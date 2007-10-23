@@ -42,14 +42,11 @@
 package org.netbeans.modules.java.platform.queries;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-import java.util.zip.ZipOutputStream;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.test.TestFileUtils;
 
 /**
  * @author Tomas Zezula
@@ -91,13 +88,7 @@ public class PlatformSourceForBinaryQueryTest extends NbTestCase {
     }
 
     private static FileObject createSrcZip (FileObject pf) throws Exception {
-        File f = new File (FileUtil.toFile(pf),"src.zip");
-        ZipOutputStream zf = new ZipOutputStream (new FileOutputStream(f));
-        ZipEntry e = new ZipEntry ("Test.java");
-        zf.putNextEntry(e);
-        zf.write("class Test {}".getBytes());
-        zf.close();
-        return FileUtil.toFileObject(f);
+        return TestFileUtils.writeZipFile(pf, "src.zip", "Test.java:class Test {}");
     }
 
 }

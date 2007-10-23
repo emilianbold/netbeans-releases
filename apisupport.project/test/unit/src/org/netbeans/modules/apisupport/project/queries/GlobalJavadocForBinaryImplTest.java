@@ -42,16 +42,15 @@
 package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery.Result;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.test.TestFileUtils;
 
 public class GlobalJavadocForBinaryImplTest extends TestBase {
 
@@ -68,7 +67,7 @@ public class GlobalJavadocForBinaryImplTest extends TestBase {
         Result res = new GlobalJavadocForBinaryImpl().findJavadoc(loadersSrcURL);
         assertNotNull("result is not null", res);
         
-        URL[] expected = new URL[] {
+        URL[] expected = {
             nbDocZipURL,
             new URL(nbDocZipURL, "org-openide-loaders/")
         };
@@ -78,10 +77,6 @@ public class GlobalJavadocForBinaryImplTest extends TestBase {
     }
 
     private File generateNbDocZip() throws IOException {
-        File zip = new File(getWorkDir(), "nbdoc.zip");
-        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zip));
-        zos.putNextEntry(new ZipEntry("org-openide-loaders/"));
-        zos.close();
-        return zip;
+        return FileUtil.toFile(TestFileUtils.writeZipFile(FileUtil.toFileObject(getWorkDir()), "nbdoc.zip", "org-openide-loaders/index.html:"));
     }
 }

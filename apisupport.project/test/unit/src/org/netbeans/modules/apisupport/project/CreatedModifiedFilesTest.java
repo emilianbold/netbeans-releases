@@ -60,8 +60,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import junit.framework.TestCase;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -73,6 +71,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.test.TestFileUtils;
 import org.openide.modules.SpecificationVersion;
 
 /**
@@ -538,20 +537,11 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
     }
     
     private FileObject createBinaryFile(String[] content) throws IOException {
-        File myTemplate = new File(getWorkDir(), "myTemplate.zip");
-        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(myTemplate));
-        ZipEntry entry = new ZipEntry("a/b/c/d.txt");
-        zos.putNextEntry(entry);
-        
-        try {
-            for (String section : content) {
-                zos.write(section.getBytes());
-            }
-            
-        } finally {
-            zos.close();
+        StringBuilder b = new StringBuilder();
+        for (String section : content) {
+            b.append(section);
         }
-        return FileUtil.toFileObject(myTemplate);
+        return TestFileUtils.writeZipFile(FileUtil.toFileObject(getWorkDir()), "myTemplate.zip", "a/b/c/d.txt:" + b);
     }
     
     private void assertFileContent(String[] content, File file) throws IOException {

@@ -42,13 +42,10 @@
 package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -58,6 +55,7 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.filesystems.test.TestFileUtils;
 
 /**
  * Test functionality of GlobalSourceForBinaryImpl.
@@ -82,7 +80,7 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
     public GlobalSourceForBinaryImplTest(String name) {
         super(name);
     }
-    
+
     public void testFindSourceRootForZipWithFirstLevelDepthNbBuild() throws Exception {
         File nbSrcZip = generateNbSrcZip("");
         NbPlatform.getDefaultPlatform().addSourceRoot(Util.urlForJar(nbSrcZip));
@@ -160,26 +158,10 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
     }
     
     private File generateNbSrcZip(String topLevelEntry) throws IOException {
-        File zip = new File(getWorkDir(), "nbsrc.zip");
-        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zip));
-        if (topLevelEntry.length() != 0) {
-            zos.putNextEntry(new ZipEntry(topLevelEntry));
-        }
-        zos.putNextEntry(new ZipEntry(topLevelEntry + "nbbuild/"));
-        zos.putNextEntry(new ZipEntry(topLevelEntry + "nbbuild/nbproject/"));
-        zos.putNextEntry(new ZipEntry(topLevelEntry + "nbbuild/nbproject/project.xml"));
-        zos.putNextEntry(new ZipEntry(topLevelEntry + "openide/"));
-        zos.putNextEntry(new ZipEntry(topLevelEntry + "openide/loaders/"));
-        zos.putNextEntry(new ZipEntry(topLevelEntry + "openide/loaders/src/"));
-        zos.putNextEntry(new ZipEntry(topLevelEntry + "openide/loaders/nbproject/"));
-        ZipEntry loadersXML = new ZipEntry(topLevelEntry + "openide/loaders/nbproject/project.xml");
-        zos.putNextEntry(loadersXML);
-        try {
-            zos.write(LOADERS_XML.getBytes());
-        } finally {
-            zos.close();
-        }
-        return zip;
+        return FileUtil.toFile(TestFileUtils.writeZipFile(FileUtil.toFileObject(getWorkDir()), "nbsrc.zip",
+                topLevelEntry + "nbbuild/nbproject/project.xml:",
+                topLevelEntry + "openide/loaders/src/dummy:",
+                topLevelEntry + "openide/loaders/nbproject/project.xml:" + LOADERS_XML));
     }
     
     private static void assertRoot(final URL loadersURL, final FileObject loadersSrcFO) {

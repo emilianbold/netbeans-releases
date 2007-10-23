@@ -41,18 +41,14 @@
 
 package org.netbeans.api.project;
 
-import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URI;
-import java.util.zip.CRC32;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.projectapi.TimedWeakReference;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.test.TestFileUtils;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -101,59 +97,13 @@ public class FileOwnerQueryTest extends NbTestCase {
         assertNotNull("found a project successfully", p);
         
         // make jar:file:/.../projdir/foo.jar!/zipfile/zippedfile
-        FileObject foojar = projdir.createData("foo.jar");
-        FileLock lock = foojar.lock();
-        try {
-            OutputStream os = foojar.getOutputStream(lock);
-            try {
-                ZipOutputStream zos = new ZipOutputStream(os);
-                ZipEntry ze = new ZipEntry("zipdir/");
-                ze.setMethod(ZipEntry.STORED);
-                ze.setSize(0L);
-                ze.setCrc(new CRC32().getValue());
-                zos.putNextEntry(ze);
-                ze = new ZipEntry("zipdir/zippedfile");
-                ze.setMethod(ZipEntry.STORED);
-                ze.setSize(0L);
-                ze.setCrc(new CRC32().getValue());
-                zos.putNextEntry(ze);
-                zos.closeEntry();
-                zos.close();
-            } finally {
-                os.close();
-            }
-        } finally {
-            lock.releaseLock();
-        }
+        FileObject foojar = TestFileUtils.writeZipFile(projdir, "foo.jar", "zipdir/zippedfile:");
         FileObject foojarRoot = FileUtil.getArchiveRoot(foojar);
         assertNotNull("have an archive in " + foojar, foojarRoot);
         zippedfile = foojarRoot.getFileObject("zipdir/zippedfile");
         assertNotNull("zippedfile found in it", zippedfile);
         
-        hashedFile = projdir.createData(".#webapp.jar.1.45");
-        lock = hashedFile.lock();
-        try {
-            OutputStream os = hashedFile.getOutputStream(lock);
-            try {
-                ZipOutputStream zos = new ZipOutputStream(os);
-                ZipEntry ze = new ZipEntry("zipdir/");
-                ze.setMethod(ZipEntry.STORED);
-                ze.setSize(0L);
-                ze.setCrc(new CRC32().getValue());
-                zos.putNextEntry(ze);
-                ze = new ZipEntry("zipdir/zippedfile");
-                ze.setMethod(ZipEntry.STORED);
-                ze.setSize(0L);
-                ze.setCrc(new CRC32().getValue());
-                zos.putNextEntry(ze);
-                zos.closeEntry();
-                zos.close();
-            } finally {
-                os.close();
-            }
-        } finally {
-            lock.releaseLock();
-        }
+        hashedFile = TestFileUtils.writeZipFile(projdir, ".#webapp.jar.1.45", "zipdir/zippedfile:");
         foojarRoot = FileUtil.getArchiveRoot(hashedFile);
         assertNotNull("have an archive in " + hashedFile, foojarRoot);
         hashedFile = foojarRoot.getFileObject("zipdir/zippedfile");

@@ -44,9 +44,6 @@ package org.netbeans.modules.java.j2seproject.classpath;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.Collections;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-import junit.framework.*;
 import java.io.File;
 import java.net.URI;
 import java.util.List;
@@ -67,9 +64,9 @@ import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.test.TestFileUtils;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
@@ -113,18 +110,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
 
     public void testAddRemoveRoot () throws Exception {
         final FileObject rootFolder = this.scratch.createFolder("Root");
-        final FileObject jarFile = this.scratch.createData("archive","jar");
-        FileLock lck = jarFile.lock();
-        try {
-            ZipOutputStream jf = new ZipOutputStream (jarFile.getOutputStream(lck));
-            try {
-                jf.putNextEntry(new ZipEntry("Test.properties"));
-            }finally {
-                jf.close();
-            }
-        } finally {
-            lck.releaseLock();
-        }
+        final FileObject jarFile = TestFileUtils.writeZipFile(scratch, "archive.jar", "Test.properties:");
         final FileObject jarRoot = FileUtil.getArchiveRoot(jarFile);
         ProjectClassPathModifier.addRoots (new URL[] {rootFolder.getURL()}, this.src, ClassPath.COMPILE);
         String cp = this.eval.getProperty("javac.classpath");
@@ -211,18 +197,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
     @SuppressWarnings("deprecation")
     public void testClassPathExtenderCompatibility () throws Exception {
         final FileObject rootFolder = this.scratch.createFolder("Root");
-        final FileObject jarFile = this.scratch.createData("archive","jar");
-        FileLock lck = jarFile.lock();
-        try {
-            ZipOutputStream jf = new ZipOutputStream (jarFile.getOutputStream(lck));
-            try {
-                jf.putNextEntry(new ZipEntry("Test.properties"));
-            }finally {
-                jf.close();
-            }
-        } finally {
-            lck.releaseLock();
-        }
+        final FileObject jarFile = TestFileUtils.writeZipFile(scratch, "archive.jar", "Test.properties:");
         org.netbeans.spi.java.project.classpath.ProjectClassPathExtender extender =
                 prj.getLookup().lookup(org.netbeans.spi.java.project.classpath.ProjectClassPathExtender.class);
         assertNotNull (extender);
@@ -239,20 +214,9 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
 
     public void testRemoveBrokenRoot () throws Exception {
         final FileObject rootFolder = this.scratch.createFolder("BrokenRoot");
-        final FileObject jarFile = this.scratch.createData("brokenarchive","jar");
+        final FileObject jarFile = TestFileUtils.writeZipFile(scratch, "brokenarchive.jar", "Test.properties:");
         final File jar = FileUtil.toFile(jarFile);
         assertNotNull(jar);
-        FileLock lck = jarFile.lock();
-        try {
-            ZipOutputStream jf = new ZipOutputStream (jarFile.getOutputStream(lck));
-            try {
-                jf.putNextEntry(new ZipEntry("Test.properties"));
-            }finally {
-                jf.close();
-            }
-        } finally {
-            lck.releaseLock();
-        }
         final FileObject jarRoot = FileUtil.getArchiveRoot(jarFile);
         final URL rootFolderURL = rootFolder.getURL();
         ProjectClassPathModifier.addRoots (new URL[] {rootFolderURL}, this.src, ClassPath.COMPILE);
