@@ -677,8 +677,12 @@ public abstract class TagBasedLexerFormatter {
                 } else {
                     int newIndent = 0;
                     int lineNumber = Utilities.getLineOffset(doc, dotPos);
+                    boolean firstRow = false;
                     
-                    if (lineNumber > 0){
+                    if (Utilities.getRowStart(doc, dotPos - 1) == dotPos - 1){
+                        newIndent = getExistingIndent(doc, lineNumber);
+                        firstRow = true;
+                    } else if (lineNumber > 0){
                         newIndent = getExistingIndent(doc, lineNumber - 1);
                     }
                     
@@ -700,6 +704,10 @@ public abstract class TagBasedLexerFormatter {
                     }
 
                     context.modifyIndent(Utilities.getRowStart(doc, dotPos), newIndent);
+                    
+                    if (firstRow){
+                        context.setCaretOffset(context.caretOffset() - newIndent);
+                    }
                 }
             }
         } catch (BadLocationException e) {
@@ -840,7 +848,7 @@ public abstract class TagBasedLexerFormatter {
         
         public int getAbsoluteEnd() {
             return absoluteEnd;
-        }
+        } 
 
         public int getAbsoluteStart() {
             return absoluteStart;
