@@ -144,11 +144,23 @@ public abstract class Util {
             name = nameExt;
             ext = ""; // NOI18N
         }
-        for (String suffix : getLocalizingSuffixesFast()) {
-            String path = logicalDir + name + suffix + ext;
-            File v = InstalledFileLocator.getDefault().locate(path, null, false);
-            if (v != null) {
-                l.add(new FileWithSuffix(v, suffix));
+        if (logicalDir != null) {
+            for (String suffix : getLocalizingSuffixesFast()) {
+                String path = logicalDir + name + suffix + ext;
+                File v = InstalledFileLocator.getDefault().locate(path, null, false);
+                if (v != null) {
+                    l.add(new FileWithSuffix(v, suffix));
+                }
+            }
+        } else {
+            File dir = new File(f.getParentFile(), "locale"); // NOI18N
+            if (dir.exists()) {
+                for (String suffix : getLocalizingSuffixesFast()) {
+                    File v = new File(dir, name + suffix + ext);
+                    if (v.isFile()) {
+                        l.add(new FileWithSuffix(v, suffix));
+                    }
+                }
             }
         }
         return l;
