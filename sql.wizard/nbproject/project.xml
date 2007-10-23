@@ -215,16 +215,16 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>../../java1/ant/lib/ant.jar</runtime-relative-path>
                 <binary-origin>"${harness.dir}/../java1/ant/lib/ant.jar"</binary-origin>
             </class-path-extension>
-			 <!-- <public-packages>
-                <package>org.netbeans.modules.jdbcwizard.builder</package>
+			<public-packages>
+                 <!-- <package>org.netbeans.modules.jdbcwizard.builder</package>
                 <package>org.netbeans.modules.jdbcwizard.builder.dbmodel</package>
                 <package>org.netbeans.modules.jdbcwizard.builder.dbmodel.impl</package>
                 <package>org.netbeans.modules.jdbcwizard.builder.model</package>
                 <package>org.netbeans.modules.jdbcwizard.builder.util</package>
                 <package>org.netbeans.modules.jdbcwizard.builder.wsdl</package>
                 <package>org.netbeans.modules.jdbcwizard.builder.xsd</package>
-                <package>org.netbeans.modules.jdbcwizard.wizards</package>
-            </public-packages> -->
+                <package>org.netbeans.modules.jdbcwizard.wizards</package>  -->
+            </public-packages>
         </data>
     </configuration>
 </project>
