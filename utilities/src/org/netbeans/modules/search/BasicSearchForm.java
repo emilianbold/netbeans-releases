@@ -129,6 +129,14 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         initHistory();
         initInteraction();
 
+        if (searchAndReplace) {
+            /* We must set the initial replace string, otherwise it might not
+             * be initialized at all if the user keeps the field "Replace With:"
+             * empty. One of the side-effects would be that method
+             * BasicSearchCriteria.isSearchAndReplace() would return 'false'. */
+            searchCriteria.setReplaceString("");                        //NOI18N
+        }
+
         /*
          * Interaction must be already set up when we set values, otherwise
          * state of the dialog might not be corresponding to the values,
