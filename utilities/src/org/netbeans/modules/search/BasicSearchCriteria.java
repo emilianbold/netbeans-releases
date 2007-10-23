@@ -554,7 +554,7 @@ final class BasicSearchCriteria {
         }
         
         FileObject fileObj = dataObj.getPrimaryFile();
-        if (fileObj.isFolder() || !fileObj.isValid() || !isTextFile(fileObj)) {
+        if (fileObj.isFolder() || !fileObj.isValid() || (isFullText() && !isTextFile(fileObj))) {
             return false;
         }
 
