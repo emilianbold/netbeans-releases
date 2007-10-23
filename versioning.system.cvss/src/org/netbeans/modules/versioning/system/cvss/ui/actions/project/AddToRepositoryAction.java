@@ -495,6 +495,9 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
                 CVSRoot root = CVSRoot.parse(repositoryStep.getCvsRoot());
                 String path = selector.selectRepositoryPath(root);
                 if (path != null) {
+                    if (!path.endsWith(module)) {
+                        path += "/" + module;
+                    }
                     importPanel.moduleTextField.setText(path);
                 }
             }
