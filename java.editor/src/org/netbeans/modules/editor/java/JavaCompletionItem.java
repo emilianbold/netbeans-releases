@@ -294,7 +294,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         BaseDocument doc = (BaseDocument)c.getDocument();
         String text = getInsertPrefix().toString();
         if (text != null) {
-            boolean completeMethod = text.length() == len && "()".equals(toAdd);
+            boolean completeMethod = text.length() == len && "()".equals(toAdd.trim());
             int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
             if (semiPos > -2)
                 toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
@@ -1852,6 +1852,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 position = doc.createPosition(offset);
                 if (semiPosition != null)
                     doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
+                else if (!isAbstract && params.isEmpty() && "()".equals(text.trim())) //NOI18N
+                    c.setCaretPosition(c.getCaretPosition() - 1);
             } catch (BadLocationException e) {
             } finally {
                 doc.atomicUnlock();
@@ -2027,6 +2029,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 doc.insertString(position.getOffset(), text, null);
                 if (semiPosition != null)
                     doc.insertString(position.getOffset(), ";", null); //NOI18N
+                else if (!isAbstract && "()".equals(text.trim())) //NOI18N
+                    c.setCaretPosition(c.getCaretPosition() - 1);
             } catch (BadLocationException e) {
             } finally {
                 doc.atomicUnlock();
