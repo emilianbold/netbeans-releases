@@ -591,6 +591,16 @@ public class Utilities {
         return res;
     }
     
+    private static Set<Dependency> getNeedsAndRequiresOnly (Collection<Dependency> deps) {
+        Set<Dependency> res = new HashSet<Dependency> ();
+        for (Dependency dep : deps) {
+            if (Dependency.TYPE_REQUIRES == dep.getType () || Dependency.TYPE_NEEDS == dep.getType ()) {
+                res.add (dep);
+            }
+        }
+        return res;
+    }
+    
     static Set<String> getBrokenDependencies (UpdateElement element, List<ModuleInfo> infos) {
         assert element != null : "UpdateElement cannot be null";
         Set<String> retval = new HashSet<String> ();
@@ -792,6 +802,15 @@ public class Utilities {
      */
     public static Set<Module> findRequiredModules (Module m, ModuleManager mm) {
         Set<Module> res = new HashSet<Module> ();
+        // workaround issue #114896
+        for (Dependency dep : getNeedsAndRequiresOnly (m.getDependencies ())) {
+            for (ModuleInfo info : getInstalledModules ()) {
+                if (Arrays.asList (info.getProvides ()).contains (dep.getName ())) {
+                    res.add (toModule (info));
+                }
+            }
+        }
+        // end of workaround
         for (Object depO : mm.getModuleInterdependencies (m, false, false)) {
             assert depO instanceof Module : depO + " is instanceof Module";
             Module depM = (Module) depO;
@@ -806,13 +825,13 @@ public class Utilities {
      */
     public static Set<Module> findDependingModules (Module m, ModuleManager mm) {
         Set<Module> res = new HashSet<Module> ();
+        // workaround issue #114896
         String [] provides = m.getProvides ();
         if (provides != null && provides.length > 0) {
             Collection<Dependency> deps = new HashSet<Dependency> ();
             for (String token : provides) {
                 deps.addAll (Dependency.create (Dependency.TYPE_NEEDS, token));
                 deps.addAll (Dependency.create (Dependency.TYPE_REQUIRES, token));
-                deps.addAll (Dependency.create (Dependency.TYPE_RECOMMENDS, token)); // ???
             }
             for (ModuleInfo moduleInfo : getInstalledModules ()) {
                 Collection<Dependency> tmpDeps = new HashSet<Dependency> (deps);
@@ -822,6 +841,7 @@ public class Utilities {
                 }
             }
         }
+        // end of workaround
         for (Object depO : mm.getModuleInterdependencies (m, true, false)) {
             assert depO instanceof Module : depO + " is instanceof Module";
             Module depM = (Module) depO;
