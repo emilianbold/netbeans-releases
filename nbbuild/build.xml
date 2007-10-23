@@ -662,13 +662,14 @@ the ${netbeans.dest}/bin/ directory.
   </target>
 
 
-  <target name="-build-platform-init">
-    <!-- Do no verify checkout while building platform -->
-    <property name="verify.checkout" value="false"/> 
-  </target>
-      
-  <target name="build-platform" depends="-build-platform-init,init">
+  <target name="-build-platform" depends="init">
     <run-depend-build clusters-to-build="nb.cluster.platform,nb.cluster.harness"/>
+  </target>
+  
+  <target name="build-platform">
+      <ant dir="." target="-build-platform" inheritAll="false">
+          <property name="cluster.config" value="platform"/>
+      </ant>
   </target>
   
   <target name="build-cluster" depends="init">
