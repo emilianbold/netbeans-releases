@@ -615,7 +615,7 @@ public abstract class AbstractJsfTopComponent extends TopComponent implements Cl
     /** Updates paste action.
     * @param path selected nodes
     */
-    private void updatePasteAction() {
+    /*private*/ void updatePasteAction() {
         Clipboard clipboard = getClipboard();
         Transferable trans = clipboard.getContents(this);
 
@@ -646,7 +646,8 @@ public abstract class AbstractJsfTopComponent extends TopComponent implements Cl
 //            }
 //        }
 //        if (webform.canPasteTransferable(trans)) {
-        if (jsfForm.canPasteTransferable(trans)) {
+//        if (jsfForm.canPasteTransferable(trans)) {
+        if (jsfForm.canPasteTransferable(designer.getSelectedComponents(), trans)) {
             // Yes!
             PasteType[] pasteTypes = new PasteType[] { new Paste() };
             pasteActionPerformer.setPasteTypes(pasteTypes);

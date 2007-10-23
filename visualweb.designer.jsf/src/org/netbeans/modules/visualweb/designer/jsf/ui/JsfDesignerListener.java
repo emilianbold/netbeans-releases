@@ -289,7 +289,8 @@ class JsfDesignerListener implements DesignerListener {
     public void selectionChanged(DesignerEvent evt) {
         Designer designer = evt.getDesigner();
         Element[] selectedComponents = designer.getSelectedComponents();
-        
+
+        Node[] nds;
         if (selectedComponents.length > 0) {
             List<Node> nodes = new ArrayList<Node>(selectedComponents.length);
             for (Element selectedComponent : selectedComponents) {
@@ -297,15 +298,15 @@ class JsfDesignerListener implements DesignerListener {
                 nodes.add(n);
             }
 
-            Node[] nds = nodes.toArray(new Node[nodes.size()]);
-            jsfTopComponent.setActivatedNodes(nds);
+            nds = nodes.toArray(new Node[nodes.size()]);
         } else {
-            Node[] nodes;
             Node rootNode = jsfTopComponent.getJsfForm().getRootBeanNode();
-            nodes = rootNode == null ? new Node[0] : new Node[] {rootNode};
-            
-            jsfTopComponent.setActivatedNodes(nodes);
+            nds = rootNode == null ? new Node[0] : new Node[] {rootNode};
         }
+        
+        jsfTopComponent.setActivatedNodes(nds);
+        // XXX #94718 To update the paste according the selection.
+        jsfTopComponent.updatePasteAction();
     }
 
     public void userPopupActionPerformed(DesignerPopupEvent evt) {

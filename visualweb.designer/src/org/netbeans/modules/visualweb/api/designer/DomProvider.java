@@ -158,7 +158,7 @@ public interface DomProvider {
 //    // XXX
 //    public boolean isWoodstockPage();
     
-    public boolean canPasteTransferable(Transferable trans);
+//    public boolean canPasteTransferable(Transferable trans);
 
 //    public void updateGridMode();
     public boolean isGridMode();

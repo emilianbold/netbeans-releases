@@ -42,6 +42,7 @@
 package org.netbeans.modules.visualweb.designer.jsf;
 
 
+import java.awt.datatransfer.UnsupportedFlavorException;
 import org.netbeans.modules.visualweb.designer.jsf.palette.PaletteControllerFactory;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.DesignerFactory;
@@ -79,7 +80,6 @@ import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 
@@ -1902,7 +1902,7 @@ public class JsfForm {
             DataFlavor.javaJVMLocalObjectMimeType + "; class=" + DisplayItem.class.getName(), // NOI18N
             "RAVE_PALETTE_ITEM"); // TODO get rid of such name.
     
-    public boolean canPasteTransferable(Transferable trans) {
+    public boolean canPasteTransferable(Element[] selectedComponentElements, Transferable trans) {
 //        return domProvider.canPasteTransferable(trans);
         if (trans != null) {
             DataFlavor[] df = trans.getTransferDataFlavors();
@@ -1915,18 +1915,71 @@ public class JsfForm {
             for (int i = 0; i < n; i++) {
                 DataFlavor flavor = df[i];
 
+//		// XXX TODO Get rid of this dep, you can specify your own data flavor
+//		// which can match, there will be created new data flavors avoiding
+//		// usage of .
+//                if (FLAVOR_DISPLAY_ITEM.equals(flavor)
+//		|| (flavor.getRepresentationClass() == String.class)
+//		|| flavor.getMimeType().startsWith("application/x-creator-")) { // NOI18N
+//                    // Yes!
+//                    return true;
+//                }
 		// XXX TODO Get rid of this dep, you can specify your own data flavor
 		// which can match, there will be created new data flavors avoiding
 		// usage of .
                 if (FLAVOR_DISPLAY_ITEM.equals(flavor)
-		|| (flavor.getRepresentationClass() == String.class)
-		|| flavor.getMimeType().startsWith("application/x-creator-")) { // NOI18N
+		|| (flavor.getRepresentationClass() == String.class)) {
                     // Yes!
                     return true;
+                } else if (flavor.getMimeType().startsWith("application/x-creator-")) { // NOI18N
+                    // XXX #94718 There is API needed (from designtime/insync).
+                    FacesModel facesModel = getFacesModel();
+                    if (facesModel == null) {
+                        return false;
+                    }
+                    LiveUnit liveUnit = facesModel.getLiveUnit();
+                    if (liveUnit == null) {
+                        return false;
+                    }
+                    DesignBean selectedBean = getPrimarySelectedBean(selectedComponentElements);
+                    if (selectedBean == null) {
+                        DesignBean defaultParentBean = getDefaultParentBean();
+                        selectedBean = defaultParentBean;
+                    }
+                    if (selectedBean == null) {
+                        // Log?
+                        return false;
+                    }
+                    try {
+                        Object transferData = trans.getTransferData(flavor);
+                        if (transferData instanceof LiveUnit.ClipImage) {
+                            LiveUnit.ClipImage clipImage = (LiveUnit.ClipImage)transferData;
+                            String[] types = clipImage.getTypes();
+                            for (String className : types) {
+                                if (liveUnit.canCreateBean(className, selectedBean, null)) {
+                                    return true;
+                                }
+                            }
+                        }
+                    } catch (UnsupportedFlavorException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
         }
         return false;
+    }
+    
+    private MarkupDesignBean getPrimarySelectedBean(Element[] selectedComponentElements) {
+       for (Element componentRootElement : selectedComponentElements) {
+           MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+           if (markupDesignBean != null) {
+               return markupDesignBean;
+           }
+       }
+       return null;
     }
     
     public UndoRedo getUndoManager() {
@@ -2033,7 +2086,7 @@ public class JsfForm {
         return getFacesModel().getHtmlDomFragment();
     }
     
-    public Element getDefaultParentComponent() {
+    private MarkupDesignBean getDefaultParentBean() {
 //        return domProvider.getDefaultParentComponent();
 //        LiveUnit liveUnit = getFacesModel().getLiveUnit();
         LiveUnit liveUnit = getLiveUnit();
@@ -2043,15 +2096,17 @@ public class JsfForm {
 
             if (bean != null) {
                 DesignBean designBean = liveUnit.getDesignBean(bean);
-                Element defaultParentElement = designBean instanceof MarkupDesignBean
-                        ? JsfSupportUtilities.getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean)
-                        : null;
-//                return defaultParentElement == null ? findDefaultParentComponent() : defaultParentElement;
-                return defaultParentElement;
+                if (designBean instanceof MarkupDesignBean) {
+                    return (MarkupDesignBean)designBean;
+                }
             }
         }
-
         return null;
+    }
+            
+    public Element getDefaultParentComponent() {
+        MarkupDesignBean markupDesignBean = getDefaultParentBean();
+        return markupDesignBean == null ? null : JsfSupportUtilities.getComponentRootElementForMarkupDesignBean(markupDesignBean);
     }
     
 //    private Element findDefaultParentComponent() {

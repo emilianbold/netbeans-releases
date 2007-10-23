@@ -1127,32 +1127,32 @@ class DomProviderImpl implements DomProvider {
 //            DataFlavor.javaJVMLocalObjectMimeType + "; class=" + DisplayItem.class.getName(), // NOI18N
 //            "RAVE_PALETTE_ITEM"); // TODO get rid of such name.
 
-    public boolean canPasteTransferable(Transferable trans) {
-//        if (trans != null) {
-//            DataFlavor[] df = trans.getTransferDataFlavors();
-//            int n = 0;
-//
-//            if (df != null) {
-//                n = df.length;
-//            }
-//
-//            for (int i = 0; i < n; i++) {
-//                DataFlavor flavor = df[i];
-//
-//		// XXX TODO Get rid of this dep, you can specify your own data flavor
-//		// which can match, there will be created new data flavors avoiding
-//		// usage of .
-//                if (FLAVOR_DISPLAY_ITEM.equals(flavor)
-//		|| (flavor.getRepresentationClass() == String.class)
-//		|| flavor.getMimeType().startsWith("application/x-creator-")) { // NOI18N
-//                    // Yes!
-//                    return true;
-//                }
-//            }
-//        }
-//        return false;
-        return jsfForm.canPasteTransferable(trans);
-    }
+//    public boolean canPasteTransferable(Transferable trans) {
+////        if (trans != null) {
+////            DataFlavor[] df = trans.getTransferDataFlavors();
+////            int n = 0;
+////
+////            if (df != null) {
+////                n = df.length;
+////            }
+////
+////            for (int i = 0; i < n; i++) {
+////                DataFlavor flavor = df[i];
+////
+////		// XXX TODO Get rid of this dep, you can specify your own data flavor
+////		// which can match, there will be created new data flavors avoiding
+////		// usage of .
+////                if (FLAVOR_DISPLAY_ITEM.equals(flavor)
+////		|| (flavor.getRepresentationClass() == String.class)
+////		|| flavor.getMimeType().startsWith("application/x-creator-")) { // NOI18N
+////                    // Yes!
+////                    return true;
+////                }
+////            }
+////        }
+////        return false;
+//        return jsfForm.canPasteTransferable(trans);
+//    }
 
     public void importString(Designer designer, String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
             Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement/*,DomProvider.CoordinateTranslator coordinateTranslator*/) {

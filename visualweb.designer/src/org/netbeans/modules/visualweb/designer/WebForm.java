@@ -2187,9 +2187,9 @@ public class WebForm implements Designer {
 //        domProvider.dumpHtmlMarkupForNode(node);
 //    }
 
-    boolean canPasteTransferable(Transferable trans) {
-        return domProvider.canPasteTransferable(trans);
-    }
+//    boolean canPasteTransferable(Transferable trans) {
+//        return domProvider.canPasteTransferable(trans);
+//    }
 
     void importString(String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
     Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement) {
