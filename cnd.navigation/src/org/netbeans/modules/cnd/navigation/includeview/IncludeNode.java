@@ -49,14 +49,13 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.loaders.CCDataLoader;
-import org.netbeans.modules.cnd.loaders.CDataLoader;
 import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.navigation.services.IncludedModel;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -83,29 +82,15 @@ public class IncludeNode extends AbstractCsmNode {
         object = element;
     }
     
-    private static final String CSrcIcon = "org/netbeans/modules/cnd/loaders/CSrcIcon.gif"; // NOI18N
-    private static final String HDataIcon = "org/netbeans/modules/cnd/loaders/HDataIcon.gif";  // NOI18N
-    private static final String CppSrcIcon = "org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"; // NOI18N
-    
     public CsmObject getCsmObject() {
         return object;
     }
     
     @Override
     public Image getIcon(int param) {
-        String path = object.getAbsolutePath();
-        int i = path.lastIndexOf('.');
-        if (i > 0) {
-            String iconPath = HDataIcon;
-            if (CCDataLoader.getInstance().getExtensions().isRegistered(path)){
-                iconPath = CppSrcIcon;
-            } else if (CDataLoader.getInstance().getExtensions().isRegistered(path)){
-                iconPath = CSrcIcon;
-            }
-            Image aIcon = Utilities.loadImage(iconPath);
-            if (aIcon != null) {
-                return aIcon;
-            }
+        DataObject dataObject =CsmUtilities.getDataObject(object);
+        if (dataObject != null){
+            return dataObject.getNodeDelegate().getIcon(param);
         }
         return super.getIcon(param);
     }
