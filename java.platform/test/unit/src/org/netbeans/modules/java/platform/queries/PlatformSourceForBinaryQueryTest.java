@@ -51,24 +51,21 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-
 /**
- *
  * @author Tomas Zezula
  */
 public class PlatformSourceForBinaryQueryTest extends NbTestCase {
-    
+
     public PlatformSourceForBinaryQueryTest(String testName) {
         super(testName);
     }
 
-    protected void setUp() throws Exception {        
-        super.setUp();        
+    protected @Override void setUp() throws Exception {
+        super.setUp();
         clearWorkDir();
     }
-    
-    
-    public void testUnregisteredPlatform() throws Exception {        
+
+    public void testUnregisteredPlatform() throws Exception {
         File wd = getWorkDir();
         FileObject wdo = FileUtil.toFileObject(wd);
         assertNotNull(wdo);
@@ -76,24 +73,23 @@ public class PlatformSourceForBinaryQueryTest extends NbTestCase {
         FileObject fo = p1.createFolder("jre");
         fo = fo.createFolder("lib");
         FileObject rt1 = fo.createData("rt.jar");
-        FileObject src1 = FileUtil.getArchiveRoot(createSrcZip (p1));  
-        
+        FileObject src1 = FileUtil.getArchiveRoot(createSrcZip (p1));
+
         FileObject p2 = wdo.createFolder("platform2");
         fo = p2.createFolder("jre");
         fo = fo.createFolder("lib");
-        FileObject rt2 = fo.createData("rt.jar");        
-        
+        FileObject rt2 = fo.createData("rt.jar");
+
         PlatformSourceForBinaryQuery q = new PlatformSourceForBinaryQuery ();
-        
+
         SourceForBinaryQuery.Result result = q.findSourceRoots(FileUtil.getArchiveRoot(rt1.getURL()));
         assertEquals(1, result.getRoots().length);
         assertEquals(src1, result.getRoots()[0]);
-        
+
         result = q.findSourceRoots(FileUtil.getArchiveRoot(rt2.getURL()));
         assertNull(result);
-        
     }
-    
+
     private static FileObject createSrcZip (FileObject pf) throws Exception {
         File f = new File (FileUtil.toFile(pf),"src.zip");
         ZipOutputStream zf = new ZipOutputStream (new FileOutputStream(f));
@@ -103,5 +99,5 @@ public class PlatformSourceForBinaryQueryTest extends NbTestCase {
         zf.close();
         return FileUtil.toFileObject(f);
     }
-    
+
 }
