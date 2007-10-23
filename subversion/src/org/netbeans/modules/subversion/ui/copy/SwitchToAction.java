@@ -48,7 +48,6 @@ import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
@@ -145,23 +144,10 @@ public class SwitchToAction extends ContextAction {
             // ... and switch
             client.switchToUrl(root, toRepositoryFile.getFileUrl(), toRepositoryFile.getRevision(), recursive);
             // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
-            refreshRecursively(root); // XXX the same for another implementations like this in the code.... (see SvnUtils.refreshRecursively() )
+            Subversion.getInstance().getStatusCache().refreshRecursively(root, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             Subversion.getInstance().refreshAllAnnotations();
         } catch (SVNClientException ex) {
             support.annotate(ex);
         }
-    }
-
-    private static void refreshRecursively(File file) {
-        Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        if(!file.isFile()) {
-            File[] files = file.listFiles();
-            if(files == null) {
-                return;
-            }
-            for (int i = 0; i < files.length; i++) {
-                refreshRecursively(files[i]);
-            }
-        }                
     }
 }

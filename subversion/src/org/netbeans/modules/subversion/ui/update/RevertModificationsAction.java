@@ -168,7 +168,9 @@ public class RevertModificationsAction extends ContextAction {
                         
                         // revert also deleted parent folders
                         // for all undeleted files
-                        client.revert(deletedFiles.toArray(new File[deletedFiles.size()]), false);
+                        if(deletedFiles.size() > 0) {
+                            client.revert(deletedFiles.toArray(new File[deletedFiles.size()]), false);   
+                        }                        
                     }
                 }
             } catch (SVNClientException ex) {
@@ -213,24 +215,7 @@ public class RevertModificationsAction extends ContextAction {
         
         ret.addAll(getDeletedParents(file));
         return ret;
-    }    
-    
-    /**
-     * Folders that were resurrected by "Revert Delete" have not really been created because they already existed.
-     * Therefore we must refresh their status manually.
-     *
-     * @param file
-     */
-    private static void refreshRecursively(File file) {
-        File [] files = file.listFiles();
-        if (files != null) {
-            for (File child : files) {
-                refreshRecursively(child);
-            }
-        }
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-    }
+    }        
 
     private static RevertModifications.RevisionInterval recountStartRevision(SvnClient client, SVNUrl repository, RevertModifications.RevisionInterval ret) throws SVNClientException {
         if(ret.startRevision.equals(SVNRevision.HEAD)) {
