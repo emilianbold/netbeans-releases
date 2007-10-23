@@ -103,6 +103,9 @@ public class CssRuleContent {
     
     //TODO remove this from the API
     public void modifyProperty(String property, String newValue) throws BadLocationException {
+        if(Boolean.getBoolean("issue_118641_debug")) {
+            Thread.dumpStack();
+        }
         CssRuleItem item = findItem(property);
         newValue = newValue.trim();
         if(item == null && newValue.length() == 0) {
