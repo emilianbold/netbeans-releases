@@ -51,10 +51,11 @@ import java.nio.charset.Charset;
 import javax.swing.*;
 
 import org.netbeans.api.diff.*;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.store.StoreEntry;
+import org.netbeans.modules.localhistory.utils.FileUtils;
 import org.netbeans.modules.versioning.util.NoContentPanel;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.ErrorManager;
@@ -155,17 +156,17 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
                 public void run() {            
                     try {   
                         
-                        FileObject fo = FileUtil.toFileObject(entry.getFile());
-                        Charset cs = fo != null && !fo.isFolder() ? cs = FileEncodingQuery.getEncoding(fo) : null;
-                        InputStreamReader storeReader = cs != null ? 
-                                    new InputStreamReader(entry.getStoreFileInputStream(), cs) :
-                                    new InputStreamReader(entry.getStoreFileInputStream());
-                                                                        
-                        StreamSource ss1 = StreamSource.createSource("historyfile", entry.getFile().getName() + " " + StoreEntryNode.getFormatedDate(entry), entry.getMIMEType(), storeReader);
+                        File file = entry.getFile();
+                        
+                        File tmpHistoryFile = File.createTempFile(file.getName(), null);
+                        tmpHistoryFile.deleteOnExit();
+                        FileUtils.copy(entry.getStoreFileInputStream(), tmpHistoryFile);
+                        Utils.associateEncoding(file, tmpHistoryFile);                                                
+                             
+                        StreamSource ss1 = new LHStreamSource(tmpHistoryFile, entry.getFile().getName() + " " + StoreEntryNode.getFormatedDate(entry), entry.getMIMEType());
                         
                         String title;
-                        StreamSource ss2;
-                        File file = entry.getFile();
+                        StreamSource ss2;                        
                         if(file.exists()) {
                             title = NbBundle.getMessage(LocalHistoryDiffView.class, "LBL_Diff_CurrentFile");
                             ss2 = new LHStreamSource(file, title, entry.getMIMEType());

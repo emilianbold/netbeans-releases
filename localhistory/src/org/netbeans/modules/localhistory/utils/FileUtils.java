@@ -123,7 +123,7 @@ public class FileUtils {
      * @param targetFile
      * 
      */
-    private static void copy(InputStream inputStream, File targetFile) throws IOException {
+    public static void copy(InputStream inputStream, File targetFile) throws IOException {
         if (inputStream == null || targetFile == null) {
             throw new NullPointerException("sourcStream and targetFile must not be null"); // NOI18N
         }
