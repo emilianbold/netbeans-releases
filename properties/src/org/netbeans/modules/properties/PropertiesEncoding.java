@@ -441,8 +441,10 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
                         }
                         flushOutBuf(out);
                         if (fullOut) {
+                            log.finest(" - returning OVERFLOW");
                             return OVERFLOW;
                         } else if (emptyInBuf && emptyIn && !hasPendingCharacters()) {
+                            log.finest(" - returning UNDERFLOW");
                             return UNDERFLOW;
                         }
                     }
