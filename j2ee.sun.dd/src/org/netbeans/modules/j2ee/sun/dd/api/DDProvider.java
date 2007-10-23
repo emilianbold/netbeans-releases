@@ -211,7 +211,21 @@ public final class DDProvider {
     }
     
     private Map<Object, RootInterface> ddMap = new WeakHashMap<Object, RootInterface>();
+    private Map<FileObject, DDProviderDataObject> dObjMap = new WeakHashMap<FileObject, DDProviderDataObject>();
 
+    /** This method retrieves the root of the XML DOM for a Glassfish (SJSAS)
+     *  deployment descriptor file.
+     * 
+     *  Caveat: Calling code should hold a strong reference to the FileObject
+     *  used in this call for as long as the RootInterface is needed.  Otherwise,
+     *  it is possible that the DataObject managing the XML graph will be GC'd
+     *  If this happens, subsequent reads & writes to the graph will be invalid
+     *  and/or throw unexpected exceptions and there is a risk of dataloss.
+     * 
+     * @param fo FileObject of sun descriptor file for desired graph
+     * @return Root of XML DOM, if any, for this descriptor file.
+     * @throws java.io.IOException if there is a problem reading the file.
+     */
     public RootInterface getDDRoot(FileObject fo) throws IOException {
         if (fo == null) {
             return null;
@@ -220,7 +234,7 @@ public final class DDProvider {
         try {
             DataObject dataObject = DataObject.find(fo);
             if(dataObject instanceof DDProviderDataObject){
-                return getDDRoot0((DDProviderDataObject) dataObject);
+                return getDDRoot0((DDProviderDataObject) dataObject, fo);
             }
         } catch (DataObjectNotFoundException e) {
             return null; // should not occur
@@ -267,7 +281,7 @@ public final class DDProvider {
         return rootProxy;
     }
 
-    private synchronized RootInterface getDDRoot0(final DDProviderDataObject ddProviderDataObject) throws IOException {
+    private RootInterface getDDRoot0(final DDProviderDataObject ddProviderDataObject, final FileObject refFO) throws IOException {
         RootInterface rootProxy = null;
         synchronized (ddMap) {
             rootProxy = ddMap.get(ddProviderDataObject);
@@ -286,6 +300,10 @@ public final class DDProvider {
                 } catch(IOException ex) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
+            }
+            
+            if(rootProxy != null) {
+                dObjMap.put(refFO, ddProviderDataObject);
             }
         }
 
