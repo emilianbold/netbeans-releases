@@ -138,8 +138,12 @@ public final class SourceNodeFactory implements NodeFactory {
         public Node node(SourceGroupKey key) {
             if (key.group == null) {
                 try {
-                    DataObject dobj = DataObject.find(key.fileObject);
-                    return new FilterNode(dobj.getNodeDelegate());
+                    if (RakeSupport.isRakeFile(key.fileObject)) {
+                        return new RakeSupport.RakeNode(key.fileObject);
+                    } else {
+                        DataObject dobj = DataObject.find(key.fileObject);
+                        return new FilterNode(dobj.getNodeDelegate());
+                    }
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
                 }

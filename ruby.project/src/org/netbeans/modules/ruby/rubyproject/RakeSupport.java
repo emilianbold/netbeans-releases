@@ -43,19 +43,32 @@ package org.netbeans.modules.ruby.rubyproject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.rubyproject.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
+import org.openide.actions.CopyAction;
+import org.openide.actions.CutAction;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.FileSystemAction;
+import org.openide.actions.OpenAction;
+import org.openide.actions.PasteAction;
+import org.openide.actions.PropertiesAction;
+import org.openide.actions.RenameAction;
+import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.FilterNode;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -266,5 +279,36 @@ public class RakeSupport {
             }
             new RubyExecution(desc, charsetName).run();
         }
+    }
+
+    public static final class RakeNode extends FilterNode {
+
+        private Action[] actions;
+        
+        public RakeNode(final FileObject rakeFO) throws DataObjectNotFoundException {
+            super(DataObject.find(rakeFO).getNodeDelegate());
+        }
+
+        public @Override Action[] getActions(boolean context) {
+            if (actions == null) {
+                actions = new Action[] {
+                    SystemAction.get(OpenAction.class),
+                    null,
+                    SystemAction.get(CutAction.class),
+                    SystemAction.get(CopyAction.class),
+                    SystemAction.get(PasteAction.class),
+                    null,
+                    SystemAction.get(DeleteAction.class),
+                    SystemAction.get(RenameAction.class),
+                    null,
+                    SystemAction.get(FileSystemAction.class),
+                    null,
+                    SystemAction.get(ToolsAction.class),
+                    SystemAction.get(PropertiesAction.class),
+                };
+            }
+            return actions;
+        }
+
     }
 }

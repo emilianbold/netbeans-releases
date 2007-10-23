@@ -59,6 +59,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.SourceRoots;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.ruby.rubyproject.RakeSupport;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
@@ -167,12 +168,15 @@ public final class SourceNodeFactory implements NodeFactory {
         public Node node(SourceGroupKey key) {
             if (key.group == null) {
                 try {
-                    DataObject dobj = DataObject.find(key.fileObject);
-                    return new FilterNode(dobj.getNodeDelegate());
+                    if (RakeSupport.isRakeFile(key.fileObject)) {
+                        return new RakeSupport.RakeNode(key.fileObject);
+                    } else {
+                        DataObject dobj = DataObject.find(key.fileObject);
+                        return new FilterNode(dobj.getNodeDelegate());
+                    }
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                
             }
             return new PackageViewFilterNode(key.group, key.generator, project);
         }
