@@ -174,6 +174,9 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
         this.file = file;
         this.od = od;
         this.doc = doc;
+        
+        getBag(doc);
+        
         this.doc.addDocumentListener(this);
         editorCookie.addPropertyChangeListener(WeakListeners.propertyChange(this, editorCookie));
         this.editorCookie = editorCookie;
