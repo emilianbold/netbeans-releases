@@ -134,13 +134,11 @@ public class AddEjbGroupDialog {
         dialog.setVisible( true );
     }
     
-    private boolean loadingEjbGroup() {
+    private String loadingEjbGroup() {
         // Make sure the user has entered all the required data
         StringBuffer errorMessage = new StringBuffer();
         if( !addPanel.validateData( errorMessage ) ) {
-            NotifyDescriptor d = new NotifyDescriptor.Message( errorMessage.toString(), NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify( d );
-            return false;
+            return errorMessage.toString();
         }
         
         // Get all the user input from the inner panel
@@ -154,8 +152,10 @@ public class AddEjbGroupDialog {
         
         // Check whether the client jar files are already added with
         // different information (i.e. hostname, iiop port)
-        if( !checkClientJarInfo( ejbGroup ) )
-            return false;
+        String check = checkClientJarInfo( ejbGroup );
+        if (check != null) {
+            return check;
+        }
         
         try {
             // Try to load the EjbGroup
@@ -163,29 +163,16 @@ public class AddEjbGroupDialog {
             ejbLoader.load();
             
             // Good, the ejbs are loaded ok
-            return true;
+            return null;
         }
-        catch( EjbLoadException ex ) {
-
-            // Popup error message here to ask the them give correct information
-            
+        catch( EjbLoadException ex ) {            
             String msg = ex.getMessage();
             
             // SYSTEM_EXCEPTION means something out of user's control. It should never happen. But it did
             if( ex.getExceptionType() == EjbLoadException.SYSTEM_EXCEPTION )
                 msg = NbBundle.getMessage( AddEjbGroupDialog.class, "FAILED_TO_LOAD_EJBS", ejbGroup.getName() );
             
-            if( ex.getExceptionType() != EjbLoadException.WARNING ) {
-                NotifyDescriptor d = new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify( d );
-            }
-            else {
-                // Just a warning. Need to continue on with the operation
-                NotifyDescriptor d = new NotifyDescriptor.Message( msg, NotifyDescriptor.INFORMATION_MESSAGE);
-                DialogDisplayer.getDefault().notify( d );
-            }
-            
-            return false;
+            return msg;
         }
     }
     
@@ -220,7 +207,7 @@ public class AddEjbGroupDialog {
         }
     }
     
-    private boolean checkClientJarInfo( EjbGroup grp ) {
+    private String checkClientJarInfo( EjbGroup grp ) {
         StringBuffer msg = new StringBuffer();
         
         for( Iterator iter = grp.getClientJarFileNames().iterator(); iter.hasNext(); ) {
@@ -240,12 +227,10 @@ public class AddEjbGroupDialog {
         }
         
         if( msg.length() != 0 ) {
-            NotifyDescriptor d = new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify( d );
-            return false;
+            return msg.toString();
         }
         else
-            return true;
+            return null;
     }
     
     private boolean checkColElemClasses()
@@ -329,8 +314,9 @@ public class AddEjbGroupDialog {
         public void validate() throws org.openide.WizardValidationException {
             
             // Throw WizardValidationException will cause the wizard to stay at the same step
-            if( !loadingEjbGroup() )
-                throw new org.openide.WizardValidationException( addPanel,  "not valid", "not valid" ); // TODO I18N
+            String loadResult = loadingEjbGroup();
+            if( loadResult != null )
+                throw new org.openide.WizardValidationException( addPanel,  "not valid", loadResult );
         }
         
     }
