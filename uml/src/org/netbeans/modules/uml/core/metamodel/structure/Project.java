@@ -49,6 +49,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -94,6 +95,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementChangeEve
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementDisposal;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementImport;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementModifiedEventsSink;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackageImport;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ITransitionElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
@@ -121,36 +123,31 @@ import org.netbeans.modules.uml.core.typemanagement.ITypeManager;
 import org.netbeans.modules.uml.core.typemanagement.TypeManager;
 import org.netbeans.modules.uml.core.workspacemanagement.IWSProject;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 
-public class Project extends org.netbeans.modules.uml.core.metamodel.structure.Model implements IProject, IElementModifiedEventsSink, IDocumentationModifiedEventsSink, IElementLifeTimeEventsSink, ICoreProductInitEventsSink
+public class Project extends Model implements IProject, IElementModifiedEventsSink, IDocumentationModifiedEventsSink, IElementLifeTimeEventsSink, ICoreProductInitEventsSink
 {
-
-	private Document m_Doc;
-	private boolean  m_IsDirty = false;
-	private boolean  m_ChildrenDirty; // Only possibly true when elements are versioned
-	private boolean  m_ProjectNeedsCommit;
-	private String  m_OrigFileName;
-	private ExternalFileManager    m_ExtManager;
-	private ETList<IElement>   m_DefaultImports;
-	private long  m_EChangeCookie;
-	private long  m_DocChangeCookie;
-	private long  m_LifeCookie;
-	private IElementDisposal m_Disposal;
-	private ITypeManager m_TypeManager;
-	private ILanguage    m_DefaultLanguage;
-	private boolean   m_InLibraryState;
-	private long    m_CoreCookie;
-	private boolean   m_OldImports;
-   private IAssociatedProjectSourceRoots mSourceRoots = null;
-   public static String PROJ_BASE_DIR="";
-       /** property change listener support */
+    private Document m_Doc;
+    private boolean m_IsDirty = false;
+    private boolean m_ChildrenDirty; // Only possibly true when elements are versioned
+    private boolean m_ProjectNeedsCommit;
+    private String m_OrigFileName;
+    private ExternalFileManager m_ExtManager;
+    private ETList<IElement> m_DefaultImports;
+    private long m_LifeCookie;
+    private IElementDisposal m_Disposal;
+    private ITypeManager m_TypeManager;
+    private ILanguage m_DefaultLanguage;
+    private boolean m_InLibraryState;
+    private boolean m_OldImports;
+    private IAssociatedProjectSourceRoots mSourceRoots = null;
+    public static String PROJ_BASE_DIR = "";
+    /** property change listener support */
     private PropertyChangeSupport changeSupport;
     public static String PROP_DIRTY = "dirty";
-
-    /** The synchronization lock used only for methods creating listeners 
+    private ETList<IElementImport> m_ElementImports = new ETArrayList<IElementImport>();
+    private ETList<IPackageImport> m_PackageImports = new ETArrayList<IPackageImport>();
+    private boolean init = false;
+    /** The synchronization lock used only for methods creating listeners
      * objects. It is static and shared among all DataObjects.
      */
     private static final Object listenersMethodLock = new Object();
@@ -167,7 +164,6 @@ public class Project extends org.netbeans.modules.uml.core.metamodel.structure.M
 		m_ProjectNeedsCommit = false;
 		m_InLibraryState = false;
 		m_OldImports = false;
-		m_EChangeCookie = -1;
 		m_ExtManager = null;		
 	}
 	
@@ -2508,31 +2504,83 @@ public class Project extends org.netbeans.modules.uml.core.metamodel.structure.M
     }
     
     
+    private synchronized void loadImports()
+    {
+        if (init)
+            return;
+        
+        m_ElementImports = retrieveElementCollection(null,
+                "//UML:Package.elementImport/*",
+                IElementImport.class);
+
+        m_PackageImports = retrieveElementCollection(null,
+                "//UML:Package.packageImport/*",
+                IPackageImport.class);
+
+        init = true;
+    }
+    
+    
+    public void addElementImport(IElementImport elem, INamespace owner)
+    {
+        super.addElementImport(elem, owner);
+        if (!init)
+        {
+            loadImports();
+        }
+        m_ElementImports.add(elem);
+    }
+    
+    
+    public void addPackageImport(IPackageImport pack, INamespace owner)
+    {
+        super.addPackageImport(pack, owner);
+        if (!init)
+        {
+            loadImports();
+        }
+        m_PackageImports.add(pack);
+    }
+    
     public long getElementImportCount()
     {
-        return UMLXMLManip.queryCount(m_Node, "//UML:Package.elementImport/*", false);
+//        return UMLXMLManip.queryCount(m_Node, "//UML:Package.elementImport/*", false);
+        if (!init)
+            loadImports();
+        return m_ElementImports.size();
     }
     
     public long getPackageImportCount()
     {
-        return UMLXMLManip.queryCount(m_Node, "//UML:Package.packageImport/*", false);
+//        return UMLXMLManip.queryCount(m_Node, "//UML:Package.packageImport/*", false);
+        if (!init)
+            loadImports();
+        return m_PackageImports.size();
     }
     
     public ETList<IPackageImport> getPackageImports()
     {
-        IPackageImport dummy = null;
-        return retrieveElementCollection(dummy, "//UML:Package.packageImport/*", IPackageImport.class);
+        if (!init)
+        {
+            loadImports();
+        }
+        return m_PackageImports;
+        
     }
     
     public ETList<IElementImport> getElementImports()
     {
-        IElementImport dummy = null;
-        return retrieveElementCollection(dummy, "//UML:Package.elementImport/*", IElementImport.class);
+        if (!init)
+        {
+            loadImports();
+        }
+        return m_ElementImports;
     }
     
     public void removePackageImport(IPackageImport elem)
     {
-        IElement remEle = removeElement( elem, "//UML:Package.packageImport/*");
+//        IElement remEle = removeElement( elem, "//UML:Package.packageImport/*");
+        removeElementImport(elem);
     }
     
     
@@ -2551,6 +2599,7 @@ public class Project extends org.netbeans.modules.uml.core.metamodel.structure.M
                     setDirty(true);
                     im.delete();
                     UMLXMLManip.removeChild(this.getNode(), im);
+                    m_PackageImports.remove(im);
                 }
             }
         }
@@ -2566,6 +2615,7 @@ public class Project extends org.netbeans.modules.uml.core.metamodel.structure.M
                     setDirty(true);
                     im.delete();
                     UMLXMLManip.removeChild(this.getNode(), im);
+                    m_ElementImports.remove(im);
                 }
             }
         }
