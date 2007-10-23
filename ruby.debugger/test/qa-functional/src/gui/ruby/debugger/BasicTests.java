@@ -92,7 +92,8 @@ public class BasicTests extends JellyTestCase {
     // name of sample projects
     private static final String SAMPLE_RUBY_PROJECT_NAME = "SampleRubyApplication";  //NOI18N
     //line number with puts "helloworld"
-    private static final int breakpointLineNumber = 10;
+    //TODO get rid of hardcoding line number
+    private static final int breakpointLineNumber = 6;
     
     public void testDebuggerStartStop() throws InterruptedException {
         createRubyProject(SAMPLE_RUBY_PROJECT_NAME);
