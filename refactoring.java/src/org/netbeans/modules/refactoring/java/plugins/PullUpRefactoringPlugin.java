@@ -48,6 +48,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -252,14 +253,14 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     public Problem prepare(RefactoringElementsBag refactoringElements) {
-//        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
+        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
         
         Set<FileObject> a = new HashSet<FileObject>();
         a.addAll(RetoucheUtils.getSuperTypesFiles(refactoring.getSourceType()));
         a.add(RetoucheUtils.getFileObject(treePathHandle));
         fireProgressListenerStart(ProgressEvent.START, a.size());
         TransformTask task = new TransformTask(new PullUpTransformer(refactoring), treePathHandle);
-        createAndAddElements(a, task, refactoringElements, refactoring);
+        createAndAddElements(a, task, refactoringElements, refactoring, cpInfo);
         fireProgressListenerStop();
         return null;
     }

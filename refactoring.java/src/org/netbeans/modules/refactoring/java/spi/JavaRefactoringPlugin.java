@@ -226,6 +226,10 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
     }    
     
     protected final Collection<ModificationResult> processFiles(Set<FileObject> files, CancellableTask<WorkingCopy> task) {
+        return processFiles(files, task, null);
+    }
+
+    protected final Collection<ModificationResult> processFiles(Set<FileObject> files, CancellableTask<WorkingCopy> task, ClasspathInfo info) {
         currentTask = task;
         Collection<ModificationResult> results = new LinkedList<ModificationResult>();
         try {
@@ -234,7 +238,7 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
                 if (cancelRequest) {
                     return Collections.<ModificationResult>emptyList();
                 }
-                final JavaSource javaSource = JavaSource.create(ClasspathInfo.create(fos.get(0)), fos);
+                final JavaSource javaSource = JavaSource.create(info==null?ClasspathInfo.create(fos.get(0)):info, fos);
                 try {
                     results.add(javaSource.runModificationTask(task));
                 } catch (IOException ex) {
@@ -247,8 +251,8 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
         return results;
     }
     
-    protected final void createAndAddElements(Set<FileObject> files, CancellableTask<WorkingCopy> task, RefactoringElementsBag elements, AbstractRefactoring refactoring) {
-        final Collection<ModificationResult> results = processFiles(files, task);
+    protected final void createAndAddElements(Set<FileObject> files, CancellableTask<WorkingCopy> task, RefactoringElementsBag elements, AbstractRefactoring refactoring, ClasspathInfo info) {
+        final Collection<ModificationResult> results = processFiles(files, task, info);
         elements.registerTransaction(new RetoucheCommit(results));
         for (ModificationResult result:results) {
             for (FileObject jfo : result.getModifiedFileObjects()) {
@@ -257,6 +261,10 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
                 }
             }
         }
+    }
+
+    protected final void createAndAddElements(Set<FileObject> files, CancellableTask<WorkingCopy> task, RefactoringElementsBag elements, AbstractRefactoring refactoring) {
+        createAndAddElements(files, task, elements, refactoring, null);
     }
     
     private class WorkingTask implements Task<CompilationController> {
