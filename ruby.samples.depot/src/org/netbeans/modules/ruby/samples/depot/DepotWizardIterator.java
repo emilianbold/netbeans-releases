@@ -112,7 +112,7 @@ public class DepotWizardIterator implements WizardDescriptor.InstantiatingIterat
         // Open DEPOT-README.html in a browser
         File urlTempF = File.createTempFile("depotReadme", ".url"); // NOI18N
         urlTempF.deleteOnExit();
-        FileObject readmeURL = FileUtil.toFileObject(urlTempF);
+        FileObject readmeURL = FileUtil.toFileObject(FileUtil.normalizeFile(urlTempF));
         writeLines(readmeURL, prjDir.getFileObject("README-DEPOT.html").getURL().toString()); // NOI18N
         resultSet.add(readmeURL);
         
