@@ -55,15 +55,15 @@ public final class GLFTemplateWizardIterator implements WizardDescriptor.Instant
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty ("WizardPanel_contentSelectedIndex", new Integer (i));
+                    jc.putClientProperty ("WizardPanel_contentSelectedIndex", i);
                     // Sets steps names for a panel
                     jc.putClientProperty ("WizardPanel_contentData", steps);
                     // Turn on subtitle creation on each step
-                    jc.putClientProperty ("WizardPanel_autoWizardStyle", Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_autoWizardStyle", true);
                     // Show steps on the left side with the image on the background
-                    jc.putClientProperty ("WizardPanel_contentDisplayed", Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_contentDisplayed", true);
                     // Turn on numbering of all steps
-                    jc.putClientProperty ("WizardPanel_contentNumbered", Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_contentNumbered", true);
                 }
             }
         }
@@ -76,8 +76,7 @@ public final class GLFTemplateWizardIterator implements WizardDescriptor.Instant
         String mimeType = ((GLFTemplateWizardPanel2) panels [1]).getMimeType ();
         String extensions = ((GLFTemplateWizardPanel2) panels [1]).getExtensions ();
         
-        NbModuleProvider module = (NbModuleProvider) getProject ().getLookup ().
-            lookup (NbModuleProvider.class);
+        NbModuleProvider module = getProject().getLookup().lookup(NbModuleProvider.class);
         FileObject srcRoot = module.getSourceDirectory ();
         FileObject manifestFO = FileUtil.createData (srcRoot, getManifest ());
         File manifest = new File (getManifest ());
@@ -259,8 +258,7 @@ public final class GLFTemplateWizardIterator implements WizardDescriptor.Instant
     }
     
     String getManifest () {
-        NbModuleProvider module = (NbModuleProvider) getProject ().getLookup ().
-            lookup (NbModuleProvider.class);
+        NbModuleProvider module = getProject().getLookup().lookup(NbModuleProvider.class);
         try {
             InputStream is = module.getManifestFile().getInputStream();
             try {
@@ -277,8 +275,7 @@ public final class GLFTemplateWizardIterator implements WizardDescriptor.Instant
     
     List<String> getPackages () {
         List<String> result = new ArrayList<String> ();
-        NbModuleProvider module = (NbModuleProvider) getProject ().getLookup ().
-            lookup (NbModuleProvider.class);
+        NbModuleProvider module = getProject().getLookup().lookup(NbModuleProvider.class);
         addPackages (module.getSourceDirectory (), "", result);
         return result;
     }
