@@ -98,6 +98,7 @@ pack_all_components()
 pack_all_components $DIST $BASENAME
 
 if [ $ML_BUILD == 1 ]; then
+    cd $NB_ALL
     rm -rf $NB_ALL/nbbuild/netbeans
     mv $NB_ALL/nbbuild/netbeans-ml $NB_ALL/nbbuild/netbeans
 
