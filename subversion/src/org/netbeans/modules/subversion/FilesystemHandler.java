@@ -88,7 +88,7 @@ class FilesystemHandler extends VCSInterceptor {
      * @param file file to delete
      */ 
     public void doDelete(File file) throws IOException {
-        boolean isMetadata = SvnUtils.isPartOfSubversionMetadata(file);
+        boolean isMetadata = SvnUtils.isPartOfSubversionMetadata(file);        
         if (!isMetadata) {
             remove(file);
         }
@@ -131,7 +131,7 @@ class FilesystemHandler extends VCSInterceptor {
         return false;
     }
 
-    public void doMove(final File from, final File to) throws IOException {
+    public void doMove(final File from, final File to) throws IOException {        
         if (SwingUtilities.isEventDispatchThread()) {
             
             Logger.getLogger("org.netbeans.modules.subversion").log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace());
@@ -168,7 +168,8 @@ class FilesystemHandler extends VCSInterceptor {
 
     public void afterMove(final File from, final File to) {
         Utils.post(new Runnable() {
-            public void run() {
+            public void run() {                
+                cache.refreshRecursively(to, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                 cache.onNotify(to, null); // as if there were an event
                 File parent = to.getParentFile();
                 if (parent != null) {
@@ -216,7 +217,7 @@ class FilesystemHandler extends VCSInterceptor {
     public void doCreate(File file, boolean isDirectory) throws IOException {
     }
 
-    public void afterCreate(final File file) {
+    public void afterCreate(final File file) {        
         Utils.post(new Runnable() {
             public void run() {
                 if (file == null) return;
@@ -230,11 +231,11 @@ class FilesystemHandler extends VCSInterceptor {
         });
     }
     
-    public void afterChange(final File file) {
+    public void afterChange(final File file) {        
         Utils.post(new Runnable() {
-            public void run() {
-                if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
-                    cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+            public void run() {                
+                if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {                    
+                    cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);                                        
                 }
             }
         });

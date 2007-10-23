@@ -171,7 +171,7 @@ public class FileStatusCache implements ISVNNotifyListener {
         Set<File> set = new HashSet<File>();
         Map allFiles = cacheProvider.getAllModifiedValues();
         for (Iterator i = allFiles.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
+            File file = (File) i.next();                                   
             FileInformation info = (FileInformation) allFiles.get(file);
             if ((info.getStatus() & includeStatus) == 0) continue;
             File [] roots = context.getRootFiles();
@@ -279,7 +279,7 @@ public class FileStatusCache implements ISVNNotifyListener {
         return files != null ? files.get(file) : null;
     }
 
-    private FileInformation refresh(File file, ISVNStatus repositoryStatus, boolean forceChangeEvent) {
+    private synchronized FileInformation refresh(File file, ISVNStatus repositoryStatus, boolean forceChangeEvent) {
         File dir = file.getParentFile();
         if (dir == null) {
             return FILE_INFORMATION_NOTMANAGED; //default for filesystem roots 
@@ -319,7 +319,7 @@ public class FileStatusCache implements ISVNNotifyListener {
 
         File [] content = null;                
         if (fi.getStatus() == FileInformation.STATUS_UNKNOWN && 
-           current != null && current.isDirectory() && ( current.getStatus() == FileInformation.STATUS_VERSIONED_DELETEDLOCALLY || 
+              current != null && current.isDirectory() && ( current.getStatus() == FileInformation.STATUS_VERSIONED_DELETEDLOCALLY || 
                                                          current.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY )) 
         {
             // - if the file was deleted then all it's children have to be refreshed.
@@ -448,6 +448,24 @@ public class FileStatusCache implements ISVNNotifyListener {
         }
     }
 
+    public void refreshRecursively(File file, ISVNStatus repositoryStatus) {
+        List<ISVNStatus> ret = new ArrayList<ISVNStatus>(20);
+                        
+        File[] files = file.listFiles();
+        if(files != null) {        
+            for (int i = 0; i < files.length; i++) {
+                if(!(SvnUtils.isPartOfSubversionMetadata(files[i]) || 
+                     Subversion.getInstance().isAdministrative(files[i]))) 
+                {
+                    refresh(files[i], repositoryStatus);
+                    if(files[i].isDirectory()) {                
+                        refreshRecursively(files[i], repositoryStatus);                
+                    }                    
+                }
+            }        
+        }        
+    }
+    
     // --- Package private contract ------------------------------------------
     
     Map<File, FileInformation>  getAllModifiedFiles() {
