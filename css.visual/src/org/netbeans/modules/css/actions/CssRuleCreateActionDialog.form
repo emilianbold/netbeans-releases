@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="selectRuleButtonGroup">
     </Component>
   </NonVisualComponents>
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
@@ -41,9 +43,12 @@
               <ComponentRef name="previewTextField"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="RULE_PREVIEW_LABEL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="RULE_PREVIEW_LABEL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
               <BorderConstraints direction="West"/>
@@ -56,7 +61,7 @@
           </Properties>
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="PREVIEW_LABEL_ACCESSIBLE_DESC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="PREVIEW_LABEL_ACCESSIBLE_DESC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
           <Constraints>
@@ -105,13 +110,13 @@
             <Component class="javax.swing.JButton" name="addRuleButton">
               <Properties>
                 <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="ADD_RULE_BUTTON_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="ADD_RULE_BUTTON_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="ADD_RULE_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="ADD_RULE_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
                 <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="ADD_RULE_TOOL_TIP" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="ADD_RULE_TOOL_TIP" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <Events>
@@ -126,13 +131,13 @@
             <Component class="javax.swing.JButton" name="removeRuleButton">
               <Properties>
                 <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="REMOVE_RULE_BUTTON_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="REMOVE_RULE_BUTTON_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="REMOVE_RULE_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="REMOVE_RULE_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
                 <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="REMOVE_RULE_TOOL_TIP" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="REMOVE_RULE_TOOL_TIP" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <Events>
@@ -151,7 +156,7 @@
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
                 <TitledBorder title="Select Rule Type">
-                  <ResourceString PropertyName="titleX" bundle="com/sun/rave/css/editor/Bundle.properties" key="RULE_TYPE_PANEL_TITLE" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString PropertyName="titleX" bundle="org/netbeans/modules/css/actions/Bundle.properties" key="RULE_TYPE_PANEL_TITLE" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </TitledBorder>
               </Border>
             </Property>
@@ -170,10 +175,10 @@
                   <ComponentRef name="selectRuleButtonGroup"/>
                 </Property>
                 <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="ELEMENT_RULE_TYPE_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="ELEMENT_RULE_TYPE_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="HTML_ELELEMT" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="HTML_ELELEMT" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
                 <Property name="actionCommand" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="ELEMENT_TYPE" type="code"/>
@@ -181,7 +186,7 @@
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="HTML_ELEMENT_RULE_TYPE_ACCESSIBLE_DESCRIPTION" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="HTML_ELEMENT_RULE_TYPE_ACCESSIBLE_DESCRIPTION" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
               <Events>
@@ -205,10 +210,10 @@
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="HTML_ELEMENT_ACCESSIBLE_NAME" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="HTML_ELEMENT_ACCESSIBLE_NAME" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="HTML_ELEMENT_ACCESSIBLE_DESC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="HTML_ELEMENT_ACCESSIBLE_DESC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
               <Constraints>
@@ -223,11 +228,11 @@
                   <ComponentRef name="selectRuleButtonGroup"/>
                 </Property>
                 <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="CLASS_RULE_TYPE_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="CLASS_RULE_TYPE_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
                 <Property name="selected" type="boolean" value="true"/>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="CLASS_NAME_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="CLASS_NAME_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
                 <Property name="actionCommand" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="CLASS_TYPE" type="code"/>
@@ -235,7 +240,7 @@
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="CLASS_RULE_TYPE_ACCESSIBLE_DESCRIPTION" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="CLASS_RULE_TYPE_ACCESSIBLE_DESCRIPTION" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
               <Events>
@@ -253,10 +258,10 @@
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="CLASS_TEXT_FIELD_ACCESSIBLE_NAME" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="CLASS_TEXT_FIELD_ACCESSIBLE_NAME" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="CLASS_TEXT_FIELD_ACCESSIBLE_DESC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="CLASS_TEXT_FIELD_ACCESSIBLE_DESC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
               <Events>
@@ -274,10 +279,10 @@
                   <ComponentRef name="selectRuleButtonGroup"/>
                 </Property>
                 <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="ELEMENT_ID_RULE_TYPE_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="ELEMENT_ID_RULE_TYPE_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="ELEMENT_ID_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="ELEMENT_ID_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
                 <Property name="actionCommand" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="ELEMENT_ID_TYPE" type="code"/>
@@ -285,7 +290,7 @@
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="ELEMENT_ID_RULE_TYPE_ACCESSIBLE_DESCRIPTION" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="ELEMENT_ID_RULE_TYPE_ACCESSIBLE_DESCRIPTION" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
               <Events>
@@ -303,10 +308,10 @@
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="ELEMENT_ID_TEXTFIELD_ACCESSIBLE_NAME" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="ELEMENT_ID_TEXTFIELD_ACCESSIBLE_NAME" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="ELEMENT_ID_TEXTFIELD_ACCESSIBLE_DESC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="ELEMENT_ID_TEXTFIELD_ACCESSIBLE_DESC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
               <Constraints>
@@ -323,13 +328,13 @@
                   </StringArray>
                 </Property>
                 <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="OPTIONAL_ELEMENT_TOOLTIP" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="OPTIONAL_ELEMENT_TOOLTIP" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="OPTIONAL_ELEMENT_ACCESSIBLE_DESC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="OPTIONAL_ELEMENT_ACCESSIBLE_DESC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
               <Constraints>
@@ -340,10 +345,8 @@
             </Component>
             <Component class="javax.swing.JLabel" name="classPrefixSeparator">
               <Properties>
-                <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
-                  <FontInfo relative="false">
-                    <Font name="Dialog" size="18" style="1"/>
-                  </FontInfo>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="Dialog" size="18" style="1"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="."/>
               </Properties>
@@ -360,7 +363,7 @@
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
                 <TitledBorder title="Style Rule Hierarchy">
-                  <ResourceString PropertyName="titleX" bundle="com/sun/rave/css/editor/Bundle.properties" key="RULE_HIERARCHY_TITLE" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString PropertyName="titleX" bundle="org/netbeans/modules/css/actions/Bundle.properties" key="RULE_HIERARCHY_TITLE" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </TitledBorder>
               </Border>
             </Property>
@@ -395,13 +398,13 @@
                 <Component class="javax.swing.JButton" name="moveRuleUpButton">
                   <Properties>
                     <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                      <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="UP_RULE_BUTTON_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="UP_RULE_BUTTON_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="MOVE_RULE_UP_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="MOVE_RULE_UP_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                     <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="UP_RULE_BUTTON_TOOLTIP" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="UP_RULE_BUTTON_TOOLTIP" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
                   <Events>
@@ -416,13 +419,13 @@
                 <Component class="javax.swing.JButton" name="moveRuleDownButton">
                   <Properties>
                     <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                      <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="DOWN_RULE_BUTTON_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="DOWN_RULE_BUTTON_MNEMONIC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="MOVE_RULE_DOWN_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="MOVE_RULE_DOWN_LBL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                     <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="DOWN_RULE_BUTTON_TOOLTIP" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                      <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="DOWN_RULE_BUTTON_TOOLTIP" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                     </Property>
                   </Properties>
                   <Events>
@@ -469,10 +472,10 @@
                     <Component class="javax.swing.JList" name="ruleHierarchyList">
                       <AccessibilityProperties>
                         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="STYLE_RULE_LIST_ACCESSIBLE_NAME" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="STYLE_RULE_LIST_ACCESSIBLE_NAME" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                          <ResourceString bundle="com/sun/rave/css/editor/Bundle.properties" key="STYLE_RULE_LIST_ACCESSIBLE_DESC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                          <ResourceString bundle="org/netbeans/modules/css/actions/Bundle.properties" key="STYLE_RULE_LIST_ACCESSIBLE_DESC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                         </Property>
                       </AccessibilityProperties>
                     </Component>
