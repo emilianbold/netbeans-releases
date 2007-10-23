@@ -358,7 +358,9 @@ public final class SyntaxParser {
                     TokenSequence htmlTS = tseq.embedded(HTMLTokenId.language());
                     if(htmlTS != null) {
                         //found html piece
-                        htmlTS.moveNext();
+                        if(!htmlTS.moveNext()) {
+                            return null; //no token in the TS!?!?!
+                        }
                         nonHtmlBlockEnd = htmlTS.offset();
                         break;
                     }
