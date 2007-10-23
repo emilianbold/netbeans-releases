@@ -291,8 +291,16 @@ public class AnnotationHolderTest extends NbTestCase {
         performTypingTest(21, "a\na\na\na\n", new int[0], new AttributeSet[0]);
     }
     
+    public void testTypeNewline() throws Exception {
+        performTypingTest(22, "asdasd\nasdfasdf", new int[] {23, 25}, new int[0], new AttributeSet[0]);
+    }
+    
     private void performTypingTest(int index, String insertWhat, int[] highlightSpans, AttributeSet[] highlightValues) throws Exception {
-        ErrorDescription ed1 = ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, "1", file, 21, 32);
+        performTypingTest(index, insertWhat, new int[] {21, 32}, highlightSpans, highlightValues);
+    }
+    
+    private void performTypingTest(int index, String insertWhat, int[] errorSpan, int[] highlightSpans, AttributeSet[] highlightValues) throws Exception {
+        ErrorDescription ed1 = ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, "1", file, errorSpan[0], errorSpan[1]);
         
         ec.open();
         

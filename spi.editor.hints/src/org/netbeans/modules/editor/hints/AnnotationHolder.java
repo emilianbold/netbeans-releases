@@ -320,6 +320,16 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                 
             line2Errors.remove(line);
             
+            //make sure the highlights are removed even for multi-line inserts:
+            try {
+                int rowStart = e.getOffset();
+                int rowEnd = Utilities.getRowEnd(doc, e.getOffset() + e.getLength());
+
+                getBag(doc).removeHighlights(rowStart, rowEnd, false);
+            } catch (BadLocationException ex) {
+                throw (IOException) new IOException().initCause(ex);
+            }
+            
             for (Position lineToken : modifiedLines) {
                 updateAnnotationOnLine(lineToken);
                 updateHighlightsOnLine(lineToken);
