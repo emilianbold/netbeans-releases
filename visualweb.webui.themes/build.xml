@@ -46,4 +46,17 @@ made subject to such option by the copyright holder.
     <description>Builds, tests, and runs the project com.sun.webui.themes.</description>
     <import file="../../../nbbuild/templates/projectized.xml"/>
 
+    <property name="extract.dir" location="build"/>
+
+    <target name="extract-for-l10n">
+        <echo message="Extracting the messages files from the themes jar."/>
+        <unjar src="release/modules/ext/defaulttheme.jar" dest="${extract.dir}"/>
+        <unjar src="release/modules/ext/defaulttheme-green.jar" dest="${extract.dir}"/>
+        <unjar src="release/modules/ext/defaulttheme-gray.jar" dest="${extract.dir}"/>
+    </target>
+
+    <target name="clean" depends="projectized-common.clean" description="Clean the build and generated directory.">
+        <delete failonerror="false" includeemptydirs="true" dir="${extract.dir}"/>
+    </target>
+
 </project>
