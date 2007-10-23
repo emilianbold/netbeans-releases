@@ -106,52 +106,7 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
         this.refactoring = rename;
         startReferenceObject = refactoring.getRefactoringSource().lookup(CsmObject.class);     
         assert startReferenceObject != null : "no start reference";
-//        RubyElementCtx tph = rename.getRefactoringSource().lookup(RubyElementCtx.class);
-//        if (tph!=null) {
-//            treePathHandle = tph;
-//        } else {
-//            Source source = RetoucheUtils.getSource(rename.getRefactoringSource().lookup(FileObject.class));
-//            try {
-//                source.runUserActionTask(new CancellableTask<CompilationController>() {
-//                    public void cancel() {
-//                    }
-//                    
-//                    public void run(CompilationController co) throws Exception {
-//                        co.toPhase(org.netbeans.api.retouche.source.Phase.RESOLVED);
-//                        org.jruby.ast.Node root = AstUtilities.getRoot(co);
-//                        if (root != null) {
-//                            RubyParseResult rpr = (RubyParseResult)co.getParserResult();
-//                            if (rpr != null) {
-//                                AnalysisResult ar = rpr.getStructure();
-//                                List<? extends AstElement> els = ar.getElements();
-//                                if (els.size() > 0) {
-//                                    // TODO - try to find the outermost or most "relevant" module/class in the file?
-//                                    // In Java, we look for a class with the name corresponding to the file.
-//                                    // It's not as simple in Ruby.
-//                                    AstElement element = els.get(0);
-//                                    org.jruby.ast.Node node = element.getNode();
-//                                    treePathHandle = new RubyElementCtx(root, node, element, co.getFileObject(), co);
-//                                    refactoring.getContext().add(co);
-//                                }
-//                            }
-//                        }
-//                    }
-//                }, false);
-//            } catch (IllegalArgumentException ex) {
-//                ex.printStackTrace();
-//            } catch (IOException ex) {
-//                ex.printStackTrace();
-//            }
-//        }
     }
-    
-//    protected Problem preCheck(CompilationController info) throws IOException {
-//        Problem preCheckProblem = null;
-//        fireProgressListenerStart(refactoring.PRE_CHECK, 4);
-//        info.toPhase(org.netbeans.api.retouche.source.Phase.RESOLVED);
-//        fireProgressListenerStop();
-//        return preCheckProblem;
-//    }
     
     private static final String getCannotRename(FileObject r) {
         return new MessageFormat(NbBundle.getMessage(CsmRenameRefactoringPlugin.class, "ERR_CannotRenameFile")).format(new Object[] {r.getNameExt()});
@@ -220,10 +175,12 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
         if (preCheckProblem != null) {
             return preCheckProblem;
         }
+        CsmObject directReferencedObject = CsmRefactoringUtils.getReferencedElement(startReferenceObject);
         // check read-only elements
         FileObject fo = null;
-        if (CsmKindUtilities.isOffsetable(this.referencedObjects)) {
-            fo = CsmUtilities.getFileObject(((CsmOffsetable)this.referencedObjects).getContainingFile());
+        if (CsmKindUtilities.isOffsetable(directReferencedObject)) {
+            fo = CsmUtilities.getFileObject(((CsmOffsetable)directReferencedObject).getContainingFile());
+            fireProgressListenerStep();
         }
         if (fo != null && (FileUtil.getArchiveFile(fo)!= null || !fo.canWrite())) {
             preCheckProblem = createProblem(preCheckProblem, true, getCannotRename(fo));
