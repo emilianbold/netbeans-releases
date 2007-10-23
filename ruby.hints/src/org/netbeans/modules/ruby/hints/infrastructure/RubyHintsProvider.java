@@ -96,7 +96,7 @@ public class RubyHintsProvider implements HintsProvider {
         }
 
         if (hints.isEmpty() || isCancelled()) {
-            return Collections.emptyList();
+            return errors;
         }
         
         List<Description> descriptions = new ArrayList<Description>();
