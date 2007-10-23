@@ -104,20 +104,26 @@ class FeatureList {
     }
     
     List<Feature> getFeaturesRec (String featureName) {
+        List<Feature> list = new ArrayList<Feature>();
+        collectFeatures(list, featureName);
+        return list;
+    }
+    
+    private void collectFeatures(List result, String featureName) {
         if (features != null) {
-            List<Feature> result = features.get (featureName);
-            if (result != null) return result;
+            List<Feature> list = features.get(featureName);
+            if (list != null) {
+                result.addAll(list);
+            }
         }
         if (lists != null) {
             for (Entry<String, FeatureList> entry : lists.entrySet()) {
                 FeatureList fList = entry.getValue();
                 if (fList != null) {
-                    List<Feature> result = fList.features.get(featureName);
-                    if (result != null) return result;
+                    fList.collectFeatures(result, featureName);
                 }
-            }
-        }
-        return Collections.<Feature>emptyList ();
+            } // for
+        } // if
     }
     
     List<Feature> getFeatures (String featureName, String id) {
