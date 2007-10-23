@@ -135,8 +135,8 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer {
                 tokenSequenceList = tokenHierarchy.tokenSequenceList(htmlPath, startOffset, endOffset);
             }
 
-            //try load the background from settings
-            FontColorSettings fcs = MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
+            //try load the background from html settings
+            FontColorSettings fcs = MimeLookup.getLookup(HTML_MIME_TYPE).lookup(FontColorSettings.class);
             if (fcs != null) {
                 Color cssBC = getColoring(fcs, CSS_BACKGROUND_TOKEN_NAME);
                 cssBackgroundColor = cssBC == null ? DEFAULT_CSS_BACKGROUND_COLOR : cssBC;
