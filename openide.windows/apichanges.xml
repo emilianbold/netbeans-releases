@@ -47,6 +47,25 @@ made subject to such option by the copyright holder.
 </apidefs>
 <changes>
 
+<change id="close_component_group">
+    <api name="winsys"/>
+    <summary>Changed behavior of TopComponent.close() and TopComponentGroup.close() for non persistent TopComponent</summary>
+    <version major="6" minor="18"/>
+    <date day="23" month="10" year="2007"/>
+    <author login="mslama"/>
+    <compatibility addition="no" binary="compatible" source="compatible" semantic="incompatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        Change behavior of winsys implementation when TopComponent.close() and TopComponentGroup.close()
+        is called for non persistent TopComponent. So far if non persistent TopComponent was closed it was
+        removed from Mode. It causes window system to forget TopComponent location so if TopComponent
+        is reopened it is opened in default location. It is now changed so that window system keeps location
+        of non persistent TopComponent during session. Of course this information is not stored between sessions
+        as TopComponent is NOT persistent. So this change applies only to TopComponent with peristence type
+        PERSISTENCE_NEVER.
+    </description>
+    <issue number="101700"/>
+</change>
+
 <change id="auto_iconify">
     <api name="winsys"/>
     <summary>Added command line boolean option 'netbeans.winsys.auto_iconify'.</summary>

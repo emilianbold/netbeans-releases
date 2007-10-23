@@ -591,12 +591,7 @@ final class Central implements ControllerHandler {
         
         for(int i = 0; i < tcs.length; i++) {
             TopComponent tc = tcs[i];
-            if(WindowManagerImpl.getInstance().isTopComponentPersistentWhenClosed(tc)) {
-                model.addModeClosedTopComponent(mode, tc);
-            } else {
-                //mkleint since one cannot close the sliding mode just like that, we don't need to check the previous mode of the tc.
-                model.removeModeTopComponent(mode, tc, null);
-            }
+            model.addModeClosedTopComponent(mode, tc);
         }
         
         ModeImpl oldActive = getActiveMode();
@@ -1217,11 +1212,7 @@ final class Central implements ControllerHandler {
                     } else {
                         tc.putClientProperty(GROUP_SELECTED, null);
                     }
-                    if(WindowManagerImpl.getInstance().isTopComponentPersistentWhenClosed(tc)) {
-                        model.addModeClosedTopComponent(mode, tc);
-                    } else {
-                        model.removeModeTopComponent(mode, tc, null);
-                    }
+                    model.addModeClosedTopComponent(mode, tc);
                     closedTcs.add(tc);
                 }
             }
