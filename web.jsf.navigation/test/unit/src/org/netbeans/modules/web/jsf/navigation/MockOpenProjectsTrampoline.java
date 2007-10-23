@@ -28,10 +28,12 @@
 package org.netbeans.modules.web.jsf.navigation;
 
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 
 /**
@@ -39,52 +41,68 @@ import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
  * @author joelle
  */
 public class MockOpenProjectsTrampoline implements OpenProjectsTrampoline {
-
+    /** Property change listeners registered through API */
+    private PropertyChangeSupport pchSupport;
+    
     private final Collection<Project> openProjects = new ArrayList<Project>();
 
-        public MockOpenProjectsTrampoline() {
+    public MockOpenProjectsTrampoline() {
+        
+    }
+
+    public Project[] getOpenProjectsAPI() {
+        Project[] projects = new Project[openProjects.size()];
+        openProjects.toArray(projects);
+        return projects;
+    }
+
+    public void openAPI(Project[] projects, boolean openRequiredProjects) {
+        Project[] oldProjects = getOpenProjectsAPI();
+        for (Project project : projects) {
+            openProjects.add(project);
+            mainProject = project;
         }
-
-
-
-        public Project[] getOpenProjectsAPI() {
-            Project[] projects = new Project[openProjects.size()];
-            openProjects.toArray(projects);
-            return projects;
+        Project[] newProjects = getOpenProjectsAPI();
+        if (pchSupport != null) {
+            pchSupport.firePropertyChange(OpenProjects.PROPERTY_OPEN_PROJECTS, oldProjects, newProjects);
         }
+    }
 
-        public void openAPI(Project[] projects, boolean openRequiredProjects) {
-            for (Project project : projects) {
-                openProjects.add(project);
-                mainProject = project;
-            }
+    public void closeAPI(Project[] projects) {
+        Project[] oldProjects = getOpenProjectsAPI();
+        for (Project project : projects) {
+            openProjects.remove(project);
         }
-
-        public void closeAPI(Project[] projects) {
-            for (Project project : projects) {
-                openProjects.remove(project);
-            }
+        Project[] newProjects = getOpenProjectsAPI();
+        if (pchSupport != null) {
+            pchSupport.firePropertyChange(OpenProjects.PROPERTY_OPEN_PROJECTS, oldProjects, newProjects);
         }
+    }
 
-        public void addPropertyChangeListenerAPI(PropertyChangeListener listener, Object source) {
-            throw new UnsupportedOperationException("Not supported yet.");
+    public void addPropertyChangeListenerAPI(PropertyChangeListener listener, Object source) {
+        if (pchSupport == null) {
+            pchSupport = new PropertyChangeSupport(this);
         }
+        pchSupport.addPropertyChangeListener(listener);
+    }
 
-        public void removePropertyChangeListenerAPI(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
+    public void removePropertyChangeListenerAPI(PropertyChangeListener listener) {
+        if (pchSupport == null) {
+            pchSupport = new PropertyChangeSupport(this);
         }
+        pchSupport.removePropertyChangeListener(listener);
+    }
+    
+    private Project mainProject;
 
-        private Project mainProject;
+    public Project getMainProject() {
+        return mainProject;
+    }
 
-        public Project getMainProject() {
-            return mainProject;
+    public void setMainProject(Project project) {
+        if (project != null && !openProjects.contains(project)) {
+            throw new IllegalArgumentException("Project " + ProjectUtils.getInformation(project).getDisplayName() + " is not open and cannot be set as main.");
         }
-
-        public void setMainProject(Project project) {
-            if (project != null && !openProjects.contains(project)) {
-                throw new IllegalArgumentException("Project " + ProjectUtils.getInformation(project).getDisplayName() + " is not open and cannot be set as main.");
-            }
-            this.mainProject = project;
-        }
-
+        this.mainProject = project;
+    }
 }
