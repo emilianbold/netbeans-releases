@@ -58,7 +58,6 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -78,19 +77,17 @@ import javax.sql.rowset.spi.SyncResolver;
 import javax.sql.rowset.spi.SyncProviderException;
 import com.sun.data.provider.DataProviderException;
 import com.sun.data.provider.FieldKey;
-import com.sun.data.provider.FilterCriteria;
 import com.sun.data.provider.RowKey;
 import com.sun.data.provider.RefreshableDataProvider;
 import com.sun.data.provider.RefreshableDataListener;
-import com.sun.data.provider.SortCriteria;
 import com.sun.data.provider.TableCursorVetoException;
-import com.sun.data.provider.TableDataFilter;
 import com.sun.data.provider.TableDataProvider;
-import com.sun.data.provider.TableDataSorter;
 import com.sun.data.provider.TransactionalDataListener;
 import com.sun.data.provider.TransactionalDataProvider;
 import com.sun.sql.rowset.CachedRowSetX;
 import com.sun.sql.rowset.SyncResolverX;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * <p>{@link TableDataProvider} implementation that wraps a <code>CachedRowSet</code>.
@@ -106,6 +103,7 @@ import com.sun.sql.rowset.SyncResolverX;
 public class CachedRowSetDataProvider extends AbstractTableDataProvider
     implements TableDataProvider, TransactionalDataProvider, RefreshableDataProvider {
 
+    private static Logger LOGGER = Logger.getLogger(CachedRowSetDataProvider.class.getName());
 
     // ----------------------------------------------------------- Constructors
 
@@ -177,6 +175,10 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
      */
     private boolean onInsertRow = false;
 
+    /**
+     * Set to true if the rowset has been executed
+     */
+    private boolean executed = false;
 
     /**
      * <p>{@link PropertyChangeListener} registered with the {@link CachedRowSetX}.</p>
@@ -197,9 +199,7 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
      */
     public CachedRowSet getCachedRowSet() {
         return cachedRowSet;
-
     }
-
 
     /**
      * <p>Set the <code>CachedRowSet</code> that we are wrapping.  In addition,
@@ -231,6 +231,22 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
         if (cachedRowSet != null && cachedRowSet instanceof CachedRowSetX) {
             propertyChangeListener = new RowSetPropertyChangeListener();
             ((CachedRowSetX)cachedRowSet).addPropertyChangeListener(propertyChangeListener);
+
+            if (!Beans.isDesignTime()) {
+                try {
+                    executed = ((CachedRowSetX) cachedRowSet).isExecuted();
+                } catch (SQLException e) {
+                    LOGGER.log(Level.WARNING, null, e);
+                    executed = false;
+                }
+            } else {
+                // Assume the row set has not yet been executed yet.  The worse
+                // that could happen is the row set was executed before it was
+                // passed in to the data provider, and we end up executing it
+                // one more time.  Note that this particular branch of logic
+                // is unlikely because almost always the rowset is a CachedRowSetX
+                executed = false;
+            }
         }
         if (cachedRowSet != null) {
             rowSetListener = new CachedRowSetListener();
@@ -830,8 +846,6 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
     /** {@inheritDoc} */
     public void setValue(FieldKey fieldKey, RowKey row, Object value) throws DataProviderException {
 
-	// System.out.println("Entering setValue, fieldKey: " + fieldKey + "  rowKey: " + row + "  value: " + value);
-
         if (getCachedRowSet() != null && row instanceof CachedRowSetRowKey) {
             try {
                 if (!isUpdatable()) {
@@ -911,7 +925,7 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
     public void refresh() throws DataProviderException {
         if (getCachedRowSet() != null && getCachedRowSet() instanceof CachedRowSet) {
             try {
-                ((CachedRowSet)getCachedRowSet()).release();
+                ((CachedRowSet)getCachedRowSet()).release();                
                 fireRefreshed();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
@@ -1318,13 +1332,10 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
      * <p>Check if rowset, if so, execute if necessary.</p>
      */
     protected void checkExecute() throws SQLException {
-        if (!Beans.isDesignTime() && getCachedRowSet() != null) {
-            try {
-                getCachedRowSet().isBeforeFirst();
-            } catch (SQLException e) {
-                getCachedRowSet().execute();
-                getCachedRowSet().first();
-            }
+        if (!Beans.isDesignTime() && !executed) {
+            getCachedRowSet().execute();
+            getCachedRowSet().first();
+            executed = true;
         }
     }
 
