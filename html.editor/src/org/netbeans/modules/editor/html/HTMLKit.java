@@ -148,6 +148,7 @@ public class HTMLKit extends LanguagesEditorKit implements org.openide.util.Help
     
     public static class HTMLDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
         
+        @Override
         protected void insertString(BaseDocument doc, int dotPos,
                 Caret caret, String str,
                 boolean overwrite) throws BadLocationException {

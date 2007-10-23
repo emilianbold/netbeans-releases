@@ -163,7 +163,7 @@ public class HTMLLexerFormatter extends TagBasedLexerFormatter {
     }
     
     @Override protected boolean isClosingTagRequired(BaseDocument doc, String tagName) {
-	HTMLSyntaxSupport htmlsup = (HTMLSyntaxSupport)(doc.getSyntaxSupport().get(HTMLSyntaxSupport.class));
+	HTMLSyntaxSupport htmlsup = HTMLSyntaxSupport.get(doc);
         DTD dtd = htmlsup.getDTD();
         
         if (dtd == null){

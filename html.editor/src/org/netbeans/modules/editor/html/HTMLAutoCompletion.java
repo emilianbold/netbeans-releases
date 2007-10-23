@@ -82,7 +82,8 @@ class HTMLAutoCompletion {
             int dotPos,
             Caret caret,
             char ch) throws BadLocationException {
-        if (doc.getSyntaxSupport() instanceof ExtSyntaxSupport) {
+        String mimeType = (String)doc.getProperty("mimeType"); //NOI18N
+        if ("text/html".equals(mimeType)) { //NOI18N
             if (ch == '=') {
                 completeQuotes(doc, dotPos, caret);
             } else if(ch == '"') {
@@ -158,7 +159,7 @@ class HTMLAutoCompletion {
             
             int dotPosAfterTypedChar = dotPos + 1;
             if(token != null &&
-                    token.id() == HTMLTokenId.ARGUMENT) {
+                    token.id() == HTMLTokenId.OPERATOR) {
                 doc.insertString( dotPosAfterTypedChar, "\"\"" , null);
                 caret.setDot(dotPosAfterTypedChar + 1);
                 //mark the last autocomplete position

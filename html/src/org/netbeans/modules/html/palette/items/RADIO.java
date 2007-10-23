@@ -139,7 +139,7 @@ public class RADIO implements ActiveEditorDrop {
         if (doc.getLength() == 0)
             return groups;
 
-        HTMLSyntaxSupport sup = (HTMLSyntaxSupport)(doc.getSyntaxSupport().get(HTMLSyntaxSupport.class));
+        HTMLSyntaxSupport sup = HTMLSyntaxSupport.get(doc);
         
         try {
             TokenItem token = sup.getTokenChain(0, 1);

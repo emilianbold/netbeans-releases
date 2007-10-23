@@ -498,7 +498,6 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             case ';':
                 return COMPLETION_HIDE;
             case '>':
-                HTMLSyntaxSupport sup = (HTMLSyntaxSupport)doc.getSyntaxSupport().get(HTMLSyntaxSupport.class);
                 try {
                     //check if the cursor is behind an open tag
                     SyntaxElement se = getElementChain(dotPos-1);

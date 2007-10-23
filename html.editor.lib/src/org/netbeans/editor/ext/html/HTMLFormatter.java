@@ -68,12 +68,12 @@ public class HTMLFormatter extends TagBasedFormatter {
     }
     
     @Override protected ExtSyntaxSupport getSyntaxSupport(BaseDocument doc){
-	return (HTMLSyntaxSupport)(doc.getSyntaxSupport().get(HTMLSyntaxSupport.class));
+	return HTMLSyntaxSupport.get(doc);
     }
     
     @Override protected TokenItem getTagTokenEndingAtPosition(BaseDocument doc, int position) throws BadLocationException{
 	if (position >= 0) {
-	    HTMLSyntaxSupport sup = (HTMLSyntaxSupport)getSyntaxSupport(doc);
+	    HTMLSyntaxSupport sup = HTMLSyntaxSupport.get(doc);
 	    TokenItem token = sup.getTokenChain(position, position + 1);
 	    
 	    if (token.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL &&
@@ -137,7 +137,7 @@ public class HTMLFormatter extends TagBasedFormatter {
     }
     
     @Override protected boolean isClosingTagRequired(BaseDocument doc, String tagName) {
-	HTMLSyntaxSupport htmlsup = (HTMLSyntaxSupport)(doc.getSyntaxSupport().get(HTMLSyntaxSupport.class));
+	HTMLSyntaxSupport htmlsup = HTMLSyntaxSupport.get(doc);
         DTD dtd = htmlsup.getDTD();
         
         if (dtd == null){
