@@ -77,8 +77,7 @@ public class JPAAnnotsOnlyOnAccesor extends JPAClassRule {
         List<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
         
         for (ExecutableElement method : ElementFilter.methodsIn(subject.getEnclosedElements())){
-            if (!(method.getSimpleName().toString().startsWith("get") && //NOI18N
-                    method.getParameters().size() == 0)){
+            if (!isAccessor(method)){
                 for (String annotName : ModelUtils.extractAnnotationNames(method)){
                     if (JPAAnnotations.MEMBER_LEVEL.contains(annotName)){
                         ErrorDescription error = createProblem(method, ctx,
@@ -96,4 +95,23 @@ public class JPAAnnotsOnlyOnAccesor extends JPAClassRule {
         return problemsFound.toArray(new ErrorDescription[problemsFound.size()]);
     }
     
+    private boolean isAccessor(ExecutableElement method){
+
+        if (!method.getParameters().isEmpty()){
+            return false;
+        }
+
+        String methodName = method.getSimpleName().toString();
+        if (methodName.startsWith("get")){ //NO18N
+            return true;
+        }
+        if (isBoolean(method.getReturnType().toString()) && methodName.startsWith("is")){ //NO18N
+            return true;
+        }
+        return false;
+    }
+    
+    private boolean isBoolean(String type){
+        return "boolean".equals(type) || "java.lang.Boolean".equals(type); //NO18N
+    }
 }
