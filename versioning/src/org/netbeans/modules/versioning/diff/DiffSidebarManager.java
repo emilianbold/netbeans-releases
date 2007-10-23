@@ -115,7 +115,7 @@ public class DiffSidebarManager implements PreferenceChangeListener {
     private boolean matches(DiffSidebar sidebar, Set<FileObject> fileObjects) {
         if (fileObjects == null) return true;
         for (FileObject fileObject : fileObjects) {
-            if (sidebar.getFileObject().equals(fileObject)) return true;
+            if (fileObject.equals(sidebar.getFileObject())) return true;
         }
         return false;
     }
