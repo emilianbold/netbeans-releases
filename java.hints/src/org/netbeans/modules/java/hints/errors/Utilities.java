@@ -49,14 +49,18 @@ import com.sun.source.tree.Scope;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.WildcardType;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -64,6 +68,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.MarkBlock;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -258,4 +263,36 @@ public class Utilities {
             return false;
         }
     }
+    
+    public static TypeMirror resolveCapturedType(CompilationInfo info, TypeMirror tm) {
+        TypeMirror type = resolveCapturedTypeInt(info, tm);
+        
+        if (type.getKind() == TypeKind.WILDCARD) {
+            return ((WildcardType) type).getExtendsBound();
+        }
+        
+        return type;
+    }
+    
+    private static TypeMirror resolveCapturedTypeInt(CompilationInfo info, TypeMirror tm) {
+        TypeMirror orig = SourceUtils.resolveCapturedType(tm);
+        
+        if (orig != null) {
+            return orig;
+        }
+        
+        if (tm.getKind() == TypeKind.DECLARED) {
+            DeclaredType dt = (DeclaredType) tm;
+            List<TypeMirror> typeArguments = new LinkedList<TypeMirror>();
+            
+            for (TypeMirror t : dt.getTypeArguments()) {
+                typeArguments.add(resolveCapturedTypeInt(info, t));
+            }
+            
+            return info.getTypes().getDeclaredType((TypeElement) dt.asElement(), typeArguments.toArray(new TypeMirror[0]));
+        }
+        
+        return tm;
+    }
+    
 }

@@ -480,7 +480,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 }
             }
         }
-        
+
         Set<TypeMirrorHandle> exceptionHandles = new HashSet<TypeMirrorHandle>();
         
         for (TypeMirror tm : exceptions) {
@@ -1086,6 +1086,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         return ; //TODO...
                     }
                     
+                    tm = Utilities.resolveCapturedType(parameter, tm);
+                    
                     //hack: creating a copy of the expression:
                     Document doc = parameter.getDocument();
                     int start = (int) parameter.getTrees().getSourcePositions().getStartPosition(parameter.getCompilationUnit(), resolved.getLeaf());
@@ -1235,6 +1237,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     if (resolved == null || tm == null) {
                         return ; //TODO...
                     }
+                    
+                    tm = Utilities.resolveCapturedType(parameter, tm);
                     
                     TreePath pathToClass = resolved;
                     

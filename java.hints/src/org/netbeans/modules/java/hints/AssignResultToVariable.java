@@ -52,13 +52,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -191,9 +189,7 @@ public class AssignResultToVariable extends AbstractHint {
                             return ;
                         }
                         
-                        if (isCapturedType(copy, type)) {
-                            type = ((TypeVariable) type).getUpperBound();
-                        }
+                        type = Utilities.resolveCapturedType(copy, type);
                         
                         TreeMaker make = copy.getTreeMaker();
                         
@@ -277,20 +273,5 @@ public class AssignResultToVariable extends AbstractHint {
     }
 
     private static final Set<TypeKind> NOT_ACCEPTABLE_TYPE_KINDS = EnumSet.of(TypeKind.ERROR, TypeKind.EXECUTABLE, TypeKind.NONE, TypeKind.NULL, TypeKind.OTHER, TypeKind.PACKAGE, TypeKind.WILDCARD, TypeKind.VOID);
-    
-    //XXX: maybe create an API method for this?
-    private static boolean isCapturedType(CompilationInfo info, TypeMirror tm) {
-        if (tm.getKind() != TypeKind.TYPEVAR) {
-            return false;
-        }
-        
-        Element el = info.getTypes().asElement(tm);
-        
-        if (el == null || el.getKind() != ElementKind.TYPE_PARAMETER) {
-            return false;
-        }
-        
-        return !SourceVersion.isName(el.getSimpleName().toString());
-    }
     
 }

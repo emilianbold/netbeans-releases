@@ -118,7 +118,7 @@ public final class ChangeType implements ErrorRule<Void> {
             if (scope.getKind() == Kind.VARIABLE && ((VariableTree) scope).getInitializer() != null) {
                 expected = info.getTrees().getTypeMirror(path);
                 found = ((VariableTree) scope).getInitializer();
-                resolved = info.getTrees().getTypeMirror(new TreePath(path, found));
+                resolved = org.netbeans.modules.java.hints.errors.Utilities.resolveCapturedType(info, info.getTrees().getTypeMirror(new TreePath(path, found)));
             }
             
             if (expected != null && resolved != null) {

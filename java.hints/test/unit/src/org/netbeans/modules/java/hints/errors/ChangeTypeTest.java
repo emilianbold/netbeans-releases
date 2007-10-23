@@ -133,6 +133,20 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
                 "package test; public class Test {private void test() {Object s = new Object();}}");
     }
     
+    public void testCapturedWildcard1() throws Exception {
+        performFixTest("test/Test.java",
+                "package test; import java.util.List; public class Test {private void test() {String o = |test1();} private List<? extends CharSequence> test1() {return null;}}",
+                "Change type of o to List<? extends CharSequence>",
+                "package test; import java.util.List; public class Test {private void test() { List<? extends CharSequence> o = test1();} private List<? extends CharSequence> test1() {return null;}}");
+    }
+    
+    public void testCapturedWildcard2() throws Exception {
+        performFixTest("test/Test.java",
+                "package test; import java.util.List; public class Test {private void test() {List<? extends CharSequence> l = null; Number o = |l.get(0);}}",
+                "Change type of o to CharSequence",
+                "package test; import java.util.List; public class Test {private void test() {List<? extends CharSequence> l = null; CharSequence o = l.get(0);}}");
+    }
+    
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) {
         List<Fix> fixes = new ChangeType().run(info, null, pos, path, null);
         List<Fix> result=  new LinkedList<Fix>();

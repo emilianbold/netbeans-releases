@@ -216,6 +216,20 @@ public class IntroduceHintTest extends NbTestCase {
                 3, 0);
     }
     
+    public void testFix11() throws Exception {
+        performFixTest("package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> l = |test()|;} public List<? extends CharSequence> test() {return null;}}",
+                       "package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> name = test(); List<? extends CharSequence> l = name;} public List<? extends CharSequence> test() {return null;}}",
+                       new DialogDisplayerImpl("name", true, null, true),
+                       2, 0);
+    }
+    
+    public void testFix12() throws Exception {
+        performFixTest("package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> l = null; CharSequence c = |l.get(0)|;} }",
+                       "package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> l = null;CharSequence name = l.get(0); CharSequence c = name;} }",
+                       new DialogDisplayerImpl("name", true, null, true),
+                       2, 0);
+    }
+    
     public void testSimple4() throws Exception {
         performSimpleSelectionVerificationTest("package test; import java.util.ArrayList; public class Test {public void test() {Object o = new ArrayList<String>();}}", 141 - 49, 164- 49, true);
     }
@@ -423,6 +437,20 @@ public class IntroduceHintTest extends NbTestCase {
                        "package test; public class Test { private int name; public Test() { name = 3 + 4; } public void test() {int y = name; int z = 3 + 4;}}",
                        new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_CONSTRUCTORS, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
                        3, 2);
+    }
+    
+    public void testFix21() throws Exception {
+        performFixTest("package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> l = |test()|;} public List<? extends CharSequence> test() {return null;}}",
+                       "package test; import java.util.List; public class Test { private List<? extends CharSequence> name; public void test1() {name = test(); List<? extends CharSequence> l = name;} public List<? extends CharSequence> test() {return null;}}",
+                       new DialogDisplayerImpl2("name", IntroduceFieldPanel.INIT_METHOD, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
+                       2, 1);
+    }
+    
+    public void testFix22() throws Exception {
+        performFixTest("package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> l = null; CharSequence c = |l.get(0)|;} }",
+                       "package test; import java.util.List; public class Test { private CharSequence name; public void test1() {List<? extends CharSequence> l = null;name = l.get(0); CharSequence c = name;} }",
+                       new DialogDisplayerImpl2("name", IntroduceFieldPanel.INIT_METHOD, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
+                       2, 1);
     }
     
     public void testIntroduceFieldFix114350() throws Exception {
@@ -763,6 +791,42 @@ public class IntroduceHintTest extends NbTestCase {
                        new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
     }
     
+//    public void testIntroduceMethod109489() throws Exception {
+//        performErrorMessageTest("package test;\n" +
+//                                "public class Test {\n" +
+//                                "    public static void test(boolean arg) {\n" +
+//                                "        |int i;|\n" +
+//                                "        i = 0;\n" +
+//                                "    }\n" +
+//                                "}",
+//                                IntroduceKind.CREATE_METHOD,
+//                                "");
+//    }
+
+//    public void testIntroduceMethodFromExpression1() throws Exception {
+//        performFixTest("package test;\n" +
+//                       "public class Test {\n" +
+//                       "    public static void test(int a) {\n" +
+//                       "        int b = 0;\n"+
+//                       "        int c = |a + b|;\n" +
+//                       "    }\n" +
+//                       "}",
+//                       "package test; public class Test { public static void test(boolean arg) { name(); } private static void name() { String allianceString = new String(\"[]\"); allianceString += \"\"; } }",
+//                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
+//    }
+    
+//    public void testIntroduceMethodTooManyExceptions() throws Exception {
+//        performFixTest("package test;\n" +
+//                       "public class Test {\n" +
+//                       "    public static void test(int a) throws Exception {\n" +
+//                       "        |if (a == 1) throw new java.io.IOException(\"\");\n" +
+//                       "        if (a == 2) throw new java.io.FileNotFoundException(\"\");|\n" +
+//                       "    }\n" +
+//                       "}",
+//                       "package test; import java.io.IOException; public class Test { public static void test(int a) throws Exception { name(a); } private static void name(int a) throws IOException { if (a == 1) { throw new java.io.IOException(\"\"); } if (a == 2) { throw new java.io.FileNotFoundException(\"\"); } } }",
+//                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
+//    }
+    
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         
@@ -872,6 +936,14 @@ public class IntroduceHintTest extends NbTestCase {
         String result = doc.getText(0, doc.getLength()).replaceAll("[ \t\n]+", " ");
         
         assertEquals(golden, result);
+    }
+    
+    private void performErrorMessageTest(String code, IntroduceKind kind, String golden) throws Exception {
+        int[] span = new int[2];
+        
+        code = TestUtilities.detectOffsets(code, span);
+        
+        performErrorMessageTest(code, span[0], span[1], kind, golden);
     }
     
     private void performErrorMessageTest(String code, int start, int end, IntroduceKind kind, String golden) throws Exception {
