@@ -474,7 +474,7 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
     
     protected boolean isMultiValuedAtTargetEntity(){
         return JPAAnnotations.MANY_TO_MANY.equals(complimentaryAnnotationClassName)
-                || JPAAnnotations.MANY_TO_ONE.equals(complimentaryAnnotationClassName);
+                || JPAAnnotations.ONE_TO_MANY.equals(complimentaryAnnotationClassName);
     }
     
     protected boolean isMultiValuedAtLocalEntity(){

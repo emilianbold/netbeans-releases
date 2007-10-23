@@ -50,8 +50,9 @@ import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
-import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateOneToManyRelationshipHint;
+import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateManyToOneRelationshipHint;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateOneToOneRelationshipHint;
+import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateUnidirManyToOneRelationship;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateUnidirOneToOneRelationship;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -86,17 +87,22 @@ public class RelationshipForEntityTypeAttrDefined extends JPAEntityAttributeChec
                         attrib.getName(),
                         remoteClassName);
                 
-                Fix fix3 = new CreateOneToManyRelationshipHint(ctx.getFileObject(),
+                Fix fix3 = new CreateUnidirManyToOneRelationship(ctx.getFileObject(),
+                        classHandle,
+                        elemHandle);
+
+                Fix fix4 = new CreateManyToOneRelationshipHint(ctx.getFileObject(),
                         classHandle,
                         ctx.getAccessType(),
                         attrib.getName(),
                         remoteClassName);
                 
+                
                 return new ErrorDescription[]{Rule.createProblem(attrib.getJavaElement(),
                         ctx, NbBundle.getMessage(RelationshipForEntityTypeAttrDefined.class,
                         "MSG_EntityRelationNotDefined"),
                         Severity.WARNING,
-                        Arrays.asList(fix1, fix2, fix3))};
+                        Arrays.asList(fix1, fix2, fix3, fix4))};
             }
         }
         
