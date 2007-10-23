@@ -523,7 +523,7 @@ public final class EarProjectGenerator {
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         // XXX the following just for testing, TBD:
         ep.setProperty(EarProjectProperties.DIST_DIR, "dist"); // NOI18N
-        ep.setProperty(EarProjectProperties.DIST_JAR, "${"+EarProjectProperties.DIST_DIR+"}/" + name + ".ear"); // NOI18N
+        ep.setProperty(EarProjectProperties.DIST_JAR, "${" + EarProjectProperties.DIST_DIR + "}/${" + EarProjectProperties.JAR_NAME + "}"); // NOI18N
         
         ep.setProperty(EarProjectProperties.J2EE_PLATFORM, j2eeLevel);
         
