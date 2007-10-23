@@ -5,8 +5,10 @@
 <html>
     <jsp:setProperty name="test" property="JSP" />
     <%-- HTML --%>
-    <c:if test="${param.sayHello}">
-        <!-- Let's welcome the user ${param.name} -->
-        Hello ${param.name}!
-    </c:if>
+    <jsp:useBean id="bean" scope="request" class="some.Bean">
+        <jsp:setProperty name="bean" property="amount" value="10" /> 
+    </jsp:useBean #error>
+
+    <!-- Let's welcome the user ${param.name} -->
+    Hello ${param.name}!
 </html>
