@@ -56,6 +56,27 @@ public class PartnerLinkTypeContentLayout implements Layout {
     }
     
     public void justify(Widget widget) {
+        Rectangle parentBounds = widget.getClientArea();
+        int width = parentBounds.width;
+        
+        List<Widget> children = widget.getChildren();
+        if (children.size() < 3) return;
+        
+        Widget firstRole = children.get(0);
+        Widget secondRole = children.get(1);
+        Widget operationLayer = children.get(2);
+        
+        Rectangle bounds1 = firstRole.getBounds();
+        Rectangle bounds2 = secondRole.getBounds();
+        Rectangle bounds3 = operationLayer.getBounds();
+        
+        bounds3.width = width - bounds1.width + 10;
+        Point point = secondRole.getLocation();
+        point.x = width - 5 - bounds2.width;
+        
+        operationLayer.resolveBounds(operationLayer.getLocation(), bounds3);
+        secondRole.resolveBounds(point, bounds2);
+        
         
     }
 

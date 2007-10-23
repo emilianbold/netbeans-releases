@@ -67,7 +67,6 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.OneSideJustifiedLayout;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.OperationWidget;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.PartnerLinkTypeContentWidget;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.RectangleWidget;
@@ -118,7 +117,7 @@ public class OperationSceneLayer extends Widget {
         RectangleWidget rectangleWidget = new RectangleWidget(getScene(), 12, 70);
         rectangleWidget.setThickness(4);
         rectangleWidget.setColor(WidgetConstants.HIT_POINT_BORDER);
-        dummyOperationWidget.addChild(new Widget(getScene()));
+        dummyOperationWidget.addChild(new Widget(getScene()), 1);
         dummyOperationWidget.setBorder(BorderFactory.createEmptyBorder(3));
         dummyOperationWidget.addChild(rectangleWidget);
         dummyEndWidget = new Widget(getScene());
@@ -224,7 +223,7 @@ public class OperationSceneLayer extends Widget {
     public void showBlankWidget(boolean right) {
         dummyOperationWidget.removeFromParent();
         dummyEndWidget.removeFromParent();
-        dummyOperationWidget.setLayout(new OneSideJustifiedLayout(right));
+        dummyOperationWidget.setLayout(LayoutFactory.createHorizontalFlowLayout());
         if (right) {
             rightsideWidgetsHolder.addChild(dummyOperationWidget);
         } else {
@@ -266,10 +265,4 @@ public class OperationSceneLayer extends Widget {
         }
     }
     
-    @Override
-    protected void notifyRemoved() {
-        super.notifyRemoved();
-        leftPortType = null;
-        rightPortType = null;
-    }
 }

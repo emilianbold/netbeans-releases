@@ -95,7 +95,6 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.xam.AbstractComponent;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.openide.ErrorManager;
@@ -441,7 +440,7 @@ public class MessageWidget extends AbstractWidget<Message>
         }
         
         result.addChild(expanderWidget);
-        result.setLayout(new LeftRightLayout(32));
+        result.setLayout(WidgetConstants.HEADER_LAYOUT);
         result.setBorder(WidgetConstants.GRADIENT_BLUE_WHITE_BORDER);
         return result;
     }

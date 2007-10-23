@@ -42,6 +42,7 @@
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
@@ -52,6 +53,8 @@ import org.netbeans.api.visual.action.InplaceEditorProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.border.BorderFactory;
+import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -72,11 +75,16 @@ public abstract class OperationWidget<T extends Operation>
         extends AbstractWidget<Operation> {
     private T mOperationConstruct;
     private LabelWidget mOperationNameLabelWidget;
+    private Widget nameHolderWidget;
     protected RectangleWidget mOperationRectangleWidget;
     private WidgetAction editorAction;
+    protected Widget endFillerWidget;
     
     public OperationWidget(Scene scene, T operation, Lookup lookup) {
         super(scene, operation, lookup);
+        
+        nameHolderWidget = new Widget(scene);
+        nameHolderWidget.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.CENTER, 0));
         
         mOperationConstruct = operation;
         mOperationNameLabelWidget = new LabelWidget(getScene());
@@ -103,8 +111,7 @@ public abstract class OperationWidget<T extends Operation>
                 return mOperationConstruct.getName();
             }
             
-        },  EnumSet.<InplaceEditorProvider.ExpansionDirection>of(InplaceEditorProvider.ExpansionDirection.LEFT,
-                InplaceEditorProvider.ExpansionDirection.RIGHT));
+        },  null);
         mOperationNameLabelWidget.getActions().addAction(editorAction);
         getActions().addAction(new WidgetAction.Adapter() {
 
@@ -125,7 +132,12 @@ public abstract class OperationWidget<T extends Operation>
         mOperationRectangleWidget = new RectangleWidget(getScene(), 10, 67);
         
         if (isImported()) mOperationRectangleWidget.setColor(Color.GRAY);
+        
+        nameHolderWidget.addChild(mOperationNameLabelWidget);
+        
         setBorder(BorderFactory.createEmptyBorder(3));
+        endFillerWidget = new Widget(scene);
+        endFillerWidget.setMaximumSize(new Dimension(5, 0));
     }
     
     /**
@@ -164,8 +176,8 @@ public abstract class OperationWidget<T extends Operation>
         return mOperationConstruct;
     }
     
-    protected Widget getLabel() {
-        return mOperationNameLabelWidget;
+    protected Widget getLabelHolder() {
+        return nameHolderWidget;
     }
     
     @Override

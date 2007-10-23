@@ -46,7 +46,9 @@ import java.awt.Color;
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
 
+import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.GradientFillBorder;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 
 /**
  * Defines constants to be used throughout the widget classes.
@@ -106,6 +108,7 @@ public interface WidgetConstants {
     public int TEXT_LABEL_HEIGHT = 25;
     
     public Border EMPTY_2PX_BORDER = BorderFactory.createEmptyBorder(2, 4, 2, 4);
+    public Layout HEADER_LAYOUT = new LeftRightLayout (32);
 
     
     

@@ -78,8 +78,6 @@ public class ArrowWidget extends Widget {
         super(scene);
     }
     
-    
-    
     public ArrowWidget(Scene scene, boolean toEast, ParameterType type) {
         this(scene);
         this.mToEast = toEast;
@@ -90,8 +88,6 @@ public class ArrowWidget extends Widget {
             _stroke = new BasicStroke(_thickness, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND, 1, new float[]{5, 10, 5,10}, 0);
         }
     }
-    
-    
     
     @Override
     protected Rectangle calculateClientArea() {

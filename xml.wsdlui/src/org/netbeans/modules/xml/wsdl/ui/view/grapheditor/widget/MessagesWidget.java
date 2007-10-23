@@ -83,7 +83,6 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.MessageFolderNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -138,7 +137,7 @@ public class MessagesWidget extends Widget implements
         headerWidget = new Widget(scene);
         headerWidget.setMinimumSize(new Dimension(
                 WidgetConstants.HEADER_MINIMUM_WIDTH, 0));
-        headerWidget.setLayout(new LeftRightLayout(32));
+        headerWidget.setLayout(WidgetConstants.HEADER_LAYOUT);
         headerWidget.setBorder(WidgetConstants.HEADER_BORDER);
         addChild(headerWidget);
         headerWidget.addChild(buttons);

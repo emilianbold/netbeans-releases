@@ -54,7 +54,6 @@ import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.NotificationOperation;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.OneSideJustifiedLayout;
 import org.openide.util.Lookup;
 
 /**
@@ -86,12 +85,19 @@ public class NotificationOperationWidget
         Scene scene = getScene();
         Widget outputWidget = WidgetFactory.getInstance().getOrCreateWidget(
                 scene, getWSDLComponent().getOutput(), getLookup(), horizontalWidget);
-        horizontalWidget.setLayout(new OneSideJustifiedLayout(isRightSided()));
-        horizontalWidget.addChild(outputWidget);
-        horizontalWidget.addChild(mOperationRectangleWidget);
+        horizontalWidget.setLayout(LayoutFactory.createHorizontalFlowLayout());
+        if (isRightSided()) {
+            horizontalWidget.addChild(endFillerWidget);
+            horizontalWidget.addChild(outputWidget, 1);
+            horizontalWidget.addChild(mOperationRectangleWidget);
+        } else {
+            horizontalWidget.addChild(mOperationRectangleWidget);
+            horizontalWidget.addChild(outputWidget, 1);
+            horizontalWidget.addChild(endFillerWidget);
+        }
         
         setLayout(LayoutFactory.createVerticalFlowLayout());
-        addChild(getLabel());
+        addChild(getLabelHolder());
         addChild(horizontalWidget);
     }
 }

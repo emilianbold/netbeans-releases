@@ -92,6 +92,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.ComboBoxInplace
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.ComboBoxInplaceEditorProvider;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.MessageNode;
 import org.netbeans.modules.xml.wsdl.ui.wsdl.util.DisplayObject;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.openide.actions.NewAction;
 import org.openide.nodes.Node;
@@ -190,20 +191,32 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
 
             public void setSelectedItem(Object selectedItem) {
                 WSDLModel model = mParameter.getModel();
+                boolean newlyCreated = false;
+                Message message = null;
+                if (selectedItem instanceof DisplayObject) {
+                    DisplayObject dispObj = (DisplayObject) selectedItem;
+                    Object obj = dispObj.getValue();
+                    if (obj instanceof Message) {
+                        message = (Message) obj;
+                    }
+                    NamedComponentReference<Message> mesgRef = getWSDLComponent().getMessage();
+                    if (mesgRef != null) {
+                        Message msg = mesgRef.get();
+                        if (msg != null && msg == message) return;
+                    }
+                } else if (selectedItem instanceof String) {
+                    message = model.getFactory().createMessage();
+                    message.setName((String) selectedItem);
+                    newlyCreated = true;
+                }
+                
+                
                 try {
                     if (model.startTransaction()) {
-                        Message message = null;
-                        if (selectedItem instanceof DisplayObject) {
-                            DisplayObject dispObj = (DisplayObject) selectedItem;
-                            Object obj = dispObj.getValue();
-                            if (obj instanceof Message) {
-                                message = (Message) obj;
-                            }
-                        } else if (selectedItem instanceof String) {
-                            message = model.getFactory().createMessage();
-                            message.setName((String) selectedItem);
+                        if (newlyCreated) {
                             model.getDefinitions().addMessage(message);
                         }
+                        
                         if (message != null) {
                             mParameter.setMessage(mParameter.createReferenceTo(
                                     message, Message.class));

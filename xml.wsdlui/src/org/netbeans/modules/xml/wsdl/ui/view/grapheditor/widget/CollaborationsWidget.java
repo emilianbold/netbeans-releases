@@ -90,7 +90,6 @@ import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.ExtensibilityElementsFolderNode;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
@@ -136,7 +135,7 @@ public class CollaborationsWidget extends Widget
                 WidgetConstants.HEADER_MINIMUM_WIDTH, 0));
         mLabelWidget = new ImageLabelWidget(getScene(), IMAGE, NbBundle.getMessage(CollaborationsWidget.class, "LBL_CollaborationsWidget_PartnerLinkTypes"), 
                 "(" + mModel.getDefinitions().getExtensibilityElements(PartnerLinkType.class).size() + ")");
-        mHeaderWidget.setLayout(new LeftRightLayout(32));
+        mHeaderWidget.setLayout(WidgetConstants.HEADER_LAYOUT);
         mHeaderWidget.setBorder(WidgetConstants.HEADER_BORDER);
         addChild(mHeaderWidget);
         

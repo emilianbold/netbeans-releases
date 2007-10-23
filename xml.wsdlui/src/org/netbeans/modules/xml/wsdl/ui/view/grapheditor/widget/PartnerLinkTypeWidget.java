@@ -66,7 +66,6 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.xam.dom.Utils;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.openide.DialogDisplayer;
@@ -144,7 +143,7 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
         }, null);
         Widget actionsWidget = createActionsWidget();
         mHeaderWidget = new HeaderWidget(getScene(), expander);
-        mHeaderWidget.setLayout(new LeftRightLayout(32));
+        mHeaderWidget.setLayout(WidgetConstants.HEADER_LAYOUT);
         addChild(mHeaderWidget);
 
         mLabelWidget = createLabelWidget();

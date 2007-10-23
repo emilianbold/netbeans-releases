@@ -46,7 +46,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.datatransfer.DataFlavor;
@@ -58,7 +57,6 @@ import java.util.List;
 import java.util.ListIterator;
 
 import javax.swing.Action;
-import javax.swing.BorderFactory;
 
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.InplaceEditorProvider;
@@ -66,7 +64,7 @@ import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
-import org.netbeans.api.visual.layout.Layout;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -112,18 +110,18 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
      */
     public RoleWidget(Scene scene, Role role, Lookup lookup) {
         super(scene, role, lookup);
-        //mPartnerLinkType = getLookup().lookup(PartnerLinkType.class);
+        setBorder(BorderFactory.createEmptyBorder(10, 0));
         init();
     }
 
     private void init() {
         setMinimumSize(new Dimension(MINIMUM_WIDTH, 0));
-        setLayout(new RoleWidgetLayout(GAP));
+        setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.CENTER, GAP));
         setOpaque(true);
         mLabelWidget = new LabelWidget(getScene(), getName());
         mLabelWidget.setAlignment(Alignment.CENTER);
         mLabelWidget.setVerticalAlignment(VerticalAlignment.CENTER);
-        
+        mLabelWidget.setBorder(WidgetConstants.EMPTY_2PX_BORDER);
         editorAction = ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
 
             public void setText(Widget widget, String text) {
@@ -297,60 +295,11 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
         }
         mPortTypeWidget.setRightSided(!leftSided);
         
-        addChild(mPortTypeWidget);
-    }
-    
-    /**
-     * This layout makes the second widget (which is the port type widget) to fill the 
-     * remaining height of the parent widget, after the first widget is placed.
-     * 
-     * @author skini
-     *
-     */
-    class RoleWidgetLayout implements Layout {
-        
-        private Layout vertLayout; 
-        private int mGap = 0;
-        
-        public RoleWidgetLayout(int gap) {
-            mGap = gap;
-            vertLayout = LayoutFactory.createVerticalFlowLayout(SerialAlignment.CENTER, gap);
-        }
-        
-        public void justify(Widget widget) {
-            vertLayout.justify(widget);
-            
-            List<Widget> children = widget.getChildren();
-            
-            if (children.size() < 2) return;
-            
-            Rectangle parentBounds = widget.getClientArea();
-            
-            Widget nameWidget = children.get(0);
-            Widget portTypeWidget = children.get(1);
-            
-            Rectangle nameBounds = nameWidget.getBounds();
-            
-            Point portTypeWLocation = portTypeWidget.getLocation();
-            Rectangle portTypeBounds = portTypeWidget.getBounds();
-            
-            portTypeBounds.height = parentBounds.height - (nameBounds.height + mGap);
-            
-            portTypeWidget.resolveBounds (portTypeWLocation, portTypeBounds);
-        }
-
-        public void layout(Widget widget) {
-            vertLayout.layout(widget);
-        }
-
-        public boolean requiresJustification(Widget widget) {
-            return true;
-        }
-        
+        addChild(mPortTypeWidget, 1);
     }
 
     public void dragExit() {
-        mPortTypeWidget.setBorder(BorderFactory.createEmptyBorder());
+        mPortTypeWidget.setDefaultBorder();
         
     }
 
@@ -364,7 +313,7 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
                     if (Node.class.isAssignableFrom(repClass)) {
                         Node node = Node.class.cast(transferable.getTransferData(flavor));
                         if (node instanceof PortTypeNode) {
-                            mPortTypeWidget.setBorder(BorderFactory.createLineBorder(WidgetConstants.HIT_POINT_BORDER, 2));
+                            mPortTypeWidget.setHitPointBorder();
                             return true;
                         }
                     }
@@ -386,7 +335,7 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
                     if (Node.class.isAssignableFrom(repClass)) {
                         Node node = (Node) data;
                         if (node instanceof PortTypeNode) {
-                            mPortTypeWidget.setBorder(BorderFactory.createEmptyBorder());
+                            mPortTypeWidget.setDefaultBorder();
                             setPortType((PortTypeNode)node);
                         }
                         return true;
@@ -433,7 +382,12 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
     
     @Override
     protected Shape createSelectionShape() {
-        return new Rectangle2D.Double(getBounds().x + 1, getBounds().y + 1, getBounds().width, WidgetConstants.TEXT_LABEL_HEIGHT * 2 + GAP);
+        int labelHeight = WidgetConstants.TEXT_LABEL_HEIGHT;
+        if (mLabelWidget != null && mLabelWidget.getBounds() != null) {
+            labelHeight = mLabelWidget.getBounds().height;
+        }
+        
+        return new Rectangle2D.Double(getBounds().x, getBounds().y, getBounds().width, labelHeight + mPortTypeWidget.getLabelHeight() + GAP - 1);
     }
     
     @Override

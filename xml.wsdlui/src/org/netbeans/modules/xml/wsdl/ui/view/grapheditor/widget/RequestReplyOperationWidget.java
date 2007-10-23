@@ -56,7 +56,6 @@ import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.OneSideJustifiedLayout;
 import org.openide.util.Lookup;
 
 /**
@@ -96,11 +95,18 @@ public class RequestReplyOperationWidget
         verticalWidget.addChild(outputWidget);
         
         Widget horizontalWidget = new Widget(scene);
-        horizontalWidget.setLayout(new OneSideJustifiedLayout(isRightSided()));
-        horizontalWidget.addChild(verticalWidget);
-        horizontalWidget.addChild(mOperationRectangleWidget);
+        horizontalWidget.setLayout(LayoutFactory.createHorizontalFlowLayout());
+        if (isRightSided()) {
+            horizontalWidget.addChild(endFillerWidget);
+            horizontalWidget.addChild(verticalWidget, 1);
+            horizontalWidget.addChild(mOperationRectangleWidget);
+        } else {
+            horizontalWidget.addChild(mOperationRectangleWidget);
+            horizontalWidget.addChild(verticalWidget, 1);
+            horizontalWidget.addChild(endFillerWidget);
+        }
         
-        addChild(getLabel());
+        addChild(getLabelHolder());
         addChild(horizontalWidget);
         
     }

@@ -108,7 +108,6 @@ import org.netbeans.modules.xml.wsdl.ui.actions.schema.ExtensibilityElementCreat
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.ComboBoxInplaceEditor;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.ComboBoxInplaceEditorProvider;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.OneSideJustifiedLayout;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.PortTypeNode;
 import org.netbeans.modules.xml.wsdl.ui.wsdl.util.DisplayObject;
 import org.netbeans.modules.xml.xam.Model;
@@ -128,11 +127,11 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
     private PartnerLinkTypeContentWidget mPLTContentWidget;
     private ButtonWidget showComboBoxBtnWidget;
     private Widget nameHolderWidget;
-    private Border enabledBorder = BorderFactory.createCompositeBorder(new Border[] {BorderFactory.createLineBorder(1, Color.BLACK), WidgetConstants.GRADIENT_BLUE_WHITE_BORDER});
-    private Border disabledBorder = BorderFactory.createCompositeBorder(new Border[] {BorderFactory.createDashedBorder(Color.GRAY, 10, 5), WidgetConstants.GRADIENT_GRAY_WHITE_BORDER});
-    private Border importedBorder = BorderFactory.createCompositeBorder(new Border[] {BorderFactory.createLineBorder(1, Color.BLACK), WidgetConstants.GRADIENT_GREEN_WHITE_BORDER});
-    private Border border;
+    private Border enabledBorder = BorderFactory.createCompositeBorder(BorderFactory.createLineBorder(1, Color.BLACK), WidgetConstants.GRADIENT_BLUE_WHITE_BORDER);
+    private Border disabledBorder = BorderFactory.createCompositeBorder(BorderFactory.createDashedBorder(Color.GRAY, 8, 4, true), WidgetConstants.GRADIENT_GRAY_WHITE_BORDER);
+    private Border importedBorder = BorderFactory.createCompositeBorder(BorderFactory.createLineBorder(1, Color.BLACK), WidgetConstants.GRADIENT_GREEN_WHITE_BORDER);
     private WidgetAction editorAction;
+    private Border defaultBorder = BorderFactory.createEmptyBorder();
     
     
     public enum State {
@@ -229,7 +228,6 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         
         nameHolderWidget = new Widget(getScene());
         nameHolderWidget.setLayout(new PortTypeLayout());
-        //nameHolderWidget.setLayout(mFillLayout);
         nameHolderWidget.setMinimumSize(new Dimension(190, 25));
         
         State state = State.ENABLED;
@@ -263,10 +261,10 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         mNameWidget = new LabelWidget(getScene(), name);
         mNameWidget.setAlignment(Alignment.CENTER);
         mNameWidget.setVerticalAlignment(VerticalAlignment.CENTER);
-        
+        mNameWidget.setBorder(WidgetConstants.EMPTY_2PX_BORDER);
         Font font = getScene().getFont().deriveFont(Font.BOLD);
         String tooltipText = null;
-        border = enabledBorder;
+        Border border = enabledBorder;
         Color foreground = Color.BLACK;
 
         
@@ -393,14 +391,44 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         }
         
 
-        nameHolderWidget.addChild(mNameWidget);
+        nameHolderWidget.addChild(mNameWidget, 1);
         nameHolderWidget.addChild(showComboBoxBtnWidget);
         
         addChild(nameHolderWidget);
-        setMinimumSize(new Dimension(0, 250));
+        //setMinimumSize(new Dimension(0, 250));
         if (getWSDLComponent() != null) {
             getActions().addAction(((PartnerScene) getScene()).getDnDAction());
         }
+        
+        Widget w = new Widget(getScene()) {
+        
+            @Override
+            protected void paintWidget() {
+                Graphics2D gr = getGraphics ();
+                
+                Rectangle bounds = getBounds();
+
+                int x = bounds.x;
+                
+                Stroke oldStroke = gr.getStroke();
+                Color oldColor = gr.getColor();
+                Font font = gr.getFont();
+                
+                BasicStroke dotted = new BasicStroke(1, BasicStroke.CAP_SQUARE, 
+                             BasicStroke.JOIN_ROUND, 10.0f, new float[]{5,10,5,10}, 0);
+                
+                gr.setStroke(dotted);
+                gr.setFont (getFont ());
+                int midPointX = (x+bounds.width)/2;
+                gr.drawLine(midPointX, 0, midPointX, bounds.height);
+                
+                gr.setStroke(oldStroke);
+                gr.setColor(oldColor);
+                gr.setFont(font);
+            }
+        
+        };
+        addChild(w, 1);
         
     }
 
@@ -476,47 +504,13 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         return pt.getName();
     }
     
-    
-    
-
-
-    /**
-     * Paints the label widget.
-     */
-    @Override
-    protected void paintWidget () {
-        Graphics2D gr = getGraphics ();
-        
-        Rectangle clientArea = getBounds();
-
-        int x = clientArea.x;
-        int y = clientArea.y;
-        
-        int newY = y + clientArea.height;
-        Stroke oldStroke = gr.getStroke();
-        Color oldColor = gr.getColor();
-        Font font = gr.getFont();
-        
-        BasicStroke dotted = new BasicStroke(1, BasicStroke.CAP_SQUARE, 
-                     BasicStroke.JOIN_ROUND, 10.0f, new float[]{5,10,5,10}, 0);
-        
-        gr.setStroke(dotted);
-        gr.setFont (getFont ());
-        
-        gr.drawLine((x+clientArea.width)/2, y + mNameWidget.getClientArea().height, (x+clientArea.width)/2, newY);
-        
-        gr.setStroke(oldStroke);
-        gr.setColor(oldColor);
-        gr.setFont(font);
-    }
-    
     @Override
     protected Shape createSelectionShape() {
         int startX = 0;
         int startY = 0;
         int width = getBounds().width;
         int height = getBounds().height - 4;
-        int labelHeight = WidgetConstants.TEXT_LABEL_HEIGHT;
+        int labelHeight = getLabelHeight();
         int[] x = {startX, width, width, width / 2, width / 2, width / 2, startX, startX};
         int[] y = {startY, startY, labelHeight, labelHeight, height, labelHeight, labelHeight, startY};
         
@@ -530,6 +524,14 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         }
         
         return polyline;
+    }
+    
+    int getLabelHeight() {
+        int labelHeight = WidgetConstants.TEXT_LABEL_HEIGHT;
+        if (nameHolderWidget != null && nameHolderWidget.getBounds() != null) {
+            labelHeight = nameHolderWidget.getBounds().height;
+        }
+        return labelHeight;
     }
     
     private Vector<DisplayObject> getAllPortTypes(WSDLModel model) {
@@ -645,7 +647,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
     
     public void dragExit() {
         clearHotSpot();
-        setBorder(BorderFactory.createEmptyBorder());
+        setDefaultBorder();
         getScene().validate();
     }
 
@@ -666,7 +668,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
                                 return true;
                             }
                         } else if (node instanceof PortTypeNode) {
-                            setBorder(BorderFactory.createLineBorder(2, WidgetConstants.HIT_POINT_BORDER));
+                            setHitPointBorder();
                             return true;
                         }
                     }
@@ -691,7 +693,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
                     if (Node.class.isAssignableFrom(repClass)) {
                         Node node = (Node) data;
                         if (node instanceof PortTypeNode) {
-                            setBorder(BorderFactory.createEmptyBorder());
+                            setDefaultBorder();
                             setPortTypeToRole((PortTypeNode)node);
                             return true;
                         }
@@ -968,7 +970,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         private Layout fLayout = LayoutFactory.createOverlayLayout();
         
         public PortTypeLayout() {
-            osjLayout = new OneSideJustifiedLayout(true);
+            osjLayout = LayoutFactory.createHorizontalFlowLayout();
         }
         
         public void justify(Widget widget) {
@@ -1021,5 +1023,13 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
     public void clearHotSpot() {
         mPLTContentWidget.getOperationSceneLayer().clearHotSpot();
         
+    }
+
+    public void setDefaultBorder() {
+        setBorder(defaultBorder);
+    }
+
+    public void setHitPointBorder() {
+        setBorder(BorderFactory.createLineBorder(2, WidgetConstants.HIT_POINT_BORDER));
     }
 }
