@@ -41,21 +41,25 @@
 
 package org.netbeans.modules.web.debug.variablesfilterring;
 
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.web.debug.variablesfilterring.JSPVariablesFilter.AttributeMap;
 import org.netbeans.modules.web.debug.variablesfilterring.JSPVariablesFilter.ImplicitLocals;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
+import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
-import org.netbeans.spi.viewmodel.NodeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  *
  * @author Libor Kotouc
  */
-public class JSPVariablesNodeModelFilter implements NodeModelFilter {
+public class JSPVariablesNodeModelFilter implements ExtendedNodeModelFilter {
     
     /** Creates a new instance of JSPVariablesNodeModelFilter */
     public JSPVariablesNodeModelFilter() {
@@ -111,6 +115,11 @@ public class JSPVariablesNodeModelFilter implements NodeModelFilter {
     public String getIconBase (NodeModel original, Object node)
     throws UnknownTypeException 
     {
+        throw new IllegalStateException(
+                "getIconBaseWithExtension should be always called instead");
+    }
+    
+    public String getIconBaseWithExtension(ExtendedNodeModel original, Object node) throws UnknownTypeException {
         String ib = "";
         if (node instanceof ImplicitLocals)
             ib = NbBundle.getMessage(JSPVariablesFilter.class, "RES_IMPLICIT_LOCALS_GROUP");
@@ -119,7 +128,7 @@ public class JSPVariablesNodeModelFilter implements NodeModelFilter {
         else if (node instanceof AttributeMap.Attribute)
             ib = NbBundle.getMessage(JSPVariablesFilter.class, "RES_ATTRIBUTE_VALUE");
         else
-            ib = original.getIconBase(node);
+            ib = original.getIconBaseWithExtension(node);
                 
         return ib;
     }
@@ -188,5 +197,31 @@ public class JSPVariablesNodeModelFilter implements NodeModelFilter {
     public void addModelListener(org.netbeans.spi.viewmodel.ModelListener l) {
     }
 
-    
+    public boolean canRename(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public boolean canCopy(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public boolean canCut(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public Transferable clipboardCopy(ExtendedNodeModel original, Object node) throws IOException, UnknownTypeException {
+        throw new UnsupportedOperationException("not supported");
+    }
+
+    public Transferable clipboardCut(ExtendedNodeModel original, Object node) throws IOException, UnknownTypeException {
+        throw new UnsupportedOperationException("not supported");
+    }
+
+    public PasteType[] getPasteTypes(ExtendedNodeModel original, Object node, Transferable t) throws UnknownTypeException {
+        return new PasteType[0];
+    }
+
+    public void setName(ExtendedNodeModel original, Object node, String name) throws UnknownTypeException {
+    }
+
 }
