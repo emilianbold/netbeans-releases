@@ -107,6 +107,7 @@ public final class XMLComponentProducer extends ComponentProducer {
         return new XMLComponentProducer (producerID, TypeID.createFrom (typeID), paletteDescriptor);
     }
 
+    @Override
     public Result postInitialize (DesignDocument document, DesignComponent mainComponent) {
         ComponentDescriptor descriptor = document.getDescriptorRegistry ().getComponentDescriptor (getMainComponentTypeID ());
         if (descriptor != null) {
@@ -128,9 +129,11 @@ public final class XMLComponentProducer extends ComponentProducer {
         document.getTransactionManager ().readAccess (new Runnable() {
             public void run () {
                 ComponentDescriptor descriptor = document.getDescriptorRegistry ().getComponentDescriptor (getMainComponentTypeID ());
-                TypeID superTypeID = descriptor.getTypeDescriptor ().getSuperType ();
-                if (superTypeID != null)
-                    producers[0] = DocumentSupport.getComponentProducer (document, superTypeID.toString ());
+                if (descriptor != null) {
+                    TypeID superTypeID = descriptor.getTypeDescriptor ().getSuperType ();
+                    if (superTypeID != null)
+                        producers[0] = DocumentSupport.getComponentProducer (document, superTypeID.toString ());
+                }
             }
         });
 

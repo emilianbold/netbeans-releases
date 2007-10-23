@@ -163,18 +163,18 @@ public final class DescriptorRegistry {
         }
     }
 
-    /**
-     * Checks whether all specified component type ids are available in the descriptor registry. If some is missing there,
-     * it tries to resolve it from the sources.
-     * @param componentTypes the collection of component type ids that has to be checked
-     */
-    public void assertComponentDescriptors (Collection<TypeID> componentTypes) {
-        writeAccess (new Runnable () {
-            public void run () {
-                // TODO
-            }
-        });
-    }
+//    /**
+//     * Checks whether all specified component type ids are available in the descriptor registry. If some is missing there,
+//     * it tries to resolve it from the sources.
+//     * @param componentTypes the collection of component type ids that has to be checked
+//     */
+//    public void assertComponentDescriptors (Collection<TypeID> componentTypes) {
+//        writeAccess (new Runnable () {
+//            public void run () {
+//                // TODO
+//            }
+//        });
+//    }
 
     /**
      * Returns a component descriptor for a specified type id.
@@ -189,11 +189,8 @@ public final class DescriptorRegistry {
     }
 
     public void removeComponentDescriptor(final TypeID componentType) {
-        if (componentType == null) {
-            return;
-        }
-        
-        //writeAccess(new RemoveComponentDescriptorTerminator(componentType));
+        if (componentType != null)
+            globalDescriptorRegistry.writeAccess(new RemoveComponentDescriptorTask(componentType));
     }
 
     // TODO - proxy for GlobalDescriptorRegistry and ProjectRegistry
@@ -277,16 +274,18 @@ public final class DescriptorRegistry {
         return isComponentDescriptorCompatibleWithTypeID (superTypeID, getComponentDescriptor (derivedTypeID));
     }
     
-    class RemoveComponentDescriptorTerminator implements Runnable {
+    final class RemoveComponentDescriptorTask implements Runnable {
+
         private TypeID componentType;
 
-        public RemoveComponentDescriptorTerminator(TypeID componentType) {
+        public RemoveComponentDescriptorTask(TypeID componentType) {
             this.componentType = componentType;
         }
 
         public void run() {
             globalDescriptorRegistry.removeComponentDescriptor(componentType);
         }
+        
     }
 
 }

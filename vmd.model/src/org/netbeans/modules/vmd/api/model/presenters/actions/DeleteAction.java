@@ -71,6 +71,7 @@ public final class DeleteAction extends SystemAction {
         });
     }
 
+    @Override
     public boolean isEnabled() {        
         final DesignDocument activeDocument = ActiveDocumentSupport.getDefault ().getActiveDocument ();
         if (activeDocument == null)

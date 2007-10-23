@@ -89,15 +89,15 @@ public class DescriptorRegistryTest extends TestCase {
         });
     }
 
-    /**
-     * Test of assertComponentDescriptors method, of class org.netbeans.modules.vmd.api.model.DescriptorRegistry.
-     */
-    //TODO This method ( DescriptorRegistry -> assertComponentDescriptors) not finished yet. 
-    public void testAssertComponentDescriptors() {
-        System.out.println("assertComponentDescriptors"); // NOI18N
-        
-         HashSet<TypeID> typeids = new HashSet<TypeID> ();
-         typeids.add(FirstCD.TYPEID_CLASS);
-         document.getDescriptorRegistry().assertComponentDescriptors (typeids);   
-    }
+//    /**
+//     * Test of assertComponentDescriptors method, of class org.netbeans.modules.vmd.api.model.DescriptorRegistry.
+//     */
+//    //TODO This method ( DescriptorRegistry -> assertComponentDescriptors) not finished yet. 
+//    public void testAssertComponentDescriptors() {
+//        System.out.println("assertComponentDescriptors"); // NOI18N
+//        
+//         HashSet<TypeID> typeids = new HashSet<TypeID> ();
+//         typeids.add(FirstCD.TYPEID_CLASS);
+//         document.getDescriptorRegistry().assertComponentDescriptors (typeids);   
+//    }
 }

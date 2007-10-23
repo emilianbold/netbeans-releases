@@ -57,6 +57,7 @@ import java.util.*;
 import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import org.openide.filesystems.FileSystem.AtomicAction;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author David Kaspar
@@ -81,14 +82,16 @@ final class GlobalDescriptorRegistry {
         }
     }
 
-    private String projectType;
+    private final String projectType;
 
     private final DataFolder registryFolder;
     private final DataFolder producersFolder;
     private final Mutex mutex = new Mutex ();
-    private Map<TypeID, WeakReference<FileObject>> customFileObjects = new HashMap<TypeID, WeakReference<FileObject>>();
+
     private HashMap<TypeID, ComponentDescriptor> descriptors = new HashMap<TypeID, ComponentDescriptor> ();
     private ArrayList<ComponentProducer> producers = new ArrayList<ComponentProducer> ();
+    private Map<TypeID, WeakReference<FileObject>> customFileObjects = new HashMap<TypeID, WeakReference<FileObject>>();
+    private Map<TypeID, WeakReference<FileObject>> customProducerFileObjects = new HashMap<TypeID, WeakReference<FileObject>>();
     private final CopyOnWriteArraySet<DescriptorRegistryListener> listeners = new CopyOnWriteArraySet<DescriptorRegistryListener> ();
 
     private final HashMap<String, WeakReference<DescriptorRegistry>> projectID2projectRegistry = new HashMap<String, WeakReference<DescriptorRegistry>> ();
@@ -97,16 +100,16 @@ final class GlobalDescriptorRegistry {
         assert projectType != null  && projectType.length () > 0 : "Invalid project-type: " + projectType; // NOI18N
         this.projectType = projectType;
 
-        FileObject registryFileObject = Repository.getDefault ().getDefaultFileSystem ().findResource (projectType + "/components");
+        FileObject registryFileObject = Repository.getDefault ().getDefaultFileSystem ().findResource (projectType + "/components"); // NOI18N
         if (registryFileObject != null) {
             registryFolder = DataFolder.findFolder (registryFileObject);
             registryFolder.getPrimaryFile ().addFileChangeListener (new FileChangeListener() {
                 public void fileFolderCreated (FileEvent fileEvent) {}
-                public void fileDataCreated (FileEvent fileEvent) { reload (); }
-                public void fileChanged (FileEvent fileEvent) { reload (); }
-                public void fileDeleted (FileEvent fileEvent) { reload (); }
-                public void fileRenamed (FileRenameEvent fileRenameEvent) { reload (); }
-                public void fileAttributeChanged (FileAttributeEvent fileAttributeEvent) { reload (); }
+                public void fileDataCreated (FileEvent fileEvent) { reloadLater(); }
+                public void fileChanged (FileEvent fileEvent) { reloadLater(); }
+                public void fileDeleted (FileEvent fileEvent) { reloadLater(); }
+                public void fileRenamed (FileRenameEvent fileRenameEvent) { reloadLater(); }
+                public void fileAttributeChanged (FileAttributeEvent fileAttributeEvent) { reloadLater(); }
             });
         } else
             registryFolder = null;
@@ -116,11 +119,11 @@ final class GlobalDescriptorRegistry {
             producersFolder = DataFolder.findFolder (producersFileObject);
             producersFolder.getPrimaryFile ().addFileChangeListener (new FileChangeListener() {
                 public void fileFolderCreated (FileEvent fileEvent) {}
-                public void fileDataCreated (FileEvent fileEvent) { reload (); }
-                public void fileChanged (FileEvent fileEvent) { reload (); }
-                public void fileDeleted (FileEvent fileEvent) { reload (); }
-                public void fileRenamed (FileRenameEvent fileRenameEvent) { reload (); }
-                public void fileAttributeChanged (FileAttributeEvent fileAttributeEvent) { reload (); }
+                public void fileDataCreated (FileEvent fileEvent) { reloadLater(); }
+                public void fileChanged (FileEvent fileEvent) { reloadLater(); }
+                public void fileDeleted (FileEvent fileEvent) { reloadLater(); }
+                public void fileRenamed (FileRenameEvent fileRenameEvent) { reloadLater(); }
+                public void fileAttributeChanged (FileAttributeEvent fileAttributeEvent) { reloadLater(); }
             });
         } else
             producersFolder = null;
@@ -157,8 +160,16 @@ final class GlobalDescriptorRegistry {
     }
 
     void writeAccess (final Runnable runnable) {
-        assert Debug.isFriend (DescriptorRegistry.class, "writeAccess")  ||  Debug.isFriend (ComponentSerializationSupport.class, "runUnderDescriptorRegistryWriteAccess"); // NOI18N
+        assert Debug.isFriend (DescriptorRegistry.class, "removeComponentDescriptor")  ||  Debug.isFriend (ComponentSerializationSupport.class, "runUnderDescriptorRegistryWriteAccess"); // NOI18N
         mutex.writeAccess (runnable);
+    }
+    
+    private void reloadLater() {
+        RequestProcessor.getDefault().post(new Runnable () {
+            public void run () {
+                reload();
+            }
+        });
     }
 
     void reload () {
@@ -175,6 +186,7 @@ final class GlobalDescriptorRegistry {
         HashMap<TypeID, ComponentDescriptor> tempDescriptors = new HashMap<TypeID, ComponentDescriptor> ();
         ArrayList<ComponentProducer> tempProducers = new ArrayList<ComponentProducer> ();
         Map<TypeID, FileObject> tempFileObjects = new HashMap<TypeID, FileObject>();
+        Map<TypeID, FileObject> tempProducerFileObjects = new HashMap<TypeID, FileObject>();
 
         if (registryFolder != null) {
             Enumeration<DataObject> enumeration = registryFolder.children ();
@@ -222,20 +234,12 @@ final class GlobalDescriptorRegistry {
             }
             tempDescriptors.put (typeDescriptor.getThisType (), descriptor);
         }
-        
-        customFileObjects = new HashMap<TypeID, WeakReference<FileObject>>();
-        for (TypeID key : tempFileObjects.keySet()) {
-            if (tempDescriptors.containsKey(key)) {
-                customFileObjects.put(key, new WeakReference(tempFileObjects.get(key)));
-            }
-        }
-
 
         if (producersFolder != null) {
             Enumeration<DataObject> enumeration = producersFolder.children ();
             while (enumeration.hasMoreElements ()) {
                 DataObject dataObject = enumeration.nextElement ();
-                ComponentProducer producer = dao2producer (dataObject);
+                ComponentProducer producer = dao2producer (dataObject, tempProducerFileObjects);
                 if (producer == null) {
                     Debug.warning ("No producer", dataObject.getPrimaryFile ().getNameExt ()); // NOI18N
                     continue;
@@ -245,8 +249,24 @@ final class GlobalDescriptorRegistry {
             }
         }
 
+        Map<TypeID, WeakReference<FileObject>> tempCustomFileObjects = new HashMap<TypeID, WeakReference<FileObject>>();
+        for (TypeID key : tempFileObjects.keySet()) {
+            if (tempDescriptors.containsKey(key)) {
+                tempCustomFileObjects.put(key, new WeakReference(tempFileObjects.get(key)));
+            }
+        }
+
+        Map<TypeID, WeakReference<FileObject>> tempCustomProducerFileObjects = new HashMap<TypeID, WeakReference<FileObject>>();
+        for (TypeID key : tempProducerFileObjects.keySet()) {
+            if (tempDescriptors.containsKey(key)) {
+                tempCustomProducerFileObjects.put(key, new WeakReference(tempProducerFileObjects.get(key)));
+            }
+        }
+
         descriptors = tempDescriptors;
         producers = tempProducers;
+        customFileObjects = tempCustomFileObjects;
+        customProducerFileObjects = tempCustomProducerFileObjects;
 
         for (DescriptorRegistryListener listener : listeners)
             listener.descriptorRegistryUpdated ();
@@ -370,7 +390,7 @@ final class GlobalDescriptorRegistry {
         return null;
     }
 
-    private ComponentProducer dao2producer (DataObject dataObject) {
+    private ComponentProducer dao2producer (DataObject dataObject, Map<TypeID, FileObject> fileObjects) {
         InstanceCookie.Of instanceCookie = dataObject.getCookie (InstanceCookie.Of.class);
         if (instanceCookie != null) {
             try {
@@ -386,7 +406,7 @@ final class GlobalDescriptorRegistry {
             return null;
         }
         if (dataObject instanceof XMLDataObject) {
-            return deserializeComponentCreatorFromXML ((XMLDataObject) dataObject);
+            return deserializeComponentCreatorFromXML ((XMLDataObject) dataObject, fileObjects);
         }
         return null;
     }
@@ -411,7 +431,7 @@ final class GlobalDescriptorRegistry {
         return null;
     }
 
-    private ComponentProducer deserializeComponentCreatorFromXML (XMLDataObject xmlDataObject) {
+    private ComponentProducer deserializeComponentCreatorFromXML (XMLDataObject xmlDataObject, Map<TypeID, FileObject> fileObjects) {
         Document document;
         try {
             document = xmlDataObject.getDocument ();
@@ -425,8 +445,10 @@ final class GlobalDescriptorRegistry {
             return null;
         }
         XMLComponentProducer producer = XMLComponentProducer.deserialize (projectType, document);
-        if (producer != null)
+        if (producer != null) {
+            fileObjects.put(producer.getMainComponentTypeID(), xmlDataObject.getPrimaryFile());
             return producer;
+        }
         Debug.warning ("Error during deserialization", xmlDataObject.getPrimaryFile ()); // NOI18N
         return null;
     }
@@ -447,24 +469,25 @@ final class GlobalDescriptorRegistry {
         listeners.remove (listener);
     }
 
-    
     void removeComponentDescriptor(TypeID typeID) {
-        assert Debug.isFriend(DescriptorRegistry.RemoveComponentDescriptorTerminator.class, "run"); // NOI18N
+        assert Debug.isFriend(DescriptorRegistry.RemoveComponentDescriptorTask.class, "run"); // NOI18N
         
-        final FileObject fo = customFileObjects.get(typeID).get();
+        WeakReference<FileObject> weakReference = customFileObjects.get(typeID);
+        final FileObject fo = weakReference != null ? weakReference.get() : null;
         if (fo != null) {
             try {
                 Repository.getDefault().getDefaultFileSystem().runAtomicAction(new AtomicAction() {
                     public void run() {
                         try {
                             fo.delete();
+                            
                         } catch (IOException ex) {
-                            Debug.error(ex);
+                            throw Debug.error(ex);
                         }
                     }
                 });
             } catch (IOException ex) {
-                Debug.error(ex);
+                throw Debug.error(ex);
             }
         }
     }

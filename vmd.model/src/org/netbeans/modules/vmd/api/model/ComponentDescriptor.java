@@ -102,6 +102,7 @@ public abstract class ComponentDescriptor {
      * Returns a debug string.
      * @return the string
      */
+    @Override
     public final String toString () {
         TypeDescriptor typeDescriptor = getTypeDescriptor ();
         if (typeDescriptor == null)

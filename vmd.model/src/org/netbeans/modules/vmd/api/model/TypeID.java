@@ -216,6 +216,7 @@ public final class TypeID {
      * @param o the compared type id
      * @return true if equals
      */
+    @Override
     public boolean equals (Object o) {
         return o != null  &&  getClass () == o.getClass ()  &&  encoded.equals (((TypeID) o).encoded);
     }
@@ -224,6 +225,7 @@ public final class TypeID {
      * Returns a hash code of the type id.
      * @return the hash code
      */
+    @Override
     public int hashCode () {
         return encoded.hashCode ();
     }
@@ -232,6 +234,7 @@ public final class TypeID {
      * Returns encoded string representation of this type id.
      * @return the string
      */
+    @Override
     public String toString () {
         return encoded;
     }

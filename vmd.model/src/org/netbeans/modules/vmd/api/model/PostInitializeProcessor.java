@@ -42,7 +42,6 @@ package org.netbeans.modules.vmd.api.model;
 
 import org.openide.util.Lookup;
 
-import java.util.ArrayList;
 
 /**
  * @author David Kaspar

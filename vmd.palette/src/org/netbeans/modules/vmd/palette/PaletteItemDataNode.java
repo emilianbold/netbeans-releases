@@ -163,7 +163,35 @@ public class PaletteItemDataNode extends DataNode {
 
     @Override
     public boolean canDestroy() {
-        return true;
+        boolean canDestroy = false;
+
+        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
+        if (document != null) {
+            DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
+        
+            if (context != null) {
+                final ComponentProducer[] producer = new ComponentProducer[1];
+                final DescriptorRegistry registry = DescriptorRegistry.getDescriptorRegistry(context.getProjectType(), context.getProjectID());
+                registry.readAccess(new Runnable() {
+
+                    public void run() {
+                        List<ComponentProducer> producers = registry.getComponentProducers();
+                        for (ComponentProducer p : producers) {
+                            if (p.getProducerID().equals(obj.getProducerID())) {
+                                producer[0] = p;
+                                break;
+                            }
+                        }
+                    }
+                });
+                
+                if (producer[0] != null) {
+                    canDestroy = PaletteKit.CUSTOM_CATEGORY_NAME.equals(producer[0].getPaletteDescriptor().getCategoryID());
+                }
+            }
+        }
+        
+        return canDestroy;
     }
 
     @Override
@@ -189,7 +217,6 @@ public class PaletteItemDataNode extends DataNode {
                     }
                 });
                 
-                //if (producer[0] != null && "custom".equalsIgnoreCase(producer[0].getPaletteDescriptor().getCategoryID())) { // NOI18N
                 if (producer[0] != null) {
                     registry.removeComponentDescriptor(producer[0].getMainComponentTypeID());
                 }

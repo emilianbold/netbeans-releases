@@ -72,6 +72,7 @@ public class EditorTopComponent extends TopComponent {
         getActionMap ().remove ("cloneWindow"); // NOI18N
     }
 
+    @Override
     public Lookup getLookup () {
         return lookup;
     }
@@ -80,11 +81,13 @@ public class EditorTopComponent extends TopComponent {
         return view;
     }
    
+    @Override
     public void requestFocus() {
         super.requestFocus();
         view.requestFocus();
     }
     
+    @Override
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
         return view.requestFocusInWindow();

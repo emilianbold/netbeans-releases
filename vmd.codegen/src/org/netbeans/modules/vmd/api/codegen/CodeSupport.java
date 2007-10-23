@@ -57,19 +57,19 @@ public final class CodeSupport {
         for (int i = 0; i < value.length (); i++) {
             final char c = value.charAt (i);
             switch (c) {
-                case '\\':
-                case '"':
-                case '\'':
-                    sb.append ('\\');
+                case '\\': // NOI18N
+                case '"': // NOI18N
+                case '\'': // NOI18N
+                    sb.append ('\\'); // NOI18N
                     sb.append (c);
                     break;
-                case '\r':
+                case '\r': // NOI18N
                     sb.append ("\\r"); // NOI18N
                     break;
-                case '\n':
+                case '\n': // NOI18N
                     sb.append ("\\n"); // NOI18N
                     break;
-                case '\t':
+                case '\t': // NOI18N
                     sb.append ("\\t"); // NOI18N
                     break;
                 default:
@@ -92,7 +92,7 @@ public final class CodeSupport {
         StringBuffer sb = new StringBuffer ();
         positions -= value.length ();
         while (positions > 0) {
-            sb.append ('0');
+            sb.append ('0'); // NOI18N
             positions --;
         }
         if (positions < 0) // just to asure alignment to specified positions
@@ -109,23 +109,23 @@ public final class CodeSupport {
         while (i < len) {
             char c = value.charAt (i);
             i++;
-            if (c != '\\') {
+            if (c != '\\') { // NOI18N
                 sb.append (c);
                 continue;
             }
             c = value.charAt (i);
             i++;
             switch (c) {
-                case 'r':
-                    sb.append ('\r');
+                case 'r': // NOI18N
+                    sb.append ('\r'); // NOI18N
                     break;
-                case 'n':
-                    sb.append ('\n');
+                case 'n': // NOI18N
+                    sb.append ('\n'); // NOI18N
                     break;
-                case 't':
-                    sb.append ('\t');
+                case 't': // NOI18N
+                    sb.append ('\t'); // NOI18N
                     break;
-                case 'u':
+                case 'u': // NOI18N
                     if (i + 4 > len) {
                         ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "WARNING: Invalid hex number at the end: " + value.substring (i)); // NOI18N
                         break;
@@ -137,13 +137,13 @@ public final class CodeSupport {
                     }
                     i += 4;
                     break;
-                case '"':
-                case '\'':
-                case '\\':
+                case '"': // NOI18N
+                case '\'': // NOI18N
+                case '\\': // NOI18N
                     sb.append(c);
                     break;
                 default:
-                    if (c < '0' || c > '9') {
+                    if (c < '0' || c > '9') { // NOI18N
                         ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "WARNING: Invalid character after slash: " + c); // NOI18N
                         break;
                     }
@@ -171,7 +171,7 @@ public final class CodeSupport {
     }
 
     public static boolean isNotEmpty (String string) {
-        return string != null  &&  ! "".equals (string); // NOI18N
+        return string != null  &&  string.length() > 0;
     }
 
 }

@@ -44,14 +44,12 @@ import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 
-import java.util.ArrayList;
-
 /**
  * @author David Kaspar
  */
 public final class FlowPinDescriptor extends FlowDescriptor {
 
-    private ArrayList<FlowBadgeDescriptor> badges = new ArrayList<FlowBadgeDescriptor> ();
+    //private ArrayList<FlowBadgeDescriptor> badges = new ArrayList<FlowBadgeDescriptor> ();
 
     public FlowPinDescriptor (DesignComponent representedComponent, String descriptorID) {
         super (representedComponent, descriptorID);

@@ -85,6 +85,7 @@ public abstract class Presenter {
      * Returns string identification of the presenter.
      * @return the string
      */
+    @Override
     public String toString () {
         return (component != null ? component.toString () : "<unassigned>") + "#" + getClass ().getSimpleName (); // NOI18N
     }

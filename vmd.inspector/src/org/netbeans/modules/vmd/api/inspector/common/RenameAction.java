@@ -113,6 +113,7 @@ public final class RenameAction extends SystemAction implements ActionContext {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     public boolean isEnabled() {
         if (component == null)
             return false;

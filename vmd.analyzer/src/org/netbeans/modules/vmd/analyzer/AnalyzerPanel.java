@@ -73,6 +73,7 @@ public class AnalyzerPanel extends JPanel {
         
         Image image = analyzer.getIcon ();
         JLabel label = new JLabel (analyzer.getDisplayName (), image != null ? new ImageIcon (image) : null, JLabel.CENTER) {
+            @Override
             public void paint (Graphics g) {
                 Graphics2D gr = (Graphics2D) g;
                 gr.setPaint (new GradientPaint (0.0f, 0.0f, Color.WHITE, 0.0f, getHeight (), GRADIENT_COLOR));
@@ -80,6 +81,7 @@ public class AnalyzerPanel extends JPanel {
                 super.paint (g);
             }
 
+            @Override
             public Dimension getPreferredSize () {
                 Dimension dimension = super.getPreferredSize ();
                 dimension.width += 8;
@@ -105,6 +107,7 @@ public class AnalyzerPanel extends JPanel {
         add (visualRepresentation, constraints);
     }
 
+    @Override
     public void paint (Graphics g) {
         Graphics2D gr = (Graphics2D) g;
         Shape previousClip = gr.getClip ();
@@ -116,6 +119,7 @@ public class AnalyzerPanel extends JPanel {
     }
 
 
+    @Override
     protected void paintChildren (Graphics g) {
         super.paintChildren (g);
         Graphics2D gr = (Graphics2D) g;

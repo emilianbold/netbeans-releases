@@ -50,6 +50,10 @@ import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.openide.util.Mutex;
 
+/**
+ *
+ * @author Karol Harezlak
+ */
 final class FolderRegistry {
 
     private static final HashMap<String, WeakReference<FolderRegistry>> registries = new HashMap<String, WeakReference<FolderRegistry>> ();
@@ -105,9 +109,9 @@ final class FolderRegistry {
 
     private void reloadCore() {
         HashMap<TypeID, InspectorFolder> tempFolders = new HashMap<TypeID, InspectorFolder>();
-        Collection<InspectorFolder> folders = globalFolderRegistry.getInspectorFolder();
+        Collection<InspectorFolder> _folders = globalFolderRegistry.getInspectorFolder();
 
-        for (InspectorFolder folder : folders)
+        for (InspectorFolder folder : _folders)
             tempFolders.put(folder.getTypeID(), folder);
 
         this.folders = tempFolders;

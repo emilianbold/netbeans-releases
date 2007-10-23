@@ -151,7 +151,7 @@ public final class ActionsSupport {
                         continue;
                     
                     DesignComponent relatedComponent = presenter.getRelatedComponent();
-                    assert relatedComponent != null : "No related component for ActionsPresenter "+ presenter ;//NOI18N
+                    assert relatedComponent != null : "No related component for ActionsPresenter " + presenter ;//NOI18N
                     for (Action action : actions) {
                         if (action instanceof ActionContext)
                             ((ActionContext) action).setComponent(relatedComponent);
@@ -214,6 +214,7 @@ public final class ActionsSupport {
         public void actionPerformed(ActionEvent e) {
         }
         
+        @Override
         public boolean isEnabled() {
             return false;
         }

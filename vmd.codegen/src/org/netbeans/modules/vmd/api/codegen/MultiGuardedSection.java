@@ -218,12 +218,12 @@ public final class MultiGuardedSection {
         String name = section.getName ();
         Object[] result = new Object[3];
 
-        int secondSeparator = name.indexOf ('|', 1);
+        int secondSeparator = name.indexOf ('|', 1); // NOI18N
         assert secondSeparator >= 1;
         result[0] = name.substring (1, secondSeparator);
 
         secondSeparator ++;
-        int thirdSeparator = name.indexOf ('|', secondSeparator);
+        int thirdSeparator = name.indexOf ('|', secondSeparator); // NOI18N
         assert thirdSeparator >= 1;
         result[1] = Integer.parseInt (name.substring (secondSeparator, thirdSeparator));
 

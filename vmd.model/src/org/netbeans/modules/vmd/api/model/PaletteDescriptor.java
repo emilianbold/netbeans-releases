@@ -112,6 +112,7 @@ public final class PaletteDescriptor {
         return largeIcon;
     }
 
+    @Override
     public boolean equals (Object o) {
         if (this == o)
             return true;
@@ -130,6 +131,7 @@ public final class PaletteDescriptor {
         return true;
     }
 
+    @Override
     public int hashCode () {
         int result;
         result = displayName != null ? displayName.hashCode () : 0;

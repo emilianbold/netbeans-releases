@@ -331,6 +331,7 @@ public final class DesignComponent {
      * Returns a component debug string.
      * @return the string
      */
+    @Override
     public String toString() {
         return componentID + ":" + type; // NOI18N
     }

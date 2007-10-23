@@ -104,7 +104,7 @@ public final class InspectorRegistry {
      * Returns Collection of DesignComponents to update.
      * @return Collection of DesignComponents to update or Collections.EMTY_SET when registry is empty
      */
-    @SuppressWarnings(value = "unchecked")
+    @SuppressWarnings(value = "unchecked") // NOI18N
     public Collection<DesignComponent> getComponentsToUpdate() {
         if (components == null) {
             return Collections.EMPTY_SET;

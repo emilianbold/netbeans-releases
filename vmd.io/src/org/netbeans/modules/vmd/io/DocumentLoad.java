@@ -89,7 +89,7 @@ public class DocumentLoad {
 
         if (!DocumentSave.VERSION_VALUE_1.equals(getAttributeValue(rootNode, DocumentSave.VERSION_ATTR))) {
             Debug.warning("Invalid version of VisualDesign"); // NOI18N
-            errorHandler.addWarning(WRONG_VERSION_ERROR); // NOI18N
+            errorHandler.addWarning(WRONG_VERSION_ERROR);
             return false;
         }
 
@@ -141,7 +141,7 @@ public class DocumentLoad {
             typeids.add(element.getTypeID());
         }
 
-        loadingDocument.getDescriptorRegistry().assertComponentDescriptors(typeids);
+//        loadingDocument.getDescriptorRegistry().assertComponentDescriptors(typeids);
 
         loadingDocument.getTransactionManager().writeAccess(new Runnable() {
 

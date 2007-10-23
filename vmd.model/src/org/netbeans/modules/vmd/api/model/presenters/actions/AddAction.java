@@ -132,6 +132,7 @@ public final class AddAction extends AbstractAction  implements ActionContext , 
         return menu;
     }
     
+    @Override
     public boolean isEnabled() {
         if (component == null || component.get() == null)
             throw new IllegalStateException("This action has to be attache to DesignComponent, component can not be null");//NOI18N

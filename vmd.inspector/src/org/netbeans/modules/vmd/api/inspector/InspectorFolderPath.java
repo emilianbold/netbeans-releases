@@ -68,8 +68,7 @@ public final class InspectorFolderPath {
      * DO NOT USE THIS METHOD.This method is only accessible from InspectorWrapperTree.class
      */
     public static InspectorFolderPath createInspectorPath() {
-        if (!Debug.isFriend("org.netbeans.modules.vmd.inspector.InspectorWrapperTree$1", "run")) {
-            //NOI18N
+        if (!Debug.isFriend("org.netbeans.modules.vmd.inspector.InspectorWrapperTree$1", "run")) { // NOI18N
             throw new IllegalStateException("This method is accessible only from InspectorWrapperTree.class"); //NOI18N
         }
         instance = new InspectorFolderPath();
@@ -80,7 +79,7 @@ public final class InspectorFolderPath {
      * DO NOT USE THIS METHOD.This method is only accessible from InspectorWrapperTree.class
      */
     public InspectorFolderPath add(InspectorFolder pathElement) {
-        if (!Debug.isFriend("org.netbeans.modules.vmd.inspector.InspectorWrapperTree$1", "run") && !Debug.isFriend(InspectorWrapperTree.class)) {
+        if (!Debug.isFriend("org.netbeans.modules.vmd.inspector.InspectorWrapperTree$1", "run") && !Debug.isFriend(InspectorWrapperTree.class)) { // NOI18N
             throw new IllegalStateException("This method is accessible only from InspectorWrapperTree.class"); //NOI18N
         }
         path.add(pathElement);
@@ -119,6 +118,7 @@ public final class InspectorFolderPath {
         }
     }
 
+    @Override
     public String toString() {
         StringBuffer pathString = new StringBuffer();
         for (InspectorFolder folder : path) {

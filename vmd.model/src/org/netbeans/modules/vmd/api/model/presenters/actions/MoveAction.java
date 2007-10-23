@@ -106,6 +106,7 @@ public abstract class MoveAction extends AbstractAction implements ActionContext
         return component.get();
     }
 
+    @Override
     public boolean isEnabled() {
         component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {

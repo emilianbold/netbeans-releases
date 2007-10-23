@@ -79,6 +79,7 @@ public abstract class DeletePresenter extends Presenter {
      */
     public static Presenter createSilentDeletionPresenter () {
         return new DeletePresenter () {
+            @Override
             boolean isSilent () {
                 return true;
             }
@@ -94,6 +95,7 @@ public abstract class DeletePresenter extends Presenter {
     public static Presenter createIndeliblePresenter () {
         return new DeletePresenter () {
 
+            @Override
             DeletableState canDelete () {
                 return DeletableState.DISALLOWED;
             }
@@ -113,6 +115,7 @@ public abstract class DeletePresenter extends Presenter {
     public static Presenter createUserIndeliblePresenter () {
         return new DeletePresenter() {
 
+            @Override
             DeletableState canDelete () {
                 return DeletableState.DISALLOWED_FOR_USER_ONLY;
             }

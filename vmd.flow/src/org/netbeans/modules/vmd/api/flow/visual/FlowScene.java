@@ -198,6 +198,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
         return widget;
     }
 
+    @Override
     protected void detachNodeWidget (FlowNodeDescriptor descriptor, Widget widget) {
         if (widget != null)
             preferredNodeLocationCache.put (new CacheNodeDescriptor (descriptor), widget.getPreferredLocation ());
@@ -269,6 +270,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
         return editAction;
     }
 
+    @Override
     public void userSelectionSuggested (final Set<? extends Object> suggestedSelectedObjects, boolean invertSelection) {
         super.userSelectionSuggested (suggestedSelectedObjects, invertSelection);
 
@@ -637,6 +639,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
 
     private class FlowSceneSelectAction extends WidgetAction.Adapter {
 
+        @Override
         public State mousePressed (final Widget widget, final WidgetMouseEvent event) {
             final boolean[] ret = new boolean[] { false };
             long eventID = document.getTransactionManager ().writeAccess (new Runnable() {
@@ -853,6 +856,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
 
     private class FlowSceneKeyAction extends WidgetAction.Adapter {
 
+        @Override
         public State keyPressed (Widget widget, WidgetKeyEvent event) {
             // HINT - FlowDescriptor.KeyActionBehaviour is used for FlowScene/rootComponent only
             final FlowDescriptor.KeyActionBehaviour[] ret = new FlowDescriptor.KeyActionBehaviour[1];
@@ -990,6 +994,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
             descriptorid = node.getDescriptorID ();
         }
 
+        @Override
         public boolean equals (Object o) {
             if (this == o)
                 return true;
@@ -999,6 +1004,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
             return componentid == desc.componentid  &&  descriptorid.equals (desc.descriptorid);
         }
 
+        @Override
         public int hashCode () {
             int result;
             result = (int) (componentid ^ (componentid >>> 32));

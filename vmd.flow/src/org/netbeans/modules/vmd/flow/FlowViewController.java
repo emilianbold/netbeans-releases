@@ -76,12 +76,14 @@ public class FlowViewController implements DesignDocumentAwareness {
 //        this.context = context;
         loadingPanel = IOUtils.createLoadingPanel ();
         visual = new JPanel (new BorderLayout ()) {
+            @Override
             public void requestFocus() {
                 super.requestFocus();
                 if (view != null)
                     view.requestFocus();
             }
 
+            @Override
             public boolean requestFocusInWindow() {
                 if (view != null) {
                     super.requestFocusInWindow();

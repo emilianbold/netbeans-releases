@@ -195,7 +195,7 @@ public class Debug {
         } else {
             StringBuilder sb = new StringBuilder ("ILLEGAL ARGUMENT: "); // NOI18N
             sb.append (Thread.currentThread ().getStackTrace ()[stackTraceFriendIndex - 1]);
-            sb.append ('\n');
+            sb.append ('\n'); // NOI18N
             for (Object message : messages)
                 sb.append (" | ").append (message); // NOI18N
 

@@ -418,7 +418,7 @@ public final class PropertyValue {
                     int componentID;
                     componentID = Integer.parseInt(serialized.substring(1));
                     if (document.getComponentByUID(componentID) == null) {
-                        throw new IllegalArgumentException("No component for given serilezed value");
+                        throw new IllegalArgumentException("No component for given serilezed value"); // NOI18N
                     }
                     return createComponentReference(document.getComponentByUID(componentID));
                 }
@@ -475,6 +475,7 @@ public final class PropertyValue {
      * Returns the encoded string.
      * @return the encoded string
      */
+    @Override
     public String toString() {
         return serialize();
     }

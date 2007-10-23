@@ -68,6 +68,7 @@ public abstract class FlowDescriptor {
         return descriptorID;
     }
 
+    @Override
     public final boolean equals (Object o) {
         if (this == o)
             return true;
@@ -77,10 +78,12 @@ public abstract class FlowDescriptor {
         return representedComponent == desc.representedComponent && descriptorID.equals (desc.descriptorID);
     }
 
+    @Override
     public final int hashCode () {
         return 29 * representedComponent.hashCode () + descriptorID.hashCode ();
     }
 
+    @Override
     public String toString () {
         return getClass ().getSimpleName () + ":" + representedComponent.getComponentID () + ":" + descriptorID; // NOI18N
     }

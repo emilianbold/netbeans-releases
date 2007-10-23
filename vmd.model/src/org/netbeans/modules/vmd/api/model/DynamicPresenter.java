@@ -85,6 +85,7 @@ public abstract class DynamicPresenter extends Presenter {
     }
 
     // NOTE - if you modify this method, look at Presenter.setNotifyAttached method too
+    @Override
     final void setNotifyAttached (DesignComponent component) {
         super.setNotifyAttached (component);
 
@@ -100,6 +101,7 @@ public abstract class DynamicPresenter extends Presenter {
     }
 
     // NOTE - if you modify this method, look at Presenter.setNotifyDetached method too
+    @Override
     final void setNotifyDetached (DesignComponent component) {
         super.setNotifyDetached (component);
 
@@ -221,6 +223,7 @@ public abstract class DynamicPresenter extends Presenter {
             DynamicPresenter.this.state = State.DISABLED;
         }
 
+        @Override
         public String toString () {
             return DynamicPresenter.this.toString ();
         }

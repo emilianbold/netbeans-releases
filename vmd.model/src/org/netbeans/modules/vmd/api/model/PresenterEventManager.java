@@ -94,22 +94,22 @@ final class PresenterEventManager implements PresenterEvent {
     void execute () {
         if (topology == null)
             createTopology ();
-        List<PresenterListener> topology = this.topology;
-        Map<PresenterListener, HashSet<PresenterListener>> dependencyMap = this.dependencyMap;
+        List<PresenterListener> _topology = this.topology;
+        Map<PresenterListener, HashSet<PresenterListener>> _dependencyMap = this.dependencyMap;
 
         HashSet<PresenterListener> marked = new HashSet<PresenterListener> (100);
         for (PresenterListener presenterListener : changed) {
-            if (topology.contains (presenterListener))
+            if (_topology.contains (presenterListener))
                 marked.add (presenterListener);
             else
                 presenterListener.presenterChanged (this);
         }
 
-        for (PresenterListener presenterListener : topology) {
+        for (PresenterListener presenterListener : _topology) {
             if (marked.contains (presenterListener))
                 presenterListener.presenterChanged (this);
             if (changed.contains (presenterListener)) {
-                HashSet<PresenterListener> set = dependencyMap.get (presenterListener);
+                HashSet<PresenterListener> set = _dependencyMap.get (presenterListener);
                 if (set == null)
                     continue;
                 for (PresenterListener listener : set)
@@ -120,14 +120,14 @@ final class PresenterEventManager implements PresenterEvent {
 
     private void createTopology () {
         HashSet<PresenterListener> unsortedSet = new HashSet<PresenterListener> ();
-        HashMap<PresenterListener, HashSet<PresenterListener>> dependencyMap = new HashMap<PresenterListener, HashSet<PresenterListener>> ();
+        HashMap<PresenterListener, HashSet<PresenterListener>> _dependencyMap = new HashMap<PresenterListener, HashSet<PresenterListener>> ();
 
         for (DependencyItem item : dependencies)
-            item.setupTopology (unsortedSet, dependencyMap);
+            item.setupTopology (unsortedSet, _dependencyMap);
 
         try {
-            this.topology = Utilities.topologicalSort (unsortedSet, dependencyMap);
-            this.dependencyMap = dependencyMap;
+            this.topology = Utilities.topologicalSort (unsortedSet, _dependencyMap);
+            this.dependencyMap = _dependencyMap;
         } catch (TopologicalSortException e) {
             Debug.warning (e);
             System.err.println ("TopologicalSortException: Topological Sets:" + Arrays.toString (e.topologicalSets ())); // NOI18N
@@ -159,6 +159,7 @@ final class PresenterEventManager implements PresenterEvent {
             this.listener = listener;
         }
 
+        @Override
         public boolean equals (Object o) {
             if (this == o)
                 return true;
@@ -173,6 +174,7 @@ final class PresenterEventManager implements PresenterEvent {
             return listener == di.listener;
         }
 
+        @Override
         public int hashCode () {
             int result;
             result = (component != null ? component.hashCode () : 0);

@@ -256,10 +256,12 @@ public final class TransactionManager {
 
     private class TransactionEdit extends CompoundEdit {
 
+        @Override
         public boolean isSignificant () {
             return true;
         }
 
+        @Override
         public void undo () throws CannotUndoException {
             final boolean[] error = new boolean[1];
             writeAccess (new Runnable () {
@@ -277,6 +279,7 @@ public final class TransactionManager {
                 throw new CannotUndoException ();
         }
 
+        @Override
         public void redo () throws CannotRedoException {
             final boolean[] error = new boolean[1];
             writeAccess (new Runnable() {
@@ -308,10 +311,12 @@ public final class TransactionManager {
             this.child = child;
         }
 
+        @Override
         public boolean isSignificant () {
             return false;
         }
 
+        @Override
         public void undo () throws CannotUndoException {
             super.undo ();
             if (newParent != null)
@@ -320,6 +325,7 @@ public final class TransactionManager {
                 oldParent.addComponent (child);
         }
 
+        @Override
         public void redo () throws CannotRedoException {
             super.redo ();
             if (oldParent != null)
@@ -344,15 +350,18 @@ public final class TransactionManager {
             this.newValue = newValue;
         }
 
+        @Override
         public boolean isSignificant () {
             return false;
         }
 
+        @Override
         public void undo () throws CannotUndoException {
             super.undo ();
             component.writeProperty (propertyName, oldValue);
         }
 
+        @Override
         public void redo () throws CannotRedoException {
             super.redo ();
             component.writeProperty (propertyName, newValue);
@@ -372,15 +381,18 @@ public final class TransactionManager {
             this.newSelection = newSelection;
         }
 
+        @Override
         public boolean isSignificant () {
             return false;
         }
 
+        @Override
         public void undo () throws CannotUndoException {
             super.undo ();
             document.setSelectedComponents (null, oldSelection);
         }
 
+        @Override
         public void redo () throws CannotRedoException {
             super.redo ();
             document.setSelectedComponents (null, newSelection);
