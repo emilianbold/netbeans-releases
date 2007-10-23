@@ -153,9 +153,13 @@ public class WorkingCopy extends CompilationController {
      * @see TreeMaker
      */
     public synchronized void rewrite(Tree oldTree, Tree newTree) {
-        if (changes == null)
+        if (changes == null) {
             throw new IllegalStateException("Cannot call rewrite before toPhase.");
-        
+        }
+        if (oldTree == newTree) {
+            // no change operation called.
+            return;
+        }
         if (oldTree == null && Kind.COMPILATION_UNIT == newTree.getKind()) {
             createCompilationUnit((JCTree.JCCompilationUnit) newTree);
             return;
