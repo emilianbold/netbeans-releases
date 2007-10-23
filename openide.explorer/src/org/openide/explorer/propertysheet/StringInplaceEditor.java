@@ -132,7 +132,7 @@ class StringInplaceEditor extends JTextField implements InplaceEditor {
         if ((valFromTextField != null) && valFromTextField.equals(getText())) {
             //#47430 - JTextField will strip \n's from edited text.  If no
             //change to the text field value, return what we originally got
-            return valFromEditor;
+            return null == valFromEditor ? "" : valFromEditor;
         } else {
             return getText();
         }
@@ -191,7 +191,10 @@ class StringInplaceEditor extends JTextField implements InplaceEditor {
     public void setValue(Object o) {
         if ((null != o) && (null != editor) && editor.supportsCustomEditor()) {
             editor.setValue(o);
-            setText(editor.getAsText());
+            String val = editor.getAsText();
+            if( null == val )
+                val = "";
+            setText(val);
         } else {
             setText((o != null) ? o.toString() : ""); //NOI18N
         }
