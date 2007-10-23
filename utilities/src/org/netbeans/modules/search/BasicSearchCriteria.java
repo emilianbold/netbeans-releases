@@ -492,7 +492,7 @@ final class BasicSearchCriteria {
     }
     
     boolean isUsable() {
-        return (textPatternSpecified || fileNamePatternSpecified)
+        return (textPatternSpecified || (!isSearchAndReplace() && fileNamePatternSpecified))
                && !isInvalid();
     }
     
@@ -557,7 +557,7 @@ final class BasicSearchCriteria {
         if (fileObj.isFolder() || !fileObj.isValid() || !isTextFile(fileObj)) {
             return false;
         }
-        
+
         /* Check the file name: */
         if (fileNamePatternValid 
                 && !fileNamePattern.matcher(fileObj.getNameExt()).matches()) {
