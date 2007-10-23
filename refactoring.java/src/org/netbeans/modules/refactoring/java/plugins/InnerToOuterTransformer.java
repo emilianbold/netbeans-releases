@@ -156,7 +156,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             newInnerClass = genUtils.importComments(newInnerClass, workingCopy.getCompilationUnit());
             newInnerClass = genUtils.importFQNs(newInnerClass);
 
-            newInnerClass = make.setLabel(innerClass, refactoring.getClassName());
+            newInnerClass = make.setLabel(newInnerClass, refactoring.getClassName());
             
             newInnerClass = refactorInnerClass(newInnerClass);
             
@@ -308,6 +308,17 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 }
             }
         }
+        
+        if (inner.getKind() == ElementKind.ENUM) {
+            for (Tree member:newInnerClass.getMembers()) {
+                if (member.getKind() == Tree.Kind.METHOD) {
+                    MethodTree m = (MethodTree) member;
+                    if (m.getReturnType()==null) {
+                        rewrite(m.getBody(),make.removeBlockStatement(m.getBody(), 0));
+                    }
+                }
+            }
+        }        
         return newInnerClass;
     }
 }
