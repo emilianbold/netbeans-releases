@@ -418,6 +418,8 @@ public class FileStatusCache implements ISVNNotifyListener {
                 current != null && current.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) return true;
         if (fi.getStatus() == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED ||
                 current != null && current.getStatus() == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED) return true;
+        if (fi.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY ||
+                current != null && current.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) return true;        
         return false;
     }
 
