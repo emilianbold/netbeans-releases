@@ -196,6 +196,7 @@ public class HgCommand {
     private static final String HG_NO_UPDATES_ERR = "0 files updated, 0 files merged, 0 files removed, 0 files unresolved"; // NOI18N
     private static final String HG_NO_VIEW_ERR = "hg: unknown command 'view'"; // NOI18N
     private static final String HG_HGK_NOT_FOUND_ERR = "sh: hgk: not found"; // NOI18N
+    private static final String HG_NO_SUCH_FILE_ERR = "No such file"; // NOI18N
     
     private static final char HG_STATUS_CODE_MODIFIED = 'M' + ' ';    // NOI18N // STATUS_VERSIONED_MODIFIEDLOCALLY
     private static final char HG_STATUS_CODE_ADDED = 'A' + ' ';      // NOI18N // STATUS_VERSIONED_ADDEDLOCALLY
@@ -549,7 +550,6 @@ public class HgCommand {
         }else{
             list = exec(command);
         }
-        System.out.println("VIEW: " + env + "  " + list);
 
         if (!list.isEmpty()) {
             if (isErrorNoView(list.get(list.size() -1))) {
@@ -1057,12 +1057,13 @@ public class HgCommand {
     /**
      * Get the annotations for the specified file
      *
-     * @param File repository of the mercurial repository's root directory
-     * @param file path to mercurial repository's root directory
+     * @param File repository of the mercurial repository
+     * @param File file to be annotated
+     * @param String revision of the file to be annotated
      * @return List<String> list of the annotated lines of the file
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doAnnotate(File repository, File file) throws HgException {
+    public static List<String> doAnnotate(File repository, File file, String revision) throws HgException {
         if (repository == null) return null;
         List<String> command = new ArrayList<String>();
 
@@ -1071,15 +1072,39 @@ public class HgCommand {
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
 
+        if (revision != null) {
+            command.add(HG_FLAG_REV_CMD);
+            command.add(revision);
+        }
         command.add(HG_ANNOTATE_FLAGN_CMD);
         command.add(HG_ANNOTATE_FLAGU_CMD);
         command.add(file.getAbsolutePath());
         List<String> list = exec(command);
-        if (!list.isEmpty() && isErrorNoRepository(list.get(0)))
-            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
+            } else if (isErrorNoSuchFile(list.get(0))) {
+                // This can happen if we have multiple heads and the wrong
+                // one was picked by default hg annotation 
+                if (revision == null) {
+                    String rev = getLastRevision(repository, file);
+                    if (rev != null) {
+                        list = doAnnotate(repository, file, rev);
+                    } else {
+                        list = null;
+                    }
+                } else {
+                    list = null;
+                }
+            }
+        }
         return list;
     }
   
+    public static List<String> doAnnotate(File repository, File file) throws HgException {
+        return doAnnotate(repository, file, null);
+    }
+
     /**
      * Get the revisions this file has been modified in.
      *
@@ -1978,6 +2003,10 @@ public class HgCommand {
 
     private static boolean isErrorHgkNotFound(String msg) {
         return msg.indexOf(HG_HGK_NOT_FOUND_ERR) > -1;                               // NOI18N
+    }
+
+    private static boolean isErrorNoSuchFile(String msg) {
+        return msg.indexOf(HG_NO_SUCH_FILE_ERR) > -1;                               // NOI18N
     }
 
     public static void createConflictFile(String path) {
