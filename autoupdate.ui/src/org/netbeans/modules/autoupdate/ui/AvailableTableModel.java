@@ -161,20 +161,8 @@ public class AvailableTableModel extends UnitCategoryTableModel {
     @Override
     public String getToolTipText(int row, int col) {
         if (col == 3) {
-            CATEGORY category = (CATEGORY)getValueAt (row, 3);
-            String key = null;
-            switch(category) {
-            case STANDARD:
-                key = "AvailableTab_SourceCategory_Tooltip_STANDARD";//NOI18N
-                break;                
-            case BETA:
-                key = "AvailableTab_SourceCategory_Tooltip_BETA";//NOI18N
-                break;
-            case COMMUNITY:
-                key = "AvailableTab_SourceCategory_Tooltip_COMMUNITY";//NOI18N                
-                break;                
-            }
-            return (key != null) ? getBundle(key) : null;
+            CATEGORY category = (CATEGORY) getValueAt (row, 3);
+            return getCategoryName(category);
         }
         return super.getToolTipText(row, col);
     }
@@ -234,9 +222,25 @@ public class AvailableTableModel extends UnitCategoryTableModel {
         }
         return res;
     }
+
+    static String getCategoryName(CATEGORY category) {
+        String key = null;
+        switch (category) {
+            case STANDARD:
+                key = "AvailableTab_SourceCategory_Tooltip_STANDARD"; //NOI18N
+                break;
+            case BETA:
+                key = "AvailableTab_SourceCategory_Tooltip_BETA"; //NOI18N
+                break;
+            case COMMUNITY:
+                key = "AvailableTab_SourceCategory_Tooltip_COMMUNITY"; //NOI18N
+                break;
+        }
+        return (key != null) ? getBundle(key) : null;
+    }
     
-    private String getBundle (String key) {
-        return NbBundle.getMessage (this.getClass (), key);
+    private static String getBundle (String key) {
+        return NbBundle.getMessage (AvailableTableModel.class, key);
     }
 
     @Override
