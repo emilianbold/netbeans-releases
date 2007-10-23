@@ -66,11 +66,9 @@ import org.openide.util.NbBundle;
 public class FontFamilyEditorDialog extends javax.swing.JPanel {
     private JDialog dialog;
     private DialogDescriptor dlg = null;
-    private String okString =  NbBundle.getMessage(FontFamilyEditorDialog.class, "OK");
-    private String cancelString =  NbBundle.getMessage(FontFamilyEditorDialog.class, "CANCEL");
-
-    private JButton okButton = new JButton(okString);
-    private JButton cancelButton = new JButton(cancelString);
+    private String closeButtonLabel =  NbBundle.getMessage(FontFamilyEditorDialog.class, "Close_Button_Label");
+    
+    private JButton closeButton = new JButton(closeButtonLabel);
 
     DefaultListModel fontFamilies = null;
     DefaultListModel selectedFonts = new DefaultListModel();
@@ -99,20 +97,12 @@ public class FontFamilyEditorDialog extends javax.swing.JPanel {
         // Add a listener to the dialog's buttons
         ActionListener listener = new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Object o = evt.getSource();
-                Object[] option = dlg.getOptions();
-
-                if (o == option[0]) {
-                    // Set the selected Font Familt
-                    //dialog.hide();
-                    // Dismiss the dialog
-                    dialog.setVisible(false);
-                }
+                dialog.setVisible(false);
             }
         };
         dlg = new DialogDescriptor(this, NbBundle.getMessage(FontFamilyEditorDialog.class, "FONT_FAMILY_EDITOR_TITLE"), true, listener);
-        dlg.setOptions(new Object[] { okButton, cancelButton });
-        dlg.setClosingOptions(new Object[] {cancelButton});
+        dlg.setOptions(new Object[] { closeButton });
+        dlg.setClosingOptions(new Object[] {closeButton});
         //dlg.setHelpCtx(new HelpCtx("projrave_ui_elements_server_nav_add_datasourcedb")); // NOI18N
 
         dialog = (JDialog) DialogDisplayer.getDefault().createDialog(dlg);
