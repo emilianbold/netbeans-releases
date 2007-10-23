@@ -55,7 +55,9 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
                 
                 <folder name="BracesMatchers">
-                    <file name="org-netbeans-modules-web-core-syntax-JspBracesMatching.instance"/>
+                    <file name="org-netbeans-modules-web-core-syntax-JspBracesMatching.instance">
+                        <attr name="position" intvalue="40"/>
+                    </file>
                 </folder>
                 
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
