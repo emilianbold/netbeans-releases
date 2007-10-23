@@ -204,7 +204,7 @@ public class TopSecurityManager extends SecurityManager {
                     String n = c.getName();
                     synchronized (warnedClassesNDE) {
                         if (warnedClassesNDE.add(n)) {
-                            System.err.println("Warning: use of system property netbeans.debug.exceptions in " + n + " has been obsoleted in favor of ErrorManager"); // NOI18N
+                            System.err.println("Warning: use of system property netbeans.debug.exceptions in " + n + " has been obsoleted in favor of java.util.logging.Logger"); // NOI18N
                         }
                     }
                     break;
