@@ -414,6 +414,8 @@ public class FileStatusCache implements ISVNNotifyListener {
     }
     
     private boolean needRecursiveRefresh(FileInformation fi, FileInformation current) {
+        // XXX review this part and see also the places where svnutils.refreshrecursively is called.
+        //     looks like the same thing is done at diferent places in a different way but the same result.
         if (fi.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED || 
                 current != null && current.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) return true;
         if (fi.getStatus() == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED ||
@@ -448,24 +450,6 @@ public class FileStatusCache implements ISVNNotifyListener {
             File file = files[i];
             refreshCached(file, REPOSITORY_STATUS_UNKNOWN);
         }
-    }
-
-    public void refreshRecursively(File file, ISVNStatus repositoryStatus) {
-        List<ISVNStatus> ret = new ArrayList<ISVNStatus>(20);
-                        
-        File[] files = file.listFiles();
-        if(files != null) {        
-            for (int i = 0; i < files.length; i++) {
-                if(!(SvnUtils.isPartOfSubversionMetadata(files[i]) || 
-                     Subversion.getInstance().isAdministrative(files[i]))) 
-                {
-                    refresh(files[i], repositoryStatus);
-                    if(files[i].isDirectory()) {                
-                        refreshRecursively(files[i], repositoryStatus);                
-                    }                    
-                }
-            }        
-        }        
     }
     
     // --- Package private contract ------------------------------------------

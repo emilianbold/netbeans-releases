@@ -91,7 +91,7 @@ public class CheckoutCompleted implements ActionListener {
         List<Project> checkedOutProjects = new LinkedList<Project>();
         File normalizedWorkingFolder = FileUtil.normalizeFile(workingFolder);
         // checkout creates new folders and cache must be aware of them
-        SvnUtils.refreshRecursively(normalizedWorkingFolder);
+        SvnUtils.refreshParents(normalizedWorkingFolder);
         FileObject fo = FileUtil.toFileObject(normalizedWorkingFolder);
         if (fo != null) {
             for (int i = 0; i < checkedOutFolders.length; i++) {

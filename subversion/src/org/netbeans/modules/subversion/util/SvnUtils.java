@@ -790,12 +790,34 @@ public class SvnUtils {
      *
      * @param folder folder to refresh
      */
-    public static void refreshRecursively(File folder) {
+    public static void refreshParents(File folder) {
         if (folder == null) return;
-        refreshRecursively(folder.getParentFile());
+        refreshParents(folder.getParentFile());
         Subversion.getInstance().getStatusCache().refresh(folder, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
     }
 
+    /**
+     * Refreshes the status for the given file and all its children
+     * 
+     * @param file
+     */
+    public static void refreshRecursively(File file) {    
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        File[] files = file.listFiles();
+        if(files != null) {        
+            for (int i = 0; i < files.length; i++) {
+                if(!(SvnUtils.isPartOfSubversionMetadata(files[i]) || 
+                     Subversion.getInstance().isAdministrative(files[i]))) 
+                {
+                    cache.refresh(files[i], FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                    if(files[i].isDirectory()) {                
+                        refreshRecursively(files[i]);                
+                    }                    
+                }
+            }        
+        }        
+    }
+    
     /**
      * Rips an eventual username off - e.g. user@svn.host.org
      * 

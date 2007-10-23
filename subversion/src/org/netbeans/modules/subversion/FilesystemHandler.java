@@ -169,7 +169,9 @@ class FilesystemHandler extends VCSInterceptor {
     public void afterMove(final File from, final File to) {
         Utils.post(new Runnable() {
             public void run() {                
-                cache.refreshRecursively(to, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                // there might have been no notification 
+                // for the children files - refresh them all
+                SvnUtils.refreshRecursively(to);
                 cache.onNotify(to, null); // as if there were an event
                 File parent = to.getParentFile();
                 if (parent != null) {

@@ -144,7 +144,7 @@ public class SwitchToAction extends ContextAction {
             // ... and switch
             client.switchToUrl(root, toRepositoryFile.getFileUrl(), toRepositoryFile.getRevision(), recursive);
             // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
-            Subversion.getInstance().getStatusCache().refreshRecursively(root, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+            SvnUtils.refreshRecursively(root);
             Subversion.getInstance().refreshAllAnnotations();
         } catch (SVNClientException ex) {
             support.annotate(ex);
