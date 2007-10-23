@@ -416,7 +416,7 @@ public class LocalFileSystem extends AbstractFileSystem {
             fis = new FileInputStream(file = getFile(name));
         } catch (FileNotFoundException exc) {
             if ((file == null) || !file.exists()) {
-                ExternalUtil.annotate(exc, NbBundle.getMessage(LocalFileSystem.class, "EXC_FileOutsideModified"));
+                ExternalUtil.annotate(exc, NbBundle.getMessage(LocalFileSystem.class, "EXC_FileOutsideModified", getFile(name)));
             }
 
             throw exc;
