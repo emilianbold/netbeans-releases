@@ -203,10 +203,6 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
     private static final String VERSION_NUMBER = "0.4"; // NOI18N
 
     // --- ProjectTypeProfiler implementation ------------------------------------------------------------------------------
-    private static final String AAA = "AAAA";
-
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
     public String getProfilerTargetName(final Project project, final FileObject buildScript, final int type,
                                         final FileObject profiledClass) {
         final Element e = ((AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class))
