@@ -59,6 +59,7 @@ import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -130,6 +131,10 @@ public class PageFlowToolbarUtilities {
             map.put(view, myInstance);
         }
         return myInstance;
+    }
+    
+    public static Set<PageFlowView> getViews() {
+        return map.keySet();
     }
 
     /**
