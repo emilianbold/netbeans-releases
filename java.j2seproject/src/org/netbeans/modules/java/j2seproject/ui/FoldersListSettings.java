@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.java.j2seproject.ui;
 
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 import java.io.File;
@@ -110,8 +111,15 @@ public class FoldersListSettings {
         getPreferences().put(LAST_USED_CP_FOLDER, path);
     }
 
-    public File getLastUsedArtifactFolder () {
-        return new File (getPreferences().get(LAST_USED_ARTIFACT_FOLDER, System.getProperty("user.home")));
+    public File getLastUsedArtifactFolder (final File defaultValue) {
+        String val = getPreferences().get(LAST_USED_ARTIFACT_FOLDER, null);
+        if (val != null) {
+            return FileUtil.normalizeFile(new File (val));
+        }
+        if (defaultValue != null) {
+            return defaultValue;
+        }
+        return FileUtil.normalizeFile(new File (System.getProperty("user.home")));
     }
 
     public void setLastUsedArtifactFolder (File folder) {

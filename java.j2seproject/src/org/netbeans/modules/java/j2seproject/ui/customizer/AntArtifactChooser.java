@@ -225,8 +225,16 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
         chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AntArtifactChooser.class,"AD_AACH_SelectProject"));
         AntArtifactChooser accessory = new AntArtifactChooser( artifactTypes, chooser );
         chooser.setAccessory( accessory );
-        chooser.setPreferredSize( new Dimension( 650, 380 ) );
-        chooser.setCurrentDirectory (FoldersListSettings.getDefault().getLastUsedArtifactFolder());
+        chooser.setPreferredSize( new Dimension( 650, 380 ) );        
+        File defaultFolder = null;
+        FileObject defFo = master.getProjectDirectory();
+        if (defFo != null) {
+            defFo = defFo.getParent();
+            if (defFo != null) {
+                defaultFolder = FileUtil.toFile(defFo);
+            }
+        }
+        chooser.setCurrentDirectory (FoldersListSettings.getDefault().getLastUsedArtifactFolder(defaultFolder));
 
         int option = chooser.showOpenDialog( parent ); // Show the chooser
               
