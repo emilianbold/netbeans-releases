@@ -168,7 +168,8 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
         valueToKeyStorage         = new TreeMap<RepositoryCacheValue<V>, K>();
         this.capacity   = new AtomicInteger((capacity >0)?capacity:DEFAULT_CACHE_CAPACITY);
     }
-    
+
+    @Override
     public int size() {
         try {
             readWriteLock.readLock().lock();
@@ -178,6 +179,7 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
         }
     }
     
+    @Override
     public boolean isEmpty() {
         try {
             readWriteLock.readLock().lock();
@@ -187,6 +189,7 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
         }
     }
     
+    @Override
     public boolean containsKey(final Object key) {
         try {
             readWriteLock.readLock().lock();
@@ -196,6 +199,7 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
         }
     }
     
+    @Override
     public boolean containsValue(final Object value) {
         try {
             readWriteLock.readLock().lock();
@@ -205,6 +209,7 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
         }
     }
     
+    @Override
     public V get(final Object key) {
         V retValue = null;
         
@@ -227,6 +232,7 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
         return retValue;
     }
     
+    @Override
     public V put(K key, V value) {
         V retValue = null;
         
@@ -256,6 +262,7 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
         return retValue;
     }
     
+    @Override
     public V remove(Object key) {
         
         V retValue = null;
@@ -276,14 +283,17 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
         return retValue;
     }
     
+    @Override
     public void putAll(Map<? extends K, ? extends V> map) {
         // not supported
     }
     
+    @Override
     public void clear() {
         // keyToValueStorage.clear();
     }
     
+    @Override
     public Set<K> keySet() {
         try {
             readWriteLock.readLock().lock();
@@ -293,6 +303,7 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
         }
     }
     
+    @Override
     public Collection<V> values() {
         final Collection<V> newCollection = new ArrayList<V>();
         
@@ -313,6 +324,7 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
         return newCollection;
     }
     
+    @Override
     public Set<Map.Entry<K,V>> entrySet() {
         final TreeSet<Map.Entry<K,V>>   resultSet = new TreeSet<Map.Entry<K,V>>();
         
