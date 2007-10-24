@@ -729,11 +729,11 @@ public final class PersistenceManager implements PropertyChangeListener {
                     // #36916: Handle case when TC is not serializable.
                     String id = topComponent2IDMap.get(curTC);
                     // #75247: Log warning when TC is not serializable.
-                    LOG.log(Level.WARNING, "TopComponent " + id + " is not serializable.", nse); //NOI18N
+                    LOG.log(Level.INFO, "TopComponent " + id + " is not serializable.", nse); //NOI18N
                     removeTCFromConfig(wmc,id);
                 } catch (IOException exc) {
                     // some problem with saving of top component, log warning
-                    LOG.log(Level.WARNING, null, exc);
+                    LOG.log(Level.INFO, null, exc);
                     String id = topComponent2IDMap.get(curTC);
                     removeTCFromConfig(wmc,id);
                 } catch (RuntimeException exc) {
@@ -742,7 +742,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                             PersistenceManager.class,"EXC_CannotSaveTCSettings",
                             curTC.getName());
                     Exceptions.attachLocalizedMessage(exc, annotation);
-                    LOG.log(Level.WARNING, null, exc);
+                    LOG.log(Level.INFO, null, exc);
                     String id = topComponent2IDMap.get(curTC);
                     removeTCFromConfig(wmc,id);
                 } catch (LinkageError le) {
@@ -750,7 +750,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                             PersistenceManager.class,"EXC_CannotSaveTCSettings",
                             curTC.getName());
                     Exceptions.attachLocalizedMessage(le, annotation);
-                    LOG.log(Level.WARNING, null, le);
+                    LOG.log(Level.INFO, null, le);
                     String id = topComponent2IDMap.get(curTC);
                     removeTCFromConfig(wmc,id);
                 }
