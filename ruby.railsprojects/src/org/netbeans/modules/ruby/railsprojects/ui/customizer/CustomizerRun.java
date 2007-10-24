@@ -241,7 +241,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         mainPanel = new javax.swing.JPanel();
         portLabel = new javax.swing.JLabel();
         portField = new javax.swing.JTextField();
-        jLabel5 = new javax.swing.JLabel();
+        encodingLabel = new javax.swing.JLabel();
         encoding = new javax.swing.JComboBox();
         rakeLabel = new javax.swing.JLabel();
         rakeTextField = new javax.swing.JTextField();
@@ -315,12 +315,13 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             }
         });
 
-        jLabel5.setLabelFor(encoding);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "TXT_Encoding")); // NOI18N
+        encodingLabel.setLabelFor(encoding);
+        org.openide.awt.Mnemonics.setLocalizedText(encodingLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "TXT_Encoding")); // NOI18N
 
-        rakeLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RakeArgs")); // NOI18N
+        rakeLabel.setLabelFor(rakeTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(rakeLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RakeArgs")); // NOI18N
 
-        rakeHelpLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RakeArgsEx")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(rakeHelpLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RakeArgsEx")); // NOI18N
 
         org.jdesktop.layout.GroupLayout mainPanelLayout = new org.jdesktop.layout.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
@@ -329,13 +330,13 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             .add(mainPanelLayout.createSequentialGroup()
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, rakeLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, encodingLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, portLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(encoding, 0, 97, Short.MAX_VALUE)
-                    .add(portField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)
-                    .add(rakeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)))
+                    .add(encoding, 0, 429, Short.MAX_VALUE)
+                    .add(portField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE)
+                    .add(rakeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE)))
             .add(mainPanelLayout.createSequentialGroup()
                 .add(120, 120, 120)
                 .add(rakeHelpLabel)
@@ -349,7 +350,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                     .add(portField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel5)
+                    .add(encodingLabel)
                     .add(encoding, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -466,7 +467,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private javax.swing.JPanel configPanel;
     private javax.swing.JSeparator configSep;
     private javax.swing.JComboBox encoding;
-    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel encodingLabel;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JTextField portField;
     private javax.swing.JLabel portLabel;
