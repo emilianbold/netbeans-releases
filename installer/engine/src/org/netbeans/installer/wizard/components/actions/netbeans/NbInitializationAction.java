@@ -33,7 +33,6 @@
  * the option applies only if the new code is made subject to such option by the
  * copyright holder.
  */
-
 package org.netbeans.installer.wizard.components.actions.netbeans;
 
 import java.util.List;
@@ -55,46 +54,48 @@ import org.netbeans.installer.wizard.components.actions.SearchForJavaAction;
  *
  * @author Dmitry Lipin
  */
-public class NbInitializationAction extends WizardAction{
+public class NbInitializationAction extends WizardAction {
+
     private InitializeRegistryAction initReg;
     private DownloadConfigurationLogicAction downloadLogic;
     private SearchForJavaAction searchJava;
-    private WizardAction currentAction ;
-    
+    private WizardAction currentAction;
+
     public NbInitializationAction() {
         setProperty(TITLE_PROPERTY,
                 DEFAULT_TITLE);
         setProperty(DESCRIPTION_PROPERTY,
                 DEFAULT_DESCRIPTION);
-        
+
         initReg = new InitializeRegistryAction();
         downloadLogic = new DownloadConfigurationLogicAction();
         searchJava = new SearchForJavaAction();
     }
-    
+
     public void execute() {
         final CompositeProgress progress = new CompositeProgress(this.getWizardUi());
         progress.setTitle(getProperty(TITLE_PROPERTY));
         progress.synchronizeDetails(false);
-        if(initReg.canExecuteForward()) {
+        if (initReg.canExecuteForward()) {
             currentAction = initReg;
             initReg.setWizard(getWizard());
             initReg.execute();
         }
-        
-        if(downloadLogic.canExecuteForward()) {
+
+        if (downloadLogic.canExecuteForward()) {
             currentAction = downloadLogic;
             downloadLogic.setWizard(getWizard());
             downloadLogic.execute();
         }
-        
-        if(searchJava.canExecuteForward()) {
+
+        if (searchJava.canExecuteForward() &&
+                ExecutionMode.getCurrentExecutionMode() == ExecutionMode.NORMAL) {
             boolean doSearch = false;
-            List <Product> toInstall = Registry.getInstance().getProductsToInstall();
-            for(Product product : toInstall) {
+            List<Product> toInstall = Registry.getInstance().getProductsToInstall();
+            for (Product product : toInstall) {
                 try {
-                    for(WizardComponent component : product.getLogic().getWizardComponents()) {
-                        if(component instanceof  SearchForJavaAction) {
+                    for (WizardComponent component : product.getLogic().getWizardComponents()) {
+                        if (component instanceof SearchForJavaAction) {
                             doSearch = true;
                             break;
                         }
@@ -103,29 +104,22 @@ public class NbInitializationAction extends WizardAction{
                     LogManager.log(e);
                 }
             }
-            if(doSearch) {
+            if (doSearch) {
                 currentAction = searchJava;
                 Progress javaSearchProgress = new Progress();
-                progress.addChild(javaSearchProgress,100);
+                progress.addChild(javaSearchProgress, 100);
                 searchJava.setWizard(getWizard());
                 searchJava.execute(javaSearchProgress);
             }
         }
     }
-
-    @Override
-    public boolean canExecuteForward() {
-        return (ExecutionMode.getCurrentExecutionMode() == ExecutionMode.NORMAL);
-    }
-        
-    public static final String DEFAULT_TITLE = ResourceUtils.getString(
-            NbInitializationAction.class,
+    public static final String DEFAULT_TITLE = ResourceUtils.getString(NbInitializationAction.class,
             "NIA.title"); // NOI18N
-    public static final String PROGRESS_TITLE = ResourceUtils.getString(
-            NbInitializationAction.class,
+
+    public static final String PROGRESS_TITLE = ResourceUtils.getString(NbInitializationAction.class,
             "NIA.progress.title"); // NOI18N
-    public static final String DEFAULT_DESCRIPTION = ResourceUtils.getString(
-            NbInitializationAction.class,
+
+    public static final String DEFAULT_DESCRIPTION = ResourceUtils.getString(NbInitializationAction.class,
             "NIA.description"); // NOI18N*/
-    
+
 }
