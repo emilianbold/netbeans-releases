@@ -120,9 +120,11 @@ public class BindingConfigurationPanel extends javax.swing.JPanel {
 
         jLabel1.setLabelFor(bindingNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel1.text")); // NOI18N
+        jLabel1.setToolTipText(org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel1.toolTipText")); // NOI18N
 
         jLabel2.setLabelFor(bindingTypeComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel2.text")); // NOI18N
+        jLabel2.setToolTipText(org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel2.toolTipText")); // NOI18N
 
         DefaultComboBoxModel model = new DefaultComboBoxModel(protocols);
         model.setSelectedItem(defaultSelection);
@@ -135,14 +137,17 @@ public class BindingConfigurationPanel extends javax.swing.JPanel {
 
         jLabel3.setLabelFor(jPanel1);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel3.text")); // NOI18N
+        jLabel3.setToolTipText(org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel3.toolTipText")); // NOI18N
 
         jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.X_AXIS));
 
         jLabel4.setLabelFor(serviceNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel4.text")); // NOI18N
+        jLabel4.setToolTipText(org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel4.toolTipText")); // NOI18N
 
         jLabel5.setLabelFor(servicePortTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel5.text")); // NOI18N
+        jLabel5.setToolTipText(org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel5.toolTipText")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

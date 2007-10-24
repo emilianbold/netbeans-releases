@@ -50,8 +50,6 @@ package org.netbeans.modules.xml.wsdl.ui.view;
 import javax.swing.ButtonGroup;
 import javax.swing.JRadioButton;
 
-import org.netbeans.modules.xml.wsdl.bindingsupport.template.ExtensibilityElementTemplateFactory;
-import org.netbeans.modules.xml.wsdl.bindingsupport.template.TemplateType;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplate;
 
 /**
@@ -106,8 +104,12 @@ public class TemplatePanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
     private void initGUI() {
-        jRadioButton1.setText(this.mlt.getName());
+        String name = this.mlt.getName();
+        jRadioButton1.setText(name);
+        jRadioButton1.setToolTipText(name);
         
+        jRadioButton1.getAccessibleContext().setAccessibleName(name);
+        jRadioButton1.getAccessibleContext().setAccessibleDescription(name);
     }
     
     public boolean isSelected() {
