@@ -41,9 +41,6 @@
 
 ########### tokens #############################################################
 
-TOKEN:js_comment: ("/*" - "*/")
-TOKEN:js_line_comment: ("//"[^"\n""\r"]*)
-
 TOKEN:js_keyword: (
     "true" | "false" | "null"
 )
@@ -96,8 +93,6 @@ TOKEN:js_whitespace: ([" " "\t" "\n" "\r"]+)
 ########### grammar ############################################################
 
 SKIP:js_whitespace
-SKIP:js_comment
-SKIP:js_line_comment
 
 S = [Object];
 Object = "{" Members "}";
