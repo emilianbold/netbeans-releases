@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
@@ -92,10 +94,14 @@ public class SvnWcParser {
         File[] children = path.listFiles();
         if(children != null && children.length > 0) {        
             for (int i = 0; i < children.length; i++) {
-                ret.add(getSingleStatus(children[i]));            
-                if(descend && children[i].isDirectory()) {                
-                    ret.addAll(getStatus(children[i], descend));                
-                }                    
+                if(!SvnUtils.isPartOfSubversionMetadata(children[i]) && 
+                   !Subversion.getInstance().isAdministrative(path)) 
+                {
+                    ret.add(getSingleStatus(children[i]));            
+                    if(descend && children[i].isDirectory()) {                
+                        ret.addAll(getStatus(children[i], descend));                
+                    }                    
+                }
             }        
         }
         ret.add(getSingleStatus(path));
