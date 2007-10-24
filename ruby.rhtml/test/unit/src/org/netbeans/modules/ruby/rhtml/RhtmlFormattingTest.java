@@ -120,27 +120,27 @@ public class RhtmlFormattingTest extends RhtmlTestBase {
         assertDescriptionMatches(file, formatted, false, ".formatted");
     }
     
-    public void testFormat1() throws Exception {
-        reformatFileContents("testfiles/format1.rhtml");
-    }
-    
-    public void testFormat2() throws Exception {
-        reformatFileContents("testfiles/format2.rhtml");
-    }
-    
-    public void testFormat2b() throws Exception {
-        // Same as format2.rhtml, but flushed left to ensure that
-        // we're not reformatting correctly just by luck
-        reformatFileContents("testfiles/format2b.rhtml");
-    }
-    
-    public void testFormat3() throws Exception {
-        reformatFileContents("testfiles/format3.rhtml");
-    }
-    
-    public void testFormat4() throws Exception {
-        reformatFileContents("testfiles/format4.rhtml");
-    }
+//    public void testFormat1() throws Exception {
+//        reformatFileContents("testfiles/format1.rhtml");
+//    }
+//    
+//    public void testFormat2() throws Exception {
+//        reformatFileContents("testfiles/format2.rhtml");
+//    }
+//    
+//    public void testFormat2b() throws Exception {
+//        // Same as format2.rhtml, but flushed left to ensure that
+//        // we're not reformatting correctly just by luck
+//        reformatFileContents("testfiles/format2b.rhtml");
+//    }
+//    
+//    public void testFormat3() throws Exception {
+//        reformatFileContents("testfiles/format3.rhtml");
+//    }
+//    
+//    public void testFormat4() throws Exception {
+//        reformatFileContents("testfiles/format4.rhtml");
+//    }
     
 //    public void testFormat5() throws Exception {
 //        format("<%\ndef foo\nwhatever\nend\n%>\n",
