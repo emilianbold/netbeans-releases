@@ -70,23 +70,35 @@ import org.openide.util.LookupListener;
  */
 public final class LanguageManager extends LanguageProvider implements LookupListener, PropertyChangeListener {
     
-    private static final Language<TokenId> NO_LANG = new LanguageHierarchy<TokenId>() {
-        @Override
-        protected Lexer<TokenId> createLexer(LexerRestartInfo<TokenId> info) {
-            return null;
+    // Using lazy initialization because of deadlock in #108043.
+    private static Language<TokenId> NO_LANG = null;
+    private static Language<TokenId> NO_LANG() {
+        if (NO_LANG == null) {
+            NO_LANG = new LanguageHierarchy<TokenId>() {
+                @Override
+                protected Lexer<TokenId> createLexer(LexerRestartInfo<TokenId> info) {
+                    return null;
+                }
+                @Override
+                protected Collection<TokenId> createTokenIds() {
+                    return Collections.emptyList();
+                }
+                @Override
+                protected String mimeType() {
+                    return "obscure/no-language-marker"; //NOI18N
+                }
+            }.language();
         }
-        @Override
-        protected Collection<TokenId> createTokenIds() {
-            return Collections.emptyList();
-        }
-        @Override
-        protected String mimeType() {
-            return "obscure/no-language-marker"; //NOI18N
-        }
-    }.language();
+        return NO_LANG;
+    }
     
-    private static final LanguageEmbedding<TokenId> NO_LANG_EMBEDDING
-            = LanguageEmbedding.create(NO_LANG, 0, 0);
+    private static LanguageEmbedding<TokenId> NO_LANG_EMBEDDING = null;
+    private static LanguageEmbedding<TokenId> NO_LANG_EMBEDDING() {
+        if (NO_LANG_EMBEDDING == null) {
+            NO_LANG_EMBEDDING = LanguageEmbedding.create(NO_LANG(), 0, 0);
+        }
+        return NO_LANG_EMBEDDING;
+    }
     
     private static LanguageManager instance = null;
     
@@ -131,13 +143,13 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
                 }
                 
                 if (lang == null) {
-                    lang = NO_LANG;
+                    lang = NO_LANG();
                 }
                 
                 langCache.put(mimePath, new WeakReference<Language<? extends TokenId>>(lang));
             }
             
-            return lang == NO_LANG ? null : lang;
+            return lang == NO_LANG() ? null : lang;
         }
     }
 
@@ -154,13 +166,13 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
                 }
                 
                 if (lang == null) {
-                    lang = NO_LANG_EMBEDDING;
+                    lang = NO_LANG_EMBEDDING();
                 }
                 
                 tokenLangCache.put(token, lang);
             }
             
-            return lang == NO_LANG_EMBEDDING ? null : lang;
+            return lang == NO_LANG_EMBEDDING() ? null : lang;
         }
     }
 
