@@ -690,8 +690,9 @@ final class LibrariesNode extends AbstractNode {
                         //Check if the file is acceted by the FileFilter,
                         //user may enter the name of non displayed file into JFileChooser
                         if (fileFilter.accept(files[i])) {
-                            FileObject fo = FileUtil.toFileObject (files[i]);
-                            assert fo != null : files[i];
+                            File normalizedFile = FileUtil.normalizeFile(files[i]);
+                            FileObject fo = FileUtil.toFileObject (normalizedFile);
+                            assert fo != null : normalizedFile;
                             cpExtender.addArchiveFile(classPathId, fo);
                         }
                     } catch (IOException ioe) {
