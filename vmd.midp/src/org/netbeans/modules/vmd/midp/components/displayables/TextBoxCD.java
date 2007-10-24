@@ -115,7 +115,7 @@ public class TextBoxCD extends ComponentDescriptor{
                     PropertyEditorString.createInstance(PropertyEditorString.DEPENDENCE_TEXT_BOX,
                         NbBundle.getMessage(TextBoxCD.class, "LBL_TextBox_Text")), PROP_STRING) // NOI18N
                 .addProperty(NbBundle.getMessage(TextBoxCD.class, "DISP_TextBox_Maximum_Size"), // NOI18N
-                    PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(TextBoxCD.class, "LBL_TextBox_Maximum_Size")), PROP_MAX_SIZE) // NOI18N
+                    PropertyEditorNumber.createIntegerInstance(false, NbBundle.getMessage(TextBoxCD.class, "LBL_TextBox_Maximum_Size")), PROP_MAX_SIZE) // NOI18N
                 .addProperty(NbBundle.getMessage(TextBoxCD.class, "DISP_TextBox_Input_Constraints"), PropertyEditorConstraints.createInstance(), PROP_CONSTRAINTS) // NOI18N
                 .addProperty(NbBundle.getMessage(TextBoxCD.class, "DISP_TextBox_Initial_Input_Mode"), PropertyEditorInputMode.createInstance(), PROP_INITIAL_INPUT_MODE); // NOI18N
     }

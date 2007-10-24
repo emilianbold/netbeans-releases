@@ -140,7 +140,7 @@ public final class SMSComposerCD extends ComponentDescriptor {
                         PropertyEditorString.createInstance(NbBundle.getMessage(SMSComposerCD.class,
                             "LBL_SMSComposer_Message")), PROP_MESSAGE) //NOI18N
                    .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_Port_Number"), //NOI18N
-                        PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(SMSComposerCD.class, "LBL_SMSComposer_Port_Number")), PROP_PORT_NUMBER) //NOI18N
+                        PropertyEditorNumber.createIntegerInstance(true, NbBundle.getMessage(SMSComposerCD.class, "LBL_SMSComposer_Port_Number")), PROP_PORT_NUMBER) //NOI18N
                    .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_AutomaticallySend"), //NOI18N
                         PropertyEditorBooleanUC.createInstance(NbBundle.getMessage(SMSComposerCD.class, "LBL_SMSComposer_AutomaticallySend")), PROP_SEND_AUTOMATICALLY) //NOI18N
                .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)

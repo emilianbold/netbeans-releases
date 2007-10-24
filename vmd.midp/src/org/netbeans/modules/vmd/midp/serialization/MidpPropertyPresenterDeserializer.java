@@ -105,7 +105,7 @@ public class MidpPropertyPresenterDeserializer extends PresenterDeserializer {
             if (EDITOR_BOOLEAN.equals (editor))
                 presenter.addProperty (displayName, PropertyEditorBooleanUC.createInstance (), propertyName);
             else if (EDITOR_INT.equals (editor))
-                presenter.addProperty (displayName, PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(MidpPropertyPresenterDeserializer.class, "LBL_INTEGER_STR")), propertyName); // NOI18N
+                presenter.addProperty (displayName, PropertyEditorNumber.createIntegerInstance(false, NbBundle.getMessage(MidpPropertyPresenterDeserializer.class, "LBL_INTEGER_STR")), propertyName); // NOI18N
             else if (EDITOR_FLOAT.equals (editor))
                 presenter.addProperty (displayName, PropertyEditorNumber.createFloatInstance(NbBundle.getMessage(MidpPropertyPresenterDeserializer.class, "LBL_FLOAT_STR")), propertyName); // NOI18N
             else if (EDITOR_STRING.equals (editor))
@@ -113,13 +113,13 @@ public class MidpPropertyPresenterDeserializer extends PresenterDeserializer {
             else if (EDITOR_JAVA_CODE.equals (editor))
                 presenter.addProperty (displayName, PropertyEditorJavaString.createInstance (descriptor.getTypeDescriptor ().getThisType ()), propertyName);
             else if (EDITOR_CHAR.equals (editor))
-                presenter.addProperty (displayName, PropertyEditorNumber.createCharInstance (NbBundle.getMessage(MidpPropertyPresenterDeserializer.class, "LBL_CHAR_STR")), propertyName); // NOI18N
+                presenter.addProperty (displayName, PropertyEditorNumber.createCharInstance (false, NbBundle.getMessage(MidpPropertyPresenterDeserializer.class, "LBL_CHAR_STR")), propertyName); // NOI18N
             else if (EDITOR_BYTE.equals (editor))
-                presenter.addProperty (displayName, PropertyEditorNumber.createByteInstance(NbBundle.getMessage(MidpPropertyPresenterDeserializer.class, "LBL_BYTE_STR")), propertyName); // NOI18N
+                presenter.addProperty (displayName, PropertyEditorNumber.createByteInstance(false, NbBundle.getMessage(MidpPropertyPresenterDeserializer.class, "LBL_BYTE_STR")), propertyName); // NOI18N
             else if (EDITOR_SHORT.equals (editor))
-                presenter.addProperty (displayName, PropertyEditorNumber.createShortInstance(NbBundle.getMessage(MidpPropertyPresenterDeserializer.class, "LBL_SHORT_STR")), propertyName); // NOI18N
+                presenter.addProperty (displayName, PropertyEditorNumber.createShortInstance(false, NbBundle.getMessage(MidpPropertyPresenterDeserializer.class, "LBL_SHORT_STR")), propertyName); // NOI18N
             else if (EDITOR_LONG.equals (editor))
-                presenter.addProperty (displayName, PropertyEditorNumber.createLongInstance(NbBundle.getMessage(MidpPropertyPresenterDeserializer.class, "LBL_LONG_STR")), propertyName); // NOI18N
+                presenter.addProperty (displayName, PropertyEditorNumber.createLongInstance(false, NbBundle.getMessage(MidpPropertyPresenterDeserializer.class, "LBL_LONG_STR")), propertyName); // NOI18N
             else if (EDITOR_DOUBLE.equals (editor))
                 presenter.addProperty (displayName, PropertyEditorNumber.createDoubleInstance(NbBundle.getMessage(MidpPropertyPresenterDeserializer.class, "LBL_DOUBLE_STR")), propertyName); // NOI18N
             else

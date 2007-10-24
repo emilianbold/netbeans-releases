@@ -123,7 +123,7 @@ public class TextFieldCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Maximum_Size"), // NOI18N
-                    PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(TextFieldCD.class, "LBL_TextField_Maximum_Size")), PROP_MAX_SIZE) // NOI18N
+                    PropertyEditorNumber.createIntegerInstance(false, NbBundle.getMessage(TextFieldCD.class, "LBL_TextField_Maximum_Size")), PROP_MAX_SIZE) // NOI18N
                 .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Text"), // NOI18N
                     PropertyEditorString.createInstance(PropertyEditorString.DEPENDENCE_TEXT_FIELD,
                         NbBundle.getMessage(TextFieldCD.class, "LBL_TextField_Text")), PROP_TEXT) // NOI18N

@@ -142,7 +142,7 @@ public class GaugeCD extends ComponentDescriptor {
                         .addProperty(NbBundle.getMessage(GaugeCD.class, "DISP_Gauge_Maximum_Value"), // NOI18N
                             PropertyEditorGaugeMaxValue.createInstance(), PROP_MAX_VALUE)
                         .addProperty(NbBundle.getMessage(GaugeCD.class, "DISP_Gauge_Value"), // NOI18N
-                            PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(GaugeCD.class, "LBL_Gauge_Value")), PROP_VALUE ) // NOI18N
+                            PropertyEditorNumber.createIntegerInstance(false, NbBundle.getMessage(GaugeCD.class, "LBL_Gauge_Value")), PROP_VALUE ) // NOI18N
                         .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Label"), // NOI18N
                             PropertyEditorString.createInstance(NbBundle.getMessage(ItemCD.class, "LBL_Item_Label"), // NOI18N
                                 AlertCD.TYPEID), ItemCD.PROP_LABEL)

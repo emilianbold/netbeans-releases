@@ -103,7 +103,7 @@ public class SplashScreenCD extends ComponentDescriptor {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                    .addProperty(NbBundle.getMessage(SplashScreenCD.class, "DISP_SplashScreen_Timeout"), // NOI18N
-                        PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(SplashScreenCD.class, "LBL_SplashScreen_Timeout")), PROP_TIMEOUT) // NOI18N
+                        PropertyEditorNumber.createIntegerInstance(false, NbBundle.getMessage(SplashScreenCD.class, "LBL_SplashScreen_Timeout")), PROP_TIMEOUT) // NOI18N
                    .addProperty(NbBundle.getMessage(SplashScreenCD.class, "DISP_SplashScreen_AllowTimeoutInterrupt"), // NOI18N
                         PropertyEditorBooleanUC.createInstance(NbBundle.getMessage(SplashScreenCD.class, "LBL_SplashScreen_AllowTimeoutInterrupt")), PROP_ALLOW_TIMEOUT_INTERRUPT); // NOI18N
     }

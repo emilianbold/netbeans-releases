@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
 import java.awt.BorderLayout;
@@ -49,7 +48,10 @@ import java.util.regex.Pattern;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
@@ -64,42 +66,42 @@ import org.openide.util.NbBundle;
  * @author Anton Chechel
  */
 public class PropertyEditorNumber extends PropertyEditorUserCode implements PropertyEditorElement {
-    
+
     /**
      * The text to be shown as a warning if user inputs incorrect characters
      */
     public static final String NON_DIGITS_TEXT = NbBundle.getMessage(PropertyEditorGaugeMaxValue.class, "MSG_NON_DIGIT_CHARS"); // NOI18N
-    
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     private String label;
-    
-    private PropertyEditorNumber(String label, String userCodeLabel) {
+
+    private PropertyEditorNumber(boolean useSpinner, String label, String userCodeLabel) {
         super(userCodeLabel);
         this.label = label;
-        initComponents();
-        
+        initComponents(useSpinner);
+
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
-    
+
     /**
      * Creates instance of property editor for integer type
      *
      * @param label localized label with mnemonics for radio button
      * @return propertyEditor
      */
-    public static final PropertyEditorNumber createIntegerInstance(String label) {
-        return new PropertyEditorNumber(label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_INTEGER_UCLABEL")); // NOI18N
+    public static final PropertyEditorNumber createIntegerInstance(boolean useSpinner, String label) {
+        return new PropertyEditorNumber(useSpinner, label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_INTEGER_UCLABEL")); // NOI18N
     }
-    
+
     /**
      * Creates instance of property editor for long type
      *
      * @param label localized label with mnemonics for radio button
      * @return propertyEditor
      */
-    public static final PropertyEditorNumber createLongInstance(String label) {
-        return new PropertyEditorNumber(label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_LONG_UCLABEL")) { // NOI18N
+    public static final PropertyEditorNumber createLongInstance(boolean useSpinner, String label) {
+        return new PropertyEditorNumber(useSpinner, label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_LONG_UCLABEL")) { // NOI18N
+
             @Override
             protected void saveValue(String text) {
                 if (text.length() > 0) {
@@ -114,15 +116,16 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
             }
         };
     }
-    
+
     /**
      * Creates instance of property editor for byte type
      *
      * @param label localized label with mnemonics for radio button
      * @return propertyEditor
      */
-    public static final PropertyEditorNumber createByteInstance(String label) {
-        return new PropertyEditorNumber(label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_BYTE_UCLABEL")) { // NOI18N
+    public static final PropertyEditorNumber createByteInstance(boolean useSpinner, String label) {
+        return new PropertyEditorNumber(useSpinner, label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_BYTE_UCLABEL")) { // NOI18N
+
             @Override
             protected void saveValue(String text) {
                 if (text.length() > 0) {
@@ -137,15 +140,16 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
             }
         };
     }
-    
+
     /**
      * Creates instance of property editor for short type
      *
      * @param label localized label with mnemonics for radio button
      * @return propertyEditor
      */
-    public static final PropertyEditorNumber createShortInstance(String label) {
-        return new PropertyEditorNumber(label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_SHORT_UCLABEL")) { // NOI18N
+    public static final PropertyEditorNumber createShortInstance(boolean useSpinner, String label) {
+        return new PropertyEditorNumber(useSpinner, label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_SHORT_UCLABEL")) { // NOI18N
+
             @Override
             protected void saveValue(String text) {
                 if (text.length() > 0) {
@@ -160,7 +164,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
             }
         };
     }
-    
+
     /**
      * Creates instance of property editor for float type
      *
@@ -168,17 +172,18 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      * @return propertyEditor
      */
     public static final PropertyEditorNumber createFloatInstance(String label) {
-        return new PropertyEditorNumber(label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_FLOAT_UCLABEL")) { // NOI18N
+        return new PropertyEditorNumber(false, label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_FLOAT_UCLABEL")) { // NOI18N
+
             @Override
             protected boolean isTextCorrect(String text) {
                 return Pattern.matches("[\\d\\-\\.]+", text); // NOI18N
             }
-            
+
             @Override
             protected String prepareText(String text) {
                 return text.replaceAll("[^0-9\\-\\.]+", ""); // NOI18N
             }
-            
+
             @Override
             protected void saveValue(String text) {
                 if (text.length() > 0) {
@@ -193,7 +198,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
             }
         };
     }
-    
+
     /**
      * Creates instance of property editor for double type
      *
@@ -201,17 +206,18 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      * @return propertyEditor
      */
     public static final PropertyEditorNumber createDoubleInstance(String label) {
-        return new PropertyEditorNumber(label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_DOUBLE_UCLABEL")) { // NOI18N
+        return new PropertyEditorNumber(false, label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_DOUBLE_UCLABEL")) { // NOI18N
+
             @Override
             protected boolean isTextCorrect(String text) {
                 return Pattern.matches("[\\d\\-\\.]+", text); // NOI18N
             }
-            
+
             @Override
             protected String prepareText(String text) {
                 return text.replaceAll("[^0-9\\-\\.]+", ""); // NOI18N
             }
-            
+
             @Override
             protected void saveValue(String text) {
                 if (text.length() > 0) {
@@ -226,25 +232,26 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
             }
         };
     }
-    
+
     /**
      * Creates instance of property editor for char type
      *
      * @param label localized label with mnemonics for radio button
      * @return propertyEditor
      */
-    public static final PropertyEditorNumber createCharInstance(String label) {
-        return new PropertyEditorNumber(label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_CHAR_UCLABEL")) { // NOI18N
+    public static final PropertyEditorNumber createCharInstance(boolean useSpinner, String label) {
+        return new PropertyEditorNumber(useSpinner, label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_CHAR_UCLABEL")) { // NOI18N
+
             @Override
             protected boolean isTextCorrect(String text) {
                 return Pattern.matches("[\\d\\-]+", text); // NOI18N
             }
-            
+
             @Override
             protected String prepareText(String text) {
                 return text.replaceAll("[^0-9\\-]+", ""); // NOI18N
             }
-            
+
             @Override
             protected void saveValue(String text) {
                 if (text.length() > 0) {
@@ -259,13 +266,13 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
             }
         };
     }
-    
-    private void initComponents() {
+
+    private void initComponents(boolean useSpinner) {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, label);
-        customEditor = new CustomEditor();
+        customEditor = new CustomEditor(useSpinner);
     }
-    
+
     /**
      * Checks whether text is in correct format for given property editor.
      * For example for integer property editor text must match [\d\-]+ regex
@@ -276,9 +283,9 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     protected boolean isTextCorrect(String text) {
         return Pattern.matches("[\\d\\-]+", text) || // NOI18N
                 // hexadecimal support
-                isHexFormat(text); // NOI18N
+                isHexFormat(text);
     }
-    
+
     /**
      * Removes all incorrect characters for for given property editor.
      * For example for integer property editor removes all chars except [\d\-]+ regex
@@ -287,14 +294,18 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      * @return result text
      */
     protected String prepareText(String text) {
+        if (text == null) {
+            return text;
+        }
+
         // hex
-        if (isHexFormat(text)) { // NOI18N
+        if (isHexFormat(text)) {
             text = text.replaceAll("[^0-9\\-0xabcdefABCDEF]+", ""); // NOI18N
             return text.replace("0x", ""); // NOI18N
         }
         return text.replaceAll("[^0-9\\-]+", ""); // NOI18N
     }
-    
+
     /**
      * Saves text as a proper property value
      *
@@ -304,7 +315,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
         if (text.length() > 0) {
             int intValue = 0;
             try {
-                if (isHexFormat(text)) { // NOI18N
+                if (isHexFormat(text)) {
                     text = prepareText(text);
                     intValue = Integer.parseInt(text, 16);
                 } else {
@@ -316,11 +327,11 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
             super.setValue(MidpTypes.createIntegerValue(intValue));
         }
     }
-    
+
     private boolean isHexFormat(String text) {
-        return text.matches("-?0x[\\d\\abcdefABCDEF]+"); //NOI18N
+        return text != null && text.matches("-?0x[\\d\\abcdefABCDEF]+"); //NOI18N
     }
-    
+
     /**
      * Returns component to represent custom editor in propertyEditorUserCode
      *
@@ -329,7 +340,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     public JComponent getCustomEditorComponent() {
         return customEditor;
     }
-    
+
     /**
      * Returns radio button for propertyEditorUserCode
      *
@@ -338,7 +349,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     public JRadioButton getRadioButton() {
         return radioButton;
     }
-    
+
     /**
      * Determines whether radioButton should be selected by default in the propertyEditorUserCode
      *
@@ -347,7 +358,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     public boolean isInitiallySelected() {
         return true;
     }
-    
+
     /**
      * Determines whether custom component resizable vertically in the propertyEditorUserCode
      *
@@ -356,37 +367,37 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     public boolean isVerticallyResizable() {
         return false;
     }
-    
+
     @Override
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
             return superText;
         }
-        
+
         PropertyValue value = (PropertyValue) super.getValue();
         return String.valueOf(value.getPrimitiveValue());
     }
-    
+
     /**
      * Sets propertyValue from text
      *
      * @param text
      * @see java.beans.PropertyEditor#setAsText
      */
-    public void setTextForPropertyValue (String text) {
+    public void setTextForPropertyValue(String text) {
         saveValue(text);
     }
-    
+
     /**
      * Returns text for additional operations with propertyValue, not used here
      *
      * @return null
      */
-    public String getTextForPropertyValue () {
+    public String getTextForPropertyValue() {
         return null;
     }
-    
+
     /**
      * Sets initial propertyValue before displaying customPropertyEditor
      *
@@ -400,7 +411,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
         }
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }
-    
+
     @Override
     public void customEditorOKButtonPressed() {
         super.customEditorOKButtonPressed();
@@ -408,64 +419,98 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
             saveValue(customEditor.getText());
         }
     }
-    
-    private class CustomEditor extends JPanel implements DocumentListener, FocusListener {
+
+    private class CustomEditor extends JPanel implements DocumentListener, ChangeListener, FocusListener {
+
         private JTextField textField;
-        
-        public CustomEditor() {
+        private JSpinner spinner;
+        private boolean useSpinner;
+
+        public CustomEditor(boolean useSpinner) {
+            this.useSpinner = useSpinner;
             radioButton.addFocusListener(this);
             initComponents();
         }
-        
+
         private void initComponents() {
             setLayout(new BorderLayout());
-            textField = new JTextField();
-            textField.getDocument().addDocumentListener(this);
-            textField.addFocusListener(this);
-            add(textField, BorderLayout.CENTER);
+            if (useSpinner) {
+                spinner = new JSpinner();
+                spinner.getModel().addChangeListener(this);
+                spinner.addFocusListener(this);
+                add(spinner, BorderLayout.CENTER);
+            } else {
+                textField = new JTextField();
+                textField.getDocument().addDocumentListener(this);
+                textField.addFocusListener(this);
+                add(textField, BorderLayout.CENTER);
+            }
         }
-        
+
         public void setText(String text) {
-            textField.setText(text);
+            if (useSpinner) {
+                Integer intValue = 0;
+                try {
+                    if (isHexFormat(text)) {
+                        text = prepareText(text);
+                        intValue = Integer.parseInt(text, 16);
+                    } else {
+                        text = prepareText(text);
+                        intValue = Integer.parseInt(text);
+                    }
+                } catch (NumberFormatException e) {
+                }
+
+                spinner.setValue(intValue);
+            } else {
+                textField.setText(text);
+            }
         }
-        
+
         public String getText() {
-            return textField.getText();
+            return useSpinner ? spinner.getValue().toString() : textField.getText();
         }
-        
+
         private void checkNumberStatus() {
-            if (!isTextCorrect(textField.getText())) {
+            if (!isTextCorrect(getText())) {
                 displayWarning(NON_DIGITS_TEXT);
             } else {
                 clearErrorStatus();
             }
         }
-        
-        public void insertUpdate(DocumentEvent evt) {
-            if (textField.hasFocus()) {
-                radioButton.setSelected(true);
-                checkNumberStatus();
-            }
-        }
-        
-        public void removeUpdate(DocumentEvent evt) {
-            if (textField.hasFocus()) {
-                radioButton.setSelected(true);
-                checkNumberStatus();
-            }
-        }
-        
-        public void changedUpdate(DocumentEvent evt) {
-        }
-        
+
         public void focusGained(FocusEvent e) {
-            if (e.getSource() == radioButton || e.getSource() == textField) {
+            if (e.getSource() == radioButton  ||  e.getSource() == textField  ||  e.getSource() == spinner) {
                 checkNumberStatus();
             }
         }
-        
+
         public void focusLost(FocusEvent e) {
             clearErrorStatus();
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            if (spinner.hasFocus()) {
+                radioButton.setSelected(true);
+                checkNumberStatus();
+            }
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            if (textField.hasFocus()) {
+                radioButton.setSelected(true);
+                checkNumberStatus();
+            }
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            if (textField.hasFocus()) {
+                radioButton.setSelected(true);
+                checkNumberStatus();
+            }
+        }
+
+        public void changedUpdate(DocumentEvent e) {
         }
     }
 }

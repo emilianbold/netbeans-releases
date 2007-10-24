@@ -127,7 +127,7 @@ public final class CommandCD extends ComponentDescriptor {
                         NbBundle.getMessage(CommandCD.class, "DISP_Command_Type_RB_LABEL"), // NOI18N
                         NbBundle.getMessage(CommandCD.class, "DISP_Command_Type_UCLABEL")), PROP_TYPE) // NOI18N
                     .addProperty(NbBundle.getMessage(CommandCD.class, "DISP_Command_Priority"), // NOI18N
-                        PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(CommandCD.class, "LBL_Command_Priority")), PROP_PRIORITY); // NOI18N
+                        PropertyEditorNumber.createIntegerInstance(false, NbBundle.getMessage(CommandCD.class, "LBL_Command_Priority")), PROP_PRIORITY); // NOI18N
     }
 
     public static Map<String, PropertyValue> getTypes() {
