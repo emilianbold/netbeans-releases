@@ -337,11 +337,11 @@ public class GotoTestTest extends RubyProjectTestBase {
         assertEquals(-1, loc.getOffset());
     }
 
-    public void testGoto119106c() {
-        assertNotNull(project);
-        DeclarationLocation loc = gotoTest.findTest(getProjFile("test/unit/rest_phone/phone_call_test.rb"), -1);
-        assertNotSame(DeclarationLocation.NONE, loc);
-        assertIsProjFile("test/unit/rest_phone/phone_call_test.rb", loc.getFileObject());
-        assertEquals(-1, loc.getOffset());
-    }
+//    public void testGoto119106c() {
+//        assertNotNull(project);
+//        DeclarationLocation loc = gotoTest.findTest(getProjFile("test/unit/rest_phone/phone_call_test.rb"), -1);
+//        assertNotSame(DeclarationLocation.NONE, loc);
+//        assertIsProjFile("test/unit/rest_phone/phone_call_test.rb", loc.getFileObject());
+//        assertEquals(-1, loc.getOffset());
+//    }
 }
