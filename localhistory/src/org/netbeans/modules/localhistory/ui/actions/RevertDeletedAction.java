@@ -134,7 +134,11 @@ public class RevertDeletedAction extends NodeAction {
         File file = se.getFile();
         if(file.exists()) {
             // created externaly?
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Skipping revert for file " + file.getAbsolutePath() + " which already exists.");
+            if(file.isFile()) {
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "Skipping revert for file " + file.getAbsolutePath() + " which already exists.");    
+            }  
+            // fix history
+            // XXX create a new entry vs. fixing the entry timestamp and deleted flag?
             LocalHistory.getInstance().getLocalHistoryStore().fileCreate(file, file.lastModified());
         }
         File storeFile = se.getStoreFile();
