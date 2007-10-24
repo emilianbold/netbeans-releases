@@ -47,8 +47,6 @@ import com.sun.tools.ws.wscompile.AbortException;
 import com.sun.tools.ws.wscompile.BadCommandLineException;
 import com.sun.tools.ws.wscompile.ErrorReceiver;
 import com.sun.tools.ws.wscompile.WsimportOptions;
-import com.sun.tools.xjc.reader.Util;
-import com.sun.xml.ws.util.xml.XmlUtil;
 import com.sun.xml.ws.util.JAXWSUtils;
 import java.io.File;
 import java.net.URL;
@@ -59,6 +57,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.xml.resolver.CatalogManager;
+import org.apache.xml.resolver.tools.CatalogResolver;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.xml.sax.EntityResolver;
@@ -207,7 +207,9 @@ public class WsdlModeler {
                 options.defaultPackage = packageName;
             }
             if(catalog != null) {
-                options.entityResolver = XmlUtil.createEntityResolver(JAXWSUtils.getFileOrURL(JAXWSUtils.absolutize(Util.escapeSpace(catalog.toExternalForm()))));
+                CatalogManager manager = new CatalogManager(null);
+                manager.setCatalogFiles(catalog.toExternalForm());
+                options.entityResolver = entityResolver = new CatalogResolver(manager);
             }
             
             options.parseBindings(new IdeErrorReceiver(errorHandler));
