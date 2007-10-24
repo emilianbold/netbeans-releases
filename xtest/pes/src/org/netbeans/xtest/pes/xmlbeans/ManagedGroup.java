@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -470,16 +470,27 @@ public class ManagedGroup extends PESProjectGroup {
            if (report != null) {
                if (report.isToBeDeleted()) {
                    try {
-                       File buildRoot = new File(new File(pesWeb.getWebRoot(), 
-                                                          FileUtils.normalizeName(report.getProject())), 
-                                                 FileUtils.normalizeName(report.getBuild()));
-                        PESLogger.logger.finest("deleting old reports at "+buildRoot);
-                        if (FileUtils.delete(buildRoot)) {
-                            // remove report from the collection
-                            xmlel_ManagedReport[i] = null;
-                        } else {
-                            PESLogger.logger.warning("Cannot delete directory "+buildRoot);
-                        }
+                       // e.g. netbeans_dev/200609131100
+                       File buildRoot = new File(pesWeb.getWebRoot(),
+                               FileUtils.normalizeName(report.getProject()) + "/" +
+                               FileUtils.normalizeName(report.getBuild()));
+                       // e.g. netbeans_dev/200609131100/qa-functional_validation
+                       File typeRoot = new File(buildRoot,
+                               FileUtils.normalizeName(report.getTestingGroup()) + "-" +
+                               FileUtils.normalizeName(report.getTestedType()));
+                       PESLogger.logger.finest("deleting old reports at " + typeRoot);
+                       if (FileUtils.delete(typeRoot)) {
+                           // remove report from the collection
+                           xmlel_ManagedReport[i] = null;
+                       } else {
+                           PESLogger.logger.warning("Cannot delete directory " + typeRoot);
+                       }
+                       if (buildRoot.exists() && buildRoot.list().length == 0) {
+                           PESLogger.logger.finest("deleting empty build directory " + buildRoot);
+                           if (!buildRoot.delete()) {
+                               PESLogger.logger.warning("Cannot delete directory " + buildRoot);
+                           }
+                       }
                    } catch (IOException ioe) {
                        PESLogger.logger.log(Level.WARNING, "IOExcepting caught when determining web root.", ioe);
                    }
