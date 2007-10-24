@@ -42,6 +42,7 @@ package org.netbeans.modules.j2ee.sun.dd.impl;
 
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
+import org.netbeans.modules.schema2beans.GraphManager;
 import org.xml.sax.SAXParseException;
 
 
@@ -109,5 +110,12 @@ public interface RootInterfaceImpl
      * cannot be determined.
      */
     public ASDDVersion getASDDVersion();
+    
+    /** Retrieve the graph manager for the document, or null if there is not
+     *  current a document.
+     * 
+     * @return graph manager for current document, if any.
+     */
+    public GraphManager graphManager();
     
 }

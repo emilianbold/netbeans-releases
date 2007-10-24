@@ -58,6 +58,8 @@ import org.netbeans.modules.j2ee.sun.dd.impl.DTDRegistry;
 import org.netbeans.modules.j2ee.sun.dd.impl.DDTreeWalker;
 import org.netbeans.modules.j2ee.sun.dd.impl.RootInterfaceImpl;
 import org.netbeans.modules.j2ee.sun.dd.impl.common.DDProviderDataObject;
+import org.netbeans.modules.schema2beans.BaseBean;
+import org.netbeans.modules.schema2beans.GraphManager;
 import org.netbeans.modules.schema2beans.Schema2BeansUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -455,6 +457,10 @@ public class SunCmpMappingsProxy implements SunCmpMappings, RootInterfaceImpl {
     
     public boolean isEventSource(RootInterface rootDD) {
         return cmpMappingsRoot != null && cmpMappingsRoot == rootDD;
+    }
+    
+    public GraphManager graphManager() {
+        return cmpMappingsRoot instanceof BaseBean ? ((BaseBean) cmpMappingsRoot).graphManager() : null;
     }
     
 }

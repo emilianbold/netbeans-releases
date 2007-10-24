@@ -56,6 +56,8 @@ import org.netbeans.modules.j2ee.sun.dd.impl.DDTreeWalker;
 import org.netbeans.modules.j2ee.sun.dd.impl.DTDRegistry;
 import org.netbeans.modules.j2ee.sun.dd.impl.RootInterfaceImpl;
 import org.netbeans.modules.j2ee.sun.dd.impl.common.DDProviderDataObject;
+import org.netbeans.modules.schema2beans.BaseBean;
+import org.netbeans.modules.schema2beans.GraphManager;
 import org.netbeans.modules.schema2beans.Schema2BeansUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -471,6 +473,10 @@ public class SunEjbJarProxy implements SunEjbJar, RootInterfaceImpl {
     
     public boolean isEventSource(RootInterface rootDD) {
         return ejbJarRoot != null && ejbJarRoot == rootDD;
+    }
+    
+    public GraphManager graphManager() {
+        return ejbJarRoot instanceof BaseBean ? ((BaseBean) ejbJarRoot).graphManager() : null;
     }
     
 }

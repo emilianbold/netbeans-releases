@@ -74,6 +74,7 @@ import org.netbeans.modules.j2ee.sun.dd.impl.ejb.SunEjbJarProxy;
 import org.netbeans.modules.j2ee.sun.dd.impl.serverresources.ResourcesProxy;
 import org.netbeans.modules.j2ee.sun.dd.impl.web.SunWebAppProxy;
 import org.netbeans.modules.schema2beans.Common;
+import org.netbeans.modules.schema2beans.GraphManager;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
 import org.netbeans.modules.schema2beans.Schema2BeansRuntimeException;
 import org.netbeans.modules.xml.api.EncodingUtil;
@@ -315,12 +316,21 @@ public final class DDProvider {
     }
     
     public RootInterface getDDRoot(InputSource inputSource) throws IOException, SAXException, Schema2BeansException {
-        // TODO j2ee providers can have a proxy here w/ bogus impl that stores the SAX
-        // Exception.  Do we need to do that, or can we throw it direct to the caller?
-        DDParse parse = new DDParse(inputSource);
-        return parse.createProxy();
+        return getDDRoot(inputSource, null);
     }
 
+    private RootInterface getDDRoot(Reader reader, String defaultPublicId) 
+            throws IOException, SAXException, Schema2BeansException {
+        return getDDRoot(new InputSource(reader), defaultPublicId);
+    }
+    
+    private RootInterface getDDRoot(InputSource inputSource, String defaultPublicId) throws IOException, SAXException, Schema2BeansException {
+        // TODO j2ee providers can have a proxy here w/ bogus impl that stores the SAX
+        // Exception.  Do we need to do that, or can we throw it direct to the caller?
+        DDParse parse = new DDParse(inputSource, defaultPublicId);
+        return parse.createProxy();
+    }
+    
     private static class VersionInfo {
         private Class implClass;
         private Class proxyClass;
@@ -597,17 +607,38 @@ public final class DDProvider {
         }
     }
     
+    private String getPublicIdFromImpl(RootInterfaceImpl rootProxyImpl) {
+        String result = null;
+        
+        GraphManager gm = rootProxyImpl.graphManager();
+        if(gm != null) {
+            Document d = gm.getXmlDocument();
+            if(d != null) {
+                DocumentType dt = d.getDoctype();
+                if(dt != null) {
+                    result = dt.getPublicId();
+                }
+            }
+        }
+        
+        return result;
+    }
+    
     // TODO this method will get refactored as I find new requirements...
     // TODO RootInterfaceImpl not being related to RootInterface makes this code
     // rather messy.  Maybe we can fix that somehow?
     public void merge(RootInterface rootProxy, Reader reader) {
         RootInterfaceImpl rootProxyImpl = (RootInterfaceImpl) rootProxy;
         try {
-            RootInterface newRootProxy = getDDRoot(reader);
+            String oldPublicId = getPublicIdFromImpl(rootProxyImpl);
+            RootInterface newRootProxy = getDDRoot(reader, oldPublicId);
             RootInterfaceImpl newRootProxyImpl = (RootInterfaceImpl) newRootProxy;
             
             // If we can't parse, keep the old tree, but migrate the new parse state.
-            if(newRootProxy.getStatus() == RootInterface.STATE_INVALID_UNPARSABLE) {
+            if(newRootProxy == null) {
+                rootProxyImpl.setStatus(RootInterface.STATE_INVALID_UNPARSABLE);
+                rootProxyImpl.setError(null);
+            } else if(newRootProxy.getStatus() == RootInterface.STATE_INVALID_UNPARSABLE) {
                 rootProxyImpl.setStatus(RootInterface.STATE_INVALID_UNPARSABLE);
                 rootProxyImpl.setError(newRootProxyImpl.getError());
             } else {
@@ -757,6 +788,10 @@ public final class DDProvider {
         }
         
         public DDParse(InputSource is) throws SAXException, IOException {
+            this(is, null);
+        }
+        
+        public DDParse(InputSource is, String defaultPublicId) throws SAXException, IOException {
             try {
                 SunDDErrorHandler errorHandler = new SunDDErrorHandler();
                 DocumentBuilderFactory parserFactory = DocumentBuilderFactory.newInstance();
@@ -764,17 +799,17 @@ public final class DDProvider {
                 parser.setErrorHandler(errorHandler);
                 parser.setEntityResolver(SunDDResolver.getInstance());
                 Document d = parser.parse(is);
-                initialize(d, errorHandler.getError());
+                initialize(d, errorHandler.getError(), defaultPublicId);
             } catch(ParserConfigurationException ex) {
                 throw new SAXException(ex.getMessage());
             }
         }
         
         public DDParse(Document d, SAXParseException saxEx) {
-            initialize(d, saxEx);
+            initialize(d, saxEx, null);
         }
         
-        private void initialize(Document d, SAXParseException saxEx) {
+        private void initialize(Document d, SAXParseException saxEx, String defaultPublicId) {
             document = d;
             saxException = saxEx;
             documentInfo = null;
@@ -785,9 +820,12 @@ public final class DDProvider {
             DocumentType dt = document.getDoctype();
             if(dt != null) {
                 documentInfo = publicIdToInfoMap.get(dt.getPublicId());
-                if(documentInfo != null) {
-                    version = documentInfo.getVersion();
-                }
+            } else if(defaultPublicId != null) {
+                documentInfo = publicIdToInfoMap.get(defaultPublicId);
+            }
+            
+            if(documentInfo != null) {
+                version = documentInfo.getVersion();
             }
         }
 
