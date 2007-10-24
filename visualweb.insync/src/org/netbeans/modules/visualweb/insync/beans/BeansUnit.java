@@ -529,7 +529,9 @@ public class BeansUnit implements Unit {
             return null;
         }
         Bean bean = newBoundBean(bi, name, typeNames.subList(1, typeNames.size()));
-        bean.setInserted(true);
+        if(bean != null) {
+            bean.setInserted(true);
+        }
         return bean;
     }
     
