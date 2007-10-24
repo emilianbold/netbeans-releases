@@ -44,6 +44,7 @@ package org.netbeans.modules.web.core.syntax;
 
 import java.util.Map;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
 import org.netbeans.modules.languages.dataobject.LanguagesEditorKit;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
@@ -74,6 +75,7 @@ import org.netbeans.editor.BaseKit.InsertBreakAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
 import org.netbeans.spi.lexer.MutableTextInput;
+import org.openide.util.RequestProcessor;
 
 /**
  * Editor kit implementation for JSP content type
@@ -143,7 +145,20 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
         
         public void propertyChange(PropertyChangeEvent evt) {
             if (JSPColoringData.PROP_COLORING_CHANGE.equals(evt.getPropertyName())) {
-                recolor();
+                //THC.rebuild() must run under document write lock. Since it is not guaranteed that the
+                //event from the JSPColoringData is not fired under document read lock, synchronous call
+                //to write lock could deadlock. So the rebuild is better called asynchronously from RP thread.
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        NbEditorDocument nbdoc = (NbEditorDocument)doc;
+                        nbdoc.extWriteLock();
+                        try {
+                            recolor();
+                        } finally {
+                            nbdoc.extWriteUnlock();
+                        }
+                    }
+                });
             }
         }
         private void recolor() {
