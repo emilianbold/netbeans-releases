@@ -933,15 +933,17 @@ public class ProxyDiagramImpl
          {
             
             DiagramDetails details = CachedDiagrams.instance().getInfo(m_Filename);
-                      
-            ArrayList < String > associatedDiagrams = details.getAssociatedDiagrams();                        
-            for (Iterator < String > iter = associatedDiagrams.iterator();
-                 (iter.hasNext() == true) && (retVal == false) ; )
+            if (details != null) 
             {
-               if(sDiagramXMIID.equals(iter.next()) == true)
-               {
-                  retVal = true;
-               }
+                ArrayList < String > associatedDiagrams = details.getAssociatedDiagrams();                        
+                for (Iterator < String > iter = associatedDiagrams.iterator();
+                     (iter.hasNext() == true) && (retVal == false) ; )
+                {
+                    if(sDiagramXMIID.equals(iter.next()) == true)
+                    {
+                        retVal = true;
+                    }
+                }
             }
          }
       }
@@ -1134,18 +1136,20 @@ public class ProxyDiagramImpl
          }
          else
          {
-            DiagramDetails details = CachedDiagrams.instance().getInfo(m_Filename);
-                      
-            ArrayList < ModelElementXMIIDPair > associatedElements = details.getAssociatedElements();
+            DiagramDetails details = CachedDiagrams.instance().getInfo(m_Filename);            
+            if (details != null) 
+            {                      
+                ArrayList < ModelElementXMIIDPair > associatedElements = details.getAssociatedElements();
             
-            for (Iterator iter = associatedElements.iterator(); iter.hasNext();)
-            {
-               ModelElementXMIIDPair pair = (ModelElementXMIIDPair)iter.next();
-               if( sModelElementXMIID.equals( pair.getModelElementID() ) )
-               {
-                  retVal = true;
-                  break;
-               }
+                for (Iterator iter = associatedElements.iterator(); iter.hasNext();)
+                {
+                    ModelElementXMIIDPair pair = (ModelElementXMIIDPair)iter.next();
+                    if( sModelElementXMIID.equals( pair.getModelElementID() ) )
+                    {
+                        retVal = true;
+                        break;
+                    }
+                }
             }
          }
       }
