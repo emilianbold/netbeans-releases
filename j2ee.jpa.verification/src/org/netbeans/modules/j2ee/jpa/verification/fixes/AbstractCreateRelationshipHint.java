@@ -357,7 +357,6 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
         }
     }
     
-    
     private void modifyTargetClass(WorkingCopy workingCopy, String mappedBy, boolean owningSide) throws IOException{
         TypeElement targetClass = workingCopy.getElements().getTypeElement(targetEntityClassName);
         assert targetClass != null;
@@ -373,26 +372,35 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
         
         VariableTree targetField = null;
         VariableElement targetFieldElem = ModelUtils.getField(targetClass, mappedBy);
-        MethodTree targetFieldAccesor = null;
+        MethodTree targetFieldAccesor = resolveAccessor(targetFieldElem, targetClass, workingCopy);
         
+        ClassTree modifiedClass = targetClassTree;
         if (targetFieldElem != null){
             targetField = (VariableTree) workingCopy.getTrees().getTree(targetFieldElem);
-        } else{
+        } else {
             ModifiersTree fieldModifiers = workingCopy.getTreeMaker().Modifiers(Collections.singleton(Modifier.PRIVATE));
-            
             targetField = genUtils.createField(fieldModifiers, mappedBy, remoteFieldType);
-            
-            ClassTree modifiedClass = genUtils.addClassFields(targetClassTree, Collections.singletonList(targetField));
-            
-            ModifiersTree accessorMutatorModifiers = workingCopy.getTreeMaker().Modifiers(Collections.singleton(Modifier.PUBLIC));
-            targetFieldAccesor = genUtils.createPropertyGetterMethod(accessorMutatorModifiers, mappedBy, remoteFieldType);
-            MethodTree mutator = genUtils.createPropertySetterMethod(accessorMutatorModifiers, mappedBy, remoteFieldType);
-            modifiedClass = workingCopy.getTreeMaker().addClassMember(modifiedClass, targetFieldAccesor);
-            modifiedClass = workingCopy.getTreeMaker().addClassMember(modifiedClass, mutator);
-            
-            workingCopy.rewrite(targetClassTree, modifiedClass);
-            targetClassTree = modifiedClass;
+            modifiedClass = genUtils.addClassFields(targetClassTree, Collections.singletonList(targetField));
         }
+
+        AccessType targetEntityAccessType = findTargetEntityAccessType(targetClass);
+        if (AccessType.PROPERTY == targetEntityAccessType){
+
+            MethodTree targetFieldMutator = resolveMutator(targetFieldElem, targetClass, workingCopy);
+            ModifiersTree accessorMutatorModifiers = workingCopy.getTreeMaker().Modifiers(Collections.singleton(Modifier.PUBLIC));
+
+            if (targetFieldAccesor == null){
+                targetFieldAccesor = genUtils.createPropertyGetterMethod(accessorMutatorModifiers, mappedBy, remoteFieldType);
+                modifiedClass = workingCopy.getTreeMaker().addClassMember(modifiedClass, targetFieldAccesor);
+            }
+            
+            if (targetFieldMutator == null) {
+                MethodTree mutator = genUtils.createPropertySetterMethod(accessorMutatorModifiers, mappedBy, remoteFieldType);
+                modifiedClass = workingCopy.getTreeMaker().addClassMember(modifiedClass, mutator);
+            }
+        }
+        workingCopy.rewrite(targetClassTree, modifiedClass);
+            
         
         List<ExpressionTree> targetAnnArgs = null;
         
@@ -404,7 +412,6 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
         }
         
         AnnotationTree targetAnn = genUtils.createAnnotation(complimentaryAnnotationClassName, targetAnnArgs);
-        AccessType targetEntityAccessType = findTargetEntityAccessType(targetClass);
         
         if (targetEntityAccessType == AccessType.FIELD){
             VariableTree modifiedTree = genUtils.addAnnotation(targetField, targetAnn);
@@ -413,6 +420,27 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
             MethodTree modifiedTree = genUtils.addAnnotation(targetFieldAccesor, targetAnn);
             workingCopy.rewrite(targetFieldAccesor, modifiedTree);
         }
+    }
+
+    private MethodTree resolveAccessor(VariableElement fieldElem, TypeElement clazz, WorkingCopy workingCopy){
+       return resolvePropertyMethod(fieldElem, clazz, workingCopy, true);
+    }
+    
+    private MethodTree resolveMutator(VariableElement fieldElem, TypeElement clazz, WorkingCopy workingCopy){
+        return resolvePropertyMethod(fieldElem, clazz, workingCopy, false);
+    }
+    
+    private MethodTree resolvePropertyMethod(VariableElement fieldElem, TypeElement clazz, WorkingCopy workingCopy, boolean accessor){
+        if (fieldElem == null){
+            return null;
+        }
+       VariableTree field = (VariableTree) workingCopy.getTrees().getTree(fieldElem);
+
+       ExecutableElement propertyMethod = accessor
+               ? ModelUtils.getAccesor(clazz, field.getName().toString())
+               : ModelUtils.getMutator(workingCopy, clazz, fieldElem);
+
+       return propertyMethod == null ? null : workingCopy.getTrees().getTree(propertyMethod);
     }
     
     private AccessType findTargetEntityAccessType(final TypeElement targetEntityClass){
