@@ -195,28 +195,22 @@ public class RevertModificationsAction extends ContextAction {
                 }
             }
         }
+    }     
+
+    private static List<File> getDeletedParents(File file) {
+        List<File> ret = new ArrayList<File>();
+        for(File parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {        
+            FileInformation info = Subversion.getInstance().getStatusCache().getStatus(parent);
+            if( !((info.getStatus() & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) != 0 ||
+                  (info.getStatus() & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY) != 0) )  
+            {
+                return ret;
+            }
+            ret.add(parent);                                
+        }        
+        return ret;
     }
     
-    private static Set<File> getDeletedParents(File file) {
-        Set<File> ret = new HashSet<File>();
-        file = file.getParentFile();
-        if(file == null) {
-            return ret;
-        }        
-        
-        FileInformation info = Subversion.getInstance().getStatusCache().getStatus(file);
-        if( !((info.getStatus() & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) != 0 ||
-              (info.getStatus() & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY) != 0) )  
-        {
-            return ret;
-        }        
-                
-        ret.add(file);        
-        
-        ret.addAll(getDeletedParents(file));
-        return ret;
-    }        
-
     private static RevertModifications.RevisionInterval recountStartRevision(SvnClient client, SVNUrl repository, RevertModifications.RevisionInterval ret) throws SVNClientException {
         if(ret.startRevision.equals(SVNRevision.HEAD)) {
             ISVNInfo info = client.getInfo(repository);

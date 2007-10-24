@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.Exceptions;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -196,17 +197,22 @@ class FilesystemHandler extends VCSInterceptor {
             }            
             return false;
         } else {
-            if (!file.exists()) {
+            if (!file.exists()) {                
                 try {
-                    SvnClient client = Subversion.getInstance().getClient(true);
-
-                    // a direct cache call could, because of the synchrone beforeCreate handling, 
-                    // trigger an reentrant call on FS => we have to check manually           
-                    ISVNStatus status = client.getSingleStatus(file);
-
-                    if (status != null && status.getTextStatus().equals(SVNStatusKind.DELETED)) {                                            
-                        client.revert(file, false);
-                        file.delete();
+                    SvnClient client = Subversion.getInstance().getClient(true);                    
+                    
+                    ISVNStatus status = getStatus(client, file);
+                    if (status != null && status.getTextStatus().equals(SVNStatusKind.DELETED)) {    
+                        // we have a file scheduled for deletion but it's giong to created again,
+                        // so it's parent folder can't stay deleted either
+                        List<File> deletedParents = getDeletedParents(file, client);
+                        client.revert(deletedParents.toArray(new File[deletedParents.size()]), false);                        
+                        
+                        // reverting the file will set the metadata uptodate
+                        client.revert(file, false);                        
+                        // this is beforeCreate and our actuall goal was on;y to fix the metadata ->
+                        //  -> get rid of the reverted file
+                        file.delete();                        
                     }
                 } catch (SVNClientException ex) {
                     SvnClientExceptionHandler.notifyException(ex, false, false);
@@ -216,7 +222,28 @@ class FilesystemHandler extends VCSInterceptor {
         }
     }
 
+    /**
+     * Returns all direct parent folders from the given file which are scheduled for deletion
+     * 
+     * @param file
+     * @param client
+     * @return a list of folders 
+     * @throws org.tigris.subversion.svnclientadapter.SVNClientException
+     */
+    private static List<File> getDeletedParents(File file, SvnClient client) throws SVNClientException {
+        List<File> ret = new ArrayList<File>();
+        for(File parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {        
+            ISVNStatus status = getStatus(client, parent);
+            if (status == null || !status.getTextStatus().equals(SVNStatusKind.DELETED)) {                                                            
+                return ret;
+            }
+            ret.add(parent);                                      
+        }        
+        return ret;
+    }        
+    
     public void doCreate(File file, boolean isDirectory) throws IOException {
+        // do nothing
     }
 
     public void afterCreate(final File file) {        
@@ -310,7 +337,7 @@ class FilesystemHandler extends VCSInterceptor {
                         
                         // check the status - if the file isn't in the repository yet ( ADDED | UNVERSIONED )
                         // then it also can't be moved via the svn client
-                        ISVNStatus status = client.getSingleStatus(srcFile);
+                        ISVNStatus status = getStatus(client, srcFile);
                         if (status != null && status.getTextStatus().equals(SVNStatusKind.ADDED)) {                                            
                             client.revert(srcFile, true);  
                             renameFile(srcFile, dstFile);                
@@ -407,4 +434,11 @@ class FilesystemHandler extends VCSInterceptor {
             throw new SVNClientException("Reached FS root, but it's still not Subversion versioned!"); // NOI18N
         }
     }
+    
+    private static ISVNStatus getStatus(SvnClient client, File file) throws SVNClientException {
+        // a direct cache call could, because of the synchrone beforeCreate handling, 
+        // trigger an reentrant call on FS => we have to check manually 
+        return client.getSingleStatus(file);
+    }
+    
 }
