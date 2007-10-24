@@ -50,7 +50,6 @@ import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
 import org.netbeans.modules.profiler.ui.NBHTMLLabel;
 import org.netbeans.modules.profiler.ui.ProfilerDialogs;
-import org.netbeans.modules.profiler.utils.IDEUtils;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.netbeans.modules.profiler.utils.SourceUtils;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -71,6 +70,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import javax.swing.*;
+import org.openide.util.HelpCtx;
 
 
 /**
@@ -81,7 +81,11 @@ import javax.swing.*;
 public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfiler {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
-    private static final class AntTaskSelectPanel extends JPanel {
+    private static final class AntTaskSelectPanel extends JPanel implements HelpCtx.Provider {
+        
+        private static final String HELP_CTX_KEY = "FreeFormProjectTypeProfiler.AntTaskSelectPanel.HelpCtx"; // NOI18N
+        private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
+    
         //~ Instance fields ------------------------------------------------------------------------------------------------------
 
         final JComboBox targetBox;
@@ -99,8 +103,7 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
                 label = new JLabel(SELECT_FILE_TASK_LABEL_STRING);
             }
 
-            final String helpFileURL = "file://" + IDEUtils.getHelpDir() + "/antTasksForProfiling.html"; // NOI18N
-            descriptionLabel = new NBHTMLLabel(MessageFormat.format(CREATE_NEW_TARGET_MSG, new Object[] { helpFileURL }));
+            descriptionLabel = new NBHTMLLabel(CREATE_NEW_TARGET_MSG);
             targetBox = new JComboBox(list.toArray(new Object[list.size()]));
             targetBox.setSelectedIndex(0);
             targetBox.addItemListener(new ItemListener() {
@@ -160,6 +163,10 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
             }
 
             return (String) targetBox.getSelectedItem();
+        }
+
+        public HelpCtx getHelpCtx() {
+            return HELP_CTX;
         }
     }
 
