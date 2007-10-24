@@ -41,12 +41,29 @@
 
 package org.netbeans.modules.web.core.syntax.formatting;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.SyntaxSupport;
+import org.netbeans.editor.ext.ExtFormatter;
+import org.netbeans.editor.ext.java.JavaFormatter;
+import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter;
+import org.netbeans.modules.web.core.syntax.formatting.JspJavaFormatter;
+import org.netbeans.spi.editor.indent.Context;
 import static org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter.JoinedTokenSequence;
 
 /**
@@ -194,4 +211,29 @@ public class JSPLexerFormatter extends TagBasedLexerFormatter {
         String img = token.text().toString();
         return img.equals(">") || img.equals("/>") || img.equals("%>"); //NOI18N
     }
+    
+ 
+    @Override
+    // workaround for issue #116022 - Scriptlet formatting doesn't work
+    // indentation is delegated to the old infrastructure
+    public void enterPressed(Context context) {
+        TokenHierarchy<Document> hi = TokenHierarchy.get(context.document());
+        List<TokenSequence<? extends TokenId>> sequences = hi.embeddedTokenSequences(context.caretOffset(), true);
+        TokenSequence mostEmbedded = sequences.get(sequences.size() - 1);
+        if(mostEmbedded.language() == JavaTokenId.language()) {
+            ExtFormatter formatter = new JspJavaFormatter(JavaKit.class);
+            try {
+                formatter.reformat((BaseDocument)context.document(), context.caretOffset(), context.caretOffset() + 1, true);
+            }catch(BadLocationException e) {
+                Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
+            }catch(IOException e) {
+                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, null, e);
+            }
+        }
+        super.enterPressed(context);
+    }
+       
+    
+    
+    
 }

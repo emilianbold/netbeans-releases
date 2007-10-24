@@ -41,12 +41,14 @@
 
 package org.netbeans.modules.web.core.syntax.formatting;
 
+import org.netbeans.editor.Syntax;
 import org.netbeans.modules.web.core.syntax.*;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.FormatSupport;
 import org.netbeans.editor.ext.FormatWriter;
 import org.netbeans.editor.ext.java.JavaFormatter;
+import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 
 
 /**
@@ -60,6 +62,10 @@ public class JspJavaFormatter extends JavaFormatter{
 	super(kitClass);
     }
 
+    protected boolean acceptSyntax(Syntax syntax) {
+        return (syntax instanceof Jsp11Syntax);
+    }
+    
     protected void initFormatLayers() {
 
 	addFormatLayer(new StripEndWhitespaceLayer());
