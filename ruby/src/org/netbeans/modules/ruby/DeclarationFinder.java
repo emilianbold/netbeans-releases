@@ -122,9 +122,6 @@ import org.openide.util.NbBundle;
  * @todo If you're looking for a local class, such as a Rails model, I should
  *   find those first!
  * @todo Within a gem, prefer other matches within the same gem or gem cluster
- * @todo I've gotta use the inherited method and field finders! If I'm in a Rails model
- *   and search for find_all it goes and pops into the stubs for enumerations instead.
- *   I -know- the method being referenced here since we have the inheritance chain!
  * @todo Prefer files named after the class! (e.g. SchemaStatements in schema_statements.rb)
  * 
  * @author Tor Norbye
@@ -423,7 +420,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
 
                 String fqn = AstUtilities.getFqnName(path);
 
-                return findMethod(name, fqn, type, info, astOffset, lexOffset, path, closest, index);
+                return findMethod(name, fqn, type, call, info, astOffset, lexOffset, path, closest, index);
             } else if (closest instanceof ConstNode || closest instanceof Colon2Node) {
                 // POSSIBLY a class usage.
                 String name = ((INameNode)closest).getName();
@@ -850,19 +847,20 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
         return null;
     }
     
-    // TODO - rewrite to use getInheritedMethods!
-    private DeclarationLocation findMethod(String name, String possibleFqn, String type,
+    private DeclarationLocation findMethod(String name, String possibleFqn, String type, Call call,
         CompilationInfo info, int caretOffset, int lexOffset, AstPath path, Node closest, RubyIndex index) {
         Set<IndexedMethod> methods = Collections.emptySet();
 
         String fqn = possibleFqn;
-
-        if (type != null) {
+        if (type == null && possibleFqn != null && call.getLhs() == null && call != Call.UNKNOWN) {
             fqn = possibleFqn;
 
-            // Try looking at the libraries too
-            while ((methods.size() == 0) && (fqn.length() > 0)) {
-                methods = index.getMethods(name, fqn + "::" + type, NameKind.EXACT_NAME);
+            // Possibly a class on the left hand side: try searching with the class as a qualifier.
+            // Try with the LHS + current FQN recursively. E.g. if we're in
+            // Test::Unit when there's a call to Foo.x, we'll try
+            // Test::Unit::Foo, and Test::Foo
+            while (methods.size() == 0 && (fqn.length() > 0)) {
+                methods = index.getInheritedMethods(fqn, name, NameKind.EXACT_NAME);
 
                 int f = fqn.lastIndexOf("::");
 
@@ -870,6 +868,48 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                     break;
                 } else {
                     fqn = fqn.substring(0, f);
+                }
+            }
+        }
+
+        if (type != null && methods.size() == 0) {
+            fqn = possibleFqn;
+
+            // Possibly a class on the left hand side: try searching with the class as a qualifier.
+            // Try with the LHS + current FQN recursively. E.g. if we're in
+            // Test::Unit when there's a call to Foo.x, we'll try
+            // Test::Unit::Foo, and Test::Foo
+            while (methods.size() == 0 && fqn != null && (fqn.length() > 0)) {
+                methods = index.getInheritedMethods(fqn + "::" + type, name, NameKind.EXACT_NAME);
+
+                int f = fqn.lastIndexOf("::");
+
+                if (f == -1) {
+                    break;
+                } else {
+                    fqn = fqn.substring(0, f);
+                }
+            }
+
+            if (methods.size() == 0) {
+                // Add methods in the class (without an FQN)
+                methods = index.getInheritedMethods(type, name, NameKind.EXACT_NAME);
+            }
+            
+            // Fall back to ALL methods across classes
+            // Try looking at the libraries too
+            if (methods.size() == 0) {
+                fqn = possibleFqn;
+                while ((methods.size() == 0) && (fqn.length() > 0)) {
+                    methods = index.getMethods(name, fqn + "::" + type, NameKind.EXACT_NAME);
+
+                    int f = fqn.lastIndexOf("::");
+
+                    if (f == -1) {
+                        break;
+                    } else {
+                        fqn = fqn.substring(0, f);
+                    }
                 }
             }
         }
@@ -1283,7 +1323,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 String clz = method.substring(0, methodIndex);
                 method = method.substring(methodIndex+1);
 
-                return findMethod(method, clz, null, info, astOffset, lexOffset, path, closest, index);
+                return findMethod(method, null, clz, Call.UNKNOWN, info, astOffset, lexOffset, path, closest, index);
             }
         }
 
@@ -1334,7 +1374,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
             String clz = method.substring(0, methodIndex);
             method = method.substring(methodIndex+1);
 
-            return findMethod(method, clz, null, info, astOffset, lexOffset, path, closest, index);
+            return findMethod(method, null, clz, Call.UNKNOWN, info, astOffset, lexOffset, path, closest, index);
         }
         
         return DeclarationLocation.NONE;
