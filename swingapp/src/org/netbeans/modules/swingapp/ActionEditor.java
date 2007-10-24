@@ -117,6 +117,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     }
     
     // property editor impl
+    @Override
     public String getJavaInitializationString() {
         if(!isAppFramework()) {
             return super.getJavaInitializationString();
@@ -174,6 +175,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     }
     
     // property editor impl. returns the ActionPropertyEditorPanel to go in a dialog
+    @Override
     public Component getCustomEditor() {
         if(!isAppFramework()) {
             return new DisabledEditorPanel();
@@ -203,6 +205,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     }
     
     // property editor impl
+    @Override
     public boolean supportsCustomEditor() {
         if(!isAppFramework()) {
             return super.supportsCustomEditor();
@@ -211,6 +214,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     }
     
     // property editor impl
+    @Override
     public String getAsText() {
         if(!isAppFramework()) {
             return super.getAsText();
@@ -224,6 +228,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     }
     
     // property editor impl
+    @Override
     public void setAsText(String string) throws IllegalArgumentException {
         if(!isAppFramework()) {
             super.setAsText(string);
@@ -263,6 +268,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     }
     
     // property editor impl
+    @Override
     public Object getValue() {
         if(!isAppFramework()) {
             return super.getValue();
@@ -271,6 +277,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     }
     
     // property editor impl
+    @Override
     public void setValue(Object object) {
         if(!isAppFramework()) {
             super.setValue(object);
@@ -302,6 +309,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
 
     
     // property editor impl
+    @Override
     public String[] getTags() {
         if(!isAppFramework()) {
             return null;
@@ -470,8 +478,6 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     }
     
     private void saveChangedActionProperties(ProxyAction action) {
-        ResourceValueImpl val;
-        
         FileObject fileInProject = getSourceFile();
         DesignResourceMap map = ResourceUtils.getDesignResourceMap(fileInProject, true);
         
@@ -480,7 +486,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         updateOrDeleteResource(action, actionKey+".text", Action.NAME,fileInProject,map, String.class); // NOI18N
         updateOrDeleteResource(action, actionKey+".shortDescription", Action.SHORT_DESCRIPTION,fileInProject,map, String.class); // NOI18N
         
-        if(action.getValue(action.SMALL_ICON) != null) {
+        if(action.getValue(Action.SMALL_ICON) != null) {
             updateOrDeleteResource(action, actionKey + ".icon", Action.SMALL_ICON+".IconName", fileInProject, map, Icon.class); // NOI18N
         } else {
             updateOrDeleteResource(action, actionKey + ".icon", ActionPropertyEditorPanel.LARGE_ICON_KEY+".IconName", fileInProject, map, Icon.class); // NOI18N
@@ -530,18 +536,6 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
                 String pkgResName = map.getResourcesDir();
                 stringVal = iconCPName.startsWith(pkgResName) ?
                 iconCPName.substring(pkgResName.length()) : iconCPName;
-                //trim off the full path if icon is in the same package as the action
-                /* disable changes for 110933
-                if(iconCPName.startsWith(pkgResName)) {
-                    stringVal = iconCPName.substring(pkgResName.length());
-                } else if(iconCPName.startsWith("/"+pkgResName)) {
-                    stringVal = iconCPName.substring(1+pkgResName.length());
-                } else {
-                    stringVal = iconCPName;
-                    if(!iconCPName.startsWith("/")) {
-                        stringVal = "/" + iconCPName;
-                    }
-                }*/
                 newVal = null;
             } else {
                 stringVal = (String)newVal;
