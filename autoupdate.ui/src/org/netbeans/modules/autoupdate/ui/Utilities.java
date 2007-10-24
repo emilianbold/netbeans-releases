@@ -79,6 +79,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 
 /**
  *
@@ -461,4 +462,32 @@ public class Utilities {
     private static Preferences getPreferences () {
         return NbPreferences.forModule (Utilities.class);
     }
+    
+    static String getCategoryName(CATEGORY category) {
+        String key = null;
+        switch (category) {
+            case STANDARD:
+                key = "AvailableTab_SourceCategory_Tooltip_STANDARD"; //NOI18N
+                break;
+            case BETA:
+                key = "AvailableTab_SourceCategory_Tooltip_BETA"; //NOI18N
+                break;
+            case COMMUNITY:
+                key = "AvailableTab_SourceCategory_Tooltip_COMMUNITY"; //NOI18N
+                break;
+        }
+        return (key != null) ? getBundle(key) : null;
+    }
+    
+    static URL getCategoryIcon(CATEGORY state) {
+        URL retval = null;
+        if (CATEGORY.BETA.equals(state)) {
+            retval = Utilities.class.getResource("/org/netbeans/modules/autoupdate/ui/resources/icon-beta.png"); // NOI18N
+        } else if (CATEGORY.COMMUNITY.equals(state)) {
+            retval = Utilities.class.getResource("/org/netbeans/modules/autoupdate/ui/resources/icon-community.png"); // NOI18N
+        } else if (CATEGORY.STANDARD.equals(state)) {
+            retval = Utilities.class.getResource("/org/netbeans/modules/autoupdate/ui/resources/icon-standard.png"); // NOI18N
+        }
+        return retval;
+    }    
 }

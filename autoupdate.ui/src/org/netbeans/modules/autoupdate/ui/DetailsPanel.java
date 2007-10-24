@@ -63,7 +63,7 @@ public class DetailsPanel extends JTextPane  {
     
     public DetailsPanel() {
         initComponents2();
-        HTMLEditorKit htmlkit = new HTMLEditorKit();
+        HTMLEditorKit htmlkit = new HTMLEditorKitEx();
         // override the Swing default CSS to make the HTMLEditorKit use the
         // same font as the rest of the UI.
         

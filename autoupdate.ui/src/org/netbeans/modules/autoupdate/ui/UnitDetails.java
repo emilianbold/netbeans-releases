@@ -42,11 +42,13 @@
 package org.netbeans.modules.autoupdate.ui;
 
 import java.io.CharConversionException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
@@ -78,6 +80,14 @@ public class UnitDetails extends DetailsPanel{
                 text = u.annotate(XMLUtil.toElementContent(u.getDisplayName())); // NOI18N
                 setTitle(text);text = "";//NOI18N
                 setActionListener(action);
+                if (u instanceof Unit.Available) {
+                    Unit.Available u1 = (Unit.Available)u;
+                    CATEGORY c = u1.getSourceCategory();
+                    String categoryName = Utilities.getCategoryName(c);
+                    URL icon = Utilities.getCategoryIcon(c);
+                    text += "<img src=\""+icon.toExternalForm()+"\"> </img>&nbsp;<b>"+ categoryName+ "</b><br><br>";
+                }
+                                
                 if (Utilities.modulesOnly () || Utilities.showExtendedDescription ()) {
                     text += "<b>" + getBundle ("UnitDetails_Plugin_CodeName") + "</b>" + u.annotate (u.updateUnit.getCodeName ()); // NOI18N
                     text += "<br>";
@@ -96,7 +106,7 @@ public class UnitDetails extends DetailsPanel{
                     text += "<b>" + getBundle ("UnitDetails_Plugin_Homepage") + "</b><a href=\"" + u.getHomepage() + "\">" + u.annotate(u.getHomepage()) + "</a><br>"; // NOI18N
                 }
                 if (u.getDescription() != null && u.getDescription().length () > 0) {
-                    text += "<h4>" + getBundle ("UnitDetails_Plugin_Description") + "</h4>"; // NOI18N
+                    text += "<br><h4>" + getBundle ("UnitDetails_Plugin_Description") + "</h4>"; // NOI18N
                     text += (u.getDescription() == null ? "" : u.annotate(u.getDescription ()));
                 }
             } catch (CharConversionException e) {

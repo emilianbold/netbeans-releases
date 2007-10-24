@@ -52,6 +52,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1646,14 +1647,8 @@ public class UnitTab extends javax.swing.JPanel {
                 if (u instanceof Unit.Available) {
                     Unit.Available a = (Unit.Available)u;
                     CATEGORY state = a.getSourceCategory();
-                    if (CATEGORY.BETA.equals(state)) {
-                            renderComponent.setIcon (new javax.swing.ImageIcon (getClass ().getResource ("/org/netbeans/modules/autoupdate/ui/resources/icon-beta.png"))); // NOI18N
-                    } else if (CATEGORY.COMMUNITY.equals(state)) {
-                            renderComponent.setIcon (new javax.swing.ImageIcon (getClass ().getResource ("/org/netbeans/modules/autoupdate/ui/resources/icon-community.png"))); // NOI18N
-                        
-                    } else if (CATEGORY.STANDARD.equals(state)) {
-                            renderComponent.setIcon (new javax.swing.ImageIcon (getClass ().getResource ("/org/netbeans/modules/autoupdate/ui/resources/icon-standard.png"))); // NOI18N                        
-                    }                        
+                    URL icon = Utilities.getCategoryIcon(state);
+                    renderComponent.setIcon(new ImageIcon(icon));
                     renderComponent.setText ("");
                     renderComponent.setHorizontalAlignment (SwingConstants.CENTER);
                 }
