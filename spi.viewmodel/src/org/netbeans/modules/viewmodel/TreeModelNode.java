@@ -172,7 +172,9 @@ public class TreeModelNode extends AbstractNode {
     public String getShortDescription () {
         try {
             String shortDescription = model.getShortDescription (object);
-            shortDescription = adjustHTML(shortDescription);
+            if (shortDescription != null) {
+                shortDescription = adjustHTML(shortDescription);
+            }
             return shortDescription;
         } catch (UnknownTypeException e) {
             if (!(object instanceof String)) {
