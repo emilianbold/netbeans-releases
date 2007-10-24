@@ -57,6 +57,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import java.util.*;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -485,6 +486,96 @@ public final class TreeUtilities {
         HashSet<TypeMirror> set = new HashSet<TypeMirror>();
         new UncaughtExceptionsVisitor(info).scan(path, set);
         return set;
+    }
+    
+    /**Find span of the {@link ClassTree#getSimpleName()} identifier in the source.
+     * Returns starting and ending offset of the name in the source code that was parsed
+     * (ie. {@link CompilationInfo.getText()}, which may differ from the positions in the source
+     * document if it has been already altered.
+     * 
+     * @param clazz class which name should be searched for
+     * @return the span of the name, or null if cannot be found
+     * @since 0.25
+     */
+    public int[] findNameSpan(ClassTree clazz) {
+        return findNameSpan(clazz.getSimpleName().toString(), clazz, JavaTokenId.CLASS, JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.JAVADOC_COMMENT);
+    }
+    
+    /**Find span of the {@link MethodTree#getName()} identifier in the source.
+     * Returns starting and ending offset of the name in the source code that was parsed
+     * (ie. {@link CompilationInfo.getText()}, which may differ from the positions in the source
+     * document if it has been already altered.
+     * 
+     * @param method method which name should be searched for
+     * @return the span of the name, or null if cannot be found
+     * @since 0.25
+     */
+    public int[] findNameSpan(MethodTree method) {
+        return findNameSpan(method.getName().toString(), method);
+    }
+    
+    /**Find span of the {@link VariableTree#getName()} identifier in the source.
+     * Returns starting and ending offset of the name in the source code that was parsed
+     * (ie. {@link CompilationInfo.getText()}, which may differ from the positions in the source
+     * document if it has been already altered.
+     * 
+     * @param var variable which name should be searched for
+     * @return the span of the name, or null if cannot be found
+     * @since 0.25
+     */
+    public int[] findNameSpan(VariableTree var) {
+        return findNameSpan(var.getName().toString(), var);
+    }
+    
+    /**Find span of the {@link MemberSelectTree#getIdentifier()} identifier in the source.
+     * Returns starting and ending offset of the name in the source code that was parsed
+     * (ie. {@link CompilationInfo.getText()}, which may differ from the positions in the source
+     * document if it has been already altered.
+     * 
+     * @param mst member select which identifier should be searched for
+     * @return the span of the name, or null if cannot be found
+     * @since 0.25
+     */
+    public int[] findNameSpan(MemberSelectTree mst) {
+        return findNameSpan(mst.getIdentifier().toString(), mst, JavaTokenId.DOT, JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.JAVADOC_COMMENT);
+    }
+    
+    private int[] findNameSpan(String name, Tree t, JavaTokenId... allowedTokens) {
+        if (!SourceVersion.isIdentifier(name)) {
+            //names like "<error>", etc.
+            return null;
+        }
+        
+        JCTree jcTree = (JCTree) t;
+        int pos = jcTree.pos;
+        
+        if (pos < 0)
+            return null;
+        
+        Set<JavaTokenId> allowedTokensSet = EnumSet.noneOf(JavaTokenId.class);
+        
+        allowedTokensSet.addAll(Arrays.asList(allowedTokens));
+        
+        TokenSequence<JavaTokenId> tokenSequence = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+        
+        tokenSequence.move(pos);
+        
+        boolean wasNext;
+        
+        while ((wasNext = tokenSequence.moveNext()) && allowedTokensSet.contains(tokenSequence.token().id()))
+            ;
+        
+        if (wasNext) {
+            if (tokenSequence.token().id() == JavaTokenId.IDENTIFIER &&
+                name.contentEquals(tokenSequence.token().text())) {
+                return new int[] {
+                    tokenSequence.offset(),
+                    tokenSequence.offset() + tokenSequence.token().length()
+                };
+            }
+        }
+        
+        return null;
     }
     
     /**Find the target of <code>break</code> or <code>continue</code>. The given

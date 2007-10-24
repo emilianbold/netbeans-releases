@@ -41,8 +41,13 @@
 package org.netbeans.api.java.source;
 
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.File;
+import java.util.Arrays;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.TestUtil;
 import org.openide.filesystems.FileObject;
@@ -114,4 +119,126 @@ public class TreeUtilitiesTest extends NbTestCase {
         
         assertFalse(info.getTreeUtilities().isSynthetic(tp));
     }
+
+    public void testFindNameSpan1() throws Exception {
+        prepareTest("Test", "package test; public class Test {}");
+        
+        TreePath tp = info.getTreeUtilities().pathFor(29);
+        ClassTree ct = (ClassTree) tp.getLeaf();
+        
+        int[] span = info.getTreeUtilities().findNameSpan(ct);
+        
+        assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {27, 31}));
+    }
+    
+    public void testFindNameSpan2() throws Exception {
+        prepareTest("Test", "package test; public /*dsfasfd*/   class   /*laksdjflk*/   /**asdff*/ //    \n Test {}");
+        
+        TreePath tp = info.getTreeUtilities().pathFor(109 - 30);
+        ClassTree ct = (ClassTree) tp.getLeaf();
+        
+        int[] span = info.getTreeUtilities().findNameSpan(ct);
+        
+        assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {108 - 30, 112 - 30}));
+    }
+    
+    public void testFindNameSpan3() throws Exception {
+        prepareTest("Test", "package test; public class   {}");
+        
+        TreePath tp = info.getTreeUtilities().pathFor(54 - 30);
+        ClassTree ct = (ClassTree) tp.getLeaf();
+        
+        int[] span = info.getTreeUtilities().findNameSpan(ct);
+        
+        assertEquals(null, span);
+    }
+    
+    public void testFindNameSpan4() throws Exception {
+        prepareTest("Test", "package test; public class Test {public void test() {}}");
+        
+        TreePath tp = info.getTreeUtilities().pathFor(77 - 30);
+        MethodTree ct = (MethodTree) tp.getLeaf();
+        
+        int[] span = info.getTreeUtilities().findNameSpan(ct);
+        
+        assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {75 - 30, 79 - 30}));
+    }
+    
+    public void testFindNameSpan5() throws Exception {
+        prepareTest("Test", "package test; public class Test {private int test;}");
+        
+        TreePath tp = info.getTreeUtilities().pathFor(77 - 30);
+        VariableTree ct = (VariableTree) tp.getLeaf();
+        
+        int[] span = info.getTreeUtilities().findNameSpan(ct);
+        
+        assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {75 - 30, 79 - 30}));
+    }
+    
+    public void testFindNameSpan6() throws Exception {
+        prepareTest("Test", "package test; public class Test {public void test()[] {}}");
+        
+        TreePath tp = info.getTreeUtilities().pathFor(77 - 30);
+        MethodTree ct = (MethodTree) tp.getLeaf();
+        
+        int[] span = info.getTreeUtilities().findNameSpan(ct);
+        
+        assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {75 - 30, 79 - 30}));
+    }
+    
+    public void testFindNameSpan7() throws Exception {
+        prepareTest("Test", "package test; public class Test {private int test[];}");
+        
+        TreePath tp = info.getTreeUtilities().pathFor(77 - 30);
+        VariableTree ct = (VariableTree) tp.getParentPath().getLeaf();
+        
+        int[] span = info.getTreeUtilities().findNameSpan(ct);
+        
+        assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {75 - 30, 79 - 30}));
+    }
+    
+    public void testFindNameSpan8() throws Exception {
+        prepareTest("Test", "package test; public class Test {private test.Test t;}");
+        
+        TreePath tp = info.getTreeUtilities().pathFor(77 - 30);
+        MemberSelectTree ct = (MemberSelectTree) tp.getLeaf();
+        
+        int[] span = info.getTreeUtilities().findNameSpan(ct);
+        
+        assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {76 - 30, 80 - 30}));
+    }
+    
+    public void testFindNameSpan9() throws Exception {
+        prepareTest("Test", "package test; public class Test {private test. /*adsTestsldf*/ //\n /**aTestklajdf*/ Test t;}");
+        
+        TreePath tp = info.getTreeUtilities().pathFor(77 - 30);
+        MemberSelectTree ct = (MemberSelectTree) tp.getLeaf();
+        
+        int[] span = info.getTreeUtilities().findNameSpan(ct);
+        
+        assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {114 - 30, 118 - 30}));
+    }
+    
+    public void testFindNameSpan10() throws Exception {
+        prepareTest("Test", "package test; public class Test {public void /*test*/test()[] {}}");
+        
+        TreePath tp = info.getTreeUtilities().pathFor(77 - 30);
+        MethodTree ct = (MethodTree) tp.getLeaf();
+        
+        int[] span = info.getTreeUtilities().findNameSpan(ct);
+        
+        assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {83 - 30, 87 - 30}));
+    }
+    
+    public void testFindNameSpan11() throws Exception {
+        prepareTest("Test", "package test; public class Test {private int /*test*/test[];}");
+        
+        TreePath tp = info.getTreeUtilities().pathFor(77 - 30);
+        VariableTree ct = (VariableTree) tp.getParentPath().getLeaf();
+        
+        int[] span = info.getTreeUtilities().findNameSpan(ct);
+        
+        assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {83 - 30, 87 - 30}));
+    }
+    
 }
