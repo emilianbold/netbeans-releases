@@ -353,10 +353,12 @@ public final class ReferenceHelper {
                 path.getAbsolutePath()
             };            
         }
+        assert !Arrays.asList(values).contains(null) : "values=" + Arrays.toString(values) + " base=" + base + " path=" + path; // #119847
         
         boolean metadataChanged = false;
         for (int i=0; i<propertiesFiles.length; i++) {
             EditableProperties props = h.getProperties(propertiesFiles[i]);
+            assert props != null : h.getProjectDirectory(); // #119847
             if (!values[i].equals(props.getProperty(propertyName))) {
                 props.put(propertyName, values[i]);
                 h.putProperties(propertiesFiles[i], props);
@@ -367,7 +369,7 @@ public final class ReferenceHelper {
         if (propertiesFiles.length == 1) {                    
             // check presence of this property in opposite property file and
             // remove it if necessary
-            String propertiesFile = (propertiesFiles[0] == AntProjectHelper.PROJECT_PROPERTIES_PATH ? 
+            String propertiesFile = (propertiesFiles[0].equals(AntProjectHelper.PROJECT_PROPERTIES_PATH) ? 
                 AntProjectHelper.PRIVATE_PROPERTIES_PATH : AntProjectHelper.PROJECT_PROPERTIES_PATH);
             EditableProperties props = h.getProperties(propertiesFile);
             if (props.remove(propertyName) != null) {
@@ -1697,7 +1699,7 @@ public final class ReferenceHelper {
             scriptLocation = null;
         }
         
-        public String toString() {
+        public @Override String toString() {
             return "ReferenceHelper.RawReference<" + foreignProjectName + "," + 
                 artifactType + "," + newScriptLocation != null ? newScriptLocation : scriptLocation + 
                 "," + targetName + "," + cleanTargetName + "," + artifactID + ">"; // NOI18N
