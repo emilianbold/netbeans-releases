@@ -1747,7 +1747,7 @@ public final class FileUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final int BUFFER_SIZE =
-            4096; // NOMAGI
+            65536; // NOMAGI
     
     public static final String SLASH =
             "/"; // NOI18N
