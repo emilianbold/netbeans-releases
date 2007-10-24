@@ -387,6 +387,16 @@ public final class PersistenceManager implements PropertyChangeListener {
         }
     }
     
+    // XXX helper method
+    public boolean isTopComponentPersistentWhenClosed(TopComponent tc) {
+        int persistenceType = tc.getPersistenceType();
+        if (persistenceType == TopComponent.PERSISTENCE_ALWAYS) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     private void removeTopComponentForDataObject(DataObject dob) {
         //System.out.println("PM.removeTopComponentForDataObject ENTER"
         //+ " dob:" + dob.getName());
@@ -466,9 +476,12 @@ public final class PersistenceManager implements PropertyChangeListener {
     }
     
     /** @return Searches for top component with given string id and returns
-     * found lookup item.
+     * found lookup item. May return null.
+     * @param stringId unique ID for TC
+     * @param deserialize if true and TC instance is not present in cache it tries
+     * to create TC instance by deserialization
      */
-    private TopComponent getTopComponentPersistentForID(String stringId) {
+    private TopComponent getTopComponentPersistentForID(String stringId, boolean deserialize) {
         synchronized(LOCK_IDS) {
             //Search in cache first
             Reference<TopComponent> result = id2TopComponentMap.get(stringId);
@@ -481,6 +494,9 @@ public final class PersistenceManager implements PropertyChangeListener {
                     id2TopComponentMap.remove(stringId);
                 }
             }
+        }
+        if (!deserialize) {
+            return null;
         }
         // search on disk
         IOException resultExc = null;
@@ -596,10 +612,10 @@ public final class PersistenceManager implements PropertyChangeListener {
     /** @return Searches for top component with given string id and returns
      * found lookup item.
      */
-    public TopComponent getTopComponentForID (String stringId) {
+    public TopComponent getTopComponentForID (String stringId, boolean deserialize) {
         TopComponent tc = getTopComponentNonPersistentForID(stringId);
         if (tc == null) {
-            return getTopComponentPersistentForID(stringId);
+            return getTopComponentPersistentForID(stringId, deserialize);
         } else {
             return tc;
         }
@@ -700,6 +716,11 @@ public final class PersistenceManager implements PropertyChangeListener {
         for (Map.Entry<String, Reference<TopComponent>> curEntry: copyIdToTopComponentMap.entrySet()) {
             TopComponent curTC = curEntry.getValue().get();
             if (curTC != null) {
+                if ((!curTC.isOpened()) && (!isTopComponentPersistentWhenClosed(curTC))) {
+                    //We do not want to save closed TC which has persistence type
+                    //PERSISTENCE_ONLY_OPENED or PERSISTENCE_NEVER
+                    continue;
+                }
                 try {
                     // bugfix #21223 top components are stored by IDO.SaveCookie
                     FileObject fo = compsFolder.getPrimaryFile ().getFileObject

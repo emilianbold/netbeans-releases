@@ -767,16 +767,10 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     public void attachTopComponentToSide(TopComponent tc, ModeImpl attachMode, String side) {
         central.attachTopComponentsToSide(new TopComponent[] {tc}, attachMode, side);
     }
-    // Utility method <<
-    
-    boolean isTopComponentPersistentWhenClosed(TopComponent tc) {
-        // XXX
-        return PersistenceHandler.getDefault().isTopComponentPersistentWhenClosed(tc);
-    }
     
     // XXX
     public TopComponent getTopComponentForID(String tcID) {
-        return PersistenceHandler.getDefault().getTopComponentForID(tcID);
+        return PersistenceHandler.getDefault().getTopComponentForID(tcID,true);
     }
     
     public boolean isTopComponentAllowedToMoveAnywhere(TopComponent tc) {

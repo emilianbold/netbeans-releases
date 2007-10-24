@@ -102,15 +102,10 @@ final public class PersistenceHandler implements PersistenceObserver {
         
         return defaultInstance;
     }
-
+    
     // XXX helper method
     public boolean isTopComponentPersistentWhenClosed(TopComponent tc) {
-        int persistenceType = tc.getPersistenceType();
-        if (persistenceType == TopComponent.PERSISTENCE_ALWAYS) {
-            return true;
-        } else {
-            return false;
-        }
+        return PersistenceManager.getDefault().isTopComponentPersistentWhenClosed(tc);
     }
     
     public void load() {
@@ -149,7 +144,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         if (wmc.tcIdViewList.length > 0) {
             List<TopComponent> tcList = new ArrayList<TopComponent>(wmc.tcIdViewList.length);
             for (int i = 0; i < wmc.tcIdViewList.length; i++) {
-                TopComponent tc = getTopComponentForID(wmc.tcIdViewList[i]);
+                TopComponent tc = getTopComponentForID(wmc.tcIdViewList[i],true);
                 if (tc != null) {
                     tcList.add(tc);
                 }
@@ -164,7 +159,7 @@ final public class PersistenceHandler implements PersistenceObserver {
                 for (int j = 0; j < mc.tcRefConfigs.length; j++) {
                     //Only opened
                     if (mc.tcRefConfigs[j].opened) {
-                        TopComponent tc = getTopComponentForID(mc.tcRefConfigs[j].tc_id);
+                        TopComponent tc = getTopComponentForID(mc.tcRefConfigs[j].tc_id,true);
                         if (tc != null) {
                             tcList.add(tc);
                         }
@@ -388,7 +383,7 @@ final public class PersistenceHandler implements PersistenceObserver {
 
             // PENDING
             if (tcRefConfig.opened) {
-                TopComponent tc = getTopComponentForID(tcRefConfig.tc_id);
+                TopComponent tc = getTopComponentForID(tcRefConfig.tc_id,true);
                 if(tc != null) {
                     mode.addOpenedTopComponent(tc);
                 }
@@ -418,13 +413,13 @@ final public class PersistenceHandler implements PersistenceObserver {
         return mode;
     }
     
-    TopComponent getTopComponentForID(String tc_id) {
+    TopComponent getTopComponentForID(String tc_id, boolean deserialize) {
         if(tc_id == null || "".equals(tc_id)) {
             return null;
         }
         
 //        long start = System.currentTimeMillis();
-        TopComponent tc = PersistenceManager.getDefault().getTopComponentForID(tc_id);
+        TopComponent tc = PersistenceManager.getDefault().getTopComponentForID(tc_id, deserialize);
 //        if(DEBUG) {
 //            debugLog("***Getting TopComponent for ID=" + tc_id + " in " + (System.currentTimeMillis() - start) + " ms"); // NOI18N
 //        }
@@ -670,12 +665,22 @@ final public class PersistenceHandler implements PersistenceObserver {
         List<String> openedTcIDs = mode.getOpenedTopComponentsIDs();
         for(Iterator it = mode.getTopComponentsIDs().iterator(); it.hasNext(); ) {
             String tcID = (String)it.next();
-            
             boolean opened = openedTcIDs.contains(tcID);
-            if(opened) {
-                TopComponent tc = wm.findTopComponent(tcID);
+            if (opened) {
+                TopComponent tc = getTopComponentForID(tcID,true);
                 if(tc == null || !pm.isTopComponentPersistent(tc)) {
                     continue;
+                }
+            } else {
+                //If TC is closed and TC instance exists look for persistence type
+                //DO NOT instantiate closed TC as it has bad performance effect.
+                TopComponent tc = getTopComponentForID(tcID,false);
+                if (tc != null) {
+                    if (!isTopComponentPersistentWhenClosed(tc)) {
+                        //We do not want to save closed TC which has persistence type
+                        //PERSISTENCE_ONLY_OPENED or PERSISTENCE_NEVER
+                        continue;
+                    }
                 }
             }
             
@@ -795,7 +800,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         wm.setTopComponentSlidedInDefaultMode( tcRefConfig.tc_id, !tcRefConfig.dockedInDefaultMode );
         wm.setTopComponentMaximizedWhenSlidedIn( tcRefConfig.tc_id, tcRefConfig.slidedInMaximized );
         
-        TopComponent tc = getTopComponentForID(tcRefConfig.tc_id);
+        TopComponent tc = getTopComponentForID(tcRefConfig.tc_id,true);
         if(tc != null) {
             ModeImpl mode = (ModeImpl)name2mode.get(modeName);
             if(mode != null) {
@@ -819,7 +824,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         ModeImpl mode = wm.findModeForOpenedID(tc_id);
         if(mode != null) {
-            TopComponent tc = getTopComponentForID(tc_id);
+            TopComponent tc = getTopComponentForID(tc_id,true);
             if(tc != null) {
                 mode.removeTopComponent(tc);
             }
