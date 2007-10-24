@@ -181,7 +181,13 @@ public class MercurialInterceptor extends VCSInterceptor {
         final File root = hg.getTopmostManagedParent(srcFile);
 
         try {
-            HgCommand.doRename(root, srcFile, dstFile);
+            int status = hg.getFileStatusCache().getStatus(srcFile).getStatus();
+            if ((status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY || 
+                 status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
+                srcFile.renameTo(dstFile);
+            } else {
+                HgCommand.doRename(root, srcFile, dstFile);
+            }
         } catch (HgException e) {
             IOException ex = new IOException("Mercurial failed to rename " + srcFile.getAbsolutePath() + " to: " + dstFile.getAbsolutePath()); // NOI18N
             ex.initCause(e);
