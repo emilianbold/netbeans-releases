@@ -177,7 +177,11 @@ public final class SVGFileModel {
         }
 
         public void changedUpdate(DocumentEvent e) {
-            documentModified(e);
+            if ( e.getLength() > 0 ||
+                 e.getOffset() > 0 ||
+                 e.getType() != DocumentEvent.EventType.CHANGE) {
+                documentModified(e);
+            }
         }
     };
     

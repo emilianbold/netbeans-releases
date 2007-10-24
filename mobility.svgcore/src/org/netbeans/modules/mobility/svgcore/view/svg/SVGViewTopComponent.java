@@ -893,7 +893,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         zoomComboBox.getEditor().setItem(Integer.toString((int) (getScreenManager().getZoomRatio() * 100 + 0.5)) + "%"); //NOI18N
     }
 
-    public synchronized void updateImage() {
+    protected synchronized void updateImage() {
         assert SwingUtilities.isEventDispatchThread() : "Not in AWT event dispach thread"; //NOI18N
         getSceneManager().saveSelection();
 
