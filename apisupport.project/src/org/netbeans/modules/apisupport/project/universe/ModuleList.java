@@ -43,8 +43,15 @@ package org.netbeans.modules.apisupport.project.universe;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamClass;
+import java.lang.reflect.Field;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,6 +61,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ManifestManager;
@@ -206,7 +215,7 @@ public final class ModuleList {
             }
         }
     }
-    
+
     private static void registerEntry(ModuleEntry entry, Set<File> files) {
         synchronized (knownEntries) {
             for (File f : files) {
@@ -232,11 +241,75 @@ public final class ModuleList {
     private static ModuleList createModuleListFromNetBeansOrgSources(File root) throws IOException {
         Util.err.log("ModuleList.createModuleListFromSources: " + root);
         File nbdestdir = new File(root, DEST_DIR_IN_NETBEANS_ORG);
+        try {
+            return loadNetBeansOrgCachedModuleList(root, nbdestdir);
+        } catch (IOException x) {
+            Logger.getLogger(ModuleList.class.getName()).log(Level.FINE, "Failed to load cached module list in " + root + "; falling back to scan", x);
+        }
         Map<String,ModuleEntry> entries = new HashMap<String,ModuleEntry>();
         scanNetBeansOrgStableSources(entries, root, nbdestdir);
         return new ModuleList(entries, root, true);
     }
     
+    private static ModuleList loadNetBeansOrgCachedModuleList(File root, File nbdestdir) throws IOException {
+        File scanCache = new File(root, "nbbuild" + File.separatorChar + "nbproject" + File.separatorChar +
+                "private" + File.separatorChar + "scan-cache-full.ser");
+        if (!scanCache.isFile()) {
+            throw new FileNotFoundException(scanCache.getAbsolutePath());
+        }
+        File nbantextJar = new File(root, "nbbuild" + File.separatorChar + "nbantext.jar");
+        if (!nbantextJar.isFile()) {
+            throw new FileNotFoundException(nbantextJar.getAbsolutePath());
+        }
+        final ClassLoader loader = new URLClassLoader(new URL[] {nbantextJar.toURL()}, ClassLoader.getSystemClassLoader());
+        InputStream is = new FileInputStream(scanCache);
+        try {
+            ObjectInput oi = new ObjectInputStream(is) {
+                protected @Override Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+                    return loader.loadClass(desc.getName());
+                }
+            };
+            for (Map.Entry<File,Long[]> entry : NbCollections.checkedMapByFilter((Map) oi.readObject(), File.class, Long[].class, true).entrySet()) {
+                File f = entry.getKey();
+                if (f.lastModified() != entry.getValue()[0] || f.length() != entry.getValue()[1]) {
+                    throw new IOException("Cache ignored due to modifications in " + f);
+                }
+            }
+            Map cachedEntries = (Map) oi.readObject();
+            Class entryClazz = loader.loadClass("org.netbeans.nbbuild.ModuleListParser$Entry");
+            Map<String,Field> fields = new HashMap<String,Field>();
+            for (Field field : entryClazz.getDeclaredFields()) {
+                field.setAccessible(true);
+                fields.put(field.getName(), field);
+            }
+            Map<String,ModuleEntry> entries = new HashMap<String,ModuleEntry>();
+            for (Object entry : cachedEntries.values()) {
+                String cnb = (String) fields.get("cnb").get(entry);
+                File jar = (File) fields.get("jar").get(entry);
+                File[] classPathExtensions = (File[]) fields.get("classPathExtensions").get(entry);
+                File sourceLocation = (File) fields.get("sourceLocation").get(entry);
+                String netbeansOrgPath = (String) fields.get("netbeansOrgPath").get(entry);
+                String[] buildPrerequisites = (String[]) fields.get("buildPrerequisites").get(entry);
+                String clusterName = (String) fields.get("clusterName").get(entry);
+                String[] runtimeDependencies = (String[]) fields.get("runtimeDependencies").get(entry);
+                String[] testDependencies = (String[]) fields.get("testDependencies").get(entry);
+                ModuleEntry me = new NetBeansOrgCachedEntry(
+                    root, nbdestdir, cnb, jar, classPathExtensions, sourceLocation, netbeansOrgPath, buildPrerequisites, clusterName, runtimeDependencies, testDependencies);
+                entries.put(cnb, me);
+                // Forget about registering anything else for now, too slow:
+                registerEntry(me, Collections.singleton(jar));
+            }
+            Logger.getLogger(ModuleList.class.getName()).log(Level.FINE, "Successfully loaded " + scanCache + " with " + entries.size() + " entries");
+            return new ModuleList(entries, root, false);
+        } catch (IOException x) {
+            throw x;
+        } catch (Exception x) {
+            throw (IOException) new IOException(x.toString()).initCause(x);
+        } finally {
+            is.close();
+        }
+    }
+
     /**
      * Look just for stable modules in netbeans.org, assuming that this is most commonly what is wanted.
      * @see "#62221"
@@ -309,7 +382,7 @@ public final class ModuleList {
         }
     }
     
-    private static void scanPossibleProject(File basedir, Map<String,ModuleEntry> entries,
+    static void scanPossibleProject(File basedir, Map<String,ModuleEntry> entries,
             boolean suiteComponent, boolean standalone, File root, File nbdestdir, String path, boolean warnReDuplicates) throws IOException {
         directoriesChecked++;
         Element data = parseData(basedir);
