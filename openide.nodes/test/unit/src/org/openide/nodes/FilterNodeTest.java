@@ -48,6 +48,7 @@ import java.util.Collections;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
@@ -767,6 +768,36 @@ public class FilterNodeTest extends NbTestCase {
         assertEquals("It is the filter node", n, all.iterator().next());
     }
     
+    public void testBuggyIsWrongInFavoritesIssue119727() {
+        class ProjectFilterNode extends FilterNode {
+            public ProjectFilterNode (Node node, org.openide.nodes.Children children) {
+                super (node, children);
+            }
+        }
+        
+        CookieSet set = CookieSet.createGeneric(null);
+        
+        Node pfn = new AbstractNode(Children.LEAF, set.getLookup());
+        FilterNode n = new ProjectFilterNode(pfn, Children.LEAF);
+
+        
+        Lookup contextLookup = n.getLookup();
+        Object o;
+        
+        o = contextLookup.lookup(ProjectFilterNode.class);
+        assertEquals("found self", n, o);
+        
+        o = contextLookup.lookup(n.getClass());
+        assertEquals("found sefl2", n, o);
+        
+        o = contextLookup.lookup(Node.class);
+        assertEquals("found node", n, o);
+        
+        Result<Node> res = contextLookup.lookupResult(Node.class);
+        Collection<? extends Node> all = res.allInstances();
+        assertEquals("One found: " + all, 1, all.size());
+        assertEquals("It is the filter node", n, all.iterator().next());
+    }
     
 }
 

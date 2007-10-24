@@ -1778,6 +1778,9 @@ public class FilterNode extends Node {
                     for (T o : c) {
                         ll.add(replaceNodes(o, template.getType()));
                     }
+                    if (ll.isEmpty() && template.getType().isInstance(node)) {
+                        ll.add(template.getType().cast(node));
+                    }
 
                     return ll;
                 } else {
