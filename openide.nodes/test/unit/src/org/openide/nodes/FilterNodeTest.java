@@ -709,6 +709,7 @@ public class FilterNodeTest extends NbTestCase {
         assertNull("Indeed null, string is not a cookie", f.getCookie(what));
         assertEquals("Kuk", f.getLookup().lookup(String.class));
     }
+    @SuppressWarnings("unchecked")
     public void testNoClass2Cast89329() throws Exception {
         InstanceContent ic = new InstanceContent();
         AbstractLookup lookup = new AbstractLookup(ic);
@@ -735,5 +736,38 @@ public class FilterNodeTest extends NbTestCase {
         assertNull("Indeed null, string is not a cookie", f.getCookie(what));
         assertEquals("Kuk", f.getLookup().lookup(String.class));
     }
+    
+    
+    public void testLookupIsWrongInFavoritesIssue119727() {
+        class ProjectFilterNode extends FilterNode {
+            public ProjectFilterNode (Node node, org.openide.nodes.Children children) {
+                super (node, children);
+            }
+        }
+        
+        
+        Node pfn = new AbstractNode(Children.LEAF);
+        FilterNode n = new ProjectFilterNode(pfn, Children.LEAF);
+
+        
+        Lookup contextLookup = n.getLookup();
+        Object o;
+        
+        o = contextLookup.lookup(ProjectFilterNode.class);
+        assertEquals("found self", n, o);
+        
+        o = contextLookup.lookup(n.getClass());
+        assertEquals("found sefl2", n, o);
+        
+        o = contextLookup.lookup(Node.class);
+        assertEquals("found node", n, o);
+        
+        Collection<? extends Node> all = contextLookup.lookupResult(Node.class).allInstances();
+        assertEquals("One found: " + all, 1, all.size());
+        assertEquals("It is the filter node", n, all.iterator().next());
+    }
+    
+    
 }
+
 
