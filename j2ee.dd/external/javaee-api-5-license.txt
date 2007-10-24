@@ -1,5 +1,5 @@
 Name: Java EE API Stripped version
-Version: 5.0
+Version: 5
 Description: Stripped version of Java EE 5 API.
 License: CDDL-1.0
 Origin: http://java.sun.com/javaee
