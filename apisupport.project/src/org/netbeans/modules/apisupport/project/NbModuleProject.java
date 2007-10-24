@@ -125,7 +125,7 @@ import org.openide.util.Exceptions;
 public final class NbModuleProject implements Project {
     
     public static final String NB_PROJECT_ICON_PATH =
-            "org/netbeans/modules/apisupport/project/resources/module.gif"; // NOI18N
+            "org/netbeans/modules/apisupport/project/resources/module.png"; // NOI18N
     
     private static final Icon NB_PROJECT_ICON = new ImageIcon(
             Utilities.loadImage(NB_PROJECT_ICON_PATH));
