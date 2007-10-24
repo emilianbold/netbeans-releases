@@ -301,7 +301,10 @@ public final class PaletteUtils {
     }
     
     public static void clearPaletteSelection() {
-        getPalette().clearSelection();
+        PaletteController palette = getPalette();
+        if (palette != null) {
+            palette.clearSelection();
+        }
     }
     
     public static PaletteItem getSelectedItem() {
@@ -316,7 +319,7 @@ public final class PaletteUtils {
     
     public static void selectItem( PaletteItem item ) {
         if( null == item ) {
-            getPalette().clearSelection();
+            clearPaletteSelection();
         } else {
             // This is not the node returned by getPaletteNode()!
             Node paletteNode = getPalette().getRoot().lookup(Node.class);
