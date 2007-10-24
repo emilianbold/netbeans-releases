@@ -131,7 +131,7 @@ public class RenameTransformer extends RefactoringVisitor {
         if (el.equals(elementToFind) || isMethodMatch(el)) {
             String useThis = null;
 
-            if (elementToFind.getKind().isField()) {
+            if (elementToFind!=null && elementToFind.getKind().isField()) {
                 Scope scope = workingCopy.getTrees().getScope(path);
                 for (Element ele : scope.getLocalElements()) {
                     if ((ele.getKind() == ElementKind.LOCAL_VARIABLE || ele.getKind() == ElementKind.PARAMETER) 
