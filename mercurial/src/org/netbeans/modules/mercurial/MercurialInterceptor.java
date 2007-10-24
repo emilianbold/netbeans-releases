@@ -182,9 +182,12 @@ public class MercurialInterceptor extends VCSInterceptor {
 
         try {
             int status = hg.getFileStatusCache().getStatus(srcFile).getStatus();
-            if ((status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY || 
-                 status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
+            if (status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
                 srcFile.renameTo(dstFile);
+            } else if (status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
+                srcFile.renameTo(dstFile);
+                HgCommand.doRemove(root, srcFile);
+                HgCommand.doAdd(root, dstFile);
             } else {
                 HgCommand.doRename(root, srcFile, dstFile);
             }
