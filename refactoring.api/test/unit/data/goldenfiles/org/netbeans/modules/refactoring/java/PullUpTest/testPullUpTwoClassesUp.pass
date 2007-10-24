@@ -19,14 +19,14 @@ pulluppkg.PullUpTwoClassesSuperSuper.java
 --------------------
 null
 --------------------
- 1   package pulluppkg;
- 2   
- 3   public class PullUpTwoClassesSuperSuper {
-   +     int field;
- 4   
-   +     public void method() {
-   +     }
-   + 
- 5   }
+  2   
+  3   public class PullUpTwoClassesSuperSuper {
+  4   
+    +     int field;
+    + 
+    +     public void method() {
+    +     }
+    + 
+  5   }
 
 

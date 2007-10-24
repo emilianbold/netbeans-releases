@@ -17,12 +17,12 @@ pulluppkg.PullUpFieldSuper.java
 --------------------
 null
 --------------------
- 3   
- 4   
- 5   public class PullUpFieldSuper {
-   +     public int filed;
- 6   
- 7   
- 8   }
+  4   
+  5   public class PullUpFieldSuper {
+  6   
+    +     public int filed;
+  7   
+    + 
+  8   }
 
 

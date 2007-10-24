@@ -8,7 +8,7 @@ null
  2   
  3   public abstract class PullUpAbsMethod2Iface implements PullUpAbsMethod2IfaceSuper {
  4 -     
- 5 -     abstract String getName();
+ 5 -     abstract void getName();
  6 - 
  7   }
 
@@ -16,15 +16,11 @@ null
 pulluppkg.PullUpAbsMethod2IfaceSuper.java
 --------------------
 null
-null
 --------------------
- 1   package pulluppkg;
  2   
-   + import String;
-   + 
  3   public interface PullUpAbsMethod2IfaceSuper {
  4   
-   +     abstract String getName();
+   +     abstract void getName();
    + 
  5   }
 

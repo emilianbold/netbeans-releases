@@ -3,7 +3,7 @@ text: Change class name
 File: MyClass3
 Position: Position bounds[28,36,"MyClass3"]
 Status: 0
-Class: org.netbeans.modules.refactoring.java.DiffElement
+Class: org.netbeans.modules.refactoring.java.spi.DiffElement
 Difference:CHANGE<28, 36>: MyClass3 -> NewClass3
 -----------------------------------
 Display text: Rename file MyClass3.java

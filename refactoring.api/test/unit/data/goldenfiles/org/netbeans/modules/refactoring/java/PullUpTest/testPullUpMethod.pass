@@ -34,6 +34,7 @@ null
  14       }
  15   
     +     public void method() {
+    +         //method body
     +         System.out.println("Hello");
     +     }
     + 

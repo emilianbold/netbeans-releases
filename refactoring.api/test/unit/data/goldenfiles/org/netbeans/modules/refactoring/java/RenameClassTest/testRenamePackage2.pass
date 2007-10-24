@@ -1,17 +1,3 @@
-defaultpkg.RenamePkgDep.java
---------------------
-null
---------------------
-  1   
-  2   package defaultpkg;
-  3   
-    + import newpkgname2.RenamePkg1;
-    + import newpkgname2.RenamePkg2;
-  4   import renamepkg2.*;
-  5   
-  6   public class RenamePkgDep {
-
-
 renamepkg2
 --------------------
 Rename file renamepkg2
