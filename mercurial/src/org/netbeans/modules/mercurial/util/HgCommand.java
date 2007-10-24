@@ -62,7 +62,6 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.mercurial.HgModuleConfig;
-import org.netbeans.modules.mercurial.ui.pull.PullAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -1464,7 +1463,6 @@ public class HgCommand {
         return getAllStatusWithFlags(repository, HG_STATUS_FLAG_INTERESTING_CMD, true);
     }
     
-    /**
     /**
      * Returns the mercurial status for only files of interest to us in a given directory in a repository
      * that is modified, locally added, locally removed, locally deleted, locally new and ignored.

@@ -129,7 +129,7 @@ public class FileStatusCache {
      * @return
      */
     public File [] listFiles(File dir) {
-        Set<File> files = getScannedFiles(dir).keySet();
+        Set<File> files = getScannedFiles(dir, null).keySet();
         return files.toArray(new File[files.size()]);
     }
     
@@ -233,7 +233,7 @@ public class FileStatusCache {
         if (dir == null) {
             return FileStatusCache.FILE_INFORMATION_NOTMANAGED; //default for filesystem roots
         }
-        Map files = getScannedFiles(dir);
+        Map files = getScannedFiles(dir, null);
         if (files == FileStatusCache.NOT_MANAGED_MAP) return FileStatusCache.FILE_INFORMATION_NOTMANAGED;
         FileInformation fi = (FileInformation) files.get(file);
         if (fi != null) {
@@ -268,7 +268,7 @@ public class FileStatusCache {
         if (dir == null) {
             return FileStatusCache.FILE_INFORMATION_NOTMANAGED; //default for filesystem roots
         }
-        Map<File, FileInformation> files = getScannedFiles(dir);
+        Map<File, FileInformation> files = getScannedFiles(dir, null);
         if (files == FileStatusCache.NOT_MANAGED_MAP && repositoryStatus == FileStatusCache.REPOSITORY_STATUS_UNKNOWN) return FileStatusCache.FILE_INFORMATION_NOTMANAGED;
         FileInformation current = files.get(file);
         
@@ -352,19 +352,40 @@ public class FileStatusCache {
     public FileInformation refreshForce(File file, FileStatus repositoryStatus) {
         return refresh(file, repositoryStatus, true);
     }
-    
-    /**
-     * Refreshes the status of the file given the FileInformation
-     *
-     * @param file - file whose status is to be refreshed
-     * @param fi - file information to refresh to
-     */
-    public void refreshFileStatus(File file, FileInformation fi) {
+ 
+    @SuppressWarnings("unchecked") // Need to change turbo module to remove warning at source
+    private Map<File, FileInformation> getScannedFiles(File dir, Map<File, FileInformation> interestingFiles) {
+        Map<File, FileInformation> files;
+        
+        files = (Map<File, FileInformation>) turbo.readEntry(dir, FILE_STATUS_MAP);
+        if (files != null) return files;
+        if (isNotManagedByDefault(dir)) {
+            return FileStatusCache.NOT_MANAGED_MAP;
+        }
+        
+        dir = FileUtil.normalizeFile(dir);
+        files = scanFolder(dir, interestingFiles);
+        assert files.containsKey(dir) == false;
+        turbo.writeEntry(dir, FILE_STATUS_MAP, files);
+        if(interestingFiles == null){
+            for (Iterator i = files.keySet().iterator(); i.hasNext();) {
+                File file = (File) i.next();
+                FileInformation info = files.get(file);
+                if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
+                    fireFileStatusChanged(file, null, info);
+                }
+            }
+        }
+        return files;
+    }
+
+    public void refreshFileStatus(File file, FileInformation fi, Map<File, FileInformation> interestingFiles ) {
         if(file == null || fi == null) return;
         File dir = file.getParentFile();
         if(dir == null) return;
 
-        Map<File, FileInformation> files = getScannedFiles(dir);
+        Map<File, FileInformation> files = getScannedFiles(dir, interestingFiles);
+
         if (files == null || files == FileStatusCache.NOT_MANAGED_MAP ) return;     
         FileInformation current = files.get(file);  
         if (FileStatusCache.equivalent(fi, current))  {
@@ -404,7 +425,10 @@ public class FileStatusCache {
         assert files.containsKey(dir) == false;
         turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles);
 
-        fireFileStatusChanged(file, current, fi);
+        if(interestingFiles == null){ 
+            fireFileStatusChanged(file, current, fi);
+        }
+        
         return;
     }
 
@@ -482,7 +506,7 @@ public class FileStatusCache {
                         // We have a file in the cache which seems to have disappeared
                         refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                     } else {
-                        refreshFileStatus(file, fi);
+                        refreshFileStatus(file, fi, null);
                     }
                 }
             } catch (HgException ex) {
@@ -569,31 +593,6 @@ public class FileStatusCache {
     }
     
     // --- Private methods ---------------------------------------------------
-    @SuppressWarnings("unchecked") // Need to change turbo module to remove warning at source
-    private Map<File, FileInformation> getScannedFiles(File dir) {
-        Map<File, FileInformation> files;
-        
-        files = (Map<File, FileInformation>) turbo.readEntry(dir, FILE_STATUS_MAP);
-        if (files != null) return files;
-        if (isNotManagedByDefault(dir)) {
-            return FileStatusCache.NOT_MANAGED_MAP;
-        }
-        
-        // scan and populate cache with results
-        
-        dir = FileUtil.normalizeFile(dir);
-        files = scanFolder(dir);
-        assert files.containsKey(dir) == false;
-        turbo.writeEntry(dir, FILE_STATUS_MAP, files);
-        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            FileInformation info = files.get(file);
-            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
-                fireFileStatusChanged(file, null, info);
-            }
-        }
-        return files;
-    }
     
     private boolean isNotManagedByDefault(File dir) {
         return !dir.exists();
@@ -605,7 +604,7 @@ public class FileStatusCache {
      * @param dir directory to scan
      * @return Map map to be included in the status cache (File => FileInformation)
      */
-    private Map<File, FileInformation> scanFolder(File dir) {
+    private Map<File, FileInformation> scanFolder(File dir, Map<File, FileInformation> interestingFiles) {
         File [] files = dir.listFiles();
         if (files == null) files = new File[0];
         Map<File, FileInformation> folderFiles = new HashMap<File, FileInformation>(files.length);
@@ -631,20 +630,14 @@ public class FileStatusCache {
             }
             return folderFiles;
         }
-
-        Map<File, FileInformation> interestingFiles;
-        // Map<File, FileInformation> removedOrDeletedFiles;
-        try {
-            Calendar start = Calendar.getInstance();
-            interestingFiles = HgCommand.getInterestingStatus(rootManagedFolder, dir);
-            Calendar end = Calendar.getInstance();
-            Mercurial.LOG.log(Level.FINE, "getInterestingStatus took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
-            // removedOrDeletedFiles = HgCommand.getRemovedDeletedStatus(rootManagedFolder,dir);
-            //interestingFiles = HgCommand.getAllInterestingStatus(rootManagedFolder);
-            //removedOrDeletedFiles = HgCommand.getAllRemovedDeletedStatus(rootManagedFolder);
-        } catch (HgException ex) {
-            Mercurial.LOG.log(Level.FINE, "scanFolder() dir: {0} {1}", new Object[] {dir.getAbsolutePath(), ex.toString()}); // NOI18N
-            return folderFiles;
+                
+        if(interestingFiles == null){
+            try {
+                interestingFiles = HgCommand.getInterestingStatus(rootManagedFolder, dir);
+            } catch (HgException ex) {
+                Mercurial.LOG.log(Level.FINE, "scanFolder() dir: {0} {1}", new Object[]{dir.getAbsolutePath(), ex.toString()}); // NOI18N
+                return folderFiles;
+            }
         }
                 
         // TODO: Deal with removed and deleted files the repository is tracking but are not on the filesystem
@@ -662,7 +655,7 @@ public class FileStatusCache {
         }
         */
         
-        if (interestingFiles.isEmpty()) return folderFiles;
+        if (interestingFiles == null || interestingFiles.isEmpty()) return folderFiles;
 
         boolean bInIgnoredDir = SharabilityQuery.getSharability(dir) == SharabilityQuery.NOT_SHARABLE;
         if(bInIgnoredDir){

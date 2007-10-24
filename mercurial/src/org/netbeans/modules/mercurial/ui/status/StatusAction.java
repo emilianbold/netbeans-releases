@@ -53,6 +53,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.util.HashMap;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -113,7 +114,8 @@ public class StatusAction extends AbstractAction {
             Calendar start = Calendar.getInstance();
             cache.refreshCached(context);
             Calendar end = Calendar.getInstance();
-            Mercurial.LOG.log(Level.FINE, "refreshCached took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
+            Mercurial.LOG.log(Level.FINE, "executeStatus: refreshCached took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
+
             for (File root :  context.getRootFiles()) {
                 if(support.isCanceled()) {
                     return;
@@ -122,17 +124,23 @@ public class StatusAction extends AbstractAction {
                     Map<File, FileInformation> interestingFiles;
                     interestingFiles = HgCommand.getInterestingStatus(repository, root);
                     if (!interestingFiles.isEmpty()){
-                        start = Calendar.getInstance();
                         Collection<File> files = interestingFiles.keySet();
+
+                        Map<File, Map<File,FileInformation>> interestingDirs = 
+                                HgUtils.getInterestingDirs(interestingFiles, files);
+
+                        start = Calendar.getInstance();
                         for (File file : files) {
                              if(support.isCanceled()) {
                                  return;
                              }
                              FileInformation fi = interestingFiles.get(file);
-                             cache.refreshFileStatus(file, fi); 
+                             
+                             cache.refreshFileStatus(file, fi, 
+                                     interestingDirs.get(file.isDirectory()? file: file.getParentFile())); 
                         }
                         end = Calendar.getInstance();
-                        Mercurial.LOG.log(Level.FINE, "process interesting files took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
+                        Mercurial.LOG.log(Level.FINE, "executeStatus: process interesting files took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
                     } 
                 } else {
                     cache.refresh(root, FileStatusCache.REPOSITORY_STATUS_UNKNOWN); 

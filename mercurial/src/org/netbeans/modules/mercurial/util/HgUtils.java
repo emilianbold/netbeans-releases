@@ -78,6 +78,8 @@ import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 import java.text.MessageFormat;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
 import javax.swing.JOptionPane;
@@ -324,6 +326,39 @@ public class HgUtils {
         writeIgnoreEntries(directory, entries);
     }
 
+    /**
+     * Returns a Map keyed by Directory, containing a single File/FileInformation Map for each Directories file contents.
+     *
+     * @param Map of <File, FileInformation> interestingFiles to be processed and divided up into Files in Directory
+     * @param Collection of <File> files to be processed against the interestingFiles
+     * @return Map of Dirs containing Map of files and status for all files in each directory
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static Map<File, Map<File, FileInformation>> getInterestingDirs(Map<File, FileInformation> interestingFiles, Collection<File> files) {
+        Map<File, Map<File, FileInformation>> interestingDirs = new HashMap<File, Map<File, FileInformation>>();
+
+        Calendar start = Calendar.getInstance();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                if (interestingDirs.get(file) == null) {
+                    interestingDirs.put(file, new HashMap<File, FileInformation>());
+                }
+            } else {
+                File par = file.getParentFile();
+                if (par != null) {
+                    if (interestingDirs.get(par) == null) {
+                        interestingDirs.put(par, new HashMap<File, FileInformation>());
+                    }
+                    FileInformation fi = interestingFiles.get(file);
+                    interestingDirs.get(par).put(file, fi);
+                }
+            }
+        }
+        Calendar end = Calendar.getInstance();
+        Mercurial.LOG.log(Level.FINE, "getInterestingDirs: process interesting Dirs took {0} millisecs",  // NOI18N
+                end.getTimeInMillis() - start.getTimeInMillis());
+        return interestingDirs;
+    }
 
     /**
      * Semantics is similar to {@link org.openide.windows.TopComponent#getActivatedNodes()} except that this
@@ -489,7 +524,7 @@ itor tabs #66700).
                     Collection<File> files = interestingFiles.keySet();
                     for (File aFile : files) {
                         FileInformation fi = interestingFiles.get(aFile);
-                        cache.refreshFileStatus(aFile, fi);
+                        cache.refreshFileStatus(aFile, fi, null);
                     }
                 }
             } else {
