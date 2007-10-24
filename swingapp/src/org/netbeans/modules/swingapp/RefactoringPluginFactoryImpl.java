@@ -388,8 +388,14 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
             ClassPath cp = ClassPath.getClassPath(resFolder.getPrimaryFile(), ClassPath.SOURCE);
             DataFolder targetFolder = DataFolder.findFolder(
                     cp.findResource(refactoring.getNewName().replace('.', '/')));
+            FileObject originalFolder = resFolder.getPrimaryFile().getParent();
             try {
                 resFolder.move(targetFolder);
+                // remove the original package folder if it empty after moving resources
+                if (originalFolder != null && originalFolder.isValid()
+                        && originalFolder.getChildren().length == 0) {
+                    originalFolder.delete();
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -405,11 +411,12 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
             // loaded they have the resources in place.
 
             ClassPath cp = ClassPath.getClassPath(resFolder.getPrimaryFile(), ClassPath.SOURCE);
-            DataFolder targetFolder = DataFolder.findFolder(
-                    cp.findResource(oldPkgName.replace('.', '/')));
+            FileObject srcRoot = cp.findOwnerRoot(resFolder.getPrimaryFile());
             try {
+                DataFolder targetFolder = DataFolder.findFolder(
+                    FileUtil.createFolder(srcRoot, oldPkgName.replace('.', '/')));
                 resFolder.move(targetFolder);
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
