@@ -79,7 +79,7 @@ public class PasswdEncryption {
     }
 
     private static String arrayToString(byte[] array) {
-        String result = new String();
+        String result = "";
         for (int i = 0; i < array.length; i++) {
             byte b = array[i];
             result = result.concat(Byte.toString(b) + delimiter);

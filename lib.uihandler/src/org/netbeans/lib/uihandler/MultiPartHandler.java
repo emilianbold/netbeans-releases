@@ -145,6 +145,7 @@ public class MultiPartHandler {
 	  //String msg = localStrings.getString( "admin.server.gui.servlet.not_writable", tmpDirectory );
       throw new IllegalArgumentException("write protected" );
 	}
+    /*
     int length = request.getContentLength();
 	//commented this code to remove the restriction on the file upload size.
     /*if (length > maxUploadSize) {
@@ -202,7 +203,6 @@ public class MultiPartHandler {
                 );
             }
             else {
-		// FIXME: This does not call saveUploadFile(name);
                 uploadFiles.put(fieldName, new OneUpload(null, null, null));
             }
         }

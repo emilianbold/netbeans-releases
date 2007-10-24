@@ -73,7 +73,7 @@ public class LogRecordsTest extends NbTestCase {
     
     public static Test suite() {
         return new NbTestSuite(LogRecordsTest.class);
-//        return new LogRecordsTest("testReadException");
+//        return new LogRecordsTest("testCanReadEmpty");
     }
     
     protected Level logLevel() {

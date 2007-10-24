@@ -174,6 +174,7 @@ public final class LogRecords {
         private Queue<FakeException> exceptions;
         private List<String> params;
         private StringBuilder chars = new StringBuilder();
+        private int fatalErrors;
         
         public Parser(Handler c) {
             this.callback = c;
@@ -319,7 +320,9 @@ public final class LogRecords {
          * recursively fill it's cause
          */
         private FakeException createThrown(FakeException last){
-            if (exceptions.size()==0) return null;
+            if (exceptions.size()==0) {
+                return null;
+            }
             FakeException result = exceptions.poll();
             if ((result!= null) && (result.getMore()!= 0)){
                 assert last != null : "IF MORE IS NOT 0, LAST MUST BE SET NOT NULL";
@@ -347,7 +350,9 @@ public final class LogRecords {
         }
 
         public void fatalError(SAXParseException e) throws SAXException {
-            throw e;
+            if (fatalErrors++ > 1000) {
+                throw e;
+            }
         }
         
     }
