@@ -110,28 +110,29 @@ public class LifelineData extends ElementDataObject
             
             if(rClassifier==null)
             {
-                Logger.getLogger(LifelineData.class.getName()).
-                        log(Level.WARNING, NbBundle.getMessage(LifelineData.class,
-                        "MSG_InvalidRepresentingClassifier", getElementType(), getElement().toString())); // NOI18N
-                return false;
-            }
-            
-            out.write("<DT>" + NbBundle.getMessage(LifelineData.class, "represents") + ": ");
-            if (rClassifier.getOwningPackage() != null)
-            {
-                out.write("<A HREF=\"" + getLinkTo(rClassifier) + "\" title=\"interface in " +
-                        rClassifier.getOwningPackage().getFullyQualifiedName(false) +
-                        "\">" + rClassifier.getName() + "</A>");
+//                Logger.getLogger(LifelineData.class.getName()).
+//                        log(Level.WARNING, NbBundle.getMessage(LifelineData.class,
+//                        "MSG_InvalidRepresentingClassifier", getElementType(), getElement().toString())); // NOI18N              
             }
             else
             {
-                out.write(rClassifier.getName());
-                Logger.getLogger(LifelineData.class.getName()).
-                        log(Level.WARNING,
-                        NbBundle.getMessage(LifelineData.class,
-                        "MSG_InvalidPackage", rClassifier.getElementType(), rClassifier.getName()));
+                out.write("<DT>" + NbBundle.getMessage(LifelineData.class, "represents") + ": ");
+                if (rClassifier.getOwningPackage() != null)
+                {
+                    out.write("<A HREF=\"" + getLinkTo(rClassifier) + "\" title=\"interface in " +
+                            rClassifier.getOwningPackage().getFullyQualifiedName(false) +
+                            "\">" + rClassifier.getName() + "</A>");
+                }
+                else
+                {
+                    out.write(rClassifier.getName());
+                    Logger.getLogger(LifelineData.class.getName()).
+                            log(Level.WARNING,
+                            NbBundle.getMessage(LifelineData.class,
+                            "MSG_InvalidPackage", rClassifier.getElementType(), rClassifier.getName()));
+                }
+                out.write("</DL>\r\n\r\n");
             }
-            out.write("</DL>\r\n\r\n");
             
             out.write(getDependencies());
             out.write(getEnclosingDiagrams());

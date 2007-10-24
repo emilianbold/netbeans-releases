@@ -169,30 +169,30 @@ public class PartFacadeData extends ClassData
             IClassifier classifier = getElement().getFeaturingClassifier();
             if (classifier == null)
             {
-                Logger.getLogger(PartFacadeData.class.getName()).
-                        log(Level.WARNING,
-                        NbBundle.getMessage(LifelineData.class,
-                        "MSG_InvalidPartFacade", getElementType(), getElementName()));
-                return false;
-            }
-            
-            if (classifier.getOwningPackage()!=null)
-            {
-                out.write("<DT>" + NbBundle.getMessage(PartFacadeData.class, "features") + " " + "<A HREF=\"" +
-                        getLinkTo(classifier)+ "\" title=\"" +
-                        getElement().getExpandedElementType() +" in " +
-                        classifier.getOwningPackage().getFullyQualifiedName(false) +
-                        "\">" + classifier.getName() + "</A>");
+//                Logger.getLogger(PartFacadeData.class.getName()).
+//                        log(Level.WARNING,
+//                        NbBundle.getMessage(LifelineData.class,
+//                        "MSG_InvalidPartFacade", getElementType(), getElementName()));
             }
             else
             {
-                out.write("<DT>" + NbBundle.getMessage(PartFacadeData.class, "features") + " " + classifier.getName());
-                Logger.getLogger(PartFacadeData.class.getName()).
-                        log(Level.WARNING,
-                        NbBundle.getMessage(LifelineData.class,
-                        "MSG_InvalidPackage", classifier.getElementType(), classifier.getName()));
+                if (classifier.getOwningPackage()!=null)
+                {
+                    out.write("<DT>" + NbBundle.getMessage(PartFacadeData.class, "features") + " " + "<A HREF=\"" +
+                            getLinkTo(classifier)+ "\" title=\"" +
+                            getElement().getExpandedElementType() +" in " +
+                            classifier.getOwningPackage().getFullyQualifiedName(false) +
+                            "\">" + classifier.getName() + "</A>");
+                }
+                else
+                {
+                    out.write("<DT>" + NbBundle.getMessage(PartFacadeData.class, "features") + " " + classifier.getName());
+                    Logger.getLogger(PartFacadeData.class.getName()).
+                            log(Level.WARNING,
+                            NbBundle.getMessage(LifelineData.class,
+                            "MSG_InvalidPackage", classifier.getElementType(), classifier.getName()));
+                }
             }
-            
             out.write("</DL>\r\n\r\n");
             
             out.write(getDependencies());
