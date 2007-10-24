@@ -124,23 +124,17 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         } else if (t.getKind() == Tree.Kind.NEW_CLASS) {
             ExpressionTree ident = ((NewClassTree)t).getIdentifier();
             if (ident.getKind()== Tree.Kind.MEMBER_SELECT) {
-                start = (int) sp.getEndPosition(unit, ((MemberSelectTree) ident).getExpression());
-                if (start <= 0) {
-                    start = (int) sp.getStartPosition(unit, ident);
-                }
-                end = (int)sp.getEndPosition(unit, ident);
+                int[] pos = treeUtils.findNameSpan((MemberSelectTree) ident);
+                start = pos[0];
+                end = pos[1];
             } else {
                 start = (int) sp.getStartPosition(unit, ident);
                 end = (int) sp.getEndPosition(unit, ident);
             }
         } else if (t.getKind() == Tree.Kind.MEMBER_SELECT) {
-            //XXX: must be improved
-            //workaround for 110490 and 108286
-            start = (int)sp.getEndPosition(unit, ((MemberSelectTree) t).getExpression());
-            if (start<=0) {
-                start = (int) sp.getStartPosition(unit, t);
-            }
-            end = (int)sp.getEndPosition(unit, t);
+            int[] pos = treeUtils.findNameSpan((MemberSelectTree) t);
+            start = pos[0];
+            end = pos[1];
         } else {
             start = (int) sp.getStartPosition(unit, t);
             end = (int) sp.getEndPosition(unit, t);
@@ -186,7 +180,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
                 return s.substring(x, s.length());
             }
         }
-        return s;
+        return "";
     }
     
     private static String trimEnd(String s) {
@@ -197,7 +191,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
                 return s.substring(0, x);
             }
         }
-        return s;
+        return "";
     }
     
     public static WhereUsedElement create(int start, int end, CompilationInfo compiler) {
