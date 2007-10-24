@@ -323,16 +323,18 @@ public class ServiceModel {
     
     /** package private due to test functionality */ 
     void mergeModel(ServiceModel model2) {
-        changeSource=false;
-        setStatus(model2.status);
-        setName(model2.name);
-        setServiceName(model2.serviceName);
-        setPortName(model2.portName);
-        setEndpointInterface(model2.endpointInterface);
-        setWsdlLocation(model2.wsdlLocation);
-        setTargetNamespace(model2.targetNamespace);
-        setOperations(model2.operations);
-        changeSource=true;
+        if (model2.status != STATUS_INCORRECT_SERVICE) {
+            changeSource=false;
+            setStatus(model2.status);
+            setName(model2.name);
+            setServiceName(model2.serviceName);
+            setPortName(model2.portName);
+            setEndpointInterface(model2.endpointInterface);
+            setWsdlLocation(model2.wsdlLocation);
+            setTargetNamespace(model2.targetNamespace);
+            setOperations(model2.operations);
+            changeSource=true;
+        }
     }
     
     /* probably not needed

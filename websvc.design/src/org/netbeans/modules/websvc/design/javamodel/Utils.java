@@ -261,6 +261,8 @@ public class Utils {
                         operations.add(operation);
                     }
                     serviceModel.operations=operations;
+                } else {
+                    serviceModel.status = ServiceModel.STATUS_INCORRECT_SERVICE;
                 }
             }
             public void cancel() {}
