@@ -215,6 +215,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-editor-SimpleIndentEngine.settings" url="SimpleIndentEngine.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
+                <attr name="hidden" boolvalue="true"/>
             </file>
         </folder>
 
@@ -230,7 +231,7 @@ made subject to such option by the copyright holder.
         </folder> <!-- Editing -->
       </folder> <!-- Services -->
     </folder> <!-- UI -->
-
+<!--
     <folder name="Templates">
         <folder name="Services">
             <folder name="IndentEngine">
@@ -242,7 +243,7 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-
+-->
     <folder name="Editors">
         <file name="org-netbeans-modules-editor-impl-highlighting-HLFactory.instance"/>
         <file name="org-netbeans-lib-editor-hyperlink-HyperlinkOperation$HighlightFactoryImpl.instance"/>
