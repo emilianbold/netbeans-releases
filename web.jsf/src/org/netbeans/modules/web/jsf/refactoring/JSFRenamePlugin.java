@@ -166,20 +166,22 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                 WebModule webModule = WebModule.getWebModule(treePathHandle.getFileObject());
                 if (webModule != null){
                     CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
-                    Element resElement = treePathHandle.resolveElement(info);
-                    TypeElement type = (TypeElement) resElement;
-                    String oldFQN = type.getQualifiedName().toString();
-                    String newFQN = renameClass(oldFQN, refactoring.getNewName());
-                    List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, oldFQN, newFQN);
-                    Modifications modification = new Modifications();
-                    for (Occurrences.OccurrenceItem item : items) {
-                       // refactoringElements.add(refactoring, new JSFConfigRenameClassElement(item));
-                        PositionBounds position = item.getChangePosition();
-                        Modifications.Difference difference = new Modifications.Difference(
-                                Modifications.Difference.Kind.CHANGE, position.getBegin(),
-                                position.getEnd(), oldFQN, newFQN, item.getChangeMessage());
-                        modification.addDifference(item.getFacesConfig(), difference);
-                        refactoringElements.add(refactoring, new DiffElement.ChangeFQCNElement(difference, item, modification));
+                    if (info != null) {
+                        Element resElement = treePathHandle.resolveElement(info);
+                        TypeElement type = (TypeElement) resElement;
+                        String oldFQN = type.getQualifiedName().toString();
+                        String newFQN = renameClass(oldFQN, refactoring.getNewName());
+                        List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, oldFQN, newFQN);
+                        Modifications modification = new Modifications();
+                        for (Occurrences.OccurrenceItem item : items) {
+                           // refactoringElements.add(refactoring, new JSFConfigRenameClassElement(item));
+                            PositionBounds position = item.getChangePosition();
+                            Modifications.Difference difference = new Modifications.Difference(
+                                    Modifications.Difference.Kind.CHANGE, position.getBegin(),
+                                    position.getEnd(), oldFQN, newFQN, item.getChangeMessage());
+                            modification.addDifference(item.getFacesConfig(), difference);
+                            refactoringElements.add(refactoring, new DiffElement.ChangeFQCNElement(difference, item, modification));
+                        }
                     }
                 }
             }
