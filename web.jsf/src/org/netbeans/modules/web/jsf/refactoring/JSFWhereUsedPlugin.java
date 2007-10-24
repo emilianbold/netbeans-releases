@@ -43,17 +43,11 @@ package org.netbeans.modules.web.jsf.refactoring;
 
 
 import com.sun.source.tree.Tree.Kind;
-import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
@@ -112,29 +106,15 @@ public class JSFWhereUsedPlugin implements RefactoringPlugin{
                 if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS){
                     WebModule webModule = WebModule.getWebModule(treePathHandle.getFileObject());
                     if (webModule != null){
-                        CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
-                        if (refactoring.getContext().lookup(CompilationInfo.class) == null){
-                            final ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
-                            JavaSource source = JavaSource.create(cpInfo, new FileObject[]{treePathHandle.getFileObject()});
-                            try{
-                                source.runUserActionTask(new Task<CompilationController>() {
-
-                                    public void run(CompilationController co) throws Exception {
-                                        co.toPhase(JavaSource.Phase.RESOLVED);
-                                        refactoring.getContext().add(co);
-                                    }
-                                }, false);
-                            } catch (IOException ex) {
-                                LOGGER.log(Level.WARNING, "Exception in JSFWhereUsedPlugin", ex);   //NOI18N
+                        CompilationInfo info = JSFRefactoringUtils.getCompilationInfo(refactoring, treePathHandle.getFileObject());
+                        if (info != null) {
+                            Element resElement = treePathHandle.resolveElement(info);
+                            TypeElement type = (TypeElement) resElement;
+                            String fqnc = type.getQualifiedName().toString();
+                            List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, fqnc,"");
+                            for (Occurrences.OccurrenceItem item : items) {
+                                refactoringElements.add(refactoring, new JSFWhereUsedElement(item));
                             }
-                        }
-                        info = refactoring.getContext().lookup(CompilationInfo.class);
-                        Element resElement = treePathHandle.resolveElement(info);
-                        TypeElement type = (TypeElement) resElement;
-                        String fqnc = type.getQualifiedName().toString();
-                        List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, fqnc,"");
-                        for (Occurrences.OccurrenceItem item : items) {
-                            refactoringElements.add(refactoring, new JSFWhereUsedElement(item));
                         }
                     }
                 }

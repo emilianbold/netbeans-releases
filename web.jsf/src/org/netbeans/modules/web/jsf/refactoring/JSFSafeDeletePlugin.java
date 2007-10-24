@@ -112,29 +112,15 @@ public class JSFSafeDeletePlugin implements RefactoringPlugin{
                     if (treePathHandle.getKind() == Kind.CLASS) {
                         webModule = WebModule.getWebModule(treePathHandle.getFileObject());
                         if (webModule != null) {
-                            CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
-                            if (refactoring.getContext().lookup(CompilationInfo.class) == null) {
-                                final ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
-                                JavaSource source = JavaSource.create(cpInfo, new FileObject[]{treePathHandle.getFileObject()});
-                                try{
-                                    source.runUserActionTask(new Task<CompilationController>() {
-
-                                        public void run(CompilationController compilationController) throws Exception {
-                                            compilationController.toPhase(JavaSource.Phase.RESOLVED);
-                                            refactoring.getContext().add(compilationController);
-                                        }
-                                    }, false);
-                                } catch (IOException exception) {
-                                    LOGGER.log(Level.WARNING, "Exception in JSFSafeDeletePlugin", exception); //NOI18NN
+                            CompilationInfo info = JSFRefactoringUtils.getCompilationInfo(refactoring, treePathHandle.getFileObject());
+                            if (info != null) {
+                                Element resElement = treePathHandle.resolveElement(info);
+                                TypeElement type = (TypeElement) resElement;
+                                String fqcn = type.getQualifiedName().toString();
+                                List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, fqcn, null);
+                                for (Occurrences.OccurrenceItem item : items) {
+                                    refactoringElements.add(refactoring, new JSFSafeDeleteClassElement(item));
                                 }
-                                info = refactoring.getContext().lookup(CompilationInfo.class);
-                            }
-                            Element resElement = treePathHandle.resolveElement(info);
-                            TypeElement type = (TypeElement) resElement;
-                            String fqcn = type.getQualifiedName().toString();
-                            List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, fqcn, null);
-                            for (Occurrences.OccurrenceItem item : items) {
-                                refactoringElements.add(refactoring, new JSFSafeDeleteClassElement(item));
                             }
                         }
                     }

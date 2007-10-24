@@ -165,7 +165,7 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                 //renaming a class
                 WebModule webModule = WebModule.getWebModule(treePathHandle.getFileObject());
                 if (webModule != null){
-                    CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
+                    CompilationInfo info = JSFRefactoringUtils.getCompilationInfo(refactoring, treePathHandle.getFileObject());
                     if (info != null) {
                         Element resElement = treePathHandle.resolveElement(info);
                         TypeElement type = (TypeElement) resElement;
