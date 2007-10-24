@@ -2060,9 +2060,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 getFiles (affectedFiles, classCache, names, removed);
                 //find dependent files:
                 FileObject rootFO = FileUtil.toFileObject(rootFile);
-                final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(rootFO);
-                ClasspathInfo cpInfo = ClasspathInfoAccessor.INSTANCE.create (rootFO, filter, true, false);
-                toReparse = RebuildOraculum.findAllDependent(rootFile, null, cpInfo.getClassIndex(), removed);
+                if (rootFO != null) {
+                    final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(rootFO);
+                    ClasspathInfo cpInfo = ClasspathInfoAccessor.INSTANCE.create(rootFO, filter, true, false);
+                    toReparse = RebuildOraculum.findAllDependent(rootFile, null, cpInfo.getClassIndex(), removed);
+                }
                 //actually delete the sig files:
                 for (org.netbeans.modules.java.source.usages.Pair<String,String> s : names) {
                     sa.delete(s);
