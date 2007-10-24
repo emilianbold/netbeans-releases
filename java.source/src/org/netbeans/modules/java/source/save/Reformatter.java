@@ -249,14 +249,14 @@ public class Reformatter implements ReformatTask {
         private LinkedList<Diff> diffs = new LinkedList<Diff>();
 
         private Pretty(CompilationInfo info, TreePath path, CodeStyle cs) {
-            this(info.getText(), info.getTrees().getSourcePositions(),
+            this(info, info.getText(), info.getTrees().getSourcePositions(),
                     path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT
                     ? info.getTokenHierarchy().tokenSequence(JavaTokenId.language())
                     : info.getTreeUtilities().tokensFor(path.getLeaf()),
                     path, cs);
         }
         
-        private Pretty(String text, SourcePositions sp, TokenSequence<JavaTokenId> tokens, TreePath path, CodeStyle cs) {
+        private Pretty(CompilationInfo info, String text, SourcePositions sp, TokenSequence<JavaTokenId> tokens, TreePath path, CodeStyle cs) {
             this.fText = text;
             this.sp = sp;
             this.cs = cs;
@@ -272,7 +272,7 @@ public class Reformatter implements ReformatTask {
             this.afterAnnotation = false;
             this.fieldGroup = false;
             Tree tree = path.getLeaf();
-            this.indent = getIndentLevel(tokens, path);
+            this.indent = info != null ? getIndentLevel(info, path) : 0;
             this.col = this.indent;
             this.tokens = tokens;
             tokens.moveEnd();
@@ -290,7 +290,7 @@ public class Reformatter implements ReformatTask {
         }
 
         public static LinkedList<Diff> reformat(String text, TreePath path, SourcePositions sp, TokenSequence<JavaTokenId> tokens, CodeStyle cs) {
-            Pretty pretty = new Pretty(text, sp, tokens, path, cs);
+            Pretty pretty = new Pretty(null, text, sp, tokens, path, cs);
             pretty.scan(path, null);
             return pretty.diffs;
         }
@@ -2363,7 +2363,8 @@ public class Reformatter implements ReformatTask {
             return sb.toString();
         }
 
-        private int getIndentLevel(TokenSequence<JavaTokenId> tokens, TreePath path) {
+        private int getIndentLevel(CompilationInfo info, TreePath path) {
+            TokenSequence<JavaTokenId> tokens = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
             if (tokens == null)
                 return -1;
             if (path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT)
