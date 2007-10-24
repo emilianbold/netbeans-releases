@@ -242,6 +242,17 @@ public class DelegateMethodGenerator implements CodeGenerator {
         ExecutableType methodType = (ExecutableType)wc.getTypes().asMemberOf((DeclaredType)delegate.asType(), method);
         Set<Modifier> mods = new java.util.HashSet<Modifier>(method.getModifiers());
         mods.remove(Modifier.ABSTRACT);
+        mods.remove(Modifier.NATIVE);
+        
+        boolean useThisToDereference = false;
+        String delegateName = delegate.getSimpleName().toString();
+        
+        for (VariableElement ve : method.getParameters()) {
+            if (delegateName.equals(ve.getSimpleName().toString())) {
+                useThisToDereference = true;
+                break;
+            }
+        }
         
         List<VariableTree> params = new ArrayList<VariableTree>();
         List<ExpressionTree> args = new ArrayList<ExpressionTree>();
@@ -254,7 +265,8 @@ public class DelegateMethodGenerator implements CodeGenerator {
             args.add(make.Identifier(ve.getSimpleName()));
         }
 
-        ExpressionTree exp = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier(delegate.getSimpleName()), method.getSimpleName()), args);
+        ExpressionTree methodSelect = useThisToDereference ? make.MemberSelect(make.Identifier("this"), delegate.getSimpleName()) : make.Identifier(delegate.getSimpleName()); //NOI18N
+        ExpressionTree exp = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(methodSelect, method.getSimpleName()), args);
         StatementTree stmt = method.getReturnType().getKind() == TypeKind.VOID ? make.ExpressionStatement(exp) : make.Return(exp);
         BlockTree body = make.Block(Collections.singletonList(stmt), false);
         
