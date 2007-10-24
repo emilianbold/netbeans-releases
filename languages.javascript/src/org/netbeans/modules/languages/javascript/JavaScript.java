@@ -107,6 +107,7 @@ public class JavaScript {
         regExp.add (new Integer (','));
         regExp.add (new Integer (')'));
         regExp.add (new Integer (';'));
+        regExp.add (new Integer (']'));
     }
     
     public static Object[] parseRegularExpression (CharInput input) {
