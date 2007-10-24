@@ -287,7 +287,6 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
 
             incTokenList.replaceTokens(change, incTokenList.tokenCountCurrent(), 0);
             incTokenList.restartLexing(); // Will relex tokens lazily
-            incTokenList.incrementModCount();
             
             synchronized (snapshotRefs) {
                 for (int i = snapshotRefs.size() - 1; i >= 0; i--) {
