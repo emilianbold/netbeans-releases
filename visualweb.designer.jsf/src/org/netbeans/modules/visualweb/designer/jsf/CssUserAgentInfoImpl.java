@@ -115,11 +115,26 @@ public class CssUserAgentInfoImpl implements CssUserAgentInfo {
     // XXX #110849 Be aware that elemnt might be owned by external document (fragments),
     // not the specified one.
     private static Box findBoxForDocumentElement(Document document, Element element) {
-        Designer[] designers = JsfForm.findDesignersForDocument(document);
-        for (Designer designer : designers) {
-            Box box = designer.findBoxForElement(element);
-            if (box != null) {
-                return box;
+         {
+            Designer[] designers = JsfForm.findDesignersForDocument(document);
+            for (Designer designer : designers) {
+                Box box = designer.findBoxForElement(element);
+                if (box != null) {
+                    return box;
+                }
+            }
+        }
+        
+        // XXX #119888 There are funky things done with elements from fragment (inside page),
+        // they might be part of different document (engine), try also original document in that case.
+        Document doc = element == null ? null : element.getOwnerDocument();
+        if (doc != document) {
+            Designer[] designers = JsfForm.findDesignersForDocument(doc);
+            for (Designer designer : designers) {
+                Box box = designer.findBoxForElement(element);
+                if (box != null) {
+                    return box;
+                }
             }
         }
         
