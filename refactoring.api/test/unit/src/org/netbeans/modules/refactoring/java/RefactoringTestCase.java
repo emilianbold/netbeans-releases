@@ -208,14 +208,19 @@ public abstract class RefactoringTestCase extends LogTestCase{
         }
         if(fatal) return  false;
         RefactoringSession rs = RefactoringSession.create("Session");
-        absRefactoring.prepare(rs);
-        Collection<RefactoringElement> elems = rs.getRefactoringElements();
-        for (RefactoringElement refactoringElement : elems) {
-            addRefactoringElement(refactoringElement);
+        try {
+            absRefactoring.prepare(rs);
+            Collection<RefactoringElement> elems = rs.getRefactoringElements();
+            for (RefactoringElement refactoringElement : elems) {
+                addRefactoringElement(refactoringElement);
+            }
+            rs.doRefactoring(true);
+            dumpRefactoredFiles();
+            dumpNewFiles(projectSources, getProjectSources());
+        } catch (Throwable t) {
+            t.printStackTrace();
+            t.printStackTrace(log);            
         }
-        rs.doRefactoring(true);
-        dumpRefactoredFiles();
-        dumpNewFiles(projectSources, getProjectSources());
         return true;
     }
     

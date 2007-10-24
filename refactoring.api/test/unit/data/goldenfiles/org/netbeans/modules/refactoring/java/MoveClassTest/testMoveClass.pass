@@ -34,8 +34,6 @@ movepkgdst.MoveClass.java
 
 package movepkgdst;
 
-import movepkgdst.MoveClass;
-
 public class MoveClass {
 
     public MoveClass() {
