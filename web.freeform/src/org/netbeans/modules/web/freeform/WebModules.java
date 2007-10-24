@@ -51,6 +51,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Collections;
+import java.util.Map;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -64,6 +65,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
@@ -77,6 +79,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.util.Mutex;
 
 /**
  * Web module implementation on top of freeform project.
@@ -85,8 +88,8 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
  */
 public class WebModules implements WebModuleProvider, AntProjectListener, ClassPathProvider {
     
-    private ArrayList modules = new ArrayList ();
-    private HashMap cache = new HashMap ();
+    private List<FFWebModule> modules;
+    private Map<FFWebModule, WebModule> cache;
     private final Project project;
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
@@ -101,19 +104,18 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         helper.addAntProjectListener(this);
     }
     
-    public synchronized WebModule findWebModule (FileObject file) {
+    public WebModule findWebModule (FileObject file) {
         Project owner = FileOwnerQuery.getOwner (file);
         if (project.equals (owner)) {
-            if (modules.isEmpty()) {
-                readAuxData ();
-            }
-            for (Iterator iter = modules.iterator (); iter.hasNext ();) {
-                FFWebModule wm = (FFWebModule) iter.next ();
-                if (wm.contais (file)) {
-                    if (cache.get (wm) == null) {
-                        cache.put (wm, WebModuleFactory.createWebModule (wm));
+            List<FFWebModule> mods = getModules();
+            for (FFWebModule ffwm : mods) {
+                if (ffwm.contains (file)) {
+                    WebModule wm = cache.get (ffwm);
+                    if (wm == null) {
+                        wm = WebModuleFactory.createWebModule (ffwm);
+                        cache.put (ffwm, wm);
                     }
-                    return (WebModule) cache.get (wm);
+                    return wm;
                 }
             }
         }
@@ -123,25 +125,38 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
     public ClassPath findClassPath (FileObject file, String type) {
         Project owner = FileOwnerQuery.getOwner (file);
         if (owner != null && owner.equals (project)) {
-            if (modules == null) {
-                readAuxData ();
-            }
-            for (Iterator iter = modules.iterator (); iter.hasNext ();) {
-                FFWebModule wm = (FFWebModule) iter.next ();
-                if (wm.contais (file)) {
-                    return wm.findClassPath (file, type);
+            List<FFWebModule> mods = getModules();
+            for (FFWebModule ffwm : mods) {
+                if (ffwm.contains (file)) {
+                    return ffwm.findClassPath (file, type);
                 }
             }
         }
         return null;
     }
     
-    public synchronized void readAuxData () {
-        modules.clear();
-        cache.clear();
+    private List<FFWebModule> getModules()
+    {
+        // read modules under project READ access to prevent issues like #119734
+        return ProjectManager.mutex().readAccess(new Mutex.Action<List<FFWebModule>>() {
+            public List<FFWebModule> run() {
+                synchronized (WebModules.class)
+                {
+                    if (modules == null)
+                    {
+                        modules = readAuxData();
+                        cache = new HashMap<FFWebModule, WebModule>();
+                    }
+                    return modules;
+                }
+            }});
+    }
+    
+    private List<FFWebModule> readAuxData () {
+        List<FFWebModule> mods = new ArrayList<FFWebModule>();
         Element web = aux.getConfigurationFragment(WebProjectNature.EL_WEB, WebProjectNature.NS_WEB_2, true);
         if (web == null) {
-            return;
+            return mods;
         }
         List/*<Element>*/ webModules = Util.findSubElements(web);
         Iterator it = webModules.iterator();
@@ -162,8 +177,9 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
             if (webInfEl != null) {
                 webInf = getFile (webModulesEl, "web-inf"); //NOI18N
             }
-            modules.add (new FFWebModule (docRootFO, j2eeSpec, contextPath, sources, cp, webInf));
+            mods.add (new FFWebModule (docRootFO, j2eeSpec, contextPath, sources, cp, webInf));
         }
+        return mods;
     }
     
     private FileObject getFile (Element parent, String fileElName) {
@@ -256,7 +272,12 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
     }
     
     public void configurationXmlChanged(AntProjectEvent ev) {
-        readAuxData();
+        // reset modules list; will be recreated next time somebody
+        // asks for module or classpath
+        synchronized (WebModules.class)
+        {
+            modules = null;
+        }
     }
     
     public void propertiesChanged(AntProjectEvent ev) {
@@ -287,7 +308,7 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
             javaSourcesClassPath = (sourcesFOs == null ? ClassPathSupport.createClassPath(Collections.EMPTY_LIST): ClassPathSupport.createClassPath(sourcesFOs)); 
         }
         
-        boolean contais (FileObject fo) {
+        boolean contains (FileObject fo) {
             if (docRootFO == fo || FileUtil.isParentOf (docRootFO , fo))
                 return true;
             for (int i = 0; i < sourcesFOs.length; i++) {
