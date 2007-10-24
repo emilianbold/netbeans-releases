@@ -365,23 +365,27 @@ function download(option) {
 
     var basename  = "";
 	
-
+    if(platform=="zip") {
+        basename="zip/";
+    } else {
+        basename="bundles/";
+    }
     //if ((platform == "macosx-x86") || (platform != "macosx-ppc")) {
-    //  basename  = "{nb.files.prefix}-{build.number}-";
+    //  basename  += "{nb.files.prefix}-{build.number}";
     //} else {
-	basename  = "{nb.files.prefix}-{build.number}-";
+	basename  += "{nb.files.prefix}-{build.number}";
     //}
 
     var file_name = "start.html?" + basename;
 
-    if (option != "all" ) {
-    	file_name += option + "-";
+    if (option != "all") {
+    	file_name += "-" + option;
     }
 
-    if ((platform != "macosx-x86") && (platform != "macosx-ppc")) {
-    	file_name += platform;
-    } else {
-	file_name += "macosx";
+    if ((platform == "macosx-x86") || (platform == "macosx-ppc")) {
+	file_name += "-macosx"; 
+    } else if ( platform != "zip" ) {
+   	file_name += "-" + platform;
     }
 
 
@@ -390,9 +394,12 @@ function download(option) {
     } else if ((platform == "macosx-x86") || (platform == "macosx-ppc")) {
         //file_name += ".tgz";
 	file_name += ".dmg";
+    } else if(platform == "zip"){
+	file_name += ".zip"        
     } else {
         file_name += ".sh";
     }
+
 
     window.location = file_name;
 }
