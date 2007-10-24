@@ -213,7 +213,7 @@ public abstract class JPAProblemFinder {
                     
                     context.setElementToAnnotate(treeToAnnotate);
                     JPARulesEngine rulesEngine = new JPARulesEngine();
-                    rulesEngine.visitTypeAsClass(javaClass, context);
+                    rulesEngine.visitTypeAsClass(idClass, context);
                     return rulesEngine.getProblemsFound();
                 }
             }
