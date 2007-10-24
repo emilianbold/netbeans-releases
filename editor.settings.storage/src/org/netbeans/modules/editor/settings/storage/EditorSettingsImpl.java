@@ -316,34 +316,41 @@ public class EditorSettingsImpl extends EditorSettings {
      * @param profile a profile name
      * @return highlighting properties for given profile or null
      */
-    public Map<String, AttributeSet> getHighlightings (
-	String profile
-    ) {
-        // 1) translate profile name
-	profile = getInternalFontColorProfile (profile);
+    public Map<String, AttributeSet> getHighlightings(String profile) {
+        // translate profile name
+        profile = getInternalFontColorProfile(profile);
 
-        if (!highlightings.containsKey (profile)) {
-            
-            // 2) init profile for test mime types
-            if (profile.startsWith ("test")) {
-                highlightings.put (
-                    profile,
-                    getHighlightings (DEFAULT_PROFILE)
+        if (!highlightings.containsKey(profile)) {
+            boolean specialProfile = profile.startsWith("test"); //NOI18N
+
+            Map<String, AttributeSet> profileColorings = ColoringStorage.loadColorings(
+                MimePath.EMPTY,
+                specialProfile ? DEFAULT_PROFILE : profile,
+                false,
+                false
+            );
+            if (!specialProfile && !DEFAULT_PROFILE.equals(profile)) {
+                Map<String, AttributeSet> defaultProfileColorings = ColoringStorage.loadColorings(
+                    MimePath.EMPTY,
+                    DEFAULT_PROFILE,
+                    false,
+                    false
                 );
-            } else {
-                
-                // 3) read data form disk or cache
-                Map<String, AttributeSet> m = ColoringStorage.loadColorings 
-                    (MimePath.EMPTY, profile, false, false);
-                highlightings.put (profile, m);
+
+                // Add colorings from the default profile that do not exist in
+                // the profileColorings. They are normally the same, but when
+                // imported from previous version some colorings can be missing.
+                // See #119709
+                Map<String, AttributeSet> m = new HashMap<String, AttributeSet>();
+                m.putAll(defaultProfileColorings);
+                m.putAll(profileColorings);
+                profileColorings = Collections.unmodifiableMap(m);
             }
+            highlightings.put(profile, profileColorings);
         }
-        
-        if (highlightings.get(profile) == null) {
-            return null;
-        } else {
-            return Collections.unmodifiableMap(highlightings.get(profile));
-        }
+
+        Map<String, AttributeSet> h = highlightings.get(profile);
+        return h == null ? Collections.<String, AttributeSet>emptyMap() : h;
     }
     
     // Map (String (profile) > Map (String (category) > AttributeSet)).
@@ -356,24 +363,17 @@ public class EditorSettingsImpl extends EditorSettings {
      * @param profile a profile name
      * @return highlighting properties for given profile or null
      */
-    public Map<String, AttributeSet> getHighlightingDefaults (
-	String profile
-    ) {
-        // 1) translate profile name
-	profile = getInternalFontColorProfile (profile);
+    public Map<String, AttributeSet> getHighlightingDefaults(String profile) {
+        // translate profile name
+        profile = getInternalFontColorProfile(profile);
 
-        // 2) read data form disk or cache
-        if (!highlightingDefaults.containsKey (profile)) {
-            Map<String, AttributeSet> m = ColoringStorage.loadColorings 
-                (MimePath.EMPTY, profile, false, true);
-            highlightingDefaults.put (profile, m);
+        if (!highlightingDefaults.containsKey(profile)) {
+            Map<String, AttributeSet> m = ColoringStorage.loadColorings(MimePath.EMPTY, profile, false, true);
+            highlightingDefaults.put(profile, m);
         }
-        
-        if (highlightingDefaults.get(profile) == null) {
-            return null;
-        } else {
-            return Collections.unmodifiableMap(highlightingDefaults.get(profile));
-        }
+
+        Map<String, AttributeSet> h = highlightings.get(profile);
+        return h == null ? Collections.<String, AttributeSet>emptyMap() : h;
     }
     
     /**
