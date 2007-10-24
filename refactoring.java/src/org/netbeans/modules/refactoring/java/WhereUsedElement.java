@@ -46,6 +46,7 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
@@ -109,31 +110,44 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         }
         SourcePositions sp = compiler.getTrees().getSourcePositions();
         Tree t= tree.getLeaf();
-        int start = (int)sp.getStartPosition(unit, t);
-        int end   = (int)sp.getEndPosition(unit, t);
-        if (end == -1) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new RuntimeException("Cannot get end position for " + t.getClass().getName()+ " " + t + " file:" + compiler.getFileObject().getPath()));
-            end=start;
-        }
+        int start;
+        int end;
+        TreeUtilities treeUtils = compiler.getTreeUtilities();
         if (t.getKind() == Tree.Kind.CLASS) {
-            //this is strange - how to get position of start of name?
-            start = start + t.toString().trim().indexOf(((ClassTree)t).getSimpleName().toString());
-            end = start + ((ClassTree)t).getSimpleName().toString().length();
-        }
-        if (t.getKind() == Tree.Kind.METHOD) {
-            start = start + t.toString().indexOf(((MethodTree)t).getName().toString())+1;
-            end = start + ((MethodTree)t).getName().toString().length();
-        }
-        if (t.getKind() == Tree.Kind.NEW_CLASS) {
-            start = (int)sp.getStartPosition(unit, ((NewClassTree) t).getIdentifier());
-            end = (int)sp.getEndPosition(unit, ((NewClassTree) t).getIdentifier());
-        }
-        if (t.getKind() == Tree.Kind.MEMBER_SELECT) {
+            int[] pos = treeUtils.findNameSpan((ClassTree)t);
+            start = pos[0];
+            end = pos[1];
+        } else if (t.getKind() == Tree.Kind.METHOD) {
+            int[] pos = treeUtils.findNameSpan((MethodTree)t);
+            start = pos[0];
+            end = pos[1];
+        } else if (t.getKind() == Tree.Kind.NEW_CLASS) {
+            ExpressionTree ident = ((NewClassTree)t).getIdentifier();
+            if (ident.getKind()== Tree.Kind.MEMBER_SELECT) {
+                start = (int) sp.getEndPosition(unit, ((MemberSelectTree) ident).getExpression());
+                if (start <= 0) {
+                    start = (int) sp.getStartPosition(unit, ident);
+                }
+                end = (int)sp.getEndPosition(unit, ident);
+            } else {
+                start = (int) sp.getStartPosition(unit, ident);
+                end = (int) sp.getEndPosition(unit, ident);
+            }
+        } else if (t.getKind() == Tree.Kind.MEMBER_SELECT) {
             //XXX: must be improved
             //workaround for 110490 and 108286
-            int newstart = (int)sp.getEndPosition(unit, ((MemberSelectTree) t).getExpression());
-            if (newstart>0)
-                start = newstart;
+            start = (int)sp.getEndPosition(unit, ((MemberSelectTree) t).getExpression());
+            if (start<=0) {
+                start = (int) sp.getStartPosition(unit, t);
+            }
+            end = (int)sp.getEndPosition(unit, t);
+        } else {
+            start = (int) sp.getStartPosition(unit, t);
+            end = (int) sp.getEndPosition(unit, t);
+            if (end == -1) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new RuntimeException("Cannot get end position for " + t.getClass().getName() + " " + t + " file:" + compiler.getFileObject().getPath()));
+                end = start;
+            }
         }
                 
         assert start>0:"Cannot find start position in file " + unit.getSourceFile().getName() + "\n tree=" + tree.toString();
@@ -144,11 +158,11 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         long sta = lm.getStartPosition(line);
         long en = lm.getStartPosition(endLine+1)-1;
         StringBuffer sb = new StringBuffer();
-        sb.append(RetoucheUtils.getHtml(content.subSequence((int)sta,(int)start).toString().trim()));
-        sb.append(" <b>");
+        sb.append(RetoucheUtils.getHtml(trimStart(content.subSequence((int)sta,(int)start).toString())));
+        sb.append("<b>"); //NOI18N
         sb.append(content.subSequence((int)start,(int)end));
-        sb.append("</b> ");
-        sb.append(RetoucheUtils.getHtml(content.subSequence((int)end,(int)en).toString().trim()));
+        sb.append("</b>");//NOI18N
+        sb.append(RetoucheUtils.getHtml(trimEnd(content.subSequence((int)end,(int)en).toString())));
         
         DataObject dob = null;
         try {
@@ -162,6 +176,28 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         PositionBounds bounds = new PositionBounds(ref1, ref2);
         TreePath tr = getEnclosingTree(tree);
         return new WhereUsedElement(bounds, sb.toString().trim(), compiler.getFileObject(), tr, compiler);
+    }
+    
+    private static String trimStart(String s) {
+        for (int x = 0; x < s.length(); x++) {
+            if (Character.isWhitespace(s.charAt(x))) {
+                continue;
+            } else {
+                return s.substring(x, s.length());
+            }
+        }
+        return s;
+    }
+    
+    private static String trimEnd(String s) {
+        for (int x = s.length()-1; x >=0; x--) {
+            if (Character.isWhitespace(s.charAt(x))) {
+                continue;
+            } else {
+                return s.substring(0, x);
+            }
+        }
+        return s;
     }
     
     public static WhereUsedElement create(int start, int end, CompilationInfo compiler) {
@@ -179,11 +215,11 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         long sta = lm.getStartPosition(line);
         long en = lm.getStartPosition(endLine+1)-1;
         StringBuffer sb = new StringBuffer();
-        sb.append(RetoucheUtils.getHtml(content.subSequence((int)sta,(int)start).toString().trim()));
-        sb.append(" <b>");
+        sb.append(RetoucheUtils.getHtml(trimStart(content.subSequence((int)sta,(int)start).toString())));
+        sb.append("<b>"); //NOI18N
         sb.append(content.subSequence((int)start,(int)end));
-        sb.append("</b> ");
-        sb.append(RetoucheUtils.getHtml(content.subSequence((int)end,(int)en).toString().trim()));
+        sb.append("</b>");//NOI18N
+        sb.append(RetoucheUtils.getHtml(trimEnd(content.subSequence((int)end,(int)en).toString())));
         
         DataObject dob = null;
         try {
