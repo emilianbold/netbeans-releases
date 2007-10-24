@@ -350,11 +350,22 @@ function update() {
 }
 
 function is_compatible(index, platform) {
-    for (var i = 0; i < product_platforms[index].length; i++) {
-        if (product_platforms[index][i] == platform) {
-            return true;
+    if ( platform == "zip" ) {
+         for (var i = 0; i < group_products.length; i++) {
+          for (var j = 0; j < group_products[i].length; j++) {
+              var idx = group_products[i][j];
+              if(idx==index && i == 0) {
+                   return true;
+              } 
+          }
         }
-    }
+    } else {
+        for (var i = 0; i < product_platforms[index].length; i++) {
+            if (product_platforms[index][i] == platform) {
+                return true;
+            }
+        }
+    }    
     
     return false;
 }
