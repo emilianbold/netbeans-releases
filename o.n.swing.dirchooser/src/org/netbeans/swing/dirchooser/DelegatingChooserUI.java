@@ -50,6 +50,7 @@ import javax.swing.JFileChooser;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.FileChooserUI;
 import javax.swing.plaf.metal.MetalFileChooserUI;
+import org.openide.util.Utilities;
 
 /** Placeholder ComponentUI that just delegates to other FileChooserUIs
  * based on what selection mode is set in JFileChooser.
@@ -58,10 +59,20 @@ import javax.swing.plaf.metal.MetalFileChooserUI;
  */
 public class DelegatingChooserUI extends ComponentUI {
     
+    private static final String USE_SHELL_FOLDER = "FileChooser.useShellFolder";
+    
     private static boolean firstTime = true;
 
     public static ComponentUI createUI(JComponent c) {
         JFileChooser fc = (JFileChooser)c;
+
+        // #109703 - don't use shell folder, it's terribly slow due to JDK bug
+        if (Utilities.isWindows()) {
+            if (!Boolean.TRUE.equals(fc.getClientProperty(USE_SHELL_FOLDER))) {
+                fc.putClientProperty(USE_SHELL_FOLDER, Boolean.FALSE);
+            }
+        }
+        
         Class<? extends FileChooserUI> chooser = getCurChooser(fc);
         ComponentUI compUI;
         try {
