@@ -350,6 +350,9 @@ public class BindingDesignSupport {
             do {
                 String typeName = superClass[0];
                 final String resourceName = typeName.replace('.', '/') + ".java"; // NOI18N
+                int lastDot = typeName.lastIndexOf('.');
+                lastDot = (lastDot == -1) ? 0 : lastDot;
+                final String simpleTypeName = typeName.substring(lastDot+1);
                 FileObject fob = cp.findResource(resourceName);
                 if (fob == null) {
                     try {
@@ -366,13 +369,17 @@ public class BindingDesignSupport {
                             ClassTree clazz = null;
                             for (Tree typeDecl : cu.getTypeDecls()) {
                                 if (Tree.Kind.CLASS == typeDecl.getKind()) {
-                                    clazz = (ClassTree) typeDecl;
-                                    break;
+                                    ClassTree candidate = (ClassTree)typeDecl;
+                                    if (candidate.getSimpleName().toString().equals(simpleTypeName)) {
+                                        clazz = candidate;
+                                        break;
+                                    }
                                 }
                             }
                             if (clazz == null) { // issue 118690
                                 // should not happen
                                 Logger.getLogger(getClass().getName()).log(Level.INFO, "ClassTree not found in " + resourceName); // NOI18N
+                                superClass[0] = Object.class.getName();
                                 return;
                             }
                             for (Tree clMember : clazz.getMembers()) {
