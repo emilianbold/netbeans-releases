@@ -374,7 +374,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             generator.setMasterColumnTypes(masterColumnTypes);
 
             List<String> detailColumnNames = (List<String>)wizard.getProperty("detailColumns"); // NOI18N
-            List<String> detailColumns = J2EEUtils.propertiesForColumns(mappings, (detailEntity == null) ? masterEntity : detailEntity, detailColumnNames);;
+            List<String> detailColumns = J2EEUtils.propertiesForColumns(mappings, (detailEntity == null) ? masterEntity : detailEntity, detailColumnNames);
             generator.setDetailColumns(detailColumns);
 
             if (detailClass != null) {
@@ -595,8 +595,11 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                         ClassTree clazz = null;
                         for (Tree typeDecl : cu.getTypeDecls()) {
                             if (Tree.Kind.CLASS == typeDecl.getKind()) {
-                                clazz = (ClassTree) typeDecl;
-                                break;
+                                ClassTree candidate = (ClassTree) typeDecl;
+                                if (candidate.getModifiers().getFlags().contains(javax.lang.model.element.Modifier.PUBLIC)) {
+                                    clazz = candidate;
+                                    break;
+                                }
                             }
                         }
 
@@ -734,8 +737,11 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                     ClassTree clazz = null;
                     for (Tree typeDecl : cu.getTypeDecls()) {
                         if (Tree.Kind.CLASS == typeDecl.getKind()) {
-                            clazz = (ClassTree) typeDecl;
-                            break;
+                            ClassTree candidate = (ClassTree) typeDecl;
+                            if (candidate.getModifiers().getFlags().contains(javax.lang.model.element.Modifier.PUBLIC)) {
+                                clazz = candidate;
+                                break;
+                            }
                         }
                     }
 

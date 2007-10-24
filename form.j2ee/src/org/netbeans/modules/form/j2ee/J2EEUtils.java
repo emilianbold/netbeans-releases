@@ -678,8 +678,11 @@ public class J2EEUtils {
                     ClassTree clazz = null;
                     for (Tree typeDecl : cu.getTypeDecls()) {
                         if (Tree.Kind.CLASS == typeDecl.getKind()) {
-                            clazz = (ClassTree) typeDecl;
-                            break;
+                            ClassTree candidate = (ClassTree) typeDecl;
+                            if (candidate.getModifiers().getFlags().contains(javax.lang.model.element.Modifier.PUBLIC)) {
+                                clazz = candidate;
+                                break;
+                            }
                         }
                     }
                     
@@ -769,8 +772,11 @@ public class J2EEUtils {
                     ClassTree clazz = null;
                     for (Tree typeDecl : cu.getTypeDecls()) {
                         if (Tree.Kind.CLASS == typeDecl.getKind()) {
-                            clazz = (ClassTree) typeDecl;
-                            break;
+                            ClassTree candidate = (ClassTree) typeDecl;
+                            if (candidate.getModifiers().getFlags().contains(javax.lang.model.element.Modifier.PUBLIC)) {
+                                clazz = candidate;
+                                break;
+                            }
                         }
                     }
                     TreeMaker make = wc.getTreeMaker();
@@ -809,8 +815,11 @@ public class J2EEUtils {
                     ClassTree clazz = null;
                     for (Tree typeDecl : cu.getTypeDecls()) {
                         if (Tree.Kind.CLASS == typeDecl.getKind()) {
-                            clazz = (ClassTree) typeDecl;
-                            break;
+                            ClassTree candidate = (ClassTree) typeDecl;
+                            if (candidate.getModifiers().getFlags().contains(javax.lang.model.element.Modifier.PUBLIC)) {
+                                clazz = candidate;
+                                break;
+                            }
                         }
                     }
                     TreeMaker make = wc.getTreeMaker();
@@ -860,8 +869,11 @@ public class J2EEUtils {
                     ClassTree clazz = null;
                     for (Tree typeDecl : cu.getTypeDecls()) {
                         if (Tree.Kind.CLASS == typeDecl.getKind()) {
-                            clazz = (ClassTree) typeDecl;
-                            break;
+                            ClassTree candidate = (ClassTree) typeDecl;
+                            if (candidate.getModifiers().getFlags().contains(javax.lang.model.element.Modifier.PUBLIC)) {
+                                clazz = candidate;
+                                break;
+                            }
                         }
                     }
                     Map<String, String> variables = new HashMap<String, String>();
