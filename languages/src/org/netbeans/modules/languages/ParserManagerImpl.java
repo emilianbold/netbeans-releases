@@ -194,10 +194,6 @@ public class ParserManagerImpl extends ParserManager {
         final Map<String,Set<ASTEvaluator>>   evaluators,
         final ASTNode                         root
     ) {
-        cancel [0] = true;
-        if (parsingTask != null) {
-            parsingTask.cancel ();
-        }
         parsingTask = rp.post (new Runnable () {
             public void run () {
                 cancel [0] = false;
@@ -516,6 +512,3 @@ public class ParserManagerImpl extends ParserManager {
         }
     }
 }
-
-
-
