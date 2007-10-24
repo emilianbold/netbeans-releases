@@ -127,7 +127,6 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         final AtomicBoolean departmentAdded = new AtomicBoolean();
         final AtomicBoolean addressRemoved = new AtomicBoolean();
         final AtomicBoolean employeeChanged = new AtomicBoolean();
-        final AtomicBoolean departmentChanged = new AtomicBoolean();
         final CountDownLatch typesLatch = new CountDownLatch(4);
         ClassIndexListener listener = new ClassIndexAdapter() {
             public void typesAdded(TypesEvent event) {
@@ -143,10 +142,6 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
                 for (ElementHandle<TypeElement> type : event.getTypes()) {
                     if ("foo.Employee".equals(type.getQualifiedName())) {
                         employeeChanged.set(true);
-                        typesLatch.countDown();
-                    }
-                    if ("foo.Department".equals(type.getQualifiedName())) {
-                        departmentChanged.set(true);
                         typesLatch.countDown();
                     }
                 }
@@ -178,7 +173,6 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         assertTrue("Should have got a typesAdded event for Department", departmentAdded.get());
         assertTrue("Should have got a typesRemoved event for Address ", addressRemoved.get());
         assertTrue("Should have got a typesChanged event for Employee", employeeChanged.get());
-        assertTrue("Should have got a typesChanged event for Department", departmentChanged.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
         changeListener.assertEvent();
         helper.runJavaSourceTask(new Runnable() {
