@@ -33,9 +33,10 @@
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" overwrite="true">
             <fileset dir="unpatched_files" />
         </copy>
-        <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/jruby-gems.zip"/>
-        <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rails-gems.zip"/>
-        <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/extra-gems.zip"/>
+        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/rake-0.7.3.gem"/>
+        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/rspec-1.0.8.gem"/>
+        <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rails-gems-1.2.3.zip"/>
+        <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/jdbc-ActiveRecord-JDBC-0.5.gem"/>
         <!-- Run dist-bin target in JRuby's own build.xml file -->
         <ant dir="${unpatched_source}/jruby-${jruby_src_version}" target="dist-bin" inheritall="false" inheritrefs="false"/>
         <!-- Extract the resulting .tar.gz file into our cluster -->
