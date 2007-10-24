@@ -82,13 +82,20 @@ public final class ClassIndex {
     
     private static final Logger LOGGER = Logger.getLogger(ClassIndex.class.getName());
     
+    //INV: Never null
     private final ClassPath bootPath;
+    //INV: Never null
     private final ClassPath classPath;
+    //INV: Never null
     private final ClassPath sourcePath;
 
+    //INV: Never null
     private final Set<URL> oldSources;
+    //INV: Never null
     private final Set<URL> oldDeps;    
+    //INV: Never null
     private final Set<ClassIndexImpl> sourceIndeces;
+    //INV: Never null
     private final Set<ClassIndexImpl> depsIndeces;
     
     private final List<ClassIndexListener> listeners = new CopyOnWriteArrayList<ClassIndexListener>();
@@ -193,16 +200,18 @@ public final class ClassIndex {
         this.bootPath = bootPath;
         this.classPath = classPath;
         this.sourcePath = sourcePath;
+        this.oldDeps = new HashSet<URL>();
+        this.oldSources = new HashSet<URL>();
+        this.depsIndeces = new HashSet<ClassIndexImpl>();
+        this.sourceIndeces = new HashSet<ClassIndexImpl>();
+        
         final ClassIndexManager manager = ClassIndexManager.getDefault();
         manager.addClassIndexManagerListener(WeakListeners.create(ClassIndexManagerListener.class, (ClassIndexManagerListener) this.spiListener, manager));
         this.bootPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.bootPath));
         this.classPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.classPath));
         this.sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.sourcePath));
-        this.sourceIndeces = new HashSet<ClassIndexImpl>();        
-        this.oldSources = new HashSet<URL>();
-        createQueriesForRoots (this.sourcePath, true, this.sourceIndeces, oldSources);
-        this.depsIndeces = new HashSet<ClassIndexImpl>();
-        this.oldDeps = new HashSet<URL>();
+                
+        createQueriesForRoots (this.sourcePath, true, this.sourceIndeces, oldSources);                
         createQueriesForRoots (this.bootPath, false, this.depsIndeces, oldDeps);                
         createQueriesForRoots (this.classPath, false, this.depsIndeces, oldDeps);	    
     }

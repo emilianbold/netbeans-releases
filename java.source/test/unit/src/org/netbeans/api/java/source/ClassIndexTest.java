@@ -159,7 +159,7 @@ public class ClassIndexTest extends NbTestCase {
         final CIL testListener = new CIL ();
         index.addClassIndexListener(testListener);
         
-        Set<EventType> et = EnumSet.of(EventType.TYPES_ADDED, EventType.TYPES_CHANGED);
+        Set<EventType> et = EnumSet.of(EventType.TYPES_ADDED);
         testListener.setExpectedEvents (et);
         createFile ("foo/A.java", "package foo;\n public class A {}");
         assertTrue(testListener.awaitEvent(10, TimeUnit.SECONDS));
