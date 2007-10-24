@@ -171,7 +171,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
         String javaTypeName = "";
         Type type = e.getType();
         if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
-            if( e.isNillable()) {
+            if( e.isNillable() || e.getMinOccurs() == 0 ) {
                 javaTypeName = getWrapperTypeName( e.getType());
             } else {
                 javaTypeName = type.getJavaTypeName();
@@ -946,7 +946,11 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                 
                                 Type type = e.getType();
                                 if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
-                                    off.write( "Object inputObject = " + wrapPrimitiveType( type, e.getName().getLocalPart()) + ";\n" );
+                                    if( e.isNillable() || e.getMinOccurs() == 0 ) {
+                                        off.write( "Object inputObject = " + e.getName().getLocalPart() + ";\n" );
+                                    } else {
+                                        off.write( "Object inputObject = " + wrapPrimitiveType( type, e.getName().getLocalPart()) + ";\n" );
+                                    }
                                 } else if( Type.FLAVOR_SEQUENCE == type.getFlavor()) {                                    
                                     off.write( "Object inputObject[] = new Object[] {\n" );
                                     for( Iterator<SchemaConstruct> scit = type.getSubconstructs().iterator(); scit.hasNext(); ) {
@@ -957,18 +961,18 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                             Type t = sce.getType();
                                             if( Type.FLAVOR_PRIMITIVE == t.getFlavor()) {
                                                 if( !isArray ) {
-                                                    if( !sce.isNillable()) {
-                                                        // Primitive non array
-                                                        off.write( wrapPrimitiveType( t, sce.getName().getLocalPart()));
-                                                    } else {
+                                                    if( sce.isNillable() || sce.getMinOccurs() == 0 ) {
                                                         // Wrapper non array
                                                         off.write( sce.getName().getLocalPart());
+                                                    } else {
+                                                        // Primitive non array
+                                                        off.write( wrapPrimitiveType( t, sce.getName().getLocalPart()));
                                                     }
                                                 } else {
-                                                    if( !sce.isNillable()) {
-                                                        off.write( wrapPrimitiveType( t, sce.getName().getLocalPart()));
-                                                    } else { 
+                                                    if( sce.isNillable() || sce.getMinOccurs() == 0 ) {
                                                         off.write( sce.getName().getLocalPart());
+                                                    } else { 
+                                                        off.write( wrapPrimitiveType( t, sce.getName().getLocalPart()));
                                                     }
                                                 }
                                             } else if( Type.FLAVOR_SEQUENCE == t.getFlavor()) {
