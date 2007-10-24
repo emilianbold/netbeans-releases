@@ -120,6 +120,9 @@ public class RhtmlFormattingTest extends RhtmlTestBase {
         assertDescriptionMatches(file, formatted, false, ".formatted");
     }
     
+    public void testDummy() throws Exception {
+    }
+    
 //    public void testFormat1() throws Exception {
 //        reformatFileContents("testfiles/format1.rhtml");
 //    }
