@@ -795,10 +795,6 @@ class EditablePropertyDisplayer extends EditorPropertyDisplayer implements Prope
         editor = null;
     }
 
-    public ReusablePropertyEnv getReusablePropertyEnv() {
-        return null; //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     private class InplaceEditorListener implements ActionListener, FocusListener {
         public void actionPerformed(ActionEvent e) {
             //            System.err.println("\n\nGot action from inplace editor for " + getProperty().getDisplayName() + " - " + e.getActionCommand());
