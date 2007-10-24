@@ -74,6 +74,8 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.Util;
@@ -1056,5 +1058,15 @@ public class JaxWsUtils {
         DataFolder dataFolder = DataFolder.findFolder(targetFolder);
         
         return templateDO.createFromTemplate(dataFolder, targetName);
+    }
+    
+    public static boolean isInSourceGroup(Project prj, String serviceClass) {
+
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for(SourceGroup group:sourceGroups) {
+            String resource = serviceClass.replace('.', '/')+".java"; //NOI18N
+            if (group.getRootFolder().getFileObject(resource) != null) return true;
+        }
+        return false;
     }
 }
