@@ -60,6 +60,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 
@@ -67,7 +68,7 @@ import org.openide.util.actions.Presenter;
  *
  * @author  Alexander Simon
  */
-public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Provider  {
+public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider  {
     public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/includeview/resources/tree.png"; // NOI18N
 
     private AbstractNode root;
@@ -540,5 +541,9 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
             break;
         }
         return org.openide.util.NbBundle.getMessage(getClass(), path);
+    }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("IncludeView"); // NOI18N
     }
 }

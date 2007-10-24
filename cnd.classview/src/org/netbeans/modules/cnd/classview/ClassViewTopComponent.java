@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.classview.actions.ShowHideClassViewAction;
 import org.openide.ErrorManager;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -191,6 +192,11 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
         if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesTC: componentActivated()"); // NOI18N
         super.componentActivated();
         view.requestFocus();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("UsingClassView"); // NOI18N
     }
 
     private void addRemoveModelListeners(boolean add) {
