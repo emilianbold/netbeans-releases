@@ -158,7 +158,7 @@ class J2SEActionProvider implements ActionProvider {
     final Set<String> bkgScanSensitiveActions;
 
     /** Set of Java source files (as relative path from source root) known to have been modified. See issue #104508. */
-    private final Set<String> dirty = new TreeSet<String>();
+    private Set<String> dirty = null;
 
     private Sources src;
     private List<FileObject> roots;
@@ -169,7 +169,6 @@ class J2SEActionProvider implements ActionProvider {
         // treated specially: COMMAND_{,RE}BUILD
         commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
         commands.put(COMMAND_COMPILE_SINGLE, new String[] {"compile-single"}); // NOI18N
-        // commands.put(COMMAND_COMPILE_TEST_SINGLE, new String[] {"compile-test-single"}); // NOI18N
         commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
         commands.put(COMMAND_RUN_SINGLE, new String[] {"run-single"}); // NOI18N
         commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
@@ -181,20 +180,20 @@ class J2SEActionProvider implements ActionProvider {
         commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
         commands.put(COMMAND_DEBUG_STEP_INTO, new String[] {"debug-stepinto"}); // NOI18N
 
-        this.bkgScanSensitiveActions = new HashSet<String>(Arrays.asList(new String[] {
+        this.bkgScanSensitiveActions = new HashSet<String>(Arrays.asList(
             COMMAND_RUN,
             COMMAND_RUN_SINGLE,
             COMMAND_DEBUG,
             COMMAND_DEBUG_SINGLE,
             COMMAND_DEBUG_STEP_INTO
-        }));
+        ));
 
         this.updateHelper = updateHelper;
         this.project = project;
 
         try {
             FileSystem fs = project.getProjectDirectory().getFileSystem();
-            // XXX would be more efficient to only listen while DO_DEPEND=false (not the default)
+            // XXX would be more efficient to only listen while DO_DEPEND=false (though this is the default)
             fs.addFileChangeListener(FileUtil.weakFileChangeListener(modificationListener, fs));
         } catch (FileStateInvalidException x) {
             Exceptions.printStackTrace(x);
@@ -222,8 +221,10 @@ class J2SEActionProvider implements ActionProvider {
         for (FileObject root : getRoots()) {
             String path = FileUtil.getRelativePath(root, f);
             if (path != null) {
-                synchronized (dirty) {
-                    dirty.add(path);
+                synchronized (this) {
+                    if (dirty != null) {
+                        dirty.add(path);
+                    }
                 }
                 break;
             }
@@ -541,13 +542,19 @@ class J2SEActionProvider implements ActionProvider {
         return targetNames;
     }
     private void prepareDirtyList(Properties p, boolean isExplicitBuildTarget) {
-        synchronized (dirty) {
+        String doDepend = project.evaluator().getProperty(J2SEProjectProperties.DO_DEPEND);
+        synchronized (this) {
+            if (dirty == null) {
+                // #119777: the first time, build everything.
+                dirty = new TreeSet<String>();
+                return;
+            }
             for (DataObject d : DataObject.getRegistry().getModified()) {
                 // Treat files modified in memory as dirty as well.
                 // (If you make an edit and press F11, the save event happens *after* Ant is launched.)
                 modification(d.getPrimaryFile());
             }
-            if (!"true".equalsIgnoreCase(project.evaluator().getProperty(J2SEProjectProperties.DO_DEPEND)) && !(isExplicitBuildTarget && dirty.isEmpty())) { // NOI18N
+            if (!"true".equalsIgnoreCase(doDepend) && !(isExplicitBuildTarget && dirty.isEmpty())) { // NOI18N
                 // #104508: if not using <depend>, try to compile just those files known to have been touched since the last build.
                 // (In case there are none such, yet the user invoked build anyway, probably they know what they are doing.)
                 if (dirty.isEmpty()) {

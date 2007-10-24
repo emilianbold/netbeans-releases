@@ -56,6 +56,7 @@ import java.util.Properties;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -760,6 +761,24 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertEquals("[clean, compile]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_REBUILD, Lookup.EMPTY, p)));
         assertEquals("{}", p.toString());
     }
+    public void testBuildWithDirtyListFirstTime() throws Exception { // #119777
+        J2SEProject prj = (J2SEProject) pp;
+        // Use a new instance, since the old one will already have a dirty list from setUp():
+        actionProvider = new J2SEActionProvider(prj, prj.getUpdateHelper());
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        ep.put(J2SEProjectProperties.DO_DEPEND, "false");
+        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+        Properties p = new Properties();
+        MainClassChooser.unitTestingSupport_hasMainMethodResult = true;
+        try {
+            assertEquals("[run]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_RUN, Lookup.EMPTY, p)));
+            assertEquals("{}", p.toString());
+            assertEquals("[run]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_RUN, Lookup.EMPTY, p)));
+            assertEquals("{includes=nothing whatsoever}", p.toString());
+        } finally {
+            MainClassChooser.unitTestingSupport_hasMainMethodResult = null;
+        }
+    }
     
     private static final class NonRecursiveFolderImpl implements NonRecursiveFolder {
         
@@ -826,12 +845,12 @@ public class J2SEActionProviderTest extends NbTestCase {
             return null;
         }
 
-        public org.netbeans.api.java.platform.Specification getSpecification() {
-            return new org.netbeans.api.java.platform.Specification ("j2se", new SpecificationVersion ("1.4"));
+        public Specification getSpecification() {
+            return new Specification("j2se", new SpecificationVersion("1.4"));
         }
 
-        public org.netbeans.api.java.classpath.ClassPath getSourceFolders() {
-            return null;
+        public ClassPath getSourceFolders() {
+            return ClassPathSupport.createClassPath(new URL[0]);
         }
 
         public List<URL> getJavadocFolders() {
