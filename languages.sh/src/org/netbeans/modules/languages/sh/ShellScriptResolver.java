@@ -62,7 +62,6 @@ public class ShellScriptResolver extends MIMEResolver {
                     is.close();
                 }
             } catch (IOException x) {
-                Logger.getLogger(ShellScriptResolver.class.getName()).log(Level.INFO, "Could not scan " + fo, x);
             }
         }
         return null;
