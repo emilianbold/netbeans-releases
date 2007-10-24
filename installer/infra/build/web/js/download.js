@@ -328,6 +328,15 @@ function update() {
     ruby_size = Math.ceil(ruby_size / 1024.0);
     cnd_size = Math.ceil(cnd_size / 1024.0);
 
+    if( platform == "zip") {
+       full_size = 140;
+       java_size = 43;
+       javaee_size = 91;
+       javame_size = 54;
+       ruby_size = 32;
+       cnd_size = 22;
+    } 
+
     if ((platform == "solaris-x86") || (platform == "solaris-sparc") || (platform == "macosx-ppc") || (platform == "macosx-x86")) {
 		javame_size = "--";
     }   
