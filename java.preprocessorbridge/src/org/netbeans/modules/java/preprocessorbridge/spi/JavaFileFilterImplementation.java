@@ -57,6 +57,10 @@ public interface JavaFileFilterImplementation {
         
     /**
      * Filters an {@link Reader} by the preprocessor.
+     * Called when the file is read from the disk before its content is passed to javac.
+     * PRE: The input parameter is never null
+     * POST: The returned Reader is not null
+     * Threading: The implementor is responsible for concurrent safety, tail call hand off protocol is suggested.
      * @param r {@link Reader} to be preprocessed
      * @return an preprocessed {@link Reader}
      */
@@ -65,6 +69,10 @@ public interface JavaFileFilterImplementation {
     /**
      * Filters an input {@link CharSequence} by the preprocessor. From the performance reason
      * it's highly recommended to implement the method using decorator pattern.
+     * Called before the content of the editor is passed to the javac.
+     * PRE: The input parameter is never null
+     * POST: The returned CharSequence is not null
+     * Threading: The implementor is responsible for concurrent safety, tail call hand off protocol is suggested.
      * @param charSequence {@link CharSequence} to be preprocessed
      * @return an preprocessed {@link CharSequence}
      */
@@ -72,6 +80,10 @@ public interface JavaFileFilterImplementation {
         
     /**
      * Filters an {@link Writer} by the preprocessor.
+     * Called before the file is written to the disk.
+     * PRE: The input parameter is never null
+     * POST: The returned Writer is not null
+     * Threading: The implementor is responsible for concurrent safety, tail call hand off protocol is suggested.
      * @param w {@link Writer} to be preprocessed
      * @return an preprocessed {@link Writer}
      */

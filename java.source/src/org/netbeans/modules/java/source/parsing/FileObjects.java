@@ -647,28 +647,36 @@ public class FileObjects {
 	public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
             
             char[] result;
-            InputStreamReader in;
+            Reader in;
             
             if (encoding != null) {
                 in = new InputStreamReader (new FileInputStream(this.f), encoding);
             } else {
                 in = new InputStreamReader (new FileInputStream(this.f));
             }
+            if (this.filter != null) {
+                in = this.filter.filterReader(in);
+            }
             int red = 0;
             try {
                 int len = (int)this.f.length();
                 result = new char [len+1];
                 int rv;	    
-                while ((rv=in.read(result,red,len-red))>0)
+                while ((rv=in.read(result,red,len-red))>=0) {
                     red += rv;
+                    //In case the filter enlarged the file
+                    if (red == len) {
+                        char[] _tmp = new char[2*len];
+                        System.arraycopy(result, 0, _tmp, 0, len);
+                        result = _tmp;
+                        len = result.length;
+                    }
+                }
             } finally {
                 in.close();
             }
             result[red++]='\n'; //NOI18N
             CharSequence buffer = CharBuffer.wrap (result, 0, red);
-            if (this.filter != null) {
-                buffer = this.filter.filterCharSequence(buffer);
-            }
             return buffer;
 	}
 
