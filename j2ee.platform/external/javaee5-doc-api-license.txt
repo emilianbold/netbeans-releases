@@ -1,5 +1,5 @@
 Name: Java(TM) Enterprise Edition 5 API Documentation
-Version: 5.0
+Version: 5
 Description: Java(TM) Enterprise Edition 5 API Documentation
 License: CDDL-1.0
 Origin: http://glassfish.dev.java.net
