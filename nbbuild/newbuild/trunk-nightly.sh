@@ -68,10 +68,6 @@ fi
 #
 ###################################################################
 
-if [ -z $DIST_SERVER ]; then
-    exit 0;
-fi
-
 if [ ! -z $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}
     cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}
@@ -91,6 +87,10 @@ if [ ! -z $BUILD_ID ]; then
     cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}
     mv $DIST_SERVER2/latest $DIST_SERVER2/latest.old
     ln -s $DIST_SERVER2/${BUILD_ID} $DIST_SERVER2/latest
+fi
+
+if [ -z $DIST_SERVER ]; then
+    exit 0;
 fi
 
 cd $TRUNK_NIGHTLY_DIRNAME
