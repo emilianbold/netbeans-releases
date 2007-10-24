@@ -41,14 +41,11 @@
 
 package org.netbeans.modules.java.editor.options;
 
-import java.util.Enumeration;
-import java.util.List;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.editor.ext.java.JavaSettingsNames;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.java.JavaIndentEngine;
 import org.netbeans.modules.editor.options.OptionSupport;
-import org.openide.ServiceType;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import java.awt.Color;

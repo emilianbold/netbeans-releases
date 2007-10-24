@@ -43,7 +43,6 @@ package org.netbeans.editor.ext.java;
 
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
-import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.BaseDocument;
@@ -52,9 +51,7 @@ import org.netbeans.editor.Syntax;
 import org.netbeans.editor.ext.AbstractFormatLayer;
 import org.netbeans.editor.ext.FormatTokenPosition;
 import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.editor.ext.FormatLayer;
 import org.netbeans.editor.ext.FormatSupport;
-import org.netbeans.editor.ext.ExtFormatSupport;
 import org.netbeans.editor.ext.FormatWriter;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
