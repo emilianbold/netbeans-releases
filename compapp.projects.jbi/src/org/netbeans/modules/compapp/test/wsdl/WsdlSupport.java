@@ -102,10 +102,18 @@ public class WsdlSupport {
         } catch (Exception e) {
             String msg = NbBundle.getMessage(WsdlSupport.class, "LBL_Fail_to_load_schema_types", mWsdlUrl); // NOI18N
             if (e.getMessage() != null) {
-                msg += "\n" + e.getMessage();  // NOI18N
+                String newline = System.getProperty("line.separator");
+                msg += newline;
+                msg += newline;
+                msg += "The original error message is:"; // NOI18N
+                msg += newline;
+                msg += e.getMessage();  // NOI18N
             }
             wsdlSupportErrStr += msg;
-            mLog.log(Level.SEVERE, msg, e); // NOI18N
+            
+            // We don't want the (extra) raw stacktrace thrown in the user's face.
+            // mLog.log(Level.SEVERE, msg, e);
+            mLog.severe(msg);
         }
     }
     
