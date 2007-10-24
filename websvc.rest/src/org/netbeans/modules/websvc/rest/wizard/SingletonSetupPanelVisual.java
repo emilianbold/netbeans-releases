@@ -159,9 +159,9 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel implements Abs
 
         packageComboBox.setEditable(true);
         packageComboBox.setMinimumSize(new java.awt.Dimension(4, 20));
-        packageComboBox.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                packageChanged(evt);
+        packageComboBox.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                packageComboBoxKeyReleased(evt);
             }
         });
 
@@ -319,10 +319,6 @@ private void containerTextFieldActionPerformed(java.awt.event.ActionEvent evt) {
     // TODO add your handling code here:
 }//GEN-LAST:event_containerTextFieldActionPerformed
 
-private void packageChanged(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_packageChanged
-    fireChange();
-}//GEN-LAST:event_packageChanged
-
 private void representationClassChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_representationClassChanged
     fireChange();
 }//GEN-LAST:event_representationClassChanged
@@ -366,6 +362,10 @@ private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
         resourceClassNameOveridden = true;
         fireChange();
     }//GEN-LAST:event_classTextFieldKeyReleased
+
+    private void packageComboBoxKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_packageComboBoxKeyReleased
+        fireChange();
+    }//GEN-LAST:event_packageComboBoxKeyReleased
                 
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -515,7 +515,7 @@ private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
         settings.putProperty(WizardProperties.REPRESENTATION_TYPES, new String[] { contentClassTextField.getText()} );
         
         try {            
-            Templates.setTargetFolder(settings, SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage()));
+            Templates.setTargetFolder(settings, SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage(), true));
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }

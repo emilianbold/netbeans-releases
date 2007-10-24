@@ -158,7 +158,7 @@ public class SourceGroupSupport {
     }
 
     public static FileObject getFolderForPackage(SourceGroup sourceGroup, String pgkName) throws IOException {
-        return getFolderForPackage(sourceGroup, pgkName, true);
+        return getFolderForPackage(sourceGroup, pgkName, false);
     }
 
     public static FileObject getFolderForPackage(SourceGroup sourceGroup, String pgkName, boolean create) throws IOException {

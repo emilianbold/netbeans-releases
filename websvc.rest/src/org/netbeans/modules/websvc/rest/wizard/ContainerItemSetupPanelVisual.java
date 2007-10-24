@@ -691,7 +691,7 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
         }
         
         try {            
-            Templates.setTargetFolder(settings, SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage()));
+            Templates.setTargetFolder(settings, SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage(), true));
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }

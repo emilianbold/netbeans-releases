@@ -287,7 +287,7 @@
         </Property>
       </AccessibilityProperties>
       <Events>
-        <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="packageChanged"/>
+        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="packageComboBoxKeyReleased"/>
       </Events>
     </Component>
     <Component class="javax.swing.JComboBox" name="medaTypeComboBox">
