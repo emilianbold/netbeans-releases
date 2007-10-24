@@ -259,18 +259,25 @@ public final class MidpProjectSupport {
         Map<FileObject, String> matches = new WeakHashMap<FileObject, String>();
         
         DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
-        DataObject dataObject = context.getDataObject();
+        if (context == null) {
+            return Collections.EMPTY_MAP;
+        }
         
-        assert (dataObject != null);
+        DataObject dataObject = context.getDataObject();
+        if (dataObject == null) {
+            return Collections.EMPTY_MAP;
+        }
         
         FileObject primaryFile = dataObject.getPrimaryFile();
-        
-        assert (primaryFile != null);
+        if (primaryFile == null) {
+            return Collections.EMPTY_MAP;
+        }
         
         Project project = getProjectForDocument(document);
         List<ClassPath> classPathList = getClassPath(project, primaryFile);
-        
-        assert (classPathList != null);
+        if (classPathList == null) {
+            return Collections.EMPTY_MAP;
+        }
         
         for (ClassPath cp : classPathList) {
             FileObject[] roots = cp.getRoots();
