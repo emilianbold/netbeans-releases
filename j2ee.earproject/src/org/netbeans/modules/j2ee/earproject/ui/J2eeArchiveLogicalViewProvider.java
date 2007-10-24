@@ -408,6 +408,12 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             return img;
         }
         
+        @Override
+        public String getShortDescription() {
+            String prjDirDispName = FileUtil.getFileDisplayName(project.getProjectDirectory());
+            return NbBundle.getMessage(J2eeArchiveLogicalViewProvider.class, "HINT_project_root_node", prjDirDispName); // NO18N
+        }
+
         public Action[] getActions( boolean context ) {
             return context ? super.getActions(true) : getAdditionalActions();
         }

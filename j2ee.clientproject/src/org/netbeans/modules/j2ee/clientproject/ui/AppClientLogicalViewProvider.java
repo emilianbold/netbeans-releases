@@ -436,6 +436,12 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             return img;
         }
         
+        @Override
+        public String getShortDescription() {
+            String prjDirDispName = FileUtil.getFileDisplayName(project.getProjectDirectory());
+            return NbBundle.getMessage(AppClientLogicalViewProvider.class, "HINT_project_root_node", prjDirDispName); // NO18N
+        }
+
         private Image getMyOpenedIcon(int type) {
             Image original = super.getOpenedIcon(type);
             return broken || illegalState || brokenServerAction.isEnabled()

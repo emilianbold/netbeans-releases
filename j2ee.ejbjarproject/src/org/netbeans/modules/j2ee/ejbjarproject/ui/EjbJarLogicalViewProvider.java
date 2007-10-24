@@ -382,6 +382,12 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
 
             return img;
         }
+        
+        @Override
+        public String getShortDescription() {
+            String prjDirDispName = FileUtil.getFileDisplayName(project.getProjectDirectory());
+            return NbBundle.getMessage(EjbJarLogicalViewProvider.class, "HINT_project_root_node", prjDirDispName); // NO18N
+        }
 
         public void run() {
             boolean fireIcon;
