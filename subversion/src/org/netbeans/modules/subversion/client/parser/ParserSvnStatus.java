@@ -141,11 +141,11 @@ public class ParserSvnStatus implements ISVNStatus {
     }
 
     public SVNStatusKind getRepositoryTextStatus() {
-        throw new UnsupportedOperationException("getRepositoryTextStatus() is not implemented"); // NOI18N
+        return null; 
     }
 
     public SVNStatusKind getRepositoryPropStatus() {
-        throw new UnsupportedOperationException("getRepositoryPropStatus() is not implemented"); // NOI18N
+        return null; 
     }
 
     public File getConflictNew() {

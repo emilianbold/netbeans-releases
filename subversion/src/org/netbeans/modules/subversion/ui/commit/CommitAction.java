@@ -77,7 +77,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Petr Kuzel
  */
-    public class CommitAction extends ContextAction {
+public class CommitAction extends ContextAction {
     
     static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage";
 
@@ -86,24 +86,115 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
     }
 
     protected boolean enable(Node[] nodes) {
+        if(isDeepRefresh()) {
+            // allway true as we have will accept and check for external changes 
+            // and we don't about them yet 
+            return true;
+        }
         // XXX could be a performace issue, maybe a msg box in commit would be enough
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         File[] files = cache.listFiles(getContext(nodes), FileInformation.STATUS_LOCAL_CHANGE);
         return files.length > 0;
     }
-
+        
     /** Run commit action. Shows UI */
     public static void commit(String contentTitle, final Context ctx) {
         if(!Subversion.getInstance().checkClientAvailable()) {            
             return;
+        }        
+                
+        if(isDeepRefresh()) {     
+            commitAllChanges(contentTitle, ctx);
+        } else {            
+            commitKnownChanges(contentTitle, ctx);                       
         }
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+    }
+    
+    private static boolean isDeepRefresh() {
+        String noDeepRefresh = System.getProperty("netbeans.subversion.commit.deepStatusRefresh");  // NOI18N
+        return noDeepRefresh != null && !noDeepRefresh.trim().equals("");
+    }
+    
+    /**
+     * Opens the commit dialog displaying all changed files from the status cache which belong to the given context.
+     * There is no guarantee that changes made outside of the IDE will be recognized
+     * 
+     * @param contentTitle
+     * @param ctx
+     */
+    public static void commitKnownChanges(String contentTitle, final Context ctx) {
+         
+        // get files list
+        List<File> fileList = getFiles(ctx);
+        if(fileList.size() == 0) {
+            return; 
+        }        
         
+        // show commit dialog                
+        final CommitPanel panel = new CommitPanel();   
+        final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });                                                 
+        panel.setCommitTable(data);
+        
+        data.setNodes(getFileNodes(fileList));
+        
+        final JButton commitButton = new JButton();         
+        if (showCommitDialog(panel, data, commitButton, contentTitle, ctx) == commitButton) {
+            // if OK setup sequence of add, remove and commit calls
+            startCommitTask(panel, data, ctx);                        
+        }      
+        
+    }
+        
+    /**
+     * Opens the commit dialog displaying all changed files from the status cache which belong to the given context.
+     * The status for all files will be refrehed first and the commit button in the dialog stays disabled until then.
+     * It may take a while until the dialog is setup.
+     * 
+     * @param contentTitle
+     * @param ctx
+     */
+    public static void commitAllChanges(String contentTitle, final Context ctx) {
+        
+        final CommitPanel panel = new CommitPanel();   
+        final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });                                 
+        panel.setCommitTable(data);                                
+        final JButton commitButton = new JButton(); 
+             
+        // start backround prepare
+        SVNUrl repository = null;
+        try {            
+            repository = getSvnUrl(ctx);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);                
+        }               
+        SvnProgressSupport prepareSupport = getPrepareSupport(ctx, data, commitButton, panel);
+        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);        
+        prepareSupport.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "BK1009")); // NOI18N
+                
+        // show commit dialog        
+        if (showCommitDialog(panel, data, commitButton, contentTitle, ctx) == commitButton) {            
+            // if OK setup sequence of add, remove and commit calls
+            startCommitTask(panel, data, ctx);
+        } else {
+            prepareSupport.cancel();
+        }
+    }    
+    
+    /**
+     * Returns all files from the given context honoring the flat folder logic
+     * 
+     * @param ctx
+     * @return
+     */
+    private static List<File> getFiles(Context ctx) {
+        List<File> fileList = new ArrayList<File>();
         // get files without exclusions
         File[] contextFiles = ctx.getFiles();
         if (contextFiles.length == 0) {
-            return;
+            return fileList;
         }        
+        
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
         
         // The commits are made non recursively, so 
         // add also the roots to the to be commited list.       
@@ -118,8 +209,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
         contextFiles = filesSet.toArray(new File[filesSet.size()]);
                 
         // get all changed files while honoring the flat folder logic
-        File[][] split = Utils.splitFlatOthers(contextFiles);
-        List<File> fileList = new ArrayList<File>();
+        File[][] split = Utils.splitFlatOthers(contextFiles);        
         for (int c = 0; c < split.length; c++) {
             contextFiles = split[c];
             boolean recursive = c == 1;
@@ -142,16 +232,17 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
                     }
                 }                
             }
-        }       
-
-        if(fileList.size()==0) {
-            return; 
-        }        
-        
-        // show commit dialog        
-        final CommitPanel panel = new CommitPanel();   
-        final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });                                 
-        panel.setCommitTable(data);
+        }   
+        return fileList;
+    }
+    
+    /**
+     * Returns a SvnFileNode for each given file
+     * 
+     * @param fileList
+     * @return
+     */
+    private static SvnFileNode[] getFileNodes(List<File> fileList) {
         SvnFileNode[] nodes;
         ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(fileList.size());
 
@@ -161,15 +252,26 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
             nodesList.add(node);
         }        
         nodes = nodesList.toArray(new SvnFileNode[fileList.size()]);
-        data.setNodes(nodes);
-
+        return nodes;
+    }
+    
+    /**
+     * Opens the commit dlg
+     * 
+     * @param panel
+     * @param data
+     * @param commitButton
+     * @param contentTitle
+     * @param ctx
+     * @return
+     */
+    private static Object showCommitDialog(final CommitPanel panel, final CommitTable data, final JButton commitButton, String contentTitle, final Context ctx) {
         JComponent component = data.getComponent();
         panel.filesPanel.setLayout(new BorderLayout());
         panel.filesPanel.add(component, BorderLayout.CENTER);
 
         DialogDescriptor dd = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_CommitDialog_Title", contentTitle)); // NOI18N
-        dd.setModal(true);
-        final JButton commitButton = new JButton(); // NOI18N
+        dd.setModal(true);        
         org.openide.awt.Mnemonics.setLocalizedText(commitButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Commit"));
         commitButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSN_Commit_Action_Commit"));
         commitButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSD_Commit_Action_Commit"));
@@ -199,32 +301,115 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
         dialog.addWindowListener(new DialogBoundsPreserver(SvnModuleConfig.getDefault().getPreferences(), "svn.commit.dialog")); // NOI18N       
         dialog.pack();        
         dialog.setVisible(true);
-
-        if (dd.getValue() == commitButton) {
-            
-            //SvnModuleConfig.getDefault().setCommitTableSorter(data.getSorter());
-            
-            final Map<SvnFileNode, CommitOptions> commitFiles = data.getCommitFiles();
-            final String message = panel.messageTextArea.getText();
-            org.netbeans.modules.versioning.util.Utils.insert(SvnModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message, 20);
-
-            SVNUrl repository = null;
-            try {            
-                repository = getSvnUrl(ctx);
-            } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, true, true);                
-            }                    
-            RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
-            SvnProgressSupport support = new SvnProgressSupport() {
-                public void perform() {                    
-                    performCommit(message, commitFiles, ctx, this);
-                }
-            };
-            support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
-        }             
-        // if OK setup sequence of add, remove and commit calls
         
-    }    
+        return dd.getValue();                        
+    }
+    
+    private static void startCommitTask(final CommitPanel panel, final CommitTable data, final Context ctx) {
+        final Map<SvnFileNode, CommitOptions> commitFiles = data.getCommitFiles();
+        final String message = panel.messageTextArea.getText();
+        org.netbeans.modules.versioning.util.Utils.insert(SvnModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message, 20);
+
+        SVNUrl repository = null;
+        try {            
+            repository = getSvnUrl(ctx);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);                
+        }                    
+        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
+        SvnProgressSupport support = new SvnProgressSupport() {
+            public void perform() {                    
+                performCommit(message, commitFiles, ctx, this);
+            }
+        };
+        support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N        
+    }
+    
+    private static SvnProgressSupport getPrepareSupport(final Context ctx, final CommitTable data, final JButton commitButton, final CommitPanel panel) {
+        SvnProgressSupport support = new SvnProgressSupport() {
+            public void perform() { 
+                try {
+                    // get files without exclusions
+                    File[] contextFiles = ctx.getFiles();
+                    if (contextFiles.length == 0) {
+                        return;
+                    }        
+
+                    // The commits are made non recursively, so 
+                    // add also the roots to the to be commited list.       
+                    List<File> rootFiles = ctx.getRoots();                
+                    Set<File> filesSet = new HashSet<File>(); 
+                    for(File file : contextFiles) {
+                        filesSet.add(file);
+                    }
+                    for(File file : rootFiles) {
+                        filesSet.add(file);
+                    }
+                    contextFiles = filesSet.toArray(new File[filesSet.size()]);
+
+                    // make a deep refresh to get the not yet notified external changes
+                    FileStatusCache cache = Subversion.getInstance().getStatusCache();
+                    for(File f : contextFiles) {
+                        SvnUtils.refreshRecursively(f);
+                    }                        
+                    // get all changed files while honoring the flat folder logic
+                    File[][] split = Utils.splitFlatOthers(contextFiles);
+                    List<File> fileList = new ArrayList<File>();
+                    for (int c = 0; c < split.length; c++) {
+                        contextFiles = split[c];
+                        boolean recursive = c == 1;
+                        if (recursive) {
+                            File[] files = cache.listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);
+                            for (int i= 0; i < files.length; i++) {
+                                for(int r = 0; r < contextFiles.length; r++) {
+                                    if( SvnUtils.isParentOrEqual(contextFiles[r], files[i]) ) {
+                                        if(!fileList.contains(files[i])) {
+                                            fileList.add(files[i]);
+                                        }
+                                    }                    
+                                }                    
+                            }
+                        } else {
+                            File[] files = SvnUtils.flatten(contextFiles, FileInformation.STATUS_LOCAL_CHANGE);
+                            for (int i= 0; i<files.length; i++) {
+                                if(!fileList.contains(files[i])) {
+                                    fileList.add(files[i]);
+                                }
+                            }                
+                        }
+                    }       
+
+                    if(fileList.size()==0) {
+                        return; 
+                    }  
+
+                    ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(fileList.size());
+                    SvnFileNode[] nodes;
+                    for (Iterator<File> it = fileList.iterator(); it.hasNext();) {
+                        File file = it.next();
+                        SvnFileNode node = new SvnFileNode(file);
+                        nodesList.add(node);
+                    }        
+                    nodes = nodesList.toArray(new SvnFileNode[fileList.size()]);
+                    data.setNodes(nodes);                
+                } finally {
+                    commitButton.setEnabled(containsCommitable(data));
+                    
+                    panel.addVersioningListener(new VersioningListener() {
+                        public void versioningEvent(VersioningEvent event) {
+                            refreshCommitDialog(panel, data, commitButton);
+                        }
+                    });
+                    data.getTableModel().addTableModelListener(new TableModelListener() {
+                        public void tableChanged(TableModelEvent e) {
+                            refreshCommitDialog(panel, data, commitButton);
+                        }
+                    });                    
+                }
+            }
+        };
+        return support;
+    }                
     
     private static boolean containsCommitable(CommitTable data) {
         Map<SvnFileNode, CommitOptions> map = data.getCommitFiles();
