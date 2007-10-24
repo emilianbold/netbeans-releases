@@ -1160,12 +1160,34 @@ public class JavaFormatSupport extends ExtFormatSupport {
     }
 
     private int getFormatStatementContinuationIndent() {
-        return getSettingInteger(JavaSettingsNames.JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT,
+        int def = getSettingInteger(JavaSettingsNames.JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT,
                                  JavaSettingsDefaults.defaultJavaFormatStatementContinuationIndent);
+        try {
+            ClassLoader cl = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+            Class accpClass = cl.loadClass("org.netbeans.modules.java.ui.FmtOptions"); // NOI18N
+            if (accpClass == null) {
+                return def;
+            }
+            Preferences p = NbPreferences.forModule(accpClass);
+            if (p == null) {
+                return def;
+            }
+            p = p.node("CodeStyle"); // NOI18N
+            if (p == null) {
+                return def;
+            }        
+            p = p.node("default"); // NOI18N
+            if (p == null) {
+                return def;
+            }        
+            return p.getInt("continuationIndentSize", def); // NOI18N
+            
+        } catch (ClassNotFoundException ex) {
+            return def;
+        }
     }
 
 
-    
     /*   this is fix for bugs: 7980 and 9111. if user enters
      *        {   foo();
      *   and press enter at the end of the line, she wants
