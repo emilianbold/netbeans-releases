@@ -62,6 +62,11 @@ public final class ClassDataLoader extends UniFileLoader {
         getExtensions().addExtension(CLASS_EXTENSION);
     }
     
+    @Override
+    protected String actionsContext () {
+        return "Loaders/application/x-class-file/Actions/"; // NOI18N
+    }
+    
 
     protected MultiDataObject createMultiObject(FileObject primaryFile)
             throws DataObjectExistsException, IOException {

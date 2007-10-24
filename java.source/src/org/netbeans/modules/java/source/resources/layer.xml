@@ -113,6 +113,16 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="application">
+        <folder name="x-class-file">
+            <folder name="Actions">
+                <file name="OpenAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
   </folder>
 
   <folder name="OptionsDialog">
