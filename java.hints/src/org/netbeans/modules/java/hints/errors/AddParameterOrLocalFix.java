@@ -242,6 +242,8 @@ public class AddParameterOrLocalFix implements Fix {
                 AssignmentTree at = (AssignmentTree) exp;
                 VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(proposedType), at.getExpression());
                 
+                vt = Utilities.copyComments(wc, statement, vt);
+                        
                 wc.rewrite(statement, vt);
                 
                 return;

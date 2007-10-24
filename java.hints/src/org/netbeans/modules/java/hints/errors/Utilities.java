@@ -46,6 +46,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Scope;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.EnumSet;
@@ -64,11 +65,15 @@ import javax.lang.model.type.WildcardType;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
+import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.MarkBlock;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -295,4 +300,19 @@ public class Utilities {
         return tm;
     }
     
+    public static <T extends Tree> T copyComments(WorkingCopy wc, Tree from, T to) {
+        TreeMaker make = wc.getTreeMaker();
+        
+        GeneratorUtilities.get(wc).importComments(from, wc.getCompilationUnit());
+
+        for (Comment c : wc.getTreeUtilities().getComments(from, true)) {
+            make.addComment(to, c, true);
+        }
+
+        for (Comment c : wc.getTreeUtilities().getComments(from, false)) {
+            make.addComment(to, c, false);
+        }
+        
+        return to;
+    }
 }

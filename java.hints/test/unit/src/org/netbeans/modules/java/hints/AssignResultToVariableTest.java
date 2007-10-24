@@ -113,14 +113,14 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
                        "package test; public class Test {public void t() {Iterable<? super CharSequence> test = test(); } private Iterable<? super CharSequence> test() {return null;}}");
     }
     
-//    public void testCommentsCopied() throws Exception {
-//        performFixTest("test/Test.java",
-//                       "package test; public class Test {public void t() {/*t*/get();/*t*/\n} String get() {return null;}}",
-//                       81 - 25,
-//                       "0:55-0:58:hint:Assign Return Value To New Variable",
-//                       "FixImpl",
-//                       "package test; public class Test {public void t() { /*t*/ String get = get();/*t*/ } String get() {return null;}}");
-//    }
+    public void testCommentsCopied() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void t() {/*t*/get();\n} String get() {return null;}}",
+                       81 - 25,
+                       "0:55-0:58:hint:Assign Return Value To New Variable",
+                       "FixImpl",
+                       "package test; public class Test {public void t() { /*t*/ String get = get(); } String get() {return null;}}");
+    }
     
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         int offset = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), path.getLeaf());

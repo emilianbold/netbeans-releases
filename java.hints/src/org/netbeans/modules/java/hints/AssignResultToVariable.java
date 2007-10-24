@@ -197,6 +197,8 @@ public class AssignResultToVariable extends AbstractHint {
                         
                         VariableTree var = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name[0], make.Type(type), (ExpressionTree) tp.getLeaf());
                         
+                        var = Utilities.copyComments(copy, tp.getLeaf(), var);
+                        
                         copy.rewrite(tp.getParentPath().getLeaf(), var);
                     }
                 });

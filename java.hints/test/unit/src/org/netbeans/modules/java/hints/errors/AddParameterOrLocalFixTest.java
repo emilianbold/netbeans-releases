@@ -41,6 +41,8 @@ import org.netbeans.spi.editor.hints.Fix;
  */
 public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
     
+    private boolean parameter = true;
+    
     public AddParameterOrLocalFixTest(String testName) {
         super(testName);
     }
@@ -69,13 +71,22 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                        "package test; public class Test {public void test(int bbb) {bbb = 0;}}");
     }
     
+    public void testAddLocalVariableWithComments() throws Exception {
+        parameter = false;
+        
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void test() {int a;\n //test\n |bbb = 0;\n int c; }}",
+                       "AddParameterOrLocalFix:bbb:int:false",
+                       "package test; public class Test {public void test() {int a; //test int bbb = 0; int c; }}");
+    }
+    
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = CreateElement.analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();
         
         for (Fix f : fixes) {
             if (f instanceof AddParameterOrLocalFix) {
-                if (((AddParameterOrLocalFix) f).isParameter())
+                if (((AddParameterOrLocalFix) f).isParameter() == parameter)
                     result.add(f);
             }
         }
