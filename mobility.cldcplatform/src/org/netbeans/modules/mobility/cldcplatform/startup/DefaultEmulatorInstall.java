@@ -113,10 +113,14 @@ public class DefaultEmulatorInstall extends ModuleInstall {
                     StringBuffer sb = new StringBuffer(1024);
                     int len;
                     while ((len = is.read(data)) != -1) sb.append(new String(data, 0, len, "UTF-8")); //NOI18N
+                    is.close();
+                    is = null;
                     FileObject fo = platformsFolder.createData(desc.getNameExt());
                     fl = fo.lock();
                     os = new OutputStreamWriter(fo.getOutputStream(fl), "UTF8"); //NOI18N
                     os.write(MessageFormat.format(sb.toString(), new Object[]{XMLUtil.toAttributeValue(installRoot.getAbsolutePath())}));
+                    os.close();
+                    os = null;
                     desc.delete();
                 } catch (Exception e) {
                     ErrorManager.getDefault().notify(e);
