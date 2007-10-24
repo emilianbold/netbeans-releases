@@ -680,7 +680,7 @@ public class FilterNodeTest extends NbTestCase {
         Object o = n.getLookup().lookup(NodeA.class);
         assertNull("There is no instance of NodeA in the lookup, we should get null here:" + o, o);
 
-        Lookup.Item item = n.getLookup().lookupItem(new Lookup.Template(NodeA.class));
+        Lookup.Item item = n.getLookup().lookupItem(new Lookup.Template<NodeA>(NodeA.class));
         assertNull("There is no instance of NodeA in the lookup, there shall be no item:" + item, item);
         
         Lookup.Result res = n.getLookup().lookupResult(NodeA.class);
