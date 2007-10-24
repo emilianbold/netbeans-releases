@@ -69,12 +69,8 @@ import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 public class JaxRpcSchemaCatalog implements CatalogReader, CatalogDescriptor, EntityResolver  {
 
     public static final String JAXRPC_CONFIG_1_1 = "http://java.sun.com/xml/ns/jax-rpc/ri/config"; // NOI18N
-    public static final String JAXRPC_CONFIG_1_1_SLASH = "http://java.sun.com/xml/ns/jax-rpc/ri/config/"; // NOI18N
-    private static final String JAXRPC_CONFIG_1_1_XSD = "jax-rpc-ri-config_1_1.xsd"; // NOI18N
     private static final String URL_JAXRPC_CONFIG_1_1 = "nbres:/org/netbeans/modules/websvc/wsdl/config/resources/jax-rpc-ri-config_1_1.xsd"; // NOI18N
-
-    public static final String JAXRPC_CONFIG_1_1_ID = "SCHEMA:" + JAXRPC_CONFIG_1_1; // NOI18N
-
+    
     public JaxRpcSchemaCatalog() {
     }
 
@@ -84,7 +80,8 @@ public class JaxRpcSchemaCatalog implements CatalogReader, CatalogDescriptor, En
      */
     public Iterator<String> getPublicIDs() {
         List<String> list = new ArrayList<String>();
-        list.add(JAXRPC_CONFIG_1_1_ID);
+        //list.add(JAXRPC_CONFIG_1_1_ID);
+        list.add(JAXRPC_CONFIG_1_1);
         return list.listIterator();
     }
 
@@ -93,7 +90,7 @@ public class JaxRpcSchemaCatalog implements CatalogReader, CatalogDescriptor, En
      * @return null if not registered
      */
     public String getSystemID(String publicId) {
-        if(JAXRPC_CONFIG_1_1_ID.equals(publicId)) {
+        if(JAXRPC_CONFIG_1_1.equals(publicId)) {
             return URL_JAXRPC_CONFIG_1_1;
         } else {
             return null;
@@ -159,10 +156,8 @@ public class JaxRpcSchemaCatalog implements CatalogReader, CatalogDescriptor, En
      * @return InputSource for
      */
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-        if(JAXRPC_CONFIG_1_1.equals(systemId) || JAXRPC_CONFIG_1_1_SLASH.equals(systemId)) {
+        if(JAXRPC_CONFIG_1_1.equals(publicId)) {
             return new InputSource(URL_JAXRPC_CONFIG_1_1);
-        } else if(systemId != null && systemId.endsWith(JAXRPC_CONFIG_1_1_XSD)) {
-            return new org.xml.sax.InputSource(URL_JAXRPC_CONFIG_1_1);
         } else {
             return null;
         }
@@ -173,7 +168,7 @@ public class JaxRpcSchemaCatalog implements CatalogReader, CatalogDescriptor, En
      * @return null if not registered
      */
     public String resolveURI(String name) {
-        if(JAXRPC_CONFIG_1_1.equals(name) || JAXRPC_CONFIG_1_1_SLASH.equals(name)) {
+        if(JAXRPC_CONFIG_1_1.equals(name)) {
             return URL_JAXRPC_CONFIG_1_1;
         }
 
