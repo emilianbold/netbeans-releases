@@ -606,8 +606,12 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         }
         
         TagLibraryInfo info = getTagLibrary(prefix);
-        if (info != null && info.getTags() != null) {
-            TagInfo[] tags = getSortedTagInfos(getAllTagInfos(info));
+        TagInfo[] tags = null;
+        if (info != null) {
+            tags = getAllTagInfos(info);
+        }   
+        if (tags != null) {
+            tags = getSortedTagInfos(tags);
             String url = (String)helpMap.get(info.getURI());
             if (url != null && !url.equals("")){
                 for (int i = 0; i < tags.length; i++) {
