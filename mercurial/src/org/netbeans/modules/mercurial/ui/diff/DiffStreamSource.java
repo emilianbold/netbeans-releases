@@ -68,6 +68,7 @@ public class DiffStreamSource extends StreamSource {
     private final String    revision;
     private final String    title;
     private String          mimeType;
+    private Boolean         start;
 
     /**
      * Null is a valid value if base file does not exist in this revision. 
@@ -85,6 +86,7 @@ public class DiffStreamSource extends StreamSource {
         this.baseFile = baseFile;
         this.revision = revision;
         this.title = title;
+        this.start = true;
     }
 
     /** Creates DiffStreamSource for nonexiting files. */
@@ -92,6 +94,7 @@ public class DiffStreamSource extends StreamSource {
         this.baseFile = null;
         this.revision = null;
         this.title = title;
+        this.start = true;
     }
 
     public String getName() {
@@ -177,6 +180,8 @@ public class DiffStreamSource extends StreamSource {
         if (baseFile.isDirectory()) {
             return;
         }
+        if (start == false) return;
+        start = false;;
         if (remoteFile != null || revision == null) return;
         mimeType = Mercurial.getInstance().getMimeType(baseFile);
         try {
