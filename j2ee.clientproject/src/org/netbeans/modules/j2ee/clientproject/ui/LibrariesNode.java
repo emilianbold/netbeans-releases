@@ -712,8 +712,9 @@ final class LibrariesNode extends AbstractNode {
                 List<FileObject> fileObjects = new LinkedList<FileObject>();
                 for (int i = 0; i < files.length; i++) {
                     if (fileFilter.accept(files[i])) {
-                        FileObject fo = FileUtil.toFileObject (files[i]);
-                        assert fo != null : files[i];
+                        File normalizedFile = FileUtil.normalizeFile(files[i]);
+                        FileObject fo = FileUtil.toFileObject(normalizedFile);
+                        assert fo != null : normalizedFile;
                         fileObjects.add(fo);
                     }
                 }
