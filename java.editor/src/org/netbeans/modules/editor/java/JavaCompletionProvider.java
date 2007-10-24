@@ -1165,9 +1165,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (((TryTree)last).getFinallyBlock() == null) {
                     addKeyword(env, CATCH_KEYWORD, null, false);
                     addKeyword(env, FINALLY_KEYWORD, null, false);
+                    if (((TryTree)last).getCatches().size() == 0)
+                        return;
                 }
-                if (((TryTree)last).getCatches().size() == 0)
-                    return;
             }
             localResult(env);
             addKeywordsForBlock(env);
