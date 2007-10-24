@@ -2098,7 +2098,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         public int getSortPriority() {
-            return 100;
+            return 100 - SMART_TYPE;
         }
 
         public CharSequence getSortText() {
