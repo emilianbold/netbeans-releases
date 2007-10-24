@@ -490,5 +490,24 @@ final class GlobalDescriptorRegistry {
                 throw Debug.error(ex);
             }
         }
+        
+        weakReference = customProducerFileObjects.get(typeID);
+        final FileObject fo1 = weakReference != null ? weakReference.get() : null;
+        if (fo1 != null) {
+            try {
+                Repository.getDefault().getDefaultFileSystem().runAtomicAction(new AtomicAction() {
+                    public void run() {
+                        try {
+                            fo1.delete();
+                            
+                        } catch (IOException ex) {
+                            throw Debug.error(ex);
+                        }
+                    }
+                });
+            } catch (IOException ex) {
+                throw Debug.error(ex);
+            }
+        }
     }
 }
