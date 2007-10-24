@@ -43,6 +43,7 @@ package org.netbeans.modules.languages.features;
 
 import java.util.Set;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -78,6 +79,7 @@ import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Language;
+import org.netbeans.modules.languages.ParserManagerImpl;
 
 
 /**
@@ -112,7 +114,15 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
             this.operation = operation;
             editorParser = ParserManager.get (doc);
             editorParser.addASTEvaluator (this);
-           // parserManager.forceEvaluation (this);
+            try {
+                ((ParserManagerImpl) editorParser).fire (
+                    editorParser.getState (), 
+                    null, 
+                    Collections.<String,Set<ASTEvaluator>>singletonMap (FOLD, Collections.<ASTEvaluator>singleton (this)),
+                    editorParser.getAST ()
+                );
+            } catch (ParseException ex) {
+            }
         }
     }
     
