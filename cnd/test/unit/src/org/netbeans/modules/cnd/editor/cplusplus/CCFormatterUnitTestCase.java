@@ -942,6 +942,18 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n"
         );
     };
+
+    public void testMacroDefineWithBrace1() {
+        setLoadDocumentText(
+            "\n"+
+            "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n"
+            );
+        reformat();
+            assertDocumentText("Incorrect formatting for macro define with brace",
+            "\n"+
+            "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n"
+        );
+    };
     
     public void testMacroDefineWithBrace2() {
         Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE, Boolean.TRUE);
@@ -950,6 +962,21 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                     "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n");
             reformat();
             assertDocumentText("Incorrect formatting for macro define with brace",
+                    "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n");
+        } finally {
+            Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE, Boolean.FALSE);
+        }
+    }
+
+    public void testMacroDefineWithBrace3() {
+        Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE, Boolean.TRUE);
+        try {
+            setLoadDocumentText(
+                    "\n"+
+                    "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n");
+            reformat();
+            assertDocumentText("Incorrect formatting for macro define with brace",
+                    "\n"+
                     "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n");
         } finally {
             Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE, Boolean.FALSE);
@@ -985,7 +1012,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                     "    return 0;\n" +
                     "}\n");
             reformat();
-           assertDocumentText("Incorrect formatting for macro define with paren",
+            assertDocumentText("Incorrect formatting for macro define with paren",
                     "#include <stdio.h>\n" +
                     "#define M(x) puts(#x)\n" +
                     "int main () {\n" +
@@ -995,6 +1022,34 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         } finally {
             Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS, Boolean.FALSE);
         }
+    }
+
+    public void testSwitchFormatting() {
+        setLoadDocumentText(
+                "switch (GetTypeID()){\n" +
+                "case FAST:\n" +
+                "metric += 100;\n" +
+                "break;\n" +
+                "case ULTRA:\n" +
+                "case SLOW:\n" +
+                "metric += 200;\n" +
+                "break;\n" +
+                "default:\n" +
+                "break;\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "switch (GetTypeID()){\n" +
+                "    case FAST:\n" +
+                "        metric += 100;\n" +
+                "        break;\n" +
+                "    case ULTRA:\n" +
+                "    case SLOW:\n" +
+                "        metric += 200;\n" +
+                "        break;\n" +
+                "    default:\n" +
+                "        break;\n" +
+                "}\n");
     }
 }
 

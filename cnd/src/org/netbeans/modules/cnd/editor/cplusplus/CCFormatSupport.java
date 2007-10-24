@@ -839,8 +839,15 @@ public class CCFormatSupport extends ExtFormatSupport {
                                     CCTokenContext.PRIVATE,
                                     CCTokenContext.PROTECTED,
                                     CCTokenContext.PUBLIC}, t.getTokenContextPath(), true);
-                            if (ttt != null && ttt.getTokenID().getNumericID() == CCTokenContext.QUESTION_ID){
-                                indent = getTokenIndent(ttt) + getShiftWidth();
+                            if (ttt != null) {
+                                int id = ttt.getTokenID().getNumericID();
+                                if (id == CCTokenContext.QUESTION_ID) {
+                                    indent = getTokenIndent(ttt) + getShiftWidth();
+                                } else if (id == CCTokenContext.CASE_ID || id == CCTokenContext.DEFAULT_ID){
+                                    indent = getTokenIndent(ttt) + getShiftWidth();
+                                } else {
+                                    indent = getTokenIndent(t);// + getShiftWidth();
+                                }
                             } else {
                                 // Indent of line with ':' plus one indent level
                                 indent = getTokenIndent(t);// + getShiftWidth();

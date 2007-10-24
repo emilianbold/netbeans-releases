@@ -302,11 +302,23 @@ public class CCFormatter extends ExtFormatter {
         }
 
         protected void formatLine(CCFormatSupport ccfs, FormatTokenPosition pos) {
+            if (pos.getToken().getTokenID() == CCTokenContext.WHITESPACE) {
+                if (pos.getToken().getImage().indexOf('\n')==0){
+                    return;
+                }
+            }
             TokenItem token = ccfs.findLineStart(pos).getToken();
             if (ccfs.isPreprocessorLine(token)){
                 return;
             }
+            boolean first = true;
             while (token != null) {
+                if (!first && token.getTokenID() == CCTokenContext.WHITESPACE) {
+                    if (token.getImage().indexOf('\n')>=0){
+                        return;
+                    }
+                }
+                first = false;
 /*                if (ccfs.findLineEnd(ccfs.getPosition(token, 0)).getToken() == token) {
                     break; // at line end
                 }
