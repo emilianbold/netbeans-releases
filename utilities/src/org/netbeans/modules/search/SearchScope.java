@@ -58,6 +58,19 @@ public abstract class SearchScope {
      * @return  name of this search scope
      */
     protected abstract String getDisplayName();
+
+    /**
+     * Returns an additional information about this search scope.
+     * This information may (but may not) be displayed by the scope's
+     * display name, possibly rendered using a different font (style, colour).
+     * The default implementation returns {@code null}.
+     * 
+     * @return  string with the additional information,
+     *          or {@code null} if no additional information is available
+     */
+    protected String getAdditionalInfo() {
+        return null;
+    }
     
     /**
      * Is this search scope applicable at the moment?

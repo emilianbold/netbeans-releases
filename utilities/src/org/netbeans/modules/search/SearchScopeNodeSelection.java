@@ -84,8 +84,27 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
     }
 
     @Override
+    protected String getAdditionalInfo() {
+        final Node[] nodes = getNodes();
+
+        if ((nodes == null) || (nodes.length == 0)) {
+            return null;
+        }
+
+        return (nodes.length == 1)
+               ? nodes[0].getDisplayName()
+               : NbBundle.getMessage(getClass(),
+                                     "SearchScopeSelectionAddInfo",     //NOI18N
+                                     nodes.length);
+    }
+
+    @Override
     protected boolean checkIsApplicable() {
-        return checkIsApplicable(TopComponent.getRegistry().getActivatedNodes());
+        return checkIsApplicable(getNodes());
+    }
+
+    private Node[] getNodes() {
+        return TopComponent.getRegistry().getActivatedNodes();
     }
 
     /**
@@ -402,6 +421,11 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
 
         protected String getDisplayName() {
             return delegate.getDisplayName();
+        }
+
+        @Override
+        protected String getAdditionalInfo() {
+            return delegate.getAdditionalInfo();
         }
 
     }

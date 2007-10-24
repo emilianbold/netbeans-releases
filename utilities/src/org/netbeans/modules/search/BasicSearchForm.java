@@ -43,6 +43,7 @@ package org.netbeans.modules.search;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.ItemSelectable;
 import java.awt.SystemColor;
@@ -73,7 +74,6 @@ import javax.swing.JRootPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -163,7 +163,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         JLabel lblTextToFind = new JLabel();
         cboxTextToFind = new JComboBox();
         lblTextToFind.setLabelFor(cboxTextToFind);
-        JLabel lblHintTextToFind = new JLabel();
+        lblHintTextToFind = new JLabel();
+        lblHintTextToFind.setMinimumSize(new Dimension(0, 0));
         
         JLabel lblReplacement;
         JLabel lblDummyReplacement;
@@ -214,22 +215,17 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         lblHintFileNamePattern.setForeground(SystemColor.textInactiveText);
         cboxFileNamePattern.setEditable(true);
         
-        final Border emptyBorder = BorderFactory.createEmptyBorder(0, 0, 0, 0);
-        
         Mnemonics.setLocalizedText(
                 chkWholeWords,
                 getText("BasicSearchForm.chkWholeWords.text"));         //NOI18N
-        chkWholeWords.setBorder(emptyBorder);
 
         Mnemonics.setLocalizedText(
                 chkCaseSensitive,
                 getText("BasicSearchForm.chkCaseSensitive.text"));      //NOI18N
-        chkCaseSensitive.setBorder(emptyBorder);
 
         Mnemonics.setLocalizedText(
                 chkRegexp,
                 getText("BasicSearchForm.chkRegexp.text"));             //NOI18N
-        chkRegexp.setBorder(emptyBorder);
 
         JComponent optionsPanel
                 = createButtonsPanel("LBL_OptionsPanelTitle",           //NOI18N
@@ -254,9 +250,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
 
         GroupLayout criteriaPanelLayout = new GroupLayout(this);
         setLayout(criteriaPanelLayout);
-        if (searchAndReplace) {
-            criteriaPanelLayout.setHonorsVisibility(lblDummyReplacement, false);
-        }
+        criteriaPanelLayout.setHonorsVisibility(false);
         criteriaPanelLayout.setHorizontalGroup(
             criteriaPanelLayout.createSequentialGroup()
                 .addContainerGap()
@@ -627,6 +621,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             updateTextPatternColor();
             chkCaseSensitive.setEnabled(!selected);
             chkWholeWords.setEnabled(!selected);
+            lblHintTextToFind.setVisible(!selected);
         } else if (toggle == chkCaseSensitive) {
             searchCriteria.setCaseSensitive(selected);
         } else if (toggle == chkWholeWords) {
@@ -673,7 +668,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                 }
             }
         };
-        
+
         AbstractButton[] result = new AbstractButton[searchScopes.size()];
         int index = 0;
         
@@ -681,12 +676,15 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         int firstEnabled = -1;
         for (Map.Entry<SearchScope, Boolean> entry : orderSearchScopes()) {
             SearchScope searchScope = entry.getKey();
-            AbstractButton button = new JRadioButton();
+            String searchScopeInfo = searchScope.getAdditionalInfo();
+            AbstractButton button = (searchScopeInfo == null)
+                                    ? new JRadioButton()
+                                    : new ButtonWithExtraInfo(searchScopeInfo);
             Mnemonics.setLocalizedText(button, searchScope.getDisplayName());
             button.getAccessibleContext().setAccessibleDescription(searchScope.getDisplayName());
             button.putClientProperty("searchScope", searchScope);
             button.addItemListener(buttonStateListener);
-            
+
             boolean enabled = entry.getValue();
             button.setEnabled(enabled);
             if (enabled) {
@@ -707,7 +705,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
         return result;
     }
-    
+
     /**
      * Moves the node selection search scope to the last position.
      * The implementation assumes that the node selection search scope
@@ -745,7 +743,22 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         
         ParallelGroup parallelGroup = buttonsPanelLayout.createParallelGroup();
         for (AbstractButton button : buttons) {
-            parallelGroup.add(button);
+            if (button instanceof ButtonWithExtraInfo) {
+                /*
+                 * parallelGroup.add(button) makes the button's maximum size
+                 * equal to its preferred size. We need the button to expand
+                 * horizontally so we set its maximum width to MAX_VALUE.
+                 * If horizontal expanding is set on a button, it causes
+                 * that the button passes the invalidate-validate cycle much
+                 * more frequently - so we only set it on buttons which need it
+                 * (i.e. on buttons with extra information available).
+                 */
+                parallelGroup.add(button, GroupLayout.DEFAULT_SIZE,
+                                          GroupLayout.PREFERRED_SIZE,
+                                          Short.MAX_VALUE);
+            } else {
+                parallelGroup.add(button);
+            }
         }
         buttonsPanelLayout.setHorizontalGroup(parallelGroup);
         
@@ -770,7 +783,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         
         return buttonsPanel;
     }
-    
+
     /**
      * Called when the criteria in the Find dialog are confirmed by the user
      * and the search is about to be started.
@@ -967,6 +980,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     private JTextComponent textToFindEditor;
     private JTextComponent fileNamePatternEditor;
     private JTextComponent replacementPatternEditor;
+    private JLabel lblHintTextToFind;
     
     private Color errorTextColor, defaultTextColor;
     private boolean invalidTextPattern = false;
