@@ -28,6 +28,8 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
+import org.netbeans.editor.Settings;
+
 /**
  * Class was taken from java
  * Links point to java IZ.
@@ -930,4 +932,69 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 //            "}\n"
 //        );
 //    };
+    
+    public void testMacroDefineWithBrace() {
+        setLoadDocumentText(
+            "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n"
+            );
+        reformat();
+            assertDocumentText("Incorrect formatting for macro define with brace",
+            "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n"
+        );
+    };
+    
+    public void testMacroDefineWithBrace2() {
+        Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE, Boolean.TRUE);
+        try {
+            setLoadDocumentText(
+                    "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n");
+            reformat();
+            assertDocumentText("Incorrect formatting for macro define with brace",
+                    "#define SOME_IF(a, b) if ((a) > (b)) { /* do something */ }\n");
+        } finally {
+            Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE, Boolean.FALSE);
+        }
+    }
+
+    public void testMacroDefineWithParen() {
+        setLoadDocumentText(
+                "#include <stdio.h>\n" +
+                "#define M(x) puts(#x)\n" +
+                "int main() {\n" +
+                "M(\"test\");\n" +
+                "return 0;\n" +
+                "}\n");
+        reformat();
+        assertDocumentText("Incorrect formatting for macro define with paren",
+                "#include <stdio.h>\n" +
+                "#define M(x) puts(#x)\n" +
+                "int main() {\n" +
+                "    M(\"test\");\n" +
+                "    return 0;\n" +
+                "}\n");
+    }
+
+    public void testMacroDefineWithParen2() {
+        Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS, Boolean.TRUE);
+        try {
+            setLoadDocumentText(
+                    "#include <stdio.h>\n" +
+                    "#define M(x) puts(#x)\n" +
+                    "int main() {\n" +
+                    "    M(\"test\");\n" +
+                    "    return 0;\n" +
+                    "}\n");
+            reformat();
+           assertDocumentText("Incorrect formatting for macro define with paren",
+                    "#include <stdio.h>\n" +
+                    "#define M(x) puts(#x)\n" +
+                    "int main () {\n" +
+                    "    M (\"test\");\n" +
+                    "    return 0;\n" +
+                    "}\n");
+        } finally {
+            Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS, Boolean.FALSE);
+        }
+    }
 }
+

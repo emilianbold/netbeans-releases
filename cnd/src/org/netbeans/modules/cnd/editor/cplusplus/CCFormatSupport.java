@@ -500,7 +500,11 @@ public class CCFormatSupport extends ExtFormatSupport {
         TokenItem t = findStatementStart(token, true);
         // preprocessor tokens are not important (bug#22570)
         while (t != null && isPreprocessorLine(t)) {
-            t = findStatementStart(t.getPrevious(), true);
+            TokenItem current = t.getPrevious();
+            if (current == null) {
+                return null;
+            }
+            t = findStatementStart(current, true);
         }
         return t;
     }
@@ -1188,7 +1192,10 @@ public class CCFormatSupport extends ExtFormatSupport {
     }
     
     private TokenItem getVisibility(TokenItem token) {
-        TokenItem t = getPreviousToken(token);
+        TokenItem t = token;
+        if (t != null){
+            t = token.getPrevious();
+        }
         while (t != null) {
             if (t.getTokenContextPath() == tokenContextPath) {
                 switch (t.getTokenID().getNumericID()) {

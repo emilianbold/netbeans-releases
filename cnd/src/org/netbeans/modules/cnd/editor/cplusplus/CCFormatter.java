@@ -303,6 +303,9 @@ public class CCFormatter extends ExtFormatter {
 
         protected void formatLine(CCFormatSupport ccfs, FormatTokenPosition pos) {
             TokenItem token = ccfs.findLineStart(pos).getToken();
+            if (ccfs.isPreprocessorLine(token)){
+                return;
+            }
             while (token != null) {
 /*                if (ccfs.findLineEnd(ccfs.getPosition(token, 0)).getToken() == token) {
                     break; // at line end
