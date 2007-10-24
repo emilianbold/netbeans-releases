@@ -80,12 +80,11 @@ public class ViewLogAction extends CookieAction {
         
         
     }
-    public static void viewLog(SunDeploymentManagerInterface sdm){
-            viewLog(sdm,false,false);//not the entire file and no forced refresh, just a front view
-    
+    public static InputOutput viewLog(SunDeploymentManagerInterface sdm){
+        return viewLog(sdm,false,false);//not the entire file and no forced refresh, just a front view    
     }
     
-    public static InputOutput viewLog(SunDeploymentManagerInterface sdm, boolean entireFile, boolean forced){
+    private static InputOutput viewLog(SunDeploymentManagerInterface sdm, boolean entireFile, boolean forced){
         try{
             if(sdm.isLocal()==false){
                 return null;
@@ -97,8 +96,9 @@ public class ViewLogAction extends CookieAction {
                 return null;
             }
             String domain = dmProps.getDomainName();
-            // XXX the dm props has the domain directory....
-            //File f = new File(installRoot+"/domains/"+domain+"/logs/server.log");
+            // FIXME -- the log file can be renamed by the user in the admin gui
+            //  we probably need to get the property value and use it... not this 
+            //  hard coded value....
             File f = new File(domainRoot+File.separator+domain+"/logs/server.log");
             LogViewerSupport p = LogViewerSupport.getLogViewerSupport(f , dmProps.getUrl(),2000,entireFile);
             return p.showLogViewer(forced);

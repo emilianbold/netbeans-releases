@@ -335,7 +335,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
      */
     private InputOutput getLogViewerWindow(){
         SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)this.dm;
-        return org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ViewLogAction.viewLog(sunDm,false,false);
+        return org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ViewLogAction.viewLog(sunDm);
     }
     
     public synchronized void run() {

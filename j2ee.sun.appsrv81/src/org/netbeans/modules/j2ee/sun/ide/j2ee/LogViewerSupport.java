@@ -44,11 +44,11 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.WeakHashMap;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
@@ -228,8 +228,7 @@ public final class LogViewerSupport extends Thread {
                 }
                 // Now show the last OLD_LINES
                 if (startAtBeginning){
-                    ring.output();
-
+                    ring.output(null);
                 }
                 ring.setMaxCount(LINES);
             }
@@ -242,7 +241,14 @@ public final class LogViewerSupport extends Thread {
     public void run() {
         // The file pointer keeps track of where we are in the file
         long currentIndex = 0;
-        long currentNbofFileLogs = logfile.getParentFile().list().length;
+        FilenameFilter logsDirectoryFilter = new FilenameFilter() {
+            
+            public boolean accept(File arg0, String arg1) {
+                return arg1.startsWith(logfile.getName());
+            }
+            
+        };
+        long currentNbofFileLogs = logfile.getParentFile().list(logsDirectoryFilter).length;
         boolean needTosleep=true;
         boolean needToRotate=false;
         boolean alreadyRotated=false;
@@ -264,11 +270,11 @@ public final class LogViewerSupport extends Thread {
                     }
                     if (lines >= MAX_LINES) {
                         io.getOut().reset();
-                        lines = ring.output();
+                        lines = ring.output(null);
                     }
                     // Compare the length of the file to the file pointer
                     long fileLength = logfile.length();
-                    long newNbofFileLogs = logfile.getParentFile().list().length;
+                    long newNbofFileLogs = logfile.getParentFile().list(logsDirectoryFilter).length;
                     
                     if( fileLength < currentIndex ) {
                         needToRotate =true;
@@ -379,7 +385,7 @@ public final class LogViewerSupport extends Thread {
 
     /*
      * return the 6th element of a log line entry, or the line if this element does
-     * not exist, or if the line cannot be parsed correclty.
+     * not exist, or if the line cannot be parsed correctly.
      *
      */
     private String filterLine(String line){
@@ -411,9 +417,6 @@ public final class LogViewerSupport extends Thread {
      */
     public InputOutput showLogViewer(boolean forced) throws IOException{
         io = UISupport.getServerIO(url);
-        
-        
-        // System.out.println("we retart the thread in showlogviewwer forced="+forced +"  Closed?="+io.isClosed());
         
         working = true;
         if (forced &&(io.isClosed())){
@@ -458,13 +461,19 @@ public final class LogViewerSupport extends Thread {
             maxCount = newMax;
         }
         
-        public int output() {
+        public int output(String bracket) {
             int i = 0;
             Iterator it = anchor.iterator();
             
+            if (null != bracket) {
+                printLine("<<<<<<<<<<<<<<<<<<<<<<<<<<<< "+bracket);
+            }
             while (it.hasNext()) {
                 printLine((String)it.next());
                 i++;
+            }
+            if (null != bracket) {
+                printLine(">>>>>>>>>>>>>>>>>>>>>>>>>>>> "+bracket);
             }
             return i;
         }
