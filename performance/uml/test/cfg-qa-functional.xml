@@ -59,6 +59,7 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/UMLMeasureActions.class"/>
+                <exclude name="gui/UMLMeasureActions.class/Reverse Engineering"/>
             </patternset>
         </testset>
     </testbag>
@@ -86,6 +87,7 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/UMLMeasureActions.class"/>
+                <exclude name="gui/UMLMeasureActions.class/Reverse Engineering"/>
             </patternset>
         </testset>
     </testbag>
@@ -112,6 +114,7 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/UMLMeasureActions.class"/>
+                <exclude name="gui/UMLMeasureActions.class/Reverse Engineering"/>
             </patternset>
         </testset>
     </testbag>
@@ -129,6 +132,15 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/UMLMeasureMenus.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="(all or ui_responsiveness or actions) and NOT once" prio="8"
+             executor="ide_performance" name="UI responsiveness - Actions" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/UMLMeasureActions.class/Reverse Engineering"/>
             </patternset>
         </testset>
     </testbag>
