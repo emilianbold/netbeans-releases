@@ -65,7 +65,7 @@ import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
 import org.netbeans.modules.uml.core.workspacemanagement.WorkspaceManagementException;
 import org.netbeans.modules.uml.ui.products.ad.applicationcore.ADProduct;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
-import org.openide.util.NbPreferences;
+
 /**
  * Test case that needs an active namespace (workspace, project) to work in.
  * 
@@ -77,7 +77,6 @@ abstract public class AbstractUMLTestCase extends TestCase
     protected static UMLCreationFactory factory = null;
     protected static IWorkspace workspace;
     protected static IProject project;
-
     protected static IRelationFactory relFactory = new RelationFactory();
 
     static
@@ -88,21 +87,26 @@ abstract public class AbstractUMLTestCase extends TestCase
     public static void initialize() 
     {
         product = getProduct();
+
         try
         {
             ProductHelper.getMessenger().setDisableMessaging(true);
 
             // we don't want to be prompted to save projects,
             // just save them automatically
-            NbPreferences.forModule (AbstractUMLTestCase.class).putBoolean("UML_Prompt_to_Save_Project", false); // NOI18N
+            // IZ=119824 - conover
+            // NbPreferences are not initialized in Unit Test runtime
+            // NbPreferences.forModule (AbstractUMLTestCase.class)
+            //      .putBoolean("UML_Prompt_to_Save_Project", false); // NOI18N
             
         }
+        
         catch (Exception e)
         {
             e.printStackTrace();
         }
-        factory = (UMLCreationFactory) product.getCreationFactory();
         
+        factory = (UMLCreationFactory) product.getCreationFactory();
         establishNamespaces();
     }
 
@@ -128,6 +132,7 @@ abstract public class AbstractUMLTestCase extends TestCase
     /* (non-Javadoc)
      * @see junit.framework.TestCase#tearDown()
      */
+    @Override
     protected void tearDown() throws Exception
     {
         for (int i = createdTypes.size() - 1; i >= 0; --i)
@@ -312,6 +317,7 @@ abstract public class AbstractUMLTestCase extends TestCase
     /* (non-Javadoc)
      * @see junit.framework.TestCase#tearDown()
      */
+    @Override
     protected void finalize() throws WorkspaceManagementException
     {
         File wksFile = new File(workspace.getLocation()),

@@ -41,9 +41,11 @@
 
 
 package org.netbeans.modules.uml.core.reverseengineering.reframework;
-import org.netbeans.modules.uml.core.AbstractUMLTestCase;
-import org.netbeans.modules.uml.core.ModuleUnitTestSuiteBuilder;
+
 import java.io.File;
+import java.io.IOException;
+import org.netbeans.modules.uml.core.AbstractUMLTestCase;
+
 
 /**
  * Test cases for LanguageLibrary.
@@ -55,24 +57,40 @@ public class LanguageLibraryTestCase extends AbstractUMLTestCase
         junit.textui.TestRunner.run(LanguageLibraryTestCase.class);
     }
 
-    private static ILanguageLibrary ll = new LanguageLibrary();
+    private ILanguageLibrary ll;
     
-    static
+    private void init()
     {
+        // IZ=119824 - conover
+        // major modifications to find the language library files 
+        // in the new location
+        try
+        {
+            ll = new LanguageLibrary();
+            
+            String path = (new File(".")).getCanonicalPath();
+            path = path.substring(0, path.length() - 23);
+
+            String langPath = path + File.separator + "nbbuild" + 
+                File.separator + "netbeans" + File.separator +
+                "uml4" + File.separator + "modules" + File.separator + 
+                "Libraries" + File.separator;
+
+            ll.setIndex(langPath + "Java16.index");
+            ll.setLookupFile(langPath + "Java16.etd");
+        }
         
-        ll.setIndex(ModuleUnitTestSuiteBuilder.tempDotUmlDirName 
-            + File.separator + "config" + File.separator // NOI18N
-            + "Libraries" + File.separator + "Java16.index"); // NOI18N
-        
-        ll.setLookupFile(ModuleUnitTestSuiteBuilder.tempDotUmlDirName
-            + File.separator + "config" + File.separator // NOI18N
-            + "Libraries" + File.separator + "Java16.etd"); // NOI18N
+        catch (IOException ex)
+        {
+            ex.printStackTrace();
+        }
     }
 
     public void testFindClass()
     {
-        assertEquals("String", ll.findClass("String").getName()); // NOI18N
-        assertEquals("ArrayList",  // NOI18N
-                ll.findClass("java::util::ArrayList").getName()); // NOI18N
+        init();
+        assertNotNull(ll);
+        assertEquals("String", ll.findClass("String").getName());
+        assertEquals("ArrayList", ll.findClass("java::util::ArrayList").getName());
     }
 }

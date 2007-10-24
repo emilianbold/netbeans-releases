@@ -156,11 +156,11 @@ public class JavaClassChangeHandlerTestCase extends AbstractUMLTestCase
         prefs.put ("UML_ADD_DTORS", "PSK_YES") ;
         String str = prefs.get ("UML_ADD_DTORS", "PSK_YES") ;
         
-        IClass clazz = createClass("AA");
-        assertEquals(2, clazz.getOperations().size());
-        assertEquals("AA", clazz.getOperations().get(0).getName());
-        assertEquals("finalize", clazz.getOperations().get(1).getName());
-        assertEquals(IVisibilityKind.VK_PROTECTED, clazz.getOperations().get(1).getVisibility());
+        IClass clazz2 = createClass("AA");
+        assertEquals(2, clazz2.getOperations().size());
+        assertEquals("AA", clazz2.getOperations().get(0).getName());
+        assertEquals("finalize", clazz2.getOperations().get(1).getName());
+        assertEquals(IVisibilityKind.VK_PROTECTED, clazz2.getOperations().get(1).getVisibility());
         prefs.put ("UML_ADD_DTORS", "PSK_NO");
     }
     
