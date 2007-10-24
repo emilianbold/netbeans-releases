@@ -174,6 +174,12 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             container.getCancelButton().setEnabled(false);
         }
         
+        @Override
+        public void evaluateNextButtonClick() {
+            container.getNextButton().setEnabled(false);            
+            super.evaluateNextButtonClick();
+        }
+        
         protected void initialize() {
             final Registry registry = Registry.getInstance();
             

@@ -43,6 +43,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
@@ -199,18 +200,27 @@ public class NbBasePanel extends DestinationPanel {
                 statusLabel.setVisible(false);
             }
             
+            final List<File> jdkLocations = jdkLocationPanel.getLocations();                        
+            final List<String> jdkLabels = jdkLocationPanel.getLabels();
+            
             final LocationsComboBoxModel model = new LocationsComboBoxModel(
-                    jdkLocationPanel.getLocations(),
-                    jdkLocationPanel.getLabels());
+                    jdkLocations,
+                    jdkLabels);            
             
             ((LocationsComboBoxEditor) jdkLocationComboBox.getEditor()).setModel(
                     model);
             jdkLocationComboBox.setModel(
                     model);
             
-            model.setSelectedItem(
-                    jdkLocationPanel.getSelectedLocation().toString());
-            
+            final File selectedLocation = jdkLocationPanel.getSelectedLocation();
+            final int index = jdkLocations.indexOf(selectedLocation);
+            String selectedItem;
+            if(index != -1) {
+                  selectedItem = jdkLabels.get(index);  
+            } else {
+                  selectedItem = selectedLocation.toString();
+            }  
+            model.setSelectedItem(selectedItem);                        
             browseButton.setText(
                     panel.getProperty(BROWSE_BUTTON_TEXT_PROPERTY));
             
@@ -247,7 +257,7 @@ public class NbBasePanel extends DestinationPanel {
                 }
                 
                 public void removeUpdate(DocumentEvent e) {
-                    updateErrorMessage();
+                 //   updateErrorMessage();  
                 }
                 
                 public void changedUpdate(DocumentEvent e) {
