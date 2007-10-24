@@ -143,10 +143,8 @@ public class ConfigureMethodsDialog implements ActionListener
             configurePanel.getMethodDetailPanel().updateColElemClassName();
             
             // If anything has changed, the all the classes will be regenerated
-            if( refresh || doModification( origCopy, ejbGroup ) )
+            if( refresh || isModified( origCopy, ejbGroup ) )
             {
-                // Sometihng has changed
-                EjbDataModel.getInstance().touchModifiedFlag();
                 
                 // Regenerate the classes
                                 
@@ -154,6 +152,12 @@ public class ConfigureMethodsDialog implements ActionListener
                 
                 try {
                     ejbLoader.createWrapperClientBeans();    
+                    
+                    // (IZ 199266) Propagate modification here so compilation
+                    // errors do not corrupt the data model
+                    doModification(origCopy, ejbGroup);
+                    
+                    EjbDataModel.getInstance().touchModifiedFlag();
                 }catch( EjbLoadException ex ) {
                     // Popup error message here to ask the them give correct information
 
@@ -174,7 +178,15 @@ public class ConfigureMethodsDialog implements ActionListener
         }
     }
     
-    private boolean doModification( EjbGroup origGroup, EjbGroup modGroup )
+    private boolean isModified(EjbGroup origGroup, EjbGroup modGroup) {
+        return findModifications(origGroup, modGroup, false);
+    }
+    
+    private void doModification(EjbGroup origGroup, EjbGroup modGroup) {
+        findModifications(origGroup, modGroup, true);
+    }
+    
+    private boolean findModifications( EjbGroup origGroup, EjbGroup modGroup, boolean modifyOriginal )
     {
         boolean foundModification = false;
         
@@ -218,7 +230,10 @@ public class ConfigureMethodsDialog implements ActionListener
                             
                             if( !origParam.getName().equals( modParam.getName() ) ) 
                             {
-                                origParam.setName( modParam.getName() );
+                                if (modifyOriginal) {
+                                    origParam.setName( modParam.getName() );
+                                }
+                                
                                 foundModification = true;
                             }
                         }
