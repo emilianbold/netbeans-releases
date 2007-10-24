@@ -373,8 +373,6 @@ made subject to such option by the copyright holder.
                 <package>org.apache.commons.collections.primitives.adapters.io</package>
                 <package>org.apache.commons.collections.primitives.decorators</package>
                 <package>org.apache.commons.collections.set</package>
-                <package>org.apache.commons.logging</package>
-                <package>org.apache.commons.logging.impl</package>
                 <package>org.apache.log</package>
                 <package>org.apache.log.format</package>
                 <package>org.apache.log.output</package>
