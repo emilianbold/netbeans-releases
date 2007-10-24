@@ -71,6 +71,7 @@ import org.openide.util.Utilities;
 
 public class NbEditorSettingsInitializer extends Settings.AbstractInitializer {
 
+    // -J-Dorg.netbeans.modules.editor.NbEditorSettingsInitializer.level=FINE
     private static final Logger LOG = Logger.getLogger(NbEditorSettingsInitializer.class.getName());
     
     public static final String NAME = "nb-editor-settings-initializer"; // NOI18N
@@ -129,7 +130,7 @@ public class NbEditorSettingsInitializer extends Settings.AbstractInitializer {
             String mimeType = (String) i.next();
             
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Initializing settings for '" + mimeType + "', " + kitClass);
+                LOG.fine("Initializing settings for '" + mimeType + "', " + kitClass); //NOI18N
             }
             
             // Lookup BaseOptions for the given mime type so that it can hook up its
