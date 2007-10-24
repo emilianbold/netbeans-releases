@@ -590,8 +590,7 @@ final class Central implements ControllerHandler {
         TopComponent[] tcs = getModeOpenedTopComponents(mode).toArray(new TopComponent[0]);
         
         for(int i = 0; i < tcs.length; i++) {
-            TopComponent tc = tcs[i];
-            model.addModeClosedTopComponent(mode, tc);
+            model.addModeClosedTopComponent(mode, tcs[i]);
         }
         
         ModeImpl oldActive = getActiveMode();
@@ -1870,7 +1869,6 @@ final class Central implements ControllerHandler {
     }
 
     public void userClosedTopComponent(ModeImpl mode, TopComponent tc) {
-//        debugLog("userClosedTopComponent");
         if( mode == getCurrentMaximizedMode() && isViewMaximized() ) {
             switchMaximizedMode( null );
             for(Iterator it = getModes().iterator(); it.hasNext(); ) {
@@ -1882,12 +1880,7 @@ final class Central implements ControllerHandler {
                 }
             }
         }
-        
-        if(WindowManagerImpl.getInstance().isTopComponentPersistentWhenClosed(tc)) {
-            addModeClosedTopComponent(mode, tc);
-        } else {
-            removeModeTopComponent(mode, tc);
-        }
+        addModeClosedTopComponent(mode, tc);
     }
     
     public void userClosedMode(ModeImpl mode) {

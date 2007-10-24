@@ -234,12 +234,7 @@ public final class ModeImpl implements Mode {
         if(!getOpenedTopComponents().contains(tc)) {
             return;
         }
-        
-        if(WindowManagerImpl.getInstance().isTopComponentPersistentWhenClosed(tc)) {
-            addClosedTopComponent(tc);
-        } else {
-            removeTopComponent(tc);
-        }
+        addClosedTopComponent(tc);
     }
 
     /** Gets list of opened TopComponentS. */
