@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
@@ -77,8 +76,8 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final RequestProcessor rp = new RequestProcessor("PersistentObjectManager", 1); // NOI18N
 
-    private boolean initialized = false;
     // not private because used in unit tests
+    boolean initialized = false;
     boolean temporary = false;
 
     static <V extends PersistentObject> PersistentObjectManager<V> create(AnnotationModelHelper helper, ObjectProvider<V> provider) {
@@ -93,11 +92,6 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
     private PersistentObjectManager(AnnotationModelHelper helper, ObjectProvider<T> provider) {
         this.helper = helper;
         this.provider = provider;
-        objectList.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                fireChange();
-            }
-        });
     }
 
     public Collection<T> getObjects() {
@@ -155,7 +149,9 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
             }
             List<T> newObjects = provider.createObjects(type);
             LOGGER.log(Level.FINE, "typesAdded: new objects {0}", newObjects); // NOI18N
-            objectList.put(typeHandle, newObjects);
+            if (objectList.put(typeHandle, newObjects)) {
+                fireChange();
+            }
         }
     }
 
@@ -171,6 +167,7 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
             List<T> list = objectList.remove(typeHandle);
             if (list != null) {
                 LOGGER.log(Level.FINE, "typesRemoved: removing objects {0}", list); // NOI18N
+                fireChange();
             }
         }
     }
@@ -196,7 +193,9 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
                 boolean modified = provider.modifyObjects(type, oldNewObjects);
                 if (modified) {
                     LOGGER.log(Level.FINE, "typesChanged: modified objects to {0}", oldNewObjects); // NOI18N
-                    objectList.put(typeHandle, oldNewObjects);
+                    if (objectList.put(typeHandle, oldNewObjects)) {
+                        fireChange();
+                    }
                 } else {
                     LOGGER.log(Level.FINE, "typesChanged: not modifying any objects"); // NOI18N
                 }
@@ -209,7 +208,9 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
                 }
                 List<T> newObjects = provider.createObjects(type);
                 LOGGER.log(Level.FINE, "typesChanged: new objects {0}", newObjects); // NOI18N
-                objectList.put(typeHandle, newObjects);
+                if (objectList.put(typeHandle, newObjects)) {
+                    fireChange();
+                }
             }
         }
     }

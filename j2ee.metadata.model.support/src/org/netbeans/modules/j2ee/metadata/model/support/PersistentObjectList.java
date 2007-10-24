@@ -49,10 +49,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.*;
-import org.openide.util.ChangeSupport;
 
 /**
  *
@@ -63,15 +61,6 @@ public class PersistentObjectList<T extends PersistentObject> {
     private static final Logger LOGGER = Logger.getLogger(PersistentObjectManager.class.getName());
 
     private final Map<ElementHandle<TypeElement>, List<T>> type2Objects = new HashMap<ElementHandle<TypeElement>, List<T>>();
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
-    }
-
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
-    }
 
     public void add(List<T> objects) {
         for (T newObject : objects) {
@@ -82,10 +71,9 @@ public class PersistentObjectList<T extends PersistentObject> {
             }
             list.add(newObject);
         }
-        changeSupport.fireChange();
     }
 
-    public void put(ElementHandle<TypeElement> typeHandle, List<T> objects) {
+    public boolean put(ElementHandle<TypeElement> typeHandle, List<T> objects) {
         List<T> list = new ArrayList<T>();
         for (T object : objects) {
             ElementHandle<TypeElement> sourceHandle = object.getTypeElementHandle();
@@ -95,30 +83,21 @@ public class PersistentObjectList<T extends PersistentObject> {
                 LOGGER.log(Level.WARNING, "setObjects: ignoring object with incorrect ElementHandle {0} (expected {1})", new Object[] { sourceHandle, typeHandle }); // NOI18N
             }
         }
-        boolean fireChange;
         if (list.size() > 0) {
             type2Objects.put(typeHandle, list);
-            fireChange = true;
+            return true;
         } else {
             List<T> oldList = type2Objects.remove(typeHandle);
-            fireChange = oldList != null;
-        }
-        if (fireChange) {
-            changeSupport.fireChange();
+            return oldList != null;
         }
     }
 
     public List<T> remove(ElementHandle<TypeElement> typeHandle) {
-        List<T> oldList = type2Objects.remove(typeHandle);
-        if (oldList != null) {
-            changeSupport.fireChange();
-        }
-        return oldList;
+        return type2Objects.remove(typeHandle);
     }
 
     public void clear() {
         type2Objects.clear();
-        changeSupport.fireChange();
     }
 
     public List<T> get() {

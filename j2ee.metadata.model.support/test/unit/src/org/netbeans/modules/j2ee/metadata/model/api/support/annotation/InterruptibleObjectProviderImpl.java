@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,37 +41,36 @@
 
 package org.netbeans.modules.j2ee.metadata.model.api.support.annotation;
 
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.modules.j2ee.metadata.model.support.PersistenceTestCase;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import java.util.Collections;
+import java.util.List;
+import javax.lang.model.element.TypeElement;
 
 /**
  *
  * @author Andrei Badea
  */
-public class PersistentObjectManagerInterruptedTest extends PersistenceTestCase {
+public class InterruptibleObjectProviderImpl implements ObjectProvider<PersistentObject> {
 
-    public PersistentObjectManagerInterruptedTest(String name) {
-        super(name);
+    private final boolean interruptible;
+
+    public InterruptibleObjectProviderImpl(boolean interruptible) {
+        super();
+        this.interruptible = interruptible;
     }
 
-    public void testInterrupted() throws Exception {
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
-        ClasspathInfo cpi = ClasspathInfo.create(srcFO);
-        final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
-        helper.runJavaSourceTask(new Runnable() {
-            public void run() {
-                // first checking that the manager does not (for any reason) initialize temporarily
-                ObjectProvider<PersistentObject> provider = new InterruptibleObjectProviderImpl(false);
-                PersistentObjectManager<PersistentObject> manager = helper.createPersistentObjectManager(provider);
-                manager.getObjects();
-                assertFalse(manager.temporary);
-                // now checking that the manager initializes temporarily when ObjectProvider.createInitialObjects throws InterruptedException
-                provider = new InterruptibleObjectProviderImpl(true);
-                manager = helper.createPersistentObjectManager(provider);
-                manager.getObjects();
-                assertTrue(manager.temporary);
-            }
-        });
+    public List<PersistentObject> createInitialObjects() throws InterruptedException {
+        if (interruptible) {
+            throw new InterruptedException();
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    public List<PersistentObject> createObjects(TypeElement type) {
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean modifyObjects(TypeElement type, List<PersistentObject> objects) {
+        throw new UnsupportedOperationException();
     }
 }

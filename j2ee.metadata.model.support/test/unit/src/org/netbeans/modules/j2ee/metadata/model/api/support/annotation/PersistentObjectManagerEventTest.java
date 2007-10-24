@@ -41,37 +41,48 @@
 
 package org.netbeans.modules.j2ee.metadata.model.api.support.annotation;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.metadata.model.support.PersistenceTestCase;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.openide.util.test.MockChangeListener;
 
 /**
  *
  * @author Andrei Badea
  */
-public class PersistentObjectManagerInterruptedTest extends PersistenceTestCase {
+public class PersistentObjectManagerEventTest extends PersistenceTestCase {
 
-    public PersistentObjectManagerInterruptedTest(String name) {
+    public PersistentObjectManagerEventTest(String name) {
         super(name);
     }
 
-    public void testInterrupted() throws Exception {
+    /**
+     * Tests that POM doesn't fire events if it was initialized temporarily. This
+     * is important to avoid issues like 119767, where a client getting an event
+     * reacts by initializing the model again, which fires an event, which
+     * initializes the model, etc.
+     */
+    public void testNoEventsIfTemporary() throws Exception {
         RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
+        final MockChangeListener listener = new MockChangeListener();
+        final ObjectProvider<PersistentObject> provider = new InterruptibleObjectProviderImpl(true);
+        final List<PersistentObjectManager<PersistentObject>> manager = new ArrayList<PersistentObjectManager<PersistentObject>>();
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
-                // first checking that the manager does not (for any reason) initialize temporarily
-                ObjectProvider<PersistentObject> provider = new InterruptibleObjectProviderImpl(false);
-                PersistentObjectManager<PersistentObject> manager = helper.createPersistentObjectManager(provider);
-                manager.getObjects();
-                assertFalse(manager.temporary);
-                // now checking that the manager initializes temporarily when ObjectProvider.createInitialObjects throws InterruptedException
-                provider = new InterruptibleObjectProviderImpl(true);
-                manager = helper.createPersistentObjectManager(provider);
-                manager.getObjects();
-                assertTrue(manager.temporary);
+                PersistentObjectManager<PersistentObject> newManager = helper.createPersistentObjectManager(provider);
+                newManager.addChangeListener(listener);
+                newManager.getObjects();
+                assertTrue(newManager.temporary);
+                manager.add(newManager);
             }
         });
+        // just check the manager has was deinitialized by now (as we are out of the java context)
+        assertFalse(manager.get(0).initialized);
+        // there should have been no events whatsoever
+        listener.assertNoEvents();
     }
 }
