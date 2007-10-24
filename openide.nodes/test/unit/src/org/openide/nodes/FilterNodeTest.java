@@ -691,6 +691,10 @@ public class FilterNodeTest extends NbTestCase {
         assertTrue("No items:" + c, c.isEmpty());
         c = res.allInstances();
         assertTrue("No instances:" + c, c.isEmpty());
+        
+        Collection<? extends Node> all = n.getLookup().lookupAll(Node.class);
+        assertEquals("One found: " + all, 1, all.size());
+        assertEquals("It is the filter node", n, all.iterator().next());
     }
     
     public void testNoClassCast89329() throws Exception {
