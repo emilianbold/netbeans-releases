@@ -42,6 +42,7 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
+import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardAction;
@@ -110,6 +111,11 @@ public class NbInitializationAction extends WizardAction{
                 searchJava.execute(javaSearchProgress);
             }
         }
+    }
+
+    @Override
+    public boolean canExecuteForward() {
+        return (ExecutionMode.getCurrentExecutionMode() == ExecutionMode.NORMAL);
     }
         
     public static final String DEFAULT_TITLE = ResourceUtils.getString(
