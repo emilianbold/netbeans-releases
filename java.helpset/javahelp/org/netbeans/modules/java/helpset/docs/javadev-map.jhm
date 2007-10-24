@@ -140,6 +140,12 @@
 <mapID target="gui.bind.about" url="gui/gui_bind_about.html" />
 <mapID target="gui.bind.working" url="gui/gui_bind_working.html" />
 <mapID target="gui.bind.db.working" url="gui/gui_bind_db_working.html" />
+<mapID target="gui.bind.data" url="gui/gui_bind_data.html" />
+<mapID target="gui.bind.synthetic" url="gui/gui_bind_synthetic.html" />
+<mapID target="gui.bind.converters" url="gui/gui_bind_converters.html" />
+<mapID target="gui.bind.validators" url="gui/gui_bind_validators.html" />
+
+
 
 <mapID target="gui.config" url="gui/gui_configuring.html" />
 <mapID target="gui.source.modifying" url="gui/gui_modifysource.html" />

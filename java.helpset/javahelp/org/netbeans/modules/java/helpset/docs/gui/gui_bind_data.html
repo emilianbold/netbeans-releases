@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright (c) 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <title>Binding Data to a Swing Component</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Binding Data to a Swing Component</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>Once you have created a new Java form and added components to the form, 
+            you can generate code to bind those components to data. The IDE makes 
+        it easy to bind data to Swing JTable and JList components.</p>
+        <p>Before binding a component to a database, you need to have done the following things 
+        ready:</p>        
+        <ul>
+            <li><a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">Connected to a database</a> in the IDE.</li>
+            <li><a href="gui_addcomponent.html">Added the component</a> to a form in the GUI Builder.</li>
+            <li>Created classes that represent the database tables to which you want to 
+                bind. Steps on creating the entity classes for binding data to a component  
+            are given below.</li>
+        </ul>
+
+        <p><b>To create entity classes to represent the database that is to be bound to the JTable:</b></p>
+        <ol>
+            <li>In the Projects window, right-click your project and choose 
+                New &gt; Other, select the Persistence category, and select the 
+            Entity Classes from Database template. </li>
+            <li>In the Database Tables page of the wizard, select the 
+            database connection.</li>
+            <li>Once the Available Tables column is populated, select the tables 
+                that you want to use in your application and click Add to move them to 
+            the Selected Tables column. Click Next.</li>
+            <li>In the Entity Classes page of the wizard, make sure the 
+            Generate Named Query Annotations for Persistent Fields dialog 
+            box is selected. 
+            <li>Make any customizations that you want to make to the 
+            names of the generated classes and their location.</li>
+            <li>Click Create Persistence Unit.</li>
+            <li>In the Create Persistence Unit dialog box, make sure of the following things:
+                <ul>
+                    <li>That the selected Persistence Library is TopLink.</li>
+                    <li>That the selected Table Generation Strategy is "None".</li>                
+                </ul> 
+            </li>
+            <li>Click Finish.
+            <p>You should see nodes for the entity classes in the Projects window.</p></li>
+        </ol>
+        <p><b>To bind the data to a JTable component:</b></p>
+        <ol>
+            <li>Right-click the component in the GUI Builder and choose Bind &gt; elements.</li>
+            <li>Click Import Data to Form. From the Import Data to Form dialog box, 
+                select the database table to which you want to bind your components. 
+            Click OK.</li>
+            <li>From the Binding Source combo box, select the item that represents the 
+                result list of the entity class. For example, if the entity class is called, 
+            <tt>Customer.java</tt>, the list object would be generated as <tt>customerList</tt>.</li>
+            <li>Leave the Binding Expression value as <tt>null</tt>.
+            <li>If there are any database columns that you want to appear in the JTable, 
+            select those columns in the Selected list and move them to the Available list.</li>
+            <li>Select the <a href="csh/gui_bind_advanced_dialog.html">Advanced tab</a>
+            to further configure the binding. For example, 
+                you can specify a validator or converter, or you can specify behavior 
+        if the binding source is null or unreadable.</li>
+        <li>Click OK.</li>
+            
+        </ol>      
+        <p><b>To bind the data to a JList component:</b></p>
+        <ol>
+            <li>Right-click the component in the GUI Builder and choose Bind &gt; elements.</li>
+            <li>Click Import Data to Form. From the Import Data to Form dialog box, 
+                select the database table to which you want to bind your components. 
+            Click OK.</li>
+            <li>From the Binding Source combo box, select an item that represents the 
+                result list of the entity class. For example, if the entity class is called, 
+            <tt>Customer.java</tt>, the list object would be generated as <tt>customerList</tt>.</li>
+            <li>Leave the Binding Expression value as <tt>null</tt>.
+            <li>In the Display Expression drop-down list, select the property 
+            that represents the database column that contains the values that 
+        you want to display in the list.</li>
+            <li>Select the <a href="csh/gui_bind_advanced_dialog.html">Advanced tab</a>
+            to further configure the binding. </li>
+        <li>Click OK.</li>
+        </ol>     
+        
+        <ul class="note">
+            <li>You can use the New Java Desktop Application wizard to 
+            quickly create a whole working application that has CRUD 
+        (create, read, update, and delete) features. You can also 
+        drag a database table from the Services window on to a JTable to automatically 
+        bind data to the JTable. However, it is better to 
+    generate all the entity classes in advance to ensure that all relations 
+among the entities are correctly covered by the generated classes.</li>
+        </ul>
+        <!--TODO deal with selected elements, etc.-->
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="gui_addcomponent.html">Adding a Component to a Form</a></dd>
+            <dd><a href="gui_editcomponentprops.html">Editing Component Properties</a></dd>
+            <dd><a href="gui_designing.html">Designing Java GUIs with the GUI Builder</a></dd>
+            <dd><a href="gui_addingtopalette.html">Adding a Bean to the Palette Window</a></dd>
+        </dl>
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

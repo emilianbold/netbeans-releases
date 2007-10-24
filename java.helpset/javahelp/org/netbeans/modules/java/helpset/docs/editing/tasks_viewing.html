@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright (c) 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+	<title>Tracking Errors and Pending Tasks in Java Projects</title>
+	<link rel="StyleSheet" href="../ide.css" type="text/css">
+    </head>
+
+    <body>
+	<h2>Tracking Errors and Pending Tasks in Java Projects</h2>
+	<p><small><a href="#seealso">See Also</a></small></p>
+        <p>You can use the Task List window to track all errors and 
+        pending tasks in your project.</p>
+        <p>The Task List window scans your code and lists all TODO tasks. By default, the 
+	IDE recognizes all of the following as TODO tasks:</p>
+  
+	<!--PENDING(tm): explain that this functionality is automatic (no "search" button to click)-->
+  
+    <p>The following are some of the things that create task list entries in Java projects:</p>
+    <ul>
+        <li>Code comments that contain the patterns <tt>TODO</tt>, <tt>XXX</tt>, or <tt>FIXME</tt></li>
+        <li>The pattern <tt>&lt;&lt;&lt;&lt;&lt;&lt;</tt>, which denotes merge conflicts in CVS and other 
+        version control systems</li>
+        <li>Javadoc comments that contain the <tt>@todo</tt> keyword</li>
+        <li>Lines where compiler errors are registered</li>
+    </ul>
+
+	<ul class="note">
+	    <li>You can register custom task keywords and set 
+	    the priority for each type of task keyword. Choose Tools  &gt;  
+	    Options from the main window and click Advanced Options in the Options window.
+	    In the left pane, expand the Editing node and select To Do 
+	    Settings, and open the property editor for Task Tags in the property sheet in the right pane.</li>
+	</ul>
+      
+	<p><b>To open the To Do window:</b></p>
+	<ul>
+	    <li>Choose Window &gt; To Do from the main window (Ctrl + 6). 
+	    The To Do window opens at the bottom of the IDE. You can scan:
+	    <ul>
+		<li><b>Current File.</b> Scan the selected file in the Source Editor. The To 
+		Do window scans each file as you open it in the Source Editor.</li>
+		<li><b>Opened Files.</b> Scan all the files that are currently open.</li>
+		<li><b>Selected Folder.</b> Specify a folder to scan for TODO tasks. 
+		You have to refresh the list manually using the Refresh button (<img src="images/todo_refresh.png" alt="refesh button">).</li>
+	    </ul></li>
+	</ul>
+	<ul class="note">
+	    <li>To filter the TODO tasks displayed, select a filter from the filter drop-down list. 
+	    You can modify existing filters and create your own To Do task filters.</li>
+	</ul>
+	
+	<p><b>To create and modify To Do task filters:</b></p>
+	<ol>
+	    <li>Click the Edit Filter button (<img src="images/todo_filter.png"> ) in the toolbar to open the Edit Filter dialog box.</li>
+	    <li>Do one of the following:
+		<ul><li>To create a new filter, click New and enter a name for the filter.</li>
+		    <li>To modify an existing filter, select the filter in the Filters pane.</li>
+		</ul>
+	    </li>
+	    <li>Specify the filter conditions. Use the More and Fewer buttons to add or remove conditions for the filter.</li>
+	    <li>Click Preview to see the results when the filter is applied to the current list of To Do tasks in the To Do window.</li>
+	    <li>Click OK.</li>
+	</ol>
+	
+	<p><b>To jump to a TODO task in the Source Editor:</b></p>
+	<ul>
+	    <li>Double-click the task in the To Do window.</li>
+	    <p>Press F12 to jump to the next task in the list.</p>
+	</ul>
+
+<!--
+	<p><b>To filter the TODO tasks that are displayed:</b></p>
+	<ol>
+	    <li>Choose a filter from the drop-down list in the To Do window toolbar.</li>
+	    <li>If you have not set up a filter, click the Filters button (<img src="images/todo_filter.png" alt="filter button icon">) 
+	    and choose Edit Filter. </li>
+	    <li>Use the More and Fewer buttons to set conditions for the filter.</li>
+	    <li>Click the Preview button to see the results of applying the filter to the tasks in the Task List.</li>
+	    <li>Choose OK.</li>
+	</ol>
+-->
+	<p><b>To specify what information is listed for each task:</b></p>
+	<ol>
+	    <li>Click the columns button (<img src="images/todo_columns.gif" width="12" height="12" alt="columns button">) 
+	    in the top right corner of the Task List window.</li>
+	    <li>Check the checkbox for each type of information you want to be listed.</li>
+	</ol>
+	<dl>
+	    <dt><a name="seealso">See Also</a></dt>
+	    <dd>    <a href="configuring/configuring.html">Configuring the Source Editor</a></dd>
+	    <dd>    <a href="../shortcuts/menucuts-setting.html">Setting Keyboard Shortcuts</a></dd>
+	</dl>
+
+	<hr>
+	<small><a href="../credits.html">Legal Notices</a></small> 
+	<table border="0" cellpadding="50">
+	    <tr><td>&nbsp;</td></tr>
+	</table>
+    </body>
+</html>

@@ -24,15 +24,19 @@
     that are useful to bind to other properties.</p>
     
     <p>Below is a list of the synthetic properties added by the beans binding libraries:</p>
-    <table border="1" cellpadding="5" cellspacing="0">
-	<tr align="left" valign="top">
-		<th scope="col">Component</th>
+    <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+   component. The middle column lists properties available for the
+   component in the left column. The right column provides a description of the property.">
+        <tr align="left" valign="top">
+
+            <th scope="col">Component</th>
             <th scope="col">Property</th>
             <th scope="col">Description</th>
         </tr>
         <tbody>
             <tr>
                 <td>AbstractButton</td>
+
                 <td>selected</td>
                 <td>The selected state of a button.</td>
             </tr>
@@ -40,109 +44,109 @@
                 <td>JComboBox</td>
                 <td>selectedItem</td>
                 <td>The selected item of a JComboBox.</td>
+
             </tr>
             <tr>
-                <td>JSlider</td>
+                <td rowspan="2">JSlider</td>
                 <td>value</td>
                 <td>The value of a JSlider; notifies of all changes.</td>
             </tr>
             <tr>
-                <td>JSlider</td>
+
                 <td>value_IGNORE_ADJUSTING</td>
                 <td>Same as "value" but does not notify of change while the slider is adjusting its value.</td>
             </tr>
             <tr>
-                <td>JList</td>
+                <td rowspan="4">JList</td>
                 <td>selectedElement</td>
-                <td>The selected element of a JList; notifies of all changes. 
-                If there is a JListBinding with the JList as the target, 
-                the selected element is reported as an element from the 
-                binding's source list. Otherwise, the selected element is 
-                reported as an object from the list's model. If nothing is 
+                <td>The selected element of a JList; notifies of all changes.
+                    If there is a JListBinding with the JList as the target,
+                    the selected element is reported as an element from the
+                    binding's source list. Otherwise, the selected element is
+                    reported as an object from the list's model. If nothing is
                 selected, the property evaluates to <tt>null</tt>. </td>
+
             </tr>
             <tr>
-                <td>JList</td>
                 <td>selectedElements</td>
-                <td>A list containing the selected elements of a JList; notifies 
-                of all changes. If there is a JListBinding with the JList as the 
-                target, the selected elements are reported as elements from the 
-                binding's source list. Otherwise, the selected elements are 
-                reported as objects from the list's model. If nothing is 
+                <td>A list containing the selected elements of a JList; notifies
+                    of all changes. If there is a JListBinding with the JList as the
+                    target, the selected elements are reported as elements from the
+                    binding's source list. Otherwise, the selected elements are
+                    reported as objects from the list's model. If nothing is
                 selected, the property evaluates to an empty list. </td>
             </tr>
             <tr>
-                <td>JList</td>
                 <td>selectedElement_IGNORE_ADJUSTING</td>
-                <td>Same as "selectedElement" but does not notify of change 
+
+                <td>Same as "selectedElement" but does not notify of change
                 while the list selection is being updated.</td>
             </tr>
             <tr>
-                <td>JList</td>
                 <td>selectedElements_IGNORE_ADJUSTING</td>
-                <td>Same as "selectedElements" but does not notify of change 
+                <td>Same as "selectedElements" but does not notify of change
                 while the list selection is being updated.</td>
             </tr>
             <tr>
-                <td>JTable</td>
+
+                <td rowspan="4">JTable</td>
                 <td>selectedElement</td>
-                <td>The selected element of a JTable; notifies of all changes. 
-                If there is a JTableBinding with the JTable as the target, the 
-                selected element is reported as an element from the binding's 
-                source list. Otherwise, the selected element is reported as a 
-                map where the keys are composed of the string "column" plus the 
-                column index and the values are the model values for that 
-                column. Example: 
-                {column0=column0value, column1=column1value, ...} 
+                <td>The selected element of a JTable; notifies of all changes.
+                    If there is a JTableBinding with the JTable as the target, the
+                    selected element is reported as an element from the binding's
+                    source list. Otherwise, the selected element is reported as a
+                    map where the keys are composed of the string "column" plus the
+                    column index and the values are the model values for that
+                    column. Example:
+                    {column0=column0value, column1=column1value, ...}
                 If nothing is selected, the property evaluates to <tt>null</tt>. </td>
             </tr>
             <tr>
-                <td>JTable</td>
                 <td>selectedElements</td>
-                <td>A list containing the selected elements of a JTable; 
-                notifies of all changes. If there is a JTableBinding with the 
-                JTable as the target, the selected elements are reported as 
-                elements from the binding's source list. Otherwise, each 
-                selected element is reported as a map where the keys are 
-                composed of the string "column" plus the column index and 
-                the values are the model values for that column. Example: 
-                {column0=column0value, column1=column1value, ...} 
-                If nothing is selected, the property evaluates to an empty list.  
+
+                <td>A list containing the selected elements of a JTable;
+                    notifies of all changes. If there is a JTableBinding with the
+                    JTable as the target, the selected elements are reported as
+                    elements from the binding's source list. Otherwise, each
+                    selected element is reported as a map where the keys are
+                    composed of the string "column" plus the column index and
+                    the values are the model values for that column. Example:
+                    {column0=column0value, column1=column1value, ...}
+                    If nothing is selected, the property evaluates to an empty list.
                 </td>
             </tr>
             <tr>
-                <td>JTable</td>
                 <td>selectedElement_IGNORE_ADJUSTING</td>
-                <td>Same as "selectedElement" but does notify of change while 
+                <td>Same as "selectedElement" but does notify of change while
                 the table selection is being updated. </td>
             </tr>
             <tr>
-                <td>JTable</td>
+
                 <td>selectedElements_IGNORE_ADJUSTING</td>
-                <td>Same as "selectedElements" but does not notify of change 
+                <td>Same as "selectedElements" but does not notify of change
                 while the table selection is being updated.</td>
             </tr>
             <tr>
-                <td>JTextComponent</td>
+                <td rowspan="3">JTextComponent (including its sub-classes JTextField, JTextArea, and JEditorPane)</td>
                 <td>text</td>
-                <td>The text property of a JTextComponent; notifies of all 
+                <td>The text property of a JTextComponent; notifies of all
                 changes (including typing).</td>
+
             </tr>
             <tr>
-                <td>JTextComponent</td>
                 <td>text_ON_FOCUS_LOST</td>
-                <td>The text property of a JTextComponent; notifies of change 
-                only when focus is lost on the component.  
+                <td>The text property of a JTextComponent; notifies of change
+                    only when focus is lost on the component.
                 </td>
             </tr>
             <tr>
-                <td>JTextComponent</td>
                 <td>text_ON_ACTION_OR_FOCUS_LOST</td>
-                <td>The text property of a JTextComponent; notifies of change 
-                only when the component notifies of actionPerformed or when 
-                focus is lost on the component.  
+
+                <td>The text property of a JTextComponent; notifies of change
+                    only when the component notifies of actionPerformed or when
+                    focus is lost on the component.
                 </td>
-            </tr>  
+            </tr>
         </tbody>
     </table>
         <dl>

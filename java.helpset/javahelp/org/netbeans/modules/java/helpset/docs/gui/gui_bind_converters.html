@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright © 2007 Sun Microsystems, Inc.
+* All rights reserved. 
+* Use is subject to license terms.
+-->
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="StyleSheet" type="text/css" href=
+          "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css">
+    <title>Converting Values Between Source and Target Properties (Java Desktop Applications)</title>
+</head>
+<body>
+    <h2>
+        Converting Values Between Source and Target Properties (Java Desktop Applications)
+    </h2>
+    <p>
+        <small><a href="#seealso">See Also</a></small>
+    </p>
+    <p>When you bind the values of two properties of two objects, 
+    you sometimes need to convert the values between different types.</p> 
+    <p>The beans binding library contains converters for some common 
+        convertersions. For other conversions, you need to provide a 
+    custom converter.</p>
+    <p>Below is a list of conversions for which you do not need to provide a 
+    converter:</p>
+    <ul>
+        <li>BigDecimal to String, String to BigDecimal</li>    
+        <li>BigInteger to String, String to BigInteger</li>        
+        <li>Boolean to String, String to Boolean</li>    
+        <li>Byte to String, String to Byte</li>    
+        <li>Char to String, String to Char</li>    
+        <li>Double to String, String to Double</li>    
+        <li>Float to String, String to Float</li>    
+        <li>Int to String, String to Int</li>    
+        <li>Long to String, String to BigDecimal</li>    
+        <li>Short to String, String to Short</li>    
+        <li>Int to Boolean, Boolean to Int</li>    
+    </ul>
+    
+    <p>To write a custom converter, create a class that extends 
+        <tt>org.jdesktop.beansbinding.Converter</tt>. Your class needs to 
+        override the <tt>convertForward(S value)</tt> and <tt>convertReverse(T value)</tt> 
+        methods. <tt>convertForward(S value)</tt> converts a value from the source type 
+        to the target type. <tt>convertReverse(T value)</tt> converts a value from the 
+    target type to the source type.</p>
+    
+    <p><b>To use a custom converter in a binding:</b></p>
+    <ol>
+        <li>Right-click the converter class in the Projects window and choose Compile File.</li>
+        <li>Drag the converter from the Projects window to the Design view of your form.
+        <p>The converter is added to your form as a bean.</p></li>
+        <li>Right-click the target of your binding and choose Bind &gt; <i>TargetProperty</i>.</li>
+        <li>In the Bind Dialog box, select the Advanced tab.</li>
+        <li>From the Converter drop-down list, choose the converter you have added to the form.</li>
+        <li>Click OK.</li>
+    </ol>
+    <ul class="note">
+        <li>You can also add the conversion code directly by clicking 
+            the ellipsis (...) button, and selecting Custom Code from the Select Converter 
+        Property Using drop-down list.</li>
+    </ul>
+    
+    <dl>
+        <dt>
+            <a name="seealso">See Also</a>
+        </dt>
+        <dd><a href="gui_bind_converters.html">Validating Target Value Changes in Bindings</a></dd>
+        
+    </dl>
+    <hr>
+    <p>
+        <a href="../credits.html"><small>Legal Notices</small></a>
+    </p>
+    <table border="0" cellpadding="50">
+        <tr>
+            <td>&nbsp;
+                
+            </td>
+        </tr>
+    </table>
+</body>

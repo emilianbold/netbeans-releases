@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright © 2007 Sun Microsystems, Inc.
+* All rights reserved. 
+* Use is subject to license terms.
+-->
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="StyleSheet" type="text/css" href=
+          "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css">
+    <title>Validating Target Value Changes in Bindings (Java Desktop Applications)</title>
+</head>
+<body>
+    <h2>
+        Validating Target Value Changes in Bindings (Java Desktop Applications)
+    </h2>
+    <p>
+        <small><a href="#seealso">See Also</a></small>
+    </p>
+    <p>When you bind the values of two properties of two objects, 
+        you sometimes need to validate any changes to the target property 
+        before they are written back to the source (such as a database). 
+    To validate a target, you specify a validator that extends 
+<tt>org.jdesktop.beansbinding.Validator</tt>.</p> 
+
+<p>To write a custom validator, create a class that extends
+    <tt>org.jdesktop.beansbinding.Validator</tt>. 
+ Your class needs to 
+implement the <tt>validate(T value)</tt> 
+method. For a valid value, <tt>validate(T value)</tt> returns null. 
+For an invalid value, it returns a Result object describing the problem for the invalid value.</p>
+
+<p><b>To use a custom validator in a binding:</b></p>
+<ol>
+<li>Right-click the validator class in the Projects window and choose Compile File.</li>
+<li>Drag the validator from the Projects window to the Design view of your form.
+<p>The validator is added to your form as a bean.</p></li>
+<li>Right-click the target of your binding and choose Bind &gt; <i>TargetProperty</i>.</li>
+<li>In the Bind Dialog box, select the Advanced tab.</li>
+<li>From the Validator drop-down list, choose the validator you have added to the form.</li>
+<li>Click OK.</li>
+</ol>
+
+<ul class="note">
+<li>You can also add the validation code directly by clicking 
+the ellipsis (...) button, and selecting Custom Code from the Select Validator 
+Property Using drop-down list.</li>
+</ul>
+
+    
+    <dl>
+        <dt>
+            <a name="seealso">See Also</a>
+        </dt>
+<dd><a href="gui_bind_converters.html">Converting Values Between Source and Target Properties</a></dd>
+        
+    </dl>
+    <hr>
+    <p>
+        <a href="../credits.html"><small>Legal Notices</small></a>
+    </p>
+    <table border="0" cellpadding="50">
+        <tr>
+            <td>&nbsp;
+                
+            </td>
+        </tr>
+    </table>
+</body>
