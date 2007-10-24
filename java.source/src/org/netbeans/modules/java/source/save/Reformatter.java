@@ -243,6 +243,7 @@ public class Reformatter implements ReformatTask {
         private int wrapDepth;
         private int lastBlankLines;
         private int lastBlankLinesTokenIndex;
+        private Diff lastBlankLinesDiff;
         private boolean afterAnnotation;
         private boolean fieldGroup;
         private LinkedList<Diff> diffs = new LinkedList<Diff>();
@@ -267,6 +268,7 @@ public class Reformatter implements ReformatTask {
             this.wrapDepth = 0;
             this.lastBlankLines = -1;
             this.lastBlankLinesTokenIndex = -1;
+            this.lastBlankLinesDiff = null;
             this.afterAnnotation = false;
             this.fieldGroup = false;
             Tree tree = path.getLeaf();
@@ -457,10 +459,11 @@ public class Reformatter implements ReformatTask {
                                 if (isEnumerator((VariableTree)member)) {
                                     wrapTree(cs.wrapEnumConstants(), id == COMMA ? 1 : 0, member);
                                     int index = tokens.index();
-                                    int col = this.col;
+                                    int c = col;
+                                    Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                                     id = accept(COMMA, SEMICOLON);
                                     if (id == null) {
-                                        rollback(index, col);
+                                        rollback(index, c, d);
                                         blankLines(cs.getBlankLinesAfterFields());
                                     } else if (id == SEMICOLON) {
                                         blankLines(cs.getBlankLinesAfterFields());
@@ -533,11 +536,12 @@ public class Reformatter implements ReformatTask {
                 if (init != null && init.getKind() == Tree.Kind.NEW_CLASS) {
                     NewClassTree nct = (NewClassTree)init;
                     int index = tokens.index();
-                    int col = this.col;
+                    int c = col;
+                    Diff d = diffs.isEmpty() ? null :diffs.getFirst();
                     spaces(cs.spaceBeforeMethodCallParen() ? 1 : 0);            
                     JavaTokenId id = accept(LPAREN);
                     if (id != LPAREN)
-                        rollback(index, col);
+                        rollback(index, c, d);
                     List<? extends ExpressionTree> args = nct.getArguments();
                     if (args != null && !args.isEmpty()) {
                         spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true);
@@ -645,27 +649,70 @@ public class Reformatter implements ReformatTask {
         @Override
         public Boolean visitModifiers(ModifiersTree node, Void p) {
             boolean ret = true;
+            JavaTokenId id = null;
             afterAnnotation = false;
             Iterator<? extends AnnotationTree> annotations = node.getAnnotations().iterator();
-            do {
-                if (tokens.offset() >= endPos)
-                    break;
-                if (tokens.token().id() == AT) {
-                    if (annotations.hasNext()) {
-                        wrapTree(cs.wrapAnnotations(), 0, annotations.next());
-                        afterAnnotation = true;
+            TreePath path = getCurrentPath().getParentPath();
+            Tree parent = path.getLeaf();
+            path = path.getParentPath();
+            Tree grandParent = path.getLeaf();
+            boolean isForVariable = parent.getKind() == Tree.Kind.VARIABLE &&
+                    (grandParent.getKind() == Tree.Kind.FOR_LOOP || grandParent.getKind() == Tree.Kind.ENHANCED_FOR_LOOP);
+            while (tokens.offset() < endPos) {
+                if (afterAnnotation) {
+                    if (isForVariable) {
+                        spaces(1, true);
                     } else {
-                        afterAnnotation = false;
+                        switch (cs.wrapAnnotations()) {
+                            case WRAP_ALWAYS:
+                                newline();
+                                break;
+                            case WRAP_IF_LONG:
+                                if (col >= rightMargin)
+                                    newline();
+                                else
+                                    spaces(1, true);
+                                break;
+                            case WRAP_NEVER:
+                                spaces(1, true);
+                        }
                     }
+                } else if (id != null) {
+                    space();
+                }
+                int index = tokens.index();
+                int c = col;
+                Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+                int lbl = lastBlankLines;
+                int lblti = lastBlankLinesTokenIndex;
+                Diff lbld = lastBlankLinesDiff;
+                id = accept(PRIVATE, PROTECTED, PUBLIC, STATIC, TRANSIENT, FINAL,
+                        ABSTRACT, NATIVE, VOLATILE, SYNCHRONIZED, STRICTFP, AT);
+                if (id == null)
+                    break;
+                if (id == AT) {
+                    rollback(index, c, d);
+                    lastBlankLines = lbl;
+                    lastBlankLinesTokenIndex = lblti;
+                    lastBlankLinesDiff = lbld;
+                    if (annotations.hasNext()) {
+                        if (isForVariable) {
+                            scan(annotations.next(), p);
+                        } else {
+                            wrapTree(cs.wrapAnnotations(), 0, annotations.next());
+                        }
+                        afterAnnotation = true;
+                        ret = false;
+                        continue;
+                    }
+                    afterAnnotation = false;
                     ret = false;
                 } else {
                     afterAnnotation = false;
                     ret = true;
                     col += tokens.token().length();
                 }
-            } while (tokens.offset() < endPos && tokens.moveNext());
-            lastBlankLines = -1;
-            lastBlankLinesTokenIndex = -1;
+            }
             return ret;
         }
 
@@ -1372,6 +1419,7 @@ public class Reformatter implements ReformatTask {
                 col += tokens.token().length();
                 lastBlankLines = -1;
                 lastBlankLinesTokenIndex = -1;
+                lastBlankLinesDiff = null;
                 tokens.moveNext();
             }
             wrapTree(cs.wrapAssignOps(), cs.spaceAroundAssignOps() ? 1 : 0, node.getExpression());
@@ -1417,7 +1465,8 @@ public class Reformatter implements ReformatTask {
         public Boolean visitArrayType(ArrayTypeTree node, Void p) {
             boolean ret = scan(node.getType(), p);
             int index = tokens.index();
-            int col = this.col;
+            int c = col;
+            Diff d = diffs.isEmpty() ? null : diffs.getFirst();
             JavaTokenId id = accept(LBRACKET, ELLIPSIS, IDENTIFIER);
             if (id == ELLIPSIS)
                 return ret;
@@ -1425,7 +1474,7 @@ public class Reformatter implements ReformatTask {
                 accept(RBRACKET);
                 return ret;
             }
-            rollback(index, col);
+            rollback(index, c, d);
             spaces(1, fieldGroup);
             accept(IDENTIFIER);
             accept(LBRACKET);
@@ -1491,6 +1540,7 @@ public class Reformatter implements ReformatTask {
                 col += tokens.token().length();
                 lastBlankLines = -1;
                 lastBlankLinesTokenIndex = -1;
+                lastBlankLinesDiff = null;
                 tokens.moveNext();
                 spaces(cs.spaceAroundUnaryOps() ? 1 : 0);
                 scan(node.getExpression(), p);
@@ -1500,6 +1550,7 @@ public class Reformatter implements ReformatTask {
                 col += tokens.token().length();
                 lastBlankLines = -1;
                 lastBlankLinesTokenIndex = -1;
+                lastBlankLinesDiff = null;
                 tokens.moveNext();
                 spaces(cs.spaceAroundUnaryOps() ? 1 : 0);
             }
@@ -1626,6 +1677,7 @@ public class Reformatter implements ReformatTask {
             } while (tokens.moveNext() && tokens.offset() < endPos);
             lastBlankLines = -1;
             lastBlankLinesTokenIndex = -1;
+            lastBlankLinesDiff = null;
             return true;
         }
 
@@ -1638,6 +1690,7 @@ public class Reformatter implements ReformatTask {
                 } while (tokens.moveNext() && tokens.offset() < endPos);
                 lastBlankLines = -1;
                 lastBlankLinesTokenIndex = -1;
+                lastBlankLinesDiff = null;
                 scan(tree, p);
             }
             do {
@@ -1645,6 +1698,7 @@ public class Reformatter implements ReformatTask {
             } while (tokens.moveNext() && tokens.offset() < endPos);
             lastBlankLines = -1;
             lastBlankLinesTokenIndex = -1;
+            lastBlankLinesDiff = null;
             return true;
         }
 
@@ -1655,12 +1709,14 @@ public class Reformatter implements ReformatTask {
             } while (tokens.moveNext() && tokens.offset() < endPos);
             lastBlankLines = -1;
             lastBlankLinesTokenIndex = -1;
+            lastBlankLinesDiff = null;
             return true;
         }
 
         private JavaTokenId accept(JavaTokenId first, JavaTokenId... rest) {
             lastBlankLines = -1;
             lastBlankLinesTokenIndex = -1;
+            lastBlankLinesDiff = null;
             EnumSet<JavaTokenId> tokenIds = EnumSet.of(first, rest);
             Token<JavaTokenId> lastWSToken = null;
             int after = 0;
@@ -1955,15 +2011,17 @@ public class Reformatter implements ReformatTask {
                 if (lastBlankLinesTokenIndex < 0) {
                     lastBlankLines = count;
                     lastBlankLinesTokenIndex = tokens.index();
+                    lastBlankLinesDiff = diffs.isEmpty() ? null : diffs.getFirst();
                 } else if (lastBlankLines < count) {
                     lastBlankLines = count;
-                    rollback(lastBlankLinesTokenIndex, indent);
+                    rollback(lastBlankLinesTokenIndex, lastBlankLinesTokenIndex, lastBlankLinesDiff);
                 } else {
                     return;
                 }
             } else {
                 if (lastBlankLinesTokenIndex < 0) {
                     lastBlankLinesTokenIndex = tokens.index();
+                    lastBlankLinesDiff = diffs.isEmpty() ? null : diffs.getFirst();
                 } else {
                     return;
                 }
@@ -2113,12 +2171,15 @@ public class Reformatter implements ReformatTask {
             } while(tokens.moveNext());
         }
 
-        private void rollback(int index, int col) {
+        private void rollback(int index, int col, Diff diff) {
             tokens.moveIndex(index);
             tokens.moveNext();
-            Diff d;
-            while (!diffs.isEmpty() && (d = diffs.getFirst()) != null && d.getStartOffset() >= tokens.offset())
-                diffs.removeFirst();
+            if (diff == null) {
+                diffs.clear();
+            } else {
+                while (!diffs.isEmpty() && diffs.getFirst() != diff)
+                    diffs.removeFirst();
+            }
             this.col = col;
         }
 
@@ -2133,11 +2194,12 @@ public class Reformatter implements ReformatTask {
                 case WRAP_IF_LONG:
                     int index = tokens.index();
                     int c = col;
+                    Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                     spaces(spacesCnt, true);
                     ret = col;
                     accept(first, rest);
                     if (this.col > rightMargin) {
-                        rollback(index, c);
+                        rollback(index, c, d);
                         newline();
                         ret = col;
                         accept(first, rest);
@@ -2163,13 +2225,14 @@ public class Reformatter implements ReformatTask {
                 case WRAP_IF_LONG:
                     int index = tokens.index();
                     int c = col;
+                    Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                     spaces(spacesCnt, true);
                     ret = col;
                     wrapDepth++;
                     scan(tree, null);
                     wrapDepth--;
                     if (col > rightMargin && (wrapDepth == 0 || c <= rightMargin)) {
-                        rollback(index, c);
+                        rollback(index, c, d);
                         newline();
                         ret = col;
                         scan(tree, null);
