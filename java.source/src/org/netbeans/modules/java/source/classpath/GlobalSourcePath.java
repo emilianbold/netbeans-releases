@@ -397,6 +397,7 @@ public class GlobalSourcePath {
                                 platform.addPropertyChangeListener(GlobalSourcePath.this.libsListener);
                             }
                             ClassPath cp = platform.getSourceFolders();
+                            assert cp != null : platform.getClass();
                             for (ClassPath.Entry e : cp.entries()) {
                                 URL url = e.getURL();
                                 try {
