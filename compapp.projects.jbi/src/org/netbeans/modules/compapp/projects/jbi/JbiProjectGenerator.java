@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.compapp.projects.jbi;
 
-import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 
 import org.netbeans.api.project.Project;
@@ -68,7 +67,6 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.compapp.projects.jbi.ComponentInfoGenerator;
 import org.netbeans.modules.compapp.jbiserver.JbiManager;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
-import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentDocument;
 
 
 /**
@@ -345,10 +343,12 @@ public class JbiProjectGenerator {
         ep.setProperty(JbiProjectProperties.SERVICE_ASSEMBLY_ID, name); 
         ep.setProperty(
             JbiProjectProperties.SERVICE_ASSEMBLY_DESCRIPTION, 
-            "Represents the Service Assembly of " + name); // NOI18N
+            NbBundle.getMessage(JbiProjectGenerator.class, 
+            "SERVICE_ASSEMBLY_DESCRIPTION", name)); // NOI18N
         ep.setProperty(
             JbiProjectProperties.SERVICE_UNIT_DESCRIPTION,
-            "Represents this Service Unit"); // NOI18N
+            NbBundle.getMessage(JbiProjectGenerator.class, 
+            "DEFAULT_SERVICE_UNIT_DESCRIPTION")); // NOI18N
         //============= End of JBI ========================================//
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
 
