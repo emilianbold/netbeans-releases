@@ -82,7 +82,9 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
 
     public void removePropertyChangeListener(PropertyChangeListener lst) {
         pcs.removePropertyChangeListener(lst);
-        projectDescriptorProvider.getConfigurationDescriptor().getConfs().removePropertyChangeListener(this);
+        if (projectDescriptorProvider != null && projectDescriptorProvider.getConfigurationDescriptor() != null) {
+            projectDescriptorProvider.getConfigurationDescriptor().getConfs().removePropertyChangeListener(this);
+        }
     }
 
     public boolean hasCustomizer() {
