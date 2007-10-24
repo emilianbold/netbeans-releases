@@ -105,7 +105,9 @@ public class APTFindMacrosWalker extends APTSelfWalker {
     }
 
     private void addBlock(APTToken token) {
-        addBlock(token.getOffset(), token.getEndOffset());
+        if (token != null) {
+            addBlock(token.getOffset(), token.getEndOffset());
+        }
     }
 
     @Override
@@ -124,18 +126,22 @@ public class APTFindMacrosWalker extends APTSelfWalker {
     }
 
     private void analyzeList(List<Token> tokens) {
-        for (Token token : tokens) {
-            analyzeToken(token);
+        if (tokens != null) {
+            for (Token token : tokens) {
+                analyzeToken(token);
+            }
         }
     }
     
     private void analyzeStream(TokenStream ts) {
-        try {
-            for (Token token = ts.nextToken(); !APTUtils.isEOF(token); token = ts.nextToken()) {
-                analyzeToken(token);
+        if (ts != null) {
+            try {
+                for (Token token = ts.nextToken(); !APTUtils.isEOF(token); token = ts.nextToken()) {
+                    analyzeToken(token);
+                }
+            } catch (TokenStreamException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        } catch (TokenStreamException ex) {
-            Exceptions.printStackTrace(ex);
         }
     }
 }
