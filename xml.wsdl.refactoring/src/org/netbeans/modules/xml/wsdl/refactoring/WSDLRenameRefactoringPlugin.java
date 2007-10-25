@@ -76,6 +76,7 @@ import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 
 
@@ -222,7 +223,7 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin  {
         Model mod = SharedUtils.getModel(obj);
         FileObject fo = mod.getModelSource().getLookup().lookup(FileObject.class);
        if ( WSDL_MIME_TYPE.equals(FileUtil.getMIMEType(fo))) {
-           refactoringElements.add(rename, new FauxRefactoringElement(obj, "Rename"));
+           refactoringElements.add(rename, new FauxRefactoringElement(obj, NbBundle.getMessage(WSDLRenameRefactoringPlugin.class, "LBL_Rename")));
        }
          
         //were there any errors during find??

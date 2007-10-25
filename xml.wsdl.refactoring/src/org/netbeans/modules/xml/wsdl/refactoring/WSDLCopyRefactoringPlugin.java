@@ -152,7 +152,7 @@ public class WSDLCopyRefactoringPlugin extends WSDLRefactoringPlugin  implements
         Model mod = SharedUtils.getModel(obj);
         FileObject fo = mod.getModelSource().getLookup().lookup(FileObject.class);
         if ( WSDL_MIME_TYPE.equals(FileUtil.getMIMEType(fo))) {
-           refactoringElements.add(request, new FauxRefactoringElement(obj, "Copy File"));
+           refactoringElements.add(request, new FauxRefactoringElement(obj, NbBundle.getMessage(WSDLCopyRefactoringPlugin.class, "LBL_Copy")));
         }
                 
         fireProgressListenerStop();

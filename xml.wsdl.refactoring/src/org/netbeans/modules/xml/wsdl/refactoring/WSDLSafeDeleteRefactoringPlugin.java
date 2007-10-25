@@ -213,7 +213,7 @@ public class WSDLSafeDeleteRefactoringPlugin extends WSDLRefactoringPlugin {
         Model mod = SharedUtils.getModel(obj);
         FileObject fo = mod.getModelSource().getLookup().lookup(FileObject.class);
        if ( WSDL_MIME_TYPE.equals(FileUtil.getMIMEType(fo))) {
-           refactoringElements.add(delete, new FauxRefactoringElement(obj, "Delete"));
+           refactoringElements.add(delete, new FauxRefactoringElement(obj, NbBundle.getMessage(WSDLSafeDeleteRefactoringPlugin.class, "LBL_Delete")));
        } 
        if(allErrors.size() > 0) {
             Problem problem = processErrors(allErrors, ui, inner);
