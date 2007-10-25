@@ -588,13 +588,7 @@ public class JarClassLoader extends ProxyClassLoader {
             Attributes attr = m.getMainAttributes();
             String pack = attr.getValue("Covered-Packages");
             if (pack != null) {
-                Enumeration en = new StringTokenizer(pack, ",");
-                while (en.hasMoreElements()) {
-                    String str = (String)en.nextElement();
-                    known.add(str);
-                }
-                // #114856 - StringTokenizer doesn't recognize empty tokens
-                if (pack.startsWith(",") || pack.endsWith(",") || pack.contains(",,")) known.add("");
+                known.addAll(Arrays.asList(pack.split(",", -1)));
                 return known;
             }
         }
