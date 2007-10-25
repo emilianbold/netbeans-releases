@@ -47,9 +47,9 @@
         <delete dir="${nbi.all.dir}"/>
     </target>
 
-    <target name="-checkout" depends="-checkout-trunk,-checkout-branch,-checkout-translatedfiles"/>
+    <target name="-checkout" depends="-checkout-installer,-checkout-translatedfiles"/>
 
-    <target name="-checkout-trunk" unless="cvs.branch">
+    <target name="-checkout-installer">
         <!-- -->
         <cvs 
             command="checkout -P"
@@ -57,6 +57,7 @@
             package="nbi"
             dest="${nbi.all.dir}"
             date="${cvs.timestamp}"
+            tag="${cvs.branch}"
             failonerror="true"
         />
         <cvs 
@@ -65,6 +66,7 @@
             package="installer/components installer/engine installer/infra"
             dest="${nbi.all.dir}"
             date="${cvs.timestamp}"
+            tag="${cvs.branch}"
             failonerror="true"
         />
         <!-- -->
@@ -87,71 +89,27 @@
         -->
     </target>
 
-    <target name="-checkout-branch" if="cvs.branch">
-        <cvs 
-            command="checkout -P"
-            cvsroot="${cvs.root}" 
-            tag="${cvs.branch}"
-            package="nbi"
-            dest="${nbi.all.dir}"
-            date="${cvs.timestamp}"
-            failonerror="true"
-        />
-        <cvs 
-            command="checkout -P"
-            cvsroot="${cvs.root}" 
-            tag="${cvs.branch}"
-            package="installer/components installer/engine installer/infra"
-            dest="${nbi.all.dir}"
-            date="${cvs.timestamp}"
-            failonerror="true"
-        />
-    </target>
-
     <target name="-checkout-translatedfiles" if="ml.build">
-	<antcall target="-checkout-translatedfiles-trunk"/>
-        <antcall target="-checkout-translatedfiles-branch"/>
-    </target>
-    
-    <target name="-checkout-translatedfiles-branch" if="cvs.branch">
 	<cvs 
             command="checkout -P"
             cvsroot="${cvs.root}" 
-	    tag="${cvs.branch}"
             package="translatedfiles/src/nbi"
             dest="${nbi.all.dir}"
             date="${cvs.timestamp}"
+            tag="${cvs.branch}"
             failonerror="true"
         />
         <cvs 
             command="checkout -P"
             cvsroot="${cvs.root}" 
-	    tag="${cvs.branch}"
             package="translatedfiles/src/installer/components translatedfiles/src/installer/engine translatedfiles/src/installer/infra"
             dest="${nbi.all.dir}"
             date="${cvs.timestamp}"
+            tag="${cvs.branch}"
             failonerror="true"
         />
     </target>
 
-    <target name="-checkout-translatedfiles-trunk" unless="cvs.branch">
-	<cvs 
-            command="checkout -P"
-            cvsroot="${cvs.root}" 
-            package="translatedfiles/src/nbi"
-            dest="${nbi.all.dir}"
-            date="${cvs.timestamp}"
-            failonerror="true"
-        />
-        <cvs 
-            command="checkout -P"
-            cvsroot="${cvs.root}" 
-            package="translatedfiles/src/installer/components translatedfiles/src/installer/engine translatedfiles/src/installer/infra"
-            dest="${nbi.all.dir}"
-            date="${cvs.timestamp}"
-            failonerror="true"
-        />
-    </target>
 
     <target name="-init-ml">
         <condition property="ml.build">
@@ -364,15 +322,12 @@
     <target name="-init-properties">
         <echo file="${environment.properties}"/>
         <!-- Obligatory properties -->
-        <if property="cvs.branch">
-            <echo file="${environment.properties}" append="true">
-cvs.branch=${cvs.branch}
 
-            </echo>
-        </if>
         <echo file="${environment.properties}" append="true">
 cvs.root=${cvs.root}
 cvs.module=installer
+cvs.timestamp=${cvs.timestamp}
+cvs.branch=${cvs.branch}
 
 checkout.sources=false
 sources.dir=${nbi.all.dir}

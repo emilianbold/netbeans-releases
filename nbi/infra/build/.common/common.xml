@@ -132,20 +132,9 @@
             classpath="${custom.tasks.cls}"/>
         
         <!-- decide whether to checkout sources from trunk --> 
-        <condition property="do.checkout.trunk">
+        <condition property="do.checkout">
             <and>
                 <equals arg1="${checkout.sources}" arg2="true"/>
-                <equals arg1="${cvs.branch}" arg2=""/>
-            </and>
-        </condition>
-        
-        <!-- decide whether to checkout sources from a branch --> 
-        <condition property="do.checkout.branch">
-            <and>
-                <equals arg1="${checkout.sources}" arg2="true"/>
-                <not>
-                    <equals arg1="${cvs.branch}" arg2=""/>
-                </not>
             </and>
         </condition>
         
@@ -414,16 +403,16 @@
     <!--
       Checks out sources from a CVS repository with the given coordinates.
       
-      This target uses the values of ${cvs.root}, ${cvs.module}, ${cvs.path}
-      properties to check out the required sources. It falls back to the three
-      targets: '.checkout-trunk', '.checkout-branch' and '.checkout-copy', 
+      This target uses the values of ${cvs.root}, ${cvs.module}, ${cvs.path}, 
+      ${cvs.branch}, ${cvs.timestamp} properties to check out the required sources.
+      It falls back to the two targets: '.checkout-repository' and '.checkout-copy', 
       which correspond to the choosen check-out method. Only one of these 
       targets will be executed under any conditions.
       
       This target is not intended to be called directly.
     -->
     <target name=".checkout" 
-            depends=".checkout-trunk,.checkout-branch,.checkout-copy">
+            depends=".checkout-repository,.checkout-copy">
         <copy todir="${cvs.dir}" failonerror="false">
             <fileset dir="${translatedfiles.dir}"/>
         </copy>
@@ -442,30 +431,7 @@
     </target>
     
     <!--
-      Checks out sources from trunk.
-      
-      This target executes the <cvs> task, which performs the actual check-out.
-      
-      This target is only executed if the the ${checkout.sources} property was 
-      set to 'true' and the ${cvs.branch} property is empty.
-      
-      This target is not intended to be called directly.
-    -->
-    <target name=".checkout-trunk" if="do.checkout.trunk">
-        <cvs cvsroot="${cvs.root}" 
-             command="checkout" 
-             package="${cvs.module}/${cvs.path}" 
-             dest="${work.dir}"
-             failonerror="true"/>
-        <cvs cvsroot="${cvs.root}"
-             command="checkout"
-             package="${translatedfiles.module}/${translatedfiles.path}"
-             dest="${work.dir}"
-             failonerror="false"/>
-    </target>
-    
-    <!--
-      Checks out sources from a given branch.
+      Checks out sources from trunk or from a given branch.
       
       This target executes the <cvs> task, which performs the actual check-out.
       
@@ -474,17 +440,19 @@
       
       This target is not intended to be called directly.
     -->
-    <target name=".checkout-branch" if="do.checkout.branch">
+    <target name=".checkout-repository" if="do.checkout">
         <cvs cvsroot="${cvs.root}" 
              command="checkout" 
              package="${cvs.module}/${cvs.path}" 
-             tag="${cvs.branch}" 
+             tag="${cvs.branch}"
+             date="${cvs.timestamp}" 
              dest="${work.dir}"
              failonerror="true"/>
         <cvs cvsroot="${cvs.root}"
              command="checkout"
              package="${translatedfiles.module}/${translatedfiles.path}"
-             tag="${cvs.branch}" 
+             tag="${cvs.branch}"
+             date="${cvs.timestamp}"
              dest="${work.dir}"
              failonerror="false"/>
     </target>
