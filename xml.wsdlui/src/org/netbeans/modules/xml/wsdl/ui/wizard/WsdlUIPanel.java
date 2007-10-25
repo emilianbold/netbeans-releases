@@ -44,13 +44,17 @@ package org.netbeans.modules.xml.wsdl.ui.wizard;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JTextField;
 
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
@@ -58,8 +62,8 @@ import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.UIUtilities;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -416,8 +420,14 @@ public class WsdlUIPanel extends javax.swing.JPanel {
             for (int i=0;i<urls.length;i++) {
                 String urlString=urls[i].trim();
                 if (urlString.length()==0) continue;
+                URL url = null;
                 try {
-                    java.net.URL url = new java.net.URL(urlString);
+                    File file = new File(urlString);
+                    if (file.exists()) {
+                        url = file.toURI().toURL();
+                    } else {
+                        url = new java.net.URL(urlString);
+                    }
                     infos.add(new SchemaInfo(url));
                 } catch (java.net.MalformedURLException ex) {
                     // testing if target folder contains XML Schema
@@ -450,11 +460,16 @@ public class WsdlUIPanel extends javax.swing.JPanel {
     }
     
     private void createSchemaModel(String urlString) throws WizardValidationException {
-        java.net.URL url = null;
-        try {
-            url = new java.net.URL(urlString);
-        } catch (MalformedURLException e) {
-            org.openide.loaders.DataFolder folder;
+        File file = new File(urlString);
+        if (!file.exists()) {
+            file = null;
+        }
+        if (file == null) {
+            URL url = null;
+            try {
+                url = new java.net.URL(urlString);
+            } catch (MalformedURLException e) {
+                org.openide.loaders.DataFolder folder;
                 try {
                     folder = wizardPanel.getTemplateWizard().getTargetFolder();
                     org.openide.filesystems.FileObject fo = folder.getPrimaryFile();
@@ -473,22 +488,32 @@ public class WsdlUIPanel extends javax.swing.JPanel {
                     String errorString = NbBundle.getMessage(WsdlUIPanel.class, "INVALID_SCHEMA_FILE", urlString);
                     throw new WizardValidationException(schemaTF, errorString, errorString);
                 }
+            }
+            try {
+                file = new File(url.toURI());
+            } catch (URISyntaxException e) {
+                throw new WizardValidationException(schemaTF, e.getMessage(), e.getLocalizedMessage());
+            }
         }
+        
+        if (!file.isFile()) {
+            throw new WizardValidationException(schemaTF, "INVALID_SCHEMA_FILE", NbBundle.getMessage(WsdlUIPanel.class, "INVALID_SCHEMA_FILE", urlString));
+        }
+        
         ModelSource source;
         try {
-            File normFile = FileUtil.normalizeFile(new File(url.toURI()));
+            File normFile = FileUtil.normalizeFile(file);
             FileObject fo = FileUtil.toFileObject(normFile);
             if (fo == null) {
                 String errorMessage = NbBundle.getMessage(WsdlUIPanel.class, "INVALID_SCHEMA_FILE", urlString);
                 throw new WizardValidationException(schemaTF, errorMessage, errorMessage);
             }
+            checkAccessibleFromThisProject(wizardPanel.getProject(), fo, urlString);
             source = org.netbeans.modules.xml.retriever.catalog.Utilities.
                     createModelSource(fo, false);
         } catch (WizardValidationException e) {
             throw e;
         } catch (CatalogModelException e) {
-            throw new WizardValidationException(schemaTF, e.getMessage(), e.getLocalizedMessage());
-        } catch (URISyntaxException e) {
             throw new WizardValidationException(schemaTF, e.getMessage(), e.getLocalizedMessage());
         } catch (Throwable e) {
             String errorMessage = NbBundle.getMessage(WsdlUIPanel.class, "INVALID_SCHEMA_FILE", urlString);
@@ -502,12 +527,30 @@ public class WsdlUIPanel extends javax.swing.JPanel {
             throw new WizardValidationException(schemaTF, errorMessage, errorMessage);
         }
         
-        if (model == null || model.getState().equals(State.NOT_WELL_FORMED)) {
+        if (model == null || model.getState().equals(Model.State.NOT_WELL_FORMED)) {
             String errorMessage = NbBundle.getMessage(WsdlUIPanel.class, "INVALID_SCHEMA_FILE", urlString);
             throw new WizardValidationException(schemaTF, errorMessage, errorMessage);
         }
     }
     
+    private void checkAccessibleFromThisProject(Project project, FileObject file, String fileName) throws WizardValidationException {
+        Project filesProject = FileOwnerQuery.getOwner(file);
+        if (filesProject == null) {
+            throw new WizardValidationException(schemaTF, "INACCESSIBLE_FILE", NbBundle.getMessage(WsdlUIPanel.class, "INACCESSIBLE_FILE", fileName));
+        }
+        if (project == filesProject) {
+            return;
+        }
+        
+        DefaultProjectCatalogSupport ctlgSupp = DefaultProjectCatalogSupport.getInstance(project.getProjectDirectory());
+        for (Object pr : ctlgSupp.getProjectReferences()) {
+            if (pr == filesProject) {
+                return;
+            }
+        }
+        throw new WizardValidationException(schemaTF, "INACCESSIBLE_PROJECT", NbBundle.getMessage(WsdlUIPanel.class, "INACCESSIBLE_PROJECT", fileName, filesProject.getProjectDirectory().getName()));
+    }
+
     public JTextField getSchemaFileTextField() {
         return schemaTF;
     }

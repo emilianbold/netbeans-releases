@@ -59,6 +59,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JComponent;
 import javax.swing.JTextField;
@@ -100,6 +102,8 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
     private WizardDescriptor.Panel[] panels;
     
     private WizardDescriptor.Panel folderPanel;
+    
+    private static final Logger logger = Logger.getLogger(NewWSDLWizardIterator.class.getName());
     
     /**
      * Initialize panels representing individual wizard's steps and sets
@@ -236,7 +240,7 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
         }
     }
     
-    private void postProcessImport(Import imp, SchemaModel model, FileObject fobj, DefaultProjectCatalogSupport catalogSupport) throws Exception {
+    private void postProcessImport(Import imp, SchemaModel model, FileObject fobj, DefaultProjectCatalogSupport catalogSupport) {
         String namespace = imp.getNamespace();
         Collection<Schema> schemas = model.findSchemas(namespace);
         Iterator<Schema> it = schemas.iterator();
@@ -244,17 +248,23 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
             Schema schema = it.next();
             SchemaModel sModel = schema.getModel();
             FileObject schemaFileObj = sModel.getModelSource().getLookup().lookup(FileObject.class);
-            String location = getRelativePathOfSchema(fobj, schemaFileObj.getURL().toString(), catalogSupport);
+            URI uri = null;
+            try { 
+                uri = schemaFileObj.getURL().toURI();
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Not able to convert " + schemaFileObj.getName() + "to a valid URI", e);            
+            }
+            String location = getRelativePathOfSchema(fobj, uri, catalogSupport);
             imp.setSchemaLocation(location);
         }
     }
     
     private void addSchemaImport(WSDLModel model, FileObject fobj, DefaultProjectCatalogSupport catalogSupport) {
         WsdlPanel panel = (WsdlPanel)folderPanel;
-        if (panel.isImport() && panel.getSchemas().length>0) {
+        WsdlUIPanel.SchemaInfo[] infos = panel.getSchemas();
+        if (panel.isImport() && infos.length > 0) {
             String targetNamespace = panel.getNS();
 
-            WsdlUIPanel.SchemaInfo[] infos = panel.getSchemas();
             Schema schema = null;
             WSDLSchema wsdlSchema = null;
 
@@ -266,11 +276,26 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
 
 
                 String relativePath = null;
-                try{
-                    relativePath = getRelativePathOfSchema(fobj, infos[i].getSchemaName(), catalogSupport);
-                }catch(URISyntaxException e){
-                    relativePath= infos[i].getSchemaName();
+                String schemaFileName = infos[i].getSchemaName();
+                File schemaFile = new File(schemaFileName);
+                URI schemaFileURI = null;
+                if (schemaFile.exists()) {
+                    schemaFile = FileUtil.normalizeFile(schemaFile);
+                    FileObject schemaFO = FileUtil.toFileObject(schemaFile);
+                    try {
+                        schemaFileURI = schemaFO.getURL().toURI();
+                    } catch (Exception e) {
+                        logger.log(Level.SEVERE, "Not able to convert " + schemaFileName + "to a valid URI", e);
+                    }
                 }
+                if (schemaFileURI == null) {
+                    try {
+                        schemaFileURI = new URI(schemaFileName);
+                    } catch (URISyntaxException e) {
+                       logger.log(Level.SEVERE, schemaFileName + "is not a valid URI", e);
+                    }
+                }
+                relativePath = getRelativePathOfSchema(fobj, schemaFileURI, catalogSupport);
 
                 Definitions def = model.getDefinitions();
                 model.startTransaction();
@@ -336,9 +361,9 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
         return isImportExist;
     }
     
-    private String getRelativePathOfSchema(FileObject fo, String schemaURL, DefaultProjectCatalogSupport catalogSupport) throws URISyntaxException{
+    private String getRelativePathOfSchema(FileObject fo, URI schemaURI, DefaultProjectCatalogSupport catalogSupport) {
         File f = FileUtil.toFile(fo);
-        FileObject schemaFO = FileUtil.toFileObject(new File(new URI(schemaURL)));
+        FileObject schemaFO = FileUtil.toFileObject(new File(schemaURI));
         
         String relativePath = null;
         if (catalogSupport != null && catalogSupport.needsCatalogEntry(fo, schemaFO)) {
@@ -357,7 +382,7 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
                 ErrorManager.getDefault().notify(cme);
             }
         } else {
-            relativePath = org.netbeans.modules.xml.retriever.catalog.Utilities.relativize(f.toURI(),new URI(schemaURL));
+            relativePath = org.netbeans.modules.xml.retriever.catalog.Utilities.relativize(f.toURI(), schemaURI);
         }
         return relativePath;
     }
@@ -459,59 +484,6 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
     public void addChangeListener(ChangeListener l) {}
     public void removeChangeListener(ChangeListener l) {}
     
-    // If something changes dynamically (besides moving between panels), e.g.
-    // the number of panels changes in response to user input, then uncomment
-    // the following and call when needed: fireChangeEvent();
-    /*
-    private Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
-    public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
-    }
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
-    protected final void fireChangeEvent() {
-        Iterator<ChangeListener> it;
-        synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            it.next().stateChanged(ev);
-        }
-    }
-     */
-    
-    // You could safely ignore this method. Is is here to keep steps which were
-    // there before this wizard was instantiated. It should be better handled
-    // by NetBeans Wizard API itself rather than needed to be implemented by a
-    // client code.
-    /*private String[] createSteps() {
-        String[] beforeSteps = null;
-        Object prop = wizard.getProperty("WizardPanel_contentData");
-        if (prop != null && prop instanceof String[]) {
-            beforeSteps = (String[]) prop;
-        }
-        
-        if (beforeSteps == null) {
-            beforeSteps = new String[0];
-        }
-        
-        String[] res = new String[(beforeSteps.length - 1) + panels.length];
-        for (int i = 0; i < res.length; i++) {
-            if (i < (beforeSteps.length - 1)) {
-                res[i] = beforeSteps[i];
-            } else {
-                res[i] = panels[i - beforeSteps.length + 1].getComponent().getName();
-            }
-        }
-        return res;
-    }*/
-
     //from schema wizard
     private JTextField findFileNameField(Component panel, String text) {
         Collection<Component> allComponents = new ArrayList<Component>();
