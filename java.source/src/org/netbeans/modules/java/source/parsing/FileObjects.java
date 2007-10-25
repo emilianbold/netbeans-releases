@@ -660,6 +660,7 @@ public class FileObjects {
             int red = 0;
             try {
                 int len = (int)this.f.length();
+                if (len == 0) len++; //len - red would be 0 while reading from the stream
                 result = new char [len+1];
                 int rv;	    
                 while ((rv=in.read(result,red,len-red))>=0) {
