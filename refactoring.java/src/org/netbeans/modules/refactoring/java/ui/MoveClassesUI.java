@@ -51,6 +51,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
@@ -146,7 +147,13 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
 //        return name.substring(0, name.lastIndexOf('/')).replace('/','.');
 //    }
     private static String getDOPackageName(FileObject f) {
-        return ClassPath.getClassPath(f, ClassPath.SOURCE).getResourceName(f, '.', false);
+        ClassPath cp = ClassPath.getClassPath(f, ClassPath.SOURCE);
+        if (cp!=null) {
+            return cp.getResourceName(f, '.', false);
+        } else {
+            Logger.getLogger("org.netbeans.modules.refactoring.java").info("Cannot find classpath for " + f.getPath());
+            return f.getName();
+        }
     }
 
     private String packageName () {
