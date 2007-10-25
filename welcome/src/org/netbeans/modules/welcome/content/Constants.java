@@ -107,6 +107,7 @@ public interface Constants {
     static final String LINK_COLOR = "LinkColor"; //NOI18N
     static final String MOUSE_OVER_LINK_COLOR = "MouseOverLinkColor"; //NOI18N
     static final String VISITED_LINK_COLOR = "VisitedLinkColor"; //NOI18N
+    static final String MOUSE_OVER_TAB_COLOR = "MouseOverTabColor"; //NOI18N
 
     static final int RSS_FEED_TIMER_RELOAD_MILLIS = 60*60*1000;
 

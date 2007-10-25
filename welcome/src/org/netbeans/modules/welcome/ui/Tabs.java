@@ -110,11 +110,10 @@ class Tabs extends JPanel implements Constants {
         rightButton.addActionListener( al );
         
         JPanel buttons = new JPanel( new GridLayout(1,2) );
-        buttons.setOpaque(false);
-        buttons.add( leftButton );//, new GridBagConstraints(0,0,1,1,1.0,0.0,
-//                GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
-        buttons.add( rightButton );//, new GridBagConstraints(1,0,1,1,1.0,0.0,
-//                GridBagConstraints.EAST,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
+        buttons.setOpaque(true);
+        buttons.add( leftButton );
+        buttons.add( rightButton );
+        buttons.setBackground( Utils.getColor(COLOR_TAB_UNSEL_BACKGROUND) );
         
         add( buttons, BorderLayout.NORTH );
         
@@ -216,7 +215,7 @@ class Tabs extends JPanel implements Constants {
                 public void mouseEntered(MouseEvent e) {
                     if( !isSelected ) {
                         setCursor( Cursor.getPredefinedCursor( Cursor.HAND_CURSOR ) );
-                        lbl.setForeground( Utils.getColor( MOUSE_OVER_LINK_COLOR  )  );
+                        lbl.setForeground( Utils.getColor( MOUSE_OVER_TAB_COLOR  )  );
                     } else {
                         setCursor( Cursor.getDefaultCursor() );
 //                        lbl.setForeground( Utils.getColor( COLOR_TAB_UNSEL_FOREGROUND ) );
