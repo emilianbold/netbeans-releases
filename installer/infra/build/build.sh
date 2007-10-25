@@ -198,7 +198,7 @@ run() {
 }
 
 setNetBeansBuildsHost() {
-    if [ 1 == $1 ] && [ -n "${NB_BUILDS_HOST_ML}" ] ; then
+    if [ -n "$1" ] && [ 1 == $1 ] && [ -n "${NB_BUILDS_HOST_ML}" ] ; then
         NB_BUILDS_HOST=${NB_BUILDS_HOST_ML}
     else 
         NB_BUILDS_HOST=${NB_BUILDS_HOST_EN}
