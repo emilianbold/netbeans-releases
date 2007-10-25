@@ -142,7 +142,7 @@ public enum HTMLTokenId implements TokenId {
                 if(lang == null) {
                     return null; //no language found
                 } else {
-                    return LanguageEmbedding.create(lang, 0, 0);
+                    return LanguageEmbedding.create(lang, 0, 0, true);
                 }
             }
             return  null;
