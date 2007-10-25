@@ -16,7 +16,7 @@
 	<mapID target="about_jsp_technology" url="web/create/jsp/about_jsp_technology.html"/>
 	<mapID target="about_jstl" url="web/create/tag/about/about_jstl.html"/>
 	<mapID target="about_listener" url="web/create/listener/about_listener.html"/>
-        <mapID target="about_profilewebapp" url="web/debug/profile_webapp.html"/>
+	<mapID target="about_profilewebapp" url="web/debug/profile_webapp.html"/>
 	<mapID target="about_servlet" url="web/create/servlet/about_servlet.html"/>
 	<mapID target="about_tagfile" url="web/create/tag/tagfile/about_tagfile.html"/>
 	<mapID target="about_taglib" url="web/create/tag/about/about_taglib.html"/>
@@ -627,4 +627,6 @@
 	<mapID target="webapps_process_top" url="web/about/webapps_process.html#top"/>
 	<mapID target="webapps_quickref" url="web/about/webapps_quickref.html"/>
 	<mapID target="webapps_techsupport" url="web/about/webapps_techsupport.html"/>
+	<mapID target="org.netbeans.modules.web.wizards.ServletIterator.servlet" url="web/csh/servletwiz/PanelConfigureServlet.html"/>
+	<mapID target="org.netbeans.modules.web.wizards.DeployDataPanel.servlet" url="web/csh/servletwiz/PanelConfigureServletDeploy.html"/>
 </map>

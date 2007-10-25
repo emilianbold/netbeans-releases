@@ -1078,6 +1078,16 @@
 						<file title="StrutsConfigurationPanelVisual.html"/>
 						<file title="ThePanel.html"/>
 					</directory>
+					<directory title="servletwiz">
+						<directory title="CVS">
+							<file title="Entries"/>
+							<file title="Repository"/>
+							<file title="Root"/>
+							<file title="Template"/>
+						</directory>
+						<file title="PanelConfigureServlet.html"/>
+						<file title="PanelConfigureServletDeploy.html"/>
+					</directory>
 				</directory>
 				<directory title="debug">
 					<file title="about_debug.html"/>
