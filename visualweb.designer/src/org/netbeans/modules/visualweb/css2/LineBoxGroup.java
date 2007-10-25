@@ -283,7 +283,8 @@ public class LineBoxGroup extends ContainerBox {
                 if (siblingBox == null) {
                     continue;
                 }
-                if (element == siblingBox.getElement()) {
+                // XXX #119975 Need to check parentage to be sure.
+                if (isSameOrParentElementOf(element, siblingBox.getElement())) {
                     boxesToRemove.add(siblingBox);
                 }
             }
@@ -1189,7 +1190,7 @@ public class LineBoxGroup extends ContainerBox {
                     // I guess I should only join rectangles for -contiguous-
                     // sections of boxes
                     Element element = leaf == null ? null : leaf.getElement();
-                    if (isParentElementOf(componentRootElement, element) || hasComponentAncestor(leaf, componentRootElement)) {
+                    if (isSameOrParentElementOf(componentRootElement, element) || hasComponentAncestor(leaf, componentRootElement)) {
                         // Yessss
                         Rectangle r =
                             new Rectangle(leaf.getAbsoluteX(), leaf.getAbsoluteY(),
@@ -1276,7 +1277,7 @@ public class LineBoxGroup extends ContainerBox {
                     CssBox leaf = lb.getBox(j);
 
                     Element element = leaf == null ? null : leaf.getElement();
-                    if (isParentElementOf(componentRootElement, element) || hasComponentAncestor(leaf, componentRootElement)) {
+                    if (isSameOrParentElementOf(componentRootElement, element) || hasComponentAncestor(leaf, componentRootElement)) {
                         // Yessss
                         Rectangle r =
                             new Rectangle(leaf.getAbsoluteX(), leaf.getAbsoluteY(),
@@ -1342,7 +1343,7 @@ public class LineBoxGroup extends ContainerBox {
     }
     
     // XXX #118287 Also when the root box is not part of the tree (see also #107084).
-    private static boolean isParentElementOf(Element parentElement, Element element) {
+    private static boolean isSameOrParentElementOf(Element parentElement, Element element) {
         if (parentElement == null || element == null) {
             return false;
         }
