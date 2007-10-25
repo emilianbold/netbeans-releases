@@ -152,7 +152,7 @@ public class DataSourceResolver implements DataSourceInfoListener, Runnable {
         String[] dynamicDataSources = ProjectDataSourceTracker.getDynamicDataSources(currentProj);
                      
         for (String name : dynamicDataSources) {
-            if (name.equals((DATASOURCE_PREFIX + "/jdbc/" + dsName))) {
+            if (name.equals((DATASOURCE_PREFIX + "/jdbc/" + dsName))) {  // NOI18N
                 if (!getDataSourceUrl(dsName).equals(url)) {
                     return false;
                 }
