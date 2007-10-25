@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagAttributeInfo;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -59,8 +60,12 @@ import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
+import org.netbeans.modules.web.jsps.parserapi.Node.IncludeDirective;
+import org.netbeans.modules.web.jsps.parserapi.Node.Visitor;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.cookies.EditorCookie;
@@ -69,6 +74,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
 
@@ -103,6 +109,8 @@ public class SimplifiedJSPServlet {
     private final ArrayList<CodeBlockData> codeBlocks = new ArrayList<CodeBlockData>();
 
     private String header = null;
+    private StringBuilder importedScriptlets = new StringBuilder();
+    private StringBuilder importedDeclarations = new StringBuilder();
     private String mergedScriptlets = null;
     private String mergedDeclarations = null;
     private boolean processCalled = false;
@@ -148,9 +156,10 @@ public class SimplifiedJSPServlet {
         final StringBuilder buffScriplets = new StringBuilder();
         final StringBuilder buffDeclarations = new StringBuilder();
         final BadLocationException[] ex = new BadLocationException[1];
+        
+        processIncludes();
 
         doc.render(new Runnable() {
-
             public void run() {
                 TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
                 TokenSequence tokenSequence = tokenHierarchy.tokenSequence(); //get top level token sequence
@@ -201,10 +210,55 @@ public class SimplifiedJSPServlet {
 
         header = getClassHeader();
         importStatements = createImportStatements();
-        mergedDeclarations = buffDeclarations + "\n" + createBeanVarDeclarations();
-        mergedScriptlets = buffScriplets.toString();
+        mergedDeclarations = importedDeclarations.toString() + buffDeclarations + "\n" + createBeanVarDeclarations();
+        mergedScriptlets = importedScriptlets + buffScriplets.toString();
     }
     
+    private void processIncludes()  {
+        PageInfo pageInfo = getPageInfo();
+        
+        if (pageInfo != null){
+            for (String preludePath : (List<String>)pageInfo.getIncludePrelude()){
+                processIncludedFile(preludePath);
+            }
+        }
+        
+        Visitor visitor = new Visitor() {
+
+            public void visit(IncludeDirective includeDirective) throws JspException {
+                String fileName = includeDirective.getAttributeValue("file");
+                processIncludedFile(fileName);
+            }
+        };
+
+        JspSyntaxSupport jspSyntax = JspSyntaxSupport.get(doc);
+        try {
+            jspSyntax.getParseResult().getNodes().visit(visitor);
+        } catch (JspException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    private void processIncludedFile(String filePath) {
+        FileObject includedFile = fobj.getParent().getFileObject(filePath);
+
+        if (includedFile != null && includedFile.canRead()) {
+
+            try {
+                DataObject includedFileDO = DataObject.find(includedFile);
+                EditorCookie editor = includedFileDO.getCookie(EditorCookie.class);
+                SimplifiedJSPServlet simplifiedServlet = new SimplifiedJSPServlet(editor.openDocument());
+
+                simplifiedServlet.process();
+
+                importedDeclarations.append(simplifiedServlet.mergedDeclarations);
+                importedScriptlets.append(simplifiedServlet.mergedScriptlets);
+            } catch (Exception e) {
+                logger.log(Level.WARNING, e.getMessage(), e);
+            }
+        }
+    }
+
     private boolean isServletAPIOnClasspath() {
         ClassPath cp = ClassPath.getClassPath(fobj, ClassPath.COMPILE);
 
