@@ -130,6 +130,7 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
       if (encoding == null || !EncodingUtil.isValidEncoding(encoding)) {
         encoding = "UTF-8"; // NOI18N
       }
+      // vlv
       fixEncoding(data, encoding);
       
       return Collections.singleton(data);
