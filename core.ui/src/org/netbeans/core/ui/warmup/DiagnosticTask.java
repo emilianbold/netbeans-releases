@@ -169,7 +169,9 @@ public final class DiagnosticTask implements Runnable {
                 sb.append("\n\t").append(s);
             }
             
-            sb.append("\nCompiler: "+cmpMBean.getName()).append('\n');
+            if (cmpMBean != null) {
+                sb.append("\nCompiler: "+cmpMBean.getName()).append('\n');
+            }
             
             // Memory
             MemoryUsage usage = memoryBean.getHeapMemoryUsage();
