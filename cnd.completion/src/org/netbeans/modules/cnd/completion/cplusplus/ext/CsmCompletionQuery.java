@@ -1389,7 +1389,13 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                         item, endOffset, 0, 0, isProjectBeeingParsed());
                             } else {
                                 if (mtdList.size() > 0) {
-                                    lastType = ((CsmFunction)mtdList.get(0)).getReturnType();
+                                    CsmFunction fun = (CsmFunction)mtdList.get(0);
+                                    if (CsmKindUtilities.isConstructor(fun)) {
+                                        CsmClassifier cls = ((CsmConstructor)fun).getContainingClass();
+                                        lastType = CsmCompletion.getType(cls, 0);
+                                    } else {
+                                        lastType = fun.getReturnType();
+                                    }
                                     staticOnly = false;
                                 }
                             }

@@ -126,7 +126,9 @@ public class CsmBaseUtilities {
     
     public static CsmClassifier getOriginalClassifier(CsmClassifier orig) {
         // FIXUP: after fixing IZ# the code shold be changed to simple loop
-        assert orig != null;
+        if (orig == null) {
+            throw new NullPointerException("orig parameter must be not null");
+        }
         CsmClassifier out = orig;
         Set<CsmClassifier> set = new HashSet<CsmClassifier>(100);
         set.add(orig);
