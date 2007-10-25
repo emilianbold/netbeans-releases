@@ -61,6 +61,7 @@ public final class OperationContainerImpl<Support> {
     private OperationContainer<Support> container;
     private OperationContainerImpl () {}
     private List<OperationInfo<Support>> operations = new ArrayList<OperationInfo<Support>>();
+    private Collection<OperationInfo<Support>> affectedEagers = new HashSet<OperationInfo<Support>> ();
     public static OperationContainerImpl<InstallSupport> createForInstall () {
         return new OperationContainerImpl<InstallSupport> (OperationType.INSTALL);
     }
@@ -196,7 +197,10 @@ public final class OperationContainerImpl<Support> {
                 Set<ModuleInfo> installed = new HashSet<ModuleInfo> (InstalledModuleProvider.getInstalledModules ().values ());
                 Set<UpdateElement> reqs = Utilities.findRequiredModules (mi.getDependencies (), installed);
                 if (! reqs.isEmpty() && all.containsAll (reqs) && ! all.contains (eagerEl)) {
-                    add (eagerEl.getUpdateUnit (), eagerEl);
+                    OperationInfo<Support> i = add (eagerEl.getUpdateUnit (), eagerEl);
+                    if (i != null) {
+                        affectedEagers.add (i);
+                    }
                 }
             }
         }
@@ -251,11 +255,14 @@ public final class OperationContainerImpl<Support> {
     public synchronized void remove (OperationInfo op) {
         synchronized(this) {
             operations.remove (op);
+            operations.removeAll (affectedEagers);
+            affectedEagers.clear ();
         }
     }
     public synchronized void removeAll () {
         synchronized(this) {
             operations.clear ();
+            affectedEagers.clear ();
         }
     }
     public class OperationInfoImpl<Support> {
