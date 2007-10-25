@@ -108,6 +108,9 @@ public class SetProperty extends Task {
     }
     
     private String resolveString(final String string) {
+        if(string==null || string.equals("")) {
+            return string;
+        }
         StringBuilder result = new StringBuilder(string.length());
         StringBuilder buffer = null;
         Stack <StringBuilder> started = new Stack <StringBuilder> ();
@@ -131,7 +134,7 @@ public class SetProperty extends Task {
                 case '}':
                     if (inside) {
                         final String propName = buffer.toString();
-                        final String propValue = getProject().getProperty(propName);
+                        final String propValue = resolveString(getProject().getProperty(propName));
                         final String resolved = propValue != null ? propValue : "${" + propName + "}";
                         if (!started.empty()) {
                             buffer = started.pop().append(resolved);                            
