@@ -593,16 +593,6 @@ public class Utilities {
         return res;
     }
     
-    private static Set<Dependency> getNeedsAndRequiresOnly (Collection<Dependency> deps) {
-        Set<Dependency> res = new HashSet<Dependency> ();
-        for (Dependency dep : deps) {
-            if (Dependency.TYPE_REQUIRES == dep.getType () || Dependency.TYPE_NEEDS == dep.getType ()) {
-                res.add (dep);
-            }
-        }
-        return res;
-    }
-    
     static Set<String> getBrokenDependencies (UpdateElement element, List<ModuleInfo> infos) {
         assert element != null : "UpdateElement cannot be null";
         Set<String> retval = new HashSet<String> ();
