@@ -402,9 +402,6 @@ public class PageFlowController {
         otherFacesConfigListener = null;
     }
 
-    public int getPageCount() {
-        return webFiles.size();
-    }
 
     public boolean setupGraphNoSaveData() {
         LOGGER.entering(PageFlowController.class.toString(), "setupGraphNoSaveData()");
@@ -534,13 +531,13 @@ public class PageFlowController {
         }
     }
 
-    private Collection<String> getFacesConfigPageNames(List<NavigationRule> navRules) {
+    private Collection<String> getFacesConfigPageNames(Collection<NavigationRule> navRules) {
         // Get all the pages in the faces config.  But don't list them twice.
         Collection<String> pages = new HashSet<String>();
         for (NavigationRule navRule : navRules) {
             String pageName = FacesModelUtility.getFromViewIdFiltered(navRule);
             pages.add(pageName);
-            List<NavigationCase> navCases = navRule.getNavigationCases();
+            Collection<NavigationCase> navCases = navRule.getNavigationCases();
             for (NavigationCase navCase : navCases) {
                 //                String toPage = navCase.getToViewId();
                 String toPage = FacesModelUtility.getToViewIdFiltered(navCase);
@@ -563,7 +560,7 @@ public class PageFlowController {
     }
 
     /*
-     * Create PageFlowNode with no backing page.
+     * Create PageFlowNode with no backing page. 
      */
     public Page createPage(String pageName) {
         Node tmpNode = new AbstractNode(Children.LEAF);
@@ -853,11 +850,12 @@ public class PageFlowController {
         view.saveLocation(oldDisplayName, newDisplayName);
     }
 
-    // WebFiles Wrappers
+    /* WebFiles Wrappers */
     public final boolean removeWebFile(FileObject fileObj) {
         return webFiles.remove(fileObj);
     }
 
+    /* WebFile Wrapper that adds a file to the webFile collection */
     public final boolean addWebFile(FileObject fileObj) {
         return webFiles.add(fileObj);
     }
@@ -1004,8 +1002,11 @@ public class PageFlowController {
     
     static class TestAccessor {
         final PageFlowController controller;
-        public TestAccessor(PageFlowController controller) {
+        TestAccessor(PageFlowController controller) {
                 this.controller = controller;
+        }
+        Collection<String> getPagesInFacesConfig() {
+            return controller.getFacesConfigPageNames(this.getAllNavigationRules());
         }
          
         Collection<FileObject> getAllRelevantFiles(){
