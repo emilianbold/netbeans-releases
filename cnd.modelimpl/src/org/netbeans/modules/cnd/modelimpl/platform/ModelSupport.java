@@ -168,6 +168,7 @@ public class ModelSupport implements PropertyChangeListener {
                     if (TRACE_STARTUP) System.out.println("Model support: Open projects on TopComponent.Registry.PROP_ACTIVATED"); // NOI18N
                     postponeParse = false;
                     TopComponent.getRegistry().removePropertyChangeListener(this);
+		    // TODO: use enqueueModelTask instead
                     RequestProcessor.getDefault().post(new Runnable(){
                         public void run() {
                             OpenProjects.getDefault().addPropertyChangeListener(ModelSupport.this);
