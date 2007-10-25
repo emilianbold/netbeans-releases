@@ -1111,7 +1111,9 @@ public class Util {
     }
 
     public static FileObject getSunDDFO(Project p) {
-        FileObject[] fobjs = getProvider(p).getConfigurationFiles();
+        J2eeModuleProvider provider = getProvider(p);
+        if (provider == null) return null;
+        FileObject[] fobjs = provider.getConfigurationFiles();
         if (fobjs.length > 0) {
             return fobjs[0];
         }
