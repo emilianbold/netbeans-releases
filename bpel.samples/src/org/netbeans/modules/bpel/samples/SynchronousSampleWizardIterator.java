@@ -60,33 +60,30 @@ public class SynchronousSampleWizardIterator extends SampleWizardIterator {
     public SynchronousSampleWizardIterator() {}
     
     public static SynchronousSampleWizardIterator createIterator() {
-        return new SynchronousSampleWizardIterator();
+      return new SynchronousSampleWizardIterator();
     }
     
     protected String[] createSteps() {
-        return new String[] { NbBundle.getMessage(SynchronousSampleWizardIterator.class, "MSG_CreateSynchronousSampleProject")};
+      return new String[] { NbBundle.getMessage(SynchronousSampleWizardIterator.class, "MSG_CreateSynchronousSampleProject") };
     }
     
     protected WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[] { new SynchronousSampleWizardPanel() };
+      return new WizardDescriptor.Panel[] { new SynchronousSampleWizardPanel() };
     }
     
     protected Set<FileObject> createCompositeApplicationProject(FileObject projectDir, String name) throws IOException {
-        Set<FileObject> resultSet = new HashSet<FileObject>();
-        FileObject compAppProjectDir = projectDir.createFolder(name);                
-        
-        FileObject trsCompositeApp = Repository.getDefault().
-                getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/SynchronousSampleApplication.zip");// NOI18N
+      Set<FileObject> resultSet = new HashSet<FileObject>();
+      FileObject compAppProjectDir = projectDir.createFolder(name);                
+      
+      FileObject trsCompositeApp = Repository.getDefault().
+              getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/SynchronousSampleApplication.zip");// NOI18N
 
-        SoaSampleUtils.unZipFile(trsCompositeApp.getInputStream(), compAppProjectDir);
-        
-        SoaSampleUtils.setProjectName(compAppProjectDir, 
-                SoaSampleProjectProperties.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE,
-                name, "SynchronousSampleApplication");       
+      Util.unZipFile(trsCompositeApp.getInputStream(), compAppProjectDir);
+      Util.setProjectName(compAppProjectDir, Util.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE, name, "SynchronousSampleApplication");       
 
-        SoaSampleUtils.addJbiModule(compAppProjectDir, getProjectDir());
-        resultSet.add(compAppProjectDir);               
+      Util.addJbiModule(compAppProjectDir, getProjectDir());
+      resultSet.add(compAppProjectDir);               
 
-        return resultSet;
+      return resultSet;
     }
 }

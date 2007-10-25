@@ -57,50 +57,43 @@ public class TravelReservationServiceWizardIterator extends SampleWizardIterator
     private static final long serialVersionUID = 1L;
     
     public static TravelReservationServiceWizardIterator createIterator() {
-        return new TravelReservationServiceWizardIterator();
+      return new TravelReservationServiceWizardIterator();
     }
     
     protected WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[] {
-            new TravelReservationServiceWizardPanel(),
-        };
+      return new WizardDescriptor.Panel[] { new TravelReservationServiceWizardPanel() };
     }
     
     protected String[] createSteps() {
-        return new String[] {
-            NbBundle.getMessage(TravelReservationServicePanelVisual.class, "MSG_CreateTravelReservatioService"),
-        };
+      return new String[] { NbBundle.getMessage(TravelReservationServicePanelVisual.class, "MSG_CreateTravelReservatioService") };
     }
     
     private Set<FileObject> createJ2eeReservationPartnerServicesProjects(FileObject projectDir) throws IOException {
-        Set<FileObject> resultSet = new HashSet<FileObject>();
-        FileObject j2eeProjectDir = projectDir.createFolder(SoaSampleProjectProperties.RESERVATION_PARTNER_SERVICES);
+      Set<FileObject> resultSet = new HashSet<FileObject>();
+      FileObject j2eeProjectDir = projectDir.createFolder(Util.RESERVATION_PARTNER_SERVICES);
 
-        FileObject j2eeSamples = Repository.getDefault().
-                getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/ReservationPartnerServices.zip");// NOI18N
+      FileObject j2eeSamples = Repository.getDefault().
+              getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/ReservationPartnerServices.zip");// NOI18N
 
-        SoaSampleUtils.unZipFile(j2eeSamples.getInputStream(), j2eeProjectDir);
-        resultSet.add(j2eeProjectDir);
+      Util.unZipFile(j2eeSamples.getInputStream(), j2eeProjectDir);
+      resultSet.add(j2eeProjectDir);
 
-        return resultSet;
+      return resultSet;
     }
     
     protected Set<FileObject> createCompositeApplicationProject(FileObject projectDir, String name) throws IOException {
-        Set<FileObject> resultSet = createJ2eeReservationPartnerServicesProjects(projectDir);
-        FileObject compAppProjectDir = projectDir.createFolder(name);                
-        
-        FileObject trsCompositeApp = Repository.getDefault().
-                getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/TravelReservationServiceApplication.zip");// NOI18N
+      Set<FileObject> resultSet = createJ2eeReservationPartnerServicesProjects(projectDir);
+      FileObject compAppProjectDir = projectDir.createFolder(name);                
+      
+      FileObject trsCompositeApp = Repository.getDefault().
+              getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/TravelReservationServiceApplication.zip");// NOI18N
 
-        SoaSampleUtils.unZipFile(trsCompositeApp.getInputStream(), compAppProjectDir);
-                
-        SoaSampleUtils.setProjectName(compAppProjectDir, 
-                SoaSampleProjectProperties.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE,
-                name, "TravelReservationServiceApplication");                
-        
-        SoaSampleUtils.addJbiModule(compAppProjectDir, getProjectDir());
-        resultSet.add(compAppProjectDir);               
-        
-        return resultSet;
+      Util.unZipFile(trsCompositeApp.getInputStream(), compAppProjectDir);
+      Util.setProjectName(compAppProjectDir, Util.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE, name, "TravelReservationServiceApplication");
+      
+      Util.addJbiModule(compAppProjectDir, getProjectDir());
+      resultSet.add(compAppProjectDir);               
+      
+      return resultSet;
     }
 }

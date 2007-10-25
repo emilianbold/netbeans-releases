@@ -64,11 +64,11 @@ public class AsynchronousSampleWizardIterator extends SampleWizardIterator {
     }
     
     protected String[] createSteps() {
-        return new String[] { NbBundle.getMessage(AsynchronousSampleWizardIterator.class, "MSG_CreateAsynchronousSampleProject") };
+      return new String[] { NbBundle.getMessage(AsynchronousSampleWizardIterator.class, "MSG_CreateAsynchronousSampleProject") };
     }
     
     protected WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[] { new AsynchronousSampleWizardPanel() };
+      return new WizardDescriptor.Panel[] { new AsynchronousSampleWizardPanel() };
     }
     
     protected Set<FileObject> createCompositeApplicationProject(FileObject projectDir, String name) throws IOException {
@@ -78,13 +78,10 @@ public class AsynchronousSampleWizardIterator extends SampleWizardIterator {
         FileObject trsCompositeApp = Repository.getDefault().
                 getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/AsynchronousSampleApplication.zip");// NOI18N
 
-        SoaSampleUtils.unZipFile(trsCompositeApp.getInputStream(), compAppProjectDir);
-        
-        SoaSampleUtils.setProjectName(compAppProjectDir,
-                SoaSampleProjectProperties.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE,
-                name, "AsynchronousSampleApplication");
+        Util.unZipFile(trsCompositeApp.getInputStream(), compAppProjectDir);
+        Util.setProjectName(compAppProjectDir, Util.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE, name, "AsynchronousSampleApplication");
 
-        SoaSampleUtils.addJbiModule(compAppProjectDir, getProjectDir());
+        Util.addJbiModule(compAppProjectDir, getProjectDir());
         resultSet.add(compAppProjectDir);
         
         return resultSet;

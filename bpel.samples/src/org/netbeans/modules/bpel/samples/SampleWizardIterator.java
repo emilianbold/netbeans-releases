@@ -73,11 +73,11 @@ public abstract class SampleWizardIterator implements WizardDescriptor.Instantia
     private FileObject dir;
  
     protected WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[] { new SampleWizardPanel() };
+      return new WizardDescriptor.Panel[] { new SampleWizardPanel() };
     }
     
     protected String[] createSteps() {
-        return new String[] { NbBundle.getMessage(SampleWizardIterator.class, "MSG_SampleProject") };
+      return new String[] { NbBundle.getMessage(SampleWizardIterator.class, "MSG_SampleProject") };
     }
 
     protected FileObject getProjectDir() {
@@ -98,9 +98,8 @@ public abstract class SampleWizardIterator implements WizardDescriptor.Instantia
           dir = dir.createFolder(name);
           dirF = FileUtil.toFile(dir);
 
-          SoaSampleUtils.unZipFile(template.getInputStream(), dir);
-
-          SoaSampleUtils.setProjectName(dir, SoaSampleProjectProperties.BPEL_PROJECT_CONFIGURATION_NAMESPACE, name, template.getName());
+          Util.unZipFile(template.getInputStream(), dir);
+          Util.setProjectName(dir, Util.BPEL_PROJECT_CONFIGURATION_NAMESPACE, name, template.getName());
           resultSet.add(dir);
           FileObject dirParent = dir.getParent();
 

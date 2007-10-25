@@ -49,26 +49,22 @@ public class BluePrint2SampleWizardIterator extends BluePrintSampleWizardIterato
     public BluePrint2SampleWizardIterator() {}
     
     public static BluePrintSampleWizardIterator createIterator() {
-        return new BluePrint2SampleWizardIterator();
+      return new BluePrint2SampleWizardIterator();
     }
     
     protected String[] createSteps() {
-        return new String[] {
-            NbBundle.getMessage(BluePrintSampleWizardIterator.class, "MSG_CreateBPELBluePrint2Project"),
-        };
+      return new String[] { NbBundle.getMessage(BluePrintSampleWizardIterator.class, "MSG_CreateBPELBluePrint2Project") };
     }
     
     protected WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[] {
-            new BluePrintSampleWizardPanel(BluePrintSampleWizardIterator.BLUE_PRINT2), 
-        };
+      return new WizardDescriptor.Panel[] { new BluePrintSampleWizardPanel(BluePrintSampleWizardIterator.BLUE_PRINT2) };
     }
     
-     public String getCompositeApplicationArchiveName() {
-         return BluePrintSampleWizardIterator.BLUE_PRINT2_COMP_APP;
-     }
+    public String getCompositeApplicationArchiveName() {
+      return BluePrintSampleWizardIterator.BLUE_PRINT2_COMP_APP;
+    }
 
-     public String getCompositeApplicationName() {
-         return BluePrintSampleWizardIterator.BLUE_PRINT2_APP;
-     }
+    public String getCompositeApplicationName() {
+      return BluePrintSampleWizardIterator.BLUE_PRINT2_APP;
+    }
 }

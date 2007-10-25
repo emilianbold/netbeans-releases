@@ -85,13 +85,10 @@ public abstract class BluePrintSampleWizardIterator extends SampleWizardIterator
         FileObject bluePrintCompositeApp = Repository.getDefault().
                 getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/" + getCompositeApplicationArchiveName());// NOI18N
         
-        SoaSampleUtils.unZipFile(bluePrintCompositeApp.getInputStream(), compAppProjectDir);
-        
-        SoaSampleUtils.setProjectName(compAppProjectDir, 
-                SoaSampleProjectProperties.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE,
-                name, getCompositeApplicationName());             
+        Util.unZipFile(bluePrintCompositeApp.getInputStream(), compAppProjectDir);
+        Util.setProjectName(compAppProjectDir, Util.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE, name, getCompositeApplicationName());
 
-        SoaSampleUtils.addJbiModule(compAppProjectDir, getProjectDir());
+        Util.addJbiModule(compAppProjectDir, getProjectDir());
         resultSet.add(compAppProjectDir);               
         
         return resultSet;
