@@ -48,7 +48,6 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.editor.NbEditorSettingsInitializer;
-import org.openide.util.RequestProcessor;
 
 /**
 * Options for the base editor kit
@@ -89,14 +88,22 @@ public class OptionSupport extends SystemOption {
         
         // Hook up the settings initializer. This must not happen before
         // subclasses finish their initialization.
-        RequestProcessor.getDefault().post(new Runnable() {
+        Settings.update(new Runnable() {
             public void run() {
                 Settings.Initializer si = getSettingsInitializer();
                 Settings.removeInitializer(si.getName());
                 Settings.addInitializer(si, Settings.OPTION_LEVEL);
                 Settings.reset();
             }
-        }, 10);
+            
+            public boolean asynchronous() {
+                return true;
+            }
+            
+            public int delay() {
+                return 10;
+            }
+        });
     }
 
     public Class getKitClass() {
@@ -246,8 +253,6 @@ public class OptionSupport extends SystemOption {
     class SettingsInitializer implements Settings.Initializer {
         
         String name;
-        private volatile boolean updating = false;
-        
         public String getName() {
             if (name == null) {
                 name = getSettingsInitializerName();
@@ -257,17 +262,14 @@ public class OptionSupport extends SystemOption {
         }
         
         public void updateSettingsMap(Class kitClass, Map settingsMap) {
-            if (!updating) {
-                updating = true;
-                try {
-                    OptionSupport.this.updateSettingsMap(kitClass, settingsMap);
-                } finally {
-                    updating = false;
-                }
-            }
+            OptionSupport.this.updateSettingsMap(kitClass, settingsMap);
+        }
+
+        public @Override String toString() {
+            return super.toString() + "[" + getName(); //NOI18N
         }
         
-    }
+    } // End of SettingsInitializer class
 
 
 }

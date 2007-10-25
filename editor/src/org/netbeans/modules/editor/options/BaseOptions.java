@@ -82,7 +82,6 @@ import org.openide.util.Lookup;
 import java.util.StringTokenizer;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import java.awt.RenderingHints;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.NbEditorKit;
@@ -1656,13 +1655,12 @@ public class BaseOptions extends OptionSupport {
         final MIMEOptionFile file = fileX;
         if (file!=null){
             if (useRequestProcessorForSaving){
-                Settings.update(new CallableRunnable() {
+                Settings.update(new Runnable() {
                     public void run() {
-                        call();
-                    }
-                    public Object call() {
                         file.updateSettings(finalSettings);
-                        return null;
+                    }
+                    public boolean asynchronous() {
+                        return true;
                     }
                 });
             }else{
@@ -1673,8 +1671,6 @@ public class BaseOptions extends OptionSupport {
             LOG.info("A settings file for " + processor + " does not exist in " + mimeFolder.getDataFolder()); //NOI18N
         }
     }
-    
-    private static interface CallableRunnable extends Runnable, Callable {};
     
     public @Override void setSettingValue(String settingName, Object newValue) {
         setSettingValue(settingName, newValue, settingName);

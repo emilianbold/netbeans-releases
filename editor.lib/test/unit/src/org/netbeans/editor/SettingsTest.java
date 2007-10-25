@@ -150,6 +150,18 @@ public class SettingsTest extends NbTestCase {
         }
     }
     
+    public void testAddingExtraInitializersWhenInUpdateMap() {
+        MyInitializer2 init = new MyInitializer2(true);
+        Settings.addInitializer(init);
+        try {
+            Object value = Settings.getValue(MyKit.class, MyInitializer2.TEST_SETTING_NAME);
+            assertNotNull("No extra initializer added", init.another);
+            assertEquals("Wrong setting value", Boolean.TRUE, value);
+        } finally {
+            Settings.removeInitializer(MyInitializer2.NAME);
+        }
+    }
+    
     public static final class MyKit extends BaseKit {
         public MyKit() {
             super();
@@ -172,6 +184,34 @@ public class SettingsTest extends NbTestCase {
         
         public void updateSettingsMap(Class kitClass, Map settingsMap) {
             Settings.setValue(BaseKit.class, TEST_SETTING_NAME, Boolean.TRUE);
+        }
+    } // End of MyInitializer class
+    
+    private static final class MyInitializer2 extends Settings.AbstractInitializer {
+
+        public static final String NAME = "TestInitializer2";
+        public static final String NAME_ANOTHER = "TestInitializer2-Another";
+        public static final String TEST_SETTING_NAME = "TestSetting2";
+        
+        private final boolean addAnother;
+        private MyInitializer2 another = null;
+        
+        public MyInitializer2(boolean addAnother) {
+            super(addAnother ? NAME : NAME_ANOTHER);
+            this.addAnother = addAnother;
+        }
+        
+        public void updateSettingsMap(Class kitClass, Map settingsMap) {
+            if (addAnother) {
+                if (kitClass == BaseKit.class) {
+                    another = new MyInitializer2(false);
+                    Settings.addInitializer(another);
+                }                
+            } else {
+                if (kitClass == MyKit.class) {
+                    Settings.setValue(BaseKit.class, TEST_SETTING_NAME, Boolean.TRUE);
+                }
+            }
         }
     } // End of MyInitializer class
     
