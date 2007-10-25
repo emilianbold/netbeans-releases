@@ -149,6 +149,7 @@ run() {
     	    \"-Dwtk.builds.host=${WTK_BUILDS_HOST}\" \
             \"-Djdk.home=${JDK_HOME}\" \
             \"-Dcvs.root=${CVS_ROOT}\" \
+            \"-Dcvs.timestamp=${CVS_STAMP}\" \
             \"-Dglassfish.home=${GLASSFISH_HOME}\" \
             \"-Dglassfish.asadmin=${GLASSFISH_ASADMIN}\" \
             \"-Dglassfish.http.port=${GLASSFISH_HTTP_PORT}\" \
