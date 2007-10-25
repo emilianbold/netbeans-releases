@@ -36,6 +36,8 @@
 
 package org.netbeans.installer.infra.build.ant;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -47,6 +49,7 @@ import org.apache.tools.ant.Task;
  * @author Kirill Sorokin
  */
 public class SetProperty extends Task {
+     private List <String> resolving;
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     /**
@@ -100,9 +103,10 @@ public class SetProperty extends Task {
      * string value is used.
      */
     public void execute() {
+        resolving = new ArrayList <String> ();
         final Project project = getProject();
-        final String string = (source != null) ? project.getProperty(source): value;        
-        final String resolved = resolveString(string);        
+        final String string = (source != null) ? project.getProperty(source): value;
+        final String resolved = resolveString(string);
         log("Setting " + property + " to " + resolved);
         project.setProperty(property, resolved);
     }
@@ -110,7 +114,7 @@ public class SetProperty extends Task {
     private String resolveString(final String string) {
         if(string==null || string.equals("")) {
             return string;
-        }
+        }        
         StringBuilder result = new StringBuilder(string.length());
         StringBuilder buffer = null;
         Stack <StringBuilder> started = new Stack <StringBuilder> ();
@@ -134,10 +138,18 @@ public class SetProperty extends Task {
                 case '}':
                     if (inside) {
                         final String propName = buffer.toString();
-                        final String propValue = resolveString(getProject().getProperty(propName));
+                        String propValue;
+                        
+                        if(resolving.contains(propName)) {                            
+                            propValue = null;
+                        } else {
+                            resolving.add(propName);
+                            propValue = resolveString(getProject().getProperty(propName));
+                            resolving.remove(propName);
+                        }
                         final String resolved = propValue != null ? propValue : "${" + propName + "}";
                         if (!started.empty()) {
-                            buffer = started.pop().append(resolved);                            
+                            buffer = started.pop().append(resolved);
                         } else {
                             result.append(resolved);
                             inside = false;
@@ -150,8 +162,8 @@ public class SetProperty extends Task {
                     (inside ? buffer : result).append(c);
             }
         }
-
-        if (inside) {            
+        
+        if (inside) {
             do {
                 if (!started.empty()) {
                     buffer = started.pop().append("${").append(buffer);
@@ -161,7 +173,6 @@ public class SetProperty extends Task {
                 }
             } while (buffer != null);
         }
-
         return result.toString();
     }
 }
