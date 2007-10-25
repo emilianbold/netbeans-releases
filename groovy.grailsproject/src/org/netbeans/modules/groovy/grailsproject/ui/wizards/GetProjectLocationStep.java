@@ -43,13 +43,19 @@ import org.openide.util.HelpCtx;
  * @author schmidtm
  */
 public class GetProjectLocationStep implements  WizardDescriptor.Panel, 
-                                                WizardDescriptor.ValidatingPanel 
+                                                WizardDescriptor.ValidatingPanel,
+                                                WizardDescriptor.FinishablePanel
                                                 {
 
     private GetProjectLocationPanel component;
     private WizardDescriptor wizardDescriptor;
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
-    
+    boolean        serverRunning = false;
+
+    public GetProjectLocationStep(boolean serverRunning) {
+        this.serverRunning = serverRunning;
+    }
+
     public Component getComponent() {
         if (component == null) {
             component = new GetProjectLocationPanel(this);
@@ -75,7 +81,7 @@ public class GetProjectLocationStep implements  WizardDescriptor.Panel,
 
     public boolean isValid() {
         getComponent();
-        return component.valid( wizardDescriptor );
+        return  !serverRunning && component.valid( wizardDescriptor );
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -108,7 +114,12 @@ public class GetProjectLocationStep implements  WizardDescriptor.Panel,
     }
 
     public boolean isFinishPanel() {
-        return false;
+        return true;
     }
 
+    public javax.swing.JTextArea getGrailsServerOutputTextArea() {
+        return component.getGrailsServerOutputTextArea();
+    }
+    
+    
 }

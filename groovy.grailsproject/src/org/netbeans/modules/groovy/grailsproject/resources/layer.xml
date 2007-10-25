@@ -3,11 +3,11 @@
 <filesystem>
     <folder name="Templates">
         <folder name="Project">
-            <folder name="Groovy">
+            <folder name="Scripting">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/desktop.html"/>
 
-                <file name="emptyGrails.xml">
+                <file name="Grails Application">
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.NewGrailsProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>

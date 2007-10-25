@@ -34,14 +34,25 @@ import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import java.io.File;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
+import javax.swing.JTextArea;
+import org.openide.util.Exceptions;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import org.netbeans.modules.groovy.grails.api.GrailsServer;
+import org.netbeans.modules.groovy.grails.api.GrailsServerFactory;
+import org.netbeans.api.progress.ProgressHandle;
+import java.io.BufferedReader;
+import java.util.concurrent.CountDownLatch;
 
 
 
@@ -49,44 +60,78 @@ import org.openide.filesystems.FileObject;
  *
  * @author schmidtm
  */
-public class NewGrailsProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class NewGrailsProjectWizardIterator implements  WizardDescriptor.InstantiatingIterator,
+                                                        WizardDescriptor.ProgressInstantiatingIterator{
     
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
     
-    ServerOutputStep sos = null;
+    BufferedReader procOutput = null;
+    GetProjectLocationStep pls = null;
+    ProgressHandle handle = null;
+    CountDownLatch serverFinished = new CountDownLatch(1);
+    boolean        serverRunning = false;
     
     private WizardDescriptor.Panel[] createPanels () {
         
-        sos = new ServerOutputStep();
+        pls = new GetProjectLocationStep(serverRunning);
         
-        return new WizardDescriptor.Panel[] {
-                new GetProjectLocationStep(), sos };
+        return new WizardDescriptor.Panel[] { pls };
     }
     
      private String[] createSteps() {
             return new String[] {
-                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,"LAB_ConfigureProject"), 
-                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,"LAB_CaptureOutput")
+                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,"LAB_ConfigureProject") 
             };
     }
     
+   public Set instantiate(ProgressHandle handle) throws IOException {
+        
+            this.handle = handle;
+
+            Set<FileObject> resultSet = new HashSet<FileObject>();
+
+            new PrivateSwingWorker(pls.getGrailsServerOutputTextArea()).start();
+            
+            try {
+                serverFinished.await();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                    }
+
+            File dirF = new File((String) wiz.getProperty("projectFolder"));
+
+            if (dirF != null) {
+                dirF = FileUtil.normalizeFile(dirF);
+                FileObject dir = FileUtil.toFileObject(dirF);
+                resultSet.add(dir);
+            }
+
+            return resultSet;
+
+    }
+     
     
     
     
     public Set instantiate() throws IOException {
-        Set<FileObject> resultSet = new HashSet<FileObject> ();
 
-        File dirF = new File((String)wiz.getProperty("projectFolder"));
+            Set<FileObject> resultSet = new HashSet<FileObject>();
 
-        if (dirF != null) {
-            dirF = FileUtil.normalizeFile(dirF);
-            FileObject dir = FileUtil.toFileObject(dirF);
-            resultSet.add (dir);
-            }
-        
-        return resultSet;
+            // new PrivateSwingWorker(grailsServerOutputTextArea).start();
+            
+            
+//            File dirF = new File((String) wiz.getProperty("projectFolder"));
+//
+//            if (dirF != null) {
+//                dirF = FileUtil.normalizeFile(dirF);
+//                FileObject dir = FileUtil.toFileObject(dirF);
+//                resultSet.add(dir);
+//            }
+
+            return resultSet;
+
     }
 
     public void initialize(WizardDescriptor wizard) {
@@ -114,10 +159,7 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Instanti
     }
 
     public void uninitialize(WizardDescriptor wizard) {
-        
 
-
-        
     }
 
     public Panel current() {
@@ -150,5 +192,43 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Instanti
     public void addChangeListener(ChangeListener l) {}
 
     public void removeChangeListener(ChangeListener l) {}
+    
+    public class PrivateSwingWorker extends Thread {
+        JTextArea grailsServerOutputTextArea;
+        private  final Logger LOG = Logger.getLogger(NewGrailsProjectWizardIterator.class.getName());
+        int progressMeter = 0;
+        
+        public PrivateSwingWorker (JTextArea grailsServerOutputTextArea) {
+            this.grailsServerOutputTextArea = grailsServerOutputTextArea;
+            }
+        
+        public void run() {
+            serverRunning = true;
+            int progressMeter = 0 ;
+            
+            pls.fireChangeEvent();
+            handle.start(100);
+            GrailsServer server = GrailsServerFactory.getServer();    
+            procOutput = server.runCommand(null, "create-app", null, (String) wiz.getProperty("projectFolder"));
+            
+            String errString;
+            assert procOutput != null;
 
+            try {
+                while ((errString = procOutput.readLine()) != null) {
+                    grailsServerOutputTextArea.append(errString + "\n");
+                    progressMeter = progressMeter + 2;
+                    handle.progress(progressMeter);
+                    }
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
+                    LOG.log(Level.WARNING, "Could not read Process output " +e);
+                    }
+
+            handle.progress(100);
+            handle.finish();
+            serverFinished.countDown();
+        }       
+    }
+    
 }
