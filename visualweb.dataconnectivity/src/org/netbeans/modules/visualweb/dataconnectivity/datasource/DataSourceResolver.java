@@ -150,18 +150,16 @@ public class DataSourceResolver implements DataSourceInfoListener, Runnable {
 
     public boolean isDataSourceUnique(Project currentProj, String dsName, String url) {        
         String[] dynamicDataSources = ProjectDataSourceTracker.getDynamicDataSources(currentProj);
-                
+                     
         for (String name : dynamicDataSources) {
-            if (name.equals((DATASOURCE_PREFIX + dsName))) {
+            if (name.equals((DATASOURCE_PREFIX + "/jdbc/" + dsName))) {
                 if (!getDataSourceUrl(dsName).equals(url)) {
-                    return true;
+                    return false;
                 }
-            } else {
-                return true;
             }
         }
         
-        return false;
+        return true;
     }
 
      private String getDataSourceUrl(String dsName) {
