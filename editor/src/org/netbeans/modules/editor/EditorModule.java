@@ -94,7 +94,7 @@ public class EditorModule extends ModuleInstall {
     private PropertyChangeListener editorHistoryChangeListener;
 
     /** Module installed again. */
-    public void restored () {
+    public @Override void restored () {
         LocaleSupport.addLocalizer(new NbLocalizer(AllOptions.class));
         LocaleSupport.addLocalizer(new NbLocalizer(BaseKit.class));
 
@@ -271,7 +271,7 @@ public class EditorModule extends ModuleInstall {
     }
 
     /** Called when module is uninstalled. Overrides superclass method. */
-    public void uninstalled() {
+    public @Override void uninstalled() {
 
         AllOptionsFolder.unregisterModuleRegListener();
 
@@ -427,7 +427,7 @@ public class EditorModule extends ModuleInstall {
             return null;
         }
         
-        public Object get(Object key) {
+        public @Override Object get(Object key) {
             synchronized (Settings.class) {
             if (debug) LOG.log(Level.INFO, "HackMap.get key=" + key); //NOI18N
             
@@ -465,7 +465,7 @@ public class EditorModule extends ModuleInstall {
             } // synchronized (Settings.class)
         }
         
-        public Object put(Object key, Object value) {
+        public @Override Object put(Object key, Object value) {
             synchronized (Settings.class) {
             if (debug) LOG.log(Level.INFO, "HackMap.put key=" + key + " value=" + value); //NOI18N
             
@@ -485,7 +485,7 @@ public class EditorModule extends ModuleInstall {
             } // synchronized (Settings.class)
         }
 
-        public Object remove(Object key) {
+        public @Override Object remove(Object key) {
             synchronized (Settings.class) {
             if (debug) LOG.log(Level.INFO, "HackMap.remove key=" + key); //NOI18N
             
@@ -533,7 +533,7 @@ public class EditorModule extends ModuleInstall {
             }
         }
         
-        public Object put(Object key, Object value) {
+        public @Override Object put(Object key, Object value) {
             Object ret = super.put(key, value);
             LOG.log(Level.INFO, "registering mimeType=" + key //NOI18N
                 + " -> kitClassName=" + value // NOI18N
@@ -541,7 +541,7 @@ public class EditorModule extends ModuleInstall {
             return ret;
         }
         
-        public Object remove(Object key) {
+        public @Override Object remove(Object key) {
             Object ret = super.remove(key);
             LOG.log(Level.INFO, "removing kitClassName=" + ret //NOI18N
                 + " for mimeType=" + key); // NOI18N
