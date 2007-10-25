@@ -99,6 +99,15 @@ public class InstalledTableModel extends UnitCategoryTableModel {
                 key = "InstallTab_InActive_Tooltip";
             }
             return (key != null) ? getBundle(key) : null;
+        } else if (col == 0) {
+            Unit.Installed u = (Unit.Installed) getUnitAtRow (row);
+            assert u != null : "Unit must found at row " + row;
+            String key = null;
+            UpdateElement ue = u.getRelevantElement ();
+            if (! u.canBeMarked ()) {
+                key = "InstallTab_ReadOnly_Tooltip"; // NOI18N
+            }
+            return (key != null) ? getBundle (key, ue.getDisplayName ()) : super.getToolTipText (row, col);
         }
         return super.getToolTipText(row, col);
     }
@@ -125,7 +134,7 @@ public class InstalledTableModel extends UnitCategoryTableModel {
             fireButtonsChange();
         } else {
             //TODO: message should contain spec.version
-            String message = NbBundle.getMessage(UpdateTableModel.class,"NotificationAlreadyPreparedToIntsall",u.getDisplayName());
+            String message = getBundle ("NotificationAlreadyPreparedToIntsall", u.getDisplayName ()); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
         }
         
@@ -254,8 +263,8 @@ public class InstalledTableModel extends UnitCategoryTableModel {
         // no need to download anything in Installed tab
         return 0;
     }
-    private String getBundle (String key) {
-        return NbBundle.getMessage (this.getClass (), key);
+    private String getBundle (String key, Object... params) {
+        return NbBundle.getMessage (this.getClass (), key, params);
     }
 
     @Override
