@@ -85,7 +85,10 @@ public class UnitDetails extends DetailsPanel{
                     CATEGORY c = u1.getSourceCategory();
                     String categoryName = Utilities.getCategoryName(c);
                     URL icon = Utilities.getCategoryIcon(c);
-                    text += "<img src=\""+icon.toExternalForm()+"\"> </img>&nbsp;<b>"+ categoryName+ "</b><br><br>";
+                    text += "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\"><tr>";
+                    text += "<td><img src=\""+ icon.toExternalForm() +"\"></img></td>";
+                    text += "<td>&nbsp;&nbsp;<b>"+ categoryName+ "</b></td>";
+                    text += "</tr></table><br>";
                 }
                                 
                 if (Utilities.modulesOnly () || Utilities.showExtendedDescription ()) {
