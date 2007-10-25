@@ -87,7 +87,7 @@ public class VersionsCache {
                 File svnBase = new File(svnDir, "text-base/" + base.getName() + ".svn-base");
                 if (!svnBase.exists()) return null;
                 File expanded = new File(svnDir, "text-base/" + base.getName() + ".netbeans-base");
-                if (expanded.canRead() && svnBase.isFile() && expanded.lastModified() > svnBase.lastModified()) {
+                if (expanded.canRead() && svnBase.isFile() && expanded.lastModified() >= svnBase.lastModified()) {
                     return expanded;
                 }
                 SvnClient client = Subversion.getInstance().getClient(base);
@@ -95,6 +95,7 @@ public class VersionsCache {
                 expanded = FileUtil.normalizeFile(expanded);
                 expanded.deleteOnExit();
                 FileUtils.copyStreamToFile(new BufferedInputStream(in), expanded);
+                expanded.setLastModified(svnBase.lastModified());
                 return expanded;
             } catch (SVNClientException e) {
                 IOException ioe = new IOException();
