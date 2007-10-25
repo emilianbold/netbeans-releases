@@ -91,6 +91,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.util.NbPreferences;
 import org.openide.cookies.EditCookie;
 import org.openide.util.Lookup;
+import sun.tools.tree.SuperExpression;
 
 /**
  *
@@ -999,5 +1000,22 @@ public class PageFlowController {
         final Lookup.Result<PageContentModelProvider> result = Lookup.getDefault().lookup(templ);
         Collection<? extends PageContentModelProvider> impls = result.allInstances();
         return impls;
+    }
+    
+    static class TestAccessor {
+        final PageFlowController controller;
+        public TestAccessor(PageFlowController controller) {
+                this.controller = controller;
+        }
+         
+        Collection<FileObject> getAllRelevantFiles(){
+            return controller.getAllProjectRelevantFilesObjects();
+        }
+        Set<NavigationRule> getAllNavigationRules() {
+            return controller.navRule2String.keySet();
+        }
+        Set<NavigationCase> getAllNavigationCases() {
+            return controller.navCase2NavCaseEdge.keySet();
+        }
     }
 }
