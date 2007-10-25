@@ -821,7 +821,7 @@ public final class ModuleList {
      */
     static PropertyEvaluator parseProperties(File basedir, File root, boolean suiteComponent, boolean standalone, String cnb) throws IOException {
         assert !(suiteComponent && standalone) : basedir;
-        Map<String,String> predefs = NbCollections.checkedMapByCopy(System.getProperties(), String.class, String.class, false);
+        Map<String,String> predefs = NbCollections.checkedMapByFilter((Map) System.getProperties()./* #118190 */clone(), String.class, String.class, false);
         predefs.put("basedir", basedir.getAbsolutePath()); // NOI18N
         PropertyProvider predefsProvider = PropertyUtils.fixedPropertyProvider(predefs);
         List<PropertyProvider> providers = new ArrayList<PropertyProvider>();
