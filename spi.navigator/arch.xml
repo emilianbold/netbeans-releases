@@ -459,6 +459,110 @@ made subject to such option by the copyright holder.
         </ul>
 
    </usecase>
+   
+   <usecase id="explorerView" name="Integration of Explorer view into Navigator" >
+        <p>Explorer views comes handy when showing Nodes in varienty of situations
+            and it is just natural to be able to integrate them into Navigator window.
+            Working with explorer views is described at 
+            <a href="@org-openide-explorer@/org/openide/explorer/ExplorerUtils.html">ExplorerUtils javadoc</a>.
+            Integration with Navigator is easy and there are only subtle differencies
+            from integration into TopComponent.
+        </p>
+        
+        <b>Steps to integrate some kind of Explorer View into Navigator:</b>
+         
+        <ul>
+            <li>Implement <code>NavigatorPanel</code> interface and return created explorer
+                view from <code>getComponent()</code> method. Creating explorer view
+                is described in <a href="@org-openide-explorer@/org/openide/explorer/ExplorerUtils.html">ExplorerUtils</a>.
+                <p></p>
+            </li>
+            
+            <li>Return lookup created using 
+                <a href="@org-openide-explorer@/org/openide/explorer/ExplorerUtils.html#createLookup(org.openide.explorer.ExplorerManager, javax.swing.ActionMap)">
+                ExplorerUtils.createLookup(ExplorerManager, ActionMap)</a> 
+                from <code>getLookup()</code> method of <code>NavigatorPanel</code>.
+                <p></p>
+            </li>
+            
+            <li>Use <a href="@org-openide-explorer@/org/openide/explorer/ExplorerUtils.html#activateActions(org.openide.explorer.ExplorerManager, boolean)">
+                ExplorerUtils.activateActions(ExplorerManager, boolean)</a> for actions activation and
+                deactivation in <code>panelActivated</code> and <code>panelDeactivated</code>.
+                <p></p>
+            </li>
+            
+            <li>Take inspiration from following example code which integrates
+                ListView with Navigator:
+                
+                <pre>
+        public class ListViewNavigatorPanel extends JPanel implements NavigatorPanel, ExplorerManager.Provider {
+
+            private ExplorerManager manager;
+            private ListView listView;
+            private Lookup lookup;
+            private Action copyAction;
+
+            public ListViewNavigatorPanel () {
+                manager = new ExplorerManager();
+                ActionMap map = getActionMap();
+                copyAction = ExplorerUtils.actionCopy(manager);
+                map.put(DefaultEditorKit.copyAction, copyAction);
+                map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
+                map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
+                map.put("delete", ExplorerUtils.actionDelete(manager, true)); // or false
+
+                lookup = ExplorerUtils.createLookup(manager, map);
+
+                listView = new ListView();
+                fillListView(listView);
+
+                add(listView);
+            }
+
+            public String getDisplayName() {
+                return "List view panel";
+            }
+
+            public String getDisplayHint() {
+                return "List view based navigator panel";
+            }
+
+            public JComponent getComponent() {
+                return this;
+            }
+
+            public void panelActivated(Lookup context) {
+                ExplorerUtils.activateActions(manager, true);
+            }
+
+            public void panelDeactivated() {
+                ExplorerUtils.activateActions(manager, false);
+            }
+
+            public Lookup getLookup() {
+                return lookup;
+            }
+
+            public ExplorerManager getExplorerManager() {
+                return manager;
+            }
+
+            private void fillListView(ListView listView) {
+                try {
+                    Node testNode = new AbstractNode(Children.LEAF);
+                    manager.setRootContext(testNode);
+                    manager.setSelectedNodes(new Node[]{testNode});
+                } catch (PropertyVetoException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+                </pre>
+            </li>
+             
+        </ul>
+           
+   </usecase>
             
  </answer>
 

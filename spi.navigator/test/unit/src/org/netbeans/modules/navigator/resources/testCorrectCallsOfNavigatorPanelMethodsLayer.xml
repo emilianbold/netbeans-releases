@@ -99,5 +99,17 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     
+    <!-- provider for testing Explorer View integration -->
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="explorerview">
+                <folder name="tester">
+                    <file name="org-netbeans-modules-navigator-ListViewNavigatorPanel.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+   
+    
 </filesystem>
 

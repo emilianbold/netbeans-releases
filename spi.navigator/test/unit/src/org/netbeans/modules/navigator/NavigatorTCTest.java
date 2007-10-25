@@ -43,7 +43,9 @@ package org.netbeans.modules.navigator;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -376,7 +378,46 @@ public class NavigatorTCTest extends NbTestCase {
         ic.remove(actNodesHint);
         ic.remove(actNode);
     }
-    
+
+    /** 
+     */
+    public void test_118082_ExplorerView () throws Exception {
+        System.out.println("Testing #118082, Explorer view integration...");
+
+        InstanceContent ic = getInstanceContent();
+        
+        TestLookupHint explorerHint = new TestLookupHint("explorerview/tester");
+        ic.add(explorerHint);
+            
+        NavigatorTC navTC = NavigatorTC.getInstance();
+        navTC.componentOpened();
+
+        List<NavigatorPanel> panels = navTC.getPanels();
+        assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
+        assertTrue("Expected 1 provider panel, but got " + panels.size(), panels != null && panels.size() == 1);
+        assertTrue("Panel class not expected", panels.get(0) instanceof ListViewNavigatorPanel);
+        ListViewNavigatorPanel provider = (ListViewNavigatorPanel)panels.get(0);
+                
+        // wait for selected node change to be applied, because changes are
+        // reflected with little delay
+        waitForChange();
+
+        Node[] actNodes = navTC.getActivatedNodes();
+        Action copyAction = provider.getCopyAction();
+        assertTrue("Copy action should be enabled", copyAction.isEnabled());
+        assertNotNull("Activated nodes musn't be null", actNodes);
+        Node[] selNodes = provider.getExplorerManager().getSelectedNodes();
+        assertNotNull("Explorer view selected nodes musn't be null", selNodes);
+        assertTrue("Expected 1 activated node, but got " + actNodes.length, actNodes.length == 1);
+        assertTrue("Nodes from explorer view not propagated correctly, should be the same as activated nodes, but got: \n"
+                + "activated nodes: " + Arrays.toString(actNodes) +"\n"
+                + "explorer view selected nodes: " + Arrays.toString(selNodes),
+                Arrays.equals(actNodes, selNodes));
+        
+        // cleanup
+        ic.remove(explorerHint);
+        navTC.componentClosed();
+    }
     
     /** Singleton global lookup. Lookup change notification won't come
      * if setting global lookup (UnitTestUtils.prepareTest) is called
