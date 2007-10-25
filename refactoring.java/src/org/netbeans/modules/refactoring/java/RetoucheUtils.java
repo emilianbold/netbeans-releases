@@ -580,7 +580,12 @@ public class RetoucheUtils {
         FileObject[] result = new FileObject[handles.length];
         int i=0;
         for (TreePathHandle handle:handles) {
-            result[i++]=getFileObject(handle);
+            FileObject fo = getFileObject(handle);
+            if (i==0 && fo==null) {
+                result = new FileObject[handles.length+1];
+                result[i++] = handle.getFileObject();
+            }
+            result[i++] = fo;
         }
         return getClasspathInfoFor(result);
     }
