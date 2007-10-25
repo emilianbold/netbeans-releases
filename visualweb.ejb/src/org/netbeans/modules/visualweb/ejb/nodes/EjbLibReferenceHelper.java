@@ -173,7 +173,7 @@ public class EjbLibReferenceHelper {
      * @throws IOException
      */
     public static void updateEjbGroupForProjects(Project[] projects, EjbGroup ejbGroup)
-            throws IOException {
+            throws IOException, ConfigurationException {
         // Update the jars in each open visual web project
         for (int i = 0; i < projects.length; i++) {
             Project project = projects[i];
@@ -227,6 +227,10 @@ public class EjbLibReferenceHelper {
                 ErrorManager.getDefault().notify(ie);
                 ie.printStackTrace();
                 continue;
+            } catch (ConfigurationException ce) {
+                ErrorManager.getDefault().notify(ce);
+                ce.printStackTrace();
+                continue;                
             }
         }
     }
@@ -475,7 +479,7 @@ public class EjbLibReferenceHelper {
     }
 
     private static void updateEjbGroupForProject(EjbGroup ejbGroup, Project project)
-            throws IOException {
+            throws IOException, ConfigurationException {
         // Update EJB client wrapper archive
         String wrapperJar = ejbGroup.getClientWrapperBeanJar();
         updateJarsForProject(project, null, wrapperJar);
@@ -489,6 +493,9 @@ public class EjbLibReferenceHelper {
         for (String clientJar : clientJarFiles) {
             updateJarsForProject(project, null, clientJar);
         }
+        
+        // Partial fix for 119881
+        addToDeploymentDescriptors(project, ejbGroup);
     }
 
     private static EjbRef findEjbRefByName(SunWebApp sunWebApp, String ejbRefName) {
