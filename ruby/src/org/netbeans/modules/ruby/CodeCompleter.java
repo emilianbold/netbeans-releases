@@ -773,7 +773,7 @@ public class CodeCompleter implements Completable {
      * we'd show the inherited methods).
      * This needs to be enhanced to handle "Foo." prefixes, e.g. def self.foo
      */
-    private boolean completeDefMethod(List<CompletionProposal> proposals, CompletionRequest request, String fqn) {
+    private boolean completeDefOrInclude(List<CompletionProposal> proposals, CompletionRequest request, String fqn) {
         RubyIndex index = request.index;
         String prefix = request.prefix;
         int lexOffset = request.lexOffset;
@@ -804,7 +804,7 @@ public class CodeCompleter implements Completable {
                 // See if we're in the identifier - "foo" in "def foo"
                 // I could also be a keyword in case the prefix happens to currently
                 // match a keyword, such as "next"
-                if ((id == RubyTokenId.IDENTIFIER) || id.primaryCategory().equals("keyword")) {
+                if ((id == RubyTokenId.IDENTIFIER) || (id == RubyTokenId.CONSTANT) || id.primaryCategory().equals("keyword")) {
                     if (!ts.movePrevious()) {
                         return false;
                     }
@@ -856,6 +856,20 @@ public class CodeCompleter implements Completable {
                         proposals.add(item);
                     }
 
+                    return true;
+                } else if (token.id() == RubyTokenId.IDENTIFIER && "include".equals(token.text().toString())) {
+                    // Module completion
+                    Set<IndexedClass> classes = index.getClasses(prefix, kind, false, true, false);
+                    for (IndexedClass clz : classes) {
+                        if (clz.isNoDoc()) {
+                            continue;
+                        }
+                        
+                        ClassItem item = new ClassItem(clz, anchor, request);
+                        item.setSmart(true);
+                        proposals.add(item);
+                    }     
+                    
                     return true;
                 }
             }
@@ -2178,12 +2192,7 @@ public class CodeCompleter implements Completable {
                 }
 
                 if ((fqn != null) && queryType == QueryType.COMPLETION && // doesn't apply to (or work with) documentation/tooltip help
-                        completeDefMethod(proposals, request, fqn)) {
-                    if (queryType == QueryType.DOCUMENTATION) {
-                        proposals = filterDocumentation(proposals, root, doc, info, astOffset, lexOffset,
-                                prefix, path, index);
-                    }
-
+                        completeDefOrInclude(proposals, request, fqn)) {
                     return proposals;
                 }
 
@@ -2262,7 +2271,14 @@ public class CodeCompleter implements Completable {
                 }
             }
 
-            if ((showUpper || showSymbols) && !inCall) {
+            if (showUpper) {
+                if (queryType == QueryType.COMPLETION && // doesn't apply to (or work with) documentation/tooltip help
+                        completeDefOrInclude(proposals, request, "")) {
+                    return proposals;
+                }
+            }
+            if (showUpper || (showSymbols && !inCall)) {
+                // TODO - allow method calls if you're already entered the first char!
                 completeClasses(proposals, request, showSymbols, call);
             }
         }
