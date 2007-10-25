@@ -80,6 +80,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 
 
@@ -224,7 +225,7 @@ public class SchemaRenameRefactoringPlugin extends SchemaRefactoringPlugin {
         Model mod = SharedUtils.getModel(obj);
         FileObject fo = mod.getModelSource().getLookup().lookup(FileObject.class);
        if ( XSD_MIME_TYPE.equals(FileUtil.getMIMEType(fo))) {
-           refactoringElements.add(request, new FauxRefactoringElement(obj, "Rename"));
+           refactoringElements.add(request, new FauxRefactoringElement(obj, NbBundle.getMessage(SchemaRenameRefactoringPlugin.class, "LBL_Rename")));
        }
        
        if(findErrors.size() > 0)

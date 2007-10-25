@@ -223,7 +223,7 @@ public class SchemaSafeDeleteRefactoringPlugin extends SchemaRefactoringPlugin {
         Model mod = SharedUtils.getModel(obj);
         FileObject fo = mod.getModelSource().getLookup().lookup(FileObject.class);
         if ( XSD_MIME_TYPE.equals(FileUtil.getMIMEType(fo))) {
-           refactoringElements.add(delete, new FauxRefactoringElement(obj, "Delete"));
+           refactoringElements.add(delete, new FauxRefactoringElement(obj, NbBundle.getMessage(SchemaSafeDeleteRefactoringPlugin.class, "LBL_Delete")));
        }
         if(allErrors.size() > 0) {
             Problem problem = processErrors(allErrors, ui, inner);

@@ -184,7 +184,7 @@ public class SchemaMoveRefactoringPlugin extends SchemaRefactoringPlugin  implem
         Model mod = SharedUtils.getModel(obj);
         FileObject fo = mod.getModelSource().getLookup().lookup(FileObject.class);
         if ( XSD_MIME_TYPE.equals(FileUtil.getMIMEType(fo))) {
-           refactoringElements.add(request, new FauxRefactoringElement(obj, "Move"));
+           refactoringElements.add(request, new FauxRefactoringElement(obj, NbBundle.getMessage(SchemaMoveRefactoringPlugin.class, "LBL_Move")));
         }      
         if(findErrors.size() > 0)
             return processErrors(findErrors);
