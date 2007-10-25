@@ -448,16 +448,8 @@ public class TreeModelNode extends AbstractNode {
         }
     }
     
-    private static String i (String text) {
-        if (text.startsWith ("<html>")) {
-            if (text.indexOf ("<i>") > 0) return text;
-            text = text.substring (6, text.length () - 7);
-        }
-        return "<html><font color=666666>" + text + "</font></html>";
-    }
-    
     private static String htmlValue (String name) {
-        if (!name.startsWith ("<html>")) return null;
+        if (!name.substring(0, 6).equalsIgnoreCase("<html>")) return null;
         if (name.length() > MAX_HTML_LENGTH) {
             int endTagsPos = findEndTagsPos(name);
             String ending = name.substring(endTagsPos + 1);
@@ -490,6 +482,9 @@ public class TreeModelNode extends AbstractNode {
     }
     
     private static String removeHTML (String text) {
+        if (!text.substring(0, 6).equalsIgnoreCase("<html>")) {
+            return text;
+        }
         text = text.replaceAll ("<i>", "");
         text = text.replaceAll ("</i>", "");
         text = text.replaceAll ("<b>", "");
