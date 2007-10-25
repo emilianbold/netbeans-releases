@@ -136,7 +136,9 @@ public class ModuleListTest extends TestBase {
         assertEquals("right path", "java/project", e.getNetBeansOrgPath());
         assertEquals("right source location", file("java/project"), e.getSourceLocation());
         assertTrue("same by JAR", ModuleList.getKnownEntries(e.getJarLocation()).contains(e));
+        /* will fail if nbbuild/netbeans/nbproject/private/scan-cache-full.ser exists:
         assertTrue("same by other random file", ModuleList.getKnownEntries(file("nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/config/Modules/org-netbeans-modules-java-project.xml")).contains(e));
+         */
         assertEquals("right codeNameBase", "org.netbeans.modules.java.project", e.getCodeNameBase());
         assertEquals(file("nbbuild/netbeans"), e.getDestDir());
         assertEquals("", e.getClassPathExtensions());
