@@ -54,6 +54,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import static org.netbeans.modules.xslt.project.XsltproConstants.*;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.openide.loaders.DataObject;
 
 /**
  * Iterator for a wizard that needs to instantiate new xslt object.
@@ -112,7 +114,7 @@ public class NewXsltproProjectWizardIterator extends NewIcanproProjectWizardIter
                     .findResource("org-netbeans-xsltpro/transformmap.xml"), //NOI18N
                     srcFo, "transformmap"); //NOI18N
             
-            Util.fixEncoding(tMapFo, srcFo);
+            SoaUiUtil.fixEncoding(DataObject.find(tMapFo), srcFo);
         }
     }
 }

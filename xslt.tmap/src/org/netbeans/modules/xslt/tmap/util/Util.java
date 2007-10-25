@@ -89,6 +89,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.soa.ui.SoaUiUtil;
 
 /**
  *
@@ -323,13 +324,8 @@ public class Util {
                     .findResource("org-netbeans-xsltpro/transformmap.xml"), //NOI18N
                     projectSource, "transformmap"); //NOI18N
             
-            
-//            tMapFo = XmlUtil.createNewXmlFo(
-//                    projectSource.getPath(),
-//                    "transformmap",
-//                    TMapComponent.TRANSFORM_MAP_NS_URI);
             if (tMapFo != null) {
-                fixEncoding(tMapFo, projectSource);
+                SoaUiUtil.fixEncoding(DataObject.find(tMapFo), projectSource);
             }
             
         } catch (IOException ex) {
@@ -579,45 +575,6 @@ public class Util {
         return messageType;
     }
 
-    // TODO m
-    public static void fixEncoding(FileObject xslFo, FileObject dirFo) 
-            throws IOException 
-    {
-        DataObject xslDo = DataObject.find(xslFo);
-        if (xslDo != null) {
-            DataFolder df = DataFolder.findFolder(dirFo);
-            String encoding = EncodingUtil.getProjectEncoding(df.getPrimaryFile());
-
-            if ( !EncodingUtil.isValidEncoding(encoding)) {
-              encoding = "UTF-8"; // NOI18N
-            }
-            EditCookie edit = xslDo.getCookie(EditCookie.class);
-
-            if (edit != null) {
-              EditorCookie editorCookie = xslDo.getCookie(EditorCookie.class);
-              Document doc = (Document)editorCookie.openDocument();
-              fixEncoding(doc, encoding);
-              SaveCookie save = xslDo.getCookie(SaveCookie.class);
-
-              if (save != null) {
-                save.save();
-              }
-            }
-        }
-    }
-    
-    public static void fixEncoding(javax.swing.text.Document document, String encoding) {
-      if (encoding == null) {
-        encoding = "UTF-8"; //NOI18N
-      }
-      try {
-        document.insertString(19, " encoding=\""+encoding+"\"", null);
-      }
-      catch (BadLocationException e) {
-      }
-    }
-
-// html names/tooltip/message presenter rel methods
     public static String getGrayString(String message) {
         return getGrayString("", message);
     }

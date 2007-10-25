@@ -77,6 +77,7 @@ import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.netbeans.modules.xslt.tmap.model.impl.VariableReferenceImpl;
 import org.openide.cookies.SaveCookie;
+import org.netbeans.modules.soa.ui.SoaUiUtil;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
@@ -301,7 +302,7 @@ public final class Iterator implements TemplateWizard.Iterator {
                 if (!isCreatedDir) {
                     createdFos.add(xslFo);
                 }
-                org.netbeans.modules.xslt.tmap.util.Util.fixEncoding(xslFo, dirFo);
+                SoaUiUtil.fixEncoding(DataObject.find(xslFo), dirFo);
             }
         }
         return xslFo;
