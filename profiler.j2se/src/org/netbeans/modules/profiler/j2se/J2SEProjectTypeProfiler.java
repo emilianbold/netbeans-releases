@@ -75,6 +75,7 @@ import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Properties;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.ProjectUtils;
 
 
 /**
@@ -112,6 +113,8 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
 
     // -----
     // I18N String constants
+    private static final String MODIFY_BUILDSCRIPT_CAPTION = NbBundle.getMessage(J2SEProjectTypeProfiler.class,
+                                                                             "J2SEProjectTypeProfiler_ModifyBuildScriptCaption"); // NOI18N
     private static final String MODIFY_BUILDSCRIPT_MSG = NbBundle.getMessage(J2SEProjectTypeProfiler.class,
                                                                              "J2SEProjectTypeProfiler_ModifyBuildScriptMsg"); // NOI18N
     private static final String REGENERATE_BUILDSCRIPT_MSG = NbBundle.getMessage(J2SEProjectTypeProfiler.class,
@@ -508,12 +511,12 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
             return true; // already modified by this version, nothing more to do
         }
 
-        if (ProfilerDialogs.notify(new NotifyDescriptor.Confirmation(MessageFormat.format(MODIFY_BUILDSCRIPT_MSG,
-                                                                                              new Object[] {
-                                                                                                  "build.xml",
-                                                                                                  "build-before-profiler.xml"
-                                                                                              }), // NOI18N
-                                                                         NotifyDescriptor.OK_CANCEL_OPTION)) != NotifyDescriptor.OK_OPTION) {
+        String projectName = ProjectUtils.getInformation(project).getDisplayName();
+        String caption = MessageFormat.format(MODIFY_BUILDSCRIPT_CAPTION, new Object[] { projectName });
+        String message = MessageFormat.format(MODIFY_BUILDSCRIPT_MSG, new Object[] { projectName, "build-before-profiler.xml" }); // NOI18N
+        if (ProfilerDialogs.notify(new NotifyDescriptor(message, caption, NotifyDescriptor.OK_CANCEL_OPTION,
+                                                        NotifyDescriptor.INFORMATION_MESSAGE, new Object[] { NotifyDescriptor.OK_OPTION,
+                                                        NotifyDescriptor.CANCEL_OPTION }, NotifyDescriptor.OK_OPTION)) != NotifyDescriptor.OK_OPTION) {
             return false; // cancelled by the user
         }
 
