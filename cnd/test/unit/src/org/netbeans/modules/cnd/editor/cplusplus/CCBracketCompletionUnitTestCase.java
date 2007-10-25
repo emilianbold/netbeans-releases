@@ -29,6 +29,8 @@
 package org.netbeans.modules.cnd.editor.cplusplus;
 
 import javax.swing.text.BadLocationException;
+import org.netbeans.editor.Formatter;
+import org.netbeans.editor.Settings;
 import org.netbeans.editor.TokenID;
 
 /**
@@ -125,7 +127,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
         setLoadDocumentText (
             "while |"
         );
-        typeChar('(');
+        typeChar('(', false);
         assertDocumentTextAndCaret ("Even a closing ')' should be added", 
             "while (|)"
         );
@@ -662,6 +664,22 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
         assertFalse(isAddRightBrace());
     }
     
+    public void testIZ102091() throws Exception {
+        Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE, Boolean.TRUE);
+        try {
+            setLoadDocumentText (
+                "if(i)\n"+
+                "    |"
+            );
+            typeChar('{', true);
+            assertDocumentTextAndCaret ("IZ102091\n", 
+                "if(i)\n"+
+                "{|"
+            );
+        } finally {
+            Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE, Boolean.FALSE);
+        }
+    }
     
 //    public void testColonAfterPublic() throws Exception {
 //        setLoadDocumentText (
@@ -680,14 +698,23 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
 
     // ------- Private methods -------------
     
-    private void typeChar(char ch) throws Exception {
+    private void typeChar(char ch, boolean isIndent) throws Exception {
         int pos = getCaretOffset();
         getDocument ().insertString(pos, String.valueOf(ch), null);
         BracketCompletion.charInserted(getDocument(), pos, getCaret(), ch);
+        if (isIndent) {
+            Formatter f = getDocument().getFormatter();
+            f.indentLock();
+            try {
+                getDocument().getFormatter().indentLine(getDocument(), pos);
+            } finally {
+                f.indentUnlock();
+            }
+        }
     }
 
     private void typeQuoteChar(char ch) throws Exception {
-        typeChar(ch);
+        typeChar(ch, false);
     }
     
     private boolean isSkipRightParen() {
@@ -712,7 +739,7 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
             return false; // should never be reached
         }
     }
-    
+
     private boolean isAddRightBrace() {
         try {
             return BracketCompletion.isAddRightBrace(getDocument(),

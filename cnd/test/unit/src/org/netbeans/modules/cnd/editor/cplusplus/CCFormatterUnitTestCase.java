@@ -1051,5 +1051,15 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "        break;\n" +
                 "}\n");
     }
-}
 
+    public void testIZ101099() {
+        setLoadDocumentText(
+                "template <class T>|\n"
+                );
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect new-line indent IZ101099",
+                "template <class T>\n"+
+                "|\n"
+                );
+    }
+}
