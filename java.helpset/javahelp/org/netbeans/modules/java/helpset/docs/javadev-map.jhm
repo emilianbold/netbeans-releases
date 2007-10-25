@@ -454,12 +454,14 @@
 <mapID target="org.netbeans.modules.i18n.InsertI18nStringAction" url="internationalize/manualinsert.html" />
 
     <!--Create Tests dialog box-->
-    <mapID target="org.netbeans.modules.junit.JUnitCfgOfCreate" url="junit/junit_creatingtests.html" />  
+    <mapID target="org.netbeans.modules.junit.JUnitCfgOfCreate" url="junit/junit_csh__creatingtests.html" />  
     <!--JUnit Test Results Window -->
     <mapID target="org.netbeans.modules.junit.output.ResultWindow" url="junit/junit_resultswindow.html" /> 
     <!--JUnit New Test Problem window -->
-    <!-- This help id appears when using New File wizard to creating a new JUnit test and there is a problem, specifically a missing test folder -->
+    <!-- This help id appears when using New File wizard to create a new JUnit test and there is a problem, specifically a missing test folder -->
     <mapID target="org.netbeans.modules.junit.wizards.StepProblemMessage" url="junit/junit_creatingtests.html" /> 
+    <!-- Choose JUnit version dialog box -->
+    <mapID target="org.netbeans.modules.junit.select_junit_version" url="junit/junit_csh_chooseversion.html" /> 
 
 
 
