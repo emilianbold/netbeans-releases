@@ -110,6 +110,10 @@ public abstract class KeymapManager {
      */
     public abstract List<String> getProfiles();
 
+    public String getProfileDisplayName(String profileName) {
+        return profileName;
+    }
+    
     /**
      * @return Currently active profile.
      */

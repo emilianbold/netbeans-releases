@@ -126,13 +126,27 @@ public class KeymapModel {
     // keymaps .................................................................
     
     public String getCurrentProfile () {
+        String profileName = null;
         for (KeymapManager m : getKeymapManagerInstances()) {
             String res = m.getCurrentProfile();
             if (res != null) {
-                return res;
+                profileName = res;
+                break;
             }
         }
-        return "NetBeans";
+        
+        if (profileName == null) {
+            profileName = "NetBeans"; //NOI18N
+        }
+        
+        Map<String, String> map = getProfilesMap();
+        for(Map.Entry<String, String> entry : map.entrySet()) {
+            if (entry.getValue().equals(profileName)) {
+                return entry.getKey();
+            }
+        }
+        
+        return profileName;
     }
     
     public void setCurrentProfile (String profile) {
@@ -146,22 +160,18 @@ public class KeymapModel {
             UI_LOG.log(rec);
         }
         
+        profile = displayNameToName(profile);
         for (KeymapManager m : getKeymapManagerInstances()) {
             m.setCurrentProfile(profile);
         }
     }
     
     public List<String> getProfiles () {
-        for (KeymapManager m : getKeymapManagerInstances()) {
-            List<String> l = m.getProfiles();
-            if (l != null) {
-                return l;
-            }
-        }
-        return null;
+        return new ArrayList<String>(getProfilesMap().keySet());
     }
     
     public boolean isCustomProfile (String profile) {
+        profile = displayNameToName(profile);
         for (KeymapManager m : getKeymapManagerInstances()) {
             boolean res = m.isCustomProfile(profile);
             if (res) {
@@ -181,6 +191,7 @@ public class KeymapModel {
      * Returns Map (ShortcutAction > Set (String (shortcut))).
      */
     public Map<ShortcutAction,Set<String>> getKeymap (String profile) {
+        profile = displayNameToName(profile);
         if (!keyMaps.containsKey(profile)) {
             Map<ShortcutAction,Set<String>> res = new 
                     HashMap<ShortcutAction,Set<String>>();
@@ -203,6 +214,7 @@ public class KeymapModel {
      * Returns Map (ShortcutAction > Set (String (shortcut))).
      */
     public Map<ShortcutAction, Set<String>> getKeymapDefaults(String profile) {
+        profile = displayNameToName(profile);
         if (!keyMapDefaults.containsKey (profile)) {
             Map<ShortcutAction,Set<String>> res = new 
                     HashMap<ShortcutAction,Set<String>>();
@@ -216,6 +228,7 @@ public class KeymapModel {
     }
     
     public void deleteProfile(String profile) {
+        profile = displayNameToName(profile);
         for (KeymapManager m : getKeymapManagerInstances()) {
             m.deleteProfile(profile);
         }
@@ -225,8 +238,9 @@ public class KeymapModel {
      * Defines new shortcuts for some actions in given keymap.
      * Map (ShortcutAction > Set (String (shortcut AS-M P)).
      */
-    public void changeKeymap(String profile, 
-                Map<ShortcutAction,Set<String>> actionToShortcuts) {
+    public void changeKeymap(String profile, Map<ShortcutAction,Set<String>> actionToShortcuts) {
+        profile = displayNameToName(profile);
+        
         log ("changeKeymap.actionToShortcuts", actionToShortcuts.entrySet ());
         
         // 1) mix changes with current keymap and put them to cached current shortcuts
@@ -260,7 +274,7 @@ public class KeymapModel {
      * Merges editor actions and layers actions. Creates CompoundAction for
      * actions like Copy, registerred to both contexts.
      */
-    Set<ShortcutAction> mergeActions (
+    /* package */ Set<ShortcutAction> mergeActions (
         Collection<ShortcutAction> res, Collection<ShortcutAction> adding, String name) {
         
         Set<ShortcutAction> result = new HashSet<ShortcutAction>();
@@ -324,7 +338,7 @@ public class KeymapModel {
         return null;
     }
     
-    Map<ShortcutAction,Set<String>> mergeShortcuts (
+    private Map<ShortcutAction,Set<String>> mergeShortcuts (
         Map<ShortcutAction,Set<String>> res,
         Map<ShortcutAction,Set<String>> adding) {
 
@@ -341,6 +355,28 @@ public class KeymapModel {
         return res;
     }
 
+    private String displayNameToName(String keymapDisplayName) {
+        String name = getProfilesMap().get(keymapDisplayName);
+        return name == null ? keymapDisplayName : name;
+    }
+
+    private Map<String, String> profilesMap;
+    private Map<String, String> getProfilesMap() {
+        if (profilesMap == null) {
+            for (KeymapManager m : getKeymapManagerInstances()) {
+                List<String> l = m.getProfiles();
+                if (l != null) {
+                    profilesMap = new HashMap<String, String>();
+                    for(String name : l) {
+                        profilesMap.put(m.getProfileDisplayName(name), name);
+                    }
+                    break;
+                }
+            }
+        }
+        return profilesMap;
+    }
+    
     {
         // HACK - loads all actions. othervise during second open of Options
         // Dialog (after cancel) map of sharedActions is not initialized.

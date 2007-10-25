@@ -170,22 +170,28 @@ public class LayersBridge extends KeymapManager {
     }
     
     private List<String> keymapNames;
+    private Map<String, String> keymapDisplayNames;
     
     public List<String> getProfiles() {
         if (keymapNames == null) {
             DataFolder root = getRootFolder(KEYMAPS_FOLDER, null);
             Enumeration en = root.children(false);
             keymapNames = new ArrayList<String>();
+            keymapDisplayNames = new HashMap<String, String>();
             while (en.hasMoreElements()) {
                 FileObject f = ((DataObject) en.nextElement()).getPrimaryFile();
                 if (f.isFolder()) {
                     String name = f.getNameExt();
+                    String displayName;
+                    
                     try {
-                        name = f.getFileSystem().getStatus().annotateName(name, Collections.singleton(f));
+                        displayName = f.getFileSystem().getStatus().annotateName(name, Collections.singleton(f));
                     } catch (FileStateInvalidException fsie) {
-                    // ignore
+                        // ignore
+                        displayName = name;
                     }
                     keymapNames.add(name);
+                    keymapDisplayNames.put(name, displayName);
                 }
             }
             if (keymapNames.isEmpty()) {
@@ -193,6 +199,11 @@ public class LayersBridge extends KeymapManager {
             }
         }
         return Collections.unmodifiableList(keymapNames);
+    }
+    
+    public @Override String getProfileDisplayName(String profileName) {
+        String displayName = keymapDisplayNames.get(profileName);
+        return displayName == null ? profileName : displayName;
     }
     
     /** Profile to Map of GlobalAction to set of shortcuts. */
@@ -349,11 +360,11 @@ public class LayersBridge extends KeymapManager {
             getDefaultFileSystem ().getRoot ();
         FileObject fo1 = root.getFileObject (name1);
         try {
-            if (fo1 == null) root.createFolder (name1);
+            if (fo1 == null) fo1 = root.createFolder (name1);
             if (fo1 == null) return null;
             if (name2 == null) return DataFolder.findFolder (fo1);
             FileObject fo2 = fo1.getFileObject (name2);
-            if (fo2 == null) fo1.createFolder (name2);
+            if (fo2 == null) fo2 = fo1.createFolder (name2);
             if (fo2 == null) return null;
             return DataFolder.findFolder (fo2);
         } catch (IOException ex) {
