@@ -113,7 +113,6 @@ import org.netbeans.modules.web.project.SourceRoots;
 import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
-import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.util.ChangeSupport;
@@ -515,7 +514,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
 
             addFromLayers(actions, "Projects/Profiler_Actions_temporary"); //NOI18N
             
-            actions.add(ProjectSensitiveActions.projectCommandAction( RestSupport.COMMAND_TEST_RESTBEANS, bundle.getString( "LBL_TestRestBeansAction_Name" ), null )); // NOI18N
+            addFromLayers(actions, "Projects/Rest_Actions_holder"); //NOI18N
             actions.add(null);
             actions.add(CommonProjectActions.setAsMainProjectAction());
             actions.add(CommonProjectActions.openSubprojectsAction());

@@ -399,7 +399,6 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
             LookupProviderSupport.createSourcesMerger(),
             new WebPropertyEvaluatorImpl(evaluator()),
             WebProject.this, // never cast an externally obtained Project to WebProject - use lookup instead
-            new WebProjectRestSupport(this, helper),
             libMod,
             new WebProjectEncodingQueryImpl(evaluator()),
             new WebTemplateAttributesProvider(this.helper),

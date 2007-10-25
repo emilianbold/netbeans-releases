@@ -49,7 +49,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,12 +62,15 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
+import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportProvider;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
+import org.netbeans.modules.websvc.rest.model.spi.RestServicesMetadataModelFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -91,7 +93,7 @@ public abstract class RestSupport {
     public static final String PROP_BASE_URL_TOKEN = "base.url.token";
     public static final String BASE_URL_TOKEN = "___BASE_URL___";
     public static final String RESTBEANS_TEST_DIR = "build/generated/rest-test";
-    public static final String COMMAND_TEST_RESTBEANS = "test.restbeans";
+    public static final String COMMAND_TEST_RESTBEANS = "test-restbeans";
     public static final String REST_SUPPORT_ON = "rest.support.on";
     public static final String TEST_RESBEANS = "test-resbeans";
     public static final String TEST_RESBEANS_HTML = TEST_RESBEANS + ".html";
@@ -107,11 +109,16 @@ public abstract class RestSupport {
     public static final String IGNORE_PLATFORM_RESTLIB = "restlib.ignore.platform";
     public static final String JSR311_API_LOCATION = "modules/ext/rest/jsr311-api.jar";
     
-    AntProjectHelper helper;
+    private AntProjectHelper helper;
+    protected MetadataModel<RestServicesMetadata> restServicesMetadataModel;
+    protected final Project project;
 
     /** Creates a new instance of RestSupport */
-    public RestSupport(AntProjectHelper helper) {
-        this.helper = helper;
+    public RestSupport(Project project) {
+        if (project == null) {
+            throw new IllegalArgumentException("Null project");
+        }
+        this.project = project;
     }
 
     /**
@@ -138,8 +145,29 @@ public abstract class RestSupport {
      * Get persistence.xml file.
      */
     public abstract FileObject getPersistenceXml();
+    
+    private FileObject findSourceRoot() {
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(getProject()).getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sourceGroups != null && sourceGroups.length > 0) {
+            return sourceGroups[0].getRootFolder();
+        }
+        return null;
+    }
 
-    public abstract MetadataModel<RestServicesMetadata> getRestServicesMetadataModel();
+    public MetadataModel<RestServicesMetadata> getRestServicesMetadataModel() {
+        FileObject sourceRoot = findSourceRoot();
+        if (restServicesMetadataModel == null && sourceRoot != null) {
+            ClassPathProvider cpProvider = getProject().getLookup().lookup(ClassPathProvider.class);
+            MetadataUnit metadataUnit = MetadataUnit.create(
+                    cpProvider.findClassPath(sourceRoot, ClassPath.BOOT),
+                    cpProvider.findClassPath(sourceRoot, ClassPath.COMPILE),
+                    cpProvider.findClassPath(sourceRoot, ClassPath.SOURCE),
+                    null);
+            restServicesMetadataModel = RestServicesMetadataModelFactory.createMetadataModel(metadataUnit);
+        }
+        return restServicesMetadataModel;
+    }
     
     /**
      * Generates test client.  Typically RunTestClientAction would need to call 
@@ -264,11 +292,6 @@ public abstract class RestSupport {
      *  @param classPathTypes types of class path to add ("javac.compile",...)
      */
     public void addSwdpLibrary(String[] classPathTypes) throws IOException {
-        Project project = getProject();
-        if (project == null) {
-            return;
-        }
-
         Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
         if (swdpLibrary == null) {
             return;
@@ -337,7 +360,7 @@ public abstract class RestSupport {
     }
 
     protected Project getProject() {
-        return FileOwnerQuery.getOwner(helper.getProjectDirectory());
+        return project;
     }
 
     /**
@@ -367,6 +390,9 @@ public abstract class RestSupport {
     }
     
     public boolean isRestSupportOn() {
+        if (getAntProjectHelper() == null) {
+            return false;
+        }
         String v = getProjectProperty(REST_SUPPORT_ON);
         return "true".equalsIgnoreCase(v) || "on".equalsIgnoreCase(v);
     }
@@ -376,6 +402,9 @@ public abstract class RestSupport {
     }
 
     protected void setProjectProperty(String name, String value) {
+        if (getAntProjectHelper() == null) {
+            return;
+        }
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.setProperty(name, value);
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
@@ -387,6 +416,9 @@ public abstract class RestSupport {
     }
 
     protected String getProjectProperty(String name) {
+        if (getAntProjectHelper() == null) {
+            return null;
+        }
         return helper.getStandardPropertyEvaluator().getProperty(name);
     }
     
@@ -397,6 +429,19 @@ public abstract class RestSupport {
             return false;
         }
         return true;
+    }
+    
+    public AntProjectHelper getAntProjectHelper() {
+        if (helper == null) {
+            JAXWSSupportProvider provider = project.getLookup().lookup(JAXWSSupportProvider.class);
+            if (provider != null) {
+                JAXWSSupport support = provider.findJAXWSSupport(project.getProjectDirectory());
+                if (support != null) {
+                    helper = support.getAntProjectHelper();
+                }
+            }
+        }
+        return helper;
     }
 }
 
