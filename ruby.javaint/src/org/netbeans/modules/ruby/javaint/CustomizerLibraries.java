@@ -94,8 +94,8 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
 //                jComboBoxTarget.setRenderer(uiProperties.PLATFORM_LIST_RENDERER);
 //        }
         
-        jComboBoxTarget.putClientProperty ("JComboBox.isTableCellEditor", Boolean.TRUE);    //NOI18N
-        jComboBoxTarget.addItemListener(new java.awt.event.ItemListener(){ 
+        platformCombo.putClientProperty ("JComboBox.isTableCellEditor", Boolean.TRUE);    //NOI18N
+        platformCombo.addItemListener(new java.awt.event.ItemListener(){ 
             public void itemStateChanged(java.awt.event.ItemEvent e){ 
                 javax.swing.JComboBox combo = (javax.swing.JComboBox)e.getSource(); 
                 combo.setPopupVisible(false); 
@@ -106,9 +106,17 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             showSubCategory(subcat.getSubcategory());
         }
         
+        hidePlatformComponents();
+        
 //        uiProperties.JAVAC_CLASSPATH_MODEL.addListDataListener( this );
     }
-        
+    
+    private void hidePlatformComponents() {
+        platformButton.setVisible(false);
+        platformCombo.setVisible(false);
+        platformLabel.setVisible(false);
+    }
+    
     // Implementation of HelpCtx.Provider --------------------------------------
     
     public HelpCtx getHelpCtx() {
@@ -159,9 +167,9 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
 
         includeJavaCheckbox = new javax.swing.JCheckBox();
         jSeparator1 = new javax.swing.JSeparator();
-        jLabelTarget = new javax.swing.JLabel();
-        jComboBoxTarget = new javax.swing.JComboBox();
-        jButton1 = new javax.swing.JButton();
+        platformLabel = new javax.swing.JLabel();
+        platformCombo = new javax.swing.JComboBox();
+        platformButton = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanelCompile = new javax.swing.JPanel();
         librariesJLabel1 = new javax.swing.JLabel();
@@ -194,27 +202,27 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jSeparator1, gridBagConstraints);
 
-        jLabelTarget.setLabelFor(jComboBoxTarget);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelTarget, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeGeneral_Platform_JLabel")); // NOI18N
-        jLabelTarget.setEnabled(false);
+        platformLabel.setLabelFor(platformCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(platformLabel, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeGeneral_Platform_JLabel")); // NOI18N
+        platformLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 12);
-        add(jLabelTarget, gridBagConstraints);
-        jLabelTarget.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustomizerGeneral_jLabelTarget")); // NOI18N
+        add(platformLabel, gridBagConstraints);
+        platformLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustomizerGeneral_jLabelTarget")); // NOI18N
 
-        jComboBoxTarget.setEnabled(false);
-        jComboBoxTarget.setMinimumSize(this.jComboBoxTarget.getPreferredSize());
+        platformCombo.setEnabled(false);
+        platformCombo.setMinimumSize(this.platformCombo.getPreferredSize());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        add(jComboBoxTarget, gridBagConstraints);
+        add(platformCombo, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeGeneral_Platform_JButton")); // NOI18N
-        jButton1.setEnabled(false);
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(platformButton, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeGeneral_Platform_JButton")); // NOI18N
+        platformButton.setEnabled(false);
+        platformButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 createNewPlatform(evt);
             }
@@ -223,8 +231,8 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
-        add(jButton1, gridBagConstraints);
-        jButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustomizerGeneral_jButton1")); // NOI18N
+        add(platformButton, gridBagConstraints);
+        platformButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustomizerGeneral_jButton1")); // NOI18N
 
         jPanelCompile.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         jPanelCompile.setLayout(new java.awt.GridBagLayout());
@@ -329,6 +337,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jTabbedPane1, gridBagConstraints);
         jTabbedPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSN_CustomizerLibraries_JTabbedPane")); // NOI18N
@@ -356,7 +365,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     }// </editor-fold>//GEN-END:initComponents
 
     private void createNewPlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createNewPlatform
-        Object selectedItem = this.jComboBoxTarget.getSelectedItem();
+//        Object selectedItem = this.platformCombo.getSelectedItem();
 //        JavaPlatform jp = (selectedItem == null ? null : PlatformUiSupport.getPlatform(selectedItem));
 //        JavaPlatform jp = null;
 //        PlatformsCustomizer.showCustomizer(jp);        
@@ -365,7 +374,6 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox includeJavaCheckbox;
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButtonAddArtifactC;
     private javax.swing.JButton jButtonAddJarC;
     private javax.swing.JButton jButtonAddLibraryC;
@@ -374,16 +382,17 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     private javax.swing.JButton jButtonMoveUpC;
     private javax.swing.JButton jButtonRemoveC;
     private javax.swing.JCheckBox jCheckBoxBuildSubprojects;
-    private javax.swing.JComboBox jComboBoxTarget;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabelErrorMessage;
-    private javax.swing.JLabel jLabelTarget;
     private javax.swing.JList jListCpC;
     private javax.swing.JPanel jPanelCompile;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel librariesJLabel1;
     private javax.swing.JScrollPane librariesJScrollPane;
+    private javax.swing.JButton platformButton;
+    private javax.swing.JComboBox platformCombo;
+    private javax.swing.JLabel platformLabel;
     // End of variables declaration//GEN-END:variables
         
         
