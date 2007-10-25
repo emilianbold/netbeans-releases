@@ -114,7 +114,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
                 input.read ();
             }
             input.read ();
-            state = -1;
+            if (!input.eof ()) state = -1;
             return createToken ("js_string", index);
         }
         // END HACK...
