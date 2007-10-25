@@ -1401,7 +1401,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
             if( SchemaConstants.TYPE_INT.equals( typeName )) {
                 parse = "Integer.parseInt(" + value + ")";
             } else if( SchemaConstants.TYPE_BOOLEAN.equals( typeName )) {
-                parse = "Boolean.parseBoolean(" + value + ")";
+                parse = "value.equals( \"true\" ) ? true : false";
             } else if( SchemaConstants.TYPE_BYTE.equals( typeName )) {
                 parse = "Byte.parseByte(" + value + ")";
             } else if( SchemaConstants.TYPE_DOUBLE.equals( typeName )) {
