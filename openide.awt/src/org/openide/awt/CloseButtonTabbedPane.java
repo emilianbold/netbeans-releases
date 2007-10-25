@@ -90,7 +90,6 @@ final class CloseButtonTabbedPane extends JTabbedPane {
         CloseButtonListener.install();
         //Bugfix #28263: Disable focus.
         setFocusable(false);
-        setBorder(javax.swing.BorderFactory.createEmptyBorder());
         setFocusCycleRoot(true);
         setFocusTraversalPolicy(new CBTPPolicy());
     }
