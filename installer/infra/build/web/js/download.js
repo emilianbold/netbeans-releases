@@ -271,13 +271,17 @@ function update() {
 	if (messages_number == 1 ) {
 		error_message += ' is not available for';
         } else {
-		error_message += ' are not available for';
+		if ( platform == "zip" ) {
+			error_message += ' are not available in';
+		} else {
+			error_message += ' are not available for';
+		}
 	}
 	error_message += ' ' + platform_display_name;	
     } else {
 	error_message = '<br>';
     }
-
+    
     //error_message += '</table>';
     
     document.getElementById("error_message").innerHTML = error_message;
