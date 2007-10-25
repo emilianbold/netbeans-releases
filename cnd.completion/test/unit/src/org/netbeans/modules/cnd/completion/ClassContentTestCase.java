@@ -42,6 +42,10 @@ public class ClassContentTestCase extends CompletionBaseTestCase {
         super(testName, true);
     }
        
+    public void testConstructorDereference() throws Exception {
+        super.performTest("file.h", 6, 9, "D(1).");
+    }
+    
     public void testNewDConstructor() throws Exception {
         super.performTest("file.cc", 6, 5, "new D()", -1);
     }
