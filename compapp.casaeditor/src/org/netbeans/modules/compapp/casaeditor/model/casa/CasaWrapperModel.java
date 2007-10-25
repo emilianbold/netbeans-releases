@@ -2834,19 +2834,152 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     /**
-     * Sets the service QName of a casa endpoint.
+     * Sets the service QName of a CASA endpoint reference (consumes/provides). 
+     * 
+     * The owner of the endpoint could be an external SE SU, or an editable
+     * BC SU. For editable BC SU, the change is also propagated to the 
+     * corresponding WSDL file. 
      */
     // TRANSACTION BOUNDARY
     // USE CASE: from property sheet
-    // AFFECT: CASA
+    // AFFECT: CASA, (COMPAPP.WSDL or other WSDL defined in CompApp project)
     public void setEndpointServiceQName(final CasaEndpointRef endpointRef,
-            final QName serviceQName) {
-        // TODO: assert the owner of the endpoint must be an external SESU.
-        CasaEndpoint endpoint = endpointRef.getEndpoint().get();
+            final QName newServiceQName) {
         
+        CasaEndpoint endpoint = endpointRef.getEndpoint().get();        
+        QName oldServiceQName = endpoint.getServiceQName();                
+        if (oldServiceQName.equals(newServiceQName)) {
+            return;
+        }
+        
+        CasaPort casaPort = getCasaPort(endpointRef);
+        
+        // Validate service QName localname
+        String newServiceName = newServiceQName.getLocalPart();
+        if (!isNCName(newServiceName)) {
+            String msg = NbBundle.getMessage(CasaWrapperModel.class,
+                        "MSG_INVALID_SERVICE_NAME", newServiceName); // NOI18N
+            NotifyDescriptor d =
+                new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+            return;
+        }
+        
+        // Validate service QName namespace
+        String newServiceNamespace = newServiceQName.getNamespaceURI();
+        if (!isURI(newServiceNamespace)) {
+            String msg = NbBundle.getMessage(CasaWrapperModel.class,
+                        "MSG_INVALID_NAMESPACE_URI", newServiceNamespace); // NOI18N
+            NotifyDescriptor d =
+                new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+            return;
+        }
+        
+        // Validate service QName prefix
+        String newPrefix = newServiceQName.getPrefix();
+        if (!isNCName(newPrefix)) {
+            String msg = NbBundle.getMessage(CasaWrapperModel.class,
+                        "MSG_INVALID_PREFIX_NAME", newPrefix); // NOI18N
+            NotifyDescriptor d =
+                new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+            return;
+        }
+        
+        // If the owner of the endpoint is a BC SU, then the change needs to be
+        // propagated to the corresponding WSDL file.
+        if (casaPort != null) {
+            
+            // Make sure the service is still in the WSDL's target namespace
+            if (!newServiceNamespace.equals(oldServiceQName.getNamespaceURI())) {
+                String msg = NbBundle.getMessage(CasaWrapperModel.class,
+                        "MSG_INVALID_SERVICE_NAMESPACE", // NOI18N    
+                        oldServiceQName.getNamespaceURI());
+                NotifyDescriptor d =
+                    new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
+                return;
+            }
+        
+            Port oldPort = getLinkedWSDLPort(casaPort);
+            Service oldService = (Service) oldPort.getParent();
+            WSDLModel wsdlModel = oldPort.getModel();
+            WSDLComponentFactory wsdlFactory = wsdlModel.getFactory();
+            Definitions definitions = oldPort.getModel().getDefinitions();
+
+            Service newService = null;
+            for (Service service : definitions.getServices()) {
+                if (service.getName().equals(newServiceName)) {
+                    newService = service;
+                    break;
+                }
+            }
+
+            if (newService != null) {
+                // Make sure the new service name doesn't cause any 
+                // name conflict for ports.
+                String portName = endpointRef.getEndpointName();
+                for (Port port : newService.getPorts()) {
+                    if (port.getName().equals(portName)) {
+                        String msg = NbBundle.getMessage(CasaWrapperModel.class,
+                                "MSG_SETTING_SERVICE_QNAME_CAUSES_PORT_CONFLICT", // NOI18N    
+                                newServiceQName);
+                        NotifyDescriptor d =
+                            new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(d);
+                        return;
+                    }
+                }
+            }
+
+            wsdlModel.startTransaction();
+            try {
+                // Create new service if applicable
+                if (newService == null) {
+                    newService = wsdlFactory.createService(); 
+                    newService.setName(newServiceName);
+                    definitions.addService(newService);
+                }
+
+                Port newPort = (Port) oldPort.copy(newService);
+
+                // Remove old service/port
+                if (oldService.getPorts().size() == 1) {
+                    definitions.removeService(oldService); 
+                    oldService = null;
+                }                    
+                if (oldService != null) { // remove AFTER cloning the old port
+                    oldService.removePort(oldPort);
+                }
+
+                // Add new port
+                newService.addPort(newPort);                  
+            } finally {
+                if (wsdlModel.isIntransaction()) {
+                    wsdlModel.endTransaction();
+                }
+            }
+        }
+              
         startTransaction();
         try {
-            endpoint.setServiceQName(serviceQName);
+            if (casaPort != null) {                
+                String oldServiceName = oldServiceQName.getLocalPart();
+                
+                // Update casa port link href
+                CasaLink link = casaPort.getLink();
+                String linkHref = link.getHref();
+                linkHref = linkHref.replaceAll(
+                        "/service\\[@name='" + oldServiceName + "'\\]", // NOI18N
+                        "/service[@name='" + newServiceName + "']"); // NOI18N
+                link.setHref(linkHref);
+                
+                // Update service link
+                // We could probably live without the update until the next build.
+            }
+                    
+            endpoint.setServiceQName(newServiceQName);
         } finally {
             if (isIntransaction()) {
                 fireChangeEvent(endpointRef, PROPERTY_ENDPOINT_SERVICE_QNAME_CHANGED);
@@ -3027,13 +3160,22 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     */
     
+    /**
+     * Checks whether the given name is a valid NCName.
+     * (http://www.w3.org/TR/REC-xml-names/#NT-NCName)
+     */
     private static boolean isNCName(String name) {
-        // NCName: [\i-[:]][\c-[:]]* 
-        // http://books.xmlschemata.org/relaxng/ch19-77215.html
-        // http://www.regular-expressions.info/xmlcharclass.html
-        String regex = "[_:A-Za-z][-._A-Za-z0-9]*"; // NOI18N
-        
+        String regex = "[_A-Za-z][-._A-Za-z0-9]*"; // NOI18N        
         return name.matches(regex);
+    }
+    
+    /**
+     * Checks whether the given name is a valid URI.
+     * (http://www.ietf.org/rfc/rfc2396.txt)
+     */
+    private static boolean isURI(String uri) {
+        String regex = "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?"; // NOI18N        
+        return uri.matches(regex);
     }
 }
 
