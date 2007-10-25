@@ -101,12 +101,10 @@ public final class ModuleDeleterImpl  {
             err.log(Level.FINE,
                     "Cannot delete module because module " +
                     moduleInfo.getCodeName() + " isEssentialModule.");
+            return false;
+        } else {
+            return foundUpdateTracking (moduleInfo);
         }
-        return isUninstallAllowed (moduleInfo) && findUpdateTracking (moduleInfo);
-    }
-    
-    private static boolean isUninstallAllowed(final ModuleInfo m) {
-        return ! (Utilities.isEssentialModule (m));
     }
     
     public Collection<File> markForDisable (Collection<ModuleInfo> modules, ProgressHandle handle) {
@@ -249,7 +247,7 @@ public final class ModuleDeleterImpl  {
         }
     }
     
-    private boolean findUpdateTracking (ModuleInfo moduleInfo) {
+    private boolean foundUpdateTracking (ModuleInfo moduleInfo) {
         File updateTracking = Utilities.locateUpdateTracking (moduleInfo);
         if (updateTracking != null && updateTracking.exists ()) {
             //err.log ("Find UPDATE_TRACKING: " + updateTracking + " found.");

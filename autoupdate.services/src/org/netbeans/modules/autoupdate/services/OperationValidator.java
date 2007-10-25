@@ -207,6 +207,9 @@ abstract class OperationValidator {
                     if (Utilities.isEssentialModule (module)) {
                         LOGGER.log (Level.WARNING, "Essential module cannot be planned for uninstall but " + module);
                         continue;
+                    } else if (! ModuleDeleterImpl.getInstance ().canDelete (module)) {
+                        LOGGER.log (Level.WARNING, "The module " + module + " cannot be planned for uninstall because is read-only.");
+                        continue;
                     }
                     // !!! e.g. applemodule can be found in the list for uninstall but has UpdateUnit nowhere else MacXOS
                     UpdateUnit unit = Utilities.toUpdateUnit (module);
