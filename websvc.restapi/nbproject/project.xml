@@ -117,9 +117,16 @@
                         <specification-version>7.7</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.websvc.jaxwsapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.websvc.rest</friend>
                 <package>org.netbeans.modules.websvc.rest.model.api</package>
                 <package>org.netbeans.modules.websvc.rest.model.spi</package>

@@ -45,9 +45,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -98,8 +98,9 @@ public class RestServicesNodeFactory implements NodeFactory {
         
         public List<String> keys() {
             final List<String> result = new ArrayList<String>();
-            MetadataModel<RestServicesMetadata> model = RestUtils.getRestServicesMetadataModel(project);
-            
+            if (model == null) {
+                return Collections.emptyList();
+            }
             try {
                 model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
                     public Void run(RestServicesMetadata metadata) throws IOException {
@@ -148,6 +149,9 @@ public class RestServicesNodeFactory implements NodeFactory {
         
         public void addNotify() {
             try {
+                if (model == null) {
+                    return;
+                }
                 model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
                     public Void run(RestServicesMetadata metadata) throws IOException {
                         metadata.getRoot().addPropertyChangeListener(restServicesListener);
@@ -162,6 +166,9 @@ public class RestServicesNodeFactory implements NodeFactory {
         
         public void removeNotify() {
             try {
+                if (model == null) {
+                    return;
+                }
                 model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
                     public Void run(RestServicesMetadata metadata) throws IOException {
                         metadata.getRoot().removePropertyChangeListener(restServicesListener);

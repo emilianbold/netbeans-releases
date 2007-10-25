@@ -45,15 +45,21 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.openide.ErrorManager;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -131,6 +137,32 @@ public class Utils {
         } catch (Exception e) {
             return null;
         }
+    }
+    
+    /** Finds all projects in given lookup. If the command is not null it will check 
+     * whther given command is enabled on all projects. If and only if all projects
+     * have the command supported it will return array including the project. If there
+     * is one project with the command disabled it will return empty array.
+     */
+    public static Project[] getProjectsFromLookup(Lookup lookup) {    
+        Set<Project> result = new HashSet<Project>();
+        for (Project p : lookup.lookupAll(Project.class)) {
+            result.add(p);
+        }
+        // Now try to guess the project from dataobjects
+        for (DataObject dObj : lookup.lookupAll(DataObject.class)) {
+            FileObject fObj = dObj.getPrimaryFile();
+            Project p = FileOwnerQuery.getOwner(fObj);
+            if ( p != null ) {
+                result.add( p );
+            }
+        }
+        Project[] projectsArray = result.toArray(new Project[result.size()]);
+        return projectsArray;
+    }
+
+    public static FileObject findBuildXml(Project project) {
+        return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
     }
     
 }

@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.rest.RestUtils;
@@ -72,6 +73,7 @@ public class WebRestSupportLookupProvider implements LookupProvider {
     
     public Lookup createAdditionalLookup(Lookup baseContext) {
         final Project prj = baseContext.lookup(Project.class);
+        RestSupport restSupport = new WebProjectRestSupport(prj);
         
         ProjectOpenedHook openhook = new ProjectOpenedHook() {
             
@@ -80,6 +82,9 @@ public class WebRestSupportLookupProvider implements LookupProvider {
             protected void projectOpened() {
                 
                 final MetadataModel<RestServicesMetadata> wsModel = RestUtils.getRestServicesMetadataModel(prj);
+                if (wsModel == null) {
+                    return;
+                }
                 try {
                     // make sure REST API jar is included in project compile classpath
                     RestUtils.addRestApiJar(prj);
@@ -100,6 +105,9 @@ public class WebRestSupportLookupProvider implements LookupProvider {
             
             protected void projectClosed() {
                 final MetadataModel<RestServicesMetadata> wsModel = RestUtils.getRestServicesMetadataModel(prj);
+                if (wsModel == null) {
+                    return;
+                }
                 try {
                     wsModel.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
                         public Void run(final RestServicesMetadata metadata) {
@@ -125,7 +133,7 @@ public class WebRestSupportLookupProvider implements LookupProvider {
         };
         
         //ProjectRestServiceNotifier servicesNotifier = new ProjectRestServiceNotifier(prj);
-        return Lookups.fixed(new Object[] {openhook, templates});
+        return Lookups.fixed(new Object[] {restSupport, openhook, templates});
     }
     
     private class RestServicesChangeListener implements PropertyChangeListener {
