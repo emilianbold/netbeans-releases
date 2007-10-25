@@ -205,7 +205,7 @@ public class GetQuote extends HttpServlet {
             out.write("</body>\n");
             out.write("</html>\n");
         } catch (Exception ex) {
-            ex.printStackTrace(out);
+            out.println(ex);
         }
         out.close();
     }
