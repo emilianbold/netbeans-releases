@@ -152,27 +152,19 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     }
     
     public Document getDocument () {
-        if (parsed) {
-            return projDoc;
-        }
         synchronized (parseLock) {
-            if (parsed) {
-                return projDoc;
+            if (!parsed) {
+                parseDocument();
             }
-            parseDocument ();
-            return projDoc;
+            return projDoc != null ? (Document) projDoc./* #111862 */cloneNode(true) : null;
         }
     }
     
     public Throwable getParseException () {
-        if (parsed) {
-            return exception;
-        }
         synchronized (parseLock) {
-            if (parsed) {
-                return exception;
+            if (!parsed) {
+                parseDocument();
             }
-            parseDocument ();
             return exception;
         }
     }
