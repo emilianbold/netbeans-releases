@@ -42,7 +42,28 @@ public class ${bean.getClassName()} extends ${bean.getParent().getFullyQualified
         <#list bean.getFields() as field>
         <#assign propertyType = field.getType().getSerializer().instanceOf( mapping, field.getType())>
         if( "${field.getName()}".equals(dataItemName)) {
-            return ${propertyType}.class;
+            <#assign fieldType = field.getType()/>
+            <#if fieldType.isPrimitive() && !fieldType.isArray()>
+                <#if propertyType == "int">
+                    return Integer.class;
+                <#elseif propertyType == "boolean">
+                    return Boolean.class;
+                <#elseif propertyType == "long">
+                    return Long.class;
+                <#elseif propertyType == "short">
+                    return Short.class;
+                <#elseif propertyType == "byte">
+                    return Byte.class;
+                <#elseif propertyType == "char">
+                    return Character.class;
+                <#elseif propertyType == "float">
+                    return Float.class;
+                <#elseif propertyType == "double">
+                    return Double.class;
+                </#if>
+            <#else>
+                return ${propertyType}.class;
+            </#if>
         }
         </#list>
         throw new IllegalArgumentException( "Invalid data item name " + dataItemName );
