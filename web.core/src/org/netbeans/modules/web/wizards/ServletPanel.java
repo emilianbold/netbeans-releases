@@ -56,7 +56,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.openide.filesystems.FileObject;
-
+    
 /* Wizard panel that collects data for the Servlet and Filter
  * wizards. 
  *
@@ -114,8 +114,11 @@ public class ServletPanel implements WizardDescriptor.FinishPanel {
     } 
     
     public HelpCtx getHelp() {
+        // #114487
+        if (evaluator.getFileType() == FileType.SERVLET) {
+            return wizardPanel.getHelp();
+        }
         return null;
-        //return wizardPanel.getHelp(); 
     }
     
     /** Add a listener to changes of the panel's validity.

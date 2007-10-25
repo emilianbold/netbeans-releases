@@ -125,7 +125,9 @@ public class ServletIterator implements TemplateWizard.Iterator {
 	if(fileType == FileType.SERVLET) { 
 	    panels = new WizardDescriptor.Panel[] {
                 //wizard.targetChooser (),
-                new FinishableProxyWizardPanel(createPackageChooserPanel(wizard,null)),
+                new FinishableProxyWizardPanel(
+                        createPackageChooserPanel(wizard,null),
+                        ServletIterator.class.getName() + "." + fileType),    // #114487
 		ServletPanel.createServletPanel((TargetEvaluator)evaluator, wizard) 
 	    };
 	}
@@ -176,7 +178,7 @@ public class ServletIterator implements TemplateWizard.Iterator {
                 return JavaTemplates.createPackageChooser(project, sourceGroups, customPanel);
         }
     }
-        
+    
     public Set instantiate(TemplateWizard wizard) throws IOException {
 
 	if(debug) log("::instantiate()"); 

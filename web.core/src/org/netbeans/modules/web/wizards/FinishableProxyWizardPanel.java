@@ -44,6 +44,8 @@ package org.netbeans.modules.web.wizards;
 import java.awt.Component;
 import javax.swing.JComponent;
 import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
+import org.openide.util.HelpCtx;
 
 /**
  * FinishableProxyWizardPanel.java - used decorator pattern to enable to finish
@@ -54,11 +56,16 @@ import org.openide.WizardDescriptor;
  */
 public class FinishableProxyWizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
 
-    private WizardDescriptor.Panel original;
-    /** Creates a new instance of ProxyWizardPanel */
+    private final WizardDescriptor.Panel original;
+    private final String helpId;
+
+    public FinishableProxyWizardPanel(Panel original, String helpId) {
+        this.original = original;
+        this.helpId = helpId;
+    }
+    
     public FinishableProxyWizardPanel(WizardDescriptor.Panel original) {
-        this.original=original;
-        
+        this(original, null);
     }
 
     public void addChangeListener(javax.swing.event.ChangeListener l) {
@@ -90,6 +97,9 @@ public class FinishableProxyWizardPanel implements WizardDescriptor.Panel, Wizar
     }
 
     public org.openide.util.HelpCtx getHelp() {
+        if (helpId != null) {
+            return new HelpCtx(helpId);
+        }
         return original.getHelp();
     }
     
