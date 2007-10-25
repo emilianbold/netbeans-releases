@@ -3018,7 +3018,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
-        LOGGER.log(Level.SEVERE, null, new AssertionError(sw.toString()).initCause(a));
+        LOGGER.log(Level.INFO, null, new AssertionError(sw.toString()).initCause(a));
     }
     
 }
