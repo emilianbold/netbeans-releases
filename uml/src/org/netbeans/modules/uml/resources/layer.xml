@@ -58,7 +58,7 @@ made subject to such option by the copyright holder.
         <folder name="MIMEResolver">
             <file name="UMLMimeTypeResolver.xml" url="UMLMimeTypeResolver.xml" >
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.Bundle"/>
-                <attr name="position" intvalue="2000"/>
+                <attr name="position" intvalue="205"/>
             </file>
         </folder>
     </folder>    
