@@ -105,8 +105,6 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
         
         if (target == null || target.getDocument() != bdoc)
             return false;
-        SyntaxSupport sup = bdoc.getSyntaxSupport();
-        JspSyntaxSupport jspSup = (JspSyntaxSupport)sup.get(JspSyntaxSupport.class);
         
         TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
@@ -126,7 +124,7 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
             WebModule wm = WebModule.getWebModule(fObject);
             
             if (wm != null){
-                JSFELExpression exp = new JSFELExpression(wm, (JspSyntaxSupport)bdoc.getSyntaxSupport());
+                JSFELExpression exp = new JSFELExpression(wm, JspSyntaxSupport.get(bdoc));
                 elTokenSequence.move(offset);
                 if(!elTokenSequence.moveNext()) {
                     return false; //no token
@@ -178,9 +176,6 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
         if (target == null || target.getDocument() != bdoc)
             return null;
         
-        SyntaxSupport sup = bdoc.getSyntaxSupport();
-        JspSyntaxSupport jspSup = (JspSyntaxSupport)sup.get(JspSyntaxSupport.class);
-        
         TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
         if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
@@ -199,7 +194,7 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
             FileObject fObject = NbEditorUtilities.getFileObject(doc);
             WebModule wm = WebModule.getWebModule(fObject);
             if (wm != null){
-                JSFELExpression exp = new JSFELExpression(wm, (JspSyntaxSupport)bdoc.getSyntaxSupport());
+                JSFELExpression exp = new JSFELExpression(wm, JspSyntaxSupport.get(bdoc));
                 elTokenSequence.move(offset);
                 if(!elTokenSequence.moveNext()) {
                     return null; //no token
@@ -233,10 +228,7 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
         
         if (target == null || target.getDocument() != bdoc)
             return;
-        
-        SyntaxSupport sup = bdoc.getSyntaxSupport();
-        JspSyntaxSupport jspSup = (JspSyntaxSupport)sup.get(JspSyntaxSupport.class);
-        
+              
         TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
         if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
@@ -254,7 +246,7 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
             FileObject fObject = NbEditorUtilities.getFileObject(doc);
             WebModule wm = WebModule.getWebModule(fObject);
             if (wm != null){
-                JSFELExpression exp = new JSFELExpression(wm, (JspSyntaxSupport)bdoc.getSyntaxSupport());
+                JSFELExpression exp = new JSFELExpression(wm, JspSyntaxSupport.get(bdoc));
                 elTokenSequence.move(offset);
                 if(!elTokenSequence.moveNext()) {
                     return; //no token

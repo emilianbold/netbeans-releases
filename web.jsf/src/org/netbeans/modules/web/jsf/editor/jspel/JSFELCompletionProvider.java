@@ -88,13 +88,13 @@ public class JSFELCompletionProvider implements CompletionProvider{
         }
         
         protected void query(CompletionResultSet resultSet, Document doc, int offset) {
-            ExtSyntaxSupport sup = (ExtSyntaxSupport)Utilities.getSyntaxSupport(component);
+            JspSyntaxSupport sup = JspSyntaxSupport.get(doc);
             FileObject fObject = NbEditorUtilities.getFileObject(doc);
             WebModule wm = null;
             if (fObject != null)
                 wm = WebModule.getWebModule(fObject);
-            if (sup instanceof JspSyntaxSupport && wm != null){
-                JSFELExpression elExpr = new JSFELExpression (wm, (JspSyntaxSupport)sup);
+            if (sup != null && wm != null){
+                JSFELExpression elExpr = new JSFELExpression (wm, sup);
                 ArrayList complItems = new ArrayList();
 
                 switch (elExpr.parse(offset)){
