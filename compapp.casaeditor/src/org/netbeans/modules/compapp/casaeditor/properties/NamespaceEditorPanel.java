@@ -287,6 +287,7 @@ implements ActionListener, ListSelectionListener, DocumentListener {
                 prefixTextField.setEnabled(true);
             }
         } else if (mURIs != null && mURIs.contains(currentPairing)) {
+            localNameTextField.setText(currentTns.getLocalPart());
             schemaNamespaceRadioButton.setSelected(true);
             uriList.setSelectedValue(currentPairing,true);
             uriList.setEnabled(true);
@@ -303,7 +304,7 @@ implements ActionListener, ListSelectionListener, DocumentListener {
             }
         }
     }
-    
+        
     public void setEditable(boolean isEditable) {
         schemaNamespaceRadioButton.setEnabled(isEditable);
         otherNamespaceRadioButton.setEnabled(isEditable);

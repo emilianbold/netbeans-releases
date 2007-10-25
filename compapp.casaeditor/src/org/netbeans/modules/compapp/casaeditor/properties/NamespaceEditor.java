@@ -197,5 +197,24 @@ public class NamespaceEditor extends PropertyEditorSupport {
         public String toString() {
             return mPrefix + Constants.COLON_STRING + mNamespace;
         }
+        public boolean equals(Object another) {
+            if (this == another) {
+                return true;
+            }
+            if (another != null && another instanceof PrefixNamespacePair) {
+                PrefixNamespacePair anotherPair = (PrefixNamespacePair) another;
+                if (getPrefix().equals(anotherPair.getPrefix()) &&
+                        getNamespace().equals(anotherPair.getNamespace())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public int hashCode() {
+            int hash = 1;
+            hash = hash * 31 + mPrefix.hashCode();
+            hash = hash * 31 + mNamespace.hashCode();
+            return hash;
+        }
     }
 }
