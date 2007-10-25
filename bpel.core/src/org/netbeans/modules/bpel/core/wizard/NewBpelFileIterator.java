@@ -125,39 +125,10 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
       if (data == null) {
         return Collections.emptySet();
       }
-      String encoding = EncodingUtil.getProjectEncoding(DataFolder.findFolder(dir).getPrimaryFile());
-
-      if (encoding == null || !EncodingUtil.isValidEncoding(encoding)) {
-        encoding = "UTF-8"; // NOI18N
-      }
       // vlv
-      fixEncoding(data, encoding);
+      SoaUiUtil.fixEncoding(data, dir, data.getCookie(BPELDataEditorSupport.class).getUndoManager());
       
       return Collections.singleton(data);
-    }
-    
-    // # 115502
-    private void fixEncoding(final DataObject data, final String encoding) throws IOException {
-      EditorCookie editor = data.getCookie(EditorCookie.class);
-      Document document = (Document) editor.openDocument();
-      
-      try {
-        document.insertString(19, " encoding=\"" + encoding + "\"", null);
-      }
-      catch (BadLocationException e) {}
-
-      SaveCookie save = data.getCookie(SaveCookie.class);
-      
-      if (save != null) {
-        save.save();
-      }
-      // # 119057 after changes for # 115502
-      BPELDataEditorSupport support = data.getCookie(BPELDataEditorSupport.class);
-
-      if (support == null) {
-        return;
-      }
-      support.getUndoManager().discardAllEdits();
     }
 
     public void initialize(TemplateWizard wiz) {

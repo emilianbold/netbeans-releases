@@ -50,6 +50,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.RootPaneContainer;
 import org.netbeans.modules.soa.ui.form.InitialFocusProvider;
+import org.openide.cookies.SaveCookie;
+import org.openide.cookies.EditorCookie;
+import org.netbeans.modules.xml.api.EncodingUtil;
+import javax.swing.text.Document;
+import javax.swing.text.BadLocationException;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -270,4 +277,31 @@ public class SoaUiUtil {
         return false;
     }
     
+    // vlv
+    public static void fixEncoding(DataObject data, FileObject dir, UndoRedo.Manager manager) throws IOException {
+      String encoding = EncodingUtil.getProjectEncoding(DataFolder.findFolder(dir).getPrimaryFile());
+
+      // # 115502
+      if (encoding == null || !EncodingUtil.isValidEncoding(encoding)) {
+        encoding = "UTF-8"; // NOI18N
+      }
+      EditorCookie editor = data.getCookie(EditorCookie.class);
+      Document document = (Document) editor.openDocument();
+      
+      try {
+        document.insertString(19, " encoding=\"" + encoding + "\"", null);
+      }
+      catch (BadLocationException e) {}
+
+      SaveCookie save = data.getCookie(SaveCookie.class);
+      
+      if (save != null) {
+        save.save();
+      }
+      // # 119057 after changes for # 115502
+      if (manager == null) {
+        return;
+      }
+      manager.discardAllEdits();
+    }
 }
