@@ -80,14 +80,14 @@ class SimpleRepositoryHelperCacheImpl implements RepositoryFilesHelperCacheStrat
         
         for (ConcurrentFileRWAccess fileToRemove: removedFiles) {
             try {
-                fileToRemove.writeLock().lock();
+                fileToRemove.getLock().writeLock().lock();
                 
                 if (fileToRemove.getFD().valid()) {
                     fileToRemove.close();
                 }
                 
             } finally {
-                fileToRemove.writeLock().unlock();
+                fileToRemove.getLock().writeLock().unlock();
             }
         }
     }
@@ -108,13 +108,13 @@ class SimpleRepositoryHelperCacheImpl implements RepositoryFilesHelperCacheStrat
         ConcurrentFileRWAccess removedFile = nameToFileCache.remove(fileName);
         if (removedFile != null) {
             try {
-                removedFile.writeLock().lock();
+                removedFile.getLock().writeLock().lock();
                 
                 if (removedFile.getFD().valid() )
                     removedFile.close();
                 
             }  finally {
-                removedFile.writeLock().unlock();
+                removedFile.getLock().writeLock().unlock();
             }
         }
     }
@@ -123,13 +123,13 @@ class SimpleRepositoryHelperCacheImpl implements RepositoryFilesHelperCacheStrat
         ConcurrentFileRWAccess removedFile = nameToFileCache.put(fileName, aFile);
         if (removedFile != null) {
             try {
-                removedFile.writeLock().lock();
+                removedFile.getLock().writeLock().lock();
                 if (removedFile.getFD().valid()) {
                     removedFile.close();
                 }
                 
             } finally {
-                removedFile.writeLock().unlock();
+                removedFile.getLock().writeLock().unlock();
             }
         }
     }

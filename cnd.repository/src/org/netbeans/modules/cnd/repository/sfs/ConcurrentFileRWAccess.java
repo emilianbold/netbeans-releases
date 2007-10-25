@@ -41,11 +41,13 @@
 
 package org.netbeans.modules.cnd.repository.sfs;
 
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 
 /**
  *
  * @author Nickolay Dalmatov
  */
-public interface ConcurrentFileRWAccess extends FileRWAccess, ReadWriteLock {
+public interface ConcurrentFileRWAccess extends FileRWAccess {
+    ReadWriteLock getLock();
 }

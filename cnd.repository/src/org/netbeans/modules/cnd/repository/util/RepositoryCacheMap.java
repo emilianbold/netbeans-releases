@@ -41,14 +41,11 @@
 
 package org.netbeans.modules.cnd.repository.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -58,41 +55,15 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author Nickolay Dalmatov
  */
 
-public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
-    private static final long serialVersionUID = 7249069246763182397L;
+public class RepositoryCacheMap<K,V>  {
+
     private final TreeMap<K, RepositoryCacheValue<V>>   keyToValueStorage;
     private final TreeMap<RepositoryCacheValue<V>, K>   valueToKeyStorage;
+    
     private AtomicInteger                         capacity;
     private final ReentrantReadWriteLock          readWriteLock;
     private static final int                      DEFAULT_CACHE_CAPACITY  = 20;
     private static AtomicInteger currentBornStamp = new AtomicInteger(0);
-    
-    static private final class CacheEntry<K,V> implements Map.Entry<K,V> {
-        private K key;
-        private V value;
-        
-        CacheEntry(final K key, final V value) {
-            this.key   = key;
-            this.value = value;
-            
-        }
-        
-        public K getKey() {
-            return this.key;
-        }
-        
-        public V getValue() {
-            return this.value;
-        }
-        
-        public V setValue(V value) {
-            final V oldValue = this.value;
-            this.value = value;
-            return oldValue;
-        }
-        
-    }
-    
     
     static private final class RepositoryCacheValue<V>  implements Comparable{
         
@@ -169,7 +140,6 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
         this.capacity   = new AtomicInteger((capacity >0)?capacity:DEFAULT_CACHE_CAPACITY);
     }
 
-    @Override
     public int size() {
         try {
             readWriteLock.readLock().lock();
@@ -179,51 +149,20 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
         }
     }
     
-    @Override
-    public boolean isEmpty() {
-        try {
-            readWriteLock.readLock().lock();
-            return keyToValueStorage.isEmpty();
-        } finally {
-            readWriteLock.readLock().unlock();
-        }
-    }
-    
-    @Override
-    public boolean containsKey(final Object key) {
-        try {
-            readWriteLock.readLock().lock();
-            return keyToValueStorage.containsKey(key);
-        } finally {
-            readWriteLock.readLock().unlock();
-        }
-    }
-    
-    @Override
-    public boolean containsValue(final Object value) {
-        try {
-            readWriteLock.readLock().lock();
-            return valueToKeyStorage.containsKey(value);
-        } finally {
-            readWriteLock.readLock().unlock();
-        }
-    }
-    
-    @Override
     public V get(final Object key) {
         V retValue = null;
         
         try {
             readWriteLock.writeLock().lock();
             
-            RepositoryCacheValue<V> entry = (RepositoryCacheValue<V>)keyToValueStorage.get(key);
+            RepositoryCacheValue<V> value = (RepositoryCacheValue<V>)keyToValueStorage.get(key);
             
-            if (entry != null) {
-                valueToKeyStorage.remove(entry);
-                entry.frequency.incrementAndGet();
-                entry.newBorn.set(false);
-                valueToKeyStorage.put(entry, (K)key);
-                retValue= entry.value;
+            if (value != null) {
+                valueToKeyStorage.remove(value);
+                value.frequency.incrementAndGet();
+                value.newBorn.set(false);
+                valueToKeyStorage.put(value, (K)key);
+                retValue= value.value;
             }
         } finally {
             readWriteLock.writeLock().unlock();
@@ -232,16 +171,20 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
         return retValue;
     }
     
-    @Override
     public V put(K key, V value) {
         V retValue = null;
         
         try {
             readWriteLock.writeLock().lock();
             RepositoryCacheValue<V> entry = new RepositoryCacheValue<V> (value);
-            
+
+
+	    softAssert(!(keyToValueStorage.size() < valueToKeyStorage.size()), "valueToKeyStorage contains more elements than keyToValueStorage"); //NOI18N
+	    softAssert(!(keyToValueStorage.size() > valueToKeyStorage.size()), "keyToValueStorage contains more elements than valueToKeyStorage"); //NOI18N
+	    
             if (keyToValueStorage.size() < capacity.intValue()) {
-                keyToValueStorage.put(key, entry);
+                RepositoryCacheValue<V> oldValue = keyToValueStorage.put(key, entry);
+		softAssert(oldValue == null, "Value replacement in RepositoryCacheMap"); //NOI18N
                 valueToKeyStorage.put(entry, key);
             } else {
                 RepositoryCacheValue<V>   minValue = valueToKeyStorage.firstKey();
@@ -250,11 +193,14 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
                 keyToValueStorage.remove(minKey);
                 valueToKeyStorage.remove(minValue);
                 
-                keyToValueStorage.put(key, entry);
+                RepositoryCacheValue<V> oldValue = keyToValueStorage.put(key, entry);
+		softAssert(oldValue == null, "Value replacement in RepositoryCacheMap"); //NOI18N
                 valueToKeyStorage.put(entry, key);
                 
                 retValue =  minValue.value;
             }
+	} catch( NoSuchElementException e ) {
+	    e.printStackTrace();
         } finally {
             readWriteLock.writeLock().unlock();
         }
@@ -262,7 +208,6 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
         return retValue;
     }
     
-    @Override
     public V remove(Object key) {
         
         V retValue = null;
@@ -281,69 +226,6 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
         }
         
         return retValue;
-    }
-    
-    @Override
-    public void putAll(Map<? extends K, ? extends V> map) {
-        // not supported
-    }
-    
-    @Override
-    public void clear() {
-        // keyToValueStorage.clear();
-    }
-    
-    @Override
-    public Set<K> keySet() {
-        try {
-            readWriteLock.readLock().lock();
-            return keyToValueStorage.keySet();
-        } finally {
-            readWriteLock.readLock().unlock();
-        }
-    }
-    
-    @Override
-    public Collection<V> values() {
-        final Collection<V> newCollection = new ArrayList<V>();
-        
-        try {
-            readWriteLock.readLock().lock();
-            
-            final Collection<RepositoryCacheValue<V>> origCollection = keyToValueStorage.values();
-            final Iterator<RepositoryCacheValue<V>> iter = origCollection.iterator();
-            
-            while ( iter.hasNext()) {
-                newCollection.add(iter.next().value);
-            }
-            
-        } finally {
-            readWriteLock.readLock().unlock();
-        }
-        
-        return newCollection;
-    }
-    
-    @Override
-    public Set<Map.Entry<K,V>> entrySet() {
-        final TreeSet<Map.Entry<K,V>>   resultSet = new TreeSet<Map.Entry<K,V>>();
-        
-        try {
-            readWriteLock.readLock().lock();
-            
-            final Set<Map.Entry<K, RepositoryCacheValue<V>>>      aSet = keyToValueStorage.entrySet();
-            final Iterator<Map.Entry<K, RepositoryCacheValue<V>>> iter = aSet.iterator();
-            
-            while (iter.hasNext()) {
-                final Map.Entry<K, RepositoryCacheValue<V>> elem = iter.next();
-                resultSet.add(new CacheEntry<K,V> (elem.getKey(), elem.getValue().value));
-            }
-
-        } finally {
-            readWriteLock.readLock().unlock();
-        }
-        
-        return resultSet;
     }
     
     public Set<V> adjustCapacity(final int newCapacity) {
@@ -376,5 +258,15 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
             readWriteLock.writeLock().unlock();
         }
         return retSet;
+    }    
+    
+    private void softAssert(boolean condition, String message) {
+	if( ! condition ) {
+	    Exception ex = new Exception();
+	    StackTraceElement[] trace = ex.getStackTrace();
+	    System.err.println(message);
+            for (int i=1; i < trace.length; i++)
+                System.err.println("\tat " + trace[i]); //NOI18N
+	}
     }
 }

@@ -51,6 +51,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author Nickolay Dalmatov
  */
 public class ConcurrentBufferedRWAccess extends BufferedRWAccess implements ConcurrentFileRWAccess {
+    
     private ReentrantReadWriteLock fileLock ;
     
     /** Creates a new instance of ConcurrentBufferedRWAccess */
@@ -58,13 +59,8 @@ public class ConcurrentBufferedRWAccess extends BufferedRWAccess implements Conc
         super(file);
         fileLock = new ReentrantReadWriteLock(true);
     }
-    
-    public Lock readLock() {
-        return fileLock.readLock();
+
+    public ReentrantReadWriteLock getLock() {
+	return fileLock;
     }
-    
-    public Lock writeLock() {
-        return fileLock.writeLock();
-    }
-    
 }

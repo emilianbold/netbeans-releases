@@ -67,7 +67,7 @@ public class SimpleRepFilesAccessStrategyImpl implements RepFilesAccessStrategy 
         theCache = SimpleRepositoryHelperCacheImpl.getInstance(openFilesLimit);
     }
     
-    public ConcurrentFileRWAccess getFileForObj(Key id, boolean read) throws IOException {
+    public ConcurrentFileRWAccess getFileForObj(Key id, final boolean read) throws IOException {
         assert id != null;
         
         String fileName = resolveFileName(id);
@@ -83,9 +83,9 @@ public class SimpleRepFilesAccessStrategyImpl implements RepFilesAccessStrategy 
             
             try {
                 if (read) {
-                    aFile.readLock().lock();
+                    aFile.getLock().readLock().lock();
                 } else {
-                    aFile.writeLock().lock();
+                    aFile.getLock().writeLock().lock();
                 }
                 if (aFile.getFD().valid()) {
                     keepLocked = true;
@@ -94,9 +94,9 @@ public class SimpleRepFilesAccessStrategyImpl implements RepFilesAccessStrategy 
             }  finally {
                 if (!keepLocked) {
                     if (read) {
-                        aFile.readLock().unlock();
+                        aFile.getLock().readLock().unlock();
                     } else {
-                        aFile.writeLock().unlock();
+                        aFile.getLock().writeLock().unlock();
                     }
                 }
             }

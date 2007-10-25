@@ -101,7 +101,7 @@ public class BaseDiskRepositoryImpl extends AbstractDiskRepository {
                     id.getUnit(), new RepositoryExceptionImpl(ex));
         } finally {
             if (fos != null) {
-                fos.writeLock().unlock();
+                fos.getLock().writeLock().unlock();
             }
         }
     }
@@ -131,7 +131,7 @@ public class BaseDiskRepositoryImpl extends AbstractDiskRepository {
                     id.getUnit(), new RepositoryExceptionImpl(ex));
         } finally {
             if (fis != null) {
-                fis.readLock().unlock();
+                fis.getLock().readLock().unlock();
             }
         }
         
