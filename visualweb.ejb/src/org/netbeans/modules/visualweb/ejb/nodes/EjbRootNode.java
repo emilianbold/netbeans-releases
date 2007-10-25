@@ -73,7 +73,7 @@ public class EjbRootNode extends AbstractNode {
         // Set FeatureDescriptor stuff:
         setName( NbBundle.getMessage(EjbRootNode.class, "ENTERPRISE_JAVA_BEANS") );
         setDisplayName( NbBundle.getMessage(EjbRootNode.class, "ENTERPRISE_JAVA_BEANS") );
-        setShortDescription( NbBundle.getMessage(EjbRootNode.class, "ENTERPRISE_JAVA_BEANS") );
+        setShortDescription( NbBundle.getMessage(EjbRootNode.class, "ENTERPRISE_JAVA_BEANS_SHORT_DESC") );
     }
     
     public Image getIcon(int type){
