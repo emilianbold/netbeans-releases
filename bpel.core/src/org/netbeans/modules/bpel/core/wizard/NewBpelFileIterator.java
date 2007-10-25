@@ -69,10 +69,11 @@ import org.netbeans.modules.bpel.project.BpelproProject;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import javax.swing.text.BadLocationException;
-import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import javax.swing.text.Document;
+import org.netbeans.modules.bpel.core.BPELDataEditorSupport;
+import org.netbeans.modules.soa.ui.SoaUiUtil;
 
 /**
  * A template wizard iterator (sequence of panels).

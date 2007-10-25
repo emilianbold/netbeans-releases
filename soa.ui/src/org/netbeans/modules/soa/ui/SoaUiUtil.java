@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.soa.ui;
 
 import java.awt.Color;
@@ -46,9 +45,12 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Image;
 import java.awt.Window;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.RootPaneContainer;
+import org.openide.filesystems.FileObject;
+import org.openide.awt.UndoRedo;
 import org.netbeans.modules.soa.ui.form.InitialFocusProvider;
 import org.openide.cookies.SaveCookie;
 import org.openide.cookies.EditorCookie;
@@ -59,7 +61,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
 /**
- *
  * @author nk160297
  */
 public class SoaUiUtil {
