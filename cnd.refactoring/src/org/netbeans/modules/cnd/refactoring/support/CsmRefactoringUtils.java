@@ -259,7 +259,7 @@ public class CsmRefactoringUtils {
     }
     
     public static String getHtml(int startLine, int endLine, final int stToken, final int endToken, BaseDocument doc) {
-        final StringBuffer buf = new StringBuffer();
+        final StringBuilder buf = new StringBuilder();
         String mime = (String) doc.getProperty("mimeType"); // NOI18N
         Lookup lookup = MimeLookup.getLookup(MimePath.get(mime));
         SyntaxSupport sup = doc.getSyntaxSupport();
@@ -325,7 +325,7 @@ public class CsmRefactoringUtils {
         if (string.trim().length() == 0) {
             return org.openide.util.Utilities.replaceString(org.openide.util.Utilities.replaceString(string, " ", "&nbsp;"), "\n", "<br>"); //NOI18N
         } 
-        StringBuffer buf = new StringBuffer(string);
+        StringBuilder buf = new StringBuilder(string);
         if (StyleConstants.isBold(set)) {
             buf.insert(0,"<b>"); //NOI18N
             buf.append("</b>"); //NOI18N
