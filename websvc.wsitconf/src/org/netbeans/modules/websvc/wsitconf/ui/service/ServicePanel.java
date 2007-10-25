@@ -233,7 +233,7 @@ public class ServicePanel extends SectionInnerPanel {
                     RMModelHelper.enableRM(binding);
                     if (securityChBox.isSelected() && !ProfilesModelHelper.isSCEnabled(binding)) {
                         String profile = (String) profileCombo.getSelectedItem();
-                        ProfilesModelHelper.enableSecureConversation(binding, true, profile);
+                        ProfilesModelHelper.enableSecureConversation(binding, true);
                     }
                 }
             } else {
@@ -428,10 +428,7 @@ public class ServicePanel extends SectionInnerPanel {
             profileInfoField.setForeground(REGULAR);
             
             boolean secSelected = securityChBox.isSelected();
-                
-            devDefaultsChBox.setEnabled(true);
-            boolean defaults = devDefaultsChBox.isSelected();
-            
+                            
             profileComboLabel.setEnabled(secSelected);
             profileCombo.setEnabled(secSelected);
             profileInfoField.setEnabled(secSelected);
@@ -443,9 +440,16 @@ public class ServicePanel extends SectionInnerPanel {
             boolean validatorsRequired = true;
             boolean stsAllowed = true;
             
+            boolean defaults = devDefaultsChBox.isSelected();
+            
             if (secSelected) {                
 
                 String secProfile = ProfilesModelHelper.getSecurityProfile(binding);
+
+                boolean defaultsSupported = ProfilesModelHelper.isServiceDefaultSetupSupported(secProfile);
+                if (!defaultsSupported) defaults = false;
+                devDefaultsChBox.setEnabled(defaultsSupported);
+                
                 boolean isSSL = ProfilesModelHelper.isSSLProfile(secProfile);
                 if (isSSL) {
                     keyStoreConfigRequired = false;

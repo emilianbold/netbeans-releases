@@ -46,15 +46,30 @@ import javax.swing.JPanel;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
+import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
+import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
+import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.AlgoSuiteModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
+import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
+import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
+import org.netbeans.modules.websvc.wsitmodelext.security.BootstrapPolicy;
+import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
+import org.netbeans.modules.websvc.wsitmodelext.security.TransportBinding;
+import org.netbeans.modules.websvc.wsitmodelext.security.TrustElement;
+import org.netbeans.modules.websvc.wsitmodelext.security.WssElement;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -64,7 +79,9 @@ import org.openide.DialogDisplayer;
  *
  * @author Martin Grebac
  */
-public class MessageAuthenticationProfile extends SecurityProfile {
+public class MessageAuthenticationProfile 
+        extends SecurityProfile 
+        implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature {
 
     private static final String DEFAULT_USERNAME = "wsit";
     private static final String DEFAULT_PASSWORD = "wsitPassword";
@@ -88,7 +105,7 @@ public class MessageAuthenticationProfile extends SecurityProfile {
         ProfilesModelHelper.setSecurityProfile(component, getDisplayName());
         boolean isRM = RMModelHelper.isRMEnabled(component);
         if (isRM) {
-            ProfilesModelHelper.enableSecureConversation(component, true, getDisplayName());
+            ProfilesModelHelper.enableSecureConversation(component, true);
         }
     }
 
@@ -113,7 +130,7 @@ public class MessageAuthenticationProfile extends SecurityProfile {
         
         model.addUndoableEditListener(undoCounter);
 
-        JPanel profConfigPanel = new MessageAuthentication(component);
+        JPanel profConfigPanel = new MessageAuthentication(component, this);
         DialogDescriptor dlgDesc = new DialogDescriptor(profConfigPanel, getDisplayName());
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
 
@@ -129,13 +146,11 @@ public class MessageAuthenticationProfile extends SecurityProfile {
         model.removeUndoableEditListener(undoCounter);
     }
     
-    @Override
     public void setServiceDefaults(WSDLComponent component, Project p) {
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
     }
  
-    @Override
     public void setClientDefaults(WSDLComponent component, WSDLComponent serviceBinding, Project p) {
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
@@ -145,7 +160,6 @@ public class MessageAuthenticationProfile extends SecurityProfile {
                 (Binding)component, CallbackHandler.PASSWORD_CBHANDLER, null, DEFAULT_PASSWORD, true);
     }
     
-    @Override
     public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
         String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
         String trustAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true);
@@ -155,7 +169,6 @@ public class MessageAuthenticationProfile extends SecurityProfile {
         return false;
     }
 
-    @Override
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
         String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
         String trustAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true);
@@ -167,6 +180,65 @@ public class MessageAuthenticationProfile extends SecurityProfile {
             }
         }
         return false;
+    }
+
+    public boolean isSecureConversation(WSDLComponent component) {
+        WSDLComponent endToken = SecurityTokensModelHelper.getSupportingToken(component, SecurityTokensModelHelper.ENDORSING);
+        return (endToken != null);
+    }
+
+    public void enableSecureConversation(WSDLComponent component, boolean enable) {
+        if (enable) {
+            WSDLModel model = component.getModel();
+            WSDLComponentFactory wcf = model.getFactory();
+
+            boolean isTransaction = model.isIntransaction();
+            if (!isTransaction) {
+                model.startTransaction();
+            }
+
+            try {
+                SecurityPolicyModelHelper.enableTrust10(component);
+                SecurityTokensModelHelper.removeSupportingTokens(component);
+                
+                WSDLComponent suppToken = SecurityTokensModelHelper.setSupportingTokens(component, 
+                        ComboConstants.SECURECONVERSATION, SecurityTokensModelHelper.ENDORSING);
+                Policy p = PolicyModelHelper.createElement(suppToken, PolicyQName.POLICY.getQName(), Policy.class, false);
+                BootstrapPolicy bp = PolicyModelHelper.createElement(p, SecurityPolicyQName.BOOTSTRAPPOLICY.getQName(), BootstrapPolicy.class, false);
+                p = PolicyModelHelper.createElement(bp, PolicyQName.POLICY.getQName(), Policy.class, false);
+                TransportBinding tb = PolicyModelHelper.createElement(p, SecurityPolicyQName.TRANSPORTBINDING.getQName(), TransportBinding.class, false);
+
+                boolean rm = RMModelHelper.isRMEnabled(component);
+                SecurityPolicyModelHelper.setDefaultTargets(p, true, rm);
+                
+                SecurityTokensModelHelper.setTokenType(tb, ComboConstants.TRANSPORT, ComboConstants.HTTPS);
+                SecurityPolicyModelHelper.setLayout(tb, ComboConstants.STRICT);
+                SecurityPolicyModelHelper.enableIncludeTimestamp(tb, true);
+                AlgoSuiteModelHelper.setAlgorithmSuite(tb, ComboConstants.BASIC128);
+
+                WSDLComponent internalSuppToken = SecurityTokensModelHelper.setSupportingTokens(p, 
+                        ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                
+                WssElement wss = SecurityPolicyModelHelper.enableWss(bp, true);
+                SecurityPolicyModelHelper.enableMustSupportRefKeyIdentifier(wss, true);
+                SecurityPolicyModelHelper.enableMustSupportRefIssuerSerial(wss, true);
+                SecurityPolicyModelHelper.enableMustSupportRefThumbprint(wss, true);
+                SecurityPolicyModelHelper.enableMustSupportRefEncryptedKey(wss, true);
+
+                TrustElement trust = SecurityPolicyModelHelper.enableTrust10(bp);
+                SecurityPolicyModelHelper.enableMustSupportIssuedTokens(trust, true);
+                SecurityPolicyModelHelper.enableRequireClientEntropy(trust, true);
+                SecurityPolicyModelHelper.enableRequireServerEntropy(trust, true);
+                
+            } finally {
+                if (!isTransaction) {
+                    model.endTransaction();
+                }
+            }
+        } else {
+            SecurityTokensModelHelper.removeSupportingTokens(component);
+            SecurityTokensModelHelper.setSupportingTokens(component, ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);            
+        }
     }
     
 }

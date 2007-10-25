@@ -143,9 +143,13 @@ public class CallbackPanel extends SectionInnerPanel {
         Binding serviceBinding = PolicyModelHelper.getBinding(serviceModel, binding.getName());
         profile = ProfilesModelHelper.getWSITSecurityProfile(serviceBinding);
 
-        boolean defaults = ProfilesModelHelper.isClientDefaultSetupUsed(profile, binding, serviceBinding, project);
+        boolean defaultsSupported = ProfilesModelHelper.isClientDefaultSetupSupported(profile);
+        boolean defaults = false;
+        if (defaultsSupported) {
+            defaults = ProfilesModelHelper.isClientDefaultSetupUsed(profile, binding, serviceBinding, project);
+        }
         setChBox(devDefaultsChBox, defaults);
-
+        
         String samlCallback = ProprietarySecurityPolicyModelHelper.getCallbackHandler(binding, CallbackHandler.SAML_CBHANDLER);
         if (samlCallback != null) {
             setCallbackHandler(samlCallback);

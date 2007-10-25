@@ -117,7 +117,7 @@ public class SecurityProfileRegistry {
             }
         });
         set.addAll(profiles.values());
-        return Collections.synchronizedSortedSet(set);
+        return Collections.unmodifiableSet(Collections.synchronizedSortedSet(set));
     }
     
     private final SecurityProfileRegistry populateRegistry() {
@@ -125,8 +125,8 @@ public class SecurityProfileRegistry {
         if (registry.getSecurityProfiles().isEmpty()) {
             Lookup.Result results = Lookup.getDefault().
                     lookup(new Lookup.Template<SecurityProfile>(SecurityProfile.class));
-            Collection<SecurityProfile> profiles = results.allInstances();
-            for (SecurityProfile p : profiles) {
+            Collection<SecurityProfile> profs = results.allInstances();
+            for (SecurityProfile p : profs) {
                 registry.register(p); 
             }
         }

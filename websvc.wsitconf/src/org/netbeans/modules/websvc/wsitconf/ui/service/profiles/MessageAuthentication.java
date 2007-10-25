@@ -43,16 +43,16 @@ package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
+import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.AlgoSuiteModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
 import org.netbeans.modules.websvc.wsitmodelext.security.BootstrapPolicy;
 import org.netbeans.modules.websvc.wsitmodelext.security.WssElement;
-import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 
@@ -65,14 +65,16 @@ public class MessageAuthentication extends javax.swing.JPanel {
     private boolean inSync = false;
 
     private WSDLComponent comp;
+    private SecurityProfile secProfile = null;
     
     /**
      * Creates new form MessageAuthentication
      */
-    public MessageAuthentication(WSDLComponent comp) {
+    public MessageAuthentication(WSDLComponent comp, SecurityProfile secProfile) {
         super();
         initComponents();
         this.comp = comp;
+        this.secProfile = secProfile;
 
         inSync = true;
         supportTokenCombo.removeAllItems();
@@ -116,18 +118,18 @@ public class MessageAuthentication extends javax.swing.JPanel {
         inSync = true;
 
         WSDLComponent secBinding = null;
-        WSDLComponent topSecBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);
-        WSDLComponent protTokenKind = SecurityTokensModelHelper.getTokenElement(topSecBinding, ProtectionToken.class);
-        WSDLComponent protToken = SecurityTokensModelHelper.getTokenTypeElement(protTokenKind);
-        
-        boolean secConv = (protToken instanceof SecureConversationToken);
 
+        WSDLComponent endToken = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.ENDORSING);
+        boolean secConv = (endToken != null);
+
+        WSDLComponent secConvT = SecurityTokensModelHelper.getTokenElement(endToken, SecureConversationToken.class);
+        
         if (secConv) {
-            WSDLComponent bootPolicy = SecurityTokensModelHelper.getTokenElement(protToken, BootstrapPolicy.class);
+            WSDLComponent bootPolicy = SecurityTokensModelHelper.getTokenElement(secConvT, BootstrapPolicy.class);
             secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(bootPolicy);
             Policy p = (Policy) secBinding.getParent();
             setChBox(secConvChBox, true);
-            setChBox(derivedKeysSecConvChBox, SecurityPolicyModelHelper.isRequireDerivedKeys(protToken));
+            setChBox(derivedKeysSecConvChBox, SecurityPolicyModelHelper.isRequireDerivedKeys(secConvT));
             setCombo(wssVersionCombo, SecurityPolicyModelHelper.isWss11(p));
             setChBox(reqSigConfChBox, SecurityPolicyModelHelper.isRequireSignatureConfirmation(p));
             setChBox(encryptSignatureChBox, SecurityPolicyModelHelper.isEncryptSignature(bootPolicy));
@@ -160,33 +162,30 @@ public class MessageAuthentication extends javax.swing.JPanel {
         if (inSync) return;
             
         WSDLComponent secBinding = null;
-        WSDLComponent topSecBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);
-        WSDLComponent protTokenKind = SecurityTokensModelHelper.getTokenElement(topSecBinding, ProtectionToken.class);
-        WSDLComponent protToken = SecurityTokensModelHelper.getTokenTypeElement(protTokenKind);
+        WSDLComponent topSecBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);        
         
-        boolean secConv = (protToken instanceof SecureConversationToken);
+        WSDLComponent endToken = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.ENDORSING);
+        boolean secConv = (endToken != null);
+
+        WSDLComponent secConvT = SecurityTokensModelHelper.getTokenElement(endToken, SecureConversationToken.class);
 
         if (source.equals(secConvChBox)) {
-            ProfilesModelHelper.enableSecureConversation(comp, secConvChBox.isSelected(), ComboConstants.PROF_MSGAUTHSSL);
+            ((SecureConversationFeature)secProfile).enableSecureConversation(comp, secConvChBox.isSelected());
             sync();
         }
         
         if (secConv) {
-            WSDLComponent bootPolicy = SecurityTokensModelHelper.getTokenElement(protToken, BootstrapPolicy.class);
+            WSDLComponent bootPolicy = SecurityTokensModelHelper.getTokenElement(secConvT, BootstrapPolicy.class);
             secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(bootPolicy);
             Policy p = (Policy) secBinding.getParent();
-            if (source.equals(reqSigConfChBox)) {
-                SecurityPolicyModelHelper.enableRequireSignatureConfirmation(
-                        SecurityPolicyModelHelper.getWss11(p), reqSigConfChBox.isSelected());
-            }
             if (source.equals(derivedKeysSecConvChBox)) {
-                SecurityPolicyModelHelper.enableRequireDerivedKeys(protToken, derivedKeysSecConvChBox.isSelected());
+                SecurityPolicyModelHelper.enableRequireDerivedKeys(secConvT, derivedKeysSecConvChBox.isSelected());
             }
             if (source.equals(wssVersionCombo)) {
                 boolean wss11 = ComboConstants.WSS11.equals(wssVersionCombo.getSelectedItem());
                 WssElement wss = SecurityPolicyModelHelper.enableWss(p, wss11);
                 if (wss11) {
-                    SecurityPolicyModelHelper.enableRequireSignatureConfirmation(
+                        SecurityPolicyModelHelper.enableRequireSignatureConfirmation(
                             SecurityPolicyModelHelper.getWss11(p), reqSigConfChBox.isSelected());
                 }
                 SecurityPolicyModelHelper.enableMustSupportRefKeyIdentifier(wss, true);
@@ -244,6 +243,9 @@ public class MessageAuthentication extends javax.swing.JPanel {
     private void enableDisable() {
         boolean secConvEnabled = secConvChBox.isSelected();
         derivedKeysSecConvChBox.setEnabled(secConvEnabled);
+        reqSigConfChBox.setEnabled(!secConvEnabled);
+        encryptSignatureChBox.setEnabled(!secConvEnabled);        
+        
         boolean wss11 = ComboConstants.WSS11.equals(wssVersionCombo.getSelectedItem());
         reqSigConfChBox.setEnabled(wss11);
     }

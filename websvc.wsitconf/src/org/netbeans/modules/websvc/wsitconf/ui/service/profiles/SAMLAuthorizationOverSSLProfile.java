@@ -53,6 +53,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
+import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
+import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.wizard.SamlCallbackCreator;
@@ -73,7 +75,8 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Grebac
  */
-public class SAMLAuthorizationOverSSLProfile extends SecurityProfile {
+public class SAMLAuthorizationOverSSLProfile extends SecurityProfile 
+        implements ClientDefaultsFeature,ServiceDefaultsFeature {
     
     private static final String PKGNAME = "samlcb";
 
@@ -138,7 +141,6 @@ public class SAMLAuthorizationOverSSLProfile extends SecurityProfile {
         return true;
     }    
     
-    @Override
     public void setClientDefaults(WSDLComponent component, WSDLComponent serviceBinding, Project p) {
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
@@ -184,18 +186,15 @@ public class SAMLAuthorizationOverSSLProfile extends SecurityProfile {
     
     }    
 
-    @Override
     public void setServiceDefaults(WSDLComponent component, Project p) {
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
     }
     
-    @Override
     public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
         return true;
     }
 
-    @Override
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
         String samlVersion = getSamlVersion(serviceBinding);
         String cbName = null;

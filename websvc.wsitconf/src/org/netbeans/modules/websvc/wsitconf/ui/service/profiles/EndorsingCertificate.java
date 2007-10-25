@@ -43,6 +43,8 @@ package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
+import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.AlgoSuiteModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
@@ -63,14 +65,16 @@ public class EndorsingCertificate extends javax.swing.JPanel {
     private boolean inSync = false;
 
     private WSDLComponent comp;
+    private SecurityProfile secProfile = null;
     
     /**
      * Creates new form EndorsingCertificate
      */
-    public EndorsingCertificate(WSDLComponent comp) {
+    public EndorsingCertificate(WSDLComponent comp, SecurityProfile secProfile) {
         super();
         initComponents();
         this.comp = comp;
+        this.secProfile = secProfile;
 
         inSync = true;
         layoutCombo.removeAllItems();
@@ -149,7 +153,7 @@ public class EndorsingCertificate extends javax.swing.JPanel {
         boolean secConv = (protToken instanceof SecureConversationToken);
 
         if (source.equals(secConvChBox)) {
-            ProfilesModelHelper.enableSecureConversation(comp, secConvChBox.isSelected(), ComboConstants.PROF_MSGAUTHSSL);
+            ((SecureConversationFeature)secProfile).enableSecureConversation(comp, secConvChBox.isSelected());
             sync();
         }
 

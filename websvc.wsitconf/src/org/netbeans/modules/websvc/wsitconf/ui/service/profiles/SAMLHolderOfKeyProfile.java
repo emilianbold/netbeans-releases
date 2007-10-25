@@ -54,6 +54,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
+import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
+import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
+import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.KeystorePanel;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
@@ -81,7 +84,8 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Grebac
  */
-public class SAMLHolderOfKeyProfile extends SecurityProfile {
+public class SAMLHolderOfKeyProfile extends SecurityProfile 
+        implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature {
     private static final String CERTS_DIR = "certs";
 
     private static final String PKGNAME = "samlcb";
@@ -105,7 +109,7 @@ public class SAMLHolderOfKeyProfile extends SecurityProfile {
         ProfilesModelHelper.setSecurityProfile(component, getDisplayName());
         boolean isRM = RMModelHelper.isRMEnabled(component);
         if (isRM) {
-            ProfilesModelHelper.enableSecureConversation(component, true, getDisplayName());
+            ProfilesModelHelper.enableSecureConversation(component, true);
         }
     }
 
@@ -130,7 +134,7 @@ public class SAMLHolderOfKeyProfile extends SecurityProfile {
         
         model.addUndoableEditListener(undoCounter);
 
-        JPanel profConfigPanel = new SAMLHolderOfKey(component);
+        JPanel profConfigPanel = new SAMLHolderOfKey(component, this);
         DialogDescriptor dlgDesc = new DialogDescriptor(profConfigPanel, getDisplayName());
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
 
@@ -151,7 +155,6 @@ public class SAMLHolderOfKeyProfile extends SecurityProfile {
         return true;
     }
 
-    @Override
     public void setServiceDefaults(WSDLComponent component, Project p) {
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
@@ -184,7 +187,6 @@ public class SAMLHolderOfKeyProfile extends SecurityProfile {
         return SecurityTokensModelHelper.getTokenProfileVersion(token);
     }
     
-    @Override
     public void setClientDefaults(WSDLComponent binding, WSDLComponent serviceBinding, Project p) {
 
         if (Util.isTomcat(p)) {
@@ -244,7 +246,6 @@ public class SAMLHolderOfKeyProfile extends SecurityProfile {
                 (Binding)binding, CallbackHandler.SAML_CBHANDLER, PKGNAME + "." + cbName, null, true);
     }
     
-    @Override
     public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
         if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false))) {
             if (Util.isTomcat(p)) {
@@ -262,7 +263,6 @@ public class SAMLHolderOfKeyProfile extends SecurityProfile {
         return false;
     }
 
-    @Override
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
         String samlVersion = getSamlVersion(serviceBinding);
         String cbName = null;
@@ -298,6 +298,17 @@ public class SAMLHolderOfKeyProfile extends SecurityProfile {
         }
         
         return false;
+    }
+
+    public boolean isSecureConversation(WSDLComponent component) {
+        WSDLComponent topSecBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(component);
+        WSDLComponent protTokenKind = SecurityTokensModelHelper.getTokenElement(topSecBinding, ProtectionToken.class);
+        WSDLComponent protToken = SecurityTokensModelHelper.getTokenTypeElement(protTokenKind);        
+        return (protToken instanceof SecureConversationToken);
+    }
+
+    public void enableSecureConversation(WSDLComponent component, boolean enable) {
+        ProfilesModelHelper.enableSecureConversation(component, enable);
     }
     
 }

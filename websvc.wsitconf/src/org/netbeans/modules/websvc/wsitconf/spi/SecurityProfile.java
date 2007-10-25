@@ -43,7 +43,6 @@ package org.netbeans.modules.websvc.wsitconf.spi;
 
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 
 /**
@@ -95,32 +94,6 @@ public abstract class SecurityProfile {
      */
     public boolean isProfileSupported(Project p, WSDLComponent component, boolean sts) {
         return true;
-    }
-
-    /**
-     * Should return true if the setup in the wsdl is according to developer defaults
-     */
-    public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
-        return false;
-    }
-
-    /**
-     * Should return true if the setup in the wsdl is according to developer defaults
-     */
-    public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
-        return false;
-    }
-
-    /**
-     * Should return true if the setup in the wsdl is according to developer defaults
-     */
-    public void setServiceDefaults(WSDLComponent component, Project p) {
-    }
-    
-    /**
-     * Should return true if the setup in the wsdl is according to developer defaults
-     */
-    public void setClientDefaults(WSDLComponent component, WSDLComponent serviceBinding, Project project) {
     }
 
     /**

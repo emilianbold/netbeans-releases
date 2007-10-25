@@ -666,6 +666,10 @@ public class SecurityTokensModelHelper {
                 setTokenProfileVersion(tokenType, ComboConstants.SAML_V1110);
                 setTokenInclusionLevel(tokenType, ComboConstants.ALWAYSRECIPIENT);
             }
+            if (ComboConstants.SECURECONVERSATION.equals(authToken)) {
+                tokenType = PolicyModelHelper.createElement(tokenKind, TokensQName.SECURECONVERSATIONTOKEN.getQName(), SecureConversationToken.class, true);
+                setTokenInclusionLevel(tokenType, ComboConstants.ALWAYSRECIPIENT);
+            }
             if (ComboConstants.ISSUED.equals(authToken)) {
                 tokenType = PolicyModelHelper.createElement(tokenKind, TokensQName.ISSUEDTOKEN.getQName(), IssuedToken.class, true);
                 setTokenInclusionLevel(tokenType, ComboConstants.ALWAYSRECIPIENT);

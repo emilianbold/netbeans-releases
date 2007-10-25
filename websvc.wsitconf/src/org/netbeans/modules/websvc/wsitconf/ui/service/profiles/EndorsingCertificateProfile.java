@@ -47,6 +47,9 @@ import javax.swing.JPanel;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
+import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
+import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
+import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.KeystorePanel;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
@@ -55,6 +58,9 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
+import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
+import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -66,7 +72,8 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Grebac
  */
-public class EndorsingCertificateProfile extends SecurityProfile {
+public class EndorsingCertificateProfile extends SecurityProfile 
+        implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature  {
     private static final String CERTS_DIR = "certs";
     
     public int getId() {
@@ -88,7 +95,7 @@ public class EndorsingCertificateProfile extends SecurityProfile {
         ProfilesModelHelper.setSecurityProfile(component, getDisplayName());
         boolean isRM = RMModelHelper.isRMEnabled(component);
         if (isRM) {
-            ProfilesModelHelper.enableSecureConversation(component, true, getDisplayName());
+            ProfilesModelHelper.enableSecureConversation(component, true);
         }
     }
 
@@ -113,7 +120,7 @@ public class EndorsingCertificateProfile extends SecurityProfile {
         
         model.addUndoableEditListener(undoCounter);
 
-        JPanel profConfigPanel = new EndorsingCertificate(component);
+        JPanel profConfigPanel = new EndorsingCertificate(component, this);
         DialogDescriptor dlgDesc = new DialogDescriptor(profConfigPanel, getDisplayName());
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
 
@@ -129,7 +136,6 @@ public class EndorsingCertificateProfile extends SecurityProfile {
         model.removeUndoableEditListener(undoCounter);
     }
 
-    @Override
     public void setServiceDefaults(WSDLComponent component, Project p) {
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
@@ -142,7 +148,6 @@ public class EndorsingCertificateProfile extends SecurityProfile {
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
     }
     
-    @Override
     public void setClientDefaults(WSDLComponent component, WSDLComponent c, Project p) {
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
@@ -160,7 +165,6 @@ public class EndorsingCertificateProfile extends SecurityProfile {
         ProprietarySecurityPolicyModelHelper.setTrustPeerAlias(component,ProfilesModelHelper.XWS_SECURITY_SERVER, true);
     }
  
-    @Override
     public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
         if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false))) {
             if (Util.isTomcat(p)) {
@@ -178,7 +182,6 @@ public class EndorsingCertificateProfile extends SecurityProfile {
         return false;
     }
 
-    @Override
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
         if (ProfilesModelHelper.XWS_SECURITY_CLIENT.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false)) &&
             ProfilesModelHelper.XWS_SECURITY_SERVER.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true))) {
@@ -200,6 +203,17 @@ public class EndorsingCertificateProfile extends SecurityProfile {
                 }
         }
         return false;
+    }
+
+    public boolean isSecureConversation(WSDLComponent component) {
+        WSDLComponent topSecBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(component);
+        WSDLComponent protTokenKind = SecurityTokensModelHelper.getTokenElement(topSecBinding, ProtectionToken.class);
+        WSDLComponent protToken = SecurityTokensModelHelper.getTokenTypeElement(protTokenKind);
+        return (protToken instanceof SecureConversationToken);
+    }
+
+    public void enableSecureConversation(WSDLComponent component, boolean enable) {
+        ProfilesModelHelper.enableSecureConversation(component, enable);
     }
 
 }

@@ -58,6 +58,8 @@ import org.netbeans.modules.j2ee.dd.api.web.WebResourceCollection;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfileRegistry;
+import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
+import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
 import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.BootstrapPolicy;
 import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
@@ -166,7 +168,11 @@ public class ProfilesModelHelper {
                 // depends on message level policy
                 if (c instanceof BindingOperation) {
                     BindingInput input = ((BindingOperation)c).getBindingInput();
-                    WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                    WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.ENDORSING);
+                    if (tokenKind != null) {
+                        return ComboConstants.PROF_MSGAUTHSSL; // profile 2 with secure conversation
+                    }
+                    tokenKind = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.SIGNED_SUPPORTING);
                     String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
                     if (ComboConstants.SAML.equals(tokenType)) { // profile3
                         return ComboConstants.PROF_SAMLSSL;
@@ -175,7 +181,10 @@ public class ProfilesModelHelper {
                     }
                     return ComboConstants.PROF_TRANSPORT;
                 } else {
-                    WSDLComponent tokenKind = null;
+                    WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(c, SecurityTokensModelHelper.ENDORSING);
+                    if (tokenKind != null) {
+                        return ComboConstants.PROF_MSGAUTHSSL; // profile 2 with secure conversation
+                    }
                     if (secConv) {
                         Policy pp = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class);
                         tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
@@ -297,24 +306,44 @@ public class ProfilesModelHelper {
         newP.profileSelected(c);
     }
     
+    public static boolean isServiceDefaultSetupSupported(String profile) {
+        SecurityProfile p = SecurityProfileRegistry.getDefault().getProfile(profile);
+        return (p instanceof ServiceDefaultsFeature);
+    }
+
+    public static boolean isClientDefaultSetupSupported(String profile) {
+        SecurityProfile p = SecurityProfileRegistry.getDefault().getProfile(profile);
+        return (p instanceof ClientDefaultsFeature);
+    }
+    
     public static boolean isServiceDefaultSetupUsed(String profile, Binding binding, Project project) {
         SecurityProfile p = SecurityProfileRegistry.getDefault().getProfile(profile);
-        return p.isServiceDefaultSetupUsed(binding, project);
+        if (p instanceof ServiceDefaultsFeature) {
+            return ((ServiceDefaultsFeature)p).isServiceDefaultSetupUsed(binding, project);
+        }
+        return false;
     }
 
     public static boolean isClientDefaultSetupUsed(String profile, Binding binding, WSDLComponent serviceBinding, Project project) {
         SecurityProfile p = SecurityProfileRegistry.getDefault().getProfile(profile);
-        return p.isClientDefaultSetupUsed(binding, (Binding)serviceBinding, project);
+        if (p instanceof ClientDefaultsFeature) {
+            return ((ClientDefaultsFeature)p).isClientDefaultSetupUsed(binding, (Binding)serviceBinding, project);
+        }
+        return false;
     }
     
     public static void setClientDefaults(String profile, Binding binding, WSDLComponent serviceBinding, Project project) {
         SecurityProfile p = SecurityProfileRegistry.getDefault().getProfile(profile);
-        p.setClientDefaults(binding, serviceBinding, project);
+        if (p instanceof ClientDefaultsFeature) {
+            ((ClientDefaultsFeature)p).setClientDefaults(binding, serviceBinding, project);
+        }
     }
 
     public static void setServiceDefaults(String profile, Binding binding, Project project) {
         SecurityProfile p = SecurityProfileRegistry.getDefault().getProfile(profile);
-        p.setServiceDefaults(binding, project);
+        if (p instanceof ServiceDefaultsFeature) {
+            ((ServiceDefaultsFeature)p).setServiceDefaults(binding, project);
+        }
     }
     
     /** Sets security profile on Binding or BindingOperation
@@ -790,7 +819,7 @@ public class ProfilesModelHelper {
         }
     }
 
-    public static void enableSecureConversation(WSDLComponent c, boolean enable, String profile) {
+    public static void enableSecureConversation(WSDLComponent c, boolean enable) {
         assert (c != null);
         assert ((c instanceof BindingOperation) || (c instanceof Binding));
 

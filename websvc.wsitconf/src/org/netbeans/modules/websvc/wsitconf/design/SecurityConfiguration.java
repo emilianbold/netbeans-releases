@@ -57,6 +57,9 @@ import org.netbeans.modules.websvc.design.javamodel.ServiceChangeListener;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.netbeans.modules.websvc.wsitconf.api.DesignerListenerProvider;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
+import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
+import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfileRegistry;
+import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
@@ -196,10 +199,11 @@ public class SecurityConfiguration implements WSConfiguration {
         if (!(SecurityPolicyModelHelper.isSecurityEnabled(binding))) {
             
             // default profile with the easiest setup
-            ProfilesModelHelper.setSecurityProfile(binding, ComboConstants.PROF_MUTUALCERT);
-            
-            // enable secure conversation by default - better performance, and no need to hassle with RM set/unset
-            ProfilesModelHelper.enableSecureConversation(binding, true, ComboConstants.PROF_MUTUALCERT);
+            SecurityProfile secProf = SecurityProfileRegistry.getDefault().getProfile(ComboConstants.PROF_MUTUALCERT);
+            secProf.profileSelected(binding);
+            if (secProf instanceof SecureConversationFeature) {
+                ((SecureConversationFeature)secProf).enableSecureConversation(binding, true);
+            }
             
             Util.fillDefaults(project, false,true);
             ProfilesModelHelper.setServiceDefaults(ComboConstants.PROF_MUTUALCERT, binding, project);
