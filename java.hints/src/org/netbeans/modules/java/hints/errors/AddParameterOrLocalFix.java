@@ -134,6 +134,12 @@ public class AddParameterOrLocalFix implements Fix {
                 assert tp.getLeaf().getKind() == Kind.IDENTIFIER;
 
                 TreePath targetPath = findMethod(tp);
+                
+                if (targetPath == null) {
+                    ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target method."); // NOI18N
+                    return;
+                }
+                
                 MethodTree targetTree = (MethodTree) targetPath.getLeaf();
 
                 if (parameter) {
