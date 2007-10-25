@@ -97,16 +97,16 @@ public class StockServerSampleWizardIterator extends SampleWizardIterator {
         } 
         ProjectChooser.setProjectsFolder(FileUtil.toFile(dirParent.getParent()));
         
-        Iterator iter = resultSet.iterator();
-        while (iter.hasNext()) {
-            FileObject dir = (FileObject) iter.next();
-            if (dir.getName().contains("war")) {
-                SoaSampleUtils.setPrivateProperty(dir, "project.StockQuoteService-ejb", 
-                    getProject().getProjectDirectory().getPath() + "/StockQuoteService-ejb");
-                
-                break;
-            }
-        }
+//        Iterator iter = resultSet.iterator();
+//        while (iter.hasNext()) {
+//            FileObject dir = (FileObject) iter.next();
+//            if (dir.getName().contains("war")) {
+//                SoaSampleUtils.setPrivateProperty(dir, "project.StockQuoteService-ejb", 
+//                    getProject().getProjectDirectory().getPath() + "/StockQuoteService-ejb");
+//                
+//                break;
+//            }
+//        }
         
         return resultSet;
     }

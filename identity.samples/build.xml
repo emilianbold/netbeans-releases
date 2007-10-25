@@ -76,37 +76,19 @@ made subject to such option by the copyright holder.
 
     <!-- Target for Stock Client sample -->
     <target name="zip-identity-stock-client" depends="init-zip-samples">
-        <property name="identity.samples.stockclient" value="src/${identity.samples}/JavaOneHOL/StockQuoteClient"/>
+        <property name="identity.samples.stockclient" value="src/${identity.samples}/StockQuoteClient"/>
         <zip destfile="${identity.samples.resources}/StockQuoteClient.zip"
             update="true">
-        <zipfileset dir="JavaOneHOL/StockQuoteClient"/>
+        <zipfileset dir="StockQuoteClient"/>
         </zip>
     </target>
     
     <!-- Target for Stock Service sample -->
     <target name="zip-identity-stock-server" depends="init-zip-samples">
-        <property name="identity.samples.stockserver" value="src/${identity.samples}/JavaOneHOL/StockQuoteService"/>
+        <property name="identity.samples.stockserver" value="src/${identity.samples}/StockQuoteService"/>
         <zip destfile="${identity.samples.resources}/StockQuoteService.zip"
             update="true">
-        <zipfileset dir="JavaOneHOL/StockQuoteService"/>
-        </zip>
-    </target>
-
-    <!-- Target for Calendar Client sample -->
-    <target name="zip-identity-calendar-client" depends="init-zip-samples">
-        <property name="identity.samples.calendarclient" value="src/${identity.samples}/CalendarClient"/>
-        <zip destfile="${identity.samples.resources}/CalendarClient.zip"
-            update="true">
-        <zipfileset dir="CalendarClient"/>
-        </zip>
-    </target>
-    
-    <!-- Target for Calendar Service sample -->
-    <target name="zip-identity-calendar-server" depends="init-zip-samples">
-        <property name="identity.samples.calendarserver" value="src/${identity.samples}/CalendarService"/>
-        <zip destfile="${identity.samples.resources}/CalendarService.zip"
-            update="true">
-        <zipfileset dir="CalendarService"/>
+        <zipfileset dir="StockQuoteService"/>
         </zip>
     </target>
 </project>

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -24,9 +25,9 @@ your own identifying information:
 
 Contributor(s):
 
- The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- Microsystems, Inc. All Rights Reserved.
+  The Original Software is NetBeans. The Initial Developer of the Original
+  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+  Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
@@ -39,12 +40,32 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<html>
-    <body>
-        Creates a sample web project to illustrate WSI-BSP SAML
-        token profile used for message level security of a web service.
-        For a guide to using this sample, see the Identity BluePrint
-        "Securing Enterprise Web Services" available on the NetBeans Enterprise 
-        Pack portal.
-    </body>
-</html>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.web.project</type>
+    <configuration>
+        <buildExtensions xmlns="http://www.netbeans.org/ns/ant-build-extender/1">
+            <extension file="jaxws-build.xml" id="jaxws">
+                <dependency dependsOn="wsimport-client-compile" target="-do-compile-single"/>
+                <dependency dependsOn="wsimport-client-compile" target="-do-ws-compile"/>
+                <dependency dependsOn="wsimport-client-generate" target="-pre-pre-compile"/>
+            </extension>
+        </buildExtensions>
+        <data xmlns="http://www.netbeans.org/ns/web-project/3">
+            <name>StockQuoteClient</name>
+            <minimum-ant-version>1.6</minimum-ant-version>
+            <web-module-libraries>
+                <library>
+                    <file>${libs.restapi.classpath}</file>
+                    <path-in-war>WEB-INF/lib</path-in-war>
+                </library>
+            </web-module-libraries>
+            <web-module-additional-libraries/>
+            <source-roots>
+                <root id="src.dir" name="Source Packages"/>
+            </source-roots>
+            <test-roots>
+                <root id="test.src.dir" name="Test Packages"/>
+            </test-roots>
+        </data>
+    </configuration>
+</project>

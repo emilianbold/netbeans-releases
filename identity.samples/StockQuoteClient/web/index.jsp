@@ -1,4 +1,4 @@
-<!--
+<%--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
 Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
@@ -24,9 +24,9 @@ your own identifying information:
 
 Contributor(s):
 
- The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- Microsystems, Inc. All Rights Reserved.
+  The Original Software is NetBeans. The Initial Developer of the Original
+  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+  Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
@@ -38,13 +38,40 @@ to extend the choice of license to its licensees as provided above.
 However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
--->
+--%>
+<%@page contentType="text/html"%>
+<%@page pageEncoding="UTF-8"%>
+<%--
+The taglib directive below imports the JSTL library. If you uncomment it,
+you must also add the JSTL library to the project. The Add Library... action
+on Libraries node in Projects view can be used to add the JSTL 1.1 library.
+--%>
+<%--
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%> 
+--%>
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+   "http://www.w3.org/TR/html4/loose.dtd">
+
 <html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Stock Quote Client Sample</title>
+    </head>
     <body>
-        Creates a sample web project to illustrate WSI-BSP SAML
-        token profile used for message level security of a web service.
-        For a guide to using this sample, see the Identity BluePrint
-        "Securing Enterprise Web Services" available on the NetBeans Enterprise 
-        Pack portal.
+
+    <h1>Stock Quote Client Sample</h1>
+    
+    <form name="GetQuote" action="GetQuote" method="GET">
+        Stock Symbol: <input type="text" name="symbol" value="JAVA" size="12" />
+        <p><input type="submit" value="GetQuote" name="quote" />
+    </form>
+    <p><hr>
+    <form name="AMConsole" action="/amserver/console" method="GET">
+        Click <a href="/amserver/console">here</a> to view Access Manager Console
+        <p><input type="submit" value="AMConsole"/>
+    </form>
+    
     </body>
 </html>
+

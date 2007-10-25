@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -24,9 +25,9 @@ your own identifying information:
 
 Contributor(s):
 
- The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- Microsystems, Inc. All Rights Reserved.
+  The Original Software is NetBeans. The Initial Developer of the Original
+  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+  Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
@@ -39,12 +40,10 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<html>
-    <body>
-        Creates a sample web project to illustrate WSI-BSP SAML
-        token profile used for message level security of a web service.
-        For a guide to using this sample, see the Identity BluePrint
-        "Securing Enterprise Web Services" available on the NetBeans Enterprise 
-        Pack portal.
-    </body>
-</html>
+<jws:handler-chains xmlns:jws="http://java.sun.com/xml/ns/javaee">
+  <jws:handler-chain>
+    <jws:handler>
+      <jws:handler-class>org.netbeans.identity.samples.LogClientHandler</jws:handler-class>
+    </jws:handler>
+  </jws:handler-chain>
+</jws:handler-chains>

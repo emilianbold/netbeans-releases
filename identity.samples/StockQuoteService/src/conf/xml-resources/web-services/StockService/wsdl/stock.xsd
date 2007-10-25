@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -24,9 +25,9 @@ your own identifying information:
 
 Contributor(s):
 
- The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- Microsystems, Inc. All Rights Reserved.
+  The Original Software is NetBeans. The Initial Developer of the Original
+  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+  Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
@@ -39,12 +40,46 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<html>
-    <body>
-        Creates a sample web project to illustrate WSI-BSP SAML
-        token profile used for message level security of a web service.
-        For a guide to using this sample, see the Identity BluePrint
-        "Securing Enterprise Web Services" available on the NetBeans Enterprise 
-        Pack portal.
-    </body>
-</html>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns="http://sun.com/stockquote.xsd"
+  targetNamespace="http://sun.com/stockquote.xsd">
+  <xs:annotation>
+      <xs:documentation>
+         This is a sample stock ticker web service protocol
+      </xs:documentation>
+  </xs:annotation>
+
+  <xs:element name="QuoteRequest" type="QuoteRequestType"/>
+  <xs:complexType name="QuoteRequestType">
+    <xs:sequence>
+        <xs:element name = "Symbol" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PriceType">
+      <xs:sequence>
+          <xs:element name="Last" type="xs:float"/>
+          <xs:element name="Open" type="xs:float"/>
+          <xs:element name="DayHigh" type="xs:float"/>
+          <xs:element name="DayLow" type="xs:float"/>
+          <xs:element name="YearRange" type="xs:string"/>
+      </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="QuoteResponse" type="QuoteResponseType"/>
+  <xs:complexType name="QuoteResponseType">
+    <xs:sequence>
+        <xs:element name="Message" type="xs:string"/>
+        <xs:element name="Company" type="xs:string"/>
+        <xs:element name="Symbol" type="xs:string"/>
+        <xs:element name="Time" type="xs:string"/>
+        <xs:element name="Delay" type="xs:string"/>
+        <xs:element name="Price" type="PriceType"/>
+        <xs:element name="Change" type="xs:string"/>
+        <xs:element name="Volume" type="xs:string"/>
+        <xs:element name="MarketCap" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+</xs:schema>

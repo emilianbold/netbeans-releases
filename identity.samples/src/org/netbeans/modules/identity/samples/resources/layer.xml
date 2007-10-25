@@ -66,23 +66,6 @@ made subject to such option by the copyright holder.
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/StockSampleDescription.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
-                    <!-- Calendar Client Sample 
-                    <file name="CalendarClientSampleProject" url="CalendarClient.zip">
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/projectIcon.gif"/>
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.samples.resources.Bundle"/>
-                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.identity.samples.ui.CalendarClientSampleWizardIterator.createIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/CalendarSampleDescription.html"/>
-                        <attr name="template" boolvalue="true"/>
-                    </file-->
-                    
-                    <!-- Calendar Service Sample 
-                    <file name="CalendarServerSampleProject" url="CalendarService.zip">
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/projectIcon.gif"/>
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.samples.resources.Bundle"/>
-                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.identity.samples.ui.CalendarServerSampleWizardIterator.createIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/CalendarSampleDescription.html"/>
-                        <attr name="template" boolvalue="true"/>
-                    </file-->
                 </folder>
             </folder>
         </folder>
