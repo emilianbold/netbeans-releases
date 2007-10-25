@@ -42,16 +42,14 @@
 package org.netbeans.modules.ruby.modules.project.rake;
 
 import java.io.File;
-import java.util.Map;
-import java.util.WeakHashMap;
-import org.openide.filesystems.FileObject;
-import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
-
-import org.openide.filesystems.FileChangeListener;
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
@@ -69,7 +67,7 @@ import org.openide.util.Utilities;
  */
 public final class FileChangeSupport {
     
-    public static FileChangeSupport DEFAULT = new FileChangeSupport();
+    public static final FileChangeSupport DEFAULT = new FileChangeSupport();
     
     private FileChangeSupport() {}
     
@@ -84,15 +82,17 @@ public final class FileChangeSupport {
      */
     public void addListener(FileChangeSupportListener listener, File path) {
         assert path.equals(FileUtil.normalizeFile(path)) : "Need to normalize " + path + " before passing to FCS!";
-        Map<File,Holder> f2H = holders.get(listener);
-        if (f2H == null) {
-            f2H = new HashMap<File,Holder>();
-            holders.put(listener, f2H);
+        synchronized (holders) {
+            Map<File,Holder> f2H = holders.get(listener);
+            if (f2H == null) {
+                f2H = new HashMap<File,Holder>();
+                holders.put(listener, f2H);
+            }
+            if (f2H.containsKey(path)) {
+                throw new IllegalArgumentException("Already listening to " + path); // NOI18N
+            }
+            f2H.put(path, new Holder(listener, path));
         }
-        if (f2H.containsKey(path)) {
-            throw new IllegalArgumentException("Already listening to " + path); // NOI18N
-        }
-        f2H.put(path, new Holder(listener, path));
     }
     
     /**
@@ -100,14 +100,16 @@ public final class FileChangeSupport {
      */
     public void removeListener(FileChangeSupportListener listener, File path) {
         assert path.equals(FileUtil.normalizeFile(path)) : "Need to normalize " + path + " before passing to FCS!";
-        Map<File,Holder> f2H = holders.get(listener);
-        if (f2H == null) {
-            throw new IllegalArgumentException("Was not listening to " + path); // NOI18N
+        synchronized (holders) {
+            Map<File,Holder> f2H = holders.get(listener);
+            if (f2H == null) {
+                throw new IllegalArgumentException("Was not listening to " + path); // NOI18N
+            }
+            if (!f2H.containsKey(path)) {
+                throw new IllegalArgumentException(listener + " was not listening to " + path + "; only to " + f2H.keySet()); // NOI18N
+            }
+            f2H.remove(path);
         }
-        if (!f2H.containsKey(path)) {
-            throw new IllegalArgumentException("Was not listening to " + path); // NOI18N
-        }
-        f2H.remove(path);
     }
     
     private static final class Holder extends WeakReference<FileChangeSupportListener> implements FileChangeListener, Runnable {
