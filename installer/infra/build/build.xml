@@ -236,7 +236,7 @@
             name="create-bundle" 
             classpath="${custom.tasks.cls}" 
             classname="org.netbeans.installer.infra.build.ant.registries.CreateBundle"/>
-        
+        <!--
         <get
             src="${glassfish.builds.host}/java/re/glassfish/9.1/promoted/fcs/latest/bundles/"
             dest="${temp.file}"/>
@@ -246,14 +246,29 @@
         <glassfish-buildnumber 
             file="${temp.file}" 
             prefix="sjsas"/>
+	-->
+        <set property="glassfish.milestone.number" value="58"/>
+        <set property="glassfish.milestone.number.real" value="58g"/>
+        <set property="glassfish.build.type" value="fcs"/>
+        <set property="glassfish.build.number" value="20070907"/>
 
+	<set property="sjsas.milestone.number" value="58"/>
+        <set property="sjsas.milestone.number.real" value="58g"/>
+        <set property="sjsas.build.type" value="fcs"/>
+        <set property="sjsas.build.number" value="20070907"/>
+
+
+
+        <set property="openesb.build.number" value="2007073000"/>
+        <set property="openesb.build.number.real" value="070730"/>
+        <!--
         <get
             src="${openesb.builds.host}/kits/ojc/openesb_as9_fcs/latestSDK/log/"
             dest="${temp.file}"/>
         <openesb-buildnumber 
             file="${temp.file}" 
             prefix="openesb"/>
-
+        -->
         <!--        
         <get
             src="${glassfish.builds.host}/java/re/swdp/1.0/promoted/fcs/latest/bundles/"
@@ -308,7 +323,7 @@
         <property name="sjsam.build.number" value="20070614"/>
         -->
         
-        <delete file="${temp.file}"/>
+        <delete file="${temp.file}" failonerror="false"/>
     </target>
     
     <target name="-init-properties">
