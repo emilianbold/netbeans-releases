@@ -241,6 +241,12 @@ public class PaletteKit implements Runnable, LookupListener {
                     Debug.warning("Can't create folder for palette category: " + ex); // NOI18N
                 }
             }
+            
+            try {
+                catFO.setAttribute("isReadonly", "true"); // NOI18N
+            } catch (IOException ex) {
+                Debug.warning("Can't set attributes for palette category folder", ex); // NOI18N
+            }
 
             StringBuffer path = new StringBuffer();
             path.append(catFO.getPath());
