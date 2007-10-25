@@ -1,5 +1,5 @@
 Name: Java API for Servlets, Java API for JavaServer Pages
-Version: 2.5 Servlet API, 2.1 JSP API
+Version: servlet2.5-jsp2.1
 License: CDDL-1.0
 Description: Java API for Servlets, Java API for JavaServer Pages
 
