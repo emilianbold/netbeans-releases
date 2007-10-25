@@ -118,43 +118,45 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
     }
     
     public Set instantiate(TemplateWizard wiz) throws IOException {
-        NewBpelFilePanel panel = (NewBpelFilePanel)folderPanel;
-        org.openide.filesystems.FileObject dir = Templates.getTargetFolder(wiz);
-        DataObject dobj = createBpelFile(Templates.getTargetName(wiz), dir, panel.getNS());
+      NewBpelFilePanel panel = (NewBpelFilePanel)folderPanel;
+      org.openide.filesystems.FileObject dir = Templates.getTargetFolder(wiz);
+      DataObject data = createBpelFile(Templates.getTargetName(wiz), dir, panel.getNS());
 
-        // # 115502
-        if (dobj == null) {
-          return Collections.emptySet();
-        }
-        DataFolder df = DataFolder.findFolder(dir);
-        String encoding = EncodingUtil.getProjectEncoding(df.getPrimaryFile());
+      if (data == null) {
+        return Collections.emptySet();
+      }
+      String encoding = EncodingUtil.getProjectEncoding(DataFolder.findFolder(dir).getPrimaryFile());
 
-        if ( !EncodingUtil.isValidEncoding(encoding)) {
-          encoding = "UTF-8"; // NOI18N
-        }
-        EditCookie edit = dobj.getCookie(EditCookie.class);
-        
-        if (edit != null) {
-          EditorCookie editorCookie = dobj.getCookie(EditorCookie.class);
-          Document doc = (Document)editorCookie.openDocument();
-          fixEncoding(doc, encoding);
-          SaveCookie save = dobj.getCookie(SaveCookie.class);
-          
-          if (save != null) {
-            save.save();
-          }
-        }
-        return Collections.singleton(dobj);
+      if (encoding == null || !EncodingUtil.isValidEncoding(encoding)) {
+        encoding = "UTF-8"; // NOI18N
+      }
+      fixEncoding(data, encoding);
+      
+      return Collections.singleton(data);
     }
     
-    private void fixEncoding(javax.swing.text.Document document, String encoding) {
-      if (encoding == null) {
-        encoding = "UTF-8"; //NOI18N
-      }
+    // # 115502
+    private void fixEncoding(final DataObject data, final String encoding) throws IOException {
+      EditorCookie editor = data.getCookie(EditorCookie.class);
+      Document document = (Document) editor.openDocument();
+      
       try {
-        document.insertString(19, " encoding=\""+encoding+"\"", null);
+        document.insertString(19, " encoding=\"" + encoding + "\"", null);
       }
       catch (BadLocationException e) {}
+
+      SaveCookie save = data.getCookie(SaveCookie.class);
+      
+      if (save != null) {
+        save.save();
+      }
+      // # 119057 after changes for # 115502
+      BPELDataEditorSupport support = data.getCookie(BPELDataEditorSupport.class);
+
+      if (support == null) {
+        return;
+      }
+      support.getUndoManager().discardAllEdits();
     }
 
     public void initialize(TemplateWizard wiz) {
