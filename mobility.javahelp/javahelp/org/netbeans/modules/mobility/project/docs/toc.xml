@@ -20,7 +20,6 @@
 		<tocitem text="Working with Mobility Projects" target="me.proj_working" />
 		<tocitem text="Importing Java ME Projects" target="me.importprojects" />
 		<tocitem text="Java ME Project and File Templates" target="me.proj_templates" />
-		<tocitem text="Installing Mobility Sample Applications" target="me.installingexamples" />
 		<tocitem text="Mobile Application Tutorials and Guides" target="me.guides" />
 		<tocitem text="Java ME CLDC/MIDP Development" expand="false">
 			<tocitem text="Getting Started">
