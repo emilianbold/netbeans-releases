@@ -40,13 +40,15 @@
     
     <target name="build" depends="init,-build"/>
     
-    <target name="init" depends="-clean,-checkout-trunk,-checkout-branch,-init,-init-properties,-post-init-clean"/>
+    <target name="init" depends="-clean,-init-ml,-checkout,-init,-init-properties,-post-init-clean"/>
     
     <target name="-clean">
         <delete dir="${output.dir}"/>
         <delete dir="${nbi.all.dir}"/>
     </target>
-    
+
+    <target name="-checkout" depends="-checkout-trunk,-checkout-branch,-checkout-translatedfiles"/>
+
     <target name="-checkout-trunk" unless="cvs.branch">
         <!-- -->
         <cvs 
@@ -67,14 +69,14 @@
         
         <!--
         <copy todir="${nbi.core.dir}">
-            <fileset dir="D:/work/nbi">
+            <fileset dir="D:/work/src/trunk/nbi">
                 <exclude name="infra/server/**/build/**/*.*"/>
                 <exclude name="infra/server/**/dist/**/*.*"/>
                 <exclude name="infra/server/**/private/**/*.*"/>
             </fileset>
         </copy>
         <copy todir="${nbi.netbeans.dir}">
-            <fileset dir="D:/work/installer">
+            <fileset dir="D:/work/src/trunk/installer">
                 <exclude name="infra/server/**/build/**/*.*"/>
                 <exclude name="infra/server/**/dist/**/*.*"/>
                 <exclude name="infra/server/**/private/**/*.*"/>
@@ -102,6 +104,11 @@
         />
     </target>
 
+    <target name="-checkout-translatedfiles" if="ml.build">
+	<antcall target="-checkout-translatedfiles-trunk"/>
+        <antcall target="-checkout-translatedfiles-branch"/>
+    </target>
+    
     <target name="-checkout-translatedfiles-branch" if="cvs.branch">
 	<cvs 
             command="checkout -P"
@@ -138,7 +145,12 @@
         />
     </target>
 
-    
+    <target name="-init-ml">
+        <condition property="ml.build">
+	     <equals arg1="${nb.build.type}" arg2="ml"/>
+        </condition>
+    </target>
+
     <target name="-init">
         <delete dir="${custom.tasks.cls}"/>
         <mkdir dir="${custom.tasks.cls}"/>
@@ -236,6 +248,21 @@
             name="create-bundle" 
             classpath="${custom.tasks.cls}" 
             classname="org.netbeans.installer.infra.build.ant.registries.CreateBundle"/>
+
+	<set property="nb.build.type.number"
+                 value="0"/>
+        <set property="nb.build.suffix"
+                 value=""/>
+
+        <if property="nb.build.type" value="ml">
+            <set property="nb.build.type.number"
+                 value="1"/>
+	    <set property="nb.build.suffix"
+                 value="-ml"/>
+        </if>
+
+	<set property="nb.full.version"
+             value="6.0.0.${nb.build.type.number}.${build.number}"/>
         <!--
         <get
             src="${glassfish.builds.host}/java/re/glassfish/9.1/promoted/fcs/latest/bundles/"
@@ -261,7 +288,7 @@
 
         <set property="openesb.build.number" value="2007073000"/>
         <set property="openesb.build.number.real" value="070730"/>
-        <!--
+	<!--
         <get
             src="${openesb.builds.host}/kits/ojc/openesb_as9_fcs/latestSDK/log/"
             dest="${temp.file}"/>
@@ -381,6 +408,9 @@ sjsas.build.number=${sjsas.build.number}
 
 openesb.build.number=${openesb.build.number}
 openesb.build.number.real=${openesb.build.number.real}
+
+nb.full.version=${nb.full.version}
+nb.build.suffix=${nb.build.suffix}
 	</echo>
 
 	<!-- SJSAM properties -->
@@ -480,7 +510,11 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
     
     <target name="-post-init-clean">
-        <delete dir="${basedir}/cache/raw" failonerror="false"/>
+        <delete failonerror="false">
+		<fileset dir="${basedir}/cache/raw">
+			<exclude name="**/sun_java_wireless_toolkit-*"/>
+                </fileset>
+        </delete>
         <delete failonerror="false">
             <fileset dir="${basedir}/cache/packaged">
                 <!-- nb components -->
@@ -1182,57 +1216,57 @@ jarsigner.storepass=${jarsigner.storepass}
         <!-- JavaSE bundles -->        
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javase-windows.exe">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-windows.exe">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javase-linux.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-linux.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javase-solaris-x86.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-solaris-x86.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javase-solaris-sparc.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-solaris-sparc.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javase-macosx-x86.zip">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-macosx-x86.zip">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javase-macosx-ppc.zip">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-macosx-ppc.zip">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
         <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javase-macosx-x86.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javase-macosx-x86.tgz"/>
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-macosx-x86.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-macosx-x86.tgz"/>
         </antcall>
         <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javase-macosx-ppc.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javase-macosx-ppc.tgz"/>
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-macosx-ppc.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-macosx-ppc.tgz"/>
         </antcall>
 	<delete>
             <fileset dir="${output.dir}/bundles">
-		<include name="${nb.files.prefix}-${build.number}-javase-macosx-*zip"/>
+		<include name="${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-macosx-*zip"/>
             </fileset>
         </delete>
     </target>
@@ -1241,75 +1275,75 @@ jarsigner.storepass=${jarsigner.storepass}
         <!-- JavaEE bundles -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javaee-windows.exe">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javaee-windows.exe">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javaee-linux.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javaee-linux.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javaee-solaris-x86.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javaee-solaris-x86.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javaee-solaris-sparc.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javaee-solaris-sparc.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javaee-macosx-x86.zip">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javaee-macosx-x86.zip">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javaee-macosx-ppc.zip">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javaee-macosx-ppc.zip">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
 	<antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javaee-macosx-x86.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javaee-macosx-x86.tgz"/>
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javaee-macosx-x86.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javaee-macosx-x86.tgz"/>
         </antcall>
         <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javaee-macosx-ppc.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javaee-macosx-ppc.tgz"/>
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javaee-macosx-ppc.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-javaee-macosx-ppc.tgz"/>
         </antcall>
         <delete>
             <fileset dir="${output.dir}/bundles">
-		<include name="${nb.files.prefix}-${build.number}-javaee-macosx-*zip"/>
+		<include name="${nb.files.prefix}-${build.number}${nb.build.suffix}-javaee-macosx-*zip"/>
             </fileset>
         </delete>
     </target>
@@ -1318,18 +1352,18 @@ jarsigner.storepass=${jarsigner.storepass}
         <!-- JavaME bundles (only for windows and linux) -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-mobility-windows.exe">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javame" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-mobility-windows.exe">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javame" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="javame"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-mobility-linux.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javame" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-mobility-linux.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javame" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="javame"/>
         </create-bundle>
     </target>
@@ -1338,57 +1372,57 @@ jarsigner.storepass=${jarsigner.storepass}
         <!-- Ruby bundles -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-ruby-windows.exe">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-ruby-windows.exe">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-ruby-linux.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-ruby-linux.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-ruby-solaris-x86.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-ruby-solaris-x86.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-ruby-solaris-sparc.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-ruby-solaris-sparc.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-ruby-macosx-x86.zip">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-ruby-macosx-x86.zip">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-ruby-macosx-ppc.zip">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-ruby-macosx-ppc.zip">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
         <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-ruby-macosx-x86.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-ruby-macosx-x86.tgz"/>
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-ruby-macosx-x86.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-ruby-macosx-x86.tgz"/>
         </antcall>
         <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-ruby-macosx-ppc.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-ruby-macosx-ppc.tgz"/>
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-ruby-macosx-ppc.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-ruby-macosx-ppc.tgz"/>
         </antcall>
         <delete>
             <fileset dir="${output.dir}/bundles">
-		<include name="${nb.files.prefix}-${build.number}-ruby-macosx-*zip"/>
+		<include name="${nb.files.prefix}-${build.number}${nb.build.suffix}-ruby-macosx-*zip"/>
             </fileset>
         </delete>
     </target>
@@ -1397,57 +1431,57 @@ jarsigner.storepass=${jarsigner.storepass}
         <!-- C/C++ bundles -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-cpp-windows.exe">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-cpp-windows.exe">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-cnd" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="cnd"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-cpp-linux.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-cpp-linux.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-cnd" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="cnd"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-cpp-solaris-x86.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-cpp-solaris-x86.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-cnd" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="cnd"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-cpp-solaris-sparc.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-cpp-solaris-sparc.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-cnd" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="cnd"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-cpp-macosx-x86.zip">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-cpp-macosx-x86.zip">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-cnd" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="cnd"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-cpp-macosx-ppc.zip">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-cpp-macosx-ppc.zip">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-cnd" version="${nb.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="cnd"/>
         </create-bundle>
         <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-cpp-macosx-x86.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-cpp-macosx-x86.tgz"/>
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-cpp-macosx-x86.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-cpp-macosx-x86.tgz"/>
         </antcall>
         <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-cpp-macosx-ppc.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-cpp-macosx-ppc.tgz"/>
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-cpp-macosx-ppc.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-cpp-macosx-ppc.tgz"/>
         </antcall>
 	<delete>
             <fileset dir="${output.dir}/bundles">
-		<include name="${nb.files.prefix}-${build.number}-cpp-macosx-*zip"/>
+		<include name="${nb.files.prefix}-${build.number}${nb.build.suffix}-cpp-macosx-*zip"/>
             </fileset>
         </delete>
     </target>
@@ -1456,15 +1490,15 @@ jarsigner.storepass=${jarsigner.storepass}
         <!-- Full bundles -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-windows.exe">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javame" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-uml" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-windows.exe">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-javame" version="${nb.full.version}"/>
+            <component uid="nb-soa" version="${nb.full.version}"/>
+            <component uid="nb-uml" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="nb-cnd" version="${nb.full.version}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -1474,15 +1508,15 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-linux.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javame" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-uml" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/> 
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-linux.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-javame" version="${nb.full.version}"/>
+            <component uid="nb-soa" version="${nb.full.version}"/>
+            <component uid="nb-uml" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="nb-cnd" version="${nb.full.version}"/> 
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -1492,14 +1526,14 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-solaris-x86.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-uml" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/> 
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-solaris-x86.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-soa" version="${nb.full.version}"/>
+            <component uid="nb-uml" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="nb-cnd" version="${nb.full.version}"/> 
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -1509,14 +1543,14 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-solaris-sparc.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-uml" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/> 
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-solaris-sparc.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-soa" version="${nb.full.version}"/>
+            <component uid="nb-uml" version="${nb.full.version}"/>
+            <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="nb-cnd" version="${nb.full.version}"/> 
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -1526,14 +1560,14 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-x86.zip">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
-            <!--<component uid="nb-uml" version="6.0.0.0.${build.number}"/>-->
-            <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/> 
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-macosx-x86.zip">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-soa" version="${nb.full.version}"/>
+            <!--<component uid="nb-uml" version="${nb.full.version}"/>-->
+            <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="nb-cnd" version="${nb.full.version}"/> 
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -1543,14 +1577,14 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
-                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-ppc.zip">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
-            <!--<component uid="nb-uml" version="6.0.0.0.${build.number}"/>-->
-            <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/> 
+                       target="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-macosx-ppc.zip">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-soa" version="${nb.full.version}"/>
+            <!--<component uid="nb-uml" version="${nb.full.version}"/>-->
+            <component uid="nb-ruby" version="${nb.full.version}"/>
+            <component uid="nb-cnd" version="${nb.full.version}"/> 
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -1559,16 +1593,16 @@ jarsigner.storepass=${jarsigner.storepass}
             -->
         </create-bundle>
         <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-x86.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-x86.tgz"/>
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-macosx-x86.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-macosx-x86.tgz"/>
         </antcall>
         <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-ppc.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-ppc.tgz"/>
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-macosx-ppc.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}${nb.build.suffix}-macosx-ppc.tgz"/>
         </antcall>
         <delete>
             <fileset dir="${output.dir}/bundles">
-		<include name="${nb.files.prefix}-${build.number}-macosx-*zip"/>
+		<include name="${nb.files.prefix}-${build.number}${nb.build.suffix}-macosx-*zip"/>
             </fileset>
         </delete>
     </target>
@@ -1578,10 +1612,10 @@ jarsigner.storepass=${jarsigner.storepass}
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
                        target="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-windows.exe">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-soa" version="${nb.full.version}"/>
             <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>	                
@@ -1596,10 +1630,10 @@ jarsigner.storepass=${jarsigner.storepass}
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
                        target="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-linux.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-soa" version="${nb.full.version}"/>
             <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -1614,10 +1648,10 @@ jarsigner.storepass=${jarsigner.storepass}
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
                        target="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-solaris-x86.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-soa" version="6.0.0.0.${build.number}"/>            
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-soa" version="${nb.full.version}"/>            
             <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>            
@@ -1632,10 +1666,10 @@ jarsigner.storepass=${jarsigner.storepass}
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
                        target="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-solaris-sparc.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-soa" version="${nb.full.version}"/>
             <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -1650,10 +1684,10 @@ jarsigner.storepass=${jarsigner.storepass}
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
                        target="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-macosx-x86.zip">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-soa" version="${nb.full.version}"/>
             <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -1668,10 +1702,10 @@ jarsigner.storepass=${jarsigner.storepass}
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
                        target="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-macosx-ppc.zip">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javaee" version="${nb.full.version}"/>
+            <component uid="nb-soa" version="${nb.full.version}"/>
             <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -1704,33 +1738,33 @@ jarsigner.storepass=${jarsigner.storepass}
         <mkdir dir="${output.dir}/bundles/jdk"/>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${output.dir}/bundles/jdk/jdk-1_5_0_13-${nb.files.prefix}-${build.number}-javase-windows.exe">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_13-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-windows.exe">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.5.0.13.5"/>
 	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${output.dir}/bundles/jdk/jdk-1_5_0_13-${nb.files.prefix}-${build.number}-javase-linux.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_13-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-linux.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.5.0.13.5"/>
 	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${output.dir}/bundles/jdk/jdk-1_5_0_13-${nb.files.prefix}-${build.number}-javase-solaris-x86.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_13-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-solaris-x86.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.5.0.13.5"/>
 	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${output.dir}/bundles/jdk/jdk-1_5_0_13-${nb.files.prefix}-${build.number}-javase-solaris-sparc.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_13-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-solaris-sparc.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.5.0.13.5"/>
 	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
@@ -1738,33 +1772,33 @@ jarsigner.storepass=${jarsigner.storepass}
         <!-- JavaSE + JDK6 bundles -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${output.dir}/bundles/jdk/jdk6-u3-${nb.files.prefix}-${build.number}-javase-windows.exe">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/jdk/jdk6-u3-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-windows.exe">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.6.0.3.5"/>
 	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${output.dir}/bundles/jdk/jdk6-u3-${nb.files.prefix}-${build.number}-javase-linux.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/jdk/jdk6-u3-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-linux.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.6.0.3.5"/>
 	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${output.dir}/bundles/jdk/jdk6-u3-${nb.files.prefix}-${build.number}-javase-solaris-x86.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/jdk/jdk6-u3-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-solaris-x86.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.6.0.3.5"/>
 	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${output.dir}/bundles/jdk/jdk6-u3-${nb.files.prefix}-${build.number}-javase-solaris-sparc.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+                       target="${output.dir}/bundles/jdk/jdk6-u3-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-solaris-sparc.sh">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.6.0.3.5"/>
 	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
