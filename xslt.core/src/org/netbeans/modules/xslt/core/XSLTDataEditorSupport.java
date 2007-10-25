@@ -100,8 +100,7 @@ import org.netbeans.modules.soa.ui.UndoRedoManagerProvider;
  * TODO add ValidateXMLCookie when becomes friend ...
  */
 public class XSLTDataEditorSupport extends DataEditorSupport implements
-        OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie,
-        UndoRedoManagerProvider
+        OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie
 {
     
     public XSLTDataEditorSupport(XSLTDataObject dObj) {
