@@ -636,7 +636,7 @@ public final class CsmProjectContentResolver {
         if (inheritanceLevel == INIT_INHERITANCE_LEVEL) {
             inheritanceLevel = NO_INHERITANCE;
             CsmClass contextClass = CsmBaseUtilities.getContextClass(contextDeclaration);
-            if (contextClass == clazz) {
+            if (clazz.equals(contextClass)) {
                 inheritanceLevel = EXACT_CLASS;
             } else if (contextClass != null) {
                 // check how clazz is visible in context class

@@ -127,7 +127,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                         // it is ok to jump to declaration
                         if (definition.getDeclaration() != null) {
                             item = definition.getDeclaration();
-                        } else if (definition != csmObject) {
+                        } else if (csmObject.equals(definition)) {
                             item = (CsmOffsetable)csmObject;
                         }
                     } else {
@@ -144,7 +144,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                     // it is ok to jump to declaration
                     if (definition.getDeclaration() != null) {
                         item = definition.getDeclaration();
-                    } else if (definition != csmObject) {
+                    } else if (csmObject.equals(definition)) {
                         item = (CsmOffsetable)csmObject;
                     }
                 }                
