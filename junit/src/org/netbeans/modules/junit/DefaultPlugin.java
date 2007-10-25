@@ -1256,7 +1256,8 @@ public final class DefaultPlugin extends JUnitPlugin {
                         new Object[] {button, CANCEL_OPTION},
                         button,
                         DialogDescriptor.DEFAULT_ALIGN,
-                        (HelpCtx) null,
+                        new HelpCtx(
+                                "org.netbeans.modules.junit.select_junit_version"),//NOI18N
                         (ActionListener) null));
 
         if (answer == button) {
