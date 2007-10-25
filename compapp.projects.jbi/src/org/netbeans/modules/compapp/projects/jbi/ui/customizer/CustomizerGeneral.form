@@ -10,6 +10,7 @@
   </Properties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -22,25 +23,25 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                   <Component id="jLabel2" max="32767" attributes="1"/>
                   <Component id="jLabelServiceUnitDescription" alignment="0" max="32767" attributes="1"/>
                   <Component id="jLabelServiceAssemblyDescription" alignment="0" max="32767" attributes="1"/>
                   <Component id="jLabelProjectName" alignment="0" pref="164" max="32767" attributes="1"/>
               </Group>
-              <Group type="103" groupAlignment="1" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jTextFieldServiceUnitDescription" alignment="1" pref="348" max="32767" attributes="1"/>
-                          <Component id="jTextFieldServiceAssemblyDescription" alignment="1" pref="348" max="32767" attributes="1"/>
-                          <Component id="jTextFieldProjectFolder" alignment="0" pref="348" max="32767" attributes="1"/>
+                          <Component id="jTextFieldServiceUnitDescription" alignment="1" pref="393" max="32767" attributes="2"/>
+                          <Component id="jTextFieldServiceAssemblyDescription" alignment="1" pref="393" max="32767" attributes="2"/>
+                          <Component id="jTextFieldProjectFolder" alignment="0" pref="393" max="32767" attributes="2"/>
                       </Group>
                   </Group>
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jComboBoxEncoding" min="-2" pref="189" max="-2" attributes="0"/>
+                      <Component id="jComboBoxEncoding" pref="393" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -55,17 +56,17 @@
                   <Component id="jLabelProjectName" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
                   <Component id="jTextFieldProjectFolder" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jTextFieldServiceAssemblyDescription" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabelServiceAssemblyDescription" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jTextFieldServiceUnitDescription" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabelServiceUnitDescription" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jComboBoxEncoding" alignment="3" min="-2" max="-2" attributes="0"/>
