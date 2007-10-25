@@ -153,12 +153,19 @@ public class Reformatter implements ReformatTask {
         for (Diff diff : Pretty.reformat(controller, path, CodeStyle.getDefault(null))) {
             int start = diff.getStartOffset();
             int end = diff.getEndOffset();
-            if (startOffset >= end || endOffset <= start)
+            String text = diff.getText();
+            if (startOffset > end || endOffset < start)
                 continue;
-            if (startOffset > start)
+            if (startOffset > start) {
+                if (text != null && text.length() > 0)
+                    text = startOffset - start >= text.length() ? null : text.substring(startOffset - start);
                 start = startOffset;
-            if (endOffset < end)
+            }
+            if (endOffset < end) {
+                if (text != null && text.length() > 0)
+                    text = end - endOffset >= text.length() ? null : text.substring(0, text.length() - end + endOffset);
                 end = endOffset;
+            }
             if (converter != null) {
                 start = converter.getOriginalPosition(start);
                 end = converter.getOriginalPosition(end);
@@ -166,7 +173,6 @@ public class Reformatter implements ReformatTask {
             start += shift;
             end += shift;
             doc.remove(start, end - start);
-            String text = diff.getText();
             if (text != null && text.length() > 0)
                 doc.insertString(start, text, null);
         }
