@@ -385,8 +385,6 @@ public class JaxWsCodeGenerator {
         // Collect up any and all errors for display in case of problem
         List errors = new ArrayList();
         
-        boolean success=false;
-        
         // including code to JSP
         if (inJsp) {
             final javax.swing.text.StyledDocument document = cookie.getDocument();
@@ -449,13 +447,13 @@ public class JaxWsCodeGenerator {
                 } else {
                     document.insertString(pos,invocationBody,null);
                 }
-                success=true;
+                addProjectReference(serviceNode, sourceNode);
             } catch (javax.swing.text.BadLocationException ex) {}
         } else {
             //
             //            // including code to java class
             //
-            EditorCookie ec = (EditorCookie)dataObj.getCookie(EditorCookie.class);
+            EditorCookie ec = dataObj.getCookie(EditorCookie.class);
             JEditorPane pane = ec.getOpenedPanes()[0];
             int pos = pane.getCaretPosition();
             
@@ -555,6 +553,8 @@ public class JaxWsCodeGenerator {
                     document.insertString(pos + 1, textToInsert, null);
                 }
                 
+                addProjectReference(serviceNode, sourceNode);
+                
                 // @insert WebServiceRef injection
                 if (generateWsRefInjection[0]) {
                     if (wsdlUrl.startsWith("file:")) { //NOI18N
@@ -580,10 +580,6 @@ public class JaxWsCodeGenerator {
                         public void cancel() {}
                     };
                     targetSource.runModificationTask(modificationTask).commit();
-                    success=true;
-                }
-                else{
-                    success = true;
                 }
             } catch (BadLocationException badLoc) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, badLoc);
@@ -603,16 +599,16 @@ public class JaxWsCodeGenerator {
             NotifyDescriptor desc = new NotifyDescriptor.Message(buf.toString(), NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
         }
-        
-        if (success) { // managed to insert string
-            Node clientNode = operationNode.getParentNode().getParentNode().getParentNode();
-            FileObject srcRoot = (FileObject)clientNode.getLookup().lookup(FileObject.class);
-            Project clientProject = FileOwnerQuery.getOwner(srcRoot);
-            DataObject dObj = (DataObject) sourceNode.getCookie(DataObject.class);
-            if (dObj!=null) {
-                JaxWsUtils.addProjectReference(clientProject, FileOwnerQuery.getOwner(dObj.getPrimaryFile()));
-            }
-        }
+    }
+    
+    private static void addProjectReference(Node serviceNode, Node sourceNode) {
+        Node clientNode = serviceNode.getParentNode();
+        FileObject srcRoot = clientNode.getLookup().lookup(FileObject.class);
+        Project clientProject = FileOwnerQuery.getOwner(srcRoot);
+        DataObject dObj = sourceNode.getCookie(DataObject.class);
+        if (dObj!=null) {
+            JaxWsUtils.addProjectReference(clientProject, FileOwnerQuery.getOwner(dObj.getPrimaryFile()));
+        }       
     }
     
     /**
@@ -1125,38 +1121,10 @@ public class JaxWsCodeGenerator {
                 " request_1 ").replaceFirst(" response ", //NOI18N
                 " response_1 ").replaceFirst(" out "," out_1 "); //NOI18N
     }
-    // Retouche
-    //    private static String findPrinter(Method m) {
-    //        List childrens = m.getChildren();
-    //        boolean foundPrinter=false;
-    //        for (int i=0;i<childrens.size();i++) {
-    //            Object o = childrens.get(i);
-    //            if (o instanceof Parameter) {
-    //                Parameter param = (Parameter)o;
-    //                if ("java.io.PrintWriter".equals(param.getType().getName())) { //NOI18N
-    //                    return param.getName();
-    //                }
-    //            }
-    //            if (o instanceof StatementBlock) {
-    //                List<Statement> statements = ((StatementBlock)o).getStatements();
-    //                for (Statement st:statements) {
-    //                    if (st instanceof LocalVarDeclaration) {
-    //                        List<Variable> variables = ((LocalVarDeclaration)st).getVariables();
-    //                        for (Variable var:variables) {
-    //                            if ("java.io.PrintWriter".equals(var.getType().getName())) { //NOI18N
-    //                                return var.getName();
-    //                            }
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //        }
-    //        return null;
-    //    }
     
     private static String findWsdlLocation(Client client, FileObject targetFo) {
         Project targetProject = FileOwnerQuery.getOwner(targetFo);
-        J2eeModuleProvider moduleProvider = (J2eeModuleProvider)targetProject.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider moduleProvider = targetProject.getLookup().lookup(J2eeModuleProvider.class);
         if (moduleProvider!=null && J2eeModule.WAR.equals(moduleProvider.getJ2eeModule().getModuleType())) {
             return "WEB-INF/wsdl/client/"+client.getName()+"/"+client.getLocalWsdlFile(); //NOI18N
         } else {
