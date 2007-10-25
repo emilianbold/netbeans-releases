@@ -74,14 +74,6 @@ public class Mercurial {
 
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.mercurial"); // NOI18N
 
-    /* 
-     * Cache the name of the file currently being deleted and whether it is
-     * a directory so we do the correct thing after we get notification that
-     * deletion has happened.
-     */
-    public static String deletedFile;
-    public static Boolean isDirectory;
-
     private static final int STATUS_DIFFABLE =
             FileInformation.STATUS_VERSIONED_UPTODATE |
             FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY |

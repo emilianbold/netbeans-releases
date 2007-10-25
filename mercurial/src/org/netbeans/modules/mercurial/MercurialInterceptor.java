@@ -66,10 +66,11 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     public boolean beforeDelete(File file) {
-        Mercurial.getInstance().deletedFile = file.getAbsolutePath();
-        Mercurial.getInstance().isDirectory = file.isDirectory();
-        // We want to control the removal of a directory.
-        if (Mercurial.getInstance().isDirectory)  {
+        Mercurial.LOG.log(Level.FINE, "beforeDelete(): {0}", new Object[] {file.getAbsolutePath()}); // NOI18N
+        if (file == null) return true;
+        
+        // We want to control the removal of a directory
+        if (file.isDirectory()) {
             return true;
         } else {
             return false;
@@ -83,6 +84,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     public void afterDelete(final File file) {
+        Mercurial.LOG.log(Level.FINE, "afterDelete(): {0}", new Object[] {file.getAbsolutePath()}); // NOI18N
         Utils.post(new Runnable() {
             public void run() {
                 fileDeletedImpl(file);
@@ -91,25 +93,29 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
     
     private void fileDeletedImpl(final File file) {
+        Mercurial.LOG.log(Level.FINE, "fileDeletedImpl(): {0}", new Object[] {file.getAbsolutePath()}); // NOI18N
+        if (file == null) return;
         Mercurial hg = Mercurial.getInstance();
         final File root = hg.getTopmostManagedParent(file);
         if (root == null) return;
         RequestProcessor rp = hg.getRequestProcessor(root.getAbsolutePath());
-        if (file.getAbsolutePath().equals(Mercurial.getInstance().deletedFile) && Mercurial.getInstance().isDirectory) {
-            if (!file.exists()) return;
+        if (file.exists()) {
+            if (file.isDirectory()) {
 
-            // We delete the directory here; at this point we should have 
-            // finished calling cache.refresh on all the files deleted in
-            // the directory.
-            HgProgressSupport supportCreate = new HgProgressSupport() {
-                public void perform() {
-                    file.delete();
-                }
-            };
+                // We delete the directory here; at this point we should have 
+                // finished calling cache.refresh on all the files deleted in
+                // the directory.
+                HgProgressSupport supportCreate = new HgProgressSupport() {
+                    public void perform() {
+                        file.delete();
+                    }
+                };
 
-            supportCreate.start(rp, root.getAbsolutePath(), 
-                    org.openide.util.NbBundle.getMessage(MercurialInterceptor.class, "MSG_Remove_Progress")); // NOI18N
-
+                supportCreate.start(rp, root.getAbsolutePath(), 
+                        org.openide.util.NbBundle.getMessage(MercurialInterceptor.class, "MSG_Remove_Progress")); // NOI18N
+            } else {
+                Mercurial.LOG.log(Level.FINE, "fileDeletedImpl(): File: {0} not deleted", new Object[] {file.getAbsolutePath()}); // NOI18N
+            }
         } else {
             HgProgressSupport supportCreate = new HgProgressSupport() {
                 public void perform() {
