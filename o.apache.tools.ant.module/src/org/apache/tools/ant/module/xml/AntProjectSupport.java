@@ -50,10 +50,6 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -110,11 +106,11 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     }
   
     private synchronized EditorCookie.Observable getEditor() {
-        FileObject fo = getFileObject();
-        if (fo == null) return null;
+        FileObject file = getFileObject();
+        if (file == null) return null;
         if (editor == null) {
             try {
-                editor = DataObject.find(fo).getCookie(EditorCookie.Observable.class);
+                editor = DataObject.find(file).getCookie(EditorCookie.Observable.class);
                 if (editor != null) {
                     editor.addPropertyChangeListener(WeakListeners.propertyChange(this, editor));
                 }
@@ -126,9 +122,9 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     }
     
     public File getFile () {
-        FileObject fo = getFileObject();
-        if (fo != null) {
-            return FileUtil.toFile(fo);
+        FileObject file = getFileObject();
+        if (file != null) {
+            return FileUtil.toFile(file);
         } else {
             return null;
         }
@@ -255,29 +251,29 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     
     private void parseDocument () {
         assert Thread.holdsLock(parseLock); // so it is OK to use documentBuilder
-        FileObject fo = getFileObject ();
-        AntModule.err.log ("AntProjectSupport.parseDocument: fo=" + fo);
+        FileObject file = getFileObject ();
+        AntModule.err.log ("AntProjectSupport.parseDocument: fo=" + file);
         try {
             if (documentBuilder == null) {
                 documentBuilder = createDocumentBuilder();
             }
-            EditorCookie editor = getEditor ();
+            EditorCookie ed = getEditor ();
             Document doc;
-            if (editor != null) {
-                final StyledDocument document = editor.openDocument();
+            if (ed != null) {
+                final StyledDocument document = ed.openDocument();
                 // add only one Listener (listeners for doc are hold in a List!)
                 if ((styledDocRef != null && styledDocRef.get () != document) || styledDocRef == null) {
                     document.addDocumentListener(this);
                     styledDocRef = new WeakReference<StyledDocument>(document);
                 }
-                InputSource in = createInputSource(fo, document);
+                InputSource in = createInputSource(file, document);
                 doc = documentBuilder.parse(in);
-            } else if (fo != null) {
-                InputStream is = fo.getInputStream();
+            } else if (file != null) {
+                InputStream is = file.getInputStream();
                 try {
                     InputSource in = new InputSource(is);
                     try {
-                        in.setSystemId(fo.getURL().toExternalForm());
+                        in.setSystemId(file.getURL().toExternalForm());
                     } catch (FileStateInvalidException e) {
                         assert false : e;
                     }
@@ -330,9 +326,9 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     
     @Override
     public String toString () {
-        FileObject fo = getFileObject ();
-        if (fo != null) {
-            return fo.toString();
+        FileObject file = getFileObject ();
+        if (file != null) {
+            return file.toString();
         } else {
             return "<missing Ant script>"; // NOI18N
         }
