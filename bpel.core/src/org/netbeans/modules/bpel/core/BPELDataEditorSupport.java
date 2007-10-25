@@ -99,6 +99,7 @@ import org.openide.util.TaskListener;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+import org.netbeans.modules.soa.ui.UndoRedoManagerProvider;
 
 /**
  * @author ads
@@ -113,6 +114,11 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
 
     public QuietUndoManager getUndoManager() {
         return (QuietUndoManager) getUndoRedo();
+    }
+
+    // vlv
+    public UndoRedo.Manager getUndoRedoManager() {
+      return getUndoManager();
     }
 
     /**

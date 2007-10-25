@@ -59,6 +59,7 @@ import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.text.DataEditorSupport;
 
 /**
  * @author nk160297
@@ -279,7 +280,13 @@ public class SoaUiUtil {
     }
     
     // vlv
-    public static void fixEncoding(DataObject data, FileObject dir, UndoRedo.Manager manager) throws IOException {
+    public static void fixEncoding(DataObject data, FileObject dir) throws IOException {
+      DataEditorSupport support = data.getLookup().lookup(DataEditorSupport.class);
+
+      if ( !(support instanceof UndoRedoManagerProvider)) {
+        return;
+      }
+      UndoRedo.Manager manager = ((UndoRedoManagerProvider) support).getUndoRedoManager();
       String encoding = EncodingUtil.getProjectEncoding(DataFolder.findFolder(dir).getPrimaryFile());
 
       // # 115502

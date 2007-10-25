@@ -90,6 +90,7 @@ import org.openide.util.TaskListener;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+import org.netbeans.modules.soa.ui.UndoRedoManagerProvider;
 
 /**
  *
@@ -99,12 +100,18 @@ import org.openide.windows.WindowManager;
  * TODO add ValidateXMLCookie when becomes friend ...
  */
 public class XSLTDataEditorSupport extends DataEditorSupport implements
-        OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie
+        OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie,
+        UndoRedoManagerProvider
 {
     
     public XSLTDataEditorSupport(XSLTDataObject dObj) {
         super(dObj, new XSLTEnv(dObj));
         setMIMEType(XSLTDataLoader.MIME_TYPE);
+    }
+
+    // vlv
+    public UndoRedo.Manager getUndoRedoManager() {
+      return getUndoManager();
     }
 
     /** {@inheritDoc} */

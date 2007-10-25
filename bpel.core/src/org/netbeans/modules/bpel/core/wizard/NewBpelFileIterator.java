@@ -72,7 +72,6 @@ import javax.swing.text.BadLocationException;
 import org.openide.cookies.EditorCookie;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import javax.swing.text.Document;
-import org.netbeans.modules.bpel.core.BPELDataEditorSupport;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
 
 /**
@@ -127,7 +126,7 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
         return Collections.emptySet();
       }
       // vlv
-      SoaUiUtil.fixEncoding(data, dir, data.getCookie(BPELDataEditorSupport.class).getUndoManager());
+      SoaUiUtil.fixEncoding(data, dir);
       
       return Collections.singleton(data);
     }

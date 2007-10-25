@@ -87,6 +87,7 @@ import org.openide.util.TaskListener;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+import org.netbeans.modules.soa.ui.UndoRedoManagerProvider;
 
 
 /**
@@ -94,11 +95,17 @@ import org.openide.windows.WindowManager;
  * @author Vitaly Bychkov
  */
 public class TMapDataEditorSupport extends DataEditorSupport  implements
-        OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie
+        OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie,
+        UndoRedoManagerProvider
 {
     public TMapDataEditorSupport(TMapDataObject dObj) {
         super(dObj, new TMapEnv(dObj));
         setMIMEType(TMapDataLoader.MIME_TYPE);
+    }
+
+    // vlv
+    public UndoRedo.Manager getUndoRedoManager() {
+      return getUndoManager();
     }
 
     /** {@inheritDoc} */
