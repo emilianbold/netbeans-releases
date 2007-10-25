@@ -156,6 +156,10 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
 		    }
 		}
 	    }
+	    catch( AssertionError ex ) {
+		// FIXUP for #118212 NPE when opening file from boost...
+		ex.printStackTrace();
+	    }
 	    catch( Exception ex ) {
 		// FIXUP for #118212 NPE when opening file from boost...
 		ex.printStackTrace();
