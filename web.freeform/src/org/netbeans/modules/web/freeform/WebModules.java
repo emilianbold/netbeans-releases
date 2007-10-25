@@ -104,52 +104,59 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         helper.addAntProjectListener(this);
     }
     
-    public WebModule findWebModule (FileObject file) {
+    public WebModule findWebModule (final FileObject file) {
         Project owner = FileOwnerQuery.getOwner (file);
         if (project.equals (owner)) {
-            List<FFWebModule> mods = getModules();
-            for (FFWebModule ffwm : mods) {
-                if (ffwm.contains (file)) {
-                    WebModule wm = cache.get (ffwm);
-                    if (wm == null) {
-                        wm = WebModuleFactory.createWebModule (ffwm);
-                        cache.put (ffwm, wm);
+            // read modules under project READ access to prevent issues like #119734
+            return ProjectManager.mutex().readAccess(new Mutex.Action<WebModule>() {
+                public WebModule run() {
+                    synchronized (WebModules.this) {
+                        List<FFWebModule> mods = getModules();
+                        for (FFWebModule ffwm : mods) {
+                            if (ffwm.contains (file)) {
+                                WebModule wm = cache.get (ffwm);
+                                if (wm == null) {
+                                    wm = WebModuleFactory.createWebModule (ffwm);
+                                    cache.put (ffwm, wm);
+                                }
+                                return wm;
+                            }
+                        }
+                        return null;
                     }
-                    return wm;
-                }
-            }
+                }});
         }
         return null;
     }
 
-    public ClassPath findClassPath (FileObject file, String type) {
+    public ClassPath findClassPath (final FileObject file, final String type) {
         Project owner = FileOwnerQuery.getOwner (file);
         if (owner != null && owner.equals (project)) {
-            List<FFWebModule> mods = getModules();
-            for (FFWebModule ffwm : mods) {
-                if (ffwm.contains (file)) {
-                    return ffwm.findClassPath (file, type);
+            // read modules under project READ access to prevent issues like #119734
+            return ProjectManager.mutex().readAccess(new Mutex.Action<ClassPath>() {
+                public ClassPath run() {
+                    synchronized (WebModules.this) {
+                        List<FFWebModule> mods = getModules();
+                        for (FFWebModule ffwm : mods) {
+                            if (ffwm.contains (file)) {
+                                return ffwm.findClassPath (file, type);
+                            }
+                        }
+                    }
+                    return null;
                 }
-            }
+            });
         }
         return null;
     }
     
-    private List<FFWebModule> getModules()
+    private synchronized List<FFWebModule> getModules()
     {
-        // read modules under project READ access to prevent issues like #119734
-        return ProjectManager.mutex().readAccess(new Mutex.Action<List<FFWebModule>>() {
-            public List<FFWebModule> run() {
-                synchronized (WebModules.class)
-                {
-                    if (modules == null)
-                    {
-                        modules = readAuxData();
-                        cache = new HashMap<FFWebModule, WebModule>();
-                    }
-                    return modules;
-                }
-            }});
+        if (modules == null) {
+            modules = readAuxData();
+            cache = new HashMap<FFWebModule, WebModule>();
+        }
+        return modules;
     }
     
     private List<FFWebModule> readAuxData () {
@@ -271,13 +278,10 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         return ClassPathSupport.createClassPath(pathURL);
     }
     
-    public void configurationXmlChanged(AntProjectEvent ev) {
+    public synchronized void configurationXmlChanged(AntProjectEvent ev) {
         // reset modules list; will be recreated next time somebody
         // asks for module or classpath
-        synchronized (WebModules.class)
-        {
-            modules = null;
-        }
+        modules = null;
     }
     
     public void propertiesChanged(AntProjectEvent ev) {
