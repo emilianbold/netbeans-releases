@@ -345,12 +345,13 @@ public class JaxrpcInvokeOperationGenerator {
         String serviceName, serviceClassName, serviceVarName;
         String servicePortName, servicePortJaxRpcName, servicePortVarName, servicePortTypeName = null;
         String serviceOperationName;
+        DataObject wsdlObj = null;
         
         try {
             servicePortNode = serviceOperationNode.getParentNode();
             serviceNode = servicePortNode.getParentNode();
             
-            DataObject wsdlObj = (DataObject) serviceNode.getLookup().lookup(DataObject.class);
+            wsdlObj = (DataObject) serviceNode.getLookup().lookup(DataObject.class);
             wsdlName = wsdlObj.getName();
             serviceOperationName = serviceOperationNode.getName();
             servicePortName = servicePortNode.getName();
@@ -453,7 +454,7 @@ public class JaxrpcInvokeOperationGenerator {
         
         String serviceDelegateName = "get" + serviceClassName; //NOI18N
         String portDelegateName = "get" + servicePortJaxRpcName; //NOI18N
-        ClientStubDescriptor stubType = getStub(dataObj.getPrimaryFile(), wsdlName);
+        ClientStubDescriptor stubType = getStub(wsdlObj.getPrimaryFile(), wsdlName);
         EditorCookie cookie = (EditorCookie)sourceNode.getCookie(EditorCookie.class);
         
         // including code to JSP
