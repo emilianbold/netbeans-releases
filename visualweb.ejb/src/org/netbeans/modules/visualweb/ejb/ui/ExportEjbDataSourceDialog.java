@@ -110,7 +110,7 @@ public class ExportEjbDataSourceDialog implements ActionListener {
         dialogDescriptor.setClosingOptions(new Object[] {cancelButton});
         
         // help
-        dialogDescriptor.setHelpCtx(new HelpCtx("projrave_ui_elements_server_nav_export_ejb_db"));
+        dialogDescriptor.setHelpCtx(new HelpCtx("projrave_ejb_howtoejbs_ejb_export")); // NOI18N
         
         dialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );
         dialog.setResizable(true);
