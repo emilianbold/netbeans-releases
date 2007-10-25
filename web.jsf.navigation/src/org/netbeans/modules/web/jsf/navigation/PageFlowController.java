@@ -37,13 +37,6 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * PageFlowController.java
- *
- * Created on March 1, 2007, 1:12 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
  */
 
 package org.netbeans.modules.web.jsf.navigation;
@@ -91,7 +84,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.util.NbPreferences;
 import org.openide.cookies.EditCookie;
 import org.openide.util.Lookup;
-import sun.tools.tree.SuperExpression;
 
 /**
  *
