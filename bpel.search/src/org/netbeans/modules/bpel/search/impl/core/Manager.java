@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JScrollPane;
+import javax.swing.JTree;
 
 import org.netbeans.modules.xml.search.api.SearchManager;
 import org.netbeans.modules.xml.search.api.SearchMatch;
@@ -68,7 +70,7 @@ public final class Manager implements SearchManager {
     mySearch = new Search();
   }
 
-  public Component getUI(
+  public Component createSearch(
     Object source,
     SearchTarget [] targets,
     JComponent parent,
@@ -109,6 +111,14 @@ public final class Manager implements SearchManager {
       }
     }
     return engines;
+  }
+
+  public JComponent createNavigation(
+    JTree tree,
+    JScrollPane scrollPane,
+    JComponent component)
+  {
+    return new Navigation(tree, scrollPane, component);
   }
 
   private Search mySearch;

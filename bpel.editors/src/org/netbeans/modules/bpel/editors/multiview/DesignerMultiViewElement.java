@@ -538,8 +538,6 @@ public class DesignerMultiViewElement extends TopComponent
         designViewMap.put(DefaultEditorKit.cutAction, designViewMap.get("cut-pattern"));
         designViewMap.put(DefaultEditorKit.pasteAction, designViewMap.get("paste-pattern"));
         map.put("delete", designViewMap.get("delete-something"));
-//        map.put("delete", designViewMap.get("delete-something"));        
-        
         
         ThumbScrollPane scroll = new ThumbScrollPane(myDesignView.getView());
         scroll.setBorder(null);
@@ -552,8 +550,7 @@ public class DesignerMultiViewElement extends TopComponent
         SearchManager manager = SearchManagerAccess.getManager();
 
         if (manager != null) {
-          Component search =
-            manager.getUI(new DiagramImpl(getDesignView()), null, getDesignView(), false);
+          Component search = manager.createSearch(new DiagramImpl(getDesignView()), null, getDesignView(), false);
         
           if (search != null) {
             search.setVisible(false);

@@ -95,7 +95,7 @@ public final class SearchAction extends NodeAction {
     list.add(cookie);
     list.add(view);
 
-    SearchManagerAccess.getManager().getUI(list, getTargets(model), null, true);
+    SearchManagerAccess.getManager().createSearch(list, getTargets(model), null, true);
   }
 
   private static ShowCookie getCookie(Node node) {

@@ -81,6 +81,7 @@ import org.netbeans.modules.print.api.PrintManager;
 import org.netbeans.modules.xml.search.api.SearchElement;
 import org.netbeans.modules.xml.search.api.SearchEvent;
 import org.netbeans.modules.xml.search.spi.SearchListener;
+
 import org.netbeans.modules.bpel.search.impl.util.Util;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
@@ -186,11 +187,8 @@ final class Tree extends JTree implements SearchListener {
       public void mouseClicked(MouseEvent event) {
         // double click
         if (event.getClickCount() == 2) {
-          DefaultMutableTreeNode node = getSelectedNode();
-
-          if (node.isLeaf()) {
-            select(node);
-          }
+          select(getSelectedNode());
+          event.consume();
         }
       }
     });
@@ -399,6 +397,7 @@ final class Tree extends JTree implements SearchListener {
       myIndex = myOccurences.size() - 1;
     }
     selectOccurence();
+    requestFocus();
   }
 
   public void nextOccurence(TreeNode node) {
@@ -408,6 +407,7 @@ final class Tree extends JTree implements SearchListener {
       myIndex = 0;
     }
     selectOccurence();
+    requestFocus();
   }
 
   private void selectOccurence() {
@@ -446,6 +446,7 @@ final class Tree extends JTree implements SearchListener {
       myExport = new Export();
     }
     myExport.show(descriptions, myRoot.toString());
+    requestFocus();
   }
 
   private void export(DefaultMutableTreeNode node, List<List<String>> descriptions) {
@@ -532,6 +533,7 @@ final class Tree extends JTree implements SearchListener {
       }
     }
     myIsReformAll = false;
+    requestFocus();
   }
 
   private void expandChildren(TreeNode node) {

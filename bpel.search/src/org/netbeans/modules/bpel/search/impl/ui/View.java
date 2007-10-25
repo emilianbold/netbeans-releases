@@ -52,6 +52,7 @@ import javax.swing.JToolBar;
 import org.openide.util.HelpCtx;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.print.api.PrintManager;
+import org.netbeans.modules.xml.search.api.SearchManagerAccess;
 import org.netbeans.modules.bpel.search.impl.util.Util;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
@@ -87,10 +88,21 @@ public final class View extends TopComponent {
     c.fill = GridBagConstraints.BOTH;
     c.weightx = 1.0;
     c.weighty = 1.0;
-    add(scrollPane, c);
+    add(SearchManagerAccess.getManager().createNavigation(
+      myTree, scrollPane, scrollPane), c);
 
     revalidate();
     repaint();
+  }
+
+  @Override
+  public void requestActive()
+  {
+    super.requestActive();
+
+    if (myTree != null) {
+      myTree.requestFocus();
+    }
   }
 
   private JToolBar createButtonPanel() {
