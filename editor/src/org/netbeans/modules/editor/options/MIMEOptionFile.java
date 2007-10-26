@@ -51,20 +51,19 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
-import org.openide.loaders.XMLDataObject;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.w3c.dom.Document;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Template;
-import org.openide.util.Lookup.Result;
 import java.util.Collection;
 import java.util.Iterator;
 import org.openide.modules.ModuleInfo;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** MIME Option XML file.
  *
@@ -72,6 +71,8 @@ import java.beans.PropertyVetoException;
  * @since 08/2001
  */
 public abstract class MIMEOptionFile{
+
+    private static final Logger LOG = Logger.getLogger(MIMEOptionFile.class.getName());
     
     protected BaseOptions base;
     protected MIMEProcessor processor;
@@ -84,8 +85,14 @@ public abstract class MIMEOptionFile{
     /** File change listener.
      * If file was externally modified, we have to reload settings.*/
     private final FileChangeListener fileListener = new FileChangeAdapter() {
-        public void fileChanged(FileEvent fe){
-            reloadSettings();
+        public @Override void fileChanged(FileEvent fe) {
+            // ignore changes in settings files that are handled by the new infra
+            if (!(processor instanceof AbbrevsMIMEProcessor) && 
+                !(processor instanceof FontsColorsMIMEProcessor) && 
+                !(processor instanceof KeyBindingsMIMEProcessor))
+            {
+                reloadSettings();
+            }
         }
     };
 
@@ -144,7 +151,7 @@ public abstract class MIMEOptionFile{
         try{
             processor.getXMLDataObject().setValid(false);
         }catch(PropertyVetoException pve){
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, pve);
+            LOG.log(Level.INFO, null, pve);
         }
         // remove editor uninstallation listener
         editorMI.removePropertyChangeListener(moduleListener);
