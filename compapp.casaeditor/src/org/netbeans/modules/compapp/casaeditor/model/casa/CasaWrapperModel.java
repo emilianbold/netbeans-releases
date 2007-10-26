@@ -2671,16 +2671,6 @@ public class CasaWrapperModel extends CasaModelImpl {
             return;
         }
         
-        startTransaction();
-        try {
-            casaEndpoint.setEndpointName(endpointName);
-        } finally {
-            if (isIntransaction()) {
-                fireChangeEvent(component, PROPERTY_ENDPOINT_NAME_CHANGED);
-                endTransaction();
-            }
-        }
-        
         // If the corresponding port is defined in casa wsdl,
         // update the port name in casa wsdl and also the xlink in casa.
         CasaPort casaPort = null;
@@ -2689,6 +2679,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         } else {
             casaPort = getCasaPort((CasaEndpointRef) component);            
         }
+        
         if (casaPort != null) {
             Port port = getLinkedWSDLPort(casaPort);
             // The port must be defined in casa wsdl because otherwise
@@ -2702,19 +2693,28 @@ public class CasaWrapperModel extends CasaModelImpl {
                     compAppWSDLModel.endTransaction();
                 }
             }
-            
-            CasaLink link = casaPort.getLink();
-            String linkHref = link.getHref();
-            linkHref = linkHref.replaceAll(
-                    "/port\\[@name='" + oldEndpointName + "'\\]", // NOI18N
-                    "/port[@name='" + endpointName + "']"); // NOI18N
-            startTransaction();
-            try {
+        }
+        
+        startTransaction();
+        try {
+            if (casaPort != null) {
+                CasaLink link = casaPort.getLink();
+                String linkHref = link.getHref();
+                linkHref = linkHref.replaceAll(
+                        "/port\\[@name='" + oldEndpointName + "'\\]", // NOI18N
+                        "/port[@name='" + endpointName + "']"); // NOI18N
                 link.setHref(linkHref);
-            } finally {
-                if (isIntransaction()) {
-                    endTransaction();
+            }
+            
+            casaEndpoint.setEndpointName(endpointName);
+            
+        } finally {
+            if (isIntransaction()) {
+                fireChangeEvent(component, PROPERTY_ENDPOINT_NAME_CHANGED);
+                if (casaPort != null) {
+                    fireChangeEvent(casaPort, PROPERTY_ENDPOINT_NAME_CHANGED);
                 }
+                endTransaction();
             }
         }
     }
