@@ -100,7 +100,7 @@ public class ServiceModel {
     }
 
     public void setName(String name) {
-        if (!this.name.equals(name)) {
+        if (this.name != null && !this.name.equals(name)) {
             if (changeSource) {
                 JaxWsUtils.setWebServiceAttrValue(implementationClass, "name", name); //NOI18N
             }
@@ -115,7 +115,8 @@ public class ServiceModel {
     }
 
     public void setServiceName(String serviceName) {
-        if (!this.serviceName.equals(serviceName)) {
+        
+        if (this.serviceName!= null && !this.serviceName.equals(serviceName)) {
             if (changeSource) {
                 JaxWsUtils.setWebServiceAttrValue(implementationClass, "serviceName", serviceName); //NOI18N
             }
@@ -130,7 +131,7 @@ public class ServiceModel {
     }
 
     public void setPortName(String portName) {
-        if (!this.portName.equals(portName)) {
+        if (this.portName != null && !this.portName.equals(portName)) {
             if (changeSource) {
                 JaxWsUtils.setWebServiceAttrValue(implementationClass, "portName", portName); //NOI18N
             }
@@ -219,40 +220,48 @@ public class ServiceModel {
     }
     
     void setOperations(List<MethodModel> operations) {
-        Map<String, MethodModel> op1 = new HashMap<String, MethodModel>();
-        Map<String, MethodModel> op2 = new HashMap<String, MethodModel>();
-        for (MethodModel model:this.operations) {
-            op1.put(model.getOperationName(), model);
-        }
-        for (MethodModel model:operations) {
-            op2.put(model.getOperationName(), model);
-        }
-        // looking for common operations (operationName)
-        Set<String> commonOperations = new HashSet<String>();
-        Set<String> keys1 = op1.keySet();
-        Set<String> keys2 = op2.keySet();
-        for(String key:keys1) {
-            if (keys2.contains(key)) commonOperations.add(key);
-        }
-
-        for (String key:commonOperations) {
-            MethodModel method1 = op1.get(key);
-            MethodModel method2 = op2.get(key);
-            op1.remove(key);
-            op2.remove(key);
-            // comparing if something has changed in method
-            if (!method1.isEqualTo(method2)) {
-                this.operations.set(this.operations.indexOf(method1), method2);
-                fireOperationChanged(method1,method2);
+        if (this.operations == null) {
+            //this.operations = operations;
+            this.operations = new ArrayList<MethodModel>();
+            for (MethodModel op:operations) {
+                addOperation(op);
             }
-        }
-        // op1 contains methods present in model1 that are not in model2
-        // op2 contains methods present in model2 that are not in model1
-        for (String key:op1.keySet()) {
-            removeOperation(op1.get(key));
-        }
-        for (String key:op2.keySet()) {
-            addOperation(op2.get(key));
+        } else {
+            Map<String, MethodModel> op1 = new HashMap<String, MethodModel>();
+            Map<String, MethodModel> op2 = new HashMap<String, MethodModel>();
+            for (MethodModel model:this.operations) {
+                op1.put(model.getOperationName(), model);
+            }
+            for (MethodModel model:operations) {
+                op2.put(model.getOperationName(), model);
+            }
+            // looking for common operations (operationName)
+            Set<String> commonOperations = new HashSet<String>();
+            Set<String> keys1 = op1.keySet();
+            Set<String> keys2 = op2.keySet();
+            for(String key:keys1) {
+                if (keys2.contains(key)) commonOperations.add(key);
+            }
+
+            for (String key:commonOperations) {
+                MethodModel method1 = op1.get(key);
+                MethodModel method2 = op2.get(key);
+                op1.remove(key);
+                op2.remove(key);
+                // comparing if something has changed in method
+                if (!method1.isEqualTo(method2)) {
+                    this.operations.set(this.operations.indexOf(method1), method2);
+                    fireOperationChanged(method1,method2);
+                }
+            }
+            // op1 contains methods present in model1 that are not in model2
+            // op2 contains methods present in model2 that are not in model1
+            for (String key:op1.keySet()) {
+                removeOperation(op1.get(key));
+            }
+            for (String key:op2.keySet()) {
+                addOperation(op2.get(key));
+            }
         }
     }
 
@@ -323,7 +332,15 @@ public class ServiceModel {
     
     /** package private due to test functionality */ 
     void mergeModel(ServiceModel model2) {
-        if (model2.status != STATUS_INCORRECT_SERVICE) {
+        if (model2.status == STATUS_INCORRECT_SERVICE || model2.status == STATUS_NOT_SERVICE) {
+           if (this.operations != null && model2.operations == null) {
+               int size=this.operations.size();
+               for (int i=size-1;i>=0;i--) {
+                   removeOperation(this.operations.get(i));
+               }
+           }
+        }
+        else {
             changeSource=false;
             setStatus(model2.status);
             setName(model2.name);
