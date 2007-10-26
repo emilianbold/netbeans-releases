@@ -91,12 +91,12 @@ public class DataProviderGenerator {
     public Collection generateClasses( String srcDir ) throws EjbLoadException {
         
         // First, generate the bean class source code
-        ClassDescriptor beanClassDescriptor = generateBeanClass( srcDir, packageName );
+        ClassDescriptor[] beanClassDescriptor = generateBeanClass( srcDir, packageName );
         
         // Take care the case where there is no package
-        String beanClassName = beanClassDescriptor.getPackageName() + "." + beanClassDescriptor.getClassName();
-        if( beanClassDescriptor.getPackageName() == null || beanClassDescriptor.getPackageName().length() == 0 )
-            beanClassName = beanClassDescriptor.getClassName();
+        String beanClassName = beanClassDescriptor[0].getPackageName() + "." + beanClassDescriptor[0].getClassName();
+        if( beanClassDescriptor[0].getPackageName() == null || beanClassDescriptor[0].getPackageName().length() == 0 )
+            beanClassName = beanClassDescriptor[0].getClassName();
         
         // Now, Generate the BeanInfo class source code
         DataProviderBeanInfoGenerator beanInfoGenerator = new DataProviderBeanInfoGenerator( beanClassName, methodInfo );
@@ -109,7 +109,10 @@ public class DataProviderGenerator {
         // Done! Return all the class descriptors
         
         ArrayList classDescriptors = new ArrayList();
-        classDescriptors.add( beanClassDescriptor );
+        for (int i = 0; i < beanClassDescriptor.length; i++) {
+            classDescriptors.add( beanClassDescriptor[i] );
+        }
+        
         classDescriptors.add( beanInfoClassDescriptor );
         
         for( int i = 0; i < designInfoClassDescriptors.length; i ++ )
@@ -118,7 +121,7 @@ public class DataProviderGenerator {
         return classDescriptors;
     }
     
-    public ClassDescriptor generateBeanClass( String srcDir, String packageName ) throws EjbLoadException {
+    public ClassDescriptor[] generateBeanClass( String srcDir, String packageName ) throws EjbLoadException {
         // Declare it outside the try-catch so that the file name can be logged in case of exception
         File javaFile = null;
         
@@ -143,6 +146,13 @@ public class DataProviderGenerator {
                     packageName,  // package name
                     javaFile.getAbsolutePath(),  // full path java file name
                     classDir + File.separator + classFile ); // file name with package in path
+            
+            ClassDescriptor helperDescriptor = new ClassDescriptor(
+                    className + "$ResultBean",
+                    packageName,
+                    new File( dirF, className + "$ResultBean.class" ).getAbsolutePath(),
+                    classDir + File.separator + className + "$ResultBean.class",
+                    true);
             
             // Generate java code
             
@@ -207,32 +217,46 @@ public class DataProviderGenerator {
             out.println( "    public void set" + clientWrapperClassName + "( " + clientWrapperClassName + " " + clientWrapperClassVar + " ) { ");
             out.println( "        this." + clientWrapperClassVar + " = " + clientWrapperClassVar + ";" );
             
-            // Set the object instance the method is invoked from
-            out.println( "        super.setDataClassInstance( " + clientWrapperClassVar + ");" );
+            boolean usePrimitiveWrapper = false;
             
-            // Set the Collection element type is the return type is Collection
-            if( methodInfo.getReturnType().isCollection() ) {
-                String elemClassName = methodInfo.getReturnType().getElemClassName();
-                
-                out.println( "        try {" );
-                out.println( "            Class elemType = Class.forName( \"" + elemClassName + "\");" );
-                out.println( "            super.setCollectionElementType( elemType );" );
-                out.println( "        } catch( java.lang.ClassNotFoundException ne ) {" );
-                out.println( "            ne.printStackTrace();" );
-                out.println( "        }" );
-                out.println();
+            if (methodInfo.getReturnType().isPrimitive() && !methodInfo.getReturnType().isCollection()) {
+                usePrimitiveWrapper = true;
+                out.println("        super.setDataClassInstance( this );");
+                out.println("        try { ");
+                out.println("            originalDataMethod = " + clientWrapperClassName + ".class.getMethod(" );
+                out.println("                    \"" + methodInfo.getName() + "\", new Class[] {" + getMethodParamTypes() + "} );");
+                out.println("            super.setDataMethod( getWrapperMethod() ); ");
+                out.println("        }catch (java.lang.NoSuchMethodException ne) {");
+                out.println("            ne.printStackTrace();");
+                out.println("        }");
+            }else {
+                // Set the object instance the method is invoked from
+                out.println("        super.setDataClassInstance( " + clientWrapperClassVar + ");");
+
+                // Set the Collection element type is the return type is Collection
+                if (methodInfo.getReturnType().isCollection()) {
+                    String elemClassName = methodInfo.getReturnType().getElemClassName();
+
+                    out.println("        try {");
+                    out.println("            Class elemType = Class.forName( \"" + elemClassName + "\");");
+                    out.println("            super.setCollectionElementType( elemType );");
+                    out.println("        } catch( java.lang.ClassNotFoundException ne ) {");
+                    out.println("            ne.printStackTrace();");
+                    out.println("        }");
+                    out.println();
+                }
+
+                // Set the method where the data is retrieved
+                out.println("        try { ");
+                out.println("            super.setDataMethod( " + clientWrapperClassName + ".class.getMethod(");
+                out.println("                \"" + methodInfo.getName() + "\", new Class[] {" + getMethodParamTypes() + "} ) );");
+                out.println("        } catch( java.lang.NoSuchMethodException ne ) { ");
+                out.println("            ne.printStackTrace();");
+                out.println("        }");
             }
-            
-            // Set the method where the data is retrieved
-            out.println( "        try { " );
-            out.println( "            super.setDataMethod( " + clientWrapperClassName + ".class.getMethod(" );
-            out.println( "                \"" + methodInfo.getName() + "\", new Class[] {" + getMethodParamTypes() + "} ) );" );
-            out.println( "        } catch( java.lang.NoSuchMethodException ne ) { " );
-            out.println( "            ne.printStackTrace();" );
-            out.println( "        }");
-            out.println( "    }" );
+            out.println(    "    }");
             out.println();
-            
+
             // Methods for get/set of the properties/method parameters
             for( int i = 0; i < methodParams.size(); i ++ ) {
                 MethodParam p = (MethodParam)methodParams.get( i );
@@ -252,7 +276,12 @@ public class DataProviderGenerator {
             out.println();
             
             // Implement abstract method from super class - getDataMethodArguments()
-            out.println( "    public Object[] getDataMethodArguments() {" );
+            if (usePrimitiveWrapper) {
+                out.println( "    private Object[] getOriginalDataMethodArguments() {");
+            }else {
+                out.println( "    public Object[] getDataMethodArguments() {" );
+            }
+            
             if( methodInfo.getParameters() == null || methodInfo.getParameters().isEmpty() )
                 out.println( "        return new Object[0];" );
             else {
@@ -316,6 +345,46 @@ public class DataProviderGenerator {
             out.println( "        } " );
             out.println( "        return (FieldKey[])finalKeys.toArray( new FieldKey[0] ); " );
             out.println( "    } " );
+
+            
+            // helper methods for primitive return types
+            if (usePrimitiveWrapper) {
+                String mrt = methodInfo.getReturnType().getClassName();
+                out.println("");
+                out.println("    private Method originalDataMethod; ");
+                out.println("");
+                out.println("    public ResultBean invokeMethod() {");
+                out.println("        try { ");
+                out.println("            " + mrt + " result = (" + mrt + ")originalDataMethod.invoke(" + clientWrapperClassVar + ", getOriginalDataMethodArguments()); ");
+                out.println("            ResultBean methodResult = new ResultBean(); ");
+                out.println("            methodResult.setMethodResult(result); ");
+                out.println("            return methodResult; ");
+                out.println("        }catch (Exception ex) { ");
+                out.println("            ex.printStackTrace(); ");
+                out.println("            return null; ");
+                out.println("        }");
+                out.println("    } ");
+                out.println("");
+                out.println("    private Method getWrapperMethod() throws NoSuchMethodException {");
+                out.println("        return this.getClass().getMethod(\"invokeMethod\", new Class[0]); ");
+                out.println("    } ");
+                out.println("");
+                out.println("    public static final class ResultBean { ");
+                out.println("        private " + mrt + " methodResult; ");
+                out.println("");
+                out.println("        public ResultBean() { ");
+                out.println("        } ");
+                out.println("");
+                out.println("        public " + mrt + " getMethodResult() { ");
+                out.println("            return this.methodResult; ");
+                out.println("        }");
+                out.println("");
+                out.println("        public void setMethodResult(" + mrt + " result) { ");
+                out.println("            this.methodResult = result; ");
+                out.println("        } ");
+                out.println("    } ");
+            }
+            
             
             // End of client bean clas
             out.println( "}" );
@@ -323,7 +392,11 @@ public class DataProviderGenerator {
             out.flush();
             out.close();
             
-            return classDescriptor;
+            if (usePrimitiveWrapper) {
+                return new ClassDescriptor[] { classDescriptor, helperDescriptor };
+            }else {
+                return new ClassDescriptor[] { classDescriptor };
+            }
         } catch( java.io.FileNotFoundException ex ) {
             // Log error
             ex.printStackTrace();

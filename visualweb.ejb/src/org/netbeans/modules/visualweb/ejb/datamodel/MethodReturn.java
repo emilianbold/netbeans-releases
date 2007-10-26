@@ -52,6 +52,16 @@ package org.netbeans.modules.visualweb.ejb.datamodel;
  * @author  cao
  */
 public class MethodReturn implements java.lang.Cloneable {
+    private static final String[] PRIMITIVE_WRAPPER_CLASSES = 
+    { "java.lang.Boolean", 
+      "java.lang.Byte", 
+      "java.lang.Double", 
+      "java.lang.Float", 
+      "java.lang.Integer", 
+      "java.lang.Long", 
+      "java.lang.Short", 
+      "java.lang.Character", 
+      "java.lang.String" };
     
     private String className;
     private boolean isCollection;
@@ -85,6 +95,16 @@ public class MethodReturn implements java.lang.Cloneable {
     public String getClassName() { return this.className; }
     public boolean isCollection() { return this.isCollection; }
     public String getElemClassName() { return this.elemClassName; }
+    
+    public boolean isPrimitive() {
+        for (int i = 0; i < PRIMITIVE_WRAPPER_CLASSES.length; i++) {
+            if (className.equals(PRIMITIVE_WRAPPER_CLASSES[i])) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
     
     public boolean isVoid()
     {
