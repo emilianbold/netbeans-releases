@@ -326,6 +326,9 @@ public class RADComponentNode extends FormNode
         if (DesignParentAction.isParentEditableComponent(component)) {
             actions.add(SystemAction.get(DesignParentAction.class));
         }
+        if (component instanceof RADVisualComponent && component.getParentComponent() == null) {
+            actions.add(SystemAction.get(DefaultSizeAction.class));
+        }
 
         addSeparator(actions);
     }
