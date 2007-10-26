@@ -351,16 +351,16 @@ public class SQLConstants {
     /**
      * constants for statement type in target table
      */
-    public static final String STR_INSERT_STATEMENT = "insert";
+    public static final String STR_INSERT_STATEMENT = "Insert";
 
     /** insert and update statement using merge syntax */
-    public static final String STR_INSERT_UPDATE_STATEMENT = "insert_update";
+    public static final String STR_INSERT_UPDATE_STATEMENT = "Insert/Update";
 
     /** update statement by set column syntax */
-    public static final String STR_UPDATE_STATEMENT = "update";
+    public static final String STR_UPDATE_STATEMENT = "Update";
 
     /** delete statement */
-    public static final String STR_DELETE_STATEMENT = "delete";
+    public static final String STR_DELETE_STATEMENT = "Delete";
 
     public static final String EXTRACTION_FULL = "full";
 
