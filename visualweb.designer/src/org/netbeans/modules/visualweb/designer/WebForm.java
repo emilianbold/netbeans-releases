@@ -815,99 +815,99 @@ public class WebForm implements Designer {
         return domProvider.getHtmlDom();
     }
     
-    /**
-     * Return the HTML DOM associated with the source JSPX DOM
-     * returned by {@link getDom}.
-     * @return A DocumentFragment which represents an HTML rendered,
-     *   JavaScript mutated, &lt;f:verbatim&gt;/&lt;ui:tag&gt; expanded
-     *   view of the source DOM.
-     */
-    public DocumentFragment getHtmlDomFragment() {
-// <separation of models>
-//        if (html == null) {
-//            // XXX TODO There is not needed webform here.
-//            FileObject markupFile = this.getModel().getMarkupFile();
-////            html = FacesSupport.renderHtml(markupFile, null, !CssBox.noBoxPersistence);
-//            html = InSyncService.getProvider().renderHtml(markupFile, null, !CssBox.noBoxPersistence);
-//            // XXX FIXME Is this correct here?
-//            FacesSupport.updateErrorsInComponent(this);
+//    /**
+//     * Return the HTML DOM associated with the source JSPX DOM
+//     * returned by {@link getDom}.
+//     * @return A DocumentFragment which represents an HTML rendered,
+//     *   JavaScript mutated, &lt;f:verbatim&gt;/&lt;ui:tag&gt; expanded
+//     *   view of the source DOM.
+//     */
+//    public DocumentFragment getHtmlDomFragment() {
+//// <separation of models>
+////        if (html == null) {
+////            // XXX TODO There is not needed webform here.
+////            FileObject markupFile = this.getModel().getMarkupFile();
+//////            html = FacesSupport.renderHtml(markupFile, null, !CssBox.noBoxPersistence);
+////            html = InSyncService.getProvider().renderHtml(markupFile, null, !CssBox.noBoxPersistence);
+////            // XXX FIXME Is this correct here?
+////            FacesSupport.updateErrorsInComponent(this);
+////
+////            if (html != null) {
+////                // Is this a page fragment?
+////                if (isFragment || isPortlet) {
+////                    // Just use the first element
+////                    NodeList nl = html.getChildNodes();
+////
+////                    for (int i = 0, n = nl.getLength(); i < n; i++) {
+////                        Node node = nl.item(i);
+////
+////                        if (node.getNodeType() == Node.ELEMENT_NODE) {
+////                            body = (RaveElement)node;
+////
+////                            getDom().setRoot(body);
+////
+////                            break;
+////                        }
+////                    }
+////
+////                    WebForm page = getContextPage();
+////
+////                    if (page != null) {
+////                        // XXX Force sync first??
+////                        Element surroundingBody = page.getBody();
+////
+////                        if (surroundingBody != null) {
+////                            RaveElement.setStyleParent(body, surroundingBody);
+////
+////                            // Make sure styles inherit right into the included content
+////                            ((RaveDocument)getDom()).setCssEngine(page.getDom().getCssEngine());
+////
+////                            XhtmlCssEngine engine = CssLookup.getCssEngine(body);
+////
+////                            if (engine != null) {
+////                                engine.clearTransientStyleSheetNodes();
+////                            }
+////                        }
+////                    }
+////                } else {
+////                    body = null;
+////                }
+////
+////                if (body == null) {
+////                    body = findBody(html);
+////
+////                    //if (body == null) {
+////                    //    // Insert one! Is this going to cause locking problems??? I
+////                    //    // need to do this under a write lock...
+////                    //}
+////                    NodeList nl = html.getChildNodes();
+////
+////                    for (int i = 0, n = nl.getLength(); i < n; i++) {
+////                        Node node = nl.item(i);
+////
+////                        if (node.getNodeType() == Node.ELEMENT_NODE) {
+////                            getDom().setRoot((RaveElement)node);
+////
+////                            break;
+////                        }
+////                    }
+////                }
+////            }
+////        }
+////
+////        return html;
+//// ====
+////        DocumentFragment df = InSyncService.getProvider().getHtmlDomFragmentForMarkupFile(getModel().getMarkupFile());
+////        DocumentFragment df = InSyncService.getProvider().getHtmlDomFragmentForDocument(getHtmlDom());
+//        DocumentFragment df = domProvider.getHtmlDocumentFragment();
 //
-//            if (html != null) {
-//                // Is this a page fragment?
-//                if (isFragment || isPortlet) {
-//                    // Just use the first element
-//                    NodeList nl = html.getChildNodes();
-//
-//                    for (int i = 0, n = nl.getLength(); i < n; i++) {
-//                        Node node = nl.item(i);
-//
-//                        if (node.getNodeType() == Node.ELEMENT_NODE) {
-//                            body = (RaveElement)node;
-//
-//                            getDom().setRoot(body);
-//
-//                            break;
-//                        }
-//                    }
-//
-//                    WebForm page = getContextPage();
-//
-//                    if (page != null) {
-//                        // XXX Force sync first??
-//                        Element surroundingBody = page.getBody();
-//
-//                        if (surroundingBody != null) {
-//                            RaveElement.setStyleParent(body, surroundingBody);
-//
-//                            // Make sure styles inherit right into the included content
-//                            ((RaveDocument)getDom()).setCssEngine(page.getDom().getCssEngine());
-//
-//                            XhtmlCssEngine engine = CssLookup.getCssEngine(body);
-//
-//                            if (engine != null) {
-//                                engine.clearTransientStyleSheetNodes();
-//                            }
-//                        }
-//                    }
-//                } else {
-//                    body = null;
-//                }
-//
-//                if (body == null) {
-//                    body = findBody(html);
-//
-//                    //if (body == null) {
-//                    //    // Insert one! Is this going to cause locking problems??? I
-//                    //    // need to do this under a write lock...
-//                    //}
-//                    NodeList nl = html.getChildNodes();
-//
-//                    for (int i = 0, n = nl.getLength(); i < n; i++) {
-//                        Node node = nl.item(i);
-//
-//                        if (node.getNodeType() == Node.ELEMENT_NODE) {
-//                            getDom().setRoot((RaveElement)node);
-//
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        return html;
-// ====
-//        DocumentFragment df = InSyncService.getProvider().getHtmlDomFragmentForMarkupFile(getModel().getMarkupFile());
-//        DocumentFragment df = InSyncService.getProvider().getHtmlDomFragmentForDocument(getHtmlDom());
-        DocumentFragment df = domProvider.getHtmlDocumentFragment();
-
-        // XXX #6472138 This doesn't need to be here now, used only in the dump.
-//        // XXX FIXME Is this correct here?
-//        updateErrorsInComponent();
-        
-        return df;
-// </separation of models>
-    }
+//        // XXX #6472138 This doesn't need to be here now, used only in the dump.
+////        // XXX FIXME Is this correct here?
+////        updateErrorsInComponent();
+//        
+//        return df;
+//// </separation of models>
+//    }
 
     /**
      * Return the &lt;body&gt; element associated with the rendered HTML

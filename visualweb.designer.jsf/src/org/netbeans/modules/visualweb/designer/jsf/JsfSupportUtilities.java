@@ -57,6 +57,7 @@ import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
@@ -185,6 +186,13 @@ public final class JsfSupportUtilities {
         return Util.findDescendant(HtmlTag.HTML.name, df);
     }
 
+    public static Element findHtmlElementDescendant(Document doc) {
+        if (doc == null) {
+            return null;
+        }
+        return Util.findDescendant(HtmlTag.HTML.name, doc.getDocumentElement());
+    }
+    
     // XXX Copy also in designer/../GridHandler.
     /** Given absolute coordinates x,y in the viewport, compute
      * the CSS coordinates to assign to a box if it's parented by

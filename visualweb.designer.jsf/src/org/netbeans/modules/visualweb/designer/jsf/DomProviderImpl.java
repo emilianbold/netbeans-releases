@@ -107,10 +107,10 @@ class DomProviderImpl implements DomProvider {
         return jsfForm.getHtmlDom();
     }
 
-    public DocumentFragment getHtmlDocumentFragment() {
-//        return getFacesModel().getHtmlDomFragment();
-        return jsfForm.getHtmlDomFragment();
-    }
+//    public DocumentFragment getHtmlDocumentFragment() {
+////        return getFacesModel().getHtmlDomFragment();
+//        return jsfForm.getHtmlDomFragment();
+//    }
 
     public Element getHtmlBody() {
 //        return getFacesModel().getHtmlBody();

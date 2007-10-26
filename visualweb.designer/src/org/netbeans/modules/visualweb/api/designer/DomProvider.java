@@ -108,9 +108,9 @@ public interface DomProvider {
     /** Gets html document. */
     public Document getHtmlDom();
 
-    /** XXX Gets html document fragment. Containing the 'rendered' tree.
-     * FIXME This should be in the document directly. */
-    public DocumentFragment getHtmlDocumentFragment();
+//    /** XXX Gets html document fragment. Containing the 'rendered' tree.
+//     * FIXME This should be in the document directly. */
+//    public DocumentFragment getHtmlDocumentFragment();
 
     /** XXX Gets the body element. */
     public Element getHtmlBody();

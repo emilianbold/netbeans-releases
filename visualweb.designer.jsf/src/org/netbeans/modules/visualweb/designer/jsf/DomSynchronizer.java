@@ -71,6 +71,7 @@ import java.util.Map;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.openide.ErrorManager;
 import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 
 /**
@@ -717,8 +718,8 @@ FacesDndSupport.UpdateSuspender {
 
         if (DEBUG) {
 //            DocumentFragment html = jsfForm.getDomProvider().getHtmlDocumentFragment();
-            DocumentFragment html = jsfForm.getHtmlDomFragment();
-
+//            DocumentFragment html = jsfForm.getHtmlDomFragment();
+            Document html = jsfForm.getHtmlDom();
             if (html != null) {
                 System.out.println("\nBefore delayed updates to bean " + bean + " the html is\n" +
                     InSyncServiceProvider.get().getHtmlStream(html));
@@ -842,8 +843,8 @@ FacesDndSupport.UpdateSuspender {
 
         if (DEBUG) {
 //            DocumentFragment html = jsfForm.getDomProvider().getHtmlDocumentFragment();
-            DocumentFragment html = jsfForm.getHtmlDomFragment();
-
+//            DocumentFragment html = jsfForm.getHtmlDomFragment();
+            Document html = jsfForm.getHtmlDom();
             if (html != null) {
                 System.out.println("\nAfter delayed updates to bean " + bean + " the html is\n" +
                     InSyncServiceProvider.get().getHtmlStream(html));
@@ -1477,11 +1478,13 @@ FacesDndSupport.UpdateSuspender {
 
         // Intentional side-effect -- cause re-generation of html dom
 //        DocumentFragment html = jsfForm.getDomProvider().getHtmlDocumentFragment();
-        DocumentFragment html = jsfForm.getHtmlDomFragment();
+//        DocumentFragment html = jsfForm.getHtmlDomFragment();
+        // XXX This is a very ugly hack.
+        jsfForm.getHtmlBody();
 
         if (DEBUG) {
-            System.out.println("Refresh: Got new HTML fragment: " +
-                InSyncServiceProvider.get().getHtmlStream(html));
+            System.err.println("Refresh: Got new HTML: " + // NOI18N
+                InSyncServiceProvider.get().getHtmlStream(jsfForm.getHtmlDom()));
         }
 
         //        webform.getPane().hideCaret();

@@ -112,6 +112,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.actions.Presenter;
+import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
@@ -1648,11 +1649,12 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     
     private void dumpRootComponentCssBoxes() {
 //        DocumentFragment df = webform.getHtmlDomFragment();
-        DocumentFragment df = jsfForm.getHtmlDomFragment();
+//        DocumentFragment df = jsfForm.getHtmlDomFragment();
+        Document doc = jsfForm.getHtmlDom();
         
 //        Element html = Util.findDescendant(HtmlTag.HTML.name, df);
 //        Element html = WebForm.getDomProviderService().findHtmlElementDescendant(df);
-        Element html = JsfSupportUtilities.findHtmlElementDescendant(df);
+        Element html = JsfSupportUtilities.findHtmlElementDescendant(doc);
         if (html == null) {
             html = jsfForm.getHtmlBody(false);
         }

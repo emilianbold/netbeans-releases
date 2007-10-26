@@ -1727,7 +1727,7 @@ public class JsfForm {
         return getFacesModel().getJspDom();
     }
     
-    Document getHtmlDom() {
+    public Document getHtmlDom() {
 //        return domProvider.getHtmlDom();
         return getFacesModel().getHtmlDom();
     }
@@ -2081,7 +2081,7 @@ public class JsfForm {
                 + "\n" + Util.getHtmlStream(html)); // NOI18N
     }
    
-    public DocumentFragment getHtmlDomFragment() {
+    private DocumentFragment getHtmlDomFragment() {
 //        return domProvider.getHtmlDocumentFragment();
         return getFacesModel().getHtmlDomFragment();
     }
