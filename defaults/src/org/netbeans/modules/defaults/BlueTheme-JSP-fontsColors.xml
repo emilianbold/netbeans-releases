@@ -43,17 +43,31 @@ made subject to such option by the copyright holder.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="argument" foreColor="ff007c00" default="identifier"/>
-    <fontcolor name="block-comment" foreColor="gray" default="comment"/>
-    <fontcolor name="character" foreColor="ffb20000" default="char"/>
-    <fontcolor name="error" foreColor="white" bgColor="red" default="error"/>
-    <fontcolor name="operator" foreColor="ff007c00" default="operator"/>
-    <fontcolor name="sgml-comment" foreColor="gray" default="comment"/>
-    <fontcolor name="sgml-declaration" foreColor="ffbf9221" default="default"/>
-    <fontcolor name="tag" foreColor="blue" default="default"/>
-    <fontcolor name="text" default="default"/>
-    <fontcolor name="value" foreColor="ff99006b" default="default"/>
-    <fontcolor name="ws" default="whitespace"/>
-    <fontcolor name="css-embedded" bgColor="121E31" default="default"/>
-    <fontcolor name="javascript-embedded" bgColor="121E31" default="default"/>
+    <fontcolor name="attribute-name" foreColor="ff007c00" default="default"/>
+    <fontcolor name="attribute-value" foreColor="ff99006b" default="default"/>
+    <fontcolor name="comment" foreColor="gray" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="error" foreColor="black" bgColor="red" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="scriptlet-delimiter" foreColor="gray" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="symbol" foreColor="gray" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="tag-directive" foreColor="blue" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="endtag" foreColor="blue" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="jsp-whitespace" foreColor="black" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="scriptlet" default="default"/>
+    <fontcolor name="expression-language" foreColor="yellow" default="default">
+        <font style="bold"/>
+    </fontcolor>
 </fontscolors>
