@@ -56,6 +56,18 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         super(testName, true);
     }
     
+    public void testEmptyDerefCompletion() throws Exception {
+        super.performTest("file.cc", 39, 5, "&");
+        super.performTest("file.cc", 39, 5, "pointer = &");
+        super.performTest("file.cc", 39, 5, "foo(&)", -1);
+    }
+    
+    public void testEmptyPtrCompletion() throws Exception {
+        super.performTest("file.cc", 39, 5, "*");
+        super.performTest("file.cc", 39, 5, "pointer = *");
+        super.performTest("file.cc", 39, 5, "foo(*)", -1);
+    }
+    
     public void testCompletionInEmptyFile() throws Exception {
         super.performTest("empty.cc", 1,1);
     }
