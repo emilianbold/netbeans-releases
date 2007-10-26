@@ -254,13 +254,13 @@ public class RubyInstallation {
             for (String dir : dirs) {
                 File f = null;
                 if (Utilities.isWindows()) {
-                    f = new File(dir, "ruby.exe");
+                    f = new File(dir, "ruby.exe"); // NOI18N
                 } else {
                     f = new File(dir, "ruby"); // NOI18N
                     // Don't include /usr/bin/ruby on the Mac - it's no good
                     if (Utilities.isMac() && "/usr/bin/ruby".equals(f.getPath())) { // NOI18N
                         String version = System.getProperty("os.version"); // NOI18N
-                        if (version == null || version.startsWith("10.4")) { // Only a problem on Tiger
+                        if (version == null || version.startsWith("10.4")) { // Only a problem on Tiger // NOI18N
                             continue;
                         }
                     }
@@ -333,7 +333,7 @@ public class RubyInstallation {
         }
 
         if (descriptor.getValue() != DialogDescriptor.OK_OPTION) {
-            return "jruby";
+            return "jruby"; // NOI18N
         }
         String displayItem = panel.getChosenInterpreter();
         if (displayItem == null) {
@@ -676,7 +676,7 @@ public class RubyInstallation {
                 LOGGER.warning("Could not find Ruby interpreter executable when searching for '" + toFind + "'"); // NOI18N
             }
             if (exec == null) {
-                final String libGemBinDir = getRubyLibGemDir(canonical) + File.separator + "bin";
+                String libGemBinDir = getRubyLibGemDir(canonical) + File.separator + "bin"; // NOI18N
                 exec = findExecutable(libGemBinDir, toFind);
             }
             canonical ^= true;
@@ -882,7 +882,7 @@ public class RubyInstallation {
                 if (ruby != null) {
                     FileObject fo = FileUtil.toFileObject(new File(ruby));
                     if (fo != null) {
-                        rubyStubsFo = fo.getParent().getParent().getParent().getFileObject("rubystubs/" + RUBYSTUBS_VERSION);
+                        rubyStubsFo = fo.getParent().getParent().getParent().getFileObject("rubystubs/" + RUBYSTUBS_VERSION); // NOI18N
                     }
                 }
             }
@@ -1259,7 +1259,7 @@ public class RubyInstallation {
                             initGemList();
                             if (PREINDEXING) {
                                 String gemDir = getRubyLibGemDir();
-                                File specDir = new File(gemDir, "gems");
+                                File specDir = new File(gemDir, "gems"); // NOI18N
 
                                 if (specDir.exists()) {
                                     File[] gems = specDir.listFiles();
@@ -1394,7 +1394,7 @@ public class RubyInstallation {
                 return BUILTIN_JRUBY;
             }
             if (isJRubySet()) {
-                return "JRuby"; // TODO I18N and version
+                return "JRuby"; // TODO I18N and version // NOI18N
             }
         }
 
