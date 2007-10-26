@@ -151,8 +151,7 @@ ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-valid
 # UML UI validation tests
 ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-uml -Dxtest.instance.name="UML tests" -Dxtest.no.cleanresults=true runtests
 # Ruby UI validation tests
-# XXX failing for unknown reason
-#ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-ruby -Dxtest.instance.name="Ruby tests" -Dxtest.no.cleanresults=true runtests
+ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-ruby -Dxtest.instance.name="Ruby tests" -Dxtest.no.cleanresults=true runtests
 echo TESTS STARTED: $TESTS_STARTED
 echo TESTS FINISHED: `date`
 
