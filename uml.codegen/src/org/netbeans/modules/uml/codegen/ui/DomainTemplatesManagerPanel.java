@@ -168,7 +168,6 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         "VAL_ElementType_ShallowHistoryState", // NOI18N
         "VAL_ElementType_Signal", // NOI18N
         "VAL_ElementType_SubmachineState", // NOI18N
-        "VAL_ElementType_TemplateClass" // NOI18N
     };
     
     private void populateTemplatesTreeValues(boolean reset)
