@@ -12,20 +12,35 @@
 <body>
 <h2>Select JUnit Version Dialog Box</h2>
 <p><small><a href="#seealso">See Also</a>&nbsp;</small>
-    <p>This dialog box lets you specify the version of JUnit to use for creating JUnit test skeletons. 
+    <p>Use this dialog box to specify the version of JUnit to use when creating JUnit test skeletons. 
     You see this dialog box the first time you create a JUnit test or test suite for your project.</p>
 
-<p>If you are developing your project on the Java 5 platform, you can choose between the
-following versions of JUnit:</p>
-<!-- TODO -->
+    <p>When you select a JUnit version, the IDE adds the corresponding JUnit libraries to your project. 
+    You can view the project's JUnit libraries by expanding the project's Test Libraries node in the Projects window.</p>
+
+<p>If you are developing your project on the Java 5.0 platform, you can choose between the
+following JUnit versions:</p>
+
 <ul>
     <li><b>JUnit 3.x</b></li>
     <li><b>JUnit 4.x</b></li>
 </ul>
 
+
+<p><b>Notes:</b></p>
 <ul class="note">
-<li>To choose JUnit 4, your project must be running on the Java 5 platform or higher.</li>
+    <li>The JUnit 4.x option is only available if your project is running on the Java 5.0 platform or higher.
+    <!--JUnit 4.x includes support for static imports and annotation descriptions in tests.--></li>
+    <li>JUnit 4.x is backwards-compatible with JUnit 3.x. If you decide to downgrade from JUnit 4.x to JUnit 3.x, 
+    tests using unsupported features such as annotation descriptions and static imports will be ignored.</li>
+    <li>You can use the Options window to further <a href="junit_configuring.html">configure JUnit</a>.</li>
 </ul>
+
+<h3>Changing the JUnit Version</h3>
+<p>The Select JUnit Version dialog box only appears the first time you create a JUnit test.
+You can update support for the JUnit versions by updating the JUnit libraries in the project's Test Libraries node.</p>
+<p>To add a new library, right-click the Test Libraries node and choose Add Library and select the library in the Add Library dialog box.
+To remove a library, right-click the library and choose Remove.</p>
 
 <dl>
   <dt><a name="seealso">See Also</a></dt>
