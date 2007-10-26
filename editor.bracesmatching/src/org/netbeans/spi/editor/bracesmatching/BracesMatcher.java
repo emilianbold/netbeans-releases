@@ -100,7 +100,7 @@ import javax.swing.text.BadLocationException;
  *         // look a bit furter in the document ....
  * 
  *         if (Thread.currentThread().isInterrupted()) {
- *             return;
+ *             return null;
  *         }
  *     }
  * }
