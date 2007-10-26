@@ -41,7 +41,7 @@ import org.openide.util.actions.SystemAction;
  */
 public class Page extends PageFlowSceneElement implements SaveCookie {
 
-    public PageFlowController pc;
+    public final PageFlowController pc;
     private Node original;
     private PageContentModel pageContentModel = null;
 
@@ -184,7 +184,6 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
     /* Joelle: Temporarily I need not use destroy for the other purpose.  I plan to fix after stabilization */
     public void destroy2() {
         destroyListeners();
-        pc = null;
         original = null;
         pccl = null;
         pageContentModel = null;
@@ -312,7 +311,7 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
      **/
     private void initListeners() {
         if (pageContentModel != null && pccl == null) {
-            pccl = new PageContentChangeListener(pc, this);
+            pccl = new PageContentChangeListener();
             pageContentModel.addChangeListener(pccl);
         }
     }
@@ -337,14 +336,6 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         return this;
     }
     private class PageContentChangeListener implements ChangeListener {
-
-        private final PageFlowController pc;
-//        private final Page pageNode;
-
-        public PageContentChangeListener(PageFlowController pc, Page pageNode) {
-            this.pc = pc;
-//            this.pageNode = pageNode;
-        }
 
         public void stateChanged(ChangeEvent arg0) {
             pc.updatePageItems(getInstance());
