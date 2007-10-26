@@ -257,14 +257,12 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         if(mode == Mode.Form) {
             actionToEdit.setVisible(true);
             actionsCombo.setVisible(true);
-            actionsLabel.setVisible(false);
-            classLabel.setVisible(true);
-            classField.setVisible(false);
-            targetClassButton.setVisible(false);
+            actionsField.setVisible(false);
+            classField.setVisible(true);
+            classField.setEditable(false);
             scopeCombo.setVisible(false);
-            methodLabel.setVisible(true);
-            methodField.setVisible(false);
-            backgroundTaskLabel.setVisible(false);
+            targetClassButton.setVisible(false);
+            methodField.setEditable(false);
             backgroundTaskCheckbox.setVisible(true);
             resetFields();
         }
@@ -272,33 +270,32 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             newAction =  new ProxyAction();
             actionToEdit.setVisible(true);
             setNewActionCreated(true);
-            classField.setText(scopeClasses.get(ProxyAction.Scope.Form));
             classField.setVisible(false);
             scopeCombo.setVisible(true);
+            targetClassButton.setVisible(false);
         }
         if(mode == Mode.Global) {
             actionToEdit.setVisible(true);
             actionsCombo.setVisible(false);
-            actionsLabel.setVisible(true);
-            classLabel.setVisible(true);
-            classField.setVisible(false);
-            targetClassButton.setVisible(false);
+            actionsField.setVisible(true);
+            classField.setVisible(true);
+            classField.setEditable(false);
             scopeCombo.setVisible(false);
-            methodLabel.setVisible(true);
-            methodField.setVisible(false);
-            backgroundTaskLabel.setVisible(false);
+            targetClassButton.setVisible(false);
+            methodField.setEditable(false);
             backgroundTaskCheckbox.setVisible(true);
         }
         if(mode == Mode.NewActionGlobal) {
             newAction = new ProxyAction();
-            actionsLabel.setVisible(false);
+            actionsCombo.setVisible(false);
+            actionsField.setVisible(false);
             actionToEdit.setVisible(false);
             setNewActionCreated(true);
-            classField.setText(""); // NOI18N
-            classField.setVisible(false);
-            classLabel.setVisible(true);
-            targetClassButton.setVisible(true);
+            classField.setVisible(true);
+            classField.setEditable(true);
             scopeCombo.setVisible(false);
+            targetClassButton.setVisible(true);
+            methodField.setEditable(true);
         }
     }
     
@@ -352,14 +349,12 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         sig.append("()"); // NOI18N
         
         if(act == null) {
-            methodLabel.setText(""); // NOI18N
-            classLabel.setText(""); // NOI18N
-            backgroundTaskLabel.setText(""); // NOI18N
+            classField.setText(""); // NOI18N
+            methodField.setText(""); // NOI18N
         } else {
-            actionsLabel.setText(act.getId());
-            methodLabel.setText(sig.toString());
-            classLabel.setText(act.getClassname());
-            backgroundTaskLabel.setText(act.isTaskEnabled() ? getLocalizedString("yes") : getLocalizedString("no")); // NOI18N
+            actionsField.setText(act.getId());
+            classField.setText(act.getClassname());
+            methodField.setText(sig.toString());
             backgroundTaskCheckbox.setSelected(act.isTaskEnabled());
         }
 
@@ -413,7 +408,6 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel2 = new javax.swing.JPanel();
@@ -433,7 +427,6 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         altCheckbox = new javax.swing.JCheckBox();
         metaCheckbox = new javax.swing.JCheckBox();
         jLabel13 = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
         setIconButtonSmall = new javax.swing.JButton();
         setIconButtonLarge = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
@@ -452,30 +445,21 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         actionToEdit = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
-        jLabel14 = new javax.swing.JLabel();
         jLabel17 = new javax.swing.JLabel();
+        backgroundTaskCheckbox = new javax.swing.JCheckBox();
+        actionsCombo = new javax.swing.JComboBox();
+        methodField = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
-        classLabel = new javax.swing.JLabel();
-        classField = new javax.swing.JTextField();
         targetClassButton = new javax.swing.JButton();
         scopeCombo = new javax.swing.JComboBox();
-        jPanel4 = new javax.swing.JPanel();
-        methodLabel = new javax.swing.JLabel();
-        methodField = new javax.swing.JTextField();
-        jPanel5 = new javax.swing.JPanel();
-        backgroundTaskLabel = new javax.swing.JLabel();
-        backgroundTaskCheckbox = new javax.swing.JCheckBox();
-        jPanel6 = new javax.swing.JPanel();
-        actionsCombo = new javax.swing.JComboBox();
-        actionsLabel = new javax.swing.JLabel();
-
-        jPanel2.setOpaque(false);
+        classField = new javax.swing.JTextField();
+        actionsField = new javax.swing.JTextField();
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel2.text_1")); // NOI18N
 
-        textField.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "textField.text")); // NOI18N
+        textField.setColumns(15);
 
-        tooltipField.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "tooltipField.text")); // NOI18N
+        tooltipField.setColumns(15);
 
         jLabel5.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel5.text")); // NOI18N
 
@@ -490,12 +474,12 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
 
         iconButtonLarge.setBackground(new java.awt.Color(255, 255, 255));
         iconButtonLarge.setBorder(null);
-        iconButtonLarge.setOpaque(false);
+        iconButtonLarge.setContentAreaFilled(false);
         iconButtonLarge.setPreferredSize(new java.awt.Dimension(64, 64));
 
         jPanel7.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(153, 153, 153)));
 
-        acceleratorText.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "acceleratorText.text")); // NOI18N
+        acceleratorText.setColumns(5);
 
         clearAccelButton.setMnemonic('1');
         clearAccelButton.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.clearAccelButton.text")); // NOI18N
@@ -526,18 +510,21 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             .add(jPanel7Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel7Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(controlCheckbox)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, altCheckbox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE)
-                    .add(jLabel13))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel7Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(metaCheckbox)
-                    .add(shiftCheckbox)
                     .add(jPanel7Layout.createSequentialGroup()
-                        .add(acceleratorText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 47, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(controlCheckbox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(shiftCheckbox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(altCheckbox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(metaCheckbox))
+                    .add(jPanel7Layout.createSequentialGroup()
+                        .add(jLabel13)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(acceleratorText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(clearAccelButton)))
-                .addContainerGap())
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -545,9 +532,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(jPanel7Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(controlCheckbox)
-                    .add(shiftCheckbox))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jPanel7Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(shiftCheckbox)
                     .add(altCheckbox)
                     .add(metaCheckbox))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -555,16 +540,14 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                     .add(jLabel13)
                     .add(acceleratorText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(clearAccelButton))
-                .add(12, 12, 12))
+                .addContainerGap())
         );
 
         clearAccelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.clearAccelButton.AccessibleContext.accessibleDescription")); // NOI18N
 
-        jLabel10.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "jLabel10.text")); // NOI18N
+        setIconButtonSmall.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jButton1.text")); // NOI18N
 
-        setIconButtonSmall.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "jButton1.text")); // NOI18N
-
-        setIconButtonLarge.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "jButton2.text")); // NOI18N
+        setIconButtonLarge.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jButton2.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -573,32 +556,24 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             .add(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel2)
+                    .add(jLabel4)
+                    .add(jLabel7)
+                    .add(jLabel5))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(tooltipField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
+                    .add(textField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
                     .add(jPanel2Layout.createSequentialGroup()
-                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel2)
-                            .add(jLabel4)
-                            .add(jLabel7))
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                            .add(iconButtonSmall, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(setIconButtonSmall))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jPanel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(tooltipField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
-                            .add(textField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE))
-                        .addContainerGap())
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jPanel2Layout.createSequentialGroup()
-                                .add(jLabel5)
-                                .add(18, 18, 18)
-                                .add(iconButtonSmall, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(jPanel2Layout.createSequentialGroup()
-                                .add(jLabel10)
-                                .add(18, 18, 18)
-                                .add(iconButtonLarge, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 66, Short.MAX_VALUE)
-                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(setIconButtonSmall)
-                            .add(setIconButtonLarge))
-                        .add(20, 20, 20))))
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                            .add(iconButtonLarge, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(setIconButtonLarge))))
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -611,26 +586,23 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel4)
                     .add(tooltipField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel7)
                     .add(jPanel7, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel5)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(setIconButtonSmall)
-                    .add(iconButtonSmall, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jLabel5)
+                    .add(setIconButtonLarge))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(setIconButtonLarge)
-                    .add(jLabel10)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(iconButtonSmall, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(iconButtonLarge, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(34, 34, 34))
+                .addContainerGap())
         );
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jPanel2.TabConstraints.tabTitle"), jPanel2); // NOI18N
-
-        jPanel3.setOpaque(false);
 
         jLabel6.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel6.text")); // NOI18N
 
@@ -647,45 +619,31 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         blockingType.setEnabled(false);
         blockingType.setOpaque(false);
 
-        blockingDialogTitle.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "blockingDialogTitle.text")); // NOI18N
         blockingDialogTitle.setEnabled(false);
 
-        blockingDialogText.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "blockingDialogText.text")); // NOI18N
         blockingDialogText.setEnabled(false);
-
-        enabledCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        selectedCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel3Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jLabel8)
-                        .add(36, 36, 36)
-                        .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(selectedCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(enabledTextfield, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
-                            .add(enabledCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(selectedTextfield, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)))
-                    .add(jPanel3Layout.createSequentialGroup()
-                        .add(20, 20, 20)
-                        .add(jLabel11))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel3Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel3)
-                            .add(jLabel6)
-                            .add(jLabel1))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(blockingType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 128, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(blockingDialogTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
-                            .add(blockingDialogText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE))))
+                    .add(jLabel8)
+                    .add(jLabel11)
+                    .add(jLabel3)
+                    .add(jLabel6)
+                    .add(jLabel1))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(enabledTextfield, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)
+                    .add(selectedTextfield, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)
+                    .add(blockingDialogTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)
+                    .add(blockingDialogText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)
+                    .add(enabledCombo, 0, 186, Short.MAX_VALUE)
+                    .add(selectedCombo, 0, 186, Short.MAX_VALUE)
+                    .add(blockingType, 0, 186, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -715,7 +673,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel6)
                     .add(blockingDialogText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(118, Short.MAX_VALUE))
+                .addContainerGap(53, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jPanel3.TabConstraints.tabTitle"), jPanel3); // NOI18N
@@ -726,32 +684,25 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
 
         jLabel12.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel12.text")); // NOI18N
 
-        jLabel14.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel14.text")); // NOI18N
-
         jLabel17.setLabelFor(jTabbedPane1);
         jLabel17.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel17.text")); // NOI18N
 
-        jPanel1.setLayout(new java.awt.GridBagLayout());
+        backgroundTaskCheckbox.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.backgroundTaskCheckbox.text")); // NOI18N
+        backgroundTaskCheckbox.setToolTipText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.backgroundTaskCheckbox.toolTipText")); // NOI18N
+        backgroundTaskCheckbox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        backgroundTaskCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                backgroundTaskCheckboxActionPerformed(evt);
+            }
+        });
 
-        classLabel.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.classLabel.text")); // NOI18N
-        classLabel.setMinimumSize(new java.awt.Dimension(10, 16));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel1.add(classLabel, gridBagConstraints);
+        actionsCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                actionsComboActionPerformed(evt);
+            }
+        });
 
-        classField.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "classField.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        jPanel1.add(classField, gridBagConstraints);
+        methodField.setColumns(24);
 
         targetClassButton.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.targetClassButton.text")); // NOI18N
         targetClassButton.addActionListener(new java.awt.event.ActionListener() {
@@ -759,187 +710,90 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                 targetClassButtonActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        jPanel1.add(targetClassButton, gridBagConstraints);
 
-        scopeCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel1.add(scopeCombo, gridBagConstraints);
+        classField.setColumns(10);
 
-        jPanel4.setLayout(new java.awt.GridBagLayout());
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(classField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(scopeCombo, 0, 87, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(targetClassButton))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(targetClassButton)
+                .add(classField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(scopeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
 
-        methodLabel.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "methodLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel4.add(methodLabel, gridBagConstraints);
-
-        methodField.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "methodField.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel4.add(methodField, gridBagConstraints);
-
-        jPanel5.setLayout(new java.awt.GridBagLayout());
-
-        backgroundTaskLabel.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.backgroundTaskLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel5.add(backgroundTaskLabel, gridBagConstraints);
-
-        backgroundTaskCheckbox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        backgroundTaskCheckbox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                backgroundTaskCheckboxActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel5.add(backgroundTaskCheckbox, gridBagConstraints);
-
-        jPanel6.setLayout(new java.awt.GridBagLayout());
-
-        actionsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "save", "open", "new", "exit", "cut" }));
-        actionsCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                actionsComboActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel6.add(actionsCombo, gridBagConstraints);
-        actionsCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.actionsCombo.AccessibleContext.accessibleName")); // NOI18N
-        actionsCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.actionsCombo.AccessibleContext.accessibleDescription")); // NOI18N
-
-        actionsLabel.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "actionsLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel6.add(actionsLabel, gridBagConstraints);
+        actionsField.setColumns(10);
+        actionsField.setEditable(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel14)
-                    .add(jLabel17)
                     .add(jLabel12)
                     .add(actionToEdit)
-                    .add(jLabel9))
+                    .add(jLabel9)
+                    .add(jLabel17))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 367, Short.MAX_VALUE)
-                    .add(jPanel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 367, Short.MAX_VALUE)
-                    .add(jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 367, Short.MAX_VALUE)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 367, Short.MAX_VALUE)
-                    .add(jPanel6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 143, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(backgroundTaskCheckbox)
+                    .add(layout.createSequentialGroup()
+                        .add(actionsCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 200, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(0, 0, 0)
+                        .add(actionsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE))
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
+                    .add(methodField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(actionToEdit))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(actionToEdit)
+                    .add(actionsCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(actionsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel9))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel12)
-                    .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(methodField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(backgroundTaskCheckbox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel14)
-                    .add(jPanel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(10, 10, 10)
-                        .add(jLabel17))
-                    .add(layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)))
+                    .add(jTabbedPane1)
+                    .add(jLabel17))
                 .addContainerGap())
         );
 
         jTabbedPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jTabbedPane1.AccessibleContext.accessibleName")); // NOI18N
         jTabbedPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jTabbedPane1.AccessibleContext.accessibleDescription")); // NOI18N
+        actionsCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.actionsCombo.AccessibleContext.accessibleName")); // NOI18N
+        actionsCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.actionsCombo.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-private void targetClassButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_targetClassButtonActionPerformed
-
-    ClassPathFileChooser cp = new ClassPathFileChooser(sourceFile, new ClassPathFileChooser.Filter() {
-        public boolean accept(FileObject file) {
-            return true;
-        }
-    },false,true);
-
-    cp.getDialog(getLocalizedString("classChooserDialogTitle"), null).setVisible(true); // NOI18N
-    if(cp.getSelectedFile() != null && cp.isConfirmed()) {
-        selectedSourceFile = cp.getSelectedFile();
-        String selectedClass = AppFrameworkSupport.getClassNameForFile(cp.getSelectedFile());
-        if(AppFrameworkSupport.getFileForClass(sourceFile, selectedClass) == null) {
-            classField.setText(""); // NOI18N
-            classLabel.setText(""); // NOI18N
-        } else {
-            classField.setText(selectedClass);
-            classLabel.setText(selectedClass);
-        }
-    }
-}//GEN-LAST:event_targetClassButtonActionPerformed
-
-private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backgroundTaskCheckboxActionPerformed
-    if(backgroundTaskCheckbox.isVisible()) {
-        blockingType.setEnabled(backgroundTaskCheckbox.isSelected());
-        blockingDialogText.setEnabled(backgroundTaskCheckbox.isSelected());
-        blockingDialogTitle.setEnabled(backgroundTaskCheckbox.isSelected());
-    }
-}//GEN-LAST:event_backgroundTaskCheckboxActionPerformed
 
     private void clearAccelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearAccelButtonActionPerformed
         // clear the accelerator because you can't actually use backspace to clear it
         acceleratorListener.clearFields();
         clearAcceleratorPanel();
     }//GEN-LAST:event_clearAccelButtonActionPerformed
-    
     
         
     private void actionsComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_actionsComboActionPerformed
@@ -951,6 +805,35 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
             }
         }
     }//GEN-LAST:event_actionsComboActionPerformed
+
+    private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backgroundTaskCheckboxActionPerformed
+        if(backgroundTaskCheckbox.isVisible()) {
+            blockingType.setEnabled(backgroundTaskCheckbox.isSelected());
+            blockingDialogText.setEnabled(backgroundTaskCheckbox.isSelected());
+            blockingDialogTitle.setEnabled(backgroundTaskCheckbox.isSelected());
+        }
+    }//GEN-LAST:event_backgroundTaskCheckboxActionPerformed
+
+    private void targetClassButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_targetClassButtonActionPerformed
+        ClassPathFileChooser cp = new ClassPathFileChooser(sourceFile, new ClassPathFileChooser.Filter() {
+            public boolean accept(FileObject file) {
+                return true;
+            }
+        },false,true);
+        
+        cp.getDialog(getLocalizedString("classChooserDialogTitle"), null).setVisible(true); // NOI18N
+        if(cp.getSelectedFile() != null && cp.isConfirmed()) {
+            selectedSourceFile = cp.getSelectedFile();
+            String selectedClass = AppFrameworkSupport.getClassNameForFile(cp.getSelectedFile());
+            if(AppFrameworkSupport.getFileForClass(sourceFile, selectedClass) == null) {
+                //            classLabel.setText(""); // NOI18N
+                classField.setText(""); // NOI18N
+            } else {
+                //            classLabel.setText(selectedClass);
+                classField.setText(selectedClass);
+            }
+        }
+    }//GEN-LAST:event_targetClassButtonActionPerformed
 
     
     void setParsedActions(Map<ProxyAction.Scope, List<ProxyAction>> actionMap) {
@@ -1003,7 +886,7 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
             return scopeClasses.get(scope);
         }
         if(mode == Mode.NewActionGlobal) {
-            return classLabel.getText();
+            return classField.getText();
         }
         return null;
     }
@@ -1086,7 +969,7 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
                     ProxyAction act2 = (ProxyAction)o;
                     if(act2.getId().equals(act.getId())) {
                         actionsCombo.setSelectedItem(act2);
-                        actionsLabel.setText(act2.getId());
+                        actionsField.setText(act2.getId());
                         break;
                     }
                 }
@@ -1103,15 +986,13 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     public javax.swing.JTextField acceleratorText;
     private javax.swing.JLabel actionToEdit;
     private javax.swing.JComboBox actionsCombo;
-    private javax.swing.JLabel actionsLabel;
+    private javax.swing.JTextField actionsField;
     public javax.swing.JCheckBox altCheckbox;
     private javax.swing.JCheckBox backgroundTaskCheckbox;
-    private javax.swing.JLabel backgroundTaskLabel;
     private javax.swing.JTextField blockingDialogText;
     private javax.swing.JTextField blockingDialogTitle;
     private javax.swing.JComboBox blockingType;
     private javax.swing.JTextField classField;
-    private javax.swing.JLabel classLabel;
     private javax.swing.JButton clearAccelButton;
     public javax.swing.JCheckBox controlCheckbox;
     private javax.swing.JComboBox enabledCombo;
@@ -1119,11 +1000,9 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     private javax.swing.JButton iconButtonLarge;
     private javax.swing.JButton iconButtonSmall;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
-    private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -1136,14 +1015,10 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JTabbedPane jTabbedPane1;
     public javax.swing.JCheckBox metaCheckbox;
     private javax.swing.JTextField methodField;
-    private javax.swing.JLabel methodLabel;
     private javax.swing.JComboBox scopeCombo;
     private javax.swing.JComboBox selectedCombo;
     private javax.swing.JTextField selectedTextfield;
@@ -1217,18 +1092,12 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         // josh: is this next line correct?
         blockingType.setEnabled(false);
         
-        classLabel.setText(""); // NOI18N
-        classLabel.setVisible(false);
         classField.setText(""); // NOI18N
-        classField.setVisible(true);
+        classField.setVisible(false);
         
-        methodLabel.setText(""); // NOI18N
-        methodLabel.setVisible(false);
         methodField.setText(""); // NOI18N
-        methodField.setVisible(true);
+        methodField.setEditable(true);
         
-        backgroundTaskLabel.setText(""); // NOI18N
-        backgroundTaskLabel.setVisible(false);
         backgroundTaskCheckbox.setSelected(false);
         backgroundTaskCheckbox.setEnabled(true);
         backgroundTaskCheckbox.setVisible(true);
