@@ -342,8 +342,12 @@ public class EditorSettingsImpl extends EditorSettings {
                 // imported from previous version some colorings can be missing.
                 // See #119709
                 Map<String, AttributeSet> m = new HashMap<String, AttributeSet>();
-                m.putAll(defaultProfileColorings);
-                m.putAll(profileColorings);
+                if (defaultProfileColorings != null) {
+                    m.putAll(defaultProfileColorings);
+                }
+                if (profileColorings != null) {
+                    m.putAll(profileColorings);
+                }
                 profileColorings = Collections.unmodifiableMap(m);
             }
             highlightings.put(profile, profileColorings);
