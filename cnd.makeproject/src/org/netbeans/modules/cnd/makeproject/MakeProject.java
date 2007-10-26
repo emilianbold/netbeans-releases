@@ -335,7 +335,7 @@ public final class MakeProject implements Project, AntProjectListener {
                     Project project = ProjectManager.getDefault().findProject(fo);
                     subProjects.add(project);
                 } catch (Exception e) {
-                    System.err.println(e); // FIXUP
+                    System.err.println("Cannot find subproject in '"+location+"' "+e); // FIXUP // NOI18N
                 }
             }
 

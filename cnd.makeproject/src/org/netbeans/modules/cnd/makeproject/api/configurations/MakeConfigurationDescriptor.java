@@ -164,7 +164,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 project = ProjectManager.getDefault().findProject(fo);
             } catch (Exception e) {
                 // Should not happen
-                System.err.println(e); // FIXUP
+                System.err.println("Cannot find project in '"+location+"' "+e); // FIXUP // NOI18N
             }
         }
         return project;

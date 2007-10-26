@@ -136,11 +136,11 @@ public class LibraryItem {
 		String location = IpeUtils.toAbsolutePath(baseDir, getMakeArtifact().getProjectLocation());
 		location = FilePathAdaptor.mapToLocal(location); // PC path
 		try {
-		    FileObject fo = FileUtil.toFileObject(new File(location).getCanonicalFile()); 
-		    project = ProjectManager.getDefault().findProject(fo);
+		    FileObject fo = FileUtil.toFileObject(new File(location).getCanonicalFile());
+                    project = ProjectManager.getDefault().findProject(fo);
 		}
 		catch (Exception e) {
-		    System.err.println(e); // FIXUP
+		    System.err.println("Cannot find subproject in '"+location+"' "+e); // FIXUP // NOI18N
 		}
 	    }
 	    return project;
