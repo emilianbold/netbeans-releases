@@ -418,7 +418,7 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
     FileObject getSourceDirectory() {
         String srcDir = helper.getStandardPropertyEvaluator().getProperty(JbiProjectProperties.SRC_DIR); // NOI18N
         
-        return helper.resolveFileObject(srcDir);
+        return srcDir == null ? null : helper.resolveFileObject(srcDir);
     }
     
     /**
