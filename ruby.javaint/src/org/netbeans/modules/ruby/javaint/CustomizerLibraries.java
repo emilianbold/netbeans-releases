@@ -41,12 +41,17 @@
 
 package org.netbeans.modules.ruby.javaint;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /** 
  * Customizer for general project attributes.
@@ -86,6 +91,10 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                                                jButtonMoveDownC.getModel() );
         
         includeJavaCheckbox.setModel(uiProperties.INCLUDE_JAVA_MODEL);
+        // XXX: the above call destroys mnemonic set in initComponents. Workarounding.
+        Mnemonics.setLocalizedText(includeJavaCheckbox,
+                NbBundle.getMessage(CustomizerLibraries.class, "IncludeJava")); // NOI18N
+
 //        uiProperties.NO_DEPENDENCIES_MODEL.setMnemonic( jCheckBoxBuildSubprojects.getMnemonic() );
 //        jCheckBoxBuildSubprojects.setModel( uiProperties.NO_DEPENDENCIES_MODEL );                        
 
@@ -95,9 +104,9 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
 //        }
         
         platformCombo.putClientProperty ("JComboBox.isTableCellEditor", Boolean.TRUE);    //NOI18N
-        platformCombo.addItemListener(new java.awt.event.ItemListener(){ 
-            public void itemStateChanged(java.awt.event.ItemEvent e){ 
-                javax.swing.JComboBox combo = (javax.swing.JComboBox)e.getSource(); 
+        platformCombo.addItemListener(new ItemListener() { 
+            public void itemStateChanged(ItemEvent e){ 
+                JComboBox combo = (JComboBox) e.getSource(); 
                 combo.setPopupVisible(false); 
             } 
         });
