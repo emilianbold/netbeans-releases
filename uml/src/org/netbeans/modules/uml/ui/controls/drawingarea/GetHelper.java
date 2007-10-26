@@ -754,6 +754,27 @@ public class GetHelper
       return null;
    }
 
+   
+   /**
+    * Returns a list of the selected items (nodes).
+    */
+    public static ETList<IETGraphObject> getSelectedNodes(ETGraph etGraph)
+    {
+        if (etGraph != null)
+        {
+            ETList<IETGraphObject> selected = new ETArrayList<IETGraphObject>();
+            List selectedNodes = etGraph.selectedNodes();
+
+            if (selectedNodes != null)
+                selected.addAll(selectedNodes);
+
+            return selected.size() > 0 ? selected : null;
+        }
+        
+        return null;
+    }
+   
+   
    /**
     * Calculates the rectangle that encompasses all the specified graph objects' veiw bounds rectangles
     * This call is equivalent to the C++ TSGraph::getBoundingRectOfObjects

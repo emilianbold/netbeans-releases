@@ -1438,6 +1438,12 @@ public class ETContainerDrawEngine extends ADNodeDrawEngine implements IADContai
 			}
 		}
 }
+    
+    public ETList<IETGraphObject> getAllContainedObjects()
+    {
+        return getAllContained();
+    }
+    
 
 	/*
 	 * Returns all contained graph objects including edges and labels.

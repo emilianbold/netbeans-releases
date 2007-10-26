@@ -154,6 +154,7 @@ import com.tomsawyer.util.TSProperty;
 import com.tomsawyer.xml.editor.TSEEnumerationTable;
 import com.tomsawyer.xml.editor.TSEVisualizationXMLReader;
 import com.tomsawyer.xml.editor.TSEVisualizationXMLWriter;
+import java.util.HashSet;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -12828,80 +12829,181 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
 
     private boolean align(int alignHow)
     {
-        ETList<IPresentationElement> presElements = null;
-        presElements = getSelectedPresentionNodes();
+        ETList<IETGraphObject> selGraphNodes = 
+            GetHelper.getSelectedNodes((ETGraph)getGraph());
+        
+        ETList<IPresentationElement> presElems = 
+            new ETArrayList<IPresentationElement>(selGraphNodes.size());
 
-        if (presElements == null || presElements.size() < 2)
+        Set<IPresentationElement> containedElems = 
+            new HashSet<IPresentationElement>();
+
+        Set<IETGraphObject> alignNodes = new HashSet<IETGraphObject>();
+
+        Iterator<IETGraphObject> iter = selGraphNodes.iterator();
+        
+        // find all contained nodes of the selected nodes
+        while (iter.hasNext())
         {
-            return false;
-        }
-        // get the first selected node to align to
-        TSENode anchorNode = null;
-        for (IPresentationElement presElem : presElements)
-        {
-            if (presElem != null && presElem instanceof INodePresentation)
+            IETGraphObject etGraphObj = iter.next();
+            IPresentationElement presElem = etGraphObj != null 
+                ? etGraphObj.getPresentationElement() : null;
+            
+            IDrawEngine drawEng = etGraphObj.getEngine();
+            
+            if (drawEng instanceof ETContainerDrawEngine)
             {
-
-                break; // we just need the first selected presentation node
+                ETContainerDrawEngine etcDrawEng = 
+                    (ETContainerDrawEngine)etGraphObj.getEngine();
+            
+                containedElems.addAll(etcDrawEng.getContained());
             }
         }
 
-        // loop through selected elements and align them
-        for (IPresentationElement presElem : presElements)
+        iter = selGraphNodes.iterator();
+        // keep only top level nodes for the alignment
+        while (iter.hasNext())
         {
-            if (presElem != null && presElem instanceof INodePresentation)
+            IETGraphObject tsObj = iter.next();
+            IPresentationElement presElem = tsObj != null 
+                ? tsObj.getPresentationElement() : null;
+            
+            if (!containedElems.contains(presElem))
+                alignNodes.add(tsObj);
+        }
+        
+        if (alignNodes == null || alignNodes.size() < 2)
+        {
+            return false;
+        }
+        
+        
+        TSConstRect anchor = null;
+
+        // loop through selected elements and align them
+        for (IETGraphObject graphObj : alignNodes)
+        {
+            if (anchor == null)
             {
-                INodePresentation nodePres = (INodePresentation) presElem;
-                TSENode tsNode = nodePres.getTSNode();
+                anchor = graphObj.getObject().getBounds();
+                continue; // this is the node to align to
+            }
 
-                if (anchorNode == null)
-                {
-                    anchorNode = tsNode;
-                    continue; // this is the node to align to
-                }
+            TSConstRect bounds = graphObj.getObject().getBounds();
 
-                nodePres.invalidate();
-                tsNode.setCenter(calculateNewCenter(anchorNode, tsNode, alignHow));
-                nodePres.invalidate();
-            } // if instanceof INodePresentation
+            TSConstPoint newCenter = 
+                calculateNewCenter(anchor, bounds, alignHow);
+            
+            moveNode(
+                graphObj, 
+                (int)newCenter.getX() - (int)bounds.getCenterX(), 
+                (int)newCenter.getY() - (int)bounds.getCenterY(), 
+                true);
         } // for
+
         // need to call refresh here because the drawing area does not refresh
         // properly when elements are moved
         refresh(true);
-
         requestFocus();
         return true;
     }
+    
+    private void moveNode(
+        IETGraphObject etGraphObj, int diffX, int diffY, boolean deep)
+    {
+        INodePresentation containerNodePres = 
+            (INodePresentation)etGraphObj.getPresentationElement();
+        
+        int fromCenterX = containerNodePres.getCenter().getX();
+        int fromCenterY = containerNodePres.getCenter().getY();
+        
+        ETList<IETGraphObject> containedObjects = null;
+        
+        if (deep && etGraphObj.getEngine() instanceof ETContainerDrawEngine)
+        {
+            ETContainerDrawEngine etcDrawEng =
+                (ETContainerDrawEngine) etGraphObj.getEngine();
 
-    private TSConstPoint calculateNewCenter(TSENode anchorNode,
-            TSENode alignNode, int alignHow)
+            containedObjects = etcDrawEng.getAllContainedObjects();            
+        }
+        
+        containerNodePres.moveTo(fromCenterX + diffX, fromCenterY + diffY);
+        
+        if (deep && containedObjects != null && containedObjects.size() > 0)
+        {
+            Iterator<IETGraphObject> iter = containedObjects.iterator();
+
+            while (iter.hasNext())
+            {
+                IETGraphObject obj = iter.next();
+                
+                INodePresentation nodePres = 
+                    (INodePresentation)obj.getPresentationElement();
+                
+                fromCenterX = nodePres.getCenter().getX();
+                fromCenterY = nodePres.getCenter().getY();
+                
+                nodePres.moveTo(fromCenterX + diffX, fromCenterY + diffY);
+                // moveNode(obj, diffX, diffY, deep);
+            }
+        }
+    }
+
+    private TSConstPoint calculateNewCenter(
+        TSConstRect anchorRect, TSConstRect alignRect, int alignHow)
     {
         switch (alignHow)
         {
             case ALIGN_LEFT:
-                return new TSConstPoint(anchorNode.getCenterX() - ((anchorNode.getWidth() - alignNode.getWidth()) / 2),
-                        alignNode.getCenterY());
+                return 
+                    new TSConstPoint(
+                        anchorRect.getCenterX() - 
+                            ((anchorRect.getWidth() - 
+                            alignRect.getWidth()) / 2),
+                        alignRect.getCenterY());
+                
             case ALIGN_HCENTER:
-                return new TSConstPoint(alignNode.getCenterX(),
-                        anchorNode.getCenterY());
+                return 
+                    new TSConstPoint(
+                        alignRect.getCenterX(),
+                        anchorRect.getCenterY());
+                
             case ALIGN_RIGHT:
-                return new TSConstPoint(anchorNode.getCenterX() + ((anchorNode.getWidth() - alignNode.getWidth()) / 2),
-                        alignNode.getCenterY());
+                return 
+                    new TSConstPoint(
+                        anchorRect.getCenterX() + 
+                            ((anchorRect.getWidth() - 
+                            alignRect.getWidth()) / 2),
+                        alignRect.getCenterY());
+                
             case ALIGN_TOP:
-                return new TSConstPoint(alignNode.getCenterX(),
-                        anchorNode.getCenterY() + ((anchorNode.getHeight() - alignNode.getHeight()) / 2));
+                return 
+                    new TSConstPoint(
+                        alignRect.getCenterX(),
+                        anchorRect.getCenterY() + 
+                            ((anchorRect.getHeight() - 
+                            alignRect.getHeight()) / 2));
+                
             case ALIGN_VCENTER:
-                return new TSConstPoint(anchorNode.getCenterX(),
-                        alignNode.getCenterY());
+                return 
+                    new TSConstPoint(
+                        anchorRect.getCenterX(),
+                        alignRect.getCenterY());
+                
             case ALIGN_BOTTOM:
-                return new TSConstPoint(alignNode.getCenterX(),
-                        anchorNode.getCenterY() - ((anchorNode.getHeight() - alignNode.getHeight()) / 2));
+                return 
+                    new TSConstPoint(
+                        alignRect.getCenterX(),
+                        anchorRect.getCenterY() - 
+                            ((anchorRect.getHeight() - 
+                            alignRect.getHeight()) / 2));
         }
 
         // if all else fails, return the same center so it doesn't move at all
         // should never reach here, though
-        return alignNode.getCenter();
+        return alignRect.getCenter();
     }
+    
 // disabled - feature to be added with Meteora
 //    public final static int DISTRIBUTE_LEFT_EDGE = 0;
 //    public final static int DISTRIBUTE_HCENTER = 1;
