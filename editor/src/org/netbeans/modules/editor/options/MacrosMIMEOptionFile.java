@@ -152,9 +152,9 @@ public class MacrosMIMEOptionFile extends MIMEOptionFile{
     /** Save settings to XML file 
      *  @param changedProp the Map of settings to save */
     protected void updateSettings(Map changedProp){
-        Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
-        
         synchronized (Settings.class) {
+            Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
+            
             // put changed properties to local map
             properties.putAll(changedProp);
 
@@ -206,9 +206,8 @@ public class MacrosMIMEOptionFile extends MIMEOptionFile{
             }
 
             doc.getDocumentElement().normalize();
+            saveSettings(doc);
         }
-        
-        saveSettings(doc);
     }
     
 }

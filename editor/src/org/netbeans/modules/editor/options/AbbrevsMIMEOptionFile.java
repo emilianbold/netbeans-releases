@@ -160,9 +160,9 @@ public class AbbrevsMIMEOptionFile extends MIMEOptionFile{
             "Please file a bug (http://www.netbeans.org/community/issues.html) " + //NOI18N
             "for editor/settings and attach this stacktrace to it."; //NOI18N
             
-        Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
-        
         synchronized (Settings.class) {
+            Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
+            
             // put changed properties to local map
             properties.putAll(changedProp);
 
@@ -215,9 +215,8 @@ public class AbbrevsMIMEOptionFile extends MIMEOptionFile{
             }
 
             doc.getDocumentElement().normalize();
+            saveSettings(doc);
         }
-        
-        saveSettings(doc);
     }
     
 }

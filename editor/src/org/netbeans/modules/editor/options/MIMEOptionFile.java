@@ -64,6 +64,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.filesystems.FileSystem;
 
 /** MIME Option XML file.
  *
@@ -197,27 +198,29 @@ public abstract class MIMEOptionFile{
     }
     
     protected void saveSettings(Document doc){
-        try{
-            FileLock lock = processor.getXMLDataObject().getPrimaryFile().lock();
+        synchronized (Settings.class) {
             try{
-                OutputStream os = processor.getXMLDataObject().getPrimaryFile().getOutputStream(lock);
-                try {
-                    wasSaved = true;
-                    XMLUtil.write(doc, os, "UTF-8"); // NOI18N
-                    os.flush();
-                } catch (Exception e){
-                    wasSaved = false;
-                    e.printStackTrace();
-                } finally {
-                    os.close();
+                FileLock lock = processor.getXMLDataObject().getPrimaryFile().lock();
+                try{
+                    OutputStream os = processor.getXMLDataObject().getPrimaryFile().getOutputStream(lock);
+                    try {
+                        wasSaved = true;
+                        XMLUtil.write(doc, os, "UTF-8"); // NOI18N
+                        os.flush();
+                    } catch (IOException ioe1){
+                        wasSaved = false;
+                        LOG.log(Level.WARNING, null, ioe1);
+                    } finally {
+                        os.close();
+                    }
+                }catch (IOException ioe2){
+                    LOG.log(Level.WARNING, null, ioe2);
+                }finally{
+                    lock.releaseLock();
                 }
-            }catch (IOException ioe){
-                ioe.printStackTrace();
-            }finally{
-                lock.releaseLock();
+            }catch (IOException ioe3){
+                LOG.log(Level.WARNING, null, ioe3);
             }
-        }catch (IOException ioexc){
-            ioexc.printStackTrace();
         }
     }
     
@@ -240,6 +243,18 @@ public abstract class MIMEOptionFile{
         return properties;
     }
     
+    /* package */ final void setAllProperties(final Map properties) {
+        try {
+            FileSystem fs = processor.getXMLDataObject().getPrimaryFile().getFileSystem();
+            fs.runAtomicAction(new FileSystem.AtomicAction() {
+                public void run() throws IOException {
+                    updateSettings(properties);
+                }
+            });
+        } catch (IOException ioe) {
+            LOG.log(Level.WARNING, "Can't save settings by " + processor, ioe); //NOI18N
+        }
+    }
     
     /** Inner class error catcher for handling SAXParseExceptions */
     class ErrorCatcher implements org.xml.sax.ErrorHandler {

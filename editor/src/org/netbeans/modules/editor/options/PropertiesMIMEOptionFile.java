@@ -43,21 +43,16 @@ package org.netbeans.modules.editor.options;
 
 import java.awt.Color;
 import java.awt.Insets;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
 import org.openide.xml.XMLUtil;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 import java.awt.Dimension;
 
 
@@ -179,8 +174,6 @@ public class PropertiesMIMEOptionFile extends MIMEOptionFile{
     /** Save settings to XML file 
      *  @param changedProp the Map of settings to save */
     protected void updateSettings(Map changedProp){
-        Document doc = null;
-
         synchronized (Settings.class) {
             boolean save = false;
 
@@ -221,7 +214,7 @@ public class PropertiesMIMEOptionFile extends MIMEOptionFile{
             if (save == false) return;
 
             // now we can save local map to XML file
-            doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
+            Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
             Element rootElem = doc.getDocumentElement();
 
             // save XML
@@ -270,9 +263,8 @@ public class PropertiesMIMEOptionFile extends MIMEOptionFile{
             }
 
             doc.getDocumentElement().normalize();
+            saveSettings(doc);
         }
-        
-        saveSettings(doc);
     }
     
 }

@@ -1657,14 +1657,14 @@ public class BaseOptions extends OptionSupport {
             if (useRequestProcessorForSaving){
                 Settings.update(new Runnable() {
                     public void run() {
-                        file.updateSettings(finalSettings);
+                        file.setAllProperties(finalSettings);
                     }
                     public boolean asynchronous() {
                         return true;
                     }
                 });
             }else{
-                file.updateSettings(finalSettings);                
+                file.setAllProperties(finalSettings);                
             }
             
         } else {
