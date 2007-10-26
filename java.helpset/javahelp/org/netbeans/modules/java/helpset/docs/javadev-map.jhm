@@ -127,6 +127,9 @@
 <mapID target="gui.components.aligning" url="gui/gui_component_align.html" />
 <mapID target="gui.components.sizing" url="gui/gui_component_size.html" />
 
+<mapID target="gui.saf.about" url="gui/saf/gui_saf_about.html" />
+<mapID target="gui.saf.working" url="gui/saf/gui_saf_working.html" />
+
 <mapID target="gui.layouts.about" url="gui/layout_managers/gui_layoutmanagers.html" />
 <mapID target="gui.layouts.setting" url="gui/layout_managers/gui_settinglayout.html" />
 <mapID target="gui.layouts.gbcustomizer" url="gui/layout_managers/gui_gbcustomizer.html" />

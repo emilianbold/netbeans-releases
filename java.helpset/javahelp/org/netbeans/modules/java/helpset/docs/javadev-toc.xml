@@ -156,8 +156,10 @@
     <tocitem text="Creating Accessible Forms" target="gui.accessibleform" />
     <tocitem text="Previewing a Form" target="gui.testing" />    
     <tocitem text="Deploying GUI Applications" target="gui.deploying" /> 
-        
-        
+    </tocitem>    
+    <tocitem text="Swing Application Framework">    
+        <tocitem text="About" target="gui.saf.about" />
+        <tocitem text="Working With the Swing Application Framework" target="gui.saf.working" />
     </tocitem>    
     <tocitem text="Working with Layout Managers">    
     <tocitem text="About Layout Managers" target="gui.layouts.about" />
@@ -174,7 +176,7 @@
       <tocitem text="Binding Data to a Swing Component" target="gui.bind.data"/>
       <tocitem text="Special Binding Properties " target="gui.bind.synthetic"/>  
       <tocitem text="Converting Values Between Source and Target Properties" target="gui.bind.converters"/>  
-      <tocitem text="Validating Target Value Changes in Bindings" target="gui.bind.converters"/>  
+      <tocitem text="Validating Target Value Changes in Bindings" target="gui.bind.validators"/>  
   </tocitem>
     <tocitem text="Configuring the GUI Builder" target="gui.config" />
 
