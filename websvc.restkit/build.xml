@@ -14,6 +14,7 @@
     </target>
 
     <target name="all-plugin-nbms">
+        <ant dir="../restapi" target="nbm"/>
         <ant dir="../swdp" target="nbm"/>
         <ant dir="../rest" target="nbm"/>
         <ant dir="../restsamples" target="nbm"/>
@@ -39,6 +40,7 @@
     </target>
     
     <target name="clean-plugin-jars">
+        <ant dir="../restapi" target="clean"/>
         <ant dir="../swdp" target="clean"/>
         <ant dir="../rest" target="clean"/>
         <ant dir="../restsamples" target="clean"/>
