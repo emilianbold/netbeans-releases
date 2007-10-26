@@ -287,18 +287,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (projectName == null) {
             if (this.type == NewRailsProjectWizardIterator.TYPE_APP) {
                 int baseCount = FoldersListSettings.getDefault().getNewApplicationCount() + 1;
-                String formater = NbBundle.getMessage(PanelProjectLocationVisual.class,"TXT_JavaApplication");
+                String formater = NbBundle.getMessage(PanelProjectLocationVisual.class,"TXT_RailsApplication");
                 while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null)
                     baseCount++;                
                 settings.putProperty (NewRailsProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
             }
-//            else {                
-//                int baseCount = FoldersListSettings.getDefault().getNewLibraryCount() + 1;
-//                String formater = NbBundle.getMessage(PanelProjectLocationVisual.class,"TXT_JavaLibrary");
-//                while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null)
-//                    baseCount++;                
-//                settings.putProperty (NewRubyProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
-//            }            
         }
         this.projectNameTextField.setText (projectName);                
         this.projectNameTextField.selectAll();

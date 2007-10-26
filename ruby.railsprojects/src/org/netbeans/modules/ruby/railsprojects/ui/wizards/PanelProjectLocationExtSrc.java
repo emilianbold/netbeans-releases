@@ -182,7 +182,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         if (projectLocation == null) {
             projectLocation = ProjectChooser.getProjectsFolder();                
 //            int index = FoldersListSettings.getDefault().getNewProjectCount();
-//            String formater = NbBundle.getMessage(PanelProjectLocationExtSrc.class,"TXT_JavaApplication");
+//            String formater = NbBundle.getMessage(PanelProjectLocationExtSrc.class,"TXT_RailsApplication");
 //            File file;
 //            do {
 //                index++;                            
