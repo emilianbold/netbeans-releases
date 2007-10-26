@@ -89,8 +89,8 @@ public class FileStatusCache {
     private static final FileInformation FILE_INFORMATION_NOTMANAGED_DIRECTORY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, true);
     private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(FileInformation.STATUS_UNKNOWN, false);
     private static final FileInformation FILE_INFORMATION_NEWLOCALLY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, false);
-
     public static final FileInformation FILE_INFORMATION_CONFLICT = new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, false);
+    public static final FileInformation FILE_INFORMATION_REMOVEDLOCALLY = new FileInformation(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, false);
     
     private PropertyChangeSupport listenerSupport = new PropertyChangeSupport(this);
     
@@ -360,7 +360,7 @@ public class FileStatusCache {
         files = (Map<File, FileInformation>) turbo.readEntry(dir, FILE_STATUS_MAP);
         if (files != null) return files;
         if (isNotManagedByDefault(dir)) {
-            return FileStatusCache.NOT_MANAGED_MAP;
+            if (interestingFiles == null) return FileStatusCache.NOT_MANAGED_MAP;
         }
         
         dir = FileUtil.normalizeFile(dir);
@@ -380,6 +380,10 @@ public class FileStatusCache {
     }
 
     public void refreshFileStatus(File file, FileInformation fi, Map<File, FileInformation> interestingFiles ) {
+        refreshFileStatus(file, fi, interestingFiles, false);
+    }
+
+    public void refreshFileStatus(File file, FileInformation fi, Map<File, FileInformation> interestingFiles, boolean alwaysFireEvent) {
         if(file == null || fi == null) return;
         File dir = file.getParentFile();
         if(dir == null) return;
@@ -396,7 +400,7 @@ public class FileStatusCache {
                  } else {
                      return;
                  }
-            } else {
+            } else if (!FileStatusCache.equivalent(FILE_INFORMATION_REMOVEDLOCALLY, fi)) {
                 return;
             }
         }
@@ -427,6 +431,8 @@ public class FileStatusCache {
 
         if(interestingFiles == null){ 
             fireFileStatusChanged(file, current, fi);
+        } else if (alwaysFireEvent) {
+            fireFileStatusChanged(file, null, fi);
         }
         
         return;
@@ -606,7 +612,13 @@ public class FileStatusCache {
      */
     private Map<File, FileInformation> scanFolder(File dir, Map<File, FileInformation> interestingFiles) {
         File [] files = dir.listFiles();
-        if (files == null) files = new File[0];
+        if (files == null) {
+            if (interestingFiles == null) {
+                files = new File[0];
+            } else {
+                files = interestingFiles.keySet().toArray(new File[interestingFiles.keySet().size()]);
+            }
+        }
         Map<File, FileInformation> folderFiles = new HashMap<File, FileInformation>(files.length);
         
         Mercurial.LOG.log(Level.FINE, "scanFolder(): {0}", dir); // NOI18N

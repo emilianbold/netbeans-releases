@@ -49,6 +49,12 @@ import java.io.IOException;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.RequestProcessor;
 import java.util.logging.Level;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Collection;
+import java.util.Calendar;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.api.queries.SharabilityQuery;
 
@@ -61,30 +67,34 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     private final FileStatusCache   cache;
 
+    private List<File> dirsToDelete; 
+
     public MercurialInterceptor() {
         cache = Mercurial.getInstance().getFileStatusCache();
+        dirsToDelete = new ArrayList<File>();
     }
 
     public boolean beforeDelete(File file) {
-        Mercurial.LOG.log(Level.FINE, "beforeDelete(): {0}", new Object[] {file.getAbsolutePath()}); // NOI18N
         if (file == null) return true;
         
-        // We want to control the removal of a directory
+        // We track the deletion of top level directories
         if (file.isDirectory()) {
-            return true;
-        } else {
-            return false;
+            for (Iterator i = dirsToDelete.iterator(); i.hasNext();) {
+                File dir = (File) i.next();
+                if (file.equals(dir.getParentFile())) {
+                    i.remove();
+                }
+            }
+            dirsToDelete.add(file);
         }
+        return true;
     }
 
     public void doDelete(File file) throws IOException {
-        // We should only get here for a directory; see beforeDelete.
-        // We will delete the directory later.
         return;
     }
 
     public void afterDelete(final File file) {
-        Mercurial.LOG.log(Level.FINE, "afterDelete(): {0}", new Object[] {file.getAbsolutePath()}); // NOI18N
         Utils.post(new Runnable() {
             public void run() {
                 fileDeletedImpl(file);
@@ -93,7 +103,6 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
     
     private void fileDeletedImpl(final File file) {
-        Mercurial.LOG.log(Level.FINE, "fileDeletedImpl(): {0}", new Object[] {file.getAbsolutePath()}); // NOI18N
         if (file == null) return;
         Mercurial hg = Mercurial.getInstance();
         final File root = hg.getTopmostManagedParent(file);
@@ -101,37 +110,64 @@ public class MercurialInterceptor extends VCSInterceptor {
         RequestProcessor rp = hg.getRequestProcessor(root.getAbsolutePath());
         if (file.exists()) {
             if (file.isDirectory()) {
-
-                // We delete the directory here; at this point we should have 
-                // finished calling cache.refresh on all the files deleted in
-                // the directory.
-                HgProgressSupport supportCreate = new HgProgressSupport() {
+                file.delete();
+                if (!dirsToDelete.remove(file)) return;
+                HgProgressSupport support = new HgProgressSupport() {
                     public void perform() {
-                        file.delete();
+                        try {
+                            HgCommand.doRemove(root, file);
+                            // We need to cache the status of all deleted files
+                            Map<File, FileInformation> interestingFiles = HgCommand.getInterestingStatus(root, file);
+                            if (!interestingFiles.isEmpty()){
+                                Collection<File> files = interestingFiles.keySet();
+
+                                Map<File, Map<File,FileInformation>> interestingDirs =
+                                        HgUtils.getInterestingDirs(interestingFiles, files);
+
+                                Calendar start = Calendar.getInstance();
+                                for (File tmpFile : files) {
+                                    if(this.isCanceled()) {
+                                        return;
+                                    }
+                                    FileInformation fi = interestingFiles.get(tmpFile);
+
+                                    cache.refreshFileStatus(tmpFile, fi,
+                                    interestingDirs.get(tmpFile.isDirectory()? tmpFile: tmpFile.getParentFile()), true);
+                                }
+                                Calendar end = Calendar.getInstance();
+                            }
+                        } catch (HgException ex) {
+                            Mercurial.LOG.log(Level.FINE, "fileDeletedImpl(): File: {0} {1}", new Object[] {file.getAbsolutePath(), ex.toString()}); // NOI18N
+                        }             
                     }
                 };
 
-                supportCreate.start(rp, root.getAbsolutePath(), 
+                support.start(rp, root.getAbsolutePath(), 
                         org.openide.util.NbBundle.getMessage(MercurialInterceptor.class, "MSG_Remove_Progress")); // NOI18N
             } else {
-                Mercurial.LOG.log(Level.FINE, "fileDeletedImpl(): File: {0} not deleted", new Object[] {file.getAbsolutePath()}); // NOI18N
-            }
-        } else {
-            HgProgressSupport supportCreate = new HgProgressSupport() {
-                public void perform() {
-                
-                    try {
-                        HgCommand.doRemove(root, file);
-                        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                    } catch (HgException ex) {
-                        Mercurial.LOG.log(Level.FINE, "fileDeletedImpl(): File: {0} {1}", new Object[] {file.getAbsolutePath(), ex.toString()}); // NOI18N
-                    }             
+                // If we are deleting a parent directory of this file
+                // skip the call to hg remove as we will do it for the directory
+                for (File dir : dirsToDelete) {
+                    File tmpFile = file;
+                    do {
+                        if (tmpFile.getParentFile().equals(dir)) return;
+                        tmpFile = tmpFile.getParentFile();
+                    }
+                    while (tmpFile != null);
                 }
-            };
-
-            supportCreate.start(rp, root.getAbsolutePath(), 
-                    org.openide.util.NbBundle.getMessage(MercurialInterceptor.class, "MSG_Remove_Progress")); // NOI18N
-
+                HgProgressSupport support = new HgProgressSupport() {
+                    public void perform() {
+                        try {
+                            HgCommand.doRemove(root, file);
+                            cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                        } catch (HgException ex) {
+                            Mercurial.LOG.log(Level.FINE, "fileDeletedImpl(): File: {0} {1}", new Object[] {file.getAbsolutePath(), ex.toString()}); // NOI18N
+                        }             
+                    }
+                };
+                support.start(rp, root.getAbsolutePath(), 
+                        org.openide.util.NbBundle.getMessage(MercurialInterceptor.class, "MSG_Remove_Progress")); // NOI18N
+            }
         }
     }
 
