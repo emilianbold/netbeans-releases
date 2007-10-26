@@ -37,6 +37,10 @@ TOKEN:css_keyword: (
     "url"
 )
 
+TOKEN:css_url: (
+    "url" [" " "\t" "\n" "\r"]* ("(" - ")")
+)
+
 TOKEN:css_number:( 
     ["0"-"9"]+ 
     ( "pt" | "pc" | "in" | "mm" | "cm" | "em" |
@@ -94,10 +98,9 @@ SKIP:css_whitespace
 
 S = [charset] (import)* (ruleset | media | page)*;
 charset = "@charset"  <css_string> ";";
-import = "@import" (<css_string> | cssUrl) mediaList ";";
+import = "@import" (<css_string> | <css_url>) mediaList ";";
 mediaList = (<css_identifier>)*;
 mediaList = (<css_identifier> ",")*;
-cssUrl = "url" (<css_whitespace>)* "(" <css_string> ")";
 media = "@media" mediaName mediaBody;
 mediaName = <css_identifier> ("," <css_identifier>)*;
 mediaBody = "{" (ruleset)* "}";
