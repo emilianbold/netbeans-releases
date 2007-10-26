@@ -221,7 +221,7 @@ final class Mover extends Plugin {
       }
       _import.setLocation(location);
     }
-    catch(VetoException e) {
+    catch (VetoException e) {
       throw new IOException(e.getMessage());
     }
   }

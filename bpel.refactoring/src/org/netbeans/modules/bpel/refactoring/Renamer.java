@@ -306,7 +306,7 @@ final class Renamer extends Plugin {
       _import.setLocation(
         SharedUtils.calculateNewLocationString(_import.getLocation(), myRequest));
     }
-    catch(VetoException e) {
+    catch (VetoException e) {
       throw new IOException(e.getMessage());
     }
   }
@@ -623,7 +623,7 @@ final class Renamer extends Plugin {
     try {
       reference.setFaultName(getQName(reference.getFaultName(), target));
     }
-    catch(VetoException e) {
+    catch (VetoException e) {
       throw new IOException(e.getMessage());
     }
   }
