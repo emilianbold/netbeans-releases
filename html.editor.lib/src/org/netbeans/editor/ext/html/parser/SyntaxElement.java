@@ -68,7 +68,8 @@ public class SyntaxElement {
     public static final int TYPE_TAG = 4;
     public static final int TYPE_ENDTAG = 5;
     public static final int TYPE_SCRIPT = 6;
-    public static final int TYPE_UNKNOWN = 7; //superordinate language piece (JSP,PHP,...)
+    public static final int TYPE_STYLE = 7;
+    public static final int TYPE_UNKNOWN = 8; //superordinate language piece (JSP,PHP,...)
     
     public static final String[] TYPE_NAMES =
             new String[]{"comment","declaration","error","text","tag","endtag","script","unknown"};

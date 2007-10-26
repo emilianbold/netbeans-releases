@@ -295,6 +295,11 @@ public final class SyntaxParser {
                 return getNextElement(  ts.token().offset(hi));
             }
             
+            if( item.id() == HTMLTokenId.STYLE) {
+                //we have just one big token for script
+                return getNextElement(  ts.token().offset(hi));
+            }
+            
             
             if( isTag(item)) {
                 if( item.id() == HTMLTokenId.TAG_OPEN ||
@@ -479,6 +484,10 @@ public final class SyntaxParser {
             if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.SCRIPT) {
                 return new SyntaxElement(this, offset, getTokenEnd(hi, item),
                         SyntaxElement.TYPE_SCRIPT);
+            }
+            if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.STYLE) {
+                return new SyntaxElement(this, offset, getTokenEnd(hi, item),
+                        SyntaxElement.TYPE_STYLE);
             }
             if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE || (item.id() ==
                     org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN_SYMBOL &&
