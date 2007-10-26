@@ -117,20 +117,28 @@ public class ServiceTableModel extends DefaultTableModel {
         }
     }
     
-    public String getUserId() {
+    public AUTHENTICATIONSTYLE getAuthenticationStyle() {
+        return authenticationStyle;
+    }
+    
+    public void setAuthenticationStyle(AUTHENTICATIONSTYLE v) {
+        authenticationStyle = v;
+    }
+    
+    public SORTBY getSortBy() {
+        return sortBy;
+    }
+    
+    public void setSortBy(SORTBY v) {
+        sortBy = v;
+    }
+    
+    private String getUserId() {
         return userId;
     }
     
-    public void setUserId(String value) {
-        userId = value;
-    }
-    
-    public String getPassword() {
+    private String getPassword() {
         return password;
-    }
-    
-    public void setPassword(String value) {
-        password = value;
     }
     
     public String getSearchServiceUrl() {
