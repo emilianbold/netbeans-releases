@@ -314,7 +314,7 @@ Participant Software against such Participant either
 unilaterally or pursuant to a written agreement with
 Participant.
 
-6.3. If You assert a patent infringement claim against 
+6.3. If You assert a patent infringement claim against
 Participant alleging that the Participant Software directly 
 or indirectly infringes any patent where such claim is 
 resolved (such as by license or settlement) prior to the 
@@ -832,3 +832,4 @@ this library, you may extend this exception to your version
 of the library, but you are not obligated to do so. If you
 do not wish to do so, delete this exception statement from
 your version.
+
