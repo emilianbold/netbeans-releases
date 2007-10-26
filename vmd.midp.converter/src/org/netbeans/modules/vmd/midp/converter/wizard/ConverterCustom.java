@@ -43,9 +43,18 @@ import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.items.*;
+import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 import org.netbeans.modules.vmd.midp.components.displayables.*;
+import org.netbeans.modules.vmd.midp.components.items.*;
+import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
 import org.netbeans.modules.vmd.midp.palette.wizard.ComponentInstaller;
+import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
+import org.netbeans.modules.vmd.midpnb.components.displayables.SplashScreenCD;
+import org.netbeans.modules.vmd.midpnb.components.displayables.WaitScreenCD;
+import org.netbeans.modules.vmd.midpnb.components.items.TableItemCD;
+import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
+import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.*;
 import org.openide.util.Utilities;
 
 import java.util.*;
@@ -135,6 +144,35 @@ public class ConverterCustom {
             ConverterItems.convertStringItemCore (id2item, item, component);
         else if (TextFieldCD.TYPEID.equals (typeID))
             ConverterItems.convertTextFieldCore (id2item, item, component);
+
+        else if (AbstractInfoScreenCD.TYPEID.equals (typeID))
+            ConverterBuilt.convertAbstractInfoScreen (id2item, item, component);
+        else if (SimpleCancellableTaskCD.TYPEID.equals (typeID))
+            ConverterBuilt.convertSimpleCancellableTask (id2item, item, component.getDocument ());
+        else if (SimpleTableModelCD.TYPEID.equals (typeID))
+            ConverterBuilt.convertSimpleTableModel (id2item, item, component.getDocument ());
+        else if (SplashScreenCD.TYPEID.equals (typeID))
+            ConverterBuilt.convertSplashScreen (id2item, item, component.getDocument ());
+        else if (TableItemCD.TYPEID.equals (typeID))
+            ConverterBuilt.convertTableItem (id2item, item, component.getDocument ());
+        else if (WaitScreenCD.TYPEID.equals (typeID))
+            ConverterBuilt.convertWaitScreen (id2item, item, component.getDocument ());
+
+        else if (CommandCD.TYPEID.equals (typeID))
+            ConverterResources.convertCommand (item, component.getDocument ());
+        else if (TickerCD.TYPEID.equals (typeID))
+            ConverterResources.convertTicker (item, component.getDocument ());
+
+        else if (SVGImageCD.TYPEID.equals (typeID))
+            ConverterSVG.convertImage (id2item, item, component.getDocument ());
+        else if (SVGAnimatorWrapperCD.TYPEID.equals (typeID))
+            ConverterSVG.convertPlayer (id2item, item, component.getDocument ());
+        else if (SVGMenuCD.TYPEID.equals (typeID))
+            ConverterSVG.convertMenu (id2item, item, component.getDocument ());
+        else if (SVGSplashScreenCD.TYPEID.equals (typeID))
+            ConverterSVG.convertSplashScreen (id2item, item, component.getDocument ());
+        else if (SVGWaitScreenCD.TYPEID.equals (typeID))
+            ConverterSVG.convertWaitScreen (id2item, item, component.getDocument ());
 
         else {
             convertCustomProperties (id2item, item, component, descriptor.getSuperDescriptor ());

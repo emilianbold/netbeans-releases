@@ -217,6 +217,8 @@ public class ConverterUtil {
     }
 
     static PropertyValue decryptStringArrayArray (String value, TypeID type, int dimension) {
+        if (value == null)
+            return PropertyValue.createNull ();
         if (dimension <= 0)
             return MidpTypes.createStringValue (value);
         type = type.getComponentType ();

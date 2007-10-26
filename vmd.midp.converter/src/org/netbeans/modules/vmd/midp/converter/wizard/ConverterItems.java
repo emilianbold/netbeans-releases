@@ -91,7 +91,7 @@ public class ConverterItems {
                 for (DesignComponent commandEventSource : commandEventSources) {
                     DesignComponent foundCommand = commandEventSource.readProperty (ItemCommandEventSourceCD.PROP_COMMAND).getComponent ();
                     if (defaultCommand == foundCommand) {
-                        itemComponent.writeProperty (ItemCD.PROP_DEFAULT_COMMAND, PropertyValue.createComponentReference (defaultCommand));
+                        itemComponent.writeProperty (ItemCD.PROP_DEFAULT_COMMAND, PropertyValue.createComponentReference (commandEventSource));
                         break;
                     }
                 }

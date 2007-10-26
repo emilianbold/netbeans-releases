@@ -67,7 +67,7 @@ import java.util.List;
 public class ConverterBuilt {
 
     // Created: NO, Adds: NE
-    private static void convertAbstractInfoScreen (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent screen) {
+    static void convertAbstractInfoScreen (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent screen) {
         ConverterDisplayables.convertCanvas (id2item, item, screen);
 
         ConverterUtil.convertStringWithUserCode (screen, AbstractInfoScreenCD.PROP_TEXT, item.getPropertyValue ("text")); // NOI18N
