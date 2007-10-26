@@ -237,7 +237,7 @@ public class ELExpression {
         return null;
     }
     
-    private void runTask(CancellableTask task){
+    protected void runTask(CancellableTask task){
         ClasspathInfo cpInfo = ClasspathInfo.create(sup.getFileObject());
         JavaSource source = JavaSource.create(cpInfo, Collections.EMPTY_LIST);
         
@@ -265,17 +265,17 @@ public class ELExpression {
         return isDefferedExecution;
     }
     
-    private String getPropertyBeingTypedName(){
+    protected String getPropertyBeingTypedName(){
         String elExp = getExpression();
         int dotPos = elExp.lastIndexOf('.');
         
         return dotPos == -1 ? null : elExp.substring(dotPos + 1);
     }
     
-    private abstract class BaseELTaskClass{
+    protected abstract class BaseELTaskClass{
         protected String beanType;
         
-        BaseELTaskClass(String beanType){
+        public BaseELTaskClass(String beanType){
             this.beanType = beanType;
         }
         

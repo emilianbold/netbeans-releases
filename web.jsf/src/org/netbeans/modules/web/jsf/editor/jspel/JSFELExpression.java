@@ -48,7 +48,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import java.util.logging.Logger;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.completion.ELExpression;
@@ -67,6 +79,8 @@ public class JSFELExpression extends ELExpression{
     
     public static final int EL_JSF_BEAN = 100;
     public static final int EL_JSF_RESOURCE_BUNDLE = 101;
+    
+    private static final Logger logger = Logger.getLogger(JSFELExpression.class.getName());
     
     private WebModule webModule;
     
@@ -182,5 +196,64 @@ public class JSFELExpression extends ELExpression{
         }
         
         return items;
+    }
+    
+    public List<CompletionItem> getListenerMethodCompletionItems(String beanType){
+        JSFCompletionItemsTask task = new JSFCompletionItemsTask(beanType);
+        runTask(task);
+        return task.getCompletionItems();
+    }
+    
+    public class JSFCompletionItemsTask extends ELExpression.BaseELTaskClass implements CancellableTask<CompilationController> {
+        
+        private List<CompletionItem> completionItems = new ArrayList<CompletionItem>();
+        
+        
+        JSFCompletionItemsTask(String beanType){
+            super(beanType);
+        }
+        
+        public void cancel() {}
+        
+        public void run(CompilationController parameter) throws Exception {
+            parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            
+            TypeElement bean = getTypePreceedingCaret(parameter);
+            
+            if (bean != null){
+                String prefix = getPropertyBeingTypedName();
+                
+                for (ExecutableElement method : ElementFilter.methodsIn(bean.getEnclosedElements())){
+                    if (isActionListenerMethod(method)) {
+                        String methodName = method.getSimpleName().toString();
+                            if (methodName != null && methodName.startsWith(prefix)){
+                                CompletionItem item = new JSFResultItem.JSFMethod(
+                                    methodName, "void");
+
+                            completionItems.add(item);
+                        }
+                    }
+                }
+            }
+        }
+        
+        protected boolean isActionListenerMethod(ExecutableElement method){
+            boolean isALMethod = false;
+            
+            if (method.getModifiers().contains(Modifier.PUBLIC)
+                    && method.getParameters().size() == 1) {
+                TypeMirror type = method.getParameters().get(0).asType();
+                if ("javax.faces.event.ActionEvent".equals(type.toString()) //NOI18N
+                        && TypeKind.VOID == method.getReturnType().getKind()) { 
+                    isALMethod = true;
+                }
+            }
+            
+            return isALMethod;
+        }
+
+        public List<CompletionItem> getCompletionItems(){
+            return completionItems;
+        }
     }
 }

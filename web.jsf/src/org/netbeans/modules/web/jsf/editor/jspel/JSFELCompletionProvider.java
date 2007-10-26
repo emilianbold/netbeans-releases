@@ -45,8 +45,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
@@ -116,6 +114,8 @@ public class JSFELCompletionProvider implements CompletionProvider{
                         break;
                     case JSFELExpression.EL_JSF_BEAN:
                         List<CompletionItem> items = elExpr.getPropertyCompletionItems(elExpr.getObjectClass());
+                        complItems.addAll(items);
+                        items = elExpr.getListenerMethodCompletionItems(elExpr.getObjectClass());
                         complItems.addAll(items);
                         break;
                     case JSFELExpression.EL_JSF_RESOURCE_BUNDLE:
