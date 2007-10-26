@@ -179,22 +179,22 @@ public class RepositoryCacheMap<K,V>  {
             RepositoryCacheValue<V> entry = new RepositoryCacheValue<V> (value);
 
 
-	    softAssert(!(keyToValueStorage.size() < valueToKeyStorage.size()), "valueToKeyStorage contains more elements than keyToValueStorage"); //NOI18N
+	    softAssert(!(keyToValueStorage.size() < valueToKeyStorage.size()), "valueToKeyStorage contains more elements than keyToValueStorage key=" + key); //NOI18N
 	    softAssert(!(keyToValueStorage.size() > valueToKeyStorage.size()), "keyToValueStorage contains more elements than valueToKeyStorage"); //NOI18N
 	    
             if (keyToValueStorage.size() < capacity.intValue()) {
                 RepositoryCacheValue<V> oldValue = keyToValueStorage.put(key, entry);
-		softAssert(oldValue == null, "Value replacement in RepositoryCacheMap"); //NOI18N
+		softAssert(oldValue == null, "Value replacement in RepositoryCacheMap key=" + key); //NOI18N
                 valueToKeyStorage.put(entry, key);
             } else {
                 RepositoryCacheValue<V>   minValue = valueToKeyStorage.firstKey();
-                K   minKey   = valueToKeyStorage.get(minValue);
+                K minKey   = valueToKeyStorage.get(minValue);
                 
                 keyToValueStorage.remove(minKey);
                 valueToKeyStorage.remove(minValue);
                 
                 RepositoryCacheValue<V> oldValue = keyToValueStorage.put(key, entry);
-		softAssert(oldValue == null, "Value replacement in RepositoryCacheMap"); //NOI18N
+		softAssert(oldValue == null, "Value replacement in RepositoryCacheMap key=" + key); //NOI18N
                 valueToKeyStorage.put(entry, key);
                 
                 retValue =  minValue.value;
