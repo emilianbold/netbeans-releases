@@ -35,6 +35,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
@@ -58,15 +59,31 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
     }
 
     private List<String> getIncludePaths(CsmFile file, boolean system) {
-        List<String> out = Collections.<String>emptyList();
+            List<String> out = Collections.<String>emptyList();
         if (file instanceof FileImpl) {
             NativeFileItem item = ProjectBase.getCompiledFileItem((FileImpl) file);
             if (item != null) {
-                if (system) {
-                    out = item.getSystemIncludePaths();
-                } else {
-                    out = item.getUserIncludePaths();
-                }
+		if( item.getLanguage() == NativeFileItem.Language.C_HEADER ) {
+		    // It's an orphan (otherwise the getCompiledFileItem would return C or C++ item, not header).
+                    // For headers, NativeFileItem does NOT contain necessary information
+                    // (whe parsing, we use DefaultFileItem for headers)
+                    // so for headers, we should use project iformation instead
+		    NativeProject  nativeProject = item.getNativeProject();
+		    if( nativeProject != null ) {
+                        if (system) {
+                            out = nativeProject.getSystemIncludePaths();
+                        } else {
+                            out = nativeProject.getUserIncludePaths();
+                        }
+		    }
+		}
+		else {
+                    if (system) {
+                        out = item.getSystemIncludePaths();
+                    } else {
+                        out = item.getUserIncludePaths();
+                    }
+		}
             }
         }
         return out;
