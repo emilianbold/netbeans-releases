@@ -300,7 +300,7 @@ public class RubyInstallation {
     
     private String askForRuby(final Set<String> rubies) {
         // Ruby found in the path -- offer to use it
-        String jrubyLabel = NbBundle.getMessage(RubyInstallation.class, "JRuby");
+        String jrubyLabel = NbBundle.getMessage(RubyInstallation.class, "JRubyBundled");
         String nativeRubyLabel = NbBundle.getMessage(RubyInstallation.class, "NativeRuby") + " "; 
 
         List<String> displayList = new ArrayList<String>();
@@ -1394,7 +1394,7 @@ public class RubyInstallation {
                 return BUILTIN_JRUBY;
             }
             if (isJRubySet()) {
-                return "JRuby"; // TODO I18N and version // NOI18N
+                return NbBundle.getMessage(RubyInstallation.class, "JRuby"); // TODO version
             }
         }
 
