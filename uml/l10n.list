@@ -1,0 +1,10 @@
+read global
+
+exclude uml/core/src/**/resources/**/*.gif
+exclude uml/core/src/**/resources/**/*.jpeg
+exclude uml/core/src/**/resources/**/*.jpg
+exclude uml/core/src/**/resources/**/*.png
+exclude uml/core/javahelp/**/*.gif
+exclude uml/core/javahelp/**/*.jpeg
+exclude uml/core/javahelp/**/*.jpg
+exclude uml/core/javahelp/**/*.png

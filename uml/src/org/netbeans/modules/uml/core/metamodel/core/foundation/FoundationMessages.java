@@ -93,7 +93,7 @@ public class FoundationMessages
     }
     
     private static final String BUNDLE_CLASS = 
-        "org.netbeans.modules.uml.core.metamodel.core.foundation.Bundle";
+        "org.netbeans.modules.uml.core.metamodel.core.foundation.Bundle_noi18n";
     private static final ResourceBundle BUNDLE = 
         ResourceBundle.getBundle(BUNDLE_CLASS);
 }

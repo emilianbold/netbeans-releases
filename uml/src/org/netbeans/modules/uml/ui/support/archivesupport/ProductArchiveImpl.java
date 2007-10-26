@@ -65,7 +65,7 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
  */
 public class ProductArchiveImpl implements IProductArchive
 {
-	private static final String BUNDLE_CLASS = "org.netbeans.modules.uml.ui.support.archivesupport.Bundle";
+	private static final String BUNDLE_CLASS = "org.netbeans.modules.uml.ui.support.archivesupport.Bundle_noi18n";
 	private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(BUNDLE_CLASS);
 	private String m_ArchiveFilename = "";
 	private Document m_Document = null;

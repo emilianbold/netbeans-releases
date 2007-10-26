@@ -75,7 +75,7 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
  */
 public class CommonResourceManager implements ICommonResourceManager
 {
-   private static final String BUNDLE_NAME ="org.netbeans.modules.uml.ui.support.commonresources.Bundle";
+   private static final String BUNDLE_NAME ="org.netbeans.modules.uml.ui.support.commonresources.Bundle_noi18n";
    
    private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
    
