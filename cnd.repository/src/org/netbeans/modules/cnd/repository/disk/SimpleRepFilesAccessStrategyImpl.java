@@ -42,9 +42,7 @@
 package org.netbeans.modules.cnd.repository.disk;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import org.netbeans.modules.cnd.repository.disk.api.RepFilesAccessStrategy;
 import org.netbeans.modules.cnd.repository.disk.api.RepositoryFilesHelperCacheStrategy;
@@ -61,6 +59,7 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
 public class SimpleRepFilesAccessStrategyImpl implements RepFilesAccessStrategy {
     
     private RepositoryFilesHelperCacheStrategy theCache;
+    private Object cacheLock = new String("Repository file cache lock"); //NOI18N
     
     /** Creates a new instance of SimpleRepositoryFilesHelper */
     public SimpleRepFilesAccessStrategyImpl(int openFilesLimit) {
@@ -164,19 +163,24 @@ public class SimpleRepFilesAccessStrategyImpl implements RepFilesAccessStrategy 
         ConcurrentFileRWAccess aFile = theCache.lookupInCacheFile(fileName);
         
         if (aFile == null) {
-            File fileToCreate = new File(fileName);
-            if (fileToCreate.exists()) {
-                aFile = new ConcurrentBufferedRWAccess(fileToCreate); //NOI18N
-                theCache.putCacheFile(fileName, aFile);
-            } else if (create) {
-                String aDirName = fileToCreate.getParent();
-                File  aDir = new File(aDirName);
-                
-                if (aDir.exists() || aDir.mkdirs()) {
-                    aFile = new ConcurrentBufferedRWAccess(fileToCreate); //NOI18N
-                    theCache.putCacheFile(fileName, aFile);
-                }
-            }
+	    synchronized( cacheLock ) {
+		aFile = theCache.lookupInCacheFile(fileName);
+		if (aFile == null) {
+		    File fileToCreate = new File(fileName);
+		    if (fileToCreate.exists()) {
+			aFile = new ConcurrentBufferedRWAccess(fileToCreate); //NOI18N
+			theCache.putCacheFile(fileName, aFile);
+		    } else if (create) {
+			String aDirName = fileToCreate.getParent();
+			File  aDir = new File(aDirName);
+
+			if (aDir.exists() || aDir.mkdirs()) {
+			    aFile = new ConcurrentBufferedRWAccess(fileToCreate); //NOI18N
+			    theCache.putCacheFile(fileName, aFile);
+			}
+		    }
+		}
+	    }
         }
         
         return aFile;
