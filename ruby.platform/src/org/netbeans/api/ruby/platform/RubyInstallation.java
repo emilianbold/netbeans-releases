@@ -668,23 +668,16 @@ public class RubyInstallation {
         String exec = null;
         boolean canonical = true; // default
         do {
-            String bin = getRubyBin(canonical);
-            if (bin != null) {
+            String binDir = getRubyBin(canonical);
+            if (binDir != null) {
                 LOGGER.finest("Looking for '" + toFind + "' gem executable; used intepreter: '" + getRuby() + "'"); // NOI18N
-                exec = bin + File.separator + toFind;
-                if (!new File(exec).isFile()) {
-                    LOGGER.finest("'" + exec + "' is not a file."); // NOI18N
-                    exec = null;
-                }
+                exec = findExecutable(binDir, toFind);
             } else {
                 LOGGER.warning("Could not find Ruby interpreter executable when searching for '" + toFind + "'"); // NOI18N
             }
             if (exec == null) {
-                exec = getRubyLibGemDir(canonical) + File.separator + "bin" + File.separator + toFind; // NOI18N
-                if (!new File(exec).isFile()) {
-                    LOGGER.fine("'" + exec + "' is not a file."); // NOI18N
-                    exec = null;
-                }
+                final String libGemBinDir = getRubyLibGemDir(canonical) + File.separator + "bin";
+                exec = findExecutable(libGemBinDir, toFind);
             }
             canonical ^= true;
         } while (!canonical && exec == null);
@@ -694,7 +687,16 @@ public class RubyInstallation {
         }
         return exec;
     }
-
+    
+    private static String findExecutable(final String dir, final String toFind) {
+        String exec = dir + File.separator + toFind;
+        if (!new File(exec).isFile()) {
+            LOGGER.finest("'" + exec + "' is not a file."); // NOI18N
+            exec = null;
+        }
+        return exec;
+    }
+    
     /**
      * Return path to the <em>gem</em> tool if it does exist.
      *
