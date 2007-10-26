@@ -42,6 +42,7 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 import java.util.HashSet;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
@@ -146,14 +147,10 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                     ErrorManager.getDefault().notify(e);
                 }
             } catch (InvalidExpressionException e) {
-                if ( (e.getTargetException () != null) &&
-                     (e.getTargetException () instanceof 
-                       UnsupportedOperationException)
-                ) {
-                    // PATCH for J2ME. see 45543
-                    return original.getChildren (variable, from, to);
-                }
-                ErrorManager.getDefault().notify(e);
+                // Not a supported operation (e.g. J2ME, see #45543)
+                // Or missing context or any other reason
+                Logger.getLogger(JavaVariablesFilter.class.getName()).fine("invokeMethod(toArray) "+e.getLocalizedMessage());
+                return original.getChildren (variable, from, to);
             }
         }
         if (isMapMapType (type)) 
@@ -177,14 +174,10 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                 }
                 return original.getChildren(ov, from, to);
             } catch (InvalidExpressionException e) {
-                if ( (e.getTargetException () != null) &&
-                     (e.getTargetException () instanceof 
-                       UnsupportedOperationException)
-                ) {
-                    // PATCH for J2ME. see 45543
-                    return original.getChildren (variable, from, to);
-                }
-                ErrorManager.getDefault().notify(e);
+                // Not a supported operation (e.g. J2ME, see #45543)
+                // Or missing context or any other reason
+                Logger.getLogger(JavaVariablesFilter.class.getName()).fine("invokeMethod(entrySet) "+e.getLocalizedMessage());
+                return original.getChildren (variable, from, to);
             } catch (NoSuchMethodException e) {
                 ErrorManager.getDefault().notify(e);
             }
@@ -206,14 +199,10 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                     new Variable [0]
                 )).getFields (from, to);
             } catch (InvalidExpressionException e) {
-                if ( (e.getTargetException () != null) &&
-                     (e.getTargetException () instanceof 
-                       UnsupportedOperationException)
-                ) {
-                    // PATCH for J2ME. see 45543
-                    return original.getChildren (variable, from, to);
-                }
-                ErrorManager.getDefault().notify(e);
+                // Not a supported operation (e.g. J2ME, see #45543)
+                // Or missing context or any other reason
+                Logger.getLogger(JavaVariablesFilter.class.getName()).fine("invokeMethod(getPropertyChangeListeners) "+e.getLocalizedMessage());
+                return original.getChildren (variable, from, to);
             } catch (NoSuchMethodException e) {
                 ErrorManager.getDefault().notify(e);
             }
@@ -277,14 +266,10 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                     ErrorManager.getDefault().notify(e);
                 }
             } catch (InvalidExpressionException e) {
-                if ( (e.getTargetException () != null) &&
-                     (e.getTargetException () instanceof 
-                       UnsupportedOperationException)
-                ) {
-                    // PATCH for J2ME. see 45543
-                    return original.getChildrenCount(variable);
-                }
-                ErrorManager.getDefault().notify(e);
+                // Not a supported operation (e.g. J2ME, see #45543)
+                // Or missing context or any other reason
+                Logger.getLogger(JavaVariablesFilter.class.getName()).fine("invokeMethod(toArray) "+e.getLocalizedMessage());
+                return original.getChildrenCount(variable);
             }
         } else if (isMapMapType (type)) {
             try {
@@ -307,14 +292,10 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                 }
                 return original.getChildrenCount(ov);
             } catch (InvalidExpressionException e) {
-                if ( (e.getTargetException () != null) &&
-                     (e.getTargetException () instanceof 
-                       UnsupportedOperationException)
-                ) {
-                    // PATCH for J2ME. see 45543
-                    return original.getChildrenCount(variable);
-                }
-                ErrorManager.getDefault().notify(e);
+                // Not a supported operation (e.g. J2ME, see #45543)
+                // Or missing context or any other reason
+                Logger.getLogger(JavaVariablesFilter.class.getName()).fine("invokeMethod(entrySet) "+e.getLocalizedMessage());
+                return original.getChildrenCount(variable);
             } catch (NoSuchMethodException e) {
                 ErrorManager.getDefault().notify(e);
             }
@@ -380,6 +361,9 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
             try {
                 return "\""+ov.getToStringValue ()+"\"";
             } catch (InvalidExpressionException ex) {
+                // Not a supported operation (e.g. J2ME, see #45543)
+                // Or missing context or any other reason
+                Logger.getLogger(JavaVariablesFilter.class.getName()).fine("getToStringValue() "+ex.getLocalizedMessage());
                 if ( (ex.getTargetException () != null) &&
                      (ex.getTargetException () instanceof 
                        UnsupportedOperationException)
