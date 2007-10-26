@@ -79,7 +79,7 @@ public class ServiceTableModel extends DefaultTableModel {
     private String wsdlLocation;
     private String userId = "Sun_Search@strikeiron.com";
     private String password = "SearchSun.01";
-    private AUTHENTICATIONSTYLE authenticationStyle = AUTHENTICATIONSTYLE.SOAP_HEADER;
+    private AUTHENTICATIONSTYLE authenticationStyle = AUTHENTICATIONSTYLE.SIMPLE_PARAM;
     private Boolean useCustomWSDL = Boolean.TRUE;
     private SORTBY sortBy = SORTBY.NAME;
     private SISearchService sservice;
