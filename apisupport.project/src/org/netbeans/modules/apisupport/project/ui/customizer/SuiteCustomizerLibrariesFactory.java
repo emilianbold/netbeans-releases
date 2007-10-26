@@ -47,18 +47,15 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- *
  * @author mkleint
  */
 public class SuiteCustomizerLibrariesFactory implements ProjectCustomizer.CompositeCategoryProvider {
-    
-    /** Creates a new instance of CustomizerCompilingFactory */
-    public SuiteCustomizerLibrariesFactory() {
-    }
-    
+
+    public SuiteCustomizerLibrariesFactory() {}
+
     public ProjectCustomizer.Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(
-                SuiteCustomizer.LIBRARIES, 
+                SuiteCustomizer.LIBRARIES,
                 NbBundle.getMessage(SuiteCustomizerLibrariesFactory.class, "LBL_ConfigLibraries"),
                 null);
     }
