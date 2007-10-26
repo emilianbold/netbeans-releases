@@ -45,6 +45,12 @@ while [ $RUNNING_JOBS_COUNT -ge 1 ]; do
 done
 set -x
 
+if [ -d $DIST/ml ]; then
+    mv $DIST/installers/ml/*
+    $DIST/ml
+    rm -rf $DIST/installers/ml
+fi
+
 mv $DIST/installers/* $DIST
 rmdir $DIST/installers
 
