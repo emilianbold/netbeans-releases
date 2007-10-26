@@ -275,6 +275,7 @@ public class LanguagesEditorKit extends NbEditorKit {
         HyperlinkListener hl = new HyperlinkListener ();
         c.addMouseMotionListener (hl);
         c.addMouseListener (hl);
+        c.addKeyListener(hl);
         c.addCaretListener (new MarkOccurrencesSupport (c));
 
         //HACK:

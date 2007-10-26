@@ -42,6 +42,8 @@
 package org.netbeans.modules.languages.features;
 
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -92,8 +94,8 @@ import org.openide.text.NbDocument;
  *
  * @author Administrator
  */
-public class HyperlinkListener  implements MouseMotionListener,
-MouseListener {
+public class HyperlinkListener implements MouseMotionListener, MouseListener,
+    KeyListener {
 
     private Highlight   highlight;
     private Runnable    runnable = null;
@@ -103,6 +105,7 @@ MouseListener {
         final NbEditorDocument doc = (NbEditorDocument) c.getDocument ();
         if (highlight != null) highlight.remove ();
         highlight = null;
+        runnable = null;
         if (((e.getModifiers() | e.getModifiersEx()) & InputEvent.CTRL_DOWN_MASK) != InputEvent.CTRL_DOWN_MASK) {
             return;
         }
@@ -119,11 +122,23 @@ MouseListener {
         }
     }
 
+    public void keyReleased(KeyEvent e) {
+        if (!e.isControlDown()) {
+            if (highlight != null) {
+                highlight.remove();
+                highlight = null;
+            }
+            runnable = null;
+        }
+    }
+    
     public void mouseClicked (MouseEvent e) {}
     public void mousePressed (MouseEvent e) {}
     public void mouseExited (MouseEvent e) {}
     public void mouseEntered (MouseEvent e) {}
     public void mouseDragged (MouseEvent e) {}
+    public void keyPressed(KeyEvent e) {}
+    public void keyTyped(KeyEvent e) {}
     
     private void highlight (
         final NbEditorDocument  document,
