@@ -399,23 +399,26 @@ public class WebProjectProperties {
             // extend project with selected frameworks
             // It should be called outside mutex, which is used above. See issue#68118
             if (newExtenders != null) {
-                for(int i = 0; i < newExtenders.size(); i++)
-                    ((WebModuleExtender) newExtenders.get(i)).extend(project.getAPIWebModule());
-                newExtenders.clear();
-                SwingUtilities.invokeLater(new Runnable(){
+                // #120108
+                SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
+                        for (int i = 0; i < newExtenders.size(); i++) {
+                            ((WebModuleExtender) newExtenders.get(i)).extend(project.getAPIWebModule());
+                        }
+                        newExtenders.clear();
                         project.fixRecommendedAndPrivilegedTemplates();
+                        
+                        // ui logging of the added frameworks
+                        if ((addedFrameworkNames != null) && (addedFrameworkNames.size() > 0)) {
+                            LogRecord logRecord = new LogRecord(Level.INFO, "UI_WEB_PROJECT_FRAMEWORK_ADDED");  //NOI18N
+                            logRecord.setLoggerName(UI_LOGGER_NAME); //NOI18N
+                            logRecord.setResourceBundle(NbBundle.getBundle(WebProjectProperties.class));
+
+                            logRecord.setParameters(addedFrameworkNames.toArray());
+                            UI_LOGGER.log(logRecord);
+                        }
                     }
                 });
-                // ui logging of the added frameworks
-                if ((addedFrameworkNames != null) && (addedFrameworkNames.size() > 0)) {
-                    LogRecord logRecord = new LogRecord(Level.INFO, "UI_WEB_PROJECT_FRAMEWORK_ADDED");  //NOI18N
-                    logRecord.setLoggerName(UI_LOGGER_NAME); //NOI18N
-                    logRecord.setResourceBundle(NbBundle.getBundle(WebProjectProperties.class));
-
-                    logRecord.setParameters(addedFrameworkNames.toArray());
-                    UI_LOGGER.log(logRecord);
-                }
             }
             
             //prevent deadlock reported in the issue #54643
