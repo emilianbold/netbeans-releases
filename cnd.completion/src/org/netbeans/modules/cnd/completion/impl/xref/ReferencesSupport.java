@@ -197,7 +197,14 @@ public final class ReferencesSupport {
     }
     
     private static Token getTokenByOffset(BaseDocument doc, int offset) {
-        return TokenUtilities.getToken(doc, offset);
+        Token token = TokenUtilities.getToken(doc, offset);
+//        if (token != null) {
+//            // try prev token if it's end of prev token and prev token is interested one
+//            if (!token.getText().contains("\n")) {
+//                token = TokenUtilities.getToken(doc, offset-1);
+//            }
+//        }
+        return token;
     }    
 
     /*package*/ static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, int offset) {
