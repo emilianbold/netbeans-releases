@@ -96,6 +96,12 @@ public class InstancesView extends TopComponent {
         DebuggerManager.getDebuggerManager().addDebuggerListener(listener);
         showContent(listener.getState());
     }
+
+    @Override
+    protected void componentClosed() {
+        super.componentClosed();
+        provider = null;
+    }
     
     private void showContent(final int state) {
         if (SwingUtilities.isEventDispatchThread()) {

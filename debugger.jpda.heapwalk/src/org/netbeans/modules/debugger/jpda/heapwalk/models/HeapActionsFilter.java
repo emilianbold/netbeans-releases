@@ -122,7 +122,7 @@ public class HeapActionsFilter implements NodeActionsProviderFilter {
                 final Reference<JPDADebugger> debuggerRef = new WeakReference(debugger);
                 InstancesView.HeapFragmentWalkerProvider provider =
                         new InstancesView.HeapFragmentWalkerProvider() {
-                    public HeapFragmentWalker getHeapFragmentWalker() {
+                    public synchronized HeapFragmentWalker getHeapFragmentWalker() {
                         HeapFragmentWalker hfw = instances.getCurrentFragmentWalker();
                         HeapImpl heap = (hfw != null) ? (HeapImpl) hfw.getHeapFragment() : null;
                         JPDADebugger debugger = debuggerRef.get();
