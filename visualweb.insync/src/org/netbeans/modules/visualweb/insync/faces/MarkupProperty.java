@@ -109,8 +109,15 @@ public class MarkupProperty extends Property {
         super(bean, pd, false);   // partial construction--no java statements created
         attributeDescriptor = (AttributeDescriptor) pd.getValue(Constants.PropertyDescriptor.ATTRIBUTE_DESCRIPTOR);
         this.element = element;
-        element.setAttribute(attributeDescriptor.getName(), "");
-        this.attr = element.getAttributeNode(attributeDescriptor.getName());
+        String attribName = null;
+        if (attributeDescriptor != null) {
+            attribName = attributeDescriptor.getName();
+        } else {
+            //Use property name from descriptor if ATTRIBUTE_DESCRIPTOR is not available
+            attribName = pd.getName();
+        }
+        element.setAttribute(attribName, "");
+        this.attr = element.getAttributeNode(attribName);
         assert Trace.trace("insync.faces", "new MarkupProperty: " + this);
     }
 
