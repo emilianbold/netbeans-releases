@@ -135,10 +135,7 @@ public abstract class FileAcceptPresenter extends AcceptPresenter {
             FileObject fileNode = getNodeFileObject(transferable);
             if (fileNode == null)
                 return null;
-            File file = FileUtil.toFile(fileNode);
-            if (file == null)
-                return null;
-            return new FileInputStream(file);
+            return fileNode.getInputStream();
         } catch (FileNotFoundException ex) {
             Debug.warning(ex);
         }
