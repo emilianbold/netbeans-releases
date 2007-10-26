@@ -341,28 +341,29 @@ public abstract class AbstractRefactoring {
         return problem;
     }
     
-    private ModuleInfo getModuleInfo(Class c) {
+    private String getModuleName(Class c) {
         for (ModuleInfo info:Lookup.getDefault().lookupAll(ModuleInfo.class)) {
             if (info.owns(c)) {
-                return info;
+                return info.getDisplayName();
             }
         }
-        throw new IllegalArgumentException("Class " + c + "is not from known NB module");//NOI18N
+        return "Unknown";//NOI18N
     }
     
     private String createMessage(Class c, Throwable t) {
-        return NbBundle.getMessage(RefactoringPanel.class, "ERR_ExceptionInModule", getModuleInfo(c).getDisplayName(), t.toString());
+        return NbBundle.getMessage(RefactoringPanel.class, "ERR_ExceptionInModule", getModuleName(c), t.toString());
     }
     
     private Problem createProblemAndLog(Problem p, Throwable t, Class source) {
         Throwable cause = t.getCause();
         Problem newProblem;
-        if (cause != null && cause.getClass().getName().equals("org.netbeans.api.java.source.JavaSource$InsufficientMemoryException")) { //NOI18N
+        if (cause != null && (cause.getClass().getName().equals("org.netbeans.api.java.source.JavaSource$InsufficientMemoryException") ||  //NOI18N
+            (cause.getCause()!=null ) && cause.getCause().getClass().getName().equals("org.netbeans.api.java.source.JavaSource$InsufficientMemoryException"))) { //NOI18N
             newProblem = new Problem(true, NbBundle.getMessage(Util.class, "ERR_OutOfMemory"));
         } else {
             newProblem = new Problem(false, createMessage(source, t));
         }
-        Exceptions.printStackTrace(t);
+            Exceptions.printStackTrace(t);
         return chainProblems(newProblem, p);
     }
     
