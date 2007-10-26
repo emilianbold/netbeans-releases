@@ -112,6 +112,10 @@ public class EncodingUtil {
             logger.log(Level.INFO, NbBundle.getMessage(EncodingUtil.class, "Null_FEQ")); //NOI18N
             return "UTF-8"; //NOI18N
         }
+        if(feq.getEncoding(file) == null){
+            logger.log(Level.INFO, NbBundle.getMessage(EncodingUtil.class, "Null_Encoding")); //NOI18N
+            return "UTF-8";
+        }
         return feq.getEncoding(file).name();
     }
     
