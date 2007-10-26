@@ -50,6 +50,7 @@ import org.openide.util.NbBundle;
 public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, DocumentListener {
 
     private StrutsConfigurationPanel panel;
+    private final boolean enableComponents;
 
     /** Creates new form StrutsConfigurationPanelVisual */
     public StrutsConfigurationPanelVisual(StrutsConfigurationPanel panel, boolean customizer) {
@@ -61,13 +62,14 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
         if (customizer) {
             jCheckBoxTLD.setVisible(false);
             //jCheckBoxWAR.setVisible(false);
-            enableComponents(false);
+            enableComponents = false;
         }        
         else {
             jCheckBoxTLD.setVisible(true);
             //jCheckBoxWAR.setVisible(true);
-            enableComponents(true);
+            enableComponents = true;
         }
+        enableComponents(enableComponents);
         
         ((JTextComponent)jComboBoxURLPattern.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
     }
@@ -199,6 +201,10 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
     // End of variables declaration//GEN-END:variables
     
     boolean valid() {
+        // #119806
+        if (!enableComponents) {
+            return true;
+        }
         ExtenderController controller = panel.getController();
         String urlPattern = (String)jComboBoxURLPattern.getEditor().getItem();
         if (urlPattern == null || urlPattern.trim().equals("")){
