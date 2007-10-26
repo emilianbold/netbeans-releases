@@ -136,7 +136,7 @@ public class MoveTransformer extends RefactoringVisitor {
                 if (!isThisFileMoving) {
                     if (isElementMoving(el)) {
                         if (!elementsAlreadyImported.contains(el)) {
-                            if (!workingCopy.getCompilationUnit().getPackageName().toString().equals(move.getTargetPackageName(fo)))
+                            if (!RetoucheUtils.getPackageName(workingCopy.getCompilationUnit()).equals(move.getTargetPackageName(fo)))
                                 elementsToImport.add(el);
                         }
                     } else if (el.getKind()!=ElementKind.PACKAGE && 

@@ -42,6 +42,8 @@
 package org.netbeans.modules.refactoring.java;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.awt.Color;
@@ -332,6 +334,16 @@ public class RetoucheUtils {
         return ClassPath.getClassPath(
                 folder, ClassPath.SOURCE)
                 .getResourceName(folder, '.', false);
+    }
+    
+    public static String getPackageName(CompilationUnitTree unit) {
+        assert unit!=null;
+        ExpressionTree name = unit.getPackageName();
+        if (name==null) {
+            //default package
+            return "";
+        }
+        return name.toString();
     }
     
     public static String getPackageName(URL url) {

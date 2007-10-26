@@ -167,7 +167,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 workingCopy.rewrite(outerTree, newOuter);
                 JavaRefactoringUtils.cacheTreePathInfo(workingCopy.getTrees().getPath(outer), workingCopy);
                 CompilationUnitTree compilationUnit = tp.getCompilationUnit();
-                String relativePath = compilationUnit.getPackageName().toString().replace('.', '/') + '/' + refactoring.getClassName() + ".java";
+                String relativePath = RetoucheUtils.getPackageName(compilationUnit).replace('.', '/') + '/' + refactoring.getClassName() + ".java";
                 CompilationUnitTree newCompilation = make.CompilationUnit(sourceRoot, relativePath, null, Collections.singletonList(newInnerClass));
                 workingCopy.rewrite(null, newCompilation);        
             } else {
