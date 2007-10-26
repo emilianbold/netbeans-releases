@@ -114,7 +114,7 @@ import org.openide.xml.XMLUtil;
  */
 public class J2SELogicalViewProvider implements LogicalViewProvider {
     
-    private static final RequestProcessor BROKEN_LINKS_RP = new RequestProcessor("J2SEPhysicalViewProvider.BROKEN_LINKS_RP"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("J2SEPhysicalViewProvider.RP"); // NOI18N
     
     private final J2SEProject project;
     private final UpdateHelper helper;
@@ -448,7 +448,11 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         
         // sources change
         public void stateChanged(ChangeEvent e) {
-            setProjectFiles(project);
+            RP.post(new Runnable () {
+                public void run() {
+                    setProjectFiles(project);
+                }
+            });            
         }
         
         // group change
@@ -618,7 +622,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
                 // or change in list of platforms.
                 // Coalesce changes since they can come quickly:
                 if (task == null) {
-                    task = BROKEN_LINKS_RP.create(this);
+                    task = RP.create(this);
                 }
                 task.schedule(100);
             }
