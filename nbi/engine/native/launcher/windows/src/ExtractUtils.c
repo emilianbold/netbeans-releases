@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -16,13 +16,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -305,12 +305,13 @@ void readBigNumberWithDebug(LauncherProperties * props, int64t * dest, char * pa
 }
 
 // returns: ERROR_OK, ERROR_INPUTOUPUT, ERROR_INTEGRITY
-void extractDataToFile(LauncherProperties * props, WCHAR *output, int64t * fileSize ) {
+void extractDataToFile(LauncherProperties * props, WCHAR *output, int64t * fileSize, DWORD expectedCRC ) {
     if(isOK(props)) {
         DWORD * status = & props->status;
         HANDLE hFileRead = props->handler;
         int64t * size = fileSize;
         DWORD counter = 0;
+        DWORD crc32 = -1L;
         HANDLE hFileWrite = CreateFileW(output, GENERIC_READ | GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, hFileRead);
         
         if (hFileWrite == INVALID_HANDLE_VALUE) {
@@ -338,6 +339,7 @@ void extractDataToFile(LauncherProperties * props, WCHAR *output, int64t * fileS
             DWORD write = 0;
             while (restBytesToWrite >0) {
                 WriteFile(hFileWrite, ptr, restBytesToWrite, &write, 0);
+                update_crc32(&crc32, ptr, write);
                 restBytesToWrite -= write;
                 ptr +=write;
             }
@@ -356,6 +358,8 @@ void extractDataToFile(LauncherProperties * props, WCHAR *output, int64t * fileS
             while (ReadFile(hFileRead, buf, bufsize, &read, 0) && read && compare(size, 0) > 0) {
                 addProgressPosition(props, read);
                 WriteFile(hFileWrite, buf, read, &read, 0);
+                update_crc32(&crc32, buf, read);
+                
                 minus(size, read);
                 
                 if((compare(size, bufsize)<0) && (compare(size, 0)>0) ) {
@@ -379,6 +383,13 @@ void extractDataToFile(LauncherProperties * props, WCHAR *output, int64t * fileS
             FREE(buf);
         }
         CloseHandle(hFileWrite);
+        crc32=~crc32;
+        if(isOK(props) && crc32!=expectedCRC) {
+            writeDWORD(props, OUTPUT_LEVEL_DEBUG, 0, "expected CRC : ", expectedCRC, 1);
+            writeDWORD(props, OUTPUT_LEVEL_DEBUG, 0, "real     CRC : ", crc32, 1);
+            * status = ERROR_INTEGRITY;
+            
+        }
     }
 }
 
@@ -386,12 +397,14 @@ void extractDataToFile(LauncherProperties * props, WCHAR *output, int64t * fileS
 void extractFileToDir(LauncherProperties * props, WCHAR ** resultFile) {
     WCHAR * fileName = NULL;
     int64t * fileLength = NULL;
-    
+    DWORD crc = 0;
     writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Extracting file ...", 1);
     readStringWithDebugW( props, & fileName, "file name");
     
     fileLength = newint64_t(0, 0);
     readBigNumberWithDebug( props, fileLength, "file length ");
+    
+    readNumberWithDebug( props, &crc, "CRC32");
     
     if(!isOK(props)) return;
     
@@ -416,7 +429,7 @@ void extractFileToDir(LauncherProperties * props, WCHAR ** resultFile) {
             writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "   ... starting data extraction", 1);
             writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "   ... output file is ", 0);
             writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, fileName, 1);
-            extractDataToFile(props, fileName, fileLength);
+            extractDataToFile(props, fileName, fileLength, crc);
             writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "   ... extraction finished", 1);
             *resultFile = fileName;
         } else {
@@ -481,12 +494,12 @@ void loadI18NStrings(LauncherProperties * props) {
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Current System Locale : ", 0);
         writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0,  currentLocale, 1);
         
-         if(props->userDefinedLocale!=NULL) { // using user-defined locale via command-line parameter
+        if(props->userDefinedLocale!=NULL) { // using user-defined locale via command-line parameter
             writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "[CMD Argument] Try to use locale ", 0);
             writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, props->userDefinedLocale, 1);
             FREE(currentLocale);
             currentLocale = appendStringW(NULL, props->userDefinedLocale);
-         }
+        }
         
         for(j=0;j<numberOfLocales;j++) { //  for all locales in file...
             // read locale name as UNICODE ..
@@ -531,7 +544,7 @@ void loadI18NStrings(LauncherProperties * props) {
 LauncherResource * newLauncherResource() {
     LauncherResource * file = (LauncherResource *) LocalAlloc(LPTR, sizeof(LauncherResource));
     file->path=NULL;
-    file->resolved=NULL;    
+    file->resolved=NULL;
     file->type=0;
     return file;
 }
@@ -584,7 +597,7 @@ LauncherResourceList * newLauncherResourceList(DWORD number) {
 void freeLauncherResource(LauncherResource ** file) {
     if(*file!=NULL) {
         FREE((*file)->path);
-        FREE((*file)->resolved);        
+        FREE((*file)->resolved);
         FREE(*file);
         
     }
@@ -742,6 +755,8 @@ void extractData(LauncherProperties *props) {
     if(isOK(props)) {
         writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Extracting Bundled data... ", 1);
         readLauncherResourceList(props,  &(props->jars), "bundled and external files");
-        readLauncherResourceList(props,  &(props->other), "other data");
+        if(isOK(props)) {
+            readLauncherResourceList(props,  &(props->other), "other data");
+        }
     }
 }

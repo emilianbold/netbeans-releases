@@ -262,13 +262,13 @@ WCHAR * appendStringW(WCHAR *  initial, const WCHAR * addString) {
 
 char * DWORDtoCHAR(DWORD dw) {
     char * str = (char*) LocalAlloc(LPTR, sizeof(char)*17);
-    sprintf(str, "%ld", dw);
+    sprintf(str, "%u", dw);
     return str;
 }
 
 WCHAR * DWORDtoWCHAR(DWORD dw) {
     WCHAR * str = (WCHAR*) LocalAlloc(LPTR,sizeof(WCHAR)*17);
-    wsprintfW(str, L"%ld", dw);
+    wsprintfW(str, L"%u", dw);
     return str;
 }
 
@@ -522,7 +522,7 @@ WCHAR * getErrorDescription(DWORD dw) {
     NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR) &lpMsgBuf, 0, NULL );
     
     lpDisplayBuf = newpWCHAR(getLengthW(lpMsgBuf) + 40);
-    wsprintfW(lpDisplayBuf, L"Error code (%ld): %s", dw, lpMsgBuf);
+    wsprintfW(lpDisplayBuf, L"Error code (%u): %s", dw, lpMsgBuf);
     
     FREE(lpMsgBuf);
     

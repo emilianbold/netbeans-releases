@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -16,13 +16,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -303,18 +303,11 @@ public final class FileUtils {
         return freeSpace;
     }
     
-    public static long getCrc32(
-            final File file) throws IOException {
-        CRC32 crc = new CRC32();
-        
+    public static long getCrc32(final File file) throws IOException {
         InputStream input = null;
         try {
             input = new FileInputStream(file);
-            final byte[] buffer = new byte[BUFFER_SIZE];
-            int readLength;
-            while ((readLength = input.read(buffer)) != -1) {
-                crc.update(buffer, 0, readLength);
-            }
+            return getCrc32(input);
         } finally {
             if (input != null) {
                 try {
@@ -322,7 +315,14 @@ public final class FileUtils {
                 } catch (IOException ignord) {}
             }
         }
-        
+    }
+    public static long getCrc32(final InputStream input) throws IOException {
+        CRC32 crc = new CRC32();
+        final byte[] buffer = new byte[BUFFER_SIZE];
+        int readLength;
+        while ((readLength = input.read(buffer)) != -1) {
+            crc.update(buffer, 0, readLength);
+        }
         return crc.getValue();
     }
     
@@ -1090,8 +1090,8 @@ public final class FileUtils {
                     LogManager.log("\n\n");
                 } else {
                     throw new IOException(ResourceUtils.getString(FileUtils.class,
-                        ERROR_UNPACK200_FAILED_KEY,
-                        er.getErrorCode(), er.getStdOut(),er.getStdErr()));
+                            ERROR_UNPACK200_FAILED_KEY,
+                            er.getErrorCode(), er.getStdOut(),er.getStdErr()));
                 }
             }
         }

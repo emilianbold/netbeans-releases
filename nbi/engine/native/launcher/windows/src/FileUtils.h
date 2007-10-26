@@ -50,7 +50,8 @@ extern "C" {
     
     
     extern const WCHAR * FILE_SEP;
-    
+    extern const long CRC32_TABLE[256];
+    void update_crc32(DWORD * crc32, char * buf, DWORD size);
     int64t * getFreeSpace(WCHAR *path);
     int64t * getFileSize(WCHAR * path);
     void checkFreeSpace(LauncherProperties * props, WCHAR * tmpDir, int64t * size);
