@@ -88,7 +88,7 @@ public class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
         private final CsmUID<CsmClass> delegate;
         
         private RefImpl(CsmClass owner) {
-            super(owner.getContainingFile(), owner.getStartOffset(), owner.getEndOffset());
+            super(owner.getContainingFile(), owner.getStartOffset(), owner.getLeftBracketOffset());
             delegate = owner.getUID();
         }
 
