@@ -66,6 +66,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -109,6 +110,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import java.util.Iterator;
 import javax.xml.namespace.QName;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -533,20 +535,21 @@ public class JaxWsUtils {
             return false;
         }
     }
-    
-    public static boolean addProjectReference(Project clientProject, Project targetProject) {
+    /** Adding clientProject reference to targetProject
+     * 
+     */ 
+    public static boolean addProjectReference(Project clientProject, FileObject targetFile) {
         try {
-            assert clientProject!=null && targetProject!=null;
+            assert clientProject!=null && targetFile!=null;
+            Project targetProject = FileOwnerQuery.getOwner(targetFile);
             if (clientProject!=targetProject) {
-                ProjectClassPathExtender pce = (ProjectClassPathExtender)targetProject.getLookup().lookup(ProjectClassPathExtender.class);
                 AntArtifactProvider antArtifactProvider = clientProject.getLookup().lookup(AntArtifactProvider.class);
                 if (antArtifactProvider!=null) {
                     AntArtifact jarArtifact = getJarArtifact(antArtifactProvider);
                     if (jarArtifact!=null) {
+                        AntArtifact[] jarArtifacts = new AntArtifact[]{jarArtifact}; 
                         URI[] artifactsUri = jarArtifact.getArtifactLocations();
-                        for (int i=0;i<artifactsUri.length;i++) {
-                            pce.addAntArtifact(jarArtifact,artifactsUri[i]);
-                        }
+                        ProjectClassPathModifier.addAntArtifacts(jarArtifacts, artifactsUri, targetFile, ClassPath.COMPILE);
                         return true;
                     }
                 }

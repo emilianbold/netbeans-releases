@@ -71,11 +71,10 @@ public class OperationEditorDrop implements ActiveEditorDrop {
             try {
                 boolean enableDnD=false;
                 Node clientNode = operationNode.getParentNode().getParentNode().getParentNode();
-                FileObject srcRoot = (FileObject)clientNode.getLookup().lookup(FileObject.class);
+                FileObject srcRoot = clientNode.getLookup().lookup(FileObject.class);
                 Project clientProject = FileOwnerQuery.getOwner(srcRoot);
-                Project targetProject = FileOwnerQuery.getOwner(
-                    NbEditorUtilities.getFileObject(targetComponent.getDocument()));
-                if (JaxWsUtils.addProjectReference(clientProject, targetProject)) {
+                FileObject targetFo = NbEditorUtilities.getFileObject(targetComponent.getDocument());
+                if (JaxWsUtils.addProjectReference(clientProject, targetFo)) {
                     JaxWsCodeGenerator.insertMethod(targetComponent.getDocument(), targetComponent.getCaret().getDot(), operationNode);
                     return true;
                 }

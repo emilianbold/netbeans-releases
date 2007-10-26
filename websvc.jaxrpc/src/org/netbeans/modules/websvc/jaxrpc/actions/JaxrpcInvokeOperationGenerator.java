@@ -74,9 +74,12 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -351,7 +354,7 @@ public class JaxrpcInvokeOperationGenerator {
             servicePortNode = serviceOperationNode.getParentNode();
             serviceNode = servicePortNode.getParentNode();
             
-            wsdlObj = (DataObject) serviceNode.getLookup().lookup(DataObject.class);
+            wsdlObj = serviceNode.getLookup().lookup(DataObject.class);
             wsdlName = wsdlObj.getName();
             serviceOperationName = serviceOperationNode.getName();
             servicePortName = servicePortNode.getName();
@@ -369,13 +372,13 @@ public class JaxrpcInvokeOperationGenerator {
             return;
         }
         
-        EditorCookie ec = (EditorCookie)dataObj.getCookie(EditorCookie.class);
+        EditorCookie ec = dataObj.getCookie(EditorCookie.class);
         JEditorPane pane = ec.getOpenedPanes()[0];
         // Collect up any and all errors for display in case of problem
         ArrayList errors = new ArrayList();
         
         String servicePackageName;
-        ServiceInformation serviceInfo = (ServiceInformation) serviceNode.getCookie(ServiceInformation.class);
+        ServiceInformation serviceInfo = serviceNode.getCookie(ServiceInformation.class);
         PortInformationHandler portInformation = (PortInformationHandler)serviceInfo.getPortInformation();
         List portInfoList = null;
         List wsdlLocationsList = serviceInfo.getPortInformation().getImportedSchemas();
@@ -455,7 +458,9 @@ public class JaxrpcInvokeOperationGenerator {
         String serviceDelegateName = "get" + serviceClassName; //NOI18N
         String portDelegateName = "get" + servicePortJaxRpcName; //NOI18N
         ClientStubDescriptor stubType = getStub(wsdlObj.getPrimaryFile(), wsdlName);
-        EditorCookie cookie = (EditorCookie)sourceNode.getCookie(EditorCookie.class);
+        EditorCookie cookie = sourceNode.getCookie(EditorCookie.class);
+        
+        addProjectReference(wsdlObj, sourceNode);
         
         // including code to JSP
         if (cookie!=null && "text/x-jsp".equals(cookie.getDocument().getProperty("mimeType"))) { //NOI18N
@@ -549,6 +554,16 @@ public class JaxrpcInvokeOperationGenerator {
         
     }
     
+    private static void addProjectReference(DataObject wsdlDobj, Node sourceNode) {
+        if (wsdlDobj != null) {
+            Project clientProject = FileOwnerQuery.getOwner(wsdlDobj.getPrimaryFile());
+            DataObject dObj = sourceNode.getCookie(DataObject.class);
+            if (dObj!=null) {
+                JaxWsUtils.addProjectReference(clientProject, dObj.getPrimaryFile());
+            }
+        }
+    }
+    
     private static void generateJavaClientCode(final DataObject dataObj,
             final ClientStubDescriptor stubType,
             final String iServiceDelegateName,
@@ -562,7 +577,7 @@ public class JaxrpcInvokeOperationGenerator {
             final String iserviceOperationName,
             final ArrayList ierrors){
         
-        EditorCookie ec = (EditorCookie)dataObj.getCookie(EditorCookie.class);
+        EditorCookie ec = dataObj.getCookie(EditorCookie.class);
         JEditorPane pane = ec.getOpenedPanes()[0];
         int caretOffset = pane.getCaretPosition();
         

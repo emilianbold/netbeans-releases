@@ -321,7 +321,7 @@ public class JaxWsCodeGenerator {
             "%>\n"; //NOI18N
     
     public static void insertMethodCall(int targetSourceType, DataObject dataObj, Node sourceNode, Node operationNode) {
-        EditorCookie cookie = (EditorCookie)sourceNode.getCookie(EditorCookie.class);
+        EditorCookie cookie = sourceNode.getCookie(EditorCookie.class);
         boolean inJsp = InvokeOperationCookie.TARGET_SOURCE_JSP==targetSourceType;
         // First, collect name of method, port, and service:
         
@@ -341,11 +341,11 @@ public class JaxWsCodeGenerator {
             portNode = operationNode.getParentNode();
             serviceNode = portNode.getParentNode();
             wsdlNode = serviceNode.getParentNode();
-            operation = (WsdlOperation)operationNode.getLookup().lookup(WsdlOperation.class);
-            WsdlPort port = (WsdlPort)portNode.getLookup().lookup(WsdlPort.class);
-            WsdlService service = (WsdlService)serviceNode.getLookup().lookup(WsdlService.class);
+            operation = operationNode.getLookup().lookup(WsdlOperation.class);
+            WsdlPort port = portNode.getLookup().lookup(WsdlPort.class);
+            WsdlService service = serviceNode.getLookup().lookup(WsdlService.class);
             
-            client = (Client)wsdlNode.getLookup().lookup(Client.class);
+            client = wsdlNode.getLookup().lookup(Client.class);
             wsdlUrl = client.getWsdlUrl();
             operationJavaName = operation.getJavaName();
             portJavaName = port.getJavaName();
@@ -558,7 +558,7 @@ public class JaxWsCodeGenerator {
                 // @insert WebServiceRef injection
                 if (generateWsRefInjection[0]) {
                     if (wsdlUrl.startsWith("file:")) { //NOI18N
-                        DataObject dObj = (DataObject) sourceNode.getCookie(DataObject.class);
+                        DataObject dObj = sourceNode.getCookie(DataObject.class);
                         if (dObj!=null)
                             wsdlUrl = findWsdlLocation(client,dObj.getPrimaryFile());
                     }
@@ -607,7 +607,8 @@ public class JaxWsCodeGenerator {
         Project clientProject = FileOwnerQuery.getOwner(srcRoot);
         DataObject dObj = sourceNode.getCookie(DataObject.class);
         if (dObj!=null) {
-            JaxWsUtils.addProjectReference(clientProject, FileOwnerQuery.getOwner(dObj.getPrimaryFile()));
+            FileObject targetFo = dObj.getPrimaryFile();
+            JaxWsUtils.addProjectReference(clientProject, targetFo);
         }       
     }
     
