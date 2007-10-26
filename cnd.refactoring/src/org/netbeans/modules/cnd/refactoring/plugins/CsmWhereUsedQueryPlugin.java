@@ -41,12 +41,14 @@
 package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.util.Collection;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
+import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
 import org.netbeans.modules.cnd.refactoring.elements.CsmRefactoringElementImpl;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
@@ -135,7 +137,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
             if (CsmKindUtilities.isFile(csmObject)) {
                 Collection<CsmReference> refs = CsmIncludeHierarchyResolver.getDefault().getIncludes((CsmFile)csmObject);
                 for (CsmReference csmReference : refs) {
-                    elements.add(refactoring, CsmRefactoringElementImpl.create(csmReference));
+                    elements.add(refactoring, CsmRefactoringElementImpl.create(csmReference, false));
                 }      
             } else {
                 CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
@@ -145,11 +147,19 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                     }
                     Collection<CsmReference> refs = xRef.getReferences(csmObject, file, true);
                     for (CsmReference csmReference : refs) {
-                        elements.add(refactoring, CsmRefactoringElementImpl.create(csmReference));
+                        elements.add(refactoring, CsmRefactoringElementImpl.create(csmReference, true));
                     }      
                     fireProgressListenerStep();
                 }
             }
+        } else if (isFindDirectSubclassesOnly() || isFindSubclasses()) {
+            assert (CsmKindUtilities.isClass(csmObject));
+            CsmClass referencedClass = (CsmClass)csmObject;
+            boolean directSubtypesOnly = isFindDirectSubclassesOnly();
+            Collection<CsmReference> refs = CsmTypeHierarchyResolver.getDefault().getSubTypes(referencedClass, directSubtypesOnly);
+            for (CsmReference csmReference : refs) {
+                elements.add(refactoring, CsmRefactoringElementImpl.create(csmReference, false));
+            }             
         }
     }
 }

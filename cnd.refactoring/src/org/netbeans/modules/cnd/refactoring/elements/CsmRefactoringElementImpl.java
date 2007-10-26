@@ -110,7 +110,7 @@ public class CsmRefactoringElementImpl extends
         CsmUtilities.openSource((CsmOffsetable)elem);
     }
     
-    public static RefactoringElementImplementation create(CsmReference ref) {
+    public static RefactoringElementImplementation create(CsmReference ref,boolean nameInBold) {
         CsmFile csmFile = ref.getContainingFile();
         FileObject fo = CsmUtilities.getFileObject(csmFile);
         PositionBounds bounds = CsmUtilities.createPositionBounds(ref);
@@ -129,7 +129,7 @@ public class CsmRefactoringElementImpl extends
                 int endOffset = ref.getEndOffset();
                 int startLine = Utilities.getRowFirstNonWhite(doc, stOffset);
                 int endLine = Utilities.getRowLastNonWhite(doc, endOffset) + 1;
-                if (CsmKindUtilities.isInclude(ref.getOwner()) && (stOffset == startLine)) {
+                if (!nameInBold) {
                     stOffset = -1;
                     endOffset = -1;
                 }
