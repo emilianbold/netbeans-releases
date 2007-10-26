@@ -458,6 +458,7 @@ public class Reformatter implements ReformatTask {
                     indent = old;
                 blankLines(cs.getBlankLinesAfterClassHeader());
                 JavaTokenId id = null;
+                boolean first = true;
                 for (Tree member : node.getMembers()) {
                     if (!isSynthetic(getCurrentPath().getCompilationUnit(), member)) {
                         switch(member.getKind()) {
@@ -475,7 +476,7 @@ public class Reformatter implements ReformatTask {
                                         blankLines(cs.getBlankLinesAfterFields());
                                     }
                                 } else {
-                                    if (!fieldGroup)
+                                    if (!fieldGroup && !first)
                                         blankLines(cs.getBlankLinesBeforeFields());
                                     scan(member, p);
                                     if(!fieldGroup)
@@ -484,16 +485,19 @@ public class Reformatter implements ReformatTask {
                                 break;
                             case METHOD:
                             case BLOCK:
-                                blankLines(cs.getBlankLinesBeforeMethods());
+                                if (!first)
+                                   blankLines(cs.getBlankLinesBeforeMethods());
                                 scan(member, p);
                                 blankLines(cs.getBlankLinesAfterMethods());
                                 break;
                             case CLASS:
-                                blankLines(cs.getBlankLinesBeforeClass());
+                                if (!first)
+                                    blankLines(cs.getBlankLinesBeforeClass());
                                 scan(member, p);
                                 blankLines(cs.getBlankLinesAfterClass());
                                 break;
                         }
+                        first = false;
                     }
                 }
             }
