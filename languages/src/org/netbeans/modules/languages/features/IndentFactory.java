@@ -38,10 +38,13 @@ import java.util.WeakHashMap;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.indent.IndentUtils;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.languages.Context;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -49,6 +52,8 @@ import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Feature.Type;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
+import org.netbeans.modules.languages.Utils;
+import org.netbeans.spi.editor.indent.Context.Region;
 import org.netbeans.spi.editor.indent.ExtraLock;
 import org.netbeans.spi.editor.indent.IndentTask;
 import org.openide.ErrorManager;
@@ -76,81 +81,57 @@ public class IndentFactory implements IndentTask.Factory {
 
         public void reindent () throws BadLocationException {
             //System.out.println("SCHLIEMAN reformat !\n  " + context.document() + "\n  " + context.isIndent() + "\n  " + context.startOffset () + "\n  " + context.endOffset());
-            StyledDocument doc = (StyledDocument) context.document ();
-            int offset = context.startOffset ();
+            StyledDocument document = (StyledDocument) context.document ();
             try {
-                TokenHierarchy th = TokenHierarchy.get (doc);
-                TokenSequence ts = th.tokenSequence ();
-                ts.move (offset);
-                if (ts.moveNext ())
-                    while (ts.embedded () != null) {
-                        ts = ts.embedded ();
-                        ts.move (offset);
-                        if (!ts.moveNext ()) break;
-                    }
-                //check if the found deepest embedding equals to the context mimepath
-                MimePath mimePath = MimePath.parse(context.mimePath());
-                //get latest mimetype from the mimetype
-                mimePath = MimePath.get(mimePath.getMimeType(mimePath.size() - 1));
-                String deepestMimeType = ts.language ().mimeType ();
-                if(!mimePath.getPath().equals(deepestMimeType)) {
-                    return ; //not our bussiness
-                }
-                
-                Language l = LanguagesManager.getDefault ().getLanguage (deepestMimeType);
-                //Token token = ts.token ();
+                MimePath mimePath = MimePath.parse (context.mimePath ());
+                String mimeType = mimePath.getMimeType (mimePath.size () - 1);
+                Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
                 Object indentValue = getIndentProperties (l);
-
                 if (indentValue == null) return;
-                if (indentValue instanceof Object[]) {
-                    Object[] params = (Object[]) indentValue;
-                    int length = doc.getLength();
-                    int ln = NbDocument.findLineNumber (doc, offset - 1);
-                    int endLine = NbDocument.findLineNumber (doc, length - 1);
-                    int start = NbDocument.findLineOffset (doc, ln);
-                    int end = ln < endLine ? NbDocument.findLineOffset (doc, ln + 1) : length;
-                    String line = doc.getText (start, end - start);
-                    int indent = getIndent (line);
-                    ts.move (start);
-                    ts.moveNext ();
-                    int ni = getIndent (line, ts, end, params);
-                    if (ni > 0)
-                        indent += 4;
-                    else
-                    if (ni == 0 && ln > 0) {
-                        int start1 = NbDocument.findLineOffset (doc, ln - 1);
-                        line = doc.getText (start1, start - start1);
-                        ts.move (start1);
-                        ts.moveNext ();
-                        ni = getIndent (line, ts, start, params);
-                        if (ni == 2)
-                            indent -= 4;
-                    }
-                    try {
-                        start = NbDocument.findLineOffset (doc, ln + 1);
-                        try {
-                            end = NbDocument.findLineOffset (doc, ln + 2);
-                            line = doc.getText (start, end - start);
-                        } catch (IndexOutOfBoundsException ex) {
-                            line = doc.getText (start, doc.getLength () - start);
-                        }
-                    } catch (IndexOutOfBoundsException ex) {
-                        line = null;
-                    }
-                    indent (doc, offset, indent);
-                    if ( line != null && 
-                         ((Set) params [2]).contains (line.trim ())
-                    ) {
-                        indent -= 4;
-                        doc.insertString (context.startOffset (), "\n", null);
-                        indent (doc, context.startOffset (), indent);
-                    }
-                } else
+                
                 if (indentValue instanceof Feature) {
                     Feature m = (Feature) indentValue;
-                    m.getValue (Context.create (doc, offset));
+                    m.getValue (Context.create (document, context.startOffset ()));
                 }
+                Object[] params = (Object[]) indentValue;
+                
+                TokenHierarchy tokenHierarchy = TokenHierarchy.get (document);
+                LanguagePath languagePath = LanguagePath.get (org.netbeans.api.lexer.Language.find (mimePath.getMimeType (0)));
+                for (int i = 1; i < mimePath.size(); i++)
+                    languagePath = languagePath.embedded (org.netbeans.api.lexer.Language.find (mimePath.getMimeType (i)));
+                List<TokenSequence> tokenSequences = tokenHierarchy.tokenSequenceList (languagePath, context.startOffset (), context.endOffset ());
+                
+                Set<String> whitespaces = l.getSkipTokenTypes ();
+                
+                Iterator<Region> it = context.indentRegions ().iterator ();
+                while (it.hasNext ()) {
+                    Region region = it.next ();
+                    Map<Position,Integer> indentMap = new HashMap<Position,Integer> ();
+                    int ln = NbDocument.findLineNumber (document, region.getStartOffset ());
+                    int endLineNumber = NbDocument.findLineNumber (document, region.getEndOffset ());
+                    if (!Utils.getTokenSequence (document, context.lineStartOffset (region.getStartOffset ())).language ().mimeType ().equals (mimeType)) 
+                        ln++;
+                    int indent = 0;
+                    if (ln > 0) {
+                        int offset = NbDocument.findLineOffset (document, ln - 1);
+                        indent = context.lineIndent (offset);
+                        if (!Utils.getTokenSequence (document, offset).language ().mimeType ().equals (mimeType))
+                            indent += IndentUtils.indentLevelSize (document); 
+                    }
+                    while (ln <= endLineNumber) {
+                        if (ln == endLineNumber && 
+                            isEmpty (ln, document, whitespaces) &&
+                            !Utils.getTokenSequence (document, region.getEndOffset ()).language ().mimeType ().equals (mimeType)
+                        ) break;
+                        indent = indent (context, document, params, ln++, indent, indentMap, whitespaces);
+                    }
 
+                    Iterator<Position> it2 = indentMap.keySet ().iterator ();
+                    while (it2.hasNext ()) {
+                        Position position = it2.next ();
+                        context.modifyIndent (position.getOffset (), indentMap.get (position));
+                    }
+                }
             } catch (LanguageDefinitionNotFoundException ldnfe) {
                 //no language found - this might happen when some of the embedded languages are not schliemann based,
                 //so just ignore and do nothing - no indent
@@ -163,7 +144,55 @@ public class IndentFactory implements IndentTask.Factory {
             return null;
         }
 
-        private static int getIndent (String line) {
+        private int indent (
+            org.netbeans.spi.editor.indent.Context context,
+            StyledDocument      document, 
+            Object[]            params, 
+            int                 ln, 
+            int                 indent,
+            Map<Position,Integer> indentMap,
+            Set<String>         whitespaces
+        ) throws BadLocationException {
+            int ni = ln > 0 ? computeIndent (ln - 1, document, context, params) : 0;
+            if (ni > 0)
+                indent += IndentUtils.indentLevelSize (document); 
+            else
+            if (ni < 0) {
+                if (!startsWithBrace (ln - 1, document, context, params, whitespaces))
+                    indent -= IndentUtils.indentLevelSize (document); 
+            } else
+            if (ni == 0 && ln > 1) {
+                ni = computeIndent (ln - 2, document, context, params);
+                if (ni == 2)
+                    indent -= IndentUtils.indentLevelSize (document);
+            }
+            if (startsWithBrace (ln, document, context, params, whitespaces))
+                indent -= IndentUtils.indentLevelSize (document);
+            indentMap.put (document.createPosition (NbDocument.findLineOffset (document, ln)), indent);
+            //context.modifyIndent (end + 1, indent);
+//            try {
+//                start = NbDocument.findLineOffset (doc, ln + 1);
+//                try {
+//                    end = NbDocument.findLineOffset (doc, ln + 2);
+//                    previousLine = doc.getText (start, end - start);
+//                } catch (IndexOutOfBoundsException ex) {
+//                    previousLine = doc.getText (start, doc.getLength () - start);
+//                }
+//            } catch (IndexOutOfBoundsException ex) {
+//                previousLine = null;
+//            }
+//            indent (doc, start, indent);
+//            if ( previousLine != null && 
+//                 ((Set) params [2]).contains (previousLine.trim ())
+//            ) {
+//                indent -= 4;
+//                doc.insertString (context.startOffset (), "\n", null);
+//                indent (doc, context.startOffset (), indent);
+//            }
+            return indent;
+        }
+        
+        private static int getCurrentIndent (String line) {
             int indent = 0;
             int i = 0, k = line.length () - 1;
             while (i < k && Character.isWhitespace (line.charAt (i))) {
@@ -177,12 +206,19 @@ public class IndentFactory implements IndentTask.Factory {
             return indent;
         }
 
-        private static int getIndent (
-            String line, 
-            TokenSequence ts, 
-            int end, 
-            Object[] params
-        ) {
+        private static int computeIndent (
+            int                     ln,
+            StyledDocument          document,
+            org.netbeans.spi.editor.indent.Context context,
+            Object[]                params
+        ) throws BadLocationException {
+            int start = NbDocument.findLineOffset (document, ln);
+            int end = document.getLength ();
+            try {
+                end = NbDocument.findLineOffset (document, ln + 1) - 1;
+            } catch (IndexOutOfBoundsException ex) {
+            }
+            TokenSequence ts = Utils.getTokenSequence (document, start);
             Map<String,Integer> p = new HashMap<String,Integer> ();
             do {
                 Token t = ts.token ();
@@ -212,6 +248,7 @@ public class IndentFactory implements IndentTask.Factory {
                 if (i > 0) return 1;
                 if (i < 0) return -1;
             }
+            String line = document.getText (start, end - start);
             it = ((List) params [0]).iterator ();
             while (it.hasNext ()) {
                 Pattern pattern = (Pattern) it.next ();
@@ -221,16 +258,48 @@ public class IndentFactory implements IndentTask.Factory {
             return 0;
         }
 
-        private static void indent (Document doc, int offset, int i) {
-            StringBuilder sb = new StringBuilder ();
-            while (i > 0) {
-                sb.append (' ');i--;
-            }
+        private static boolean startsWithBrace (
+            int                     ln,
+            StyledDocument          document,
+            org.netbeans.spi.editor.indent.Context context,
+            Object[]                params,
+            Set<String>             whitespaces
+        ) throws BadLocationException {
+            int start = NbDocument.findLineOffset (document, ln);
+            int end = document.getLength ();
             try {
-                doc.insertString (offset, sb.toString (), null);
-            } catch (BadLocationException ex) {
-                ErrorManager.getDefault ().notify (ex);
+                end = NbDocument.findLineOffset (document, ln + 1) - 1;
+            } catch (IndexOutOfBoundsException ex) {
             }
+            TokenSequence ts = Utils.getTokenSequence (document, start);
+            if (ts.token () == null) return false;
+            while (whitespaces.contains (ts.token ().id ().name ())) {
+                if (!ts.moveNext ()) return false;
+                if (ts.offset () > end) return false;
+            }
+            Token t = ts.token ();
+            String id = t.text ().toString ();
+            return ((Set) params [2]).contains (t.text ().toString ());
+        }
+
+        private static boolean isEmpty (
+            int                     ln,
+            StyledDocument          document,
+            Set<String>             whitespaces
+        ) throws BadLocationException {
+            int start = NbDocument.findLineOffset (document, ln);
+            int end = document.getLength ();
+            try {
+                end = NbDocument.findLineOffset (document, ln + 1) - 1;
+            } catch (IndexOutOfBoundsException ex) {
+            }
+            TokenSequence ts = Utils.getTokenSequence (document, start);
+            if (ts.token () == null) return true;
+            while (whitespaces.contains (ts.token ().id ().name ())) {
+                if (!ts.moveNext ()) return true;
+                if (ts.offset () > end) return true;
+            }
+            return false;
         }
 
         private static Map<Language,Object> indentProperties = new WeakHashMap<Language,Object> ();
