@@ -68,9 +68,6 @@ public class JaxWsClientCreatorProvider implements ClientCreatorProvider {
         if (PlatformUtil.isJaxWsInJ2ee14Supported(project)) {
             return new JaxWsClientCreator(project, wiz);
         }
-        if (JaxWsUtils.isCarProject(project)) {
-            return new JaxWsClientCreator(project, wiz);
-        }
         return null;
     }
 
