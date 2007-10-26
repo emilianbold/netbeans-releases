@@ -70,7 +70,7 @@ public class CustomerDBClientSampleWizardIterator extends SampleWizardIterator {
     
     protected String[] createSteps() {
         return new String[] {
-            NbBundle.getMessage(CustomerDBClientSampleWizardIterator.class, "MSG_CreateCustomerDBClientProject"),
+            NbBundle.getMessage(CustomerDBClientSampleWizardIterator.class, "MSG_NameAndLocation"),
         };
     }
     

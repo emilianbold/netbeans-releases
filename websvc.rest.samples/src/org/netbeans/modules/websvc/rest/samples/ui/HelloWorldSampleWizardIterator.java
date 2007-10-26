@@ -66,7 +66,7 @@ public class HelloWorldSampleWizardIterator extends SampleWizardIterator {
     
     protected String[] createSteps() {
         return new String[] {
-            NbBundle.getMessage(HelloWorldSampleWizardIterator.class, "MSG_CreateHelloWorldProject"),
+            NbBundle.getMessage(HelloWorldSampleWizardIterator.class, "MSG_NameAndLocation"),
         };
     }
     

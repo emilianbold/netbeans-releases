@@ -66,7 +66,7 @@ public class CustomerDBSampleWizardIterator extends SampleWizardIterator {
     
     protected String[] createSteps() {
         return new String[] {
-            NbBundle.getMessage(CustomerDBSampleWizardIterator.class, "MSG_CreateCustomerDBProject"),
+            NbBundle.getMessage(CustomerDBSampleWizardIterator.class, "MSG_NameAndLocation"),
         };
     }
     
