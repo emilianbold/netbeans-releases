@@ -138,7 +138,7 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite  {
         
     }
     
-    public void store() {
+    public @Override void store() {
         //getBrandingModel().setBrandingEnabled(buildWithBranding.isSelected());        
         getBrandingModel().setName(nameValue.getText());
         getBrandingModel().setTitle(titleValue.getText());
