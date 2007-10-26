@@ -1,0 +1,3 @@
+# openide/loaders
+read global
+exclude ${l10n-module}/test/**/*.url
