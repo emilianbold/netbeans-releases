@@ -1522,12 +1522,14 @@ public class Reformatter implements ReformatTask {
                     accept(RBRACKET);
                 }
             }
-            if (inits != null && !inits.isEmpty()) {
+            if (inits != null) {
                 spaces(cs.spaceBeforeArrayInitLeftBrace() ? 1 : 0);
                 accept(LBRACE);
-                spaces(cs.spaceWithinBraces() ? 1 : 0, true);
-                wrapList(cs.wrapArrayInit(), cs.alignMultilineArrayInit(), inits);
-                spaces(cs.spaceWithinBraces() ? 1 : 0);
+                if (!inits.isEmpty()) {
+                    spaces(cs.spaceWithinBraces() ? 1 : 0, true);
+                    wrapList(cs.wrapArrayInit(), cs.alignMultilineArrayInit(), inits);
+                    spaces(cs.spaceWithinBraces() ? 1 : 0);
+                }
                 accept(RBRACE);
             }
             return true;
