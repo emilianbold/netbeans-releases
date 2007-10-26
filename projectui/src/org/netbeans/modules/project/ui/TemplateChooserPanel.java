@@ -46,9 +46,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
@@ -61,9 +64,6 @@ import org.openide.util.NbBundle;
  * @author  Petr Hrebejk
  */
 final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
-
-    private static String lastCategory = null;
-    private static String lastTemplate = null;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private TemplateChooserPanelGUI gui;
@@ -103,7 +103,21 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
 
     public void readSettings(WizardDescriptor settings) {
         TemplateChooserPanelGUI panel = (TemplateChooserPanelGUI) this.getComponent();
-        panel.readValues( project, lastCategory, lastTemplate );
+        final FileObject currentTemplate = Templates.getTemplate(settings);
+        FileObject templates = Repository.getDefault().getDefaultFileSystem().findResource("Templates");    //NOI18N        
+        String currentCategoryName = null;
+        String currentTemplateName = null;
+        if (templates != null && currentTemplate != null && currentTemplate.getParent() != null && templates.equals(currentTemplate.getParent().getParent())) {
+            try {                
+                final DataObject dobj = DataObject.find(currentTemplate);                
+                final DataObject owner = DataObject.find(currentTemplate.getParent());
+                currentTemplateName = dobj.getName();
+                currentCategoryName = owner.getName();
+            } catch (DataObjectNotFoundException e) {
+                //Ignore and use default
+            }
+        }
+        panel.readValues( project, currentCategoryName, currentTemplateName );
         settings.putProperty("WizardPanel_contentSelectedIndex", 0); // NOI18N
         settings.putProperty ("WizardPanel_contentData", new String[] { // NOI18N
                 NbBundle.getBundle (TemplateChooserPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
@@ -134,9 +148,6 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
                 } else {
                     wd.putProperty( ProjectChooserFactory.WIZARD_KEY_TEMPLATE, gui.getTemplate () );
                 }
-
-                lastCategory = gui.getCategoryName();
-                lastTemplate = gui.getTemplateName();
             }
             catch( DataObjectNotFoundException e ) {
                 ErrorManager.getDefault().notify (e);
