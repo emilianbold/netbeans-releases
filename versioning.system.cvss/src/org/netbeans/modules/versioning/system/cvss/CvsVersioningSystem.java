@@ -58,9 +58,6 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.*;
 
@@ -99,7 +96,7 @@ public class CvsVersioningSystem {
      */ 
     private static final Set textExtensions = new HashSet(Arrays.asList(new String [] { "txt", "xml", "html", "properties", "mf", "jhm", "hs", "form" })); // NOI18N
     
-    private final Map clientsCache = new HashMap();
+    private final Map<String, ClientRuntime> clientsCache = new HashMap<String, ClientRuntime>();
     private final Map params = new HashMap();
 
     private GlobalOptions defaultGlobalOptions;
@@ -113,7 +110,7 @@ public class CvsVersioningSystem {
 
     private Annotator annotator;
 
-    private final Set   userIgnorePatterns = new HashSet();
+    private final Set<Pattern>   userIgnorePatterns = new HashSet<Pattern>();
     private boolean     userIgnorePatternsReset;
     private long        userIgnorePatternsTimestamp;
 
@@ -172,7 +169,7 @@ public class CvsVersioningSystem {
 
             ClientRuntime clientRuntime;
             synchronized(clientsCache) {
-                clientRuntime = (ClientRuntime) clientsCache.get(cvsRoot);
+                clientRuntime = clientsCache.get(cvsRoot);
                 if (clientRuntime == null) {
                     clientRuntime = new ClientRuntime(cvsRoot);
                     clientsCache.put(cvsRoot, clientRuntime);
@@ -203,8 +200,7 @@ public class CvsVersioningSystem {
 
         File oneFile = files[0];
         try {
-            String cvsRoot = Utils.getCVSRootFor(oneFile);
-            return cvsRoot;
+            return Utils.getCVSRootFor(oneFile);
         } catch (IOException e) {
             throw new NotVersionedException("Cannot determine CVSRoot for: " + oneFile); // NOI18N
         }
@@ -310,7 +306,7 @@ public class CvsVersioningSystem {
         
         if (isUnignored(file)) return false;
 
-        Set patterns = new HashSet(Arrays.asList(CvsModuleConfig.getDefault().getIgnoredFilePatterns()));
+        Set<Pattern> patterns = new HashSet<Pattern>(Arrays.asList(CvsModuleConfig.getDefault().getIgnoredFilePatterns()));
         addUserPatterns(patterns);
         addCvsIgnorePatterns(patterns, file.getParentFile());
 
@@ -342,7 +338,7 @@ public class CvsVersioningSystem {
         }
     }
     
-    private void addUserPatterns(Set patterns) {
+    private void addUserPatterns(Set<Pattern> patterns) {
         File userIgnores = new File(System.getProperty("user.home"), FILENAME_CVSIGNORE); // NOI18N
         long lm = userIgnores.lastModified();
         if (lm > userIgnorePatternsTimestamp || lm == 0 && userIgnorePatternsTimestamp > 0) {
@@ -441,8 +437,8 @@ public class CvsVersioningSystem {
         return topmost;
     }
 
-    private void addCvsIgnorePatterns(Set patterns, File file) {
-        Set shPatterns;
+    private void addCvsIgnorePatterns(Set<Pattern> patterns, File file) {
+        Set<String> shPatterns;
         try {
             shPatterns = readCvsIgnoreEntries(file);
         } catch (IOException e) {
@@ -529,8 +525,8 @@ public class CvsVersioningSystem {
         }
 
         // TODO: HACKS begin, still needed?
-        FileObject fo = FileUtil.toFileObject(file);
-        return textExtensions.contains(fo.getExt());
+        int idx = file.getName().lastIndexOf('.');
+        return idx != -1 && textExtensions.contains(file.getName().substring(idx + 1));
     }
 
     /**
@@ -557,6 +553,7 @@ public class CvsVersioningSystem {
                 try {
                     in.close();
                 } catch (IOException alreadyClosed) {
+                    // ignore
                 }
             }
         }
@@ -618,7 +615,7 @@ public class CvsVersioningSystem {
         
     private void addToCvsIgnore(File file) throws IOException {
         
-        Set entries = readCvsIgnoreEntries(file.getParentFile());
+        Set<String> entries = readCvsIgnoreEntries(file.getParentFile());
         String patternToIgnore = computePatternToIgnore(file.getName());
         if (entries.add(patternToIgnore)) {
             writeCvsIgnoreEntries(file.getParentFile(), entries);
