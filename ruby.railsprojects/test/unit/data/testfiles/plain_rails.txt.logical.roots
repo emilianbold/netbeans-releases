@@ -17,7 +17,6 @@ rootnames:
   Integration Tests
   Scripts
   Documentation
-  Vendor
 rootProperties:
   app/controllers
   app/helpers
@@ -37,7 +36,6 @@ rootProperties:
   test/integration
   script
   doc
-  vendor
 rootFiles:
   components
   config
@@ -56,7 +54,6 @@ rootFiles:
   script
   spec
   unit
-  vendor
   views
 extraFiles:
   README
