@@ -1960,11 +1960,11 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                     break;
                     
                 case MEMBER_POINTER_OPEN:
-                    if (top2ID == NO_EXP) {
+//                    if (top2ID == NO_EXP) {
                         popExp();
                         pushExp(CsmCompletionExpression.createEmptyVariable(
                                 bufferStartPos + bufferOffsetDelta + offset));                        
-                    }
+//                    }
                     break;
                 case UNARY_OPERATOR:
                     switch (top2ID) {
