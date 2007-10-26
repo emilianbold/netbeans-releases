@@ -54,7 +54,7 @@ public class WSAppExtDataLoader extends UniFileLoader {
     private static final long serialVersionUID = 1L;
 
     public WSAppExtDataLoader() {
-        super("org.netbeans.modules.j2ee.websphere6.ddloaders.appext.WSAppExtDataObject");
+        super("org.netbeans.modules.j2ee.websphere6.dd.loaders.appext.WSAppExtDataObject");
     }
     
     protected String defaultDisplayName() {

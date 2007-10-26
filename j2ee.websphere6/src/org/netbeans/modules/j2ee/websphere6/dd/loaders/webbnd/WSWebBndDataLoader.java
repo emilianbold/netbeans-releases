@@ -54,7 +54,7 @@ public class WSWebBndDataLoader extends UniFileLoader {
     private static final long serialVersionUID = 1L;
 
     public WSWebBndDataLoader() {
-        super("org.netbeans.modules.j2ee.websphere6.ddloaders.webbnd.WSWebBndDataObject");
+        super("org.netbeans.modules.j2ee.websphere6.dd.loaders.webbnd.WSWebBndDataObject");
     }
     
     protected String defaultDisplayName() {

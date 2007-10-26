@@ -54,7 +54,7 @@ public class WSWebExtDataLoader extends UniFileLoader {
     private static final long serialVersionUID = 1L;
 
     public WSWebExtDataLoader() {
-        super("org.netbeans.modules.j2ee.websphere6.ddloaders.webext.WSWebExtDataObject");
+        super("org.netbeans.modules.j2ee.websphere6.dd.loaders.webext.WSWebExtDataObject");
     }
     
     protected String defaultDisplayName() {

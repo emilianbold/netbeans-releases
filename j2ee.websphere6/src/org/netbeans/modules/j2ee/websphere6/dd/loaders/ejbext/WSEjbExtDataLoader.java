@@ -54,7 +54,7 @@ public class WSEjbExtDataLoader extends UniFileLoader {
     private static final long serialVersionUID = 1L;
 
     public WSEjbExtDataLoader() {
-        super("org.netbeans.modules.j2ee.websphere6.ddloaders.ejbext.WSEjbExtDataObject");
+        super("org.netbeans.modules.j2ee.websphere6.dd.loaders.ejbext.WSEjbExtDataObject");
     }
     
     protected String defaultDisplayName() {
