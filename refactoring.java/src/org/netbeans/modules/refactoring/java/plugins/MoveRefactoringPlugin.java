@@ -260,7 +260,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
                 source.runUserActionTask(new CancellableTask<CompilationController>() {
                     
                     public void cancel() {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                     }
                     
                     public void run(final CompilationController parameter) throws Exception {

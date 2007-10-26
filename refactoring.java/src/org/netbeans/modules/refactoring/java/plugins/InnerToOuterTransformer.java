@@ -90,7 +90,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             Tree newTree = make.setLabel(node, refactoring.getClassName());        
             rewrite(node, newTree);
         } else if (isThisReferenceToOuter()) {
-            IdentifierTree m = make.Identifier(refactoring.getReferenceName() + "." + node.getName().toString());
+            IdentifierTree m = make.Identifier(refactoring.getReferenceName() + "." + node.getName().toString()); // NOI18N
             rewrite(node, m);
         }
         return super.visitIdentifier(node, p);
@@ -104,13 +104,13 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             if (getCurrentClass()==inner) {
                 thisString = refactoring.getReferenceName();
             } else if (workingCopy.getTypes().isSubtype(getCurrentClass().asType(),outer.asType())) {
-                thisString = "this";
+                thisString = "this"; // NOI18N
             } else {
                 TypeElement thisOuter = getOuter(getCurrentClass());
                 if (thisOuter!=null)
-                    thisString = getOuter(getCurrentClass()).getQualifiedName().toString() + ".this";
+                    thisString = getOuter(getCurrentClass()).getQualifiedName().toString() + ".this"; // NOI18N
                 else 
-                    thisString = "this";
+                    thisString = "this"; // NOI18N
             
             }
             if (thisString!=null) {
@@ -132,7 +132,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
         if (constructor.getReturnType()==null) {
             //constructor
             if (!inner.equals(getCurrentClass()) && workingCopy.getTypes().isSubtype(getCurrentElement().getEnclosingElement().asType(), inner.asType())) {
-                MemberSelectTree arg = make.MemberSelect(make.Identifier(getCurrentClass().getEnclosingElement().getSimpleName()), "this");
+                MemberSelectTree arg = make.MemberSelect(make.Identifier(getCurrentClass().getEnclosingElement().getSimpleName()), "this"); // NOI18N
                 MethodInvocationTree superCall = (MethodInvocationTree) ((ExpressionStatementTree)constructor.getBody().getStatements().get(0)).getExpression();
                 MethodInvocationTree newSuperCall = make.insertMethodInvocationArgument(superCall, 0, arg);
                 rewrite(superCall, newSuperCall);
@@ -167,7 +167,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 workingCopy.rewrite(outerTree, newOuter);
                 JavaRefactoringUtils.cacheTreePathInfo(workingCopy.getTrees().getPath(outer), workingCopy);
                 CompilationUnitTree compilationUnit = tp.getCompilationUnit();
-                String relativePath = RetoucheUtils.getPackageName(compilationUnit).replace('.', '/') + '/' + refactoring.getClassName() + ".java";
+                String relativePath = RetoucheUtils.getPackageName(compilationUnit).replace('.', '/') + '/' + refactoring.getClassName() + ".java"; // NOI18N
                 CompilationUnitTree newCompilation = make.CompilationUnit(sourceRoot, relativePath, null, Collections.singletonList(newInnerClass));
                 workingCopy.rewrite(null, newCompilation);        
             } else {
@@ -194,7 +194,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                             newArgs.add((ExpressionTree)make.Identifier(variable.getName().toString()));
                             MethodInvocationTree method = make.MethodInvocation(
                                     Collections.<ExpressionTree>emptyList(), 
-                                    make.Identifier("super"),
+                                    make.Identifier("super"), // NOI18N
                                     newArgs);
 
                             BlockTree block = make.insertBlockStatement(m.getBody(), 0, make.ExpressionStatement(method));
@@ -293,7 +293,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                     MethodTree m = (MethodTree) member;
                     if (m.getReturnType()==null) {
                         MethodTree newConstructor = make.addMethodParameter(m, variable);
-                        AssignmentTree assign = make.Assignment(make.Identifier("this."+referenceName), make.Identifier(referenceName));
+                        AssignmentTree assign = make.Assignment(make.Identifier("this."+referenceName), make.Identifier(referenceName)); // NOI18N
                         BlockTree block = make.insertBlockStatement(newConstructor.getBody(), 1, make.ExpressionStatement(assign));
                         newConstructor = make.Constructor(
                                 make.Modifiers(newConstructor.getModifiers().getFlags(), newConstructor.getModifiers().getAnnotations()),

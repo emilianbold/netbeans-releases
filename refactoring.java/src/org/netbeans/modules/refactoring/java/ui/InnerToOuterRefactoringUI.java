@@ -106,9 +106,7 @@ public class InnerToOuterRefactoringUI implements RefactoringUI {
     }
 
     public String getDescription() {
-        return "TODO";
-        //TODO:
-        //return NbBundle.getMessage(InnerToOuterAction.class, "DSC_InnerToOuter", sourceType.getSimpleName()); // NOI18N
+        return NbBundle.getMessage(InnerToOuterAction.class, "DSC_InnerToOuter"); // NOI18N
     }
 
     public String getName() {

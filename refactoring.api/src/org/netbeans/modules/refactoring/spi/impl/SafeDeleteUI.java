@@ -84,29 +84,11 @@ public class SafeDeleteUI<T> implements RefactoringUI{
      * underlying refactoring
      */
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {
-        //refactoring.setCheckInComments(panel.isSearchInComments());
         return refactoring.fastCheckParameters();
     }
     
     public String getDescription() {
-        //TODO: Check bounds here. Might throw an OutofBoundsException otherwise.
-//        if (elementsToDelete[0] instanceof JavaClass) {
-//            return getString("DSC_SafeDelClasses", elementsToDelete);// NOI18N
-//        } else {
-//            if (elementsToDelete[0] instanceof Method) {
-//                if (elementsToDelete.length > 1) 
-//                    return getString("DSC_SafeDelMethods");// NOI18N
-//                else 
-//                    return getString("DSC_SafeDelMethod", elementsToDelete[0]);// NOI18N
-//            }
-//            
-//        }
-//        if(elementsToDelete[0] instanceof Resource){
-//                return NbBundle.getMessage(SafeDeleteUI.class, "DSC_SafeDel", 
-//                        ((Resource)elementsToDelete[0]).getName()); // NOI18N
-//        }
-//        return NbBundle.getMessage(SafeDeleteUI.class, "DSC_SafeDel", elementsToDelete); // NOI18N
-        return "Safe Delete";
+        return NbBundle.getMessage(SafeDeleteUI.class, "LBL_SafeDel"); // NOI18N
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {
@@ -144,7 +126,6 @@ public class SafeDeleteUI<T> implements RefactoringUI{
     }
     
     public Problem setParameters() {
-        //refactoring.setCheckInComments(panel.isSearchInComments());
         return refactoring.checkParameters();
     }
     

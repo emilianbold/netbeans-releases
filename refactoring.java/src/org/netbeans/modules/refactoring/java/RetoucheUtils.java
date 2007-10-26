@@ -131,7 +131,7 @@ import org.openide.util.Utilities;
  */
 public class RetoucheUtils {
     
-    private static final String JAVA_MIME_TYPE = "text/x-java";
+    private static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
     
     public static String htmlize(String input) {
         String temp = org.openide.util.Utilities.replaceString(input, "<", "&lt;"); // NOI18N
@@ -248,8 +248,8 @@ public class RetoucheUtils {
             buf.append("</i>"); //NOI18N
         }
         if (StyleConstants.isStrikeThrough(set)) {
-            buf.insert(0,"<s>");
-            buf.append("</s>");
+            buf.insert(0,"<s>"); // NOI18N
+            buf.append("</s>"); // NOI18N
         }
         buf.insert(0,"<font color=" + getHTMLColor(StyleConstants.getForeground(set)) + ">"); //NOI18N
         buf.append("</font>"); //NOI18N
@@ -349,10 +349,10 @@ public class RetoucheUtils {
     public static String getPackageName(URL url) {
         File f = null;
         try {
-            String path = URLDecoder.decode(url.getPath(), "utf-8");
+            String path = URLDecoder.decode(url.getPath(), "utf-8"); // NOI18N
             f = FileUtil.normalizeFile(new File(path));
         } catch (UnsupportedEncodingException u) {
-            throw new IllegalArgumentException("Cannot create package name for url " + url);
+            throw new IllegalArgumentException("Cannot create package name for url " + url); // NOI18N
         }
         String suffix = "";
         
@@ -362,19 +362,19 @@ public class RetoucheUtils {
                 if ("".equals(suffix))
                     return getPackageName(fo);
                 String prefix = getPackageName(fo);
-                return prefix + ("".equals(prefix)?"":".") + suffix;
+                return prefix + ("".equals(prefix)?"":".") + suffix; // NOI18N
             }
             if (!"".equals(suffix)) {
-                suffix = "." + suffix;
+                suffix = "." + suffix; // NOI18N
             }
             try {
-                suffix = URLDecoder.decode(f.getPath().substring(f.getPath().lastIndexOf(File.separatorChar) + 1), "utf-8") + suffix;
+                suffix = URLDecoder.decode(f.getPath().substring(f.getPath().lastIndexOf(File.separatorChar) + 1), "utf-8") + suffix; // NOI18N
             } catch (UnsupportedEncodingException u) {
-                throw new IllegalArgumentException("Cannot create package name for url " + url);
+                throw new IllegalArgumentException("Cannot create package name for url " + url); // NOI18N
             }
             f = f.getParentFile();
         } while (f!=null);
-        throw new IllegalArgumentException("Cannot create package name for url " + url);
+        throw new IllegalArgumentException("Cannot create package name for url " + url); // NOI18N
     }
 
     /**

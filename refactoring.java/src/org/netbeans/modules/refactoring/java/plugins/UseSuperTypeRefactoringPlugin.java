@@ -213,7 +213,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
                 }
                 CompilationUnitTree cu = compiler.getCompilationUnit();
                 if (cu == null) {
-                    ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);
+                    ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler); // NOI18N
                     return;
                 }
                 Element subClassElement = subClassHandle.resolveElement(compiler);

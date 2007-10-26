@@ -218,7 +218,7 @@ public abstract class BackupFacility {
         void restore(long id) throws IOException {
             BackupEntry entry = map.get(id);
             if(entry==null) {
-                throw new IllegalArgumentException("Backup with id " + id + "does not exist");
+                throw new IllegalArgumentException("Backup with id " + id + "does not exist"); // NOI18N
             }
             File backup = File.createTempFile("nbbackup", null); //NOI18N
             backup.deleteOnExit();

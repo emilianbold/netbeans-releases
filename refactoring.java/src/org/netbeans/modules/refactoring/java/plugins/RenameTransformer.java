@@ -138,14 +138,14 @@ public class RenameTransformer extends RefactoringVisitor {
                             && ele.getSimpleName().toString().equals(newName)) {
                         if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
                             String isThis = ((MemberSelectTree) tree).getExpression().toString();
-                            if (isThis.equals("this") || isThis.endsWith(".this")) {
+                            if (isThis.equals("this") || isThis.endsWith(".this")) { // NOI18N
                                 break;
                             }
                         }
                         if (scope.getEnclosingClass().equals(elementToFind.getEnclosingElement())) 
-                            useThis = "this.";
+                            useThis = "this."; // NOI18N
                         else 
-                            useThis = elementToFind.getEnclosingElement().getSimpleName() + ".this.";
+                            useThis = elementToFind.getEnclosingElement().getSimpleName() + ".this."; // NOI18N
                         break;
                     }
                 } 

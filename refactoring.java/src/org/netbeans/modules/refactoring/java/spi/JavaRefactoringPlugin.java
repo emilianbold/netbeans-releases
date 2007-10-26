@@ -194,7 +194,7 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
                 return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElementNotResolved"));
             }
             
-            if ("this".equals(el.getSimpleName().toString()) || "super".equals(el.getSimpleName().toString())) {
+            if ("this".equals(el.getSimpleName().toString()) || "super".equals(el.getSimpleName().toString())) { // NOI18N
                 return new Problem(true, NbBundle.getMessage(FindVisitor.class, "ERR_CannotRefactorThis", el.getSimpleName()));
             }
             
@@ -325,7 +325,7 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
             }
             CompilationUnitTree cu = compiler.getCompilationUnit();
             if (cu == null) {
-                ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);
+                ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler); // NOI18N
                 return;
             }
             Element el = null;

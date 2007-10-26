@@ -81,7 +81,7 @@ public class CopyTransformer extends RefactoringVisitor {
         if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
             if (insertImport) {
                 Element el = workingCopy.getTrees().getElement(getCurrentPath());
-                Tree tree2 = make.insertCompUnitImport(tree, 0, make.Import(make.Identifier(oldPackage + ".*"), false));
+                Tree tree2 = make.insertCompUnitImport(tree, 0, make.Import(make.Identifier(oldPackage + ".*"), false)); // NOI18N
                 rewrite(tree, tree2);
             }
         }
@@ -93,7 +93,7 @@ public class CopyTransformer extends RefactoringVisitor {
         if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
             TypeElement currentClass = (TypeElement) workingCopy.getTrees().getElement(getCurrentPath());
             if (currentClass == null) {
-                Logger.getLogger("org.netbeans.modules.refactoring.java").severe("Cannot resolve tree " + tree + "\n file: " + workingCopy.getFileObject().getPath());
+                Logger.getLogger("org.netbeans.modules.refactoring.java").severe("Cannot resolve tree " + tree + "\n file: " + workingCopy.getFileObject().getPath()); // NOI18N
             } else {
                 if (!currentClass.getNestingKind().isNested() && ((workingCopy.getCompilationUnit().getTypeDecls().size() == 1) || tree.getSimpleName().toString().equals(oldName))) {
                     Tree nju = make.setLabel(tree, newName);
@@ -123,7 +123,7 @@ public class CopyTransformer extends RefactoringVisitor {
         if (el==null)
             return;
         
-        if ((el instanceof TypeElement) && ((TypeElement) el).getQualifiedName().toString().equals(newPackage+"."+oldName)) {
+        if ((el instanceof TypeElement) && ((TypeElement) el).getQualifiedName().toString().equals(newPackage+"."+oldName)) { // NOI18N
             Tree nju = make.setLabel(tree, newName);
             rewrite(tree, nju);
         }

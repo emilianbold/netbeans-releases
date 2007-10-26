@@ -492,7 +492,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                 TypeMirror desc = par.asType();
                 String typeRepresentation;
                 if (method.isVarArgs() && originalIndex == pars.size()-1) {
-                    typeRepresentation = getTypeStringRepresentation(((ArrayType)desc).getComponentType()) + " ...";
+                    typeRepresentation = getTypeStringRepresentation(((ArrayType)desc).getComponentType()) + " ..."; // NOI18N
                 } else {
                     typeRepresentation = getTypeStringRepresentation(desc);
                 }

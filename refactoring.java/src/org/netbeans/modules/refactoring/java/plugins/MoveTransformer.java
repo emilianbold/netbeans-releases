@@ -249,7 +249,7 @@ public class MoveTransformer extends RefactoringVisitor {
                 //add import to old package
                 ExpressionTree newPackageName = cut.getPackageName();
                 if (newPackageName != null) {
-                    cut = insertImport(cut, newPackageName.toString() + ".*", null);
+                    cut = insertImport(cut, newPackageName.toString() + ".*", null); // NOI18N
                 } else {
                     if (!moveToDefaulPackageProblem) {
                         problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_MovingClassToDefaultPackage"));
@@ -263,7 +263,7 @@ public class MoveTransformer extends RefactoringVisitor {
             FileObject fo = SourceUtils.getFile(el, workingCopy.getClasspathInfo());
             String newPackageName = move.getTargetPackageName(fo);
             if (!"".equals(newPackageName)) {
-                cut = insertImport(cut, newPackageName + "." +el.getSimpleName(), el);
+                cut = insertImport(cut, newPackageName + "." +el.getSimpleName(), el); // NOI18N
             }
         }
         rewrite(node, cut);
@@ -275,9 +275,9 @@ public class MoveTransformer extends RefactoringVisitor {
             if (tree.getQualifiedIdentifier().toString().equals(imp)) 
                 return node;
             if (orig!=null) {
-                if (tree.getQualifiedIdentifier().toString().equals(getPackageOf(orig).getQualifiedName()+".*") && isPackageRename()) {
+                if (tree.getQualifiedIdentifier().toString().equals(getPackageOf(orig).getQualifiedName()+".*") && isPackageRename()) { // NOI18N
                     FileObject fo = SourceUtils.getFile(orig, workingCopy.getClasspathInfo());
-                    rewrite(tree.getQualifiedIdentifier(), make.Identifier(move.getTargetPackageName(fo)+".*"));
+                    rewrite(tree.getQualifiedIdentifier(), make.Identifier(move.getTargetPackageName(fo)+".*")); // NOI18N
                     return node;
                 }
             }

@@ -127,7 +127,7 @@ public final class MemberInfo<H> {
     }
 
     public static <T extends TypeMirror> MemberInfo<TypeMirrorHandle<T>> create(T el, Tree t, CompilationInfo c) {
-        MemberInfo<TypeMirrorHandle<T>> mi = new MemberInfo<TypeMirrorHandle<T>>(TypeMirrorHandle.create(el), t.toString(), "implements " + t.toString(), UiUtils.getElementIcon(ElementKind.INTERFACE, null));
+        MemberInfo<TypeMirrorHandle<T>> mi = new MemberInfo<TypeMirrorHandle<T>>(TypeMirrorHandle.create(el), t.toString(), "implements " + t.toString(), UiUtils.getElementIcon(ElementKind.INTERFACE, null)); // NOI18N
         mi.group = Group.IMPLEMENTS;
         return mi;
     }
@@ -168,7 +168,7 @@ public final class MemberInfo<H> {
             g=Group.METHOD;
         } else if (el.getKind().isInterface()) {
             g=Group.IMPLEMENTS;
-            format = "implements " + format;
+            format = "implements " + format; // NOI18N
         }
 
         MemberInfo<TreePathHandle> mi = new MemberInfo<TreePathHandle>(TreePathHandle.create(tpath, c), el.getSimpleName().toString(), UiUtils.getHeader(el, c, format), UiUtils.getDeclarationIcon(el));

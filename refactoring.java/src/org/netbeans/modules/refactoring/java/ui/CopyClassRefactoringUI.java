@@ -92,7 +92,7 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
         if (panel == null) {
             FileObject target = targetFolder!=null?targetFolder:resource.getParent();
             panel = new CopyClassPanel(parent,
-                    getName() + " - " + resource.getName(), 
+                    getName() + " - " + resource.getName(), // NOI18N
                     RetoucheUtils.getPackageName(target), 
                     target,
                     resource.getName());
@@ -117,7 +117,7 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
         refactoring.setNewName(panel.getNewName());
         URL url = URLMapper.findURL(panel.getRootFolder(), URLMapper.EXTERNAL);
         try {
-            refactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm() + "/" + panel.getPackageName().replace('.','/'))));
+            refactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm() + "/" + panel.getPackageName().replace('.','/')))); // NOI18N
         } catch (MalformedURLException ex) {
             ex.printStackTrace();
         }

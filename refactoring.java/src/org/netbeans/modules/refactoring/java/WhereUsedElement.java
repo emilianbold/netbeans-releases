@@ -139,7 +139,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
             start = (int) sp.getStartPosition(unit, t);
             end = (int) sp.getEndPosition(unit, t);
             if (end == -1) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new RuntimeException("Cannot get end position for " + t.getClass().getName() + " " + t + " file:" + compiler.getFileObject().getPath()));
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new RuntimeException("Cannot get end position for " + t.getClass().getName() + " " + t + " file:" + compiler.getFileObject().getPath())); // NOI18N
                 end = start;
             }
         }

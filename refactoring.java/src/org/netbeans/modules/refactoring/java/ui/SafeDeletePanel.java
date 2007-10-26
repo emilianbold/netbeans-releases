@@ -220,7 +220,7 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
         // used for change default value for deleteInComments check-box.
         // The value is persisted and then used as default in next IDE run.
         Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
-        RefactoringModule.setOption("searchInComments.whereUsed", b);
+        RefactoringModule.setOption("searchInComments.whereUsed", b); // NOI18N
         refactoring.setCheckInComments(b.booleanValue());
     }//GEN-LAST:event_searchInCommentsItemStateChanged
     

@@ -141,7 +141,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         }
         CancellableTask<CompilationController> task =new CancellableTask<CompilationController>() {
             public void cancel() {
-                throw new UnsupportedOperationException("Not supported yet.");
+                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
             }
             
             public void run(CompilationController info) throws Exception {
@@ -216,7 +216,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                         }
                         if (currentProject!=null) {
                             scope.setModel(new DefaultComboBoxModel(new Object[]{allProjects, currentProject }));
-                            int defaultItem = (Integer) RefactoringModule.getOption("whereUsed.scope", 0);
+                            int defaultItem = (Integer) RefactoringModule.getOption("whereUsed.scope", 0); // NOI18N
                             scope.setSelectedIndex(defaultItem);
                             scope.setRenderer(new JLabelRenderer());
                         } else {
@@ -460,14 +460,14 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void scopeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeActionPerformed
-    RefactoringModule.setOption("whereUsed.scope", scope.getSelectedIndex());
+    RefactoringModule.setOption("whereUsed.scope", scope.getSelectedIndex()); // NOI18N
 }//GEN-LAST:event_scopeActionPerformed
 
     private void searchInCommentsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchInCommentsItemStateChanged
         // used for change default value for searchInComments check-box.
         // The value is persisted and then used as default in next IDE run.
         Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
-        RefactoringModule.setOption("searchInComments.whereUsed", b);
+        RefactoringModule.setOption("searchInComments.whereUsed", b); // NOI18N
     }//GEN-LAST:event_searchInCommentsItemStateChanged
 
     private void m_isBaseClassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_isBaseClassActionPerformed

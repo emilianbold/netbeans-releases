@@ -745,7 +745,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                         false,
                         NbBundle.getMessage(
                                 EncapsulateFieldRefactoringPlugin.class,
-                                "ERR_EncapsulateInsideAssignment",
+                                "ERR_EncapsulateInsideAssignment", // NOI18N
                                 exp1.toString(),
                                 parent.toString(),
                                 FileUtil.getFileDisplayName(workingCopy.getFileObject())));

@@ -121,7 +121,7 @@ public class FolderTreeElement implements TreeElement {
 
         if (allgroups.length < 1) {
             // Unknown project group
-            Logger.getLogger(FolderTreeElement.class.getName()).severe("Cannot find SourceGroup for " + file.getPath());
+            Logger.getLogger(FolderTreeElement.class.getName()).severe("Cannot find SourceGroup for " + file.getPath()); // NOI18N
             return null;
        }
         System.arraycopy(javagroups,0,allgroups,0,javagroups.length);

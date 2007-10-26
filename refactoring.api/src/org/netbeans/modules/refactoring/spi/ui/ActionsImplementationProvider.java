@@ -83,7 +83,7 @@ public abstract class ActionsImplementationProvider {
      * @param lookup current context
      */
     public void doRename(Lookup lookup) {
-        throw new UnsupportedOperationException("Not implemented!");
+        throw new UnsupportedOperationException("Not implemented!"); // NOI18N
     }
 
     /**
@@ -98,7 +98,7 @@ public abstract class ActionsImplementationProvider {
      * @param lookup current context
      */
     public void doFindUsages(Lookup lookup) {
-        throw new UnsupportedOperationException("Not implemented!");
+        throw new UnsupportedOperationException("Not implemented!"); // NOI18N
     }
 
     /**
@@ -113,7 +113,7 @@ public abstract class ActionsImplementationProvider {
      * @param lookup current context
      */
     public void doDelete(Lookup lookup) {
-        throw new UnsupportedOperationException("Not implemented!");
+        throw new UnsupportedOperationException("Not implemented!"); // NOI18N
     }
 
     /**
@@ -128,7 +128,7 @@ public abstract class ActionsImplementationProvider {
      * @param lookup current context
      */
     public void doMove(Lookup lookup) {
-        throw new UnsupportedOperationException("Not implemented!");
+        throw new UnsupportedOperationException("Not implemented!"); // NOI18N
     }
 
     /**
@@ -143,6 +143,6 @@ public abstract class ActionsImplementationProvider {
      * @param lookup current context
      */
     public void doCopy(Lookup lookup) {
-        throw new UnsupportedOperationException("Not implemented!");
+        throw new UnsupportedOperationException("Not implemented!"); // NOI18N
     }
 }

@@ -81,9 +81,9 @@ public class CheckNode extends DefaultMutableTreeNode {
                 if (s==RefactoringElement.GUARDED || s==RefactoringElement.READ_ONLY) {
                     isSelected = false;
                     disabled = true;
-                    this.nodeLabel = "[<font color=#CC0000>"
+                    this.nodeLabel = "[<font color=#CC0000>" // NOI18N
                             + NbBundle.getMessage(CheckNode.class, s==RefactoringElement.GUARDED?"LBL_InGuardedBlock":"LBL_InReadOnlyFile")
-                            + "</font>]" + this.nodeLabel;
+                            + "</font>]" + this.nodeLabel; // NOI18N
                 }
             }
         }

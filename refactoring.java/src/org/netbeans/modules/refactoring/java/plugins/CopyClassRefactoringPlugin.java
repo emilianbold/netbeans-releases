@@ -150,7 +150,7 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
             return null;
         }
         public String getTargetPackageName() {
-            return "test";
+            return RetoucheUtils.getPackageName(refactoring.getTarget().lookup(URL.class));
         }
 
         public void performChange() {
@@ -197,7 +197,7 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
             compiler.toPhase(JavaSource.Phase.RESOLVED);
             CompilationUnitTree cu = compiler.getCompilationUnit();
             if (cu == null) {
-                ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);
+                ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler); // NOI18N
                 return;
             }
             

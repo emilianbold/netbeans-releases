@@ -112,7 +112,7 @@ public class CopyClassPanel extends JPanel implements ActionListener, DocumentLi
         do {
             fob = fo.getFileObject(newName + ".java"); //NOI18N
             if (fob!=null)
-                newName += "1";
+                newName += "1"; // NOI18N
         } while (fob!=null);
         newNameTextField.setText(newName);
         newNameTextField.setSelectionStart(0);

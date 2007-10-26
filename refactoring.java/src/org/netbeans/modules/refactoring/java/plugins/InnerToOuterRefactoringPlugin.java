@@ -163,7 +163,7 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         //                Collection outerReferences = traverseForOuterReferences(sourceType, new ArrayList(), multipartIds, featureSet, innerFeatures, (JavaClass) declCls);
         //                if (!outerReferences.isEmpty()) {
         //                    this.outerReferences = outerReferences;
-        refactoring.setReferenceName("outer");
+        refactoring.setReferenceName("outer"); // NOI18N
         //                }
         //            }
         

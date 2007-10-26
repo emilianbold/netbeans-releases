@@ -92,7 +92,7 @@ public class CheckRenderer extends JPanel implements TreeCellRenderer {
         stringDisplayer.setEnabled(!node.isDisabled());
         String toolTip = node.getToolTip();
         if (toolTip!=null)
-            setToolTipText("<html>"+node.getToolTip()+"</html>");
+            setToolTipText("<html>"+node.getToolTip()+"</html>"); // NOI18N
         
         //HtmlRenderer does not tolerate null colors - real ones are needed to
         //ensure fg/bg always diverge enough to be readable
@@ -142,9 +142,9 @@ public class CheckRenderer extends JPanel implements TreeCellRenderer {
             nodeLabel += " - " + NbBundle.getMessage(RefactoringPanel.class, "LBL_NeedsRefresh");
         }
         nodeLabel += "</html>"; // NOI18N
-        int i = nodeLabel.indexOf("<br>");
+        int i = nodeLabel.indexOf("<br>"); // NOI18N
         if (i!=-1) {
-            return nodeLabel.substring(0,i) +"</html>";
+            return nodeLabel.substring(0,i) +"</html>"; // NOI18N
         } else {
             return nodeLabel;
         }

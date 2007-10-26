@@ -214,10 +214,10 @@ public final class RefactoringElementsBag {
                 }
             }
         } catch (DataObjectNotFoundException ex) {
-            java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+            java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE, // NOI18N
                     ex.getMessage(), ex);
         } catch (IOException ex) {
-            java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+            java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE, // NOI18N
                     ex.getMessage(), ex);
         }
         return false;

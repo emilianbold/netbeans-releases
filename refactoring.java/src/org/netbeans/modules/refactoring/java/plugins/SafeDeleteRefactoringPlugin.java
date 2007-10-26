@@ -324,45 +324,6 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         return new Problem(true,errorMsg);
     }
  
-    private static class ImportRefDeleteElement extends SimpleRefactoringElementImplementation {
-        
-//        private final Import importStmt;
-        private final String text = "todo";
-        
-//        private ImportRefDeleteElement(Import importStmt){
-//            this.importStmt = importStmt;
-//            text = NbBundle.getMessage(ImportRefDeleteElement.class, 
-//                    "TXT_SafeDel_Delete_Ref_Import", importStmt.getName());
-//        }
-        
-        public String getText() {
-            return text;
-        }
-
-        public String getDisplayText() {
-            return getText();
-        }
-
-        public void performChange() {
-//            importStmt.refDelete();
-        }
-
-        public Lookup getLookup() {
-//            return importStmt.getResource();
-            return Lookup.EMPTY;
-        }
-
-        public FileObject getParentFile() {
-            //return JavaMetamodel.getManager().getFileObject(importStmt.getResource());
-            return null;
-        }
-
-        public PositionBounds getPosition() {
-            //return JavaMetamodel.getManager().getElementPosition(importStmt);
-            return null;
-        }
-    }
-
     protected JavaSource getJavaSource(Phase p) {
         return null;
     }
