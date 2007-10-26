@@ -310,7 +310,11 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
             public void run(WorkingCopy workingCopy) throws Exception {
                 workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                 
-                if (fileObject.equals(workingCopy.getFileObject())){
+                if (fileObject.equals(workingCopy.getFileObject()) 
+                        && targetFileObject.equals(workingCopy.getFileObject())){
+                    modifyLocalClass(workingCopy, mappedBy, owningSide);
+                    modifyTargetClass(workingCopy, mappedBy, !owningSide);
+                } else if (fileObject.equals(workingCopy.getFileObject())){
                     modifyLocalClass(workingCopy, mappedBy, owningSide);
                 } else {
                     modifyTargetClass(workingCopy, mappedBy, !owningSide);
