@@ -86,6 +86,7 @@ public class ServiceTableModel extends DefaultTableModel {
     private List<? extends ServiceData> result;
 
     private String status;
+    private boolean warnsOrErrors = false;
     private Set<Integer> selectedRows = new HashSet<Integer>();
     private RequestProcessor.Task searchTask;
 
@@ -203,13 +204,12 @@ public class ServiceTableModel extends DefaultTableModel {
         return selection;
     }
     
-    public String getStatus() {
-        if (status == null || status.trim().length() == 0 || status.startsWith("Found")) { //NOI18N
-            status = NbBundle.getMessage(ServiceTableModel.class, "MSG_Found", result.size());
-        } else {
-            status = NbBundle.getMessage(ServiceTableModel.class, "MSG_ERROR", status);
-        }
+    public String getStatusMessage() {
         return status;
+    }
+
+    public boolean hasWarnsOrErrors() {
+        return warnsOrErrors;
     }
 
     private URL getWsdlLocation() {
@@ -235,8 +235,23 @@ public class ServiceTableModel extends DefaultTableModel {
         return converted;
     }
     
+    private void clearStatusMessage() {
+        status = "";
+        warnsOrErrors = false;
+    }
+    
+    private void setErrorMessage(String msg) {
+        status = msg;
+        warnsOrErrors = true;
+    }
+    
+    private void setStatusMessage(String msg) {
+        status = msg;
+        warnsOrErrors = false;
+    }
+    
     private void callSearch(String searchTerm, SORTBY sortBy) {
-        status = null;
+        clearStatusMessage();
         selectedRows = new HashSet<Integer>();
         result = new ArrayList<ServiceData>();
         fireTableDataChanged();
@@ -264,11 +279,16 @@ public class ServiceTableModel extends DefaultTableModel {
                 }
             }
             if (output != null && output.getServiceStatus() != null) {
-                status = output.getServiceStatus().getStatusDescription();
+                String msg = output.getServiceStatus().getStatusDescription();
+                if (msg == null || msg.trim().length() == 0 || msg.startsWith("Found")) { //NOI18N
+                    setStatusMessage(NbBundle.getMessage(ServiceTableModel.class, "MSG_Found", result.size()));
+                } else {
+                    setErrorMessage(NbBundle.getMessage(ServiceTableModel.class, "MSG_ERROR", msg));
+                }
             }
             fireTableDataChanged();
         } catch (Exception ex) {
-            status = ex.getLocalizedMessage();
+            setErrorMessage(ex.getLocalizedMessage());
         } finally {
             fireSearchEnded();
             searchTask = null;
