@@ -51,6 +51,7 @@ import java.net.URL;
 import java.util.EventListener;
 import javax.swing.JComponent;
 import org.netbeans.modules.visualweb.api.designer.Designer.Box;
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.spi.designer.Decoration;
 import org.netbeans.spi.palette.PaletteController;
 import org.w3c.dom.Document;
@@ -517,6 +518,9 @@ public interface DomProvider {
     } // End of DomPosition.
  
     public interface DomRange {
+        
+        public static final DomRange NONE = new NoneDomRange();
+        
         public DomPosition getDot();
         public DomPosition getMark();
 
@@ -533,6 +537,50 @@ public interface DomProvider {
         public boolean isDot(DomPosition dot);
         public boolean isEmpty();
         public boolean isReadOnlyRegion();
+        
+        
+        static class NoneDomRange implements DomRange {
+            public DomPosition getDot() {
+                return DomPosition.NONE;
+            }
+
+            public DomPosition getMark() {
+                return DomPosition.NONE;
+            }
+
+            public void setDot(Node node, int offset, Bias bias) {
+            }
+
+            public void setMark(Node node, int offset, Bias bias) {
+            }
+
+            public void setRange(Node dotNode, int dotOffset, Node markNode, int markOffset) {
+            }
+
+            public void detach() {
+            }
+
+            public DomPosition getFirstPosition() {
+                return DomPosition.NONE;
+            }
+
+            public DomPosition getLastPosition() {
+                return DomPosition.NONE;
+            }
+
+            public boolean isDot(DomPosition dot) {
+                return dot == DomPosition.NONE;
+            }
+
+            public boolean isEmpty() {
+                return true;
+            }
+
+            public boolean isReadOnlyRegion() {
+                return true;
+            }
+            
+        } // End of NoneDomRange.
     } // End of DomRange.
     
     public interface DomDocumentListener extends EventListener {

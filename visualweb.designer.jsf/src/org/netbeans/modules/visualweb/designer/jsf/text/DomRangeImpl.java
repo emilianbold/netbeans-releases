@@ -48,6 +48,8 @@ import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition.Bias;
 
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomRange;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Node;
 import org.w3c.dom.ranges.DocumentRange;
 
@@ -105,8 +107,21 @@ import org.w3c.dom.ranges.DocumentRange;
     private Bias dotBias = Bias.FORWARD;
     private Bias markBias = Bias.FORWARD;
 
-    public static DomRangeImpl create(DomDocumentImpl domDocumentImpl, Node dotNode, int dotOffset, Node markNode, int markOffset) {
-        return new DomRangeImpl(domDocumentImpl, dotNode, dotOffset, markNode, markOffset);
+    public static DomRange create(DomDocumentImpl domDocumentImpl, Node dotNode, int dotOffset, Node markNode, int markOffset) {
+        // XXX #113141 Fixing possible NPE (returning DomRange.NONE instead).
+        // XXX #102048 If the owner is the source doc, get the range.
+        if (dotNode.getOwnerDocument() == domDocumentImpl.getJsfForm().getJspDom()) {
+            return new DomRangeImpl(domDocumentImpl, dotNode, dotOffset, markNode, markOffset);
+        } else {
+            Logger logger = Logger.getLogger(DomRangeImpl.class.getName());
+            logger.log(Level.INFO, null,
+                new IllegalStateException("Can not create dom range for provided node in source DOM" // NOI18N
+                    + ", dotNode=" + dotNode // NOI18N
+                    + ", dotNode owner=" + dotNode.getOwnerDocument() // NOI18N
+                    + ", jsp dom=" + domDocumentImpl.getJsfForm().getJspDom())); // NOI18N
+            
+            return DomRange.NONE;
+        }
     }
     
     private DomRangeImpl(DomDocumentImpl domDocumentImpl, Node dotNode, int dotOffset, Node markNode, int markOffset) {
@@ -148,22 +163,29 @@ import org.w3c.dom.ranges.DocumentRange;
 ////                    new IllegalStateException("dotNode=" + dotNode + ", curr=" + curr + ", jsp dom=" + webform.getJspDom())); // NOI18N
 //                    new IllegalStateException("dotNode=" + dotNode + ", curr=" + curr + ", jsp dom=" + domDocumentImpl.getJsfForm().getJspDom())); // NOI18N
 //        }
-        // XXX #102048 If the owner is the source doc, get the range.
-        if (dotNode.getOwnerDocument() == domDocumentImpl.getJsfForm().getJspDom()) {
-            // It's below the main document dom node so it's part of
-            // the writable document portion
-            DocumentRange dom = (DocumentRange)domDocumentImpl.getJsfForm().getJspDom();
-            
-            domRange = dom.createRange();
-            domRange.setStart(markNode, markOffset);
-            domRange.setEnd(dotNode, dotOffset);
-        } else {
-            Logger logger = Logger.getLogger(DomRangeImpl.class.getName());
-            logger.log(Level.INFO, null,
-                new IllegalStateException("dotNode=" + dotNode // NOI18N
-                    + ", dotNode owner=" + dotNode.getOwnerDocument() // NOI18N
-                    + ", jsp dom=" + domDocumentImpl.getJsfForm().getJspDom())); // NOI18N
-        }
+//        // XXX #102048 If the owner is the source doc, get the range.
+//        if (dotNode.getOwnerDocument() == domDocumentImpl.getJsfForm().getJspDom()) {
+//            // It's below the main document dom node so it's part of
+//            // the writable document portion
+//            DocumentRange dom = (DocumentRange)domDocumentImpl.getJsfForm().getJspDom();
+//            
+//            domRange = dom.createRange();
+//            domRange.setStart(markNode, markOffset);
+//            domRange.setEnd(dotNode, dotOffset);
+//        } else {
+//            Logger logger = Logger.getLogger(DomRangeImpl.class.getName());
+//            logger.log(Level.INFO, null,
+//                new IllegalStateException("dotNode=" + dotNode // NOI18N
+//                    + ", dotNode owner=" + dotNode.getOwnerDocument() // NOI18N
+//                    + ", jsp dom=" + domDocumentImpl.getJsfForm().getJspDom())); // NOI18N
+//            
+//        }
+        // It's below the main document dom node so it's part of
+        // the writable document portion
+        DocumentRange dom = (DocumentRange)domDocumentImpl.getJsfForm().getJspDom();
+        domRange = dom.createRange();
+        domRange.setStart(markNode, markOffset);
+        domRange.setEnd(dotNode, dotOffset);
 
         dotIsFirst = false;
         ensureMarkIsFirst();
