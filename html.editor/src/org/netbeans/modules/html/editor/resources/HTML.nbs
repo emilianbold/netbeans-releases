@@ -158,23 +158,23 @@ FOLD:comment: {
 NAVIGATOR:tag: {
     display_name: "$startTag.TAG_OPEN$";
     tooltip: "$$";
-    icon: "/org/netbeans/modules/html/editor/resources/htmlTag.png";
+    icon: "org/netbeans/modules/html/editor/resources/htmlTag.png";
 }
 NAVIGATOR:simpleTag: {
     display_name: "$TAG_OPEN$";
     tooltip: "$$";
-    icon: "/org/netbeans/modules/html/editor/resources/htmlTag.png";
+    icon: "org/netbeans/modules/html/editor/resources/htmlTag.png";
 }
 
 NAVIGATOR:unpairedStartTag: {
     display_name: "$TAG_OPEN$";
     tooltip: "$$";
-    icon: "/org/netbeans/modules/html/editor/resources/htmlTag.png";
+    icon: "org/netbeans/modules/html/editor/resources/htmlTag.png";
 }
 NAVIGATOR:unpairedEndTag: {
     display_name: "$TAG_CLOSE$";
     tooltip: "$$";
-    icon: "/org/netbeans/modules/html/editor/resources/htmlTag.png";
+    icon: "org/netbeans/modules/html/editor/resources/htmlTag.png";
 }
 
 

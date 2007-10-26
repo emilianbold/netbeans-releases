@@ -179,13 +179,13 @@ FOLD:css_comment: {
 
 NAVIGATOR:media: {
     display_name: "@media $mediaName$";
-    icon: "/org/netbeans/modules/languages/resources/style_sheet_16.png";
+    icon: "org/netbeans/modules/languages/resources/style_sheet_16.png";
 }
 
 NAVIGATOR:ruleset: {
     display_name: "$selectors$";
     tooltip: org.netbeans.modules.languages.css.CSS.navigatorTooltip;
-    icon: "/org/netbeans/modules/languages/resources/style_sheet_16.png";
+    icon: "org/netbeans/modules/languages/resources/style_sheet_16.png";
 }
 
 HYPERLINK:string: org.netbeans.modules.languages.css.CSS.hyperlink  
