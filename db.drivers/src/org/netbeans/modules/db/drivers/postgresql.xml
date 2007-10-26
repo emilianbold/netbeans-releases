@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 <!DOCTYPE driver PUBLIC '-//NetBeans//DTD JDBC Driver 1.1//EN' 'http://www.netbeans.org/dtds/jdbc-driver-1_1.dtd'>
 <driver>
   <name value='Postgres-7'/>
-  <display-name value='PostgreSQL (v7.0 and later)'/>
+  <display-name value='PostgreSQL'/>
   <class value='org.postgresql.Driver'/>
   <urls>
   	<url value="nbinst:///modules/ext/postgresql-8.2-506.jdbc3.jar"/>

@@ -233,7 +233,7 @@ public class DriverListUtil {
         drivers.add("postgresql.Driver");
         urls.add("jdbc:postgresql://<HOST>:<PORT>/<DB>");
         
-        names.add("PostgreSQL (v7.0 and later)");
+        names.add("PostgreSQL"); // 7.0 and later
         drivers.add("org.postgresql.Driver");
         urls.add("jdbc:postgresql://<HOST>:<PORT>/<DB>");
         
