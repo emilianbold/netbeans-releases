@@ -2,7 +2,8 @@
 
 <Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
-    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="1"/>
@@ -26,7 +27,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="installedLabel" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jSeparator1" alignment="1" pref="405" max="32767" attributes="0"/>
+                  <Component id="jSeparator1" alignment="1" pref="377" max="32767" attributes="0"/>
                   <Component id="jrubyLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="proxyButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="jrubySslLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -57,7 +58,7 @@
               <Component id="jrubySslLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="sslButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="63" max="32767" attributes="0"/>
+              <EmptySpace pref="83" max="32767" attributes="0"/>
               <Component id="proxyButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -71,6 +72,11 @@
           <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/wizards/Bundle.properties" key="InstallRails" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/wizards/Bundle.properties" key="RailsInstallationPanel.railsButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="railsButtonActionPerformed"/>
       </Events>
@@ -81,6 +87,11 @@
           <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/wizards/Bundle.properties" key="RailsInstallationPanel.sslButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/wizards/Bundle.properties" key="RailsInstallationPanel.sslButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sslButtonActionPerformed"/>
       </Events>
@@ -114,6 +125,11 @@
           <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/wizards/Bundle.properties" key="RailsInstallationPanel.proxyButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/wizards/Bundle.properties" key="RailsInstallationPanel.proxyButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="proxyButtonActionPerformed"/>
       </Events>
@@ -131,6 +147,11 @@
           <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/wizards/Bundle.properties" key="RailsInstallationPanel.railsDetailButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/ui/wizards/Bundle.properties" key="RailsInstallationPanel.railsDetailButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="railsDetailButtonActionPerformed"/>
       </Events>

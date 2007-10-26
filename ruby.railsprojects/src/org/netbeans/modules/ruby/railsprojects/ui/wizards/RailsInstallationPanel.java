@@ -141,7 +141,7 @@ public class RailsInstallationPanel extends javax.swing.JPanel {
     void validate (WizardDescriptor d) throws WizardValidationException {
     }
     
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         railsButton = new javax.swing.JButton();
@@ -156,24 +156,24 @@ public class RailsInstallationPanel extends javax.swing.JPanel {
 
         FormListener formListener = new FormListener();
 
-        railsButton.setText(org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "InstallRails")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(railsButton, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "InstallRails")); // NOI18N
         railsButton.addActionListener(formListener);
 
-        sslButton.setText(org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.sslButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(sslButton, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.sslButton.text")); // NOI18N
         sslButton.addActionListener(formListener);
 
-        descLabel.setText(org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "NoRails")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(descLabel, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "NoRails")); // NOI18N
 
-        jrubyLabel.setText(org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.jrubyLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jrubyLabel, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.jrubyLabel.text")); // NOI18N
 
-        jrubySslLabel.setText(org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.jrubySslLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jrubySslLabel, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.jrubySslLabel.text")); // NOI18N
 
-        proxyButton.setText(org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.proxyButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(proxyButton, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.proxyButton.text")); // NOI18N
         proxyButton.addActionListener(formListener);
 
-        installedLabel.setText(org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.installedLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(installedLabel, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.installedLabel.text")); // NOI18N
 
-        railsDetailButton.setText(org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.railsDetailButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(railsDetailButton, org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.railsDetailButton.text")); // NOI18N
         railsDetailButton.addActionListener(formListener);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -191,7 +191,7 @@ public class RailsInstallationPanel extends javax.swing.JPanel {
                         .add(railsButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(installedLabel))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
                     .add(jrubyLabel)
                     .add(proxyButton)
                     .add(jrubySslLabel)
@@ -217,10 +217,15 @@ public class RailsInstallationPanel extends javax.swing.JPanel {
                 .add(jrubySslLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(sslButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 63, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 83, Short.MAX_VALUE)
                 .add(proxyButton)
                 .addContainerGap())
         );
+
+        railsButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.railsButton.AccessibleContext.accessibleDescription")); // NOI18N
+        sslButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.sslButton.AccessibleContext.accessibleDescription")); // NOI18N
+        proxyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.proxyButton.AccessibleContext.accessibleDescription")); // NOI18N
+        railsDetailButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RailsInstallationPanel.class, "RailsInstallationPanel.railsDetailButton.AccessibleContext.accessibleDescription")); // NOI18N
     }
 
     // Code for dispatching events from components to event handlers.
