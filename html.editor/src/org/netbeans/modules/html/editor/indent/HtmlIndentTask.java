@@ -42,6 +42,7 @@
 package org.netbeans.modules.html.editor.indent;
 
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.ext.html.HTMLLexerFormatter;
@@ -72,12 +73,11 @@ public class HtmlIndentTask implements IndentTask {
     }
 
     private HTMLLexerFormatter getFormatter() {
-
-        String topLevelLang = NbEditorUtilities.getMimeType(context.document());
-        LanguagePath languagePath = LanguagePath.get(Language.find(topLevelLang));
-
-        if (!"text/html".equals(topLevelLang)) {
-            languagePath = LanguagePath.get(languagePath, Language.find("text/html")); //NOI18N
+        MimePath mimePath = MimePath.parse (context.mimePath ());
+        LanguagePath languagePath = LanguagePath.get (Language.find (mimePath.getMimeType (0)));
+        
+        for (int i = 1; i < mimePath.size(); i++) {
+            languagePath = languagePath.embedded(Language.find(mimePath.getMimeType(i)));
         }
 
         return new HTMLLexerFormatter(languagePath);
