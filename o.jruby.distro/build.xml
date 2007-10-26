@@ -20,8 +20,9 @@
             <include name="ant/nblib/${code.name.base.dashes}.jar"/>
             <!-- JRuby+Rails stuff -->
             <include name="jruby-1.0.1/**"/>
-            <exclude name="jruby-1.0.1/**/netbeans-index-*.zip"/>
             <include name="jruby-javasupport/**"/>
+            <exclude name="jruby-1.0.1/**/netbeans-index-*.zip"/>
+            <exclude name="jruby-javasupport/**/netbeans-index-*.zip"/>
         </patternset>
     </target>    
 
