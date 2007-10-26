@@ -55,7 +55,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
 
-    <testbag testattribs="validation" executor="ide" name="testbag_binding">
+    <testbag testattribs="validation,test" executor="ide" name="testbag_binding">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/binding/SimpleBeansBinding.class"/>
@@ -142,7 +142,7 @@ made subject to such option by the copyright holder.
     
     <!-- Jana Maleckova -->
 
-    <testbag testattribs="validation" executor="ide" name="testbag_opentempl_defaultpack">
+    <testbag testattribs="validation, jm" executor="ide" name="testbag_opentempl_defaultpack">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/OpenTempl_defaultPack.*"/>                
@@ -157,6 +157,18 @@ made subject to such option by the copyright holder.
             </patternset>
         </testset>
     </testbag> 
+    
+    <testbag testattribs="stable" executor="ide" name="testbag_FormStable">
+
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/qa/form/beans/*.*"/>
+                <include name="org/netbeans/qa/form/options/*.*"/>
+                <include name="org/netbeans/qa/form/OpenForm.class"/>
+                <include name="org/netbeans/qa/form/binding/SimpleBeansBinding.class"/>
+            </patternset>
+        </testset>
+    </testbag>
 
     <executor name="code" antfile="build-qa-functional.xml" target="runcodetest"/>
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
