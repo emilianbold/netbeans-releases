@@ -109,13 +109,13 @@ public class ProfileTest extends NbTestCase {
             TestUtil.dumpToFile(model.getBaseDocument(), profDefaultFile);
 //            assertFile(profDefaultFile, TestUtil.getGoldenFile(getDataDir(), "Profile"+ i + "Test", "testDefault"));
 
-            ProfilesModelHelper.enableSecureConversation(b, true, profile);     // enable SC
+            ProfilesModelHelper.enableSecureConversation(b, true);     // enable SC
 
             File profSCFile = new File(getWorkDirPath() + File.separator + i + profile + "-SecureConversation.wsdl");
             TestUtil.dumpToFile(model.getBaseDocument(), profSCFile);
 //            assertFile(profSCFile, TestUtil.getGoldenFile(getDataDir(), "Profile"+ i + "Test", "testSecureConversation"));            
 
-            ProfilesModelHelper.enableSecureConversation(b, false, profile);     // disable SC
+            ProfilesModelHelper.enableSecureConversation(b, false);     // disable SC
 
             File profAfterSCFile = new File(getWorkDirPath() + File.separator + i + profile + "-After.wsdl");
             TestUtil.dumpToFile(model.getBaseDocument(), profAfterSCFile);
