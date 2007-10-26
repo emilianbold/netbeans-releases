@@ -84,6 +84,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.SupportedLocale;
 import org.openide.util.NbBundle;
 import org.openide.loaders.DataObject;
 import org.openide.cookies.OpenCookie;
+import java.util.Locale;
 
 /**
  *
@@ -99,9 +100,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private static final String FACES_VALIDATE_XML = "com.sun.faces.validateXml"; // NOI18N
     private static final String FACES_VERIFY_OBJECTS = "com.sun.faces.verifyObjects"; // NOI18N
     
-    private static final String DEFAULT_LOCALE = "en"; // NOI18N
+    private static final String DEFAULT_LOCALE = Locale.getDefault().toString();  // NOI18N
     private static final String[] SUPPORTED_LOCALES = {
-                    "en", // NOI18N
+                    "de", // NOI18N
                     "ja", // NOI18N
                     "zh_CN", // NOI18N
                     "pt_BR", // NOI18N
