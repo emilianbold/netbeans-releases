@@ -47,6 +47,7 @@ import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
 import org.netbeans.modules.languages.dataobject.LanguagesEditorKit;
+import org.netbeans.modules.web.core.syntax.JspUtils;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
 import java.awt.event.ActionEvent;
@@ -60,6 +61,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.ext.java.JavaSyntax;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 import org.netbeans.spi.jsp.lexer.JspParseData;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.WeakListeners;
@@ -118,6 +120,20 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
         Syntax scriptingSyntax = getSyntaxForLanguage(doc, JspUtils.getScriptingLanguage());
         final Jsp11Syntax newSyntax = new Jsp11Syntax(contentSyntax, scriptingSyntax);
 
+        DataObject dobj = NbEditorUtilities.getDataObject(doc);
+        FileObject fobj = (dobj != null) ? dobj.getPrimaryFile() : null;
+        
+        // tag library coloring data stuff
+        JSPColoringData data = data = JspUtils.getJSPColoringData(doc, fobj);
+        // construct the listener
+        PropertyChangeListener pList = new ColoringListener(doc, data, newSyntax);
+        // attach the listener
+        // PENDING - listen on the language
+        //jspdo.addPropertyChangeListener(WeakListeners.propertyChange(pList, jspdo));
+        if (data != null) {
+            data.addPropertyChangeListener(WeakListeners.propertyChange(pList, data));
+        }
+        
         return newSyntax;
     }
     
@@ -130,6 +146,52 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
         
         return TextAction.augmentList(super.createActions(), javaActions);
     }
+    
+     private static class ColoringListener implements PropertyChangeListener {
+        private Document doc;
+        private Object parsedDataRef; // NOPMD: hold a reference to the data we are listening on
+        // so it does not get garbage collected
+        private Jsp11Syntax syntax;
+        //private JspDataObject jspdo;
+        
+        public ColoringListener(Document doc, JSPColoringData data, Jsp11Syntax syntax) {
+            this.doc = doc;
+            // we must keep the reference to the structure we are listening on so it's not gc'ed
+            this.parsedDataRef = data;
+            this.syntax = syntax;
+            // syntax must keep a reference to this object so it's not gc'ed
+            syntax.listenerReference = this;
+            syntax.data = data;
+            /* jspdo = (JspDataObject)NbEditorUtilities.getDataObject(doc);*/
+        }
+        
+        private void recolor() {
+            if (doc instanceof BaseDocument)
+                ((BaseDocument)doc).invalidateSyntaxMarks();
+        }
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            //            System.out.println("**************** PCHL - propertyChange()");
+            if (syntax == null)
+                return;
+            if (syntax.listenerReference != this) {
+                syntax = null; // should help garbage collection
+                return;
+            }
+           /* if (JspDataObject.PROP_CONTENT_LANGUAGE.equals(evt.getPropertyName())) {
+                syntax.setContentSyntax(JSPKit.getSyntaxForLanguage(doc, jspdo.getContentLanguage()));
+                recolor();
+            }
+            if (JspDataObject.PROP_SCRIPTING_LANGUAGE.equals(evt.getPropertyName())) {
+                syntax.setScriptingSyntax(JSPKit.getSyntaxForLanguage(doc, jspdo.getScriptingLanguage()));
+                recolor();
+            }*/
+            if (JSPColoringData.PROP_COLORING_CHANGE.equals(evt.getPropertyName())) {
+                recolor();
+            }
+        }
+    }
+    
     
     private static class LexerColoringListener implements PropertyChangeListener {
         
