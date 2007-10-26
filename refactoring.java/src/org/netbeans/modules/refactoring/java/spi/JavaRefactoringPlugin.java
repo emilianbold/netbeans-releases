@@ -137,6 +137,7 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
         if (currentTask!=null) {
             currentTask.cancel();
         }
+        RetoucheUtils.cancel = true;
     }
 
     protected ClasspathInfo getClasspathInfo(AbstractRefactoring refactoring) {
