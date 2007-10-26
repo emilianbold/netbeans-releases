@@ -420,17 +420,21 @@ implements DocumentListener, KeyListener {
     public void tabAction(ActionEvent evt, Action origAction) {
         checkNotifyParameterUpdate();
 
-        activeMasterIndex++;
-        activeMasterIndex %= editableMasters.size();
-        tabUpdate();
+        if (editableMasters.size() > 1) {
+            activeMasterIndex++;
+            activeMasterIndex %= editableMasters.size();
+            tabUpdate();
+            }
     }
     
     public void shiftTabAction(ActionEvent evt) {
         checkNotifyParameterUpdate();
 
-        if (activeMasterIndex-- == 0)
-            activeMasterIndex = editableMasters.size() - 1;
-        tabUpdate();
+        if (editableMasters.size() > 1) {
+            if (activeMasterIndex-- == 0)
+                activeMasterIndex = editableMasters.size() - 1;
+            tabUpdate();
+        }
     }
     
     public void enterAction(ActionEvent evt) {
