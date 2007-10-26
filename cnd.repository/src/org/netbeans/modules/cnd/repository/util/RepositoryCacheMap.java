@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.repository.util;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeMap;
@@ -64,6 +63,8 @@ public class RepositoryCacheMap<K,V>  {
     private final ReentrantReadWriteLock          readWriteLock;
     private static final int                      DEFAULT_CACHE_CAPACITY  = 20;
     private static AtomicInteger currentBornStamp = new AtomicInteger(0);
+    
+    private static final boolean ASSERTIONS = Boolean.getBoolean("cnd.repository.cache.map.assert");
     
     static private final class RepositoryCacheValue<V>  implements Comparable{
         
@@ -261,7 +262,7 @@ public class RepositoryCacheMap<K,V>  {
     }    
     
     private void softAssert(boolean condition, String message) {
-	if( ! condition ) {
+	if( ASSERTIONS && ! condition ) {
 	    Exception ex = new Exception();
 	    StackTraceElement[] trace = ex.getStackTrace();
 	    System.err.println(message);
