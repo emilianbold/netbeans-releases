@@ -46,6 +46,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.form.BindingDesignSupport;
@@ -283,6 +284,10 @@ public class DBColumnDrop extends DBConnectionDrop {
                 prop.setValue(binding);
                 prop = control.getBindingProperty(controlProperty);
                 binding = new MetaBinding(metaTable, BindingDesignSupport.elWrap("selectedElement." + sourcePath), control, controlProperty); // NOI18N
+                if (controlProperty.equals("text") && JTextComponent.class.isAssignableFrom(control.getBeanClass())) { // NOI18N
+                    binding.setIncompletePathValueSpecified(true);
+                    prop.getSubProperty(BindingProperty.PROP_INCOMPLETE_VALUE).setValue(null);
+                }
             }
             prop.setValue(binding);
         } catch (Exception ex) {

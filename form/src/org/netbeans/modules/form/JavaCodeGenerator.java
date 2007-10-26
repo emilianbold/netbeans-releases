@@ -1603,16 +1603,7 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     private void generateComponentBinding0(CodeWriter initCodeWriter, FormProperty property, String method) throws IOException {
-        try {
-            Object value = property.getValue();
-            if (value != null) {
-                initCodeWriter.write(method + "(" + property.getJavaInitializationString() + ");\n"); // NOI18N
-            }
-        } catch (IllegalAccessException iaex) {
-            iaex.printStackTrace();
-        } catch (InvocationTargetException itex) {
-            itex.printStackTrace();
-        }
+        initCodeWriter.write(method + "(" + property.getJavaInitializationString() + ");\n"); // NOI18N
     }
 
     String getBindingDescriptionVariable(Class descriptionType, StringBuilder buf, boolean create) {

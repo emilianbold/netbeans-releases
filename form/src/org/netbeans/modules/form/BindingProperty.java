@@ -215,7 +215,7 @@ public class BindingProperty extends PropertySupport.ReadWrite<MetaBinding> {
         return nameProperty;
     }
 
-    FormProperty getSubProperty(String propName) {
+    public FormProperty getSubProperty(String propName) {
         if (PROP_NAME.equals(propName)) {
             return getNameProperty();
         } else if (PROP_NULL_VALUE.equals(propName)) {
