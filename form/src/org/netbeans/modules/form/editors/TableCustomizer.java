@@ -1262,11 +1262,6 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                 }
             }            
         });
-        modelFromComponentEd.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                updateModelCustomizers();
-            }
-        });
 
         // Replace dummy panels by customizers
         GroupLayout layout = (GroupLayout)modelTab.getLayout();
@@ -1275,6 +1270,12 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         modelCustomCustomizer = modelCustomEd.getCustomEditor();
         layout.replace(modelCustomPanel, modelCustomCustomizer);
         layout.replace(modelBoundPanel, modelBoundCustomizer.getBindingPanel());
+        
+        modelFromComponentEd.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                updateModelCustomizers();
+            }
+        });
 
         columns = new LinkedList<ColumnInfo>();
         Object value = null;
