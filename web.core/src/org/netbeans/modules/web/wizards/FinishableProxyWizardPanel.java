@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.web.wizards;
 
-import java.awt.Component;
-import javax.swing.JComponent;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.util.HelpCtx;
@@ -57,11 +55,11 @@ import org.openide.util.HelpCtx;
 public class FinishableProxyWizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
 
     private final WizardDescriptor.Panel original;
-    private final String helpId;
+    private final HelpCtx helpCtx;
 
-    public FinishableProxyWizardPanel(Panel original, String helpId) {
+    public FinishableProxyWizardPanel(Panel original, HelpCtx helpCtx) {
         this.original = original;
-        this.helpId = helpId;
+        this.helpCtx = helpCtx;
     }
     
     public FinishableProxyWizardPanel(WizardDescriptor.Panel original) {
@@ -97,8 +95,8 @@ public class FinishableProxyWizardPanel implements WizardDescriptor.Panel, Wizar
     }
 
     public org.openide.util.HelpCtx getHelp() {
-        if (helpId != null) {
-            return new HelpCtx(helpId);
+        if (helpCtx != null) {
+            return helpCtx;
         }
         return original.getHelp();
     }

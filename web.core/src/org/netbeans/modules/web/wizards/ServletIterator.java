@@ -66,6 +66,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.core.Util;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
+import org.openide.util.HelpCtx;
 
 /** A template wizard iterator for new servlets, filters and
  * listeners. 
@@ -127,7 +128,7 @@ public class ServletIterator implements TemplateWizard.Iterator {
                 //wizard.targetChooser (),
                 new FinishableProxyWizardPanel(
                         createPackageChooserPanel(wizard,null),
-                        ServletIterator.class.getName() + "." + fileType),    // #114487
+                        new HelpCtx(ServletIterator.class.getName() + "." + fileType)),    // #114487
 		ServletPanel.createServletPanel((TargetEvaluator)evaluator, wizard) 
 	    };
 	}
