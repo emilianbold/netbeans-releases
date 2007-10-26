@@ -83,7 +83,7 @@ import org.openide.util.Utilities;
 public class LocationChooser extends JFileChooser implements PropertyChangeListener {
         
 
-    private static final Dimension PREFERRED_SIZE = new Dimension (500,340);
+    private static final Dimension PREFERRED_SIZE = new Dimension (600,340);
     
     private WizardDescriptor.InstantiatingIterator<WizardDescriptor> iterator;
     private LocationChooser.Panel firer;
@@ -120,7 +120,7 @@ public class LocationChooser extends JFileChooser implements PropertyChangeListe
                         }
         }});
         getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put (KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel");
-        
+     
     }
 
     
