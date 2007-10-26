@@ -289,7 +289,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 } else {
                     // A method?
                     Set<IndexedMethod> methods =
-                        index.getMethods(text, null, NameKind.EXACT_NAME, RubyIndex.SOURCE_SCOPE);
+                        index.getMethods(text, null, NameKind.EXACT_NAME, RubyIndex.ALL_SCOPE);
 
                     if (methods.size() == 0) {
                         methods = index.getMethods(text, null, NameKind.EXACT_NAME);
@@ -419,12 +419,16 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 }
 
                 String fqn = AstUtilities.getFqnName(path);
+                if (call == Call.LOCAL && fqn != null && fqn.length() == 0) {
+                    fqn = "Object";
+                }
 
                 return findMethod(name, fqn, type, call, info, astOffset, lexOffset, path, closest, index);
             } else if (closest instanceof ConstNode || closest instanceof Colon2Node) {
                 // POSSIBLY a class usage.
                 String name = ((INameNode)closest).getName();
-                Node localClass = findClass(root, name);
+                // Disable local class searching for now - it should instead be a criterion for increasing match priority
+                Node localClass = null; // findClass(root, name);
 
                 if (localClass != null) {
                     // Ensure that we have the right FQN if specific
@@ -939,7 +943,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
         while ((classes.size() == 0) && (fqn.length() > 0)) {
             classes =
                 index.getClasses(fqn + "::" + name, NameKind.EXACT_NAME, true, false, // NOI18N
-                    false, RubyIndex.SOURCE_SCOPE, uniqueClasses);
+                    false, RubyIndex.ALL_SCOPE, uniqueClasses);
 
             int f = fqn.lastIndexOf("::"); // NOI18N
 
@@ -952,7 +956,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
 
         if (classes.size() == 0) {
             classes = index.getClasses(name, NameKind.EXACT_NAME, true, false, false,
-                    RubyIndex.SOURCE_SCOPE, uniqueClasses);
+                    RubyIndex.ALL_SCOPE, uniqueClasses);
         }
 
         // If no success with looking only at the source scope, look in libraries as well
@@ -1543,6 +1547,8 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
         //   most methods associated with it. Look at other uses of this
         //   class in this parse tree, look at the methods and see if we
         //   can rule out candidates based on that
+        // 7b. Give priority to class definitions that are local: obviously
+        //   there are class definitions in the same file, and then in the same project
 
         // 8. Look at superclasses and consider -their- requires to figure out
         //   which class we're supposed to use
@@ -2219,6 +2225,22 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                     FileObject fo = element.getFileObject();
                     if (fo != null) {
                         filename = fo.getNameExt();
+                    } else {
+                        // Perhaps a file that isn't present here, such as something in site_ruby
+                        int lastIndex = url.lastIndexOf('/');
+                        if (lastIndex != -1) {
+                            String s = url.substring(0, lastIndex);
+                            int almostLastIndex = s.lastIndexOf('/');
+                            if (almostLastIndex != -1 && ((url.length()-almostLastIndex) < 40)) {
+                                filename = url.substring(almostLastIndex+1);
+                                if (filename.indexOf(':') != -1) {
+                                    // Don't include prefix like cluster:, file:, etc.
+                                    filename = url.substring(lastIndex+1);
+                                }
+                            } else {
+                                filename = url.substring(lastIndex+1);
+                            }
+                        }
                     }
                     
                     // TODO - make this work with 1.9 etc.
