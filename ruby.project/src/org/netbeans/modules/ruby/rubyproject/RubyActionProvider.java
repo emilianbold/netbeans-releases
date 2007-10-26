@@ -554,7 +554,9 @@ public class RubyActionProvider implements ActionProvider {
             RubyFileLocator fileLocator = new RubyFileLocator(context, project);
             String displayName = NbBundle.getMessage(RubyActionProvider.class, "RubyDocumentation");
 
-            new RubyExecution(new ExecutionDescriptor(displayName, pwd, RubyInstallation.getInstance().getRDoc()).
+            new RubyExecution(new ExecutionDescriptor(displayName, pwd).
+                    //RubyInstallation.getInstance().getRDoc()).
+                    additionalArgs("-r", "rdoc/rdoc", "-e", "begin; r = RDoc::RDoc.new; r.document(ARGV); end").
                     fileLocator(fileLocator).
                     postBuild(showBrowser).
                     addStandardRecognizers(),

@@ -2277,7 +2277,7 @@ public class CodeCompleter implements Completable {
                     return proposals;
                 }
             }
-            if (showUpper || (showSymbols && !inCall)) {
+            if ((showUpper && prefix != null && prefix.length() > 0) || (showSymbols && !inCall)) {
                 // TODO - allow method calls if you're already entered the first char!
                 completeClasses(proposals, request, showSymbols, call);
             }
@@ -3668,15 +3668,21 @@ public class CodeCompleter implements Completable {
                 // Module.attr_ methods typically shouldn't use parentheses
                 if (n.startsWith("attr_"))  {
                     return new String[] { " :", " " };
-                } else if (n.equals("include")) {
+                } else if (n.equals("include") || n.equals("import")) { // NOI18N
                     return new String[] { " ", " " };
+                } else if (n.equals("include_package")) { // NOI18N
+                    return new String[] { " '", "'" }; // NOI18N
                 }
             } else if ("Kernel".equals(in)) {
                 // Module.require: insert quotes!
                 if (n.equals("require")) { // NOI18N
-                    return new String[] { " '", "'" };
+                    return new String[] { " '", "'" }; // NOI18N
                 } else if (n.equals("p")) {
-                    return new String[] { " ", " " };
+                    return new String[] { " ", " " }; // NOI18N
+                }
+            } else if ("Object".equals(in)) {
+                if (n.equals("include_class")) { // NOI18N
+                    return new String[] { " '", "'" }; // NOI18N
                 }
             }
             

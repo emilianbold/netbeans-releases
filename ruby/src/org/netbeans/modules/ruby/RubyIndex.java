@@ -93,6 +93,7 @@ public final class RubyIndex {
     private static String clusterUrl = null;
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
     private static final String RUBYHOME_URL = "ruby:"; // NOI18N
+    private static final String GEM_URL = "gem:"; // NOI18N
     private final Index index;
 
     /** Creates a new instance of RubyIndex */
@@ -1643,7 +1644,13 @@ public final class RubyIndex {
     }
 
     static String getPreindexUrl(String url) {
-        String s = RubyInstallation.getInstance().getRubyHomeUrl();
+        String s = RubyInstallation.getInstance().getGemHomeUrl();
+
+        if (s != null && url.startsWith(s)) {
+            return GEM_URL + url.substring(s.length());
+        }
+
+        s = RubyInstallation.getInstance().getRubyHomeUrl();
 
         if (url.startsWith(s)) {
             url = RUBYHOME_URL + url.substring(s.length());
@@ -1666,6 +1673,9 @@ public final class RubyIndex {
             if (url.startsWith(RUBYHOME_URL)) {
                 url = RubyInstallation.getInstance().getRubyHomeUrl() +
                     url.substring(RUBYHOME_URL.length()); // NOI18N
+            } else if (url.startsWith(GEM_URL)) {
+                url = RubyInstallation.getInstance().getGemHomeUrl() +
+                    url.substring(GEM_URL.length()); // NOI18N
             } else if (url.startsWith(CLUSTER_URL)) {
                 url = getClusterUrl() + url.substring(CLUSTER_URL.length()); // NOI18N
             }

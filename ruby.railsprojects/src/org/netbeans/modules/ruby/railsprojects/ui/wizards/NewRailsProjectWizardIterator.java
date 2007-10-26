@@ -99,17 +99,27 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
     }
     
     private WizardDescriptor.Panel[] createPanels () {
-        return new WizardDescriptor.Panel[] {
-                new PanelConfigureProject( this.type ),
-                new RailsInstallationPanel.Panel()
-            };
+        if (type == TYPE_APP) {
+            return new WizardDescriptor.Panel[] {
+                    new PanelConfigureProject(this.type),
+                    new RailsInstallationPanel.Panel()
+                };
+        } else {
+            // No "Configure Rails" panel for create-from-existing: you probably already have
+            // Rails (and the Rails-detection would need to also check for vendor-frozen Rails,
+            // not just Rails in the gem distro
+            return new WizardDescriptor.Panel[] { new PanelConfigureProject(this.type) };
+        }
     }
     
     private String[] createSteps() {
-        return new String[] {
-                NbBundle.getMessage(NewRailsProjectWizardIterator.class,"LAB_ConfigureProject"), 
-                NbBundle.getMessage(NewRailsProjectWizardIterator.class,"LAB_InstallRails"),
-        };
+        String config = NbBundle.getMessage(NewRailsProjectWizardIterator.class,"LAB_ConfigureProject");
+        String rails = NbBundle.getMessage(NewRailsProjectWizardIterator.class,"LAB_InstallRails");
+        if (type == TYPE_APP) {
+            return new String[] { config, rails };
+        } else {
+            return new String[] { config };
+        }
     }
     
     

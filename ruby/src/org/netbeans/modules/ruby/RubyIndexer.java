@@ -95,7 +95,7 @@ import org.openide.util.Exceptions;
 public class RubyIndexer implements Indexer {
     //private static final boolean INDEX_UNDOCUMENTED = Boolean.getBoolean("ruby.index.undocumented");
     private static final boolean INDEX_UNDOCUMENTED = true;
-    private static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
+    static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     
     // Class/Module Document
     static final String FIELD_EXTENDS_NAME = "extends"; //NOI18N
@@ -918,7 +918,7 @@ public class RubyIndexer implements Indexer {
                 int flags = 0;
 
                 boolean nodoc = false;
-                if (PREINDEXING) {
+                if (file.isPlatform() || PREINDEXING) {
                     // Should we skip this class? This is true for :nodoc: marked
                     // classes for example. We do NOT want to skip all children;
                     // in ActiveRecord for example we have this:
@@ -927,7 +927,7 @@ public class RubyIndexer implements Indexer {
                     //        module SchemaStatements
                     // and we definitely WANT to index SchemaStatements even though
                     // ConnectionAdapters is not there
-                    int newDocMode = RubyIndexerHelper.isNodocClass(element, file.getFileObject(), doc);
+                    int newDocMode = RubyIndexerHelper.isNodocClass(element, doc);
                     if (newDocMode == RubyIndexerHelper.DOC) {
                         docMode = RubyIndexerHelper.DEFAULT_DOC;
                     } else if (newDocMode == RubyIndexerHelper.NODOC_ALL) {
@@ -1228,9 +1228,10 @@ public class RubyIndexer implements Indexer {
                 signature = sb.toString();
             }
             
-            if (PREINDEXING) {
+            if (file.isPlatform() || PREINDEXING) {
                 Node root = AstUtilities.getRoot(result);
-                signature = RubyIndexerHelper.getMethodSignature(child, root, indexedList, notIndexedList, flags, signature, file.getFileObject(), doc);
+                signature = RubyIndexerHelper.getMethodSignature(child, root, 
+                       flags, signature, file.getFileObject(), doc);
                 if (signature == null) {
                     return;
                 }

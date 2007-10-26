@@ -139,34 +139,38 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
      *         </dl>
      */
     private int getType(FileObject file) {
-        FileObject[] srcPath = getPrimarySrcPath();
-        for (int i=0; i < srcPath.length; i++) {
-            FileObject root = srcPath[i];
-            if (root.equals(file) || FileUtil.isParentOf(root, file)) {
-                return 0;
-            }
-        }        
-        srcPath = getTestSrcDir();
-        for (int i=0; i< srcPath.length; i++) {
-            FileObject root = srcPath[i];
-            if (root.equals(file) || FileUtil.isParentOf(root, file)) {
-                return 1;
-            }
-        }
-        FileObject dir = getBuildClassesDir();
-        if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
-            return 2;
-        }
-        dir = getDistJar(); // not really a dir at all, of course
-        if (dir != null && dir.equals(FileUtil.getArchiveFile(file))) {
-            // XXX check whether this is really the root
-            return 4;
-        }
-        dir = getBuildTestClassesDir();
-        if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
-            return 3;
-        }
-        return -1;
+        // ALL files in the Rails project are considered sources - we don't have
+        // separate test roots etc.
+        // TODO - check if files are even within the project?
+        return 0;
+//        FileObject[] srcPath = getPrimarySrcPath();
+//        for (int i=0; i < srcPath.length; i++) {
+//            FileObject root = srcPath[i];
+//            if (root.equals(file) || FileUtil.isParentOf(root, file)) {
+//                return 0;
+//            }
+//        }        
+//        srcPath = getTestSrcDir();
+//        for (int i=0; i< srcPath.length; i++) {
+//            FileObject root = srcPath[i];
+//            if (root.equals(file) || FileUtil.isParentOf(root, file)) {
+//                return 1;
+//            }
+//        }
+//        FileObject dir = getBuildClassesDir();
+//        if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
+//            return 2;
+//        }
+//        dir = getDistJar(); // not really a dir at all, of course
+//        if (dir != null && dir.equals(FileUtil.getArchiveFile(file))) {
+//            // XXX check whether this is really the root
+//            return 4;
+//        }
+//        dir = getBuildTestClassesDir();
+//        if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
+//            return 3;
+//        }
+//        return -1;
     }
     
 //    private synchronized ClassPath getCompileTimeClasspath(FileObject file) {
@@ -258,7 +262,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache[7];
         if ( cp== null ) {
-            cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(evaluator));
+            cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(projectDirectory, evaluator));
             cache[7] = cp;
         }
         return cp;

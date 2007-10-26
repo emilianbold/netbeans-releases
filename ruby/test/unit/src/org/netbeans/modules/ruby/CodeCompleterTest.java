@@ -41,10 +41,12 @@
 
 package org.netbeans.modules.ruby;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JTextArea;
 import javax.swing.text.Caret;
@@ -196,7 +198,7 @@ public class CodeCompleterTest extends RubyTestBase {
             registry.addLanguages(languages);
         }
         // Force classpath initialization
-        List<ClassPath.Entry> entries = RubyInstallation.getInstance().getClassPathEntries();
+        Set<URL> urls = RubyInstallation.getInstance().getNonGemLoadPath();
         
         CompilationInfo ci = getInfo(file);
         String text = ci.getText();
@@ -485,7 +487,7 @@ public class CodeCompleterTest extends RubyTestBase {
             registry.addLanguages(languages);
         }
         // Force classpath initialization
-        List<ClassPath.Entry> entries = RubyInstallation.getInstance().getClassPathEntries();
+        Set<URL> urls = RubyInstallation.getInstance().getNonGemLoadPath();
 
         CodeCompleter cc = new CodeCompleter();
         TestCompilationInfo info = getInfo(file);

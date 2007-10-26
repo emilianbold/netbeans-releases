@@ -41,18 +41,31 @@
 package org.netbeans.modules.ruby.railsprojects.classpath;
 
 import java.beans.PropertyChangeEvent;
-import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.spi.gsfpath.classpath.ClassPathImplementation;
 import org.netbeans.spi.gsfpath.classpath.PathResourceImplementation;
 import org.netbeans.spi.gsfpath.classpath.support.ClassPathSupport;
-import org.netbeans.api.gsfpath.classpath.ClassPath;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 final class BootClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
@@ -61,6 +74,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 //    private static final String ANT_NAME = "platform.ant.name";             //NOI18N
 //    private static final String J2SE = "j2se";                              //NOI18N
 
+    private File projectDirectory;
     private final PropertyEvaluator evaluator;
 //    private JavaPlatformManager platformManager;
     //name of project active platform
@@ -70,7 +84,8 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private List<PathResourceImplementation> resourcesCache;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-    public BootClassPathImplementation(PropertyEvaluator evaluator) {
+    public BootClassPathImplementation(File projectDirectory, PropertyEvaluator evaluator) {
+        this.projectDirectory = projectDirectory;
         assert evaluator != null;
         this.evaluator = evaluator;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
@@ -81,19 +96,60 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 //            JavaPlatform jp = findActivePlatform ();
 //            if (jp != null) {
                 //TODO: May also listen on CP, but from Platform it should be fixed.
-                List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
-//                for (ClassPath.Entry entry : jp.getBootstrapLibraries().entries()) {
-                for (ClassPath.Entry entry : RubyInstallation.getInstance().getClassPathEntries()) {                
-                    result.add(ClassPathSupport.createResource(entry.getURL()));
+            List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
+            Set<URL> nonGemUrls = RubyInstallation.getInstance().getNonGemLoadPath();
+            
+            for (URL url : nonGemUrls) {
+                result.add(ClassPathSupport.createResource(url));
+            }
+
+            Map<String,URL> gemUrls = RubyInstallation.getInstance().getGemUrls();
+            Map<String,String> gemVersions = RubyInstallation.getInstance().getGemVersions();
+            
+            // Perhaps I can filter vendor/rails iff the installation contains it
+
+            // Add in all the vendor/ paths, if any
+            File vendor = new File(projectDirectory, "vendor");
+            if (vendor.exists()) {
+                List<URL> vendorPlugins = getVendorPlugins(vendor);
+                for (URL url : vendorPlugins) {
+                    result.add(ClassPathSupport.createResource(url));
                 }
 
-                resourcesCache = Collections.unmodifiableList (result);
-                RubyInstallation.getInstance().removePropertyChangeListener(this);
-                RubyInstallation.getInstance().addPropertyChangeListener(this);
-//            }
-//            else {
-//                resourcesCache = Collections.emptyList();
-//            }
+                
+                // TODO - handle multiple gem versions in the same repository
+                List<URL> combinedGems = mergeVendorGems(vendor, 
+                        new HashMap<String,String>(gemVersions), 
+                        new HashMap<String,URL>(gemUrls));
+                for (URL url : combinedGems) {
+                    result.add(ClassPathSupport.createResource(url));
+                }
+
+            } else {
+                for (URL url : gemUrls.values()) {
+                    result.add(ClassPathSupport.createResource(url));
+                }
+            }
+            
+            // Java support?
+            if (RubyInstallation.getInstance().isJRubySet()) {
+                String java = evaluator.getProperty(SharedRubyProjectProperties.INCLUDE_JAVA);
+                if (java != null && Boolean.valueOf(java)) {
+                    try {
+                        FileObject javaSupport = RubyInstallation.getInstance().getJRubyJavaSupport();
+                        if (javaSupport != null) {
+                            URL url = FileUtil.toFile(javaSupport).toURI().toURL();
+                            result.add(ClassPathSupport.createResource(url));
+                        }
+                    } catch (MalformedURLException mufe) {
+                        Exceptions.printStackTrace(mufe);
+                    }
+                }
+            }
+
+            resourcesCache = Collections.unmodifiableList (result);
+            RubyInstallation.getInstance().removePropertyChangeListener(this);
+            RubyInstallation.getInstance().addPropertyChangeListener(this);
         }
         return this.resourcesCache;
     }
@@ -140,7 +196,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 //            }
 //        }
     }
-    
+
     /**
      * Resets the cache and firesPropertyChange
      */
@@ -150,5 +206,174 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         }
         support.firePropertyChange(PROP_RESOURCES, null, null);
     }
+
+    private List<URL> mergeVendorGems(File vendorFile, Map<String,String> gemVersions, Map<String,URL> gemUrls) {
+        chooseGems(vendorFile.listFiles(), gemVersions, gemUrls);
+        
+        return new ArrayList<URL>(gemUrls.values());
+    }
     
+    private static void chooseGems(File[] gems, Map<String,String> gemVersions, Map<String,URL> gemUrls) {        
+        // Try to match foo-1.2.3, foo-bar-1.2.3, foo-bar-1.2.3-ruby
+        Pattern GEM_FILE_PATTERN = Pattern.compile("(\\S|-)+-((\\d+)\\.(\\d+)\\.(\\d+))(-\\S+)?"); // NOI18N
+
+        for (File f : gems) {
+            if (!f.isDirectory()) {
+                continue;
+            }
+
+            String n = f.getName();
+            
+            if ("plugins".equals(n)) {
+                // Special cased separately
+                continue;
+            }
+
+            if ("rails".equals(n)) { // NOI18N
+                // Special case - what do we do here?
+                chooseRails(f.listFiles(), gemVersions, gemUrls);
+                continue;
+            }
+
+            if ("gems".equals(n) || "gems-jruby".equals(n)) { // NOI18N
+                // Support both having gems in the vendor/ top directory as well as in a gems/ subdirectory            }
+                chooseGems(f.listFiles(), gemVersions, gemUrls);
+            }
+
+            if (n.indexOf('-') == -1) {
+                continue;
+            }
+
+            Matcher m = GEM_FILE_PATTERN.matcher(n);
+            if (!m.matches()) {
+                continue;
+            }
+            
+            File lib = new File(f, "lib");
+            if (lib.exists()) {
+                try {
+                    URL url = lib.toURI().toURL();
+                    String name = m.group(1);
+                    String version = m.group(2);
+                    addGem(gemVersions, gemUrls, name, version, url);
+                } catch (MalformedURLException mufe) {
+                    Exceptions.printStackTrace(mufe);
+                }
+            }
+        }
+    }
+    
+    private static void addGem(Map<String,String> gemVersions, Map<String,URL> gemUrls, String name, String version, URL url) {
+        if (!gemVersions.containsKey(name) || 
+                RubyInstallation.compareGemVersions(version, gemVersions.get(name)) > 0) {
+            gemVersions.put(name, version);
+            gemUrls.put(name, url);
+        }
+    }
+
+    private static void chooseRails(File[] gems, Map<String,String> gemVersions, Map<String,URL> gemUrls) {        
+        for (File f : gems) {
+            if (!f.isDirectory()) {
+                continue;
+            }
+            
+            String name = f.getName();
+            // actionpack/lib/action_pack/version.r
+            String middleName = name;
+            if (name.indexOf('_') == -1) {
+                if (name.startsWith("action") || name.startsWith("active")) {
+                    middleName = name.substring(0, 6) + "_" +name.substring(6);
+                }
+            }
+            File lib = new File(f, "lib");
+            if (lib.exists()) {
+                File versionFile = new File(lib, middleName + File.separator + "version.rb");
+                if (versionFile.exists()) {
+                    String version = getVersionString(versionFile);
+                    if (version != null) {
+                        try {
+                            URL url = lib.toURI().toURL();
+                            addGem(gemVersions, gemUrls, name, version, url);
+                        } catch (MalformedURLException mufe) {
+                            Exceptions.printStackTrace(mufe);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private static String getVersionString(File version) {
+        try {
+            Pattern VERSION_ELEMENT = Pattern.compile("\\s*[A-Z]+\\s*=\\s*(\\d+)\\s*");
+            BufferedReader br = new BufferedReader(new FileReader(version));
+            StringBuilder sb = new StringBuilder();
+            int major = 0;
+            int minor = 0;
+            int tiny = 0;
+            for (int line = 0; line < 10; line++) {
+                String s = br.readLine();
+                if (s == null) {
+                    break;
+                }
+
+                if (s.indexOf("MAJOR") != -1) {
+                    Matcher m = VERSION_ELEMENT.matcher(s);
+                    if (m.matches()) {
+                        major = Integer.parseInt(m.group(1));
+                    }
+                } else if (s.indexOf("MINOR") != -1) {
+                    Matcher m = VERSION_ELEMENT.matcher(s);
+                    if (m.matches()) {
+                        minor = Integer.parseInt(m.group(1));
+                    }
+                } else if (s.indexOf("TINY") != -1) {
+                    Matcher m = VERSION_ELEMENT.matcher(s);
+                    if (m.matches()) {
+                        tiny = Integer.parseInt(m.group(1));
+                    }
+                }
+            }
+            br.close();
+            
+        
+            return major + "." + minor + "." + tiny;
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+        
+        return null;
+    }
+    
+    private List<URL> getVendorPlugins(File vendor) {
+        assert vendor != null;
+        
+        File plugins = new File(vendor, "plugins");
+        if (!plugins.exists()) {
+            return Collections.emptyList();
+        }
+        
+        List<URL> urls = new ArrayList<URL>();
+
+        for (File f : plugins.listFiles()) {
+            File lib = new File(f, "lib");
+            if (lib.exists()) {
+                // TODO - preindex via version lookup somehow?
+                try {
+                    URL url = lib.toURI().toURL();
+                    urls.add(url);
+                    // TODO - find versions for the plugins?
+                    //Map<String, File> nameMap = gemFiles.get(name);
+                    //if (nameMap != null) {
+                    //    String version = nameMap.keySet().iterator().next();
+                    //    RubyInstallation.getInstance().setGemRoot(url, name+ "-" + version);
+                    //}
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        
+        return urls;
+    }
 }

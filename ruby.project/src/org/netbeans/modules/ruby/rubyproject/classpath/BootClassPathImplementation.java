@@ -48,10 +48,18 @@ import org.netbeans.spi.gsfpath.classpath.support.ClassPathSupport;
 import org.netbeans.api.gsfpath.classpath.ClassPath;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 final class BootClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
@@ -84,19 +92,39 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 //            JavaPlatform jp = findActivePlatform ();
 //            if (jp != null) {
                 //TODO: May also listen on CP, but from Platform it should be fixed.
-                List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
-//                for (ClassPath.Entry entry : jp.getBootstrapLibraries().entries()) {
-                for (ClassPath.Entry entry : RubyInstallation.getInstance().getClassPathEntries()) {                
-                    result.add(ClassPathSupport.createResource(entry.getURL()));
-                }
+            List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
+            Set<URL> nonGemUrls = RubyInstallation.getInstance().getNonGemLoadPath();
+            
+            for (URL url : nonGemUrls) {
+                result.add(ClassPathSupport.createResource(url));
+            }
 
-                resourcesCache = Collections.unmodifiableList (result);
-                RubyInstallation.getInstance().removePropertyChangeListener(this);
-                RubyInstallation.getInstance().addPropertyChangeListener(this);
-//            }
-//            else {
-//                resourcesCache = Collections.emptyList();
-//            }
+            Map<String,URL> gemUrls = RubyInstallation.getInstance().getGemUrls();
+            Map<String,String> gemVersions = RubyInstallation.getInstance().getGemVersions();
+            
+            for (URL url : gemUrls.values()) {
+                result.add(ClassPathSupport.createResource(url));
+            }
+
+            // Java support?
+            if (RubyInstallation.getInstance().isJRubySet()) {
+                String java = evaluator.getProperty(SharedRubyProjectProperties.INCLUDE_JAVA);
+                if (java != null && Boolean.valueOf(java)) {
+                    try {
+                        FileObject javaSupport = RubyInstallation.getInstance().getJRubyJavaSupport();
+                        if (javaSupport != null) {
+                            URL url = FileUtil.toFile(javaSupport).toURI().toURL();
+                            result.add(ClassPathSupport.createResource(url));
+                        }
+                   } catch (MalformedURLException mufe) {
+                        Exceptions.printStackTrace(mufe);
+                    }
+                }
+            }
+
+            resourcesCache = Collections.unmodifiableList (result);
+            RubyInstallation.getInstance().removePropertyChangeListener(this);
+            RubyInstallation.getInstance().addPropertyChangeListener(this);
         }
         return this.resourcesCache;
     }

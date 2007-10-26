@@ -130,7 +130,9 @@ public class GotoTest implements TestLocator {
     }
 
     private boolean isRailsInstalled() {
-        return RubyInstallation.getInstance().getVersion("rails") != null; // NOI18N
+        // Uhm no, it could be in the vendor gems too!
+        //return RubyInstallation.getInstance().getVersion("rails") != null; // NOI18N
+        return true;
     }
 
     private void appendRegexp(StringBuilder sb, String s) {

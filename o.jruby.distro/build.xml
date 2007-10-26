@@ -21,6 +21,7 @@
             <!-- JRuby+Rails stuff -->
             <include name="jruby-1.0.1/**"/>
             <exclude name="jruby-1.0.1/**/netbeans-index-*.zip"/>
+            <include name="jruby-javasupport/**"/>
         </patternset>
     </target>    
 
@@ -49,8 +50,17 @@
         <!-- Build JRuby from source (using its own build files -->
         <antcall target="build-jruby-bin"/>
 
-        <!-- Temporary, until JRuby ships with a rdoc wrapper scripts -->
-        <unzip dest="${jruby_dir}" src="external/rdoc.zip"/>
+        <!-- Bundle files for Java support.
+             This will hopefully not be necessary very soon - see
+             http://jira.codehaus.org/browse/JRUBY-1474
+        -->
+        <mkdir dir="${cluster}/jruby-javasupport/1.0.1"/>
+        <copy todir="${cluster}/jruby-javasupport/1.0.1" overwrite="true">
+            <fileset dir="${unpatched_source}/jruby-${jruby_src_version}/src/builtin">
+                <include name="java*/**"/>
+            </fileset>
+        </copy>
+
         <chmod perm="ugo+x">
           <fileset dir="${jruby_dir}/">
             <include name="bin/*"/>

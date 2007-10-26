@@ -72,6 +72,11 @@ public class RubyInstallationTest extends NbTestCase {
         assertTrue(RubyInstallation.compareGemVersions("0.3.9", "0.4.0") < 0);
         assertTrue(RubyInstallation.compareGemVersions("0.0.1", "0.0.2") < 0);
         assertTrue(RubyInstallation.compareGemVersions("4.4.4", "4.4.4") == 0);
+        assertTrue(RubyInstallation.compareGemVersions("4.4.4-platform", "4.4.4") != 0);
+        assertTrue(RubyInstallation.compareGemVersions("0.10.0-ruby", "0.9.0") > 0);
+        assertTrue(RubyInstallation.compareGemVersions("0.9.0-ruby", "0.10.0") < 0);
+        assertTrue(RubyInstallation.compareGemVersions("0.10.0", "0.9.0-ruby") > 0);
+        assertTrue(RubyInstallation.compareGemVersions("0.9.0", "0.10.0-ruby") < 0);
     }
 
     public void testChooseGems() throws Exception {

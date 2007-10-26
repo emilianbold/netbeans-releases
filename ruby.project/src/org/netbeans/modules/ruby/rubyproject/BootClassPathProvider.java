@@ -71,15 +71,8 @@ public class BootClassPathProvider implements ClassPathProvider {
     
     public ClassPath findClassPath(FileObject file, String type) {
         // See if the file is under the Ruby libraries
-        RubyInstallation installation = RubyInstallation.getInstance();
-        FileObject rubylib = installation.getRubyLibFo();
-        FileObject rubyStubs = installation.getRubyStubs();
-        while (file != null) {
-            if (file == rubylib || file == rubyStubs) {
-                return getRubyClassPaths(file, type);
-            }
-            
-            file = file.getParent();
+        if (RubyInstallation.getInstance().isSystemFile(file)) {
+            return getRubyClassPaths(file, type);
         }
         
         return null;
