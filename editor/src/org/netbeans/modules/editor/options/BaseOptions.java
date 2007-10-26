@@ -73,7 +73,6 @@ import java.beans.IntrospectionException;
 import org.openide.loaders.DataObject;
 import java.io.ObjectOutput;
 import org.openide.util.LookupListener;
-import org.openide.util.RequestProcessor;
 import org.openide.loaders.DataFolder;
 import org.openide.filesystems.FileObject;
 import javax.swing.KeyStroke;
@@ -1517,10 +1516,13 @@ public class BaseOptions extends OptionSupport {
     
     private void refreshIndentEngineSettings() {
         // Touches the settings
-        RequestProcessor.postRequest(new Runnable(){
+        Settings.update(new Runnable(){
             public void run(){
                 Settings.touchValue(getKitClass(), NbEditorDocument.INDENT_ENGINE);
                 Settings.touchValue(getKitClass(), NbEditorDocument.FORMATTER);
+            }
+            public boolean asynchronous() {
+                return true;
             }
         });
     }
