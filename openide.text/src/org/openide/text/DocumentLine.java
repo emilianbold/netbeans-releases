@@ -384,20 +384,19 @@ public abstract class DocumentLine extends Line {
             }
         }
 
-        java.util.List list = getAnnotations();
-
-        for (int i = 0; i < list.size(); i++) {
-            Annotation anno = (Annotation) list.get(i);
-
-            if (!closing) {
-                if (!anno.isInDocument()) {
-                    anno.setInDocument(true);
-                    NbDocument.addAnnotation(doc, annoPos, -1, anno);
-                }
-            } else {
-                if (anno.isInDocument()) {
-                    anno.setInDocument(false);
-                    NbDocument.removeAnnotation(doc, anno);
+        List<? extends Annotation> list = getAnnotations();
+        synchronized(list) {
+            for (Annotation anno : list) {
+                if (!closing) {
+                    if (!anno.isInDocument()) {
+                        anno.setInDocument(true);
+                        NbDocument.addAnnotation(doc, annoPos, -1, anno);
+                    }
+                } else {
+                    if (anno.isInDocument()) {
+                        anno.setInDocument(false);
+                        NbDocument.removeAnnotation(doc, anno);
+                    }
                 }
             }
         }
@@ -502,27 +501,26 @@ public abstract class DocumentLine extends Line {
             // Recreate positionRef unconditionally to avoid undo problems
             pos = new PositionRef(support.getPositionManager(), lineStartOffset, Position.Bias.Forward);
 
-            List annos = getAnnotations();
-            int annosSize = annos.size();
-
-            if (annosSize > 0) {
-                try {
-                    p = pos.getPosition();
-                } catch (IOException e) {
-                    throw new IllegalArgumentException(); // should not fail
-                }
-
-                for (int i = 0; i < annosSize; i++) {
-                    Annotation anno = (Annotation) annos.get(i);
-
-                    if (anno.isInDocument()) {
-                        anno.setInDocument(false);
-                        NbDocument.removeAnnotation(support.getDocument(), anno);
+            List<? extends Annotation> annos = getAnnotations();
+            synchronized(annos) {
+                if (annos.size() > 0) {
+                    try {
+                        p = pos.getPosition();
+                    } catch (IOException e) {
+                        throw new IllegalArgumentException(); // should not fail
                     }
 
-                    if (!anno.isInDocument()) {
-                        anno.setInDocument(true);
-                        NbDocument.addAnnotation(support.getDocument(), p, -1, anno);
+                    for (Annotation anno : annos) {
+
+                        if (anno.isInDocument()) {
+                            anno.setInDocument(false);
+                            NbDocument.removeAnnotation(support.getDocument(), anno);
+                        }
+                        
+                        if (!anno.isInDocument()) {
+                            anno.setInDocument(true);
+                            NbDocument.addAnnotation(support.getDocument(), p, -1, anno);
+                        }
                     }
                 }
             }
@@ -775,24 +773,25 @@ public abstract class DocumentLine extends Line {
         /** When document is opened or closed the annotations must be added or
          * removed.*/
         void attachDetachAnnotations(StyledDocument doc, boolean closing) {
-            java.util.List list = getAnnotations();
+            List<? extends Annotation> list = getAnnotations();
 
-            for (int i = 0; i < list.size(); i++) {
-                Annotation anno = (Annotation) list.get(i);
+            synchronized(list) {
+                for (Annotation anno : list) {
 
-                if (!closing) {
-                    try {
-                        if (!anno.isInDocument()) {
-                            anno.setInDocument(true);
-                            NbDocument.addAnnotation(doc, position.getPosition(), getLength(), anno);
+                    if (!closing) {
+                        try {
+                            if (!anno.isInDocument()) {
+                                anno.setInDocument(true);
+                                NbDocument.addAnnotation(doc, position.getPosition(), getLength(), anno);
+                            }
+                        } catch (IOException ex) {
+                            Logger.getLogger(DocumentLine.class.getName()).log(Level.WARNING, null, ex);
                         }
-                    } catch (IOException ex) {
-                        Logger.getLogger(DocumentLine.class.getName()).log(Level.WARNING, null, ex);
-                    }
-                } else {
-                    if (anno.isInDocument()) {
-                        anno.setInDocument(false);
-                        NbDocument.removeAnnotation(doc, anno);
+                    } else {
+                        if (anno.isInDocument()) {
+                            anno.setInDocument(false);
+                            NbDocument.removeAnnotation(doc, anno);
+                        }
                     }
                 }
             }

@@ -43,6 +43,7 @@ package org.openide.text;
 import java.beans.PropertyChangeSupport;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Collections;
 
 /** Classes which are capable of holding annotations must
  * extend this abstract class. The examples of these classes are
@@ -67,13 +68,10 @@ public abstract class Annotatable extends Object {
     public static final String PROP_TEXT = "text"; // NOI18N
 
     /** Support for property change listeners*/
-    private PropertyChangeSupport propertyChangeSupport;
-
-    /** Count of all annotations attached to this instance. */
-    private int annotationCount;
+    private final PropertyChangeSupport propertyChangeSupport;
 
     /** List of all annotations attached to this annotatable object */
-    private List<Annotation> attachedAnnotations;
+    private final List<Annotation> attachedAnnotations;
 
     /** Whether the Annotatable object was deleted during
      * the editting of document or not. */
@@ -81,25 +79,32 @@ public abstract class Annotatable extends Object {
 
     public Annotatable() {
         deleted = false;
-        annotationCount = 0;
         propertyChangeSupport = new PropertyChangeSupport(this);
-        attachedAnnotations = new LinkedList<Annotation>();
+        attachedAnnotations = Collections.synchronizedList(new LinkedList<Annotation>());
     }
 
     /** Add annotation to this Annotatable class
      * @param anno annotation which will be attached to this class */
     protected void addAnnotation(Annotation anno) {
-        annotationCount++;
-        attachedAnnotations.add(anno);
-        propertyChangeSupport.firePropertyChange(PROP_ANNOTATION_COUNT, annotationCount - 1, annotationCount);
+        int count;
+        synchronized (attachedAnnotations) {
+            attachedAnnotations.add(anno);
+            count = attachedAnnotations.size();
+        }
+        propertyChangeSupport.firePropertyChange(PROP_ANNOTATION_COUNT, count - 1, count);
     }
 
     /** Remove annotation to this Annotatable class
      * @param anno annotation which will be detached from this class  */
     protected void removeAnnotation(Annotation anno) {
-        annotationCount--;
-        attachedAnnotations.remove(anno);
-        propertyChangeSupport.firePropertyChange(PROP_ANNOTATION_COUNT, annotationCount + 1, annotationCount);
+        int count;
+        synchronized (attachedAnnotations) {
+            attachedAnnotations.remove(anno);
+            count = attachedAnnotations.size();
+        }
+        // XXX: If the annotation was not present, the PCE will be inaccurate
+        // but it was so (and worse) from the invention of this API
+        propertyChangeSupport.firePropertyChange(PROP_ANNOTATION_COUNT, count + 1, count);
     }
 
     /** Gets the list of all annotations attached to this annotatable object
@@ -157,6 +162,6 @@ public abstract class Annotatable extends Object {
      * @return count of attached annotations
      */
     final public int getAnnotationCount() {
-        return annotationCount;
+        return attachedAnnotations.size();
     }
 }
