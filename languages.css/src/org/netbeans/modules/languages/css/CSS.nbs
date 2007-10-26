@@ -23,7 +23,6 @@ TOKEN:css_comment:( "<!--" | "-->" )
 TOKEN:css_whitespace: ([" " "\t" "\n" "\r"]+)
 
 TOKEN:css_operator:( ["*" "#" "." "," ":" "-" "+" ">" "(" ")" "{" "}" ";" "[" "]" "!" "/" "\\"] )
-TOKEN:css_operator2: ( "~=" | "|=" | "=" )
 TOKEN:css_identifier: (
     "-"? ["a"-"z" "A"-"Z" "_"]
          ["a"-"z" "A"-"Z" "_" "0" - "9" "-"]*

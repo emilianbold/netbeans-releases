@@ -52,4 +52,11 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+    <folder name="OptionsDialog">
+        <folder name="PreviewExamples">
+            <folder name="text">
+                <file name="x-css" url="CSSExample"/>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>
