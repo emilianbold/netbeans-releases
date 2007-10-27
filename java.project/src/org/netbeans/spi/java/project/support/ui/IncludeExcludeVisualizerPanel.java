@@ -41,10 +41,14 @@
 
 package org.netbeans.spi.java.project.support.ui;
 
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.io.File;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -65,6 +69,7 @@ class IncludeExcludeVisualizerPanel extends JPanel {
     };
     private final DefaultListModel includedListModel = new DefaultListModel();
     private final DefaultListModel excludedListModel = new DefaultListModel();
+    private String rootPrefix;
 
     public IncludeExcludeVisualizerPanel(IncludeExcludeVisualizer handle) {
         this.handle = handle;
@@ -73,6 +78,20 @@ class IncludeExcludeVisualizerPanel extends JPanel {
         excludes.getDocument().addDocumentListener(listener);
         includedList.setModel(includedListModel);
         excludedList.setModel(excludedListModel);
+        ListCellRenderer renderer = new DefaultListCellRenderer() {
+            public @Override Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                File f = (File) value;
+                // #99401: just use relative path when possible.
+                String label = f.getAbsolutePath();
+                if (rootPrefix != null) {
+                    assert label.startsWith(rootPrefix) : "Expected " + label + " to start with '" + rootPrefix + "'";
+                    label = label.substring(rootPrefix.length()).replace(File.separatorChar, '/');
+                }
+                return super.getListCellRendererComponent(list, label, index, isSelected, cellHasFocus);
+            }
+        };
+        includedList.setCellRenderer(renderer);
+        excludedList.setCellRenderer(renderer);
     }
 
     void setFields(String includes, String excludes) {
@@ -85,7 +104,7 @@ class IncludeExcludeVisualizerPanel extends JPanel {
         this.excludes.getDocument().addDocumentListener(listener);
     }
 
-    void setFiles(File[] included, File[] excluded, boolean busy) {
+    void setFiles(File[] included, File[] excluded, boolean busy, File singleRoot) {
         assert EventQueue.isDispatchThread();
         includedListModel.clear();
         for (File f : included) {
@@ -96,6 +115,12 @@ class IncludeExcludeVisualizerPanel extends JPanel {
             excludedListModel.addElement(f);
         }
         scanningLabel.setVisible(busy);
+        if (singleRoot == null) {
+            rootPrefix = null;
+        } else {
+            assert singleRoot.isDirectory() : singleRoot;
+            rootPrefix = singleRoot.getAbsolutePath() + File.separatorChar;
+        }
     }
 
     /** This method is called from within the constructor to

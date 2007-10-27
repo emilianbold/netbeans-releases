@@ -199,9 +199,13 @@ public class IncludeExcludeVisualizer {
         if (panel == null) {
             panel = new IncludeExcludeVisualizerPanel(this);
             panel.setFields(includes, excludes);
-            panel.setFiles(included.toArray(new File[included.size()]), excluded.toArray(new File[excluded.size()]), busy);
+            updatePanelFiles();
         }
         return panel;
+    }
+
+    private void updatePanelFiles() {
+        panel.setFiles(included.toArray(new File[included.size()]), excluded.toArray(new File[excluded.size()]), busy, roots.length == 1 ? roots[0] : null);
     }
 
     private static final int DELAY = 200;
@@ -216,7 +220,7 @@ public class IncludeExcludeVisualizer {
             public void run() {
                 synchronized (IncludeExcludeVisualizer.this) {
                     if (panel != null) {
-                        panel.setFiles(included.toArray(new File[included.size()]), excluded.toArray(new File[excluded.size()]), busy);
+                        updatePanelFiles();
                     }
                 }
             }
