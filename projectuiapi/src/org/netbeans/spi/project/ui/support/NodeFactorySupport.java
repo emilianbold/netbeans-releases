@@ -41,6 +41,7 @@
 
 package org.netbeans.spi.project.ui.support;
 
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -200,7 +201,12 @@ public class NodeFactorySupport {
                 removeKeys(list);
                 addKeys(list);
             }
-            setKeys(createKeys());
+            final Collection<NodeListKeyWrapper> ks = createKeys();
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    setKeys(ks);
+                }
+            });
         }
         
         //to be called under lock.
@@ -269,6 +275,7 @@ public class NodeFactorySupport {
             object = obj;
         }
         
+        @Override
         public boolean equals(Object obj) {
             if (obj == null) {
                 return false;
@@ -286,6 +293,7 @@ public class NodeFactorySupport {
             return true;
         }
 
+        @Override
         public int hashCode() {
             int hash = 5;
             hash = 79 * hash + (this.nodeList != null ? this.nodeList.hashCode() : 0);
