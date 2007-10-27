@@ -112,7 +112,8 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
                     return new FacesRenameRefactoringUI(fileObjects[0], newName);
                 }                
         	};
-        	FacesRefactoringUtils.invokeAfterScanFinished(task, (String) RefactoringActionsFactory.renameAction().getValue(Action.NAME));
+        	FacesRefactoringUtils.invokeAfterScanFinished(task, 
+        	        getActionName(RefactoringActionsFactory.renameAction()));
         }
     }
     
@@ -173,7 +174,8 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
                 }
                 
             };
-            FacesRefactoringUtils.invokeAfterScanFinished(task, (String) RefactoringActionsFactory.moveAction().getValue(Action.NAME));
+            FacesRefactoringUtils.invokeAfterScanFinished(task, 
+                    getActionName(RefactoringActionsFactory.moveAction()));
         }
     }
     
@@ -235,4 +237,10 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
         protected abstract RefactoringUI createRefactoringUI(FileObject[] selectedElement);
     }    
 
+    static String getActionName(Action action) {
+        String arg = (String) action.getValue(Action.NAME);
+        arg = org.openide.util.Utilities.replaceString(arg, "&", ""); // NOI18N
+        return org.openide.util.Utilities.replaceString(arg, "...", ""); // NOI18N
+    }
+    
 }
