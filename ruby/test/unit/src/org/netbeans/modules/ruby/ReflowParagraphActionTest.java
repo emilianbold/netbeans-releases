@@ -134,6 +134,10 @@ public class ReflowParagraphActionTest extends RubyTestBase {
         formatParagraphFile("testfiles/linebreak.comment", "next available num^ber");
     }
 
+    public void testLineBreak2() throws Exception {
+        formatParagraphFile("testfiles/linebreak2.comment", "next available num^ber");
+    }
+
     public void testLists() throws Exception {
         formatParagraphFile("testfiles/lists.comment", "chang^e_menu");
     }

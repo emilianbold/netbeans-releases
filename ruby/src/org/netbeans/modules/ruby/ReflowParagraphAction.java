@@ -605,6 +605,9 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
                 int brIndex = text.indexOf("<br>", ltIndex); // NOI18N
                 if (brIndex == -1) {
                     brIndex = text.indexOf("<br/>", ltIndex); // NOI18N
+                    if (brIndex == -1) {
+                        brIndex = text.indexOf("<br />", ltIndex); // NOI18N
+                    }
                 }
                 if (brIndex != -1) {
                     // Need to split the text up via linebreaks

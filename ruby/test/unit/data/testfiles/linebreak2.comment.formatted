@@ -1,0 +1,11 @@
+    # [<tt>:on_key</tt>]
+    #   +:use_next_key+ => Use the next available number.  This is the
+    #   default.<br/>
+    #   <tt>:any</tt> => Respond to any key.  Normally used as the last option
+    #   to play an error message ("Sorry, 3 is not an option")<br />
+    #   <tt>1</tt> => (Or any integer).  Use these if you want to specify a
+    #   particular key.<br />
+    #   <tt>1..4</tt> => a range of values<br />
+    #
+
+
