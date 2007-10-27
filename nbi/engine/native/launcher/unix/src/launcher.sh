@@ -229,7 +229,7 @@ parseCommandLineArguments() {
 
 setLauncherLocale() {        index=0
 	if [ 0 -eq $LOCAL_OVERRIDDEN ] ; then		
-        	SYSTEM_LOCALE=`echo $LANG | sed "s/\..*//"`
+        	SYSTEM_LOCALE="$LANG"
 		debug "Setting initial launcher locale from the system : $SYSTEM_LOCALE"
 	else	
 		debug "Setting initial launcher locale using command-line argument : $SYSTEM_LOCALE"
