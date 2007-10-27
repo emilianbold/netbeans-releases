@@ -1919,7 +1919,7 @@ public class WizardDescriptor extends DialogDescriptor {
                                     return;
                                 } catch (RuntimeException x) {
                                     // notify to log
-                                    err.log(Level.INFO, null, x);
+                                    err.log(Level.WARNING, null, x);
 
                                     setValueWithoutPCH(NEXT_OPTION);
                                     updateStateWithFeedback();
