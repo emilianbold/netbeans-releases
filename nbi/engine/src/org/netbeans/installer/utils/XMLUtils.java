@@ -557,7 +557,8 @@ public abstract class XMLUtils {
         final Map<Locale, String> map = new HashMap<Locale, String>();
         
         final Element defaultElement = getChild(element, "default");
-        map.put(Locale.getDefault(), defaultElement.getTextContent());
+        map.put(Locale.getDefault(), StringUtils.parseAscii(
+                defaultElement.getTextContent()));
         
         for (Element localizedElement: getChildren(element, "localized")) {
             final Locale locale = StringUtils.parseLocale(
@@ -577,7 +578,8 @@ public abstract class XMLUtils {
         final Document document = element.getOwnerDocument();
         
         final Element defaultElement = document.createElement("default");
-        defaultElement.setTextContent(map.get(Locale.getDefault()));
+        defaultElement.setTextContent(StringUtils.convertToAscii(
+                map.get(Locale.getDefault())));
         element.appendChild(defaultElement);
         
         for (Locale locale: map.keySet()) {
@@ -585,7 +587,8 @@ public abstract class XMLUtils {
                 final Element localizedElement = document.createElement("localized");
                 
                 localizedElement.setAttribute("locale", locale.toString());
-                localizedElement.setTextContent(map.get(locale));
+                localizedElement.setTextContent(StringUtils.convertToAscii(
+                        map.get(locale)));
                 
                 element.appendChild(localizedElement);
             }
