@@ -135,15 +135,15 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
         // setIconBase("org/netbeans/modules/java/j2seproject/ui/resources/packageRoot");
     }
 
-    public Image getIcon( int type ) {        
+    public @Override Image getIcon(int type) {
         return computeIcon( false, type );
     }
         
-    public Image getOpenedIcon( int type ) {
+    public @Override Image getOpenedIcon(int type) {
         return computeIcon( true, type );
     }
     
-    public String getDisplayName () {
+    public @Override String getDisplayName() {
         String s = super.getDisplayName ();
 
         try {            
@@ -155,7 +155,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
         return s;
     }
 
-    public String getHtmlDisplayName() {
+    public @Override String getHtmlDisplayName() {
          try {
              FileSystem.Status stat = file.getFileSystem().getStatus();
              if (stat instanceof FileSystem.HtmlStatus) {
@@ -202,8 +202,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
         task.schedule(50);  // batch by 50 ms
     }    
     
-    public Action[] getActions( boolean context ) {
-
+    public @Override Action[] getActions(boolean context) {
         if ( actions == null ) {
             actions = new Action[] {
                 CommonProjectActions.newFileAction(),
@@ -222,7 +221,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
 
     // Show reasonable properties of the DataFolder,
     //it shows the sorting names as rw property, the name as ro property and the path to root as ro property
-    public PropertySet[] getPropertySets() {            
+    public @Override PropertySet[] getPropertySets() {            
         PropertySet[] properties =  getDataFolderNodeDelegate().getPropertySets();
         for (int i=0; i< properties.length; i++) {
             if (Sheet.PROPERTIES.equals(properties[i].getName())) {
@@ -249,7 +248,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
     }
 
     // XXX Paste types - probably not very nice 
-    public void createPasteTypes(Transferable t, List<PasteType> list) {
+    public @Override void createPasteTypes(Transferable t, List<PasteType> list) {
         if (t.isDataFlavorSupported(ExTransferable.multiFlavor)) {
             try {
                 MultiTransferObject mto = (MultiTransferObject) t.getTransferData(ExTransferable.multiFlavor);
@@ -428,7 +427,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
             return null;
         }
         
-        public String toString() {
+        public @Override String toString() {
             return "PathFinder[" + group + "]"; // NOI18N
         }
                     
@@ -454,7 +453,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
             return true;
         }
 
-        public Iterator/*<DataObject>*/ objectsToSearch() {
+        public Iterator<DataObject> objectsToSearch() {
             return delegate.objectsToSearch();
         }
         

@@ -45,9 +45,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.project.JavaTargetChooserPanel;
 import org.netbeans.modules.java.project.NewJavaFileWizardIterator;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
 
 /**
  * Default implementations of Java-specific template UI.
@@ -66,7 +64,7 @@ public class JavaTemplates {
      * @return a wizard panel prompting the user to choose a name and package
      * @throws IllegalArgumentException if folders is empty
      */
-    public static WizardDescriptor.Panel createPackageChooser(Project project, SourceGroup[] folders) throws IllegalArgumentException {
+    public static WizardDescriptor.Panel<WizardDescriptor> createPackageChooser(Project project, SourceGroup[] folders) throws IllegalArgumentException {
         return createPackageChooser(project, folders, null);
     }
     
@@ -82,7 +80,8 @@ public class JavaTemplates {
      * @return a wizard panel prompting the user to choose a name and package
      * @throws IllegalArgumentException if folders is empty
      */
-    public static WizardDescriptor.Panel createPackageChooser(Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel) throws IllegalArgumentException {
+    public static WizardDescriptor.Panel<WizardDescriptor> createPackageChooser(Project project, SourceGroup[] folders,
+            WizardDescriptor.Panel<WizardDescriptor> bottomPanel) throws IllegalArgumentException {
         return createPackageChooser(project, folders, bottomPanel, false);
     }
     
@@ -101,8 +100,8 @@ public class JavaTemplates {
      * @throws IllegalArgumentException if folders is empty
      * @since org.netbeans.modules.java.project/1 1.3 
      */
-    public static WizardDescriptor.Panel createPackageChooser(Project project, SourceGroup[] folders, 
-        WizardDescriptor.Panel bottomPanel, boolean validPackageRequired) throws IllegalArgumentException {
+    public static WizardDescriptor.Panel<WizardDescriptor> createPackageChooser(Project project, SourceGroup[] folders, 
+        WizardDescriptor.Panel<WizardDescriptor> bottomPanel, boolean validPackageRequired) throws IllegalArgumentException {
         if (folders.length == 0) {
             throw new IllegalArgumentException("No folders selected"); // NOI18N
         }
