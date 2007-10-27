@@ -76,61 +76,61 @@ public class EventDispatchNameKeeper {
 		if (type == EDT_WORKSPACE_KIND)
 		   typeName = "WorkspaceDispatcher";
 
-		if (type == EDT_WORKSPACE_KIND_DP)
+                else if (type == EDT_WORKSPACE_KIND_DP)
 		   typeName = "WorkspaceDispatcherDP";
 
-		if (type == EDT_DRAWINGAREA_KIND)
+                else if (type == EDT_DRAWINGAREA_KIND)
 		   typeName = "DrawingAreaDispatcher";
 
-		if (type == EDT_PROJECTTREE_KIND)
+                else if (type == EDT_PROJECTTREE_KIND)
 		   typeName = "ProjectTreeDispatcher" ;
 
-		if (type == EDT_ELEMENTMODIFIED_KIND)
+		else if (type == EDT_ELEMENTMODIFIED_KIND)
 		   typeName = "ElementChangeDispatcher" ;
 
-		if (type == EDT_EDITCTRL_KIND)
+		else if (type == EDT_EDITCTRL_KIND)
 		   typeName = "EditCtrlDispatcher" ;
 
-		if (type == EDT_PROJECTTREEDIALOGFILTER_KIND)
+		else if (type == EDT_PROJECTTREEDIALOGFILTER_KIND)
 		   typeName =  "ProjectTreeFilterDialogDispatcher" ;
 
-		if (type == EDT_ADDIN_KIND)
+		else if (type == EDT_ADDIN_KIND)
 		   typeName =  "AddInDispatcher" ;
 
-		if (type == EDT_MESSAGING_KIND)
+		else if (type == EDT_MESSAGING_KIND)
 		   typeName =  "UMLMessagingDispatcher" ;
 
-		if (type == EDT_VBA_KIND)
+		else if (type == EDT_VBA_KIND)
 		   typeName = "VBAIntegrationDispatcher";
 
-		if (type == EDT_RELATION_KIND)
+		else if (type == EDT_RELATION_KIND)
 		   typeName = "RelationValidatorEventDispatcher" ;
 
-		if (type == EDT_ELEMENT_LIFETIME_KIND)
+		else if (type == EDT_ELEMENT_LIFETIME_KIND)
 		   typeName =  "LifeTimeDispatcher";
 
-		if (type == EDT_CLASSIFIER_KIND)
+		else if (type == EDT_CLASSIFIER_KIND)
 		   typeName =  "ClassifierDispatcher" ;
 
-		if (type == EDT_COREPRODUCT_KIND)
+		else if (type == EDT_COREPRODUCT_KIND)
 		   typeName =  "CoreProductDispatcher" ;
 
-		if (type == EDT_PREFERENCEMANAGER_KIND)
+		else if (type == EDT_PREFERENCEMANAGER_KIND)
 		   typeName =  "PreferenceManager" ;
 
-		if (type == EDT_SCM_KIND)
+		else if (type == EDT_SCM_KIND)
 		   typeName =  "SCM" ;
 
-		if (type == EDT_DYNAMICS_KIND)
+		else if (type == EDT_DYNAMICS_KIND)
 		   typeName =  "DynamicsDispatcher" ;
 
-		if (type == EDT_ACTIVITIES_KIND)
+		else if (type == EDT_ACTIVITIES_KIND)
 		   typeName =  "ActivitiesDispatcher" ;
 
-		if (type == EDT_STRUCTURE_KIND)
+		else if (type == EDT_STRUCTURE_KIND)
 		   typeName =  "StructureDispatcher" ;
 
-		if (type == EDT_ROUNDTRIP_KIND)
+		else if (type == EDT_ROUNDTRIP_KIND)
 		   typeName =  "RoundTripDispatcher" ;
 
 		return typeName;

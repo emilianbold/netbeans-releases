@@ -47,10 +47,6 @@ package org.netbeans.modules.uml.designpattern;
 
 import org.netbeans.modules.uml.ui.products.ad.projecttreedefaultengine.FilteredItemManager;
 import java.util.ResourceBundle;
-
-//import org.netbeans.modules.uml.core.addinframework.IAddIn;
-//import org.netbeans.modules.uml.core.addinframework.IAddInDescriptor;
-//import org.netbeans.modules.uml.core.addinframework.IAddInManager;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.coreapplication.IDesignCenterManager;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
@@ -60,9 +56,7 @@ import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeModel;
 import org.netbeans.modules.uml.ui.products.ad.projecttreedefaultengine.ADProjectTreeEngine;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
-import org.netbeans.modules.uml.ui.support.contextmenusupport.IProductContextMenu;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ResourceMgr;
 import org.netbeans.modules.uml.ui.swing.projecttree.ISwingProjectTreeModel;
 import org.netbeans.modules.uml.ui.swing.projecttree.JProjectTree;
 import org.netbeans.modules.uml.core.coreapplication.IDesignCenterSupport;
@@ -103,10 +97,13 @@ public class ADDesignCenterEngine extends ADProjectTreeEngine implements IADDesi
 	 */
 	public void initialize(IProjectTreeModel pParentControl)
 	{
-		// Let the base class initialize.  Inside of this routine it will register for its
-		// dispatchers
-		super.initialize(pParentControl);
-
+		// Let the base class initialize.  
+		super.initializeTreeBuilder(pParentControl);
+                // Fixed IZ=119513,119944
+                // InitalizeSink() should be executed after initializeFillEditableAndDisplayList()
+                initializeFillEditableAndDisplayList();
+                initializeFilteredManager();
+                initializeSinks();
 	}
 
 	/* (non-Javadoc)
@@ -117,24 +114,22 @@ public class ADDesignCenterEngine extends ADProjectTreeEngine implements IADDesi
 		return 0;
 	}
 
-	public void onNodeExpanding(IProjectTreeControl          pParentControl,
-									    IProjectTreeExpandingContext pContext,
-                               FilteredItemManager          manager)
-	{
-		 //handleItemExpanding(pParentControl, pContext);
-       
-      if (isDesignCenterTree(pParentControl))
-      {
-         if(manager == null)
-         {
-            handleItemExpanding(pParentControl, pContext);
-         }
-         else
-         {
-            handleItemExpanding(pParentControl, pContext, manager);
-         }
-      }
-	}
+    public void onNodeExpanding(IProjectTreeControl pParentControl,
+                                IProjectTreeExpandingContext pContext,
+                                FilteredItemManager manager)
+    {
+        //handleItemExpanding(pParentControl, pContext);
+        if (isDesignCenterTree(pParentControl))
+        {
+            if (manager == null)
+            {
+                handleItemExpanding(pParentControl, pContext);
+            } else
+            {
+                handleItemExpanding(pParentControl, pContext, manager);
+            }
+        }
+    }
 
 	public void onNodeDoubleClick(IProjectTreeControl pParentControl,
 							  IProjectTreeItem pItem,

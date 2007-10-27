@@ -83,6 +83,11 @@ public class PromotePatternAction extends CookieAction
        return MODE_EXACTLY_ONE;
     }
 
+    protected boolean asynchronous() 
+    {
+        return false;
+    }
+    
     public HelpCtx getHelpCtx()
     {
        return null;

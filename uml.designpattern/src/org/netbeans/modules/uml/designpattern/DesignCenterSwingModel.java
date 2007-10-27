@@ -559,10 +559,10 @@ public class DesignCenterSwingModel extends ProjectTreeModelAdapter
      * @param children The children nodes that was added.
      */
     public void notifyOfAddedChildren(ITreeItem   parent,
-            int[]       childIndices/*,
-                                     ITreeItem[] children*/) {
+                                      int[] childIndices/*,
+                                      ITreeItem[] children*/) {
         if(/*(children != null) && (*/(childIndices != null)) {
-            ITreeItem temp = getChildItem(parent, childIndices[0]);
+            //ITreeItem temp = getChildItem(parent, childIndices[0]);
             ITreeItem[] children = new ITreeItem[childIndices.length];
             for (int index = 0; index < childIndices.length; index++) {
                 children[index] = parent.getChild(childIndices[index]);
@@ -886,6 +886,7 @@ public class DesignCenterSwingModel extends ProjectTreeModelAdapter
         try {
             attachSinks();
             attachEngines();
+
             
             IProjectTreeItem item = new ProjectTreeItemImpl();
             item.setData(null);

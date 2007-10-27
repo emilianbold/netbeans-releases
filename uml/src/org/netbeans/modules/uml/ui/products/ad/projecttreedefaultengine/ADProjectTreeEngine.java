@@ -243,23 +243,27 @@ public class ADProjectTreeEngine
     */
    public void initialize(IProjectTreeModel model)
    {
-   	setTreeModel(model);
-
-        if (m_TreeBuilder == null)
-        {
-                m_TreeBuilder = new ProjectTreeBuilderImpl(model.getNodeFactory());
-                if (this instanceof IProjectTreeBuilderFilter)
-                {            
-                        IProjectTreeBuilderFilter pFilter = (IProjectTreeBuilderFilter)this;
-                        m_TreeBuilder.setProjectTreeBuilderFilter(pFilter);
-                }
-        }
-      initializeSinks();
-      initializeByPreferences();
-      initializeFillEditableAndDisplayList();
-      initializeFilteredManager();
+   	initializeTreeBuilder(model);
+        initializeSinks();
+        initializeByPreferences();
+        initializeFillEditableAndDisplayList();
+        initializeFilteredManager();
    }
 
+   protected void initializeTreeBuilder (IProjectTreeModel model)
+   {
+        setTreeModel(model);
+        if (m_TreeBuilder == null)
+        {
+            m_TreeBuilder = new ProjectTreeBuilderImpl(model.getNodeFactory());
+            if (this instanceof IProjectTreeBuilderFilter)
+            {            
+                IProjectTreeBuilderFilter pFilter = (IProjectTreeBuilderFilter)this;
+                m_TreeBuilder.setProjectTreeBuilderFilter(pFilter);
+            }
+        }
+   }
+   
    /**
     * Test if it is OK to delete a tree item.
     * 
@@ -3276,22 +3280,20 @@ public class ADProjectTreeEngine
    		}
    }
 
-   public void onNodeExpanding(IProjectTreeControl          pParentControl,
-									    IProjectTreeExpandingContext pContext,
-                               FilteredItemManager          manager)
-   {
-      if (isProjectTree(pParentControl))
-      {
-         if(manager == null)
-         {
-            handleItemExpanding(pParentControl, pContext);
-         }
-         else
-         {
-            handleItemExpanding(pParentControl, pContext, manager);
-         }
-      }
-   }
+    public void onNodeExpanding(IProjectTreeControl pParentControl, 
+            IProjectTreeExpandingContext pContext, FilteredItemManager manager) 
+    {
+        if (isProjectTree(pParentControl)) {
+            if (manager == null) 
+            {
+                handleItemExpanding(pParentControl, pContext);
+            } 
+            else
+            {
+                handleItemExpanding(pParentControl, pContext, manager);
+            }
+        }
+    }
 
    /**
 	 * Handles the after edit event.

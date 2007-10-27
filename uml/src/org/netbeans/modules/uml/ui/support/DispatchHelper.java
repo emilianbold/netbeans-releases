@@ -141,29 +141,26 @@ import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaSynchEventsSink
  */
 public class DispatchHelper
 {
-	private HashMap < Object, Integer >  m_CookieMap = new HashMap < Object, Integer >();
-	//private HashMap  m_CookieMap = new HashMap();
-	
-	private IWorkspaceEventDispatcher   m_WorkspaceEventDispatcher   = null;
-	private IStructureEventDispatcher   m_StructureEventDispatcher   = null;
-	private IEventDispatchController    m_EventController            = null;
-   private IElementChangeEventDispatcher m_ElementChangeDispatcher  = null;
-	private IClassifierEventDispatcher   m_ClassifierEventDispatcher = null;
-	private IDynamicsEventDispatcher   m_DynamicsEventDispatcher = null;
-   private IElementLifeTimeEventDispatcher m_LifeTimeEventDispatcher = null;
-   private IRelationValidatorEventDispatcher m_RelationValidatorEventDispatcher = null;
-   
-	private static IProjectTreeEventDispatcher m_ProjectTreeEventDispatcher = null;
-   private static IDrawingAreaEventDispatcher m_DrawingAreaDispatcher = null;
-   private static IPreferenceManagerEventDispatcher m_PreferenceEventDispatcher = null;
-   private static IProjectTreeFilterDialogEventDispatcher m_ProjectTreeFilterEventDispatcher = null;
-   
-   private IWorkspaceEventDispatcher   m_WorkspaceEventDispatcherDP   = null;
-	private IActivityEventDispatcher   m_ActivityEventDispatcher = null;
+        private HashMap<Object, Integer> m_CookieMap = new HashMap<Object, Integer>();
+        //private HashMap  m_CookieMap = new HashMap();
+        private IWorkspaceEventDispatcher m_WorkspaceEventDispatcher = null;
+        private IStructureEventDispatcher m_StructureEventDispatcher = null;
+        private IEventDispatchController m_EventController = null;
+        private IElementChangeEventDispatcher m_ElementChangeDispatcher = null;
+        private IClassifierEventDispatcher m_ClassifierEventDispatcher = null;
+        private IDynamicsEventDispatcher m_DynamicsEventDispatcher = null;
+        private IElementLifeTimeEventDispatcher m_LifeTimeEventDispatcher = null;
+        private IRelationValidatorEventDispatcher m_RelationValidatorEventDispatcher = null;
+        private static IProjectTreeEventDispatcher m_ProjectTreeEventDispatcher = null;
+        private static IDrawingAreaEventDispatcher m_DrawingAreaDispatcher = null;
+        private static IPreferenceManagerEventDispatcher m_PreferenceEventDispatcher = null;
+        private static IProjectTreeFilterDialogEventDispatcher m_ProjectTreeFilterEventDispatcher = null;
+        private IWorkspaceEventDispatcher m_WorkspaceEventDispatcherDP = null;
+        private IActivityEventDispatcher m_ActivityEventDispatcher = null;
    
 	//**************************************************
-   // Workspace Event Sinks
-   //**************************************************
+        // Workspace Event Sinks
+        //**************************************************
    
 	public void registerForWorkspaceEvents(IWorkspaceEventsSink sink)
    {
@@ -855,24 +852,21 @@ public class DispatchHelper
       }
    }
    
-	public void registerForNamespaceModifiedEvents(INamespaceModifiedEventsSink sink)
-   {
-      if(sink != null)
-       {
-          IElementChangeEventDispatcher dispatcher = getElementChangeDispatcher();
-          if(dispatcher != null)
-          {
-             // TODO: We do not have a JCWrapper from the ProjectEventsSink.
-             dispatcher.registerForNamespaceModifiedEvents(sink);
-             //m_CookieMap.put(sink, new Integer(cookie));
-          }
-
-       }  
-       else
-       {
-          // TODO: I need to notify the caller that the register failed.          
-       }
-   }
+    public void registerForNamespaceModifiedEvents(INamespaceModifiedEventsSink sink) 
+    {
+        if (sink != null) 
+        {
+            IElementChangeEventDispatcher dispatcher = getElementChangeDispatcher();
+            if(dispatcher != null)
+            {
+                // TODO: We do not have a JCWrapper from the ProjectEventsSink.
+                dispatcher.registerForNamespaceModifiedEvents(sink);
+                //m_CookieMap.put(sink, new Integer(cookie));
+            }
+        } else {
+            // TODO: I need to notify the caller that the register failed.
+        }
+    }
    
 	public void revokeNamespaceModifiedSink(INamespaceModifiedEventsSink sink)
    {
