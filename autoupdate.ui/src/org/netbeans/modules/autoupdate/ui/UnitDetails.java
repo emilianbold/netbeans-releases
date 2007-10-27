@@ -113,7 +113,7 @@ public class UnitDetails extends DetailsPanel{
                     text += (u.getDescription() == null ? "" : u.annotate(u.getDescription ()));
                 }
             } catch (CharConversionException e) {
-                err.log (Level.WARNING, null, e);
+                err.log (Level.INFO, null, e);
                 return;
             }
             getDetails().setText(text);

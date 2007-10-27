@@ -140,8 +140,11 @@ public class LocalDownloadSupport {
                 try {
                     units = provider.getUpdateUnits (UpdateManager.TYPE.MODULE);
                 } catch (RuntimeException re) {
-                    err.log (Level.WARNING, re.getMessage (), re);
-                    DialogDisplayer.getDefault().notifyLater (new NotifyDescriptor.Exception (re, getBundle ("LocalDownloadSupport_BrokenNBM_Exception", file1.getName ())));
+                    err.log (Level.INFO, re.getMessage (), re);
+                    DialogDisplayer.getDefault().notifyLater (new NotifyDescriptor.Exception (re,
+                            getBundle ("LocalDownloadSupport_BrokenNBM_Exception",
+                                file1.getName (),
+                                re.getLocalizedMessage ())));
                     fileList.removeFile (file1);
                 }
                 synchronized (LocalDownloadSupport.class) {
