@@ -73,7 +73,7 @@ public class WebRestSupportLookupProvider implements LookupProvider {
     
     public Lookup createAdditionalLookup(Lookup baseContext) {
         final Project prj = baseContext.lookup(Project.class);
-        RestSupport restSupport = new WebProjectRestSupport(prj);
+        final RestSupport restSupport = new WebProjectRestSupport(prj);
         
         ProjectOpenedHook openhook = new ProjectOpenedHook() {
             
@@ -88,7 +88,7 @@ public class WebRestSupportLookupProvider implements LookupProvider {
                 try {
                     // make sure REST API jar is included in project compile classpath
                     RestUtils.addRestApiJar(prj);
-                    
+                    new AntFilesHelper(restSupport).initRestBuildExtension();
                     wsModel.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
                         public Void run(final RestServicesMetadata metadata) {
                             RestServices restServices = metadata.getRoot();
