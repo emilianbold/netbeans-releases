@@ -489,7 +489,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             startOffsetResult[0] = Utilities.getRowFirstNonWhite(doc, offset);
         }
 
-        int beginEndBalance = LexUtilities.getBeginEndLineBalance(doc, offset);
+        int beginEndBalance = LexUtilities.getBeginEndLineBalance(doc, offset, true);
         int braceBalance =
             LexUtilities.getLineBalance(doc, offset, RubyTokenId.LBRACE, RubyTokenId.RBRACE);
 
@@ -517,7 +517,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                     insertRBrace = false;
                 } else if (nextIndent == indent) {
                     if (insertEnd) {
-                        if (LexUtilities.getBeginEndLineBalance(doc, next) < 0) {
+                        if (LexUtilities.getBeginEndLineBalance(doc, next, false) < 0) {
                             insertEnd = false;
                         } else {
                             // See if I have a structure word like "else", "ensure", etc.
@@ -1076,9 +1076,18 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             Token<?extends GsfTokenId> token = ts.token();
 
             if ((token.id() == id)) {
+                final int rowFirstNonWhite = Utilities.getRowFirstNonWhite(doc, offset);
                 // Ensure that this token is at the beginning of the line
-                if (ts.offset() > Utilities.getRowFirstNonWhite(doc, offset)) {
-                    return;
+                if (ts.offset() > rowFirstNonWhite) {
+                    if (RubyUtils.isRhtmlDocument(doc)) {
+                        // Allow "<%[whitespace]*" to preceed
+                        String s = doc.getText(rowFirstNonWhite, ts.offset()-rowFirstNonWhite);
+                        if (!s.matches("<%\\s*")) {
+                            return;
+                        }
+                    } else {
+                        return;
+                    }
                 }
 
                 OffsetRange begin;

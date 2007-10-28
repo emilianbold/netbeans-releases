@@ -458,6 +458,11 @@ public class BracketCompleterTest extends RubyTestBase {
         insertBreak("class Foo^\nend", "class Foo\n  ^\nend");
     }
 
+    public void testInsertEnd4() throws Exception {
+        insertBreak("foo bar, {:x => :x,\n  :y => :y, ^:z => :z} do\nend\n",
+                "foo bar, {:x => :x,\n  :y => :y, \n  ^:z => :z} do\nend\n");
+    }
+    
     public void testInsertIf1() throws Exception {
         insertBreak("    if true^", "    if true\n      ^\n    end");
     }

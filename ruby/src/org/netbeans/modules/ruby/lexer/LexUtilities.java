@@ -471,11 +471,16 @@ public class LexUtilities {
         return INDENT_WORDS.contains(id);
     }
 
-    /** Compute the balance of begin/end tokens on the line */
-    public static int getBeginEndLineBalance(BaseDocument doc, int offset) {
+    /** Compute the balance of begin/end tokens on the line.
+     * @param doc the document
+     * @param offset The offset somewhere on the line
+     * @param upToOffset If true, only compute the line balance up to the given offset (inclusive),
+     *   and if false compute the balance for the whole line
+     */
+    public static int getBeginEndLineBalance(BaseDocument doc, int offset, boolean upToOffset) {
         try {
             int begin = Utilities.getRowStart(doc, offset);
-            int end = Utilities.getRowEnd(doc, offset);
+            int end = upToOffset ? offset : Utilities.getRowEnd(doc, offset);
 
             TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, begin);
             if (ts == null) {
