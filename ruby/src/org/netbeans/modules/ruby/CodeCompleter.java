@@ -2277,7 +2277,9 @@ public class CodeCompleter implements Completable {
                     return proposals;
                 }
             }
-            if ((showUpper && prefix != null && prefix.length() > 0) || (showSymbols && !inCall)) {
+            if ((showUpper && ((prefix != null && prefix.length() > 0) ||
+                    (!call.isMethodExpected() && call.getLhs() != null && call.getLhs().length() > 0)))
+                    || (showSymbols && !inCall)) {
                 // TODO - allow method calls if you're already entered the first char!
                 completeClasses(proposals, request, showSymbols, call);
             }
