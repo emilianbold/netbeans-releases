@@ -47,6 +47,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.*;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.*;
@@ -54,11 +56,10 @@ import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.*;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
-import org.netbeans.modules.refactoring.java.ui.SafeDeleteUI;
 import org.netbeans.modules.refactoring.java.ui.WhereUsedQueryUI;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGrip;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.text.PositionBounds;
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 
@@ -71,6 +72,8 @@ import org.openide.util.lookup.Lookups;
 public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
     private SafeDeleteRefactoring refactoring;
     private WhereUsedQuery[] whereUsedQueries;
+    
+    private static final String DOT = "."; //NOI18N
     
     /**
      * Creates the a new instance of the Safe Delete refactoring
@@ -92,6 +95,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
      */
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         RefactoringSession inner = RefactoringSession.create("delete"); // NOI18N
+        Collection<ElementGrip> abstractMethHandles = new ArrayList<ElementGrip>();
         Set<Object> refactoredObjects = new HashSet<Object>();
         Collection<? extends FileObject> files = refactoring.getRefactoringSource().lookupAll(FileObject.class);
         fireProgressListenerStart(AbstractRefactoring.PARAMETERS_CHECK, whereUsedQueries.length + 1);
@@ -100,69 +104,52 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             refactoredObjects.add(refactoredObject);
             
             whereUsedQueries[i].prepare(inner);
+            TreePathHandle treePathHandle = grips.get(i);
+            if(Tree.Kind.METHOD == treePathHandle.getKind()){
+                JavaSource javaSrc = JavaSource.forFileObject(treePathHandle.getFileObject());
+                try {
+                    javaSrc.runUserActionTask(new OverriddenAbsMethodFinder(treePathHandle, abstractMethHandles), cancelRequest);
+
+                } catch (IOException ioException) {
+                    ErrorManager.getDefault().notify(ioException);
+                }
+            }
             
-            if (!files.contains(grips.get(i).getFileObject())) {
+            if (!files.contains(treePathHandle.getFileObject())) {
                 TransformTask task = new TransformTask(new DeleteTransformer(), grips.get(i));
                 createAndAddElements(Collections.singleton(grips.get(i).getFileObject()), task, refactoringElements, refactoring);
             }
             fireProgressListenerStep();
         }
-        
-        Collection importStmts = new ArrayList();
-        
-        for (Iterator<RefactoringElement> iter = inner.getRefactoringElements().iterator(); iter.hasNext(); ) {
-            ElementGrip elem = iter.next().getLookup().lookup(ElementGrip.class);
-            boolean isOuterRef = true;
-            ElementGrip parent = elem;
-            if (parent!=null) {
-                do {
-                    if (refactoredObjects.contains(parent.getHandle())) {
-                        isOuterRef = false;
-                        break;
-                    }
-                    parent = parent.getParent();
-                } while (parent!=null);
-            }
-            //ElementGrip comp = elem;
-//            //Check if this usage is an import statement & ignore it if so.
-//            boolean isUsageImport = false;
-//            Import importStmt = null;
-//            if(comp instanceof Resource){
-//                //An Import shows up as a Resource - not as an Import object.
-//                //Hence, we go through the hassle of checking the set of import 
-//                //statements. This is not a reliable way of verifying if the import is 
-//                //accounting for a usage. But there's no better option currently.
-//                Iterator importIterator = ((Resource)comp).getImports().iterator();
-//                while(importIterator.hasNext()){
-//                    importStmt = (Import) importIterator.next();
-//                    if(refactoredObjects.contains(importStmt.getImportedNamespace())){
-//                        isUsageImport = true;
-//                        break;
-//                    }
-//                }
-//            }
-//            
-//            //If the usage is an import, we'd have to store away the standalone 
-//            //import to be deleted later
-//            if(isUsageImport){
-//                importStmts.add(new ImportRefDeleteElement(importStmt));
-//                //Go no further in this iteration. Move on to the next usage.
-//                continue;
-//            }
-//            
-//            while (comp != null && !(comp instanceof Resource)) {
-//                if (refactoredObjects.contains(comp)) {
-//                    isOuterRef = false;
-//                    break;
-//                }
-//                comp = (Element) comp.refImmediateComposite();
-//            }
-            if (isOuterRef) {
-                fireProgressListenerStop();
-                return new Problem(false, getString("ERR_ReferencesFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem!=null?elem.getHandle():null, elem!=null?elem.toString():"", refactoring), inner)));
+        Problem problemFromWhereUsed = null;
+        for (RefactoringElement refacElem : inner.getRefactoringElements()) {
+            ElementGrip elem = refacElem.getLookup().lookup(ElementGrip.class);
+            if (!isPendingDelete(elem, refactoredObjects)) {
+                problemFromWhereUsed = new Problem(false, getString("ERR_ReferencesFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem!=null?elem.getHandle():null, elem!=null?elem.toString():"", refactoring), inner)));
+                break;
             }
         }
         
+        for(ElementGrip absMethodGrip : abstractMethHandles){
+            if (!isPendingDelete(absMethodGrip, refactoredObjects)) {
+                Problem probAbsMethod = new Problem(false,
+                        getParameterizedString("ERR_OverridesAbstractMethod", 
+                        getMethodName(absMethodGrip.getHandle())));
+                if(problemFromWhereUsed != null){
+                    problemFromWhereUsed.setNext(probAbsMethod);
+                }else{
+                    problemFromWhereUsed = probAbsMethod;
+                }
+                break;
+            }
+        }
+        
+        if(problemFromWhereUsed != null){
+            fireProgressListenerStop();
+            return problemFromWhereUsed;
+        }
+        
+        Collection importStmts = new ArrayList();
         //If there we no non-import usages, delete the import statements as well.
         if(importStmts.size() > 0){
             for (Iterator it = importStmts.iterator(); it.hasNext();) {
@@ -289,6 +276,10 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         return null;
     }
     
+    protected JavaSource getJavaSource(Phase p) {
+        return null;
+    }
+    
     private boolean containsHandle(TreePathHandle handle, CompilationInfo info) {
         for (TreePathHandle current : refactoring.getRefactoringSource().lookupAll(TreePathHandle.class)) {
             if (current.resolveElement(info).equals(handle.resolveElement(info))) {
@@ -314,17 +305,47 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         return NbBundle.getMessage(SafeDeleteRefactoringPlugin.class, key);
     }
     
-    /**
-     *Returns the default critical error message for this refactoring
-     *
-     */
-    private Problem getProblemMessage(Object refactoredObject) {
-        String errorMsg = NbBundle.getMessage(SafeDeleteUI.class,
-                "DSC_SafeDelProblem", refactoredObject);// NOI18N
-        return new Problem(true,errorMsg);
+    private static boolean isPendingDelete(ElementGrip elementGrip, Set<Object> refactoredObjects){
+        ElementGrip parent = elementGrip;
+        if (parent!=null) {
+            do {
+                if (refactoredObjects.contains(parent.getHandle())) {
+                    return true;
+                }
+                parent = parent.getParent();
+            } while (parent!=null);
+        }
+        return false;
     }
- 
-    protected JavaSource getJavaSource(Phase p) {
-        return null;
+            
+    private static String getParameterizedString(String key, Object parameter){
+        return NbBundle.getMessage(SafeDeleteRefactoringPlugin.class, key, parameter);
     }
+    
+    private static String getMethodName(final TreePathHandle methodHandle){
+        JavaSource javaSrc = JavaSource.forFileObject(methodHandle.getFileObject());
+        final String[] methodNameString = new String[1];
+        //Ugly hack to return the method name from the anonymous inner class
+        try {
+            javaSrc.runUserActionTask(new CancellableTask<CompilationController>(){
+
+                public void cancel() {
+                    //No op
+                }
+
+                public void run(CompilationController compilationController) throws Exception {
+                    ExecutableElement execElem = (ExecutableElement) methodHandle.resolveElement(compilationController);
+                    TypeElement type = (TypeElement) execElem.getEnclosingElement();
+                    methodNameString[0] = type.getQualifiedName() + DOT + execElem.toString();
+                }
+                
+            }, true);
+
+        } catch (IOException ioException) {
+            ErrorManager.getDefault().notify(ioException);
+        }
+
+        return methodNameString[0];
+    }
+    
 }
