@@ -768,41 +768,6 @@ introduced by support for multiple source roots. -jglick
                 </xsl:if>
             </target>
             
-            <target name="-init-rest" if="rest.support.on">
-                <condition property="platform.restlib.classpath" value="${{j2ee.platform.classpath}}">
-                    <and>
-                        <isset property="restlib.ignore.platform"/>
-                        <isfalse value="${{restlib.ignore.platform}}"/>
-                    </and>
-                </condition>
-                <taskdef name="restapt" classname="com.sun.ws.rest.tools.ant.WebResourcesProcessorTask">
-                    <classpath>
-                        <path path="${{platform.restlib.classpath}}"/>
-                        <path path="${{libs.restlib.classpath}}"/>
-                    </classpath>
-                </taskdef>
-            </target>
-            <target name="-rest-post-compile" depends="-init-rest" if="rest.support.on">
-                <mkdir dir="${{build.generated.dir}}/rest-gen"/>
-                <restapt fork="true" xEndorsed="true" sourcePath="${{src.dir}}" nocompile="true"
-                         destdir="${{build.generated.dir}}/rest-gen" 
-                         sourcedestdir="${{build.generated.dir}}/rest-gen">
-                    <classpath>
-                        <path path="${{javac.classpath}}"/>
-                        <path path="${{libs.jaxws21.classpath}}"/>
-                        <path path="${{j2ee.platform.classpath}}"/>
-                        <pathelement location="${{build.web.dir}}/WEB-INF/classes"/>
-                    </classpath>
-                    <source dir="${{src.dir}}">
-                        <include name="**/*.java"/>
-                    </source>
-                </restapt>
-                <webproject2:javac srcdir="${{build.generated.dir}}/rest-gen" destdir="${{build.classes.dir}}"/>
-                <copy todir="${{build.classes.dir}}">
-                    <fileset dir="${{build.generated.dir}}/rest-gen" includes="**/*.wadl"/>
-                </copy>
-            </target>
-            
             <target name="-do-ws-compile">
                 <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">
                     <xsl:attribute name="depends">web-service-client-compile</xsl:attribute>
@@ -861,7 +826,7 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="compile">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-do-compile,-rest-post-compile,-post-compile</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-do-compile,-post-compile</xsl:attribute>
                 <xsl:attribute name="description">Compile project.</xsl:attribute>
             </target>
             
@@ -1346,11 +1311,6 @@ introduced by support for multiple source roots. -jglick
                 <xsl:attribute name="depends">init,compile-single</xsl:attribute>
                 <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
                 <webproject1:java classname="${{run.class}}"/>
-            </target>
-            
-            <target name="test-restbeans" depends="run-deploy,-init-display-browser">
-                <replace file="${{restbeans.test.file}}" token="${{base.url.token}}" value="${{client.url}}"/>
-                <nbbrowse url="${{restbeans.test.url}}"/>
             </target>
             
             <xsl:comment>
