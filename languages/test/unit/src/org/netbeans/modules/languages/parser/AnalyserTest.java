@@ -7,6 +7,8 @@
 
 package org.netbeans.modules.languages.parser;
 
+import java.util.ArrayList;
+import java.util.Map;
 import junit.framework.TestCase;
 
 import org.netbeans.api.languages.CharInput;
@@ -14,12 +16,19 @@ import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.TokenInput;
+import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.NBSLanguageReader;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.lexer.TokenUtilities;
+import org.netbeans.modules.languages.Rule;
+import org.netbeans.modules.languages.TestUtils;
+import org.netbeans.modules.languages.TokenType;
 import org.netbeans.modules.languages.parser.TokenInputUtils;
 
 
@@ -36,32 +45,37 @@ public class AnalyserTest extends TestCase {
     private static String mimeType = "text/test";
 
     public void test1 () throws ParseException {
-        Language l = new Language (mimeType);
-        l.addRule (LLSyntaxAnalyser.Rule.create ("S", Arrays.asList (new Object[] {
-            ASTToken.create (mimeType, "identifier", null, 0), 
+        Map<Integer,String> tokensMap = new HashMap<Integer,String> ();
+        tokensMap.put (0, "identifier");
+        tokensMap.put (1, "operator");
+        Language language = Language.create ("test/test", tokensMap, Collections.<Feature>emptyList (), null);
+        List<Rule> rules = new ArrayList<Rule> ();
+        rules.add (Rule.create ("S", Arrays.asList (new Object[] {
+            ASTToken.create (language, "identifier", null, 0, "identifier".length (), null), 
             "S"
         })));
-        l.addRule (LLSyntaxAnalyser.Rule.create ("S", Arrays.asList (new Object[] {
-            ASTToken.create (mimeType, "operator", "{", 0), 
+        rules.add (Rule.create ("S", Arrays.asList (new Object[] {
+            ASTToken.create (language, "operator", "{", 0, "operator".length (), null), 
             "S", 
-            ASTToken.create (mimeType, "operator", "}", 0), 
+            ASTToken.create (language, "operator", "}", 0, "operator".length (), null), 
             "S"
         })));
-        l.addRule (LLSyntaxAnalyser.Rule.create ("S", Arrays.asList (new Object[] {
+        rules.add (Rule.create ("S", Arrays.asList (new Object[] {
         })));
-        LLSyntaxAnalyser a = l.getAnalyser ();
+        LLSyntaxAnalyser a = LLSyntaxAnalyser.create (language, rules, Collections.<Integer>emptySet ());
+        
         //PetraTest.print (Petra.first (r, 5));
         TokenInput input = TokenInputUtils.create (new ASTToken[] {
-            ASTToken.create (mimeType, "identifier", "asd", 0),
-            ASTToken.create (mimeType, "identifier", "ss", 0),
-            ASTToken.create (mimeType, "operator", "{", 0),
-            ASTToken.create (mimeType, "identifier", "a", 0),
-            ASTToken.create (mimeType, "operator", "{", 0),
-            ASTToken.create (mimeType, "operator", "}", 0),
-            ASTToken.create (mimeType, "identifier", "asd", 0),
-            ASTToken.create (mimeType, "operator", "}", 0),
+            ASTToken.create (language, "identifier", "asd", 0, "asd".length (), null),
+            ASTToken.create (language, "identifier", "ss", 0, "ss".length (), null),
+            ASTToken.create (language, "operator", "{", 0, "{".length (), null),
+            ASTToken.create (language, "identifier", "a", 0, "a".length (), null),
+            ASTToken.create (language, "operator", "{", 0, "{".length (), null),
+            ASTToken.create (language, "operator", "}", 0, "}".length (), null),
+            ASTToken.create (language, "identifier", "asd", 0, "asd".length (), null),
+            ASTToken.create (language, "operator", "}", 0, "}".length (), null),
         });
-        assertNotNull (a.read (input, false));
+        assertNotNull (a.read (input, false, new boolean [] {false}));
         assert (input.eof ());
     }
 
@@ -140,7 +154,7 @@ public class AnalyserTest extends TestCase {
 //    }
 
     public void test4 () throws ParseException {
-        Language l = NBSLanguageReader.readLanguage (
+        Language language = TestUtils.createLanguage (
             "TOKEN:operator:( '{' | '}' | '.' | ',' | '(' | ')' )" +
             "TOKEN:separator:( ';' )" +
             "TOKEN:whitespace:( ['\\n' '\\r' ' ' '\\t']+ )" +
@@ -152,22 +166,20 @@ public class AnalyserTest extends TestCase {
             "variable = modifiers <keyword> <identifier> <separator,';'>;" +
             "variable = modifiers <identifier> <identifier> <separator,';'>;" +
             "modifiers = <keyword,'public'> modifiers;" +
-            "modifiers = ;",
-            "test", 
-            mimeType
+            "modifiers = ;"
         );
         CharInput input = new StringInput (
             "void a;" +
             "public ii name;"
         );
-        ASTNode n = l.getAnalyser ().read (
+        ASTNode n = language.getAnalyser ().read (
             TokenInputUtils.create (
-                "text/test",
-                l.getParser (),
-                input,
-                l.getSkipTokenTypes ()
+                language,
+                language.getParser (),
+                input
             ),
-            false
+            false,
+            new boolean[] {false}
         );
         assertNotNull (n);
         assertTrue (input.eof ());
@@ -269,7 +281,7 @@ public class AnalyserTest extends TestCase {
     
     
     public void test3 () throws ParseException {
-        Language l = NBSLanguageReader.readLanguage (
+        Language l = TestUtils.createLanguage (
             "TOKEN:operator:( '{' | '}' | '.' | ';' | ',' | '(' | ')' )" +
             "TOKEN:whitespace:( ['\\n' '\\r' ' ' '\\t']+ )" +
             "TOKEN:keyword:( 'package' | 'class' | 'import' | 'static' | 'synchronized' | 'final' | 'abstract' | 'native' | 'import' | 'extends' | 'implements' | 'public' | 'protected' | 'private' )" +
@@ -279,21 +291,19 @@ public class AnalyserTest extends TestCase {
             "SS = <identifier,'if'> E <identifier,'then'> SS;" +
             "SS = <identifier,'if'> E <identifier,'then'> SS <identifier,'else'> SS;" +
             "SS = <identifier, 'b'>;" +
-            "E = <identifier,'e'>;",
-            "test", 
-            mimeType
+            "E = <identifier,'e'>;"
         );
         CharInput input = new StringInput (
             "a if e then if e then b else b b"
         );
         ASTNode n = l.getAnalyser ().read (
             TokenInputUtils.create (
-                "text/test",
+                l,
                 l.getParser (),
-                input,
-                l.getSkipTokenTypes ()
+                input
             ),
-            false
+            false,
+            new boolean[] {false}
         );
         assertTrue (input.eof ());
         assertEquals (3, n.getChildren ().size ());
@@ -304,7 +314,7 @@ public class AnalyserTest extends TestCase {
     }
     
     public void test5 () throws ParseException {
-        Language l = NBSLanguageReader.readLanguage (
+        Language language = TestUtils.createLanguage (
             "TOKEN:TAG:( '<' ['a'-'z']+ )" +
             "TOKEN:SYMBOL:( '>' | '=')" +
             "TOKEN:ENDTAG:( '</' ['a'-'z']+ )" +
@@ -319,21 +329,19 @@ public class AnalyserTest extends TestCase {
             "attribute = <ATTRIBUTE>;" + 
             "attribute = <ATTR_VALUE>;" + 
             "attribute = <ATTRIBUTE> <SYMBOL,'='> <VALUE>;" + 
-            "etext = (<TEXT>)*;",
-            "test", 
-            mimeType
+            "etext = (<TEXT>)*;"
         );
         CharInput input = new StringInput (
             "<a></a>"
         );
-        ASTNode n = l.getAnalyser ().read (
+        ASTNode n = language.getAnalyser ().read (
             TokenInputUtils.create (
-                "text/test",
-                l.getParser (),
-                input,
-                l.getSkipTokenTypes ()
+                language,
+                language.getParser (),
+                input
             ),
-            false
+            false,
+            new boolean[] {false}
         );
         System.out.println(n.print ());
         assertTrue (input.eof ());
@@ -346,12 +354,12 @@ public class AnalyserTest extends TestCase {
         assertEquals ("endTag", ((ASTNode) n.getChildren ().get (1)).getNT ());
         n = (ASTNode) n.getChildren ().get (0);
         assertEquals (2, n.getChildren ().size ());
-        assertEquals ("TAG", ((ASTToken) n.getChildren ().get (0)).getType ());
-        assertEquals ("SYMBOL", ((ASTToken) n.getChildren ().get (1)).getType ());
+        assertEquals ("TAG", ((ASTToken) n.getChildren ().get (0)).getTypeName ());
+        assertEquals ("SYMBOL", ((ASTToken) n.getChildren ().get (1)).getTypeName ());
     }
     
     public void test6 () throws ParseException {
-        Language l = NBSLanguageReader.readLanguage (
+        Language language = TestUtils.createLanguage (
             "TOKEN:operator:( '{' | '}' | '.' | ';' | ',' | '(' | ')' )" +
             "TOKEN:whitespace:( ['\\n' '\\r' ' ' '\\t']+ )" +
             "TOKEN:keyword:( 'package' | 'class' | 'import' | 'static' | 'synchronized' | 'final' | 'abstract' | 'native' | 'import' | 'extends' | 'implements' | 'public' | 'protected' | 'private' )" +
@@ -361,21 +369,19 @@ public class AnalyserTest extends TestCase {
             "SS = <identifier,'if'> E <identifier,'then'> SS;" +
             "SS = <identifier,'if'> E <identifier,'then'> SS <identifier,'else'> SS;" +
             "SS = <identifier, 'b'>;" +
-            "E = <identifier,'e'>;",
-            "test", 
-            mimeType
+            "E = <identifier,'e'>;"
         );
         CharInput input = new StringInput (
             "a if e then if e then b else b b"
         );
-        ASTNode n = l.getAnalyser ().read (
+        ASTNode n = language.getAnalyser ().read (
             TokenInputUtils.create (
-                "text/test",
-                l.getParser (),
-                input,
-                l.getSkipTokenTypes ()
+                language,
+                language.getParser (),
+                input
             ),
-            false
+            false,
+            new boolean[] {false}
         );
         System.out.println(n.print ());
         assertTrue (input.eof ());

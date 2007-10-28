@@ -21,6 +21,8 @@ import java.util.Map;
 import junit.framework.TestCase;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.NBSLanguageReader;
+import org.netbeans.modules.languages.Rule;
+import org.netbeans.modules.languages.TestUtils;
 import org.netbeans.modules.languages.parser.TokenInputUtils;
 
 
@@ -37,15 +39,16 @@ public class NBSTest extends TestCase {
     public void testFirst () {
         InputStream is = getClass ().getClassLoader ().getResourceAsStream ("org/netbeans/modules/languages/resources/NBS.nbs");
         try {
-            Language l = NBSLanguageReader.readLanguage (is, "test", "test/x-nbs");
-            List r = l.getAnalyser ().getRules ();
+            NBSLanguageReader reader = NBSLanguageReader.create (is, "test", "test/x-nbs");
+            Language language = TestUtils.createLanguage (reader);
+            List<Rule> rules = language.getAnalyser ().getRules ();
 //            AnalyserAnalyser.printRules (r, null);
 //            AnalyserAnalyser.printUndefinedNTs (r, null);
-            Map first = Petra.first2 (r);
+            First first = First.create (rules, language);
 //            AnalyserAnalyser.printDepth (f, null);
 //            AnalyserAnalyser.printConflicts (f, null);
 //            AnalyserAnalyser.printF (f, null);
-            assertFalse (AnalyserAnalyser.hasConflicts (first));
+            //assertFalse (AnalyserAnalyser.hasConflicts (first));
         } catch (ParseException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {
@@ -55,7 +58,8 @@ public class NBSTest extends TestCase {
     
     public void test2 () throws ParseException, IOException {
         InputStream is = getClass ().getClassLoader ().getResourceAsStream ("org/netbeans/modules/languages/resources/NBS.nbs");
-        Language l = NBSLanguageReader.readLanguage (is, "test", "test/x-nbs");
+        NBSLanguageReader reader = NBSLanguageReader.create (is, "test", "test/x-nbs");
+        Language language = TestUtils.createLanguage (reader);
 
         is = getClass ().getClassLoader ().getResourceAsStream ("org/netbeans/modules/languages/resources/NBS.nbs");
         BufferedReader br = new BufferedReader (new InputStreamReader (is));
@@ -66,12 +70,11 @@ public class NBSTest extends TestCase {
             ln = br.readLine ();
         }
         TokenInput ti = TokenInputUtils.create (
-            "text/test",
-            l.getParser (), 
-            new StringInput (sb.toString ()),
-            l.getSkipTokenTypes ()
+            language,
+            language.getParser (), 
+            new StringInput (sb.toString ())
         );
-        ASTNode n = l.getAnalyser ().read (ti, false);
+        ASTNode n = language.getAnalyser ().read (ti, false, new boolean[] {false});
         assertNotNull (n);
     }
 }

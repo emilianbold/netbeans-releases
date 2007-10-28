@@ -295,61 +295,58 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
     }
 
     public void evaluate (State state, List<ASTItem> path, Feature fold) {
-        try {
-            ASTItem item = path.get (path.size () - 1);
-            int s = item.getOffset (),
-                e = item.getEndOffset ();
-            int sln = NbDocument.findLineNumber ((StyledDocument)doc, s),
-                eln = NbDocument.findLineNumber ((StyledDocument)doc, e);
-            if (sln == eln) return;
-            String mimeType = item.getMimeType ();
-            Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
-            boolean isTokenFold = ((item instanceof ASTToken) && 
-                        fold == language.getFeature (FOLD, ((ASTToken) item).getType()));
-            if (!isTokenFold) {
-                TokenHierarchy th = TokenHierarchy.get (doc);
-                if (doc instanceof NbEditorDocument)
-                    ((NbEditorDocument) doc).readLock ();
-                try {
-                    TokenSequence ts = th.tokenSequence ();
+        ASTItem item = path.get (path.size () - 1);
+        int s = item.getOffset (),
+            e = item.getEndOffset ();
+        int sln = NbDocument.findLineNumber ((StyledDocument)doc, s),
+            eln = NbDocument.findLineNumber ((StyledDocument)doc, e);
+        if (sln == eln) return;
+        String mimeType = item.getMimeType ();
+        Language language = (Language) item.getLanguage ();
+        boolean isTokenFold = ((item instanceof ASTToken) && 
+                    fold == language.getFeature (FOLD, ((ASTToken) item).getTypeID ()));
+        if (!isTokenFold) {
+            TokenHierarchy th = TokenHierarchy.get (doc);
+            if (doc instanceof NbEditorDocument)
+                ((NbEditorDocument) doc).readLock ();
+            try {
+                TokenSequence ts = th.tokenSequence ();
+                ts.move (e - 1);
+                if (!ts.moveNext ()) return;
+                while (!ts.language ().mimeType ().equals (mimeType)) {
+                    ts = ts.embedded ();
+                    if (ts == null) return;
                     ts.move (e - 1);
                     if (!ts.moveNext ()) return;
-                    while (!ts.language ().mimeType ().equals (mimeType)) {
-                        ts = ts.embedded ();
-                        if (ts == null) return;
-                        ts.move (e - 1);
-                        if (!ts.moveNext ()) return;
-                    }
-                    Token t = ts.token ();
-                    Set<String> skip = language.getSkipTokenTypes ();
-                    while (skip.contains (t.id ().name ())) {
-                        if (!ts.movePrevious ()) break;
-                        t = ts.token ();
-                    }
-                    e = ts.offset () + t.length ();
-                    sln = NbDocument.findLineNumber ((StyledDocument)doc, s);
-                    eln = NbDocument.findLineNumber ((StyledDocument)doc, e);
-                    if (eln - sln < 1) return;
-                } finally {
-                    if (doc instanceof NbEditorDocument)
-                        ((NbEditorDocument) doc).readUnlock ();
                 }
+                Token t = ts.token ();
+                Set<Integer> skip = language.getAnalyser ().getSkipTokenTypes ();
+                while (skip.contains (t.id ().ordinal ())) {
+                    if (!ts.movePrevious ()) break;
+                    t = ts.token ();
+                }
+                e = ts.offset () + t.length ();
+                sln = NbDocument.findLineNumber ((StyledDocument)doc, s);
+                eln = NbDocument.findLineNumber ((StyledDocument)doc, e);
+                if (eln - sln < 1) return;
+            } finally {
+                if (doc instanceof NbEditorDocument)
+                    ((NbEditorDocument) doc).readUnlock ();
             }
-                
-            if (fold.hasSingleValue ()) {
-                String foldName = language.localize((String) fold.getValue (SyntaxContext.create (doc, ASTPath.create (path))));
-                if (foldName == null) return;            
-                addFold (new FoldItem(foldName, s, e, defaultFoldType));
-                return;
-            }
-            String foldName = language.localize((String) fold.getValue ("fold_display_name", SyntaxContext.create (doc, ASTPath.create (path))));
-            if (foldName == null) {
-                foldName = "..."; // NOI18N
-            }
-            String foldType = language.localize((String) fold.getValue ("collapse_type_action_name"));
-            addFold (new FoldItem (foldName, s, e, Folds.getFoldType (foldType)));
-        } catch (ParseException ex) {
         }
+
+        if (fold.hasSingleValue ()) {
+            String foldName = language.localize((String) fold.getValue (SyntaxContext.create (doc, ASTPath.create (path))));
+            if (foldName == null) return;            
+            addFold (new FoldItem(foldName, s, e, defaultFoldType));
+            return;
+        }
+        String foldName = language.localize((String) fold.getValue ("fold_display_name", SyntaxContext.create (doc, ASTPath.create (path))));
+        if (foldName == null) {
+            foldName = "..."; // NOI18N
+        }
+        String foldType = language.localize((String) fold.getValue ("collapse_type_action_name"));
+        addFold (new FoldItem (foldName, s, e, Folds.getFoldType (foldType)));
     }
     
     private void addFold (FoldItem foldItem) {

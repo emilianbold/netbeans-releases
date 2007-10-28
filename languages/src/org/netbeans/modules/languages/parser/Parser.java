@@ -44,9 +44,10 @@ package org.netbeans.modules.languages.parser;
 import org.netbeans.api.languages.CharInput;
 import org.netbeans.api.languages.ASTToken;
 import java.util.*;
+import org.netbeans.api.languages.Language;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Feature.Type;
-import org.netbeans.modules.languages.Language.TokenType;
+import org.netbeans.modules.languages.TokenType;
 
 
 /**
@@ -61,18 +62,14 @@ public class Parser {
     }
     
     public static Parser create (List<TokenType> rules) {
-        Parser p = new Parser ();
-        Iterator<TokenType> it = rules.iterator ();
-        while (it.hasNext ()) {
-            TokenType r = it.next ();
-            p.add (r);
-        }
-        return p;
+        return new Parser (rules);
     }
     
-    private Map<Integer,Pattern> stateToPattern = new HashMap<Integer,Pattern> ();
-    private Map<String,Integer> nameToState = new HashMap<String,Integer> ();
-    private Map<Integer,String> stateToName = new HashMap<Integer,String> ();
+    
+    private Map<Integer,Pattern>        stateToPattern = new HashMap<Integer,Pattern> ();
+    private Map<String,Integer>         nameToState = new HashMap<String,Integer> ();
+    private Map<Integer,String>         stateToName = new HashMap<Integer,String> ();
+    private List<TokenType>             tokenTypes;
     private int counter = 1;
     {
         nameToState.put (DEFAULT_STATE, -1);
@@ -80,9 +77,22 @@ public class Parser {
     }
     
     
-    private void add (TokenType tt) {
-        if (tt.getPattern () == null) return;
-        String startState = tt.getStartState ();
+    private Parser (List<TokenType> tokenTypes) {
+        this.tokenTypes = tokenTypes;
+        Iterator<TokenType> it = tokenTypes.iterator ();
+        while (it.hasNext ()) {
+            TokenType r = it.next ();
+            add (r);
+        }
+    }
+    
+    public List<TokenType> getTokenTypes () {
+        return tokenTypes;
+    }
+    
+    private void add (TokenType tokenType) {
+        if (tokenType.getPattern () == null) return;
+        String startState = tokenType.getStartState ();
         if (startState == null) startState = DEFAULT_STATE;
         int state = 0;
         if (nameToState.containsKey (startState))
@@ -92,8 +102,8 @@ public class Parser {
             nameToState.put (startState, state);
             stateToName.put (state, startState);
         }
-        Pattern pattern = tt.getPattern (); 
-        pattern.mark (tt.getPriority (), tt);
+        Pattern pattern = tokenType.getPattern (); 
+        pattern.mark (tokenType.getPriority (), tokenType);
         if (stateToPattern.containsKey (state))
             stateToPattern.put (
                 state,
@@ -103,7 +113,7 @@ public class Parser {
             stateToPattern.put (state, pattern);
     }
     
-    public ASTToken read (Cookie cookie, CharInput input, String mimeType) {
+    public ASTToken read (Cookie cookie, CharInput input, Language language) {
         if (input.eof ()) return null;
         int originalIndex = input.getIndex ();
         Pattern pattern = stateToPattern.get (cookie.getState ());
@@ -120,8 +130,8 @@ public class Parser {
             state = getState (endState);
         cookie.setState (state);
         ASTToken token = ASTToken.create (
-            mimeType,
-            tokenType.getType (),
+            language,
+            tokenType.getTypeID (),
             input.getString (originalIndex, input.getIndex ()),
             originalIndex
         );

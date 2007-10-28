@@ -52,7 +52,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.languages.parser.LLSyntaxAnalyser.Rule;
+import org.netbeans.modules.languages.Language;
+import org.netbeans.modules.languages.Rule;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser.T;
 
 /**
@@ -203,7 +204,7 @@ public class AnalyserAnalyser {
         }
     }
     
-    public static void printF (Map<String,Map> first, PrintWriter writer) {
+    public static void printF (Map<String,Map> first, PrintWriter writer, Language language) {
         if (writer == null)
             System.out.println ("First:");
         else
@@ -220,24 +221,25 @@ public class AnalyserAnalyser {
                 System.out.println ("    " + nt + " : " + m.get ("&") + " " + s /*+ " d=" + d*/);
             else
                 writer.println ("    " + nt + " : " + m.get ("&") + " " + s /*+ " d=" + d*/);
-            p (m, "      ", writer);
+            p (m, "      ", writer, language);
         }
     }
     
-    private static void p (Map m, String i, PrintWriter writer) {
+    private static void p (Map m, String i, PrintWriter writer, Language language) {
         Iterator it = m.keySet ().iterator ();
         while (it.hasNext ()) {
             Object e = it.next ();
             if ("&".equals (e)) continue;
             if ("#".equals (e)) continue;
             if ("*".equals (e)) continue;
+            T t = (T) e;
             Map m1 = (Map) m.get (e);
             String s = m1.containsKey ("#") ? ("#" + m1.get ("#").toString ()) : "";
             if (writer == null)
-                System.out.println (i + e + " " + m1.get ("&") + " " + s);
+                System.out.println (i + t.toString (language) + " " + m1.get ("&") + " " + s);
             else
-                writer.println (i + e + " " + m1.get ("&") + " " + s);
-            p (m1, i + "  ", writer);
+                writer.println (i + t.toString (language) + " " + m1.get ("&") + " " + s);
+            p (m1, i + "  ", writer, language);
         }
     }
     

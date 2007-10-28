@@ -63,9 +63,13 @@ import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
+import org.netbeans.modules.languages.Rule;
 import org.netbeans.modules.languages.Selector;
+import org.netbeans.modules.languages.TokenType;
 import org.netbeans.modules.languages.lexer.SLanguageHierarchy;
-import org.netbeans.modules.languages.parser.LLSyntaxAnalyser.Rule;
+import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
+import org.netbeans.modules.languages.Rule;
+import org.netbeans.modules.languages.parser.Parser;
 import org.netbeans.modules.languages.parser.Pattern;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -82,17 +86,18 @@ public class CompletionTest extends TestCase {
     }
     
     public void testTokenBased () throws ParseException {
-        Language l = createTestLanguage ();
-        
+        List<Feature> features = new ArrayList<Feature> ();
         Map<String,String> calls = new HashMap<String,String> ();
         calls.put ("text1", "org.netbeans.modules.languages.features.CompletionTest.completion1");
-        l.addFeature (Feature.create (
+        features.add (Feature.create (
             "COMPLETION", 
             Selector.create ("keyword"),
             Collections.<String,String> emptyMap (),
             calls,
             Collections.<String,Pattern> emptyMap ()
         ));
+        Language l = createTestLanguage (features);
+        
         JEditorPane editor = createTestComponent (l.getMimeType ());
         editor.setCaretPosition (27);
         CompletionProviderImpl cc = new CompletionProviderImpl ();
@@ -108,19 +113,20 @@ public class CompletionTest extends TestCase {
     }
     
     public void testTokenBasedDirect () throws ParseException {
-        Language l = createTestLanguage ();
-        
+        List<Feature> features = new ArrayList<Feature> ();
         Map<String,String> calls = new HashMap<String,String> ();
         calls.put ("text1", "while");
         calls.put ("text2", "who");
         calls.put ("text3", "if");
-        l.addFeature (Feature.create (
+        features.add (Feature.create (
             "COMPLETION", 
             Selector.create ("keyword"),
             calls,
             Collections.<String,String> emptyMap (),
             Collections.<String,Pattern> emptyMap ()
         ));
+        Language l = createTestLanguage (features);
+        
         JEditorPane editor = createTestComponent (l.getMimeType ());
         editor.setCaretPosition (27);
         CompletionProviderImpl cc = new CompletionProviderImpl ();
@@ -132,17 +138,17 @@ public class CompletionTest extends TestCase {
     }
     
     public void testASTBased () throws ParseException, BadLocationException {
-        Language l = createTestLanguage ();
-        
+        List<Feature> features = new ArrayList<Feature> ();
         Map<String,String> calls = new HashMap<String,String> ();
         calls.put ("text1", "org.netbeans.modules.languages.features.CompletionTest.completion1");
-        l.addFeature (Feature.create (
+        features.add (Feature.create (
             "COMPLETION", 
             Selector.create ("WhileStatement"),
             Collections.<String,String> emptyMap (),
             calls,
             Collections.<String,Pattern> emptyMap ()
         ));
+        Language l = createTestLanguage (features);
         
         JEditorPane editor = createTestComponent (l.getMimeType ());
         ParserManager pm = ParserManager.get (editor.getDocument ());
@@ -162,19 +168,19 @@ public class CompletionTest extends TestCase {
     }
     
     public void testASTBasedDirect () throws ParseException, BadLocationException {
-        Language l = createTestLanguage ();
-        
+        List<Feature> features = new ArrayList<Feature> ();
         Map<String,String> calls = new HashMap<String,String> ();
         calls.put ("text1", "while");
         calls.put ("text2", "who");
         calls.put ("text3", "if");
-        l.addFeature (Feature.create (
+        features.add (Feature.create (
             "COMPLETION", 
             Selector.create ("WhileStatement"),
             calls,
             Collections.<String,String> emptyMap (),
             Collections.<String,Pattern> emptyMap ()
         ));
+        Language l = createTestLanguage (features);
         
         JEditorPane editor = createTestComponent (l.getMimeType ());
         ParserManager.get (editor.getDocument ());
@@ -190,11 +196,10 @@ public class CompletionTest extends TestCase {
     }
     
     public void testTokenAndASTBased () throws ParseException, BadLocationException {
-        Language l = createTestLanguage ();
-        
+        List<Feature> features = new ArrayList<Feature> ();
         Map<String,String> calls = new HashMap<String,String> ();
         calls.put ("text1", "org.netbeans.modules.languages.features.CompletionTest.completion1");
-        l.addFeature (Feature.create (
+        features.add (Feature.create (
             "COMPLETION", 
             Selector.create ("keyword"),
             Collections.<String,String> emptyMap (),
@@ -202,13 +207,14 @@ public class CompletionTest extends TestCase {
             Collections.<String,Pattern> emptyMap ()
         ));
         calls.put ("text1", "org.netbeans.modules.languages.features.CompletionTest.completion2");
-        l.addFeature (Feature.create (
+        features.add (Feature.create (
             "COMPLETION", 
             Selector.create ("WhileStatement"),
             Collections.<String,String> emptyMap (),
             calls,
             Collections.<String,Pattern> emptyMap ()
         ));
+        Language l = createTestLanguage (features);
         
         JEditorPane editor = createTestComponent (l.getMimeType ());
         ParserManager.get (editor.getDocument ());
@@ -232,13 +238,12 @@ public class CompletionTest extends TestCase {
     }
     
     public void testTokenAndASTBasedDirect () throws ParseException, BadLocationException {
-        Language l = createTestLanguage ();
-        
+        List<Feature> features = new ArrayList<Feature> ();
         Map<String,String> calls = new HashMap<String,String> ();
         calls.put ("text1", "while");
         calls.put ("text2", "who");
         calls.put ("text3", "if");
-        l.addFeature (Feature.create (
+        features.add (Feature.create (
             "COMPLETION", 
             Selector.create ("keyword"),
             calls,
@@ -248,13 +253,14 @@ public class CompletionTest extends TestCase {
         calls.put ("text1", "www");
         calls.put ("text2", "wma");
         calls.put ("text3", "iff");
-        l.addFeature (Feature.create (
+        features.add (Feature.create (
             "COMPLETION", 
             Selector.create ("WhileStatement"),
             calls,
             Collections.<String,String> emptyMap (),
             Collections.<String,Pattern> emptyMap ()
         ));
+        Language l = createTestLanguage (features);
         
         JEditorPane editor = createTestComponent (l.getMimeType ());
         ParserManager.get (editor.getDocument ());
@@ -281,7 +287,7 @@ public class CompletionTest extends TestCase {
     public static List completion1 (Context context) {
         contextDocument = context.getDocument ();
 //        contextComponent = context.getJTextComponent ();
-        contextPosition = context.getTokenSequence ().offset ();
+        contextPosition = context.getOffset ();
         if (context instanceof SyntaxContext) 
             contextPath = ((SyntaxContext) context).getASTPath ();
         else
@@ -297,7 +303,7 @@ public class CompletionTest extends TestCase {
     public static List completion2 (SyntaxContext context) {
         contextDocument = context.getDocument ();
 //        contextComponent = context.getJTextComponent ();
-        contextPosition = context.getTokenSequence ().offset ();
+        contextPosition = context.getOffset ();
         contextPath = ((SyntaxContext) context).getASTPath ();
         
         List result = new ArrayList ();
@@ -307,38 +313,49 @@ public class CompletionTest extends TestCase {
         return result;
     }
     
-    private static Language createTestLanguage () throws ParseException {
-        Language l = new Language ("text/mt");
-        l.addToken (null, "keyword", Pattern.create ("'if' | 'while'"), null, null);
-        l.addToken (null, "identifier", Pattern.create ("['a'-'z']+"), null, null);
-        l.addToken (null, "operator", Pattern.create ("'(' | ')' | '{' | '}'"), null, null);
-        l.addToken (null, "whitespace", Pattern.create ("[' ' '\n' '\t' '\r']+"), null, null);
+    private static Language createTestLanguage (List<Feature> features) throws ParseException {
+        List<TokenType> tokenTypes = new ArrayList<TokenType> ();
+        tokenTypes.add (new TokenType (null, Pattern.create ("'if' | 'while'"), "keyword", 0, null, 0, null));
+        tokenTypes.add (new TokenType (null, Pattern.create ("['a'-'z']+"), "identifier", 1, null, 1, null));
+        tokenTypes.add (new TokenType (null, Pattern.create ("'(' | ')' | '{' | '}'"), "operator", 2, null, 2, null));
+        tokenTypes.add (new TokenType (null, Pattern.create ("[' ' '\n' '\t' '\r']+"), "whitespace", 3, null, 3, null));
         
-        l.addFeature (Feature.create ("SKIP", Selector.create ("whitespace")));
+        Map<Integer,String> tokensMap = new HashMap<Integer,String> ();
+        tokensMap.put (0, "keyword");
+        tokensMap.put (1, "identifier");
+        tokensMap.put (2, "operator");
+        tokensMap.put (3, "whitespace");
         
-        ASTToken IDENTIFIER = ASTToken.create (null, "identifier", null, 0);
-        ASTToken IF = ASTToken.create (null, "keyword", "if", 0);
-        ASTToken WHILE = ASTToken.create (null, "keyword", "while", 0);
-        ASTToken PARENTHESIS = ASTToken.create (null, "operator", "(", 0);
-        ASTToken PARENTHESIS2 = ASTToken.create (null, "operator", ")", 0);
-        ASTToken BRACE = ASTToken.create (null, "operator", "{", 0);
-        ASTToken BRACE2 = ASTToken.create (null, "operator", "}", 0);
-    
-        l.addRule (Rule.create ("S", Arrays.asList (new Object[] {"Statement", "S"})));
-        l.addRule (Rule.create ("S", Arrays.asList (new Object[] {})));
-        l.addRule (Rule.create ("Statement", Arrays.asList (new Object[] {"IfStatement"})));
-        l.addRule (Rule.create ("Statement", Arrays.asList (new Object[] {"WhileStatement"})));
-        l.addRule (Rule.create ("Statement", Arrays.asList (new Object[] {"Block"})));
-        l.addRule (Rule.create ("IfStatement", Arrays.asList (new Object[] {IF, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"})));
-        l.addRule (Rule.create ("WhileStatement", Arrays.asList (new Object[] {WHILE, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"})));
-        l.addRule (Rule.create ("ConditionalExpression", Arrays.asList (new Object[] {IDENTIFIER})));
-        l.addRule (Rule.create ("Block", Arrays.asList (new Object[] {BRACE, "Block1", BRACE2})));
-        l.addRule (Rule.create ("Block1", Arrays.asList (new Object[] {IDENTIFIER, "Block1"})));
-        l.addRule (Rule.create ("Block1", Arrays.asList (new Object[] {"Statement", "Block1"})));
-        l.addRule (Rule.create ("Block1", Arrays.asList (new Object[] {})));
+        features.add (Feature.create ("SKIP", Selector.create ("whitespace")));
         
-        LanguagesManager.getDefault ().addLanguage (l);
-        return l;
+        Language language = Language.create ("text/mt", tokensMap, features, Parser.create (tokenTypes));
+        
+        ASTToken IDENTIFIER = ASTToken.create (language, "identifier", null, 0, "identifier".length (), null);
+        ASTToken IF = ASTToken.create (language, "keyword", "if", 0, "keyword".length (), null);
+        ASTToken WHILE = ASTToken.create (language, "keyword", "while", 0, "keyword".length (), null);
+        ASTToken PARENTHESIS = ASTToken.create (language, "operator", "(", 0, "operator".length (), null);
+        ASTToken PARENTHESIS2 = ASTToken.create (language, "operator", ")", 0, "operator".length (), null);
+        ASTToken BRACE = ASTToken.create (language, "operator", "{", 0, "operator".length (), null);
+        ASTToken BRACE2 = ASTToken.create (language, "operator", "}", 0, "operator".length (), null);
+        
+        List<Rule> rules = new ArrayList<Rule> ();
+        rules.add (Rule.create ("S", Arrays.asList (new Object[] {"Statement", "S"})));
+        rules.add (Rule.create ("S", Arrays.asList (new Object[] {})));
+        rules.add (Rule.create ("Statement", Arrays.asList (new Object[] {"IfStatement"})));
+        rules.add (Rule.create ("Statement", Arrays.asList (new Object[] {"WhileStatement"})));
+        rules.add (Rule.create ("Statement", Arrays.asList (new Object[] {"Block"})));
+        rules.add (Rule.create ("IfStatement", Arrays.asList (new Object[] {IF, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"})));
+        rules.add (Rule.create ("WhileStatement", Arrays.asList (new Object[] {WHILE, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"})));
+        rules.add (Rule.create ("ConditionalExpression", Arrays.asList (new Object[] {IDENTIFIER})));
+        rules.add (Rule.create ("Block", Arrays.asList (new Object[] {BRACE, "Block1", BRACE2})));
+        rules.add (Rule.create ("Block1", Arrays.asList (new Object[] {IDENTIFIER, "Block1"})));
+        rules.add (Rule.create ("Block1", Arrays.asList (new Object[] {"Statement", "Block1"})));
+        rules.add (Rule.create ("Block1", Arrays.asList (new Object[] {})));
+        
+        language.setAnalyser (LLSyntaxAnalyser.create(language, rules, Collections.<Integer>singleton (3)));
+        
+        LanguagesManager.getDefault ().addLanguage (language);
+        return language;
     }
     
     private static JEditorPane createTestComponent (String mimeType) {

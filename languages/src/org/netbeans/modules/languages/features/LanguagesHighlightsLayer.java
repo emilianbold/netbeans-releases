@@ -122,7 +122,7 @@ class LanguagesHighlightsLayer extends AbstractHighlightsContainer {
             if (ts2 == null) return;
             String mimeTypeOut = ts.language ().mimeType ();
             String mimeTypeIn = ts2.language ().mimeType ();
-            if (token.id ().name ().equals ("PE")) {
+            if (token.id ().name ().equals (Language.EMBEDDING_TOKEN_TYPE_NAME)) {
                 Color c = getPreprocessorImportsColor (mimeTypeIn);
                 if (c != null) {
                     attributeSet.addAttribute (StyleConstants.Background, c);

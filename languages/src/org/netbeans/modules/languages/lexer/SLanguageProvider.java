@@ -73,9 +73,11 @@ public class SLanguageProvider extends LanguageProvider {
             try {
                  org.netbeans.modules.languages.Language language = 
                         LanguagesManager.getDefault ().getLanguage (mimePath);
-                 if (language.getTokenTypes ().isEmpty ()) return null;
+                 if (language.getParser () == null) return null;
                 return new SLanguageHierarchy (mimePath).language ();
             } catch (ParseException ex) {
+            } catch (IllegalArgumentException ex) {
+                // language is currently parsed
             }
         }
         return null;
@@ -110,7 +112,7 @@ public class SLanguageProvider extends LanguageProvider {
     
     private static Language<STokenId> getPreprocessorImport (LanguagePath languagePath, Token token) {
         String tokenType = token.id ().name ();
-        if (!tokenType.equals ("PE")) return null;
+        if (!tokenType.equals (org.netbeans.modules.languages.Language.EMBEDDING_TOKEN_TYPE_NAME)) return null;
         String mimeType = languagePath.topLanguage ().mimeType ();
         if (!preprocessorImport.containsKey (mimeType)) {
             try {

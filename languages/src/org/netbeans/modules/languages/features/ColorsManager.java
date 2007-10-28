@@ -67,7 +67,7 @@ import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.Language.TokenType;
+import org.netbeans.modules.languages.TokenType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
@@ -205,7 +205,7 @@ public class ColorsManager {
         return fieldAttributeSet;
     }
     
-    public static void initColorings(Language l) {
+    public static void initColorings (Language l) {
         FontColorSettingsFactory fcsf = EditorSettings.getDefault().
                 getFontColorSettings(new String[] {l.getMimeType()});
         if (!fcsf.getAllFontColors("NetBeans").isEmpty())
@@ -217,8 +217,8 @@ public class ColorsManager {
         Map<String,AttributeSet> colorsMap = new HashMap<String,AttributeSet> ();
         Iterator<Language> it = l.getImportedLanguages().iterator();
         while (it.hasNext())
-            addColors(colorsMap, it.next(), bundle);
-        addColors(colorsMap, l, bundle);
+            addColors (colorsMap, it.next (), bundle);
+        addColors (colorsMap, l, bundle);
         fcsf.setAllFontColorsDefaults("NetBeans", colorsMap.values());
         fcsf.setAllFontColors("NetBeans", colorsMap.values());
         
@@ -241,7 +241,11 @@ public class ColorsManager {
         }
     }
     
-    private static void addColors(Map<String,AttributeSet> colorsMap, Language l, ResourceBundle bundle) {
+    private static void addColors (
+        Map<String,AttributeSet> colorsMap, 
+        Language l, 
+        ResourceBundle bundle
+    ) {
         Map<String,AttributeSet> defaultsMap = getDefaultColors();
         List<Feature> list = l.getFeatures (COLOR);
         Iterator<Feature> it = list.iterator();
@@ -254,7 +258,7 @@ public class ColorsManager {
                     );
         }
         
-        Iterator<TokenType> it2 = l.getTokenTypes().iterator();
+        Iterator<TokenType> it2 = l.getParser ().getTokenTypes ().iterator ();
         while (it2.hasNext()) {
             TokenType token = it2.next();
             String type = token.getType();

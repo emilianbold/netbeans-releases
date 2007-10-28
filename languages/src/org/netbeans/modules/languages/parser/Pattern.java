@@ -48,7 +48,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import org.netbeans.modules.languages.Language.TokenType;
+import org.netbeans.modules.languages.TokenType;
 import org.netbeans.modules.languages.parser.StringInput;
 
 public class Pattern {

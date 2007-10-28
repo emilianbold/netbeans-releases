@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Stack;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTPath;
+import org.netbeans.api.languages.Language;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
@@ -68,16 +69,16 @@ public class JSP {
     
     // private methods .........................................................
     
-    private static ASTNode clone (String mimeType, String nt, int offset, List children) {
-        return ASTNode.create (mimeType, nt, children, offset);
+    private static ASTNode clone (Language language, String nt, int offset, List children) {
+        return ASTNode.create (language, nt, children, offset);
     }
     
     private static ASTNode clone (ASTNode n) {
-        return clone (n.getMimeType (), n.getNT (), n.getOffset (), n.getChildren ());
+        return clone (n.getLanguage (), n.getNT (), n.getOffset (), n.getChildren ());
     }
     
     private static ASTNode clone (ASTNode n, String nt) {
-        return clone (n.getMimeType (), nt, n.getOffset (), n.getChildren ());
+        return clone (n.getLanguage (), nt, n.getOffset (), n.getChildren ());
     }
     
     private static ASTNode resolveRoot(ASTNode n, Stack s, List l, boolean findUnpairedTags) {
@@ -87,7 +88,7 @@ public class JSP {
         java_code_blocks = javaBlocks;
         
         resolve(n, s, l, findUnpairedTags);
-        return ASTNode.create (n.getMimeType (), n.getNT (), l, n.getOffset ());
+        return ASTNode.create (n.getLanguage (), n.getNT (), l, n.getOffset ());
     }
     
     private static void resolve (ASTNode n, Stack s, List l, boolean findUnpairedTags) {
@@ -132,7 +133,7 @@ public class JSP {
                     List ll1 = new ArrayList (ll);
                     ll1.add (node);
                     ASTNode tag = clone (
-                        node.getMimeType (),
+                        node.getLanguage (),
                         "tag",
                         ((ASTNode) ll1.get (0)).getOffset (),
                         ll1
@@ -158,7 +159,7 @@ public class JSP {
             if (node.getNT().equals("S") && node.getMimeType().equals("text/x-jsp")) {
                 List nodeChildren = new ArrayList();
                 resolve (node, new Stack(), nodeChildren, findUnpairedTags);
-                l.add(ASTNode.create (node.getMimeType (), node.getNT (), nodeChildren, node.getOffset ()));
+                l.add(ASTNode.create (node.getLanguage (), node.getNT (), nodeChildren, node.getOffset ()));
                 continue;
             }
             

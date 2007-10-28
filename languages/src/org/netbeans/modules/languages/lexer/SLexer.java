@@ -71,19 +71,19 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     private Language                language;
     private CharInput               input;
     private TokenFactory<STokenId>  tokenFactory;
-    private Map<String,STokenId>    tokensMap;
+    private Map<Integer,STokenId>   tokenIDToType;
     private Parser                  parser;
     private Object                  state;
     
     
     SLexer (
         Language                    language, 
-        Map<String,STokenId>        tokensMap,
+        Map<Integer,STokenId>       tokenIDToType,
         LexerRestartInfo<STokenId>  info
     ) {
         this.language = language;
         this.tokenFactory = info.tokenFactory ();
-        this.tokensMap = tokensMap;
+        this.tokenIDToType = tokenIDToType;
         this.state = info.state ();
         parser = language.getParser ();
         String outerMimeType = info.languagePath ().language (0).mimeType ();
@@ -92,7 +92,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
                 getLanguage (outerMimeType);
             this.input = createInputBridge (info.input (), outerLanguage);
         } catch (ParseException ex) {
-            this.input = createInputBridge (info.input (), new Language (outerMimeType));
+            this.input = createInputBridge (info.input (), Language.create (outerMimeType));
         }
     }
     
@@ -115,7 +115,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
             }
             input.read ();
             if (!input.eof ()) state = -1;
-            return createToken ("js_string", index);
+            return createToken (language.getTokenID ("js_string"), index);
         }
         // END HACK...
         
@@ -126,7 +126,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         if (input.eof ()) 
             return createToken (index);
         ASTToken token = null;
-        token = parser.read (this, input, language.getMimeType ());
+        token = parser.read (this, input, language);
         
         if (token == null) {
             
@@ -135,7 +135,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
                 char ch = input.getString (index, index + 1).charAt (0);
                 if (ch == '\"' || ch == '\'') {
                     state = "Fukala";
-                    return createToken ("js_string", index);
+                    return createToken (language.getTokenID ("js_string"), index);
                 }
             }
             // END HACK...
@@ -145,14 +145,14 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
             else
             if (input.getIndex () == index)
                 input.read ();
-            return createToken ("error", index);
+            return createToken (language.getTokenID (Language.ERROR_TOKEN_TYPE_NAME), index);
         }
         if (state != sstate && 
             index == input.getIndex ()
         )
             // 0 length token (<script></script>
             return nextToken ();
-        return createToken (token.getType (), index);
+        return createToken (token.getTypeID (), index);
     }
 
     public Object state () {
@@ -193,14 +193,14 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
                 new InputBridge (input),
                 properties.getPattern ("start"),
                 properties.getPattern ("end"),
-                "PE"//(String) properties.get ("token")
+                language.getTokenID (Language.EMBEDDING_TOKEN_TYPE_NAME)
             );
         }
         return new InputBridge (input);
     }
     
-    private Token<STokenId> createToken (String type, int start) {
-        STokenId tokenId = tokensMap.get (type);
+    private Token<STokenId> createToken (int type, int start) {
+        STokenId tokenId = tokenIDToType.get (type);
         assert tokenId != null : "Unknown token type \"" + type + "\"";
         if (!(input instanceof DelegatingInputBridge)) {
             return tokenFactory.createToken (tokenId);
@@ -251,7 +251,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     
     private Token<STokenId> createToken (Marenka marenka) {
         Vojta v = marenka.removeFirst ();
-        STokenId tokenId = tokensMap.get (v.type);
+        STokenId tokenId = tokenIDToType.get (v.type);
         assert tokenId != null : "Unknown type " + v.type;
         input.setIndex (v.endOffset);
         if (marenka.isEmpty ())
@@ -339,13 +339,13 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     
     static class Vojta {
         
-        String      type;
+        int         type;
         int         startOffset;
         int         endOffset;
         Object      property;
         
         Vojta (
-            String  type, 
+            int     type, 
             int     startOffset, 
             int     endOffset,
             Object  property

@@ -42,7 +42,9 @@
 package org.netbeans.modules.languages.features;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +62,9 @@ import org.netbeans.modules.languages.Selector;
 import org.netbeans.modules.languages.dataobject.LanguagesEditorKit;
 import org.netbeans.modules.languages.features.LanguagesFoldManager.FoldItem;
 import org.netbeans.modules.languages.lexer.SLanguageHierarchy;
-import org.netbeans.modules.languages.parser.LLSyntaxAnalyser.Rule;
+import org.netbeans.modules.languages.Rule;
+import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
+import org.netbeans.modules.languages.parser.Parser;
 import org.netbeans.modules.languages.parser.Pattern;
 
 /**
@@ -76,42 +80,46 @@ public class CodeFoldingTest extends TestCase {
     }
     
     public void testAST1 () throws ParseException {
-        Language l = new Language (TEST_MIME_TYPE);
-        l.addToken (null, "keyword", Pattern.create ("'if' | 'while'"), null, null);
-        l.addToken (null, "identifier", Pattern.create ("['a'-'z' '_']+"), null, null);
-        l.addToken (null, "operator", Pattern.create ("'(' | ')' | '{' | '}'"), null, null);
-        l.addToken (null, "whitespace", Pattern.create ("[' ' '\n' '\t' '\r']+"), null, null);
+        List<TokenType> tokenTypes = new ArrayList<TokenType> ();
+        tokenTypes.add (new TokenType (null, Pattern.create ("'if' | 'while'"), "keyword", 0, null, 0, null));
+        tokenTypes.add (new TokenType (null, Pattern.create ("['a'-'z' '_']+"), "identifier", 1, null, 1, null));
+        tokenTypes.add (new TokenType (null, Pattern.create ("'(' | ')' | '{' | '}'"), "operator", 2, null, 2, null));
+        tokenTypes.add (new TokenType (null, Pattern.create ("[' ' '\n' '\t' '\r']+"), "whitespace", 3, null, 3, null));
+        Map<Integer,String> tokensMap = new HashMap<Integer,String> ();
+        tokensMap.put (0, "keyword");
+        tokensMap.put (1, "identifier");
+        tokensMap.put (2, "operator");
+        tokensMap.put (3, "whitespace");
         
-        l.addFeature (Feature.create ("SKIP", Selector.create ("whitespace")));
+        List<Feature> features = new ArrayList<Feature> ();
+        features.add (Feature.create ("SKIP", Selector.create ("whitespace")));
+        features.add (Feature.create ("FOLD", Selector.create ("Block")));
+        Language language = Language.create (TEST_MIME_TYPE, tokensMap, features, Parser.create (tokenTypes));
         
-        ASTToken IDENTIFIER = ASTToken.create (null, "identifier", null, 0);
-        ASTToken IF = ASTToken.create (null, "keyword", "if", 0);
-        ASTToken WHILE = ASTToken.create (null, "keyword", "while", 0);
-        ASTToken PARENTHESIS = ASTToken.create (null, "operator", "(", 0);
-        ASTToken PARENTHESIS2 = ASTToken.create (null, "operator", ")", 0);
-        ASTToken BRACE = ASTToken.create (null, "operator", "{", 0);
-        ASTToken BRACE2 = ASTToken.create (null, "operator", "}", 0);
+        ASTToken IDENTIFIER = ASTToken.create (language, "identifier", null, 0, "identifier".length (), null);
+        ASTToken IF = ASTToken.create (language, "keyword", "if", 0, "keyword".length (), null);
+        ASTToken WHILE = ASTToken.create (language, "keyword", "while", 0, "keyword".length (), null);
+        ASTToken PARENTHESIS = ASTToken.create (language, "operator", "(", 0, "operator".length (), null);
+        ASTToken PARENTHESIS2 = ASTToken.create (language, "operator", ")", 0, "operator".length (), null);
+        ASTToken BRACE = ASTToken.create (language, "operator", "{", 0, "operator".length (), null);
+        ASTToken BRACE2 = ASTToken.create (language, "operator", "}", 0, "operator".length (), null);
     
-        l.addRule (Rule.create ("S", Arrays.asList (new Object[] {"Statement", "S"})));
-        l.addRule (Rule.create ("S", Arrays.asList (new Object[] {})));
-        l.addRule (Rule.create ("Statement", Arrays.asList (new Object[] {"IfStatement"})));
-        l.addRule (Rule.create ("Statement", Arrays.asList (new Object[] {"WhileStatement"})));
-        l.addRule (Rule.create ("Statement", Arrays.asList (new Object[] {"Block"})));
-        l.addRule (Rule.create ("IfStatement", Arrays.asList (new Object[] {IF, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"})));
-        l.addRule (Rule.create ("WhileStatement", Arrays.asList (new Object[] {WHILE, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"})));
-        l.addRule (Rule.create ("ConditionalExpression", Arrays.asList (new Object[] {IDENTIFIER})));
-        l.addRule (Rule.create ("Block", Arrays.asList (new Object[] {BRACE, "Block1", BRACE2})));
-        l.addRule (Rule.create ("Block1", Arrays.asList (new Object[] {IDENTIFIER, "Block1"})));
-        l.addRule (Rule.create ("Block1", Arrays.asList (new Object[] {"Statement", "Block1"})));
-        l.addRule (Rule.create ("Block1", Arrays.asList (new Object[] {})));
+        List<Rule> rules = new ArrayList<Rule> ();
+        rules.add (Rule.create ("S", Arrays.asList (new Object[] {"Statement", "S"})));
+        rules.add (Rule.create ("S", Arrays.asList (new Object[] {})));
+        rules.add (Rule.create ("Statement", Arrays.asList (new Object[] {"IfStatement"})));
+        rules.add (Rule.create ("Statement", Arrays.asList (new Object[] {"WhileStatement"})));
+        rules.add (Rule.create ("Statement", Arrays.asList (new Object[] {"Block"})));
+        rules.add (Rule.create ("IfStatement", Arrays.asList (new Object[] {IF, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"})));
+        rules.add (Rule.create ("WhileStatement", Arrays.asList (new Object[] {WHILE, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"})));
+        rules.add (Rule.create ("ConditionalExpression", Arrays.asList (new Object[] {IDENTIFIER})));
+        rules.add (Rule.create ("Block", Arrays.asList (new Object[] {BRACE, "Block1", BRACE2})));
+        rules.add (Rule.create ("Block1", Arrays.asList (new Object[] {IDENTIFIER, "Block1"})));
+        rules.add (Rule.create ("Block1", Arrays.asList (new Object[] {"Statement", "Block1"})));
+        rules.add (Rule.create ("Block1", Arrays.asList (new Object[] {})));
         
-        Map<String,String> calls = new HashMap<String,String> ();
-        l.addFeature (Feature.create (
-            "FOLD",
-            Selector.create ("Block")
-        ));
-        
-        LanguagesManager.getDefault ().addLanguage (l);
+        language.setAnalyser (LLSyntaxAnalyser.create (language, rules, Collections.<Integer>singleton (3)));
+        LanguagesManager.getDefault ().addLanguage (language);
         
         String text = 
             "if (true) {\n" +
@@ -142,8 +150,8 @@ public class CodeFoldingTest extends TestCase {
         //System.out.println("foldManager: " + env.getFoldManager());
         
         Document doc = pane.getDocument();
-        doc.putProperty ("mimeType", l.getMimeType ());
-        doc.putProperty (org.netbeans.api.lexer.Language.class, new SLanguageHierarchy (l.getMimeType ()).language ());
+        doc.putProperty ("mimeType", language.getMimeType ());
+        doc.putProperty (org.netbeans.api.lexer.Language.class, new SLanguageHierarchy (language.getMimeType ()).language ());
 
         LanguagesFoldManager.Factory factory = new LanguagesFoldManager.Factory();
         LanguagesFoldManager foldManager = (LanguagesFoldManager)factory.createFoldManager();

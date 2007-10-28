@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.text.Document;
+
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTItem;
@@ -71,7 +72,6 @@ import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.languages.LanguagesManager.LanguagesManagerListener;
 import org.netbeans.modules.languages.lexer.SLanguageHierarchy;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
-import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.parser.TokenInputUtils;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
@@ -101,20 +101,27 @@ public class ParserManagerImpl extends ParserManager {
         if (tokenHierarchy == null) {
             // for tests only....
             if (mimeType != null) {
-                doc.putProperty (
-                    org.netbeans.api.lexer.Language.class, 
-                    new SLanguageHierarchy (mimeType).language ()
-                );
-                tokenHierarchy = TokenHierarchy.get (doc);
+                try {
+                    if (LanguagesManager.getDefault ().getLanguage (mimeType).getParser () != null) {
+                        doc.putProperty (
+                            org.netbeans.api.lexer.Language.class, 
+                            new SLanguageHierarchy (mimeType).language ()
+                        );
+                        tokenHierarchy = TokenHierarchy.get (doc);
+                    }
+                } catch (LanguageDefinitionNotFoundException ex) {
+                }
             }
         }
-        new DocListener (this, tokenHierarchy);
-        if (state == State.NOT_PARSED) {
-            try {
-                LanguagesManager.getDefault().getLanguage(mimeType);
-                startParsing();
-            } catch (LanguageDefinitionNotFoundException e) {
-                //not supported language
+        if (tokenHierarchy != null) {
+            new DocListener (this, tokenHierarchy);
+            if (state == State.NOT_PARSED) {
+                try {
+                    LanguagesManager.getDefault().getLanguage(mimeType);
+                    startParsing();
+                } catch (LanguageDefinitionNotFoundException e) {
+                    //not supported language
+                }
             }
         }
     }
@@ -263,15 +270,13 @@ public class ParserManagerImpl extends ParserManager {
         Map<String,Set<ASTEvaluator>> evaluatorsMap2                            //, Map<Object,Long> times                                         
     ) {
         path.add (item);
-        try {
-            Language l = LanguagesManager.getDefault ().getLanguage (item.getMimeType ());
-            l.evaluate (
+        Language language = (Language) item.getLanguage ();
+        if (language != null)
+            language.evaluate (
                  state, 
                  path, 
                  evaluatorsMap2                                                 //, times
             );
-        } catch (LanguageDefinitionNotFoundException ex) {
-        }
         Iterator<ASTItem> it2 = item.getChildren ().iterator ();
         while (it2.hasNext ()) {
             if (cancel [0]) return;
@@ -376,11 +381,16 @@ public class ParserManagerImpl extends ParserManager {
     }
     
     private List<ASTToken> getTokens (TokenSequence ts) {
+        Language language = null;
+        try {
+            language = LanguagesManager.getDefault ().getLanguage (ts.language ().mimeType ());
+        } catch (LanguageDefinitionNotFoundException ex) {
+        }
         List<ASTToken> tokens = new ArrayList<ASTToken> ();
         while (ts.moveNext ()) {
             if (cancel [0]) return null;
             Token t = ts.token ();
-            String type = t.id ().name ();
+            int type = t.id ().ordinal ();
             int offset = ts.offset ();
             String ttype = (String) t.getProperty ("type");
             if (ttype == null || ttype.equals ("E")) {
@@ -389,7 +399,7 @@ public class ParserManagerImpl extends ParserManager {
                 if (ts2 != null)
                     children = getTokens (ts2);
                 tokens.add (ASTToken.create (
-                    ts.language ().mimeType (),
+                    language,
                     type, 
                     t.text ().toString (), 
                     offset,
@@ -439,13 +449,13 @@ public class ParserManagerImpl extends ParserManager {
 //                        children.addAll (
 //                            getTokens (ts2)
 //                        );
-                    if (!type.equals (t.id ().name ()))
+                    if (type != t.id ().ordinal ())
                         throw new IllegalArgumentException ();
                     sb.append (t.text ());
                 }
                 int no = ts.offset () + ts.token ().length ();
                 tokens.add (ASTToken.create (
-                    ts.language ().mimeType (),
+                    language,
                     type, 
                     sb.toString (), 
                     offset,
@@ -474,9 +484,9 @@ public class ParserManagerImpl extends ParserManager {
         } // if
         // end of workaround
         try {
-            return LanguagesManager.getDefault().getLanguage(mimeType);
+            return LanguagesManager.getDefault ().getLanguage (mimeType);
         } catch (LanguageDefinitionNotFoundException ex) {
-            return new Language (mimeType);
+            return Language.create (mimeType);
         }
     }
     

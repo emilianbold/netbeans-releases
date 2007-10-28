@@ -117,9 +117,8 @@ public class DatabaseManager {
                 return;
             ASTItem item =  it.next ();
             path.add (item);
-            try {
-                Language language = LanguagesManager.getDefault ().
-                    getLanguage (item.getMimeType ());
+            Language language = (Language) item.getLanguage ();
+            if (language != null) {
                 ASTPath astPath = ASTPath.create (path);
                 Feature feature = language.getFeature ("SEMANTIC_DECLARATION", astPath);
                 if (feature != null) {
@@ -170,7 +169,6 @@ public class DatabaseManager {
                         unresolvedUsages.add (context);
                     }
                 }
-            } catch (LanguageDefinitionNotFoundException ex) {
             }
             process (path, context, unresolvedUsages, doc, parser);
             path.remove (path.size () - 1);

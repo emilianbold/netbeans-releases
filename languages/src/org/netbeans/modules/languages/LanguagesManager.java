@@ -46,6 +46,8 @@ import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.features.ActionCreator;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.modules.languages.features.ColorsManager;
+import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
+import org.netbeans.modules.languages.parser.Parser;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -64,8 +66,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import org.netbeans.api.lexer.TokenId;
 
 /**
  *
@@ -98,12 +103,14 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
         return b.booleanValue ();
     }
     
-    private Language parsingLanguage = new Language ("parsing...");
+    private Language parsingLanguage = Language.create ("parsing...");
     
     private Map<String,Language> mimeTypeToLanguage = new HashMap<String,Language> ();
     
     public synchronized Language getLanguage (String mimeType) 
     throws LanguageDefinitionNotFoundException {
+        if (mimeType.equals (NBSLanguage.NBS_MIME_TYPE))
+            return NBSLanguage.getNBSLanguage ();
         if (!mimeTypeToLanguage.containsKey (mimeType)) {
             mimeTypeToLanguage.put (mimeType, parsingLanguage);
             FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
@@ -114,20 +121,52 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
                     ("Language definition for " + mimeType + " not found.");
             }
             addListener (fo);
-            Language l = null;
+            Language language = null;
             try {
-                l = NBSLanguageReader.readLanguage (fo, mimeType);
-                l.getAnalyser ();
-                initLanguage (l);
+                NBSLanguageReader reader = NBSLanguageReader.create (fo, mimeType);
+                Map<Integer,String> tokenIDToName = new HashMap<Integer,String> ();
+                List<TokenType> tokenTypes = reader.getTokenTypes ();
+                Parser parser = null;
+                if (tokenTypes.isEmpty ()) {
+                    org.netbeans.api.lexer.Language lexerLanguage = org.netbeans.api.lexer.Language.find (mimeType);
+                    Iterator it = lexerLanguage.tokenIds ().iterator ();
+                    while (it.hasNext()) {
+                        TokenId tokenId = (TokenId) it.next();
+                        tokenIDToName.put (tokenId.ordinal (), tokenId.name ());
+                    }
+                } else {
+                    Iterator<TokenType> it = tokenTypes.iterator ();
+                    while (it.hasNext()) {
+                        TokenType tokenType = it.next ();
+                        tokenIDToName.put (tokenType.getTypeID (), tokenType.getType ());
+                    }
+                    parser = Parser.create (tokenTypes);
+                }
+                List<Feature> features = reader.getFeatures ();
+                language = Language.create (mimeType, tokenIDToName, features, parser);
+                List<Rule> rules = reader.getRules (language);
+                Set<Integer> skipTokenIDs = new HashSet<Integer> ();
+                Iterator<Feature> it = features.iterator ();
+                while (it.hasNext()) {
+                    Feature feature = it.next();
+                    if (feature.getFeatureName ().equals ("SKIP")) {
+                        skipTokenIDs.add (language.getTokenID (feature.getSelector ().toString ()));
+                    }
+                }
+
+                language.setAnalyser (LLSyntaxAnalyser.create (
+                    language, rules, skipTokenIDs
+                ));
+                //l.print ();
+                initLanguage (language);
             } catch (ParseException ex) {
-                l = new Language (mimeType);
+                language = Language.create (mimeType);
                 Utils.message (ex.getMessage ());
             } catch (IOException ex) {
-                l = new Language (mimeType);
+                language = Language.create (mimeType);
                 Utils.message ("Editors/" + mimeType + "/language.nbs: " + ex.getMessage ());
             }
-            //l.print ();
-            mimeTypeToLanguage.put (mimeType, l);
+            mimeTypeToLanguage.put (mimeType, language);
         }
         if (parsingLanguage == mimeTypeToLanguage.get (mimeType))
             throw new IllegalArgumentException ();

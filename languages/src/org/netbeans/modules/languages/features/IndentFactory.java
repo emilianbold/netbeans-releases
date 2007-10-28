@@ -101,7 +101,7 @@ public class IndentFactory implements IndentTask.Factory {
                     languagePath = languagePath.embedded (org.netbeans.api.lexer.Language.find (mimePath.getMimeType (i)));
                 List<TokenSequence> tokenSequences = tokenHierarchy.tokenSequenceList (languagePath, context.startOffset (), context.endOffset ());
                 
-                Set<String> whitespaces = l.getSkipTokenTypes ();
+                Set<Integer> whitespaces = l.getAnalyser().getSkipTokenTypes ();
                 
                 Iterator<Region> it = context.indentRegions ().iterator ();
                 while (it.hasNext ()) {
@@ -151,7 +151,7 @@ public class IndentFactory implements IndentTask.Factory {
             int                 ln, 
             int                 indent,
             Map<Position,Integer> indentMap,
-            Set<String>         whitespaces
+            Set<Integer>         whitespaces
         ) throws BadLocationException {
             int ni = ln > 0 ? computeIndent (ln - 1, document, context, params) : 0;
             if (ni > 0)
@@ -168,6 +168,7 @@ public class IndentFactory implements IndentTask.Factory {
             }
             if (startsWithBrace (ln, document, context, params, whitespaces))
                 indent -= IndentUtils.indentLevelSize (document);
+            indent = Math.max (indent, 0);
             indentMap.put (document.createPosition (NbDocument.findLineOffset (document, ln)), indent);
             //context.modifyIndent (end + 1, indent);
 //            try {
@@ -263,7 +264,7 @@ public class IndentFactory implements IndentTask.Factory {
             StyledDocument          document,
             org.netbeans.spi.editor.indent.Context context,
             Object[]                params,
-            Set<String>             whitespaces
+            Set<Integer>            whitespaces
         ) throws BadLocationException {
             int start = NbDocument.findLineOffset (document, ln);
             int end = document.getLength ();
@@ -273,7 +274,7 @@ public class IndentFactory implements IndentTask.Factory {
             }
             TokenSequence ts = Utils.getTokenSequence (document, start);
             if (ts.token () == null) return false;
-            while (whitespaces.contains (ts.token ().id ().name ())) {
+            while (whitespaces.contains (ts.token ().id ().ordinal ())) {
                 if (!ts.moveNext ()) return false;
                 if (ts.offset () > end) return false;
             }
@@ -285,7 +286,7 @@ public class IndentFactory implements IndentTask.Factory {
         private static boolean isEmpty (
             int                     ln,
             StyledDocument          document,
-            Set<String>             whitespaces
+            Set<Integer>            whitespaces
         ) throws BadLocationException {
             int start = NbDocument.findLineOffset (document, ln);
             int end = document.getLength ();
@@ -295,7 +296,7 @@ public class IndentFactory implements IndentTask.Factory {
             }
             TokenSequence ts = Utils.getTokenSequence (document, start);
             if (ts.token () == null) return true;
-            while (whitespaces.contains (ts.token ().id ().name ())) {
+            while (whitespaces.contains (ts.token ().id ().ordinal ())) {
                 if (!ts.moveNext ()) return true;
                 if (ts.offset () > end) return true;
             }

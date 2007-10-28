@@ -278,7 +278,7 @@ public final class CssModel {
                                             ASTItem nextItem = declarationsChildren.get(i + 1);
                                             if(nextItem instanceof ASTToken) {
                                                 ASTToken token = (ASTToken)nextItem;
-                                                if(token.getType().equals("css_operator")
+                                                if(token.getTypeName().equals("css_operator")
                                                         && token.getIdentifier().equals(";")) {
                                                     semicolonOffset = token.getOffset();
                                                 }
@@ -298,7 +298,7 @@ public final class CssModel {
                             for(ASTItem item : body.getChildren()) {
                                 if(item instanceof ASTToken) {
                                     ASTToken token = (ASTToken)item;
-                                    if(token.getType().equals("css_operator")) {
+                                    if(token.getTypeName().equals("css_operator")) {
                                         if(token.getIdentifier().equals("{")) {
                                             openBracket = token;
                                         } else if(token.getIdentifier().equals("}")) {

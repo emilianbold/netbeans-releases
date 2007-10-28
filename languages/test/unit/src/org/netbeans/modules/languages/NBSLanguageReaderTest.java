@@ -7,9 +7,14 @@
 
 package org.netbeans.modules.languages;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import junit.framework.TestCase;
 
 import org.netbeans.api.languages.ParseException;
+import org.netbeans.modules.languages.parser.Parser;
 
 
 /**
@@ -24,7 +29,7 @@ public class NBSLanguageReaderTest extends TestCase {
     
     
     public void testOK () throws ParseException {
-        Language l = NBSLanguageReader.readLanguage (
+        NBSLanguageReader reader = NBSLanguageReader.create (
             "TOKEN:TAG:( '<' ['a'-'z']+ )\n" +
             "TOKEN:SYMBOL:( '>' | '=')\n" +
             "TOKEN:ENDTAG:( '</' ['a'-'z']+ )\n" +
@@ -44,13 +49,22 @@ public class NBSLanguageReaderTest extends TestCase {
             "test.nbs", 
             "text/x-test"
         );
-        l.getAnalyser ();
-        System.out.println("");
+        List<TokenType> tokenTypes = reader.getTokenTypes ();
+        assertEquals (10, tokenTypes.size ());
+        assertEquals (0, reader.getFeatures ().size ());
+        Map<Integer,String> tokensMap = new HashMap<Integer,String> ();
+        Iterator<TokenType> it = tokenTypes.iterator ();
+        while (it.hasNext ()) {
+            TokenType tokenType = it.next ();
+            tokensMap.put (tokenType.getTypeID (), tokenType.getType ());
+        }
+        Language language = Language.create ("test/test", tokensMap, reader.getFeatures (), Parser.create (tokenTypes));
+        assertEquals (21, reader.getRules (language).size ());
     }
     
     public void testUnexpectedToken () {
         try {
-            Language l = NBSLanguageReader.readLanguage (
+            Language language = TestUtils.createLanguage (
                 "TOKEN:TAG:( '<' ['a'-'z']+ )\n" +
                 "TOKEN:SYMBOL:( '>' | '=')\n" +
                 "TOKEN:ENDTAG:( '</' ['a'-'z']+ )\n" +
@@ -66,9 +80,7 @@ public class NBSLanguageReaderTest extends TestCase {
                 "attribute = <ATTRIBUTE>;\n" +
                 "attribute = <ATTR_VALUE>; \n" +
                 "attribute = <ATTRIBUTE> <SYMBOL,'='> <VALUE>; \n" +
-                "etext = (<TEXT>)*;\n",
-                "test.nbs", 
-                "text/x-test"
+                "etext = (<TEXT>)*;\n"
             );
             assert (false);
         } catch (ParseException ex) {
@@ -78,7 +90,7 @@ public class NBSLanguageReaderTest extends TestCase {
     
     public void testUnexpectedCharacter () {
         try {
-            Language l = NBSLanguageReader.readLanguage (
+            Language language = TestUtils.createLanguage (
                 "TOKEN:TAG:( '<' ['a'-'z']+ )\n" +
                 "TOKEN:SYMBOL:( '>' | '=')\n" +
                 "TOKEN:ENDTAG:( '</' ['a'-'z']+ )\n" +
@@ -94,19 +106,17 @@ public class NBSLanguageReaderTest extends TestCase {
                 "attribute = <ATTRIBUTE>;\n" +
                 "attribute = <ATTR_VALUE>; \n" +
                 "attribute = <ATTRIBUTE> <SYMBOL,'='> <VALUE>; \n" +
-                "etext = (<TEXT>)*;\n",
-                "test.nbs", 
-                "text/x-test"
+                "etext = (<TEXT>)*;\n"
             );
             assert (false);
         } catch (ParseException ex) {
-            assertEquals ("test.nbs 5,31: Unexpected character 'w'.", ex.getMessage ());
+            assertEquals ("test.nbs 5,29: Unexpected character 'w'.", ex.getMessage ());
         }
     }
     
     public void testNoRule () {
         try {
-            Language l = NBSLanguageReader.readLanguage (
+            NBSLanguageReader reader = NBSLanguageReader.create (
                 "TOKEN:TAG:( '<' ['a'-'z']+ )\n" +
                 "TOKEN:SYMBOL:( '>' | '=')\n" +
                 "TOKEN:ENDTAG:( '</' ['a'-'z']+ )\n" +
@@ -126,6 +136,7 @@ public class NBSLanguageReaderTest extends TestCase {
                 "test.nbs", 
                 "text/x-test"
             );
+            reader.getTokenTypes ();
             assert (false);
         } catch (ParseException ex) {
             assertEquals ("test.nbs 5,20: No rule for <identifier,'a'> in rePart.", ex.getMessage ());
@@ -133,7 +144,7 @@ public class NBSLanguageReaderTest extends TestCase {
     }
     
     public void testUndefinedNT () throws ParseException {
-        Language l = NBSLanguageReader.readLanguage (
+        NBSLanguageReader reader = NBSLanguageReader.create (
             "TOKEN:TAG:( '<' ['a'-'z']+ )\n" +
             "TOKEN:SYMBOL:( '>' | '=')\n" +
             "TOKEN:ENDTAG:( '</' ['a'-'z']+ )\n" +
@@ -153,7 +164,17 @@ public class NBSLanguageReaderTest extends TestCase {
             "text/x-test"
         );
         try {
-            l.getAnalyser ();
+            List<TokenType> tokenTypes = reader.getTokenTypes ();
+            assertEquals (10, tokenTypes.size ());
+            assertEquals (0, reader.getFeatures ().size ());
+            Map<Integer,String> tokensMap = new HashMap<Integer,String> ();
+            Iterator<TokenType> it = tokenTypes.iterator ();
+            while (it.hasNext ()) {
+                TokenType tokenType = it.next ();
+                tokensMap.put (tokenType.getTypeID (), tokenType.getType ());
+            }
+            Language language = Language.create ("test/test", tokensMap, reader.getFeatures (), Parser.create (tokenTypes));
+            assertEquals (20, reader.getRules (language).size ());
             assert (false);
         } catch (ParseException ex) {
             assertEquals ("endTag grammar rule not defined!", ex.getMessage ());

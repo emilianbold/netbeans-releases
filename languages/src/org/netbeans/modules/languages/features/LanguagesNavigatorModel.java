@@ -70,7 +70,6 @@ import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManager;
 import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
@@ -86,10 +85,7 @@ class LanguagesNavigatorModel implements TreeModel {
     private NbEditorDocument            document;
     private ASTNode                     astNode;
     private NavigatorNode               root;
-    private Line.Set                    lineSet;
     private EventListenerList           listenerList = new EventListenerList ();
-
-    private Map<ASTItem,ASTNavigatorNode> astToNode = new WeakHashMap<ASTItem,ASTNavigatorNode> ();
     private static NavigatorComparator  navigatorComparator;
 
 
@@ -136,10 +132,8 @@ class LanguagesNavigatorModel implements TreeModel {
     // other methods .......................................................
 
     void setContext (
-        Line.Set            lineSet,
         NbEditorDocument    doc
     ) {
-        this.lineSet = lineSet;
         this.document = doc;
         if (doc == null) {
             root = new NavigatorNode ("", "", null, true);
@@ -323,9 +317,8 @@ class LanguagesNavigatorModel implements TreeModel {
                 nodes,
                 model
             );
-            try {
-                Language language = LanguagesManager.getDefault ().
-                    getLanguage (item.getMimeType ());
+            Language language = (Language) item.getLanguage ();
+            if (language != null) {
                 Feature properties = language.getFeature ("PROPERTIES");
                 if (properties != null &&
                     properties.getBoolean ("navigator-sort", false)
@@ -334,7 +327,6 @@ class LanguagesNavigatorModel implements TreeModel {
                         navigatorComparator = new NavigatorComparator ();
                     Collections.<ASTNavigatorNode>sort (nodes, navigatorComparator);
                 }
-            } catch (ParseException ex) {
             }
             return nodes;
         }
@@ -373,13 +365,9 @@ class LanguagesNavigatorModel implements TreeModel {
         ) {
             ASTPath astPath = ASTPath.create (path);
             Feature navigator = null;
-            try {
-                Language language = LanguagesManager.getDefault ().
-                    getLanguage (item.getMimeType ());
-                navigator = language.getFeature ("NAVIGATOR", astPath);
-            } catch (ParseException ex) {
-                return null;
-            }
+            Language language = (Language) item.getLanguage ();
+            if (language == null) return null;
+            navigator = language.getFeature ("NAVIGATOR", astPath);
             if (navigator == null) return null;
             Context context = SyntaxContext.create (document, astPath);
             String displayName = (String) navigator.getValue ("display_name", context);

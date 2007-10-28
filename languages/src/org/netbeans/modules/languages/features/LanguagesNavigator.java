@@ -168,17 +168,15 @@ public class LanguagesNavigator implements NavigatorPanel {
         if (this.dataObject == dataObject) return;
         final EditorCookie ec = dataObject.getCookie (EditorCookie.class);    
         if (ec == null) return;
-        LineCookie lc = dataObject.getCookie (LineCookie.class);
-        if (lc == null) return;
         LanguagesNavigatorModel model = (LanguagesNavigatorModel) tree.getModel ();
         try {
             NbEditorDocument document = (NbEditorDocument) ec.openDocument ();
             String mimeType = (String) document.getProperty ("mimeType");      
             if (mimeType == null) return;
             if (!LanguagesManager.getDefault ().isSupported (mimeType)) return;
-            model.setContext (lc.getLineSet (), document);
+            model.setContext (document);
         } catch (IOException ex) {
-            model.setContext (lc.getLineSet (), null);
+            model.setContext (null);
         }
         SwingUtilities.invokeLater(new Runnable() {
             public void run () {

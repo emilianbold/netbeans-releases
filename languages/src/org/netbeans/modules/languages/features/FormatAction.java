@@ -132,57 +132,53 @@ public class FormatAction extends BaseAction {
         boolean          firstIndented,
         NbEditorDocument document
     ) {
-        try {
-            Language language = LanguagesManager.getDefault ().getLanguage (item.getMimeType ());
+        Language language = (Language) item.getLanguage ();
+        path.add (item);
+        ASTPath path2 = ASTPath.create (path);
+        Iterator<ASTItem> it = item.getChildren ().iterator ();
+        while (it.hasNext ()) {
+            ASTItem e = it.next ();
 
-            path.add (item);
-            ASTPath path2 = ASTPath.create (path);
-            Iterator<ASTItem> it = item.getChildren ().iterator ();
-            while (it.hasNext ()) {
-                ASTItem e = it.next ();
-
-                // compute indent
-                String indent = null;
-                if (e instanceof ASTToken) {
-                    ASTToken token = (ASTToken) e;
-                    if (language.getSkipTokenTypes ().contains (token.getType ())) { // NOI18N
-                        whitespace = (ASTToken) e;
-                        firstIndented = false;
-                        continue;
-                    }
+            // compute indent
+            String indent = null;
+            if (e instanceof ASTToken) {
+                ASTToken token = (ASTToken) e;
+                if (language.getAnalyser ().getSkipTokenTypes ().contains (token.getTypeID ())) { // NOI18N
+                    whitespace = (ASTToken) e;
+                    firstIndented = false;
+                    continue;
                 }
-                Feature format = language.getFeature ("FORMAT", path2);
-                if (format != null)
-                    indent = (String) format.getValue ();
+            }
+            Feature format = language.getFeature ("FORMAT", path2);
+            if (format != null)
+                indent = (String) format.getValue ();
 
-                // indent
+            // indent
 //                if (e instanceof ASTNode)
 //                    System.out.println("indent " + indent + " " + firstIndented + " : " + ((ASTNode) e).getNT () + " wh:" + whitespace);
 //                else
 //                    System.out.println("indent " + indent + " " + firstIndented + " : " + e + " wh:" + whitespace);
-                
-                if (indent != null) {
-                    if (indent.equals ("NewLine"))
-                        sb.append ("\n");
-                }
-                
-                // add child
-                if (e instanceof ASTToken)
-                    sb.append (((ASTToken) e).getIdentifier ());
-                else
-                    indent (
-                        (ASTNode) e,
-                        path,
-                        sb, 
-                        indents,
-                        whitespace,
-                        firstIndented || indent != null,
-                        null
-                    );
-            }// for children
-            path.remove (path.size () - 1);
-        } catch (ParseException ex) {
-        }
+
+            if (indent != null) {
+                if (indent.equals ("NewLine"))
+                    sb.append ("\n");
+            }
+
+            // add child
+            if (e instanceof ASTToken)
+                sb.append (((ASTToken) e).getIdentifier ());
+            else
+                indent (
+                    (ASTNode) e,
+                    path,
+                    sb, 
+                    indents,
+                    whitespace,
+                    firstIndented || indent != null,
+                    null
+                );
+        }// for children
+        path.remove (path.size () - 1);
     }
     
     private static String chars (int length) {

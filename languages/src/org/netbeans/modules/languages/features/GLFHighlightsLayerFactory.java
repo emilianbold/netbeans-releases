@@ -27,6 +27,9 @@
  */
 package org.netbeans.modules.languages.features;
 
+import javax.swing.text.Document;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.ZOrder;
@@ -38,25 +41,33 @@ import org.netbeans.spi.editor.highlighting.ZOrder;
 public class GLFHighlightsLayerFactory implements HighlightsLayerFactory {
 
     public HighlightsLayer[] createLayers (Context context) {
-        return new HighlightsLayer[] {
-            HighlightsLayer.create (
-                "GLF Semantic Coloring", 
-                ZOrder.SYNTAX_RACK.forPosition (10), 
-                false, 
-                new SemanticHighlightsLayer (context.getDocument ())
-            ),
-            HighlightsLayer.create (
-                "GLF Languages Coloring", 
-                ZOrder.SYNTAX_RACK.forPosition (11), 
-                false, 
-                new LanguagesHighlightsLayer (context.getDocument ())
-            ),
-            HighlightsLayer.create (
-                "GLF Token Highlighting", 
-                ZOrder.SHOW_OFF_RACK.forPosition (0), 
-                false, 
-                new TokenHighlightsLayer (context.getDocument ())
-            )
-        };
+        Document document = context.getDocument ();
+        String mimeType = (String) document.getProperty ("mimeType");        
+//        try {
+//            if (LanguagesManager.getDefault ().getLanguage (mimeType).getParser () == null)
+//                return null;
+            return new HighlightsLayer[] {
+                HighlightsLayer.create (
+                    "GLF Semantic Coloring", 
+                    ZOrder.SYNTAX_RACK.forPosition (10), 
+                    false, 
+                    new SemanticHighlightsLayer (document)
+                ),
+                HighlightsLayer.create (
+                    "GLF Languages Coloring", 
+                    ZOrder.SYNTAX_RACK.forPosition (11), 
+                    false, 
+                    new LanguagesHighlightsLayer (document)
+                ),
+                HighlightsLayer.create (
+                    "GLF Token Highlighting", 
+                    ZOrder.SHOW_OFF_RACK.forPosition (0), 
+                    false, 
+                    new TokenHighlightsLayer (document)
+                )
+            };
+//        } catch (LanguageDefinitionNotFoundException ex) {
+//            return null;
+//        }
     }
 }

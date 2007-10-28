@@ -111,17 +111,19 @@ selectors = selector ("," selector)*;
 selector = simple_selector (combinator simple_selector)*;
 combinator = ">" | "+" | ;
 #attrib removed!!!
-simple_selector = element_name (hash | class | attrib | pseudo)* |
-                  (hash | class | attrib | pseudo)+;
+simple_selector = element_name | hash | class | attrib | pseudo;
 element_name = <css_identifier> | "*" | ("." <escaped_css_number> <css_identifier>) | (<css_number> <css_identifier>);
 hash = <css_hash>;
 class = "." <css_identifier>;
 attrib = "[" <css_identifier> [ ("=" | "~=" | "|=") (<css_identifier> | <css_string>) ] "]";
-pseudo = ":" [ <css_identifier> ["(" <css_identifier> ")"] ];
+pseudo = ":" <css_identifier> ["(" <css_identifier> ")"];
 
-declarations = declaration ";" declarations;
-declarations = declaration;
+declarations = declaration declarations1;
 declarations = ;
+declarations1 = ;
+declarations1 = ";" declarations2;
+declarations2 = declaration declarations1;
+declarations2 = ;
 declaration = <GAP> | key ":" expr [prio];
 key = <css_identifier>;
 expr = <GAP> | term (operator term)*;

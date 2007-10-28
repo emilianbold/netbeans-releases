@@ -42,6 +42,7 @@
 package org.netbeans.modules.languages.features;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -61,10 +62,12 @@ import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Selector;
 import org.netbeans.modules.languages.dataobject.LanguagesEditorKit;
 import org.netbeans.modules.languages.features.LanguagesFoldManager.FoldItem;
-import org.netbeans.modules.languages.features.LanguagesNavigator.Model;
-import org.netbeans.modules.languages.features.LanguagesNavigator.NavigatorNode;
+import org.netbeans.modules.languages.features.LanguagesNavigatorModel;
+import org.netbeans.modules.languages.features.LanguagesNavigatorModel.NavigatorNode;
 import org.netbeans.modules.languages.lexer.SLanguageHierarchy;
-import org.netbeans.modules.languages.parser.LLSyntaxAnalyser.Rule;
+import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
+import org.netbeans.modules.languages.Rule;
+import org.netbeans.modules.languages.parser.Parser;
 import org.netbeans.modules.languages.parser.Pattern;
 
 /**
@@ -80,49 +83,55 @@ public class NavigatorTest extends TestCase {
     }
     
     public void testAST1 () throws Exception {
-        Language l = new Language (TEST_MIME_TYPE);
-        l.addToken (null, "keyword", Pattern.create ("'if' | 'while' | 'function'"), null, null);
-        l.addToken (null, "identifier", Pattern.create ("['a'-'z' '_']+"), null, null);
-        l.addToken (null, "operator", Pattern.create ("'(' | ')' | '{' | '}'"), null, null);
-        l.addToken (null, "whitespace", Pattern.create ("[' ' '\n' '\t' '\r']+"), null, null);
-        
-        l.addFeature (Feature.create ("SKIP", Selector.create ("whitespace")));
-        
-        ASTToken IDENTIFIER = ASTToken.create (null, "identifier", null, 0);
-        ASTToken IF = ASTToken.create (null, "keyword", "if", 0);
-        ASTToken WHILE = ASTToken.create (null, "keyword", "while", 0);
-        ASTToken PARENTHESIS = ASTToken.create (null, "operator", "(", 0);
-        ASTToken PARENTHESIS2 = ASTToken.create (null, "operator", ")", 0);
-        ASTToken BRACE = ASTToken.create (null, "operator", "{", 0);
-        ASTToken BRACE2 = ASTToken.create (null, "operator", "}", 0);
-        ASTToken FUNCTION = ASTToken.create (null, "keyword", "function", 0);
-    
-        l.addRule (Rule.create ("S", Arrays.asList (new Object[] {"Function", "S"})));
-        l.addRule (Rule.create ("S", Arrays.asList (new Object[] {})));
-        l.addRule (Rule.create ("Function", Arrays.asList (new Object[] {FUNCTION, "FunctionName", PARENTHESIS, PARENTHESIS2, "Block"})));
-        l.addRule (Rule.create ("FunctionName", Arrays.asList (new Object[] {IDENTIFIER})));
-        l.addRule (Rule.create ("Statement", Arrays.asList (new Object[] {"IfStatement"})));
-        l.addRule (Rule.create ("Statement", Arrays.asList (new Object[] {"WhileStatement"})));
-        l.addRule (Rule.create ("Statement", Arrays.asList (new Object[] {"Block"})));
-        l.addRule (Rule.create ("IfStatement", Arrays.asList (new Object[] {IF, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"})));
-        l.addRule (Rule.create ("WhileStatement", Arrays.asList (new Object[] {WHILE, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"})));
-        l.addRule (Rule.create ("ConditionalExpression", Arrays.asList (new Object[] {IDENTIFIER})));
-        l.addRule (Rule.create ("Block", Arrays.asList (new Object[] {BRACE, "Block1", BRACE2})));
-        l.addRule (Rule.create ("Block1", Arrays.asList (new Object[] {IDENTIFIER, "Block1"})));
-        l.addRule (Rule.create ("Block1", Arrays.asList (new Object[] {"Statement", "Block1"})));
-        l.addRule (Rule.create ("Block1", Arrays.asList (new Object[] {})));
-        
+        List<TokenType> tokenTypes = new ArrayList<TokenType> ();
+        tokenTypes.add (new TokenType (null, Pattern.create ("'if' | 'while' | 'function'"), "keyword", 0, null, 0, null));
+        tokenTypes.add (new TokenType (null, Pattern.create ("['a'-'z' '_']+"), "identifier", 1, null, 1, null));
+        tokenTypes.add (new TokenType (null, Pattern.create ("'(' | ')' | '{' | '}'"), "operator", 2, null, 2, null));
+        tokenTypes.add (new TokenType (null, Pattern.create ("[' ' '\n' '\t' '\r']+"), "whitespace", 3, null, 3, null));
+        Map<Integer,String> tokensMap = new HashMap<Integer,String> ();
+        tokensMap.put (0, "keyword");
+        tokensMap.put (1, "identifier");
+        tokensMap.put (2, "operator");
+        tokensMap.put (3, "whitespace");
+        List<Feature> features = new ArrayList<Feature> ();
         Map<String,String> exprs = new HashMap<String,String> ();
         exprs.put ("display_name", "$FunctionName$");
-        l.addFeature (Feature.create (
+        features.add (Feature.create (
             "NAVIGATOR",
             Selector.create ("Function"),
             exprs,
             Collections.<String,String>emptyMap(),
             Collections.<String,Pattern>emptyMap ()
         ));
+        Language language = Language.create (TEST_MIME_TYPE, tokensMap, features, Parser.create (tokenTypes));
         
-        LanguagesManager.getDefault ().addLanguage (l);
+        ASTToken IDENTIFIER = ASTToken.create (language, "identifier", null, 0, "identifier".length (), null);
+        ASTToken IF = ASTToken.create (language, "keyword", "if", 0, "keyword".length (), null);
+        ASTToken WHILE = ASTToken.create (language, "keyword", "while", 0, "keyword".length (), null);
+        ASTToken PARENTHESIS = ASTToken.create (language, "operator", "(", 0, "operator".length (), null);
+        ASTToken PARENTHESIS2 = ASTToken.create (language, "operator", ")", 0, "operator".length (), null);
+        ASTToken BRACE = ASTToken.create (language, "operator", "{", 0, "operator".length (), null);
+        ASTToken BRACE2 = ASTToken.create (language, "operator", "}", 0, "operator".length (), null);
+        ASTToken FUNCTION = ASTToken.create (language, "keyword", "function", 0, "keyword".length (), null);
+    
+        List<Rule> rules = new ArrayList<Rule> ();
+        rules.add (Rule.create ("S", Arrays.asList (new Object[] {"Function", "S"})));
+        rules.add (Rule.create ("S", Arrays.asList (new Object[] {})));
+        rules.add (Rule.create ("Function", Arrays.asList (new Object[] {FUNCTION, "FunctionName", PARENTHESIS, PARENTHESIS2, "Block"})));
+        rules.add (Rule.create ("FunctionName", Arrays.asList (new Object[] {IDENTIFIER})));
+        rules.add (Rule.create ("Statement", Arrays.asList (new Object[] {"IfStatement"})));
+        rules.add (Rule.create ("Statement", Arrays.asList (new Object[] {"WhileStatement"})));
+        rules.add (Rule.create ("Statement", Arrays.asList (new Object[] {"Block"})));
+        rules.add (Rule.create ("IfStatement", Arrays.asList (new Object[] {IF, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"})));
+        rules.add (Rule.create ("WhileStatement", Arrays.asList (new Object[] {WHILE, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"})));
+        rules.add (Rule.create ("ConditionalExpression", Arrays.asList (new Object[] {IDENTIFIER})));
+        rules.add (Rule.create ("Block", Arrays.asList (new Object[] {BRACE, "Block1", BRACE2})));
+        rules.add (Rule.create ("Block1", Arrays.asList (new Object[] {IDENTIFIER, "Block1"})));
+        rules.add (Rule.create ("Block1", Arrays.asList (new Object[] {"Statement", "Block1"})));
+        rules.add (Rule.create ("Block1", Arrays.asList (new Object[] {})));
+        
+        language.setAnalyser (LLSyntaxAnalyser.create (language, rules, Collections.<Integer>singleton (3)));
+        LanguagesManager.getDefault ().addLanguage (language);
         
         String text = 
             "function fnc_1() {\n" +
@@ -155,8 +164,8 @@ public class NavigatorTest extends TestCase {
         });
         
         NbEditorDocument doc = (NbEditorDocument)pane.getDocument();
-        doc.putProperty ("mimeType", l.getMimeType ());
-        doc.putProperty (org.netbeans.api.lexer.Language.class, new SLanguageHierarchy (l.getMimeType ()).language ());
+        doc.putProperty ("mimeType", language.getMimeType ());
+        doc.putProperty (org.netbeans.api.lexer.Language.class, new SLanguageHierarchy (language.getMimeType ()).language ());
 
         ParserManager parserManager = ParserManager.get(doc);
         pane.setText (text);
@@ -173,17 +182,17 @@ public class NavigatorTest extends TestCase {
         }
         
         ASTNode root = parserManager.getAST();
-        Model model = new Model();
-        model.setContext(root, null, doc);
+        LanguagesNavigatorModel model = new LanguagesNavigatorModel ();
+        model.setContext (doc);
         
-        NavigatorNode rootNode = (NavigatorNode)model.getRoot();
+        NavigatorNode rootNode = (NavigatorNode) model.getRoot();
         StringBuffer buf = new StringBuffer();
         treeToString(model, buf, rootNode);
         
-        assertEquals (buf.toString(), "root{fnc_1, fnc_2}");
+        assertEquals ("root{fnc_1, fnc_2}", buf.toString ());
     }
 
-    private void treeToString(Model model, StringBuffer buf, NavigatorNode node) {
+    private void treeToString (LanguagesNavigatorModel model, StringBuffer buf, NavigatorNode node) {
         buf.append(node.displayName);
         int count = model.getChildCount(node);
         if (count == 0) {

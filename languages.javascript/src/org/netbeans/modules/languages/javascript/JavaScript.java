@@ -86,6 +86,9 @@ import org.openide.loaders.DataObject;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.netbeans.api.languages.CompletionItem;
+import org.netbeans.api.languages.Language;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
+import org.netbeans.api.languages.LanguagesManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 
@@ -114,81 +117,87 @@ public class JavaScript {
         if (input.read () != '/')
             throw new InternalError ();
         int start = input.getIndex ();
-        while (!input.eof () &&
-                input.next () != '/'
-        ) {
-            if (input.next () == '\r' ||
-                input.next () == '\n'
+        try {
+            Language language = LanguagesManager.get ().getLanguage (MIME_TYPE);
+            while (!input.eof () &&
+                    input.next () != '/'
             ) {
-                input.setIndex (start);
-                return new Object[] {
-                    ASTToken.create (MIME_TYPE, "js_operator", "", 0),
-                    null
-                };
-            }
-            if (input.next () == '\\')
+                if (input.next () == '\r' ||
+                    input.next () == '\n'
+                ) {
+                    input.setIndex (start);
+                    return new Object[] {
+                        ASTToken.create (language, "js_operator", "", 0, 0, null),
+                        null
+                    };
+                }
+                if (input.next () == '\\')
+                    input.read ();
                 input.read ();
-            input.read ();
-        }
-        while (input.next () == '/') input.read ();
-        while (!input.eof ()) {
-            int ch = input.next ();
-            if (ch != 'g' && ch != 'i' && ch != 'm')
-                break;
-            input.read ();
-        }
-        int end = input.getIndex ();
-        char car = input.eof() ? 0 : input.next();
-        boolean newLineDetected = false;
-        while (
-            !input.eof () && (
-                car == ' ' ||
-                car == '\t' ||
-                car == '\n' ||
-                car == '\r'
-            )
-        ) {
-            newLineDetected = newLineDetected || car == '\n';
-            input.read ();
-            if (!input.eof()) {
-                car = input.next();
             }
-        }
-        if (
-            !input.eof () && 
-            input.next () == '.'
-        ) {
-            input.read ();
-            if (input.next () >= '0' &&
-                input.next () <= '9'
+            while (input.next () == '/') input.read ();
+            while (!input.eof ()) {
+                int ch = input.next ();
+                if (ch != 'g' && ch != 'i' && ch != 'm')
+                    break;
+                input.read ();
+            }
+            int end = input.getIndex ();
+            char car = input.eof() ? 0 : input.next();
+            boolean newLineDetected = false;
+            while (
+                !input.eof () && (
+                    car == ' ' ||
+                    car == '\t' ||
+                    car == '\n' ||
+                    car == '\r'
+                )
             ) {
-                input.setIndex (start);
-                return new Object[] {
-                    ASTToken.create (MIME_TYPE, "js_operator", "", 0),
-                    null
-                };
-            } else {
+                newLineDetected = newLineDetected || car == '\n';
+                input.read ();
+                if (!input.eof()) {
+                    car = input.next();
+                }
+            }
+            if (
+                !input.eof () && 
+                input.next () == '.'
+            ) {
+                input.read ();
+                if (input.next () >= '0' &&
+                    input.next () <= '9'
+                ) {
+                    input.setIndex (start);
+                    return new Object[] {
+                        ASTToken.create (language, "js_operator", "", 0, 0, null),
+                        null
+                    };
+                } else {
+                    input.setIndex (end);
+                    return new Object[] {
+                        ASTToken.create (language, "js_regularExpression", "", 0, 0, null),
+                        null
+                    };
+                }
+            }
+            if (
+                newLineDetected || input.eof () || regExp.contains (new Integer (input.next ()))
+            ) {
                 input.setIndex (end);
                 return new Object[] {
-                    ASTToken.create (MIME_TYPE, "js_regularExpression", "", 0),
+                    ASTToken.create (language, "js_regularExpression", "", 0, 0, null),
                     null
                 };
             }
-        }
-        if (
-            newLineDetected || input.eof () || regExp.contains (new Integer (input.next ()))
-        ) {
-            input.setIndex (end);
+            input.setIndex (start);
             return new Object[] {
-                ASTToken.create (MIME_TYPE, "js_regularExpression", "", 0),
+                ASTToken.create (language, "js_operator", "", 0, 0, null),
                 null
             };
+        } catch (LanguageDefinitionNotFoundException ex) {
+            ex.printStackTrace ();
+            return null;
         }
-        input.setIndex (start);
-        return new Object[] {
-            ASTToken.create (MIME_TYPE, "js_operator", "", 0),
-            null
-        };
     }
 
     public static String variableName (SyntaxContext context) {
@@ -550,7 +559,7 @@ public class JavaScript {
                 continue;
             }
             ASTToken token = (ASTToken)item;
-            String type = token.getType();
+            String type = token.getTypeName ();
             if ("js_whitespace".equals(type) || "js_comment".equals(type)) {
                 continue;
             }

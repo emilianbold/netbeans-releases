@@ -56,7 +56,7 @@ import java.util.TreeMap;
  */
 public class ASTItem {
    
-    private String          mimeType;
+    private Language        language;
     private int             offset;
     private int             length = -1;
     private List<ASTItem>   children;
@@ -64,12 +64,12 @@ public class ASTItem {
     
     @SuppressWarnings("unchecked")
     ASTItem (
-        String              mimeType,
+        Language            language,
         int                 offset,
         int                 length,
         List<? extends ASTItem> children
     ) {
-        this.mimeType =     mimeType;
+        this.language =     language;
         this.offset =       offset;
         this.length =       length;
 
@@ -98,6 +98,10 @@ public class ASTItem {
     public int getOffset () {
         return offset;
     }
+    
+    public Language getLanguage () {
+        return language;
+    }
 
     /**
      * Returns MIME type of this item.
@@ -105,7 +109,8 @@ public class ASTItem {
      * @return MIME type of this item
      */
     public String getMimeType () {
-        return mimeType;
+        if (language == null) return null;
+        return language.getMimeType ();
     }
 
     /**

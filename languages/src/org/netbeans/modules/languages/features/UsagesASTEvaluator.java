@@ -152,6 +152,7 @@ class UsagesASTEvaluator extends ASTEvaluator {
         String name = (String) feature.getValue ("name", sc);
         DatabaseDefinition definition = context.getDefinition (name, leaf.getOffset ());
         DatabaseUsage usage = new DatabaseUsage (name, leaf.getOffset (), leaf.getEndOffset ());
+        //S ystem.out.println("add " + usage + " (" + definition + ") to " + context);
         if (definition != null) {
             definition.addUsage (usage);
             usage.setDatabaseDefinition (definition);

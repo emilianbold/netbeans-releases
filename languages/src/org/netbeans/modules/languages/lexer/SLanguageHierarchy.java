@@ -41,13 +41,17 @@
 
 package org.netbeans.modules.languages.lexer;
 
-import org.netbeans.api.languages.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.api.languages.ParseException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.Language.TokenType;
+import org.netbeans.modules.languages.TokenType;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.spi.lexer.LanguageHierarchy;
@@ -62,8 +66,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
     
     private String                      mimeType;
-    private Collection<STokenId>        tokenIds;
-    private HashMap<String,STokenId>    tokensMap;
+    private List<STokenId>              tokenIDs;
+    private Map<Integer,STokenId>       tokenIDToType;
     
     
     public SLanguageHierarchy (String mimeType) {
@@ -71,44 +75,35 @@ public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
     }
     
     protected Collection<STokenId> createTokenIds () {
-        if (tokenIds == null) {
-            tokenIds = new ArrayList<STokenId> ();
-            tokensMap = new HashMap<String,STokenId> ();
-            Iterator<TokenType> it = getLanguage ().getTokenTypes ().iterator ();
-            while (it.hasNext ()) {
-                TokenType t = it.next ();
-                if (tokensMap.containsKey (t.getType ())) continue;
+        if (tokenIDs == null) {
+            Language language = getLanguage ();
+            List<TokenType> tokenTypes = language.getParser ().getTokenTypes ();
+            tokenIDToType = new HashMap<Integer,STokenId> ();
+            tokenIDs = new ArrayList<STokenId> ();
+            Set<String> types = new HashSet<String> ();
+            int size = tokenTypes.size ();
+            for (int i = 0; i < size; i++) {
+                TokenType tokenType = tokenTypes.get (i);
+                String typeName = tokenType.getType ();
+                if (types.contains (typeName)) continue; // there can be more TokenTypes with same name!!
+                types.add (typeName);
                 STokenId tokenId = new STokenId (
-                    t.getType (), 
-                    tokenIds.size (), 
-                    t.getType ()
+                    typeName, 
+                    language.getTokenID (typeName), 
+                    typeName
                 );
-                tokenIds.add (tokenId);
-                tokensMap.put (t.getType (), tokenId);
+                tokenIDs.add (tokenId);
+                tokenIDToType.put (tokenId.ordinal (), tokenId);
             }
-            STokenId errorTokenId = new STokenId (
-                "error",
-                tokenIds.size (), 
-                "error"
-            );
-            tokenIds.add (errorTokenId);
-            tokensMap.put ("error", errorTokenId);
-            STokenId embeddingTokenId = new STokenId (
-                "PE",
-                tokenIds.size (), 
-                "PE"
-            );
-            tokenIds.add (embeddingTokenId);
-            tokensMap.put ("PE", embeddingTokenId);
         }
-        return tokenIds;
+        return tokenIDs;
     }
 
     protected Lexer<STokenId> createLexer (LexerRestartInfo<STokenId> info) {
-        if (tokensMap == null) createTokenIds ();
+        if (tokenIDs == null) createTokenIds ();
         return new SLexer (
             getLanguage (), 
-            tokensMap, 
+            tokenIDToType, 
             info
         );
     }
@@ -124,7 +119,7 @@ public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
         try {
             return LanguagesManager.getDefault ().getLanguage (mimeType);
         } catch (ParseException ex) {
-            return new Language (mimeType);
+            return Language.create (mimeType);
         }
     }
 }
