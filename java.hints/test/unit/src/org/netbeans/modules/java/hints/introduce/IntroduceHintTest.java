@@ -480,6 +480,17 @@ public class IntroduceHintTest extends NbTestCase {
                        3, 2);
     }
     
+    public void testIntroduceFieldFix120271() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    |@Deprecated|\n" +
+                       "    private static void test() {}\n" +
+                       "}",
+                       null,
+                       new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_CONSTRUCTORS, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
+                       0, 0);
+    }    
+
     public void testCorrectMethodSelection1() throws Exception {
         performStatementSelectionVerificationTest("package test; public class Test {public void test() {int i = 3;}}", 105 - 52, 115 - 52, true, new int[] {0, 0});
     }
@@ -826,7 +837,7 @@ public class IntroduceHintTest extends NbTestCase {
 //                       "package test; import java.io.IOException; public class Test { public static void test(int a) throws Exception { name(a); } private static void name(int a) throws IOException { if (a == 1) { throw new java.io.IOException(\"\"); } if (a == 2) { throw new java.io.FileNotFoundException(\"\"); } } }",
 //                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
 //    }
-    
+
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         

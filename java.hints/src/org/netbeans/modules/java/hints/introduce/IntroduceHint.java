@@ -185,6 +185,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             if (tp.getParentPath().getLeaf().getKind() == Kind.EXPRESSION_STATEMENT)
                 continue;
             
+            if (tp.getLeaf().getKind() == Kind.ANNOTATION)
+                continue;
+            
             return isInsideClass(tp) ? tp : null;
         }
         
