@@ -359,7 +359,7 @@ public abstract class RestSupport {
         ProjectClassPathModifier.addLibraries(new Library[] {library}, sourceRoot, ClassPath.COMPILE);
     }
 
-    protected Project getProject() {
+    public Project getProject() {
         return project;
     }
 
@@ -401,7 +401,7 @@ public abstract class RestSupport {
         setProjectProperty(REST_SUPPORT_ON, v.toString());
     }
 
-    protected void setProjectProperty(String name, String value) {
+    public void setProjectProperty(String name, String value) {
         if (getAntProjectHelper() == null) {
             return;
         }
@@ -415,7 +415,7 @@ public abstract class RestSupport {
         }
     }
 
-    protected String getProjectProperty(String name) {
+    public String getProjectProperty(String name) {
         if (getAntProjectHelper() == null) {
             return null;
         }
