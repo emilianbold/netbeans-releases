@@ -1088,11 +1088,10 @@ public final class ModuleManager {
             // Cannot satisfy its dependencies, exclude it.
             return;
         }
-        if (willEnable.contains(m)) {
+        if (!willEnable.add(m)) {
             // Already there, done.
             return;
         }
-        willEnable.add(m);
         // Also add anything it depends on, if not already there,
         // or already enabled.
         for (Dependency dep : m.getDependenciesArray()) {
