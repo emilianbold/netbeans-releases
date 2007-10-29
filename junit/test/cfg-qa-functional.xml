@@ -2,7 +2,7 @@
 <!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
 <mconfig name="qa-functional Test Type Config">
     
-    <testbag testattribs="stable" name="Stable test bag">
+    <testbag testattribs="_stable" name="Stable test bag">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="org/netbeans/test/junit/testresults/*.class"/>
