@@ -26,20 +26,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.editor.structure</code-name-base>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.14</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.jumpto</code-name-base>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.editor.bookmarks</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
@@ -91,8 +77,8 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.editor.indent</code-name-base>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
+                        <release-version>0</release-version>
+                        <specification-version>1.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -117,24 +103,17 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.editor.structure</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.14</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.editor.util</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.17</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.spi.editor.hints</code-name-base>
-                    <run-dependency>
-                        <release-version>0</release-version>
-                        <specification-version>1.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.xml.catalog</code-name-base>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>1.12</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -156,6 +135,13 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.4</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.jumpto</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -210,6 +196,20 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.25</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.catalog</code-name-base>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.12</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.spi.editor.hints</code-name-base>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                        <specification-version>1.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
