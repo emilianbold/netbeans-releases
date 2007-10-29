@@ -178,6 +178,42 @@ public final class TaskHandler {
             items = newItems;
         }
         
+        // XXX: HACK TODO PENDING WORKAROUND
+        // A hotfix for #116022: the jsp formatter must be called first and the html formatter second
+        if (items != null && "text/x-jsp".equals(docMimeType()) || "text/x-tag".equals(docMimeType())) { //NOI18N
+            List<MimeItem> newItems = new ArrayList<MimeItem>(items.size());
+            MimeItem htmlItem = null;
+            MimeItem jspItem = null;
+            for (MimeItem item : items) {
+                if (item.mimePath().getPath().endsWith("text/html")) { //NOI18N
+                    htmlItem = item;
+                } else if (item.mimePath().getPath().endsWith("text/x-jsp") //NOI18N
+                        || item.mimePath().getPath().endsWith("text/x-tag")) { //NOI18N
+                    jspItem = item;
+                } else {
+                    newItems.add(item);
+                }
+            }
+            
+            if (htmlItem != null) {
+                newItems.add(0, htmlItem);
+            }
+            
+            if (jspItem != null) {
+                newItems.add(0, jspItem);
+            }
+            
+            items = newItems;
+        }
+
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Collected items: "); //NOI18N
+            for (MimeItem mi : items) {
+                LOG.fine("  Item: " + mi); //NOI18N
+            }
+            LOG.fine("-----------------"); //NOI18N
+        }
+        
         return (items != null);
     }
     
