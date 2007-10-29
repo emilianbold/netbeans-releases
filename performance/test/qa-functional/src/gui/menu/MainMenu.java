@@ -105,7 +105,7 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
     }
     
     public void testFileMenu(){
-        WAIT_AFTER_PREPARE = 5000;
+        WAIT_AFTER_PREPARE = 15000;
         testMenu("org.netbeans.core.Bundle","Menu/File");
     }
     
