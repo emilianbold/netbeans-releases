@@ -36,6 +36,7 @@
 
 package org.netbeans.installer.wizard.components.panels.netbeans;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -45,6 +46,7 @@ import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.ImageIcon;
+import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.Registry;
@@ -69,6 +71,7 @@ import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
+import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel;
 import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi;
@@ -111,6 +114,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 DEFAULT_WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE);
         setProperty(WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY,
                 DEFAULT_WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE);
+        setProperty(WELCOME_TEXT_OPENTAG_PROPERTY,
+                DEFAULT_WELCOME_TEXT_OPENTAG);        
         setProperty(WELCOME_TEXT_FOOTER_PROPERTY,
                 DEFAULT_WELCOME_TEXT_FOOTER);
         setProperty(CUSTOMIZE_BUTTON_TEXT_PROPERTY,
@@ -270,6 +275,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         protected NbWelcomePanel panel;
         
         private NbiTextPane textPane;
+        private NbiTextPane textScrollPane;
+        private NbiScrollPane scrollPane;        
         private NbiButton customizeButton;
         private NbiLabel installationSizeLabel;
         
@@ -312,10 +319,16 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         
         @Override
         protected void initialize() {
-            final StringBuilder welcomeText = new StringBuilder();
+            StringBuilder welcomeText = new StringBuilder();
             welcomeText.append(panel.getProperty(WELCOME_TEXT_HEADER_PROPERTY));
+            welcomeText.append(panel.getProperty(WELCOME_TEXT_FOOTER_PROPERTY));
+            textPane.setContentType(
+                    panel.getProperty(TEXT_PANE_CONTENT_TYPE_PROPERTY));            
+            textPane.setText(welcomeText);
             
             everythingIsInstalled = true;
+            welcomeText = new StringBuilder(
+                    panel.getProperty(WELCOME_TEXT_OPENTAG_PROPERTY));
             for (RegistryNode node: registryNodes) {
                 if (node instanceof Product) {
                     final Product product = (Product) node;
@@ -330,7 +343,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                         if(type.equals(BundleType.CUSTOMIZE)) {
                             welcomeText.append(StringUtils.format(
                                     panel.getProperty(WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY),
-                                    node.getDisplayName()));
+                                    node.getDisplayName()));                            
                         }
                         everythingIsInstalled = false;
                     } else if ((product.getStatus() == Status.NOT_INSTALLED)) {
@@ -353,16 +366,16 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                         }
                     }
                 }
-            }
+            } 
             
             welcomeText.append(panel.getProperty(WELCOME_TEXT_FOOTER_PROPERTY));
-            
-            textPane.setContentType(
+                                
+            textScrollPane.setContentType(
                     panel.getProperty(TEXT_PANE_CONTENT_TYPE_PROPERTY));
-            textPane.setText(welcomeText);
-            
+            textScrollPane.setText(welcomeText);
+            textScrollPane.setCaretPosition(0);
             customizeButton.setText(
-                    panel.getProperty(CUSTOMIZE_BUTTON_TEXT_PROPERTY));
+                    panel.getProperty(CUSTOMIZE_BUTTON_TEXT_PROPERTY));       
             
             updateSizes();
             
@@ -442,7 +455,17 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
             // textPane /////////////////////////////////////////////////////////////
-            textPane = new NbiTextPane();
+            textPane = new NbiTextPane();   
+            
+            // textScrollPane ///////////////////////////////////////////////////////////// 
+            textScrollPane = new NbiTextPane();
+            textScrollPane.setOpaque(true);
+            textScrollPane.setBackground(Color.WHITE);                    
+            
+            // scrollPane ////////////////////////////////////////////////////
+            scrollPane = new NbiScrollPane(textScrollPane);            
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);                 
+            scrollPane.setBorder(new EmptyBorder(new Insets(0, 0, 0, 0)));          
             
             // customizeButton //////////////////////////////////////////////////////
             customizeButton = new NbiButton();
@@ -489,10 +512,19 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     GridBagConstraints.HORIZONTAL,          // fill
                     new Insets(11, 11, 0, 11),        // padding
                     0, 0));                           // padx, pady - ???
+            NbiTextPane separatorPane =  new NbiTextPane();
             BundleType type = BundleType.getType(
-                    System.getProperty(WELCOME_PAGE_TYPE_PROPERTY));
-            //textPane.setBorder(new LineBorder(Color.BLACK));
-            if(type.equals(BundleType.JAVAEE)) {
+                    System.getProperty(WELCOME_PAGE_TYPE_PROPERTY));            
+            if(!type.equals(BundleType.JAVAEE)) {                
+                add(scrollPane, new GridBagConstraints(
+                    1, dy++,                           // x, y
+                    3, 1,                              // width, height
+                    1.0, 10.0,                         // weight-x, weight-y
+                    GridBagConstraints.LINE_START,     // anchor
+                    GridBagConstraints.BOTH,           // fill
+                    new Insets(0, 11, 11, 11),         // padding
+                    0, 0));                            // padx, pady - ???
+            }else {                                                                                
                 for (RegistryNode node: registryNodes) {
                     if (node instanceof Product) {
                         final Product product = (Product) node;
@@ -533,7 +565,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                                 
                                 //chBox.setPreferredSize(new Dimension(chBox.getPreferredSize().width,
                                 //        chBox.getPreferredSize().height-2));
-                                chBox.setBorder(new EmptyBorder(0,0,0,0));
+                                chBox.setBorder(new EmptyBorder(0,0,0,0));                                                    
                                 add(chBox,new GridBagConstraints(
                                         1, dy++,                             // x, y
                                         3, 1,                             // width, height
@@ -541,7 +573,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                                         GridBagConstraints.LINE_START,        // anchor
                                         GridBagConstraints.HORIZONTAL,          // fill
                                         new Insets(0, 11, 0, 0),        // padding
-                                        0, 0));
+                                        0, 0));                                                        
                                 chBox.addActionListener(new ActionListener() {
                                     public void actionPerformed(ActionEvent e) {
                                         if(chBox.isSelected()) {
@@ -557,57 +589,53 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                             }
                         }
                     }
-                }
-            }
-            NbiTextPane separatorPane =  new NbiTextPane();
-            //separatorPane.setBorder(new LineBorder(Color.RED));
-            add(separatorPane , new GridBagConstraints(
-                    1, dy++,                             // x, y
-                    3, 1,                             // width, height
-                    1.0, 2.0,                         // weight-x, weight-y
-                    GridBagConstraints.LINE_START,        // anchor
-                    GridBagConstraints.BOTH,          // fill
-                    new Insets(0, 0, 0, 00),        // padding
-                    0, 0));                           // padx, pady - ???
-            
-            
+                }                             
+                add(separatorPane , new GridBagConstraints(
+                        1, dy++,                             // x, y
+                        3, 1,                                // width, height
+                        1.0, 2.0,                            // weight-x, weight-y
+                        GridBagConstraints.LINE_START,       // anchor
+                        GridBagConstraints.BOTH,             // fill
+                        new Insets(0, 0, 0, 0),              // padding
+                        0, 0));                              // padx, pady - ???    
+            }            
             add(customizeButton, new GridBagConstraints(
-                    1, dy,                             // x, y
+                    1, dy,                            // x, y
                     1, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.NONE,          // fill
                     new Insets(7, 11, 11, 0),         // padding
-                    0, 0));                           // padx, pady - ???
+                    0, 0));                           // padx, pady - ??? 
             separatorPane =  new NbiTextPane();
             add(separatorPane , new GridBagConstraints(
-                    2, dy,                             // x, y
+                    2, dy,                            // x, y
                     1, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.CENTER,        // anchor
                     GridBagConstraints.BOTH,          // fill
-                    new Insets(0, 0, 0, 0),        // padding
+                    new Insets(0, 0, 0, 0),           // padding
                     0, 0));                           // padx, pady - ???
             
             add(installationSizeLabel, new GridBagConstraints(
-                    3, dy,                             // x, y
+                    3, dy,                            // x, y
                     1, 1,                             // width, height
                     0.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.EAST,        // anchor
+                    GridBagConstraints.EAST,          // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
                     new Insets(7, 11, 0, 11),         // padding
-                    0, 0));                          // padx, pady - ???
+                    0, 0));                           // padx, pady - ???
             
             // move error label after the left welcome image
             Component errorLabel = getComponent(0);
-            getLayout().removeLayoutComponent(errorLabel);
+            getLayout().removeLayoutComponent(errorLabel);          
             add(errorLabel, new GridBagConstraints(
                     1, 99,                             // x, y
                     99, 1,                             // width, height
                     1.0, 0.0,                          // weight-x, weight-y
                     GridBagConstraints.CENTER,         // anchor
                     GridBagConstraints.HORIZONTAL,     // fill
-                    new Insets(11, 11, 11, 11),        // padding
+                    new Insets(5, 11, 5, 11),          // padding
                     0, 0));                            // ??? (padx, pady)
             
             // platform-specific tweak //////////////////////////////////////////////
@@ -701,7 +729,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         public String toString() {
             return name;
         }
-    }
+    }       
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String DEFAULT_TITLE =
@@ -721,6 +749,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             "welcome.text.product.installed.template"; // NOI18N
     public static final String WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY =
             "welcome.text.product.not.installed.template"; // NOI18N
+    public static final String WELCOME_TEXT_OPENTAG_PROPERTY =
+            "welcome.text.opentag"; // NOI18N
     public static final String WELCOME_TEXT_FOOTER_PROPERTY =
             "welcome.text.footer"; // NOI18N
     public static final String CUSTOMIZE_BUTTON_TEXT_PROPERTY =
@@ -749,6 +779,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public static final String DEFAULT_WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.welcome.text.product.not.installed.template"); // NOI18N
+    public static final String DEFAULT_WELCOME_TEXT_OPENTAG =
+            ResourceUtils.getString(NbWelcomePanel.class,       
+            "NWP.welcome.text.opentag");   
     public static final String DEFAULT_WELCOME_TEXT_FOOTER =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.welcome.text.footer"); // NOI18N
