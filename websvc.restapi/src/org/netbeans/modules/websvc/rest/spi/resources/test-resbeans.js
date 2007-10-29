@@ -612,15 +612,7 @@ function updateContent(xmlHttpReq) {
     try {
         if (isResponseReady(xmlHttpReq)) {
             var content = xmlHttpReq.responseText;
-            var ndx = content.indexOf('HTTP Status');
-            var showRaw = 'false';
-            if(ndx != -1) {
-                showRaw = 'true';
-            }
-            var ndx2 = content.indexOf('Caused by: java.lang.');
-            if(ndx2 != -1) {
-                showRaw = 'true';
-            }
+            var showRaw = true;
             if(content != null && content != undefined) {
                 content = content.replace(/'/g,"\'");
                 if(content == '')
@@ -632,10 +624,10 @@ function updateContent(xmlHttpReq) {
                     if(content.indexOf("<?xml ") != -1 || 
                             content.indexOf('{"') != -1) {
                         var tc = getContainerTable(content);
-                        if(tc != null)
+                        if(tc != null) {
                             tableContent = tc;
-                        else
-                            showRaw = 'true';
+                            showRaw = false;
+                        }
                     }
                     var rawContent = content;
                     var tableViewStyle = ' ';
@@ -643,7 +635,7 @@ function updateContent(xmlHttpReq) {
                     var rawViewStyle = nodisp;
                     var headerViewStyle = nodisp;
                     var monitorViewStyle = nodisp;
-                    if(showRaw == 'true') {
+                    if(showRaw) {
                         tableViewStyle = nodisp;
                         rawViewStyle = ' ';
                         headerViewStyle = nodisp;
@@ -660,10 +652,13 @@ function updateContent(xmlHttpReq) {
                             '<textarea rows=15 cols=72 align=left readonly>'+rawContent+'</textarea></div>'+ 
                         '<div id="monitorContent"'+monitorViewStyle+'>'+
                             '<textarea id="monitorText" rows=15 cols=72 align=left readonly>'+currMonitorText+'</textarea></div>');
-                    if(showRaw == 'true')
+                    if(showRaw) {
+                        if(content.length > 7 && content.substring(0, 7) == "http://")
+                            currentValidUrl = content;
                         showViews('raw');
-                    else
+                    } else {
                         showViews('table');
+                    }
                 } catch( e ) {
                     //alert(e.name+e.message);
                     var c = createIFrame(currentValidUrl);

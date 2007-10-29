@@ -116,7 +116,12 @@ public abstract class RestComponentBean extends GenericResourceBean {
         if (getMimeTypes().length == 1 && getMimeTypes()[0] == MimeType.HTML) {
             return new String[]{String.class.getName()};
         } else {
-            return new String[]{getOutputWrapperPackageName() + "." + getOutputWrapperName()}; //NOI18N
+            String rep = getOutputWrapperPackageName() + "." + getOutputWrapperName();
+            List<String> repList = new ArrayList<String>();
+            for(MimeType m:getMimeTypes()) {//stuff rep with as much mimetype length
+                repList.add(rep);
+            }
+            return repList.toArray(new String[0]);
         }
     }
 

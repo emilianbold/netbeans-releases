@@ -262,10 +262,10 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
                 methodBody += getCustomMethodBody();
 
                 methodBody += "}"; //NOI18N
-                // currently component resource only generate for one mime.
-                MimeType mime = bean.getMimeTypes()[0];
-                MethodTree methodTree = JavaSourceHelper.getMethodByName(copy, bean.getGetMethodName(mime));
-                JavaSourceHelper.replaceMethodBody(copy, methodTree, methodBody);
+                for(MimeType mime:bean.getMimeTypes()) {
+                    MethodTree methodTree = JavaSourceHelper.getMethodByName(copy, bean.getGetMethodName(mime));
+                    JavaSourceHelper.replaceMethodBody(copy, methodTree, methodBody);
+                }
             }
         });
         result.commit();

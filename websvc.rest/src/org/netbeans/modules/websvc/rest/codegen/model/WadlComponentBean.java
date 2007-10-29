@@ -147,7 +147,8 @@ public class WadlComponentBean extends RestComponentBean {
                     }
                 }
             }
-            this.setMimeTypes(mimeTypes.toArray(new MimeType[mimeTypes.size()]));
+            if(mimeTypes.size() > 0)
+                this.setMimeTypes(mimeTypes.toArray(new MimeType[mimeTypes.size()]));
         } catch (Exception ex) {
             throw new IOException(ex.getMessage());
         }   
@@ -168,10 +169,13 @@ public class WadlComponentBean extends RestComponentBean {
                 Node respChild = respChilds.item(j);
                 if (respChild.getNodeName().equals("representation") && respChild.getAttributes() != null) {
                     Attr mediaAttr = (Attr) respChild.getAttributes().getNamedItem("mediaType");
-                    if (mediaAttr != null) {
-                        MimeType mType = MimeType.find(mediaAttr.getNodeValue());
-                        if (mType != null) {
-                            mimeTypes.add(mType);
+                    if (mediaAttr != null && mediaAttr.getNodeValue() != null) {
+                        String[] mTypes = mediaAttr.getNodeValue().split(",");
+                        for(String m:mTypes) {
+                            MimeType mType = MimeType.find(m);
+                            if (mType != null) {
+                                mimeTypes.add(mType);
+                            }
                         }
                     }
                 }
