@@ -193,36 +193,20 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         return prj;
     }
     
-//    public void onProjectOpen(Object platformProject) {
-//    }
-
-    public ProjectBase addProject(String id, String name, boolean enableModel) {
-        return addProject((Object) id, name, enableModel);
-    }
-    
     public ProjectBase addProject(NativeProject id, String name, boolean enableModel) {
-        return addProject((Object) id, name, enableModel);
-    }
-    
-    private ProjectBase addProject(Object id, String name, boolean enableModel) {
         ProjectBase prj = null;
+	assert (id != null) : "The platform project is null"; // NOI18N
         if (enableModel) {
+	    boolean fireOpened = false;
             synchronized( lock ) {
                 if( state != CsmModelState.ON ) {
                     return null;
                 }
                 prj = obj2Project(id);
                 if( prj == null ) {
-                    if( id instanceof NativeProject ) {
-                        prj = ProjectImpl.createInstance(this, (NativeProject) id,  name);
-                    }
-                    else if( id instanceof String ) {
-                        prj = ProjectImpl.createInstance(this, (String) id,  name);
-                    }
-                    else {
-                        throw new IllegalArgumentException("The platform project is neither NativeProject nor String"); // NOI18N
-                    }
+                    prj = ProjectImpl.createInstance(this, id,  name);
                     putProject2Map(id,  prj);
+		    fireOpened = true;
                 } else {
                     String expectedUniqueName = ProjectBase.getUniqueName(id);
                     String defactoUniqueName = prj.getUniqueName();
@@ -231,7 +215,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                     }
                 }
             }
-            fireProjectOpened(prj);
+	    if( fireOpened ) {
+		fireProjectOpened(prj);
+	    }
         } else {
             disabledProjects.add(id);
         }
