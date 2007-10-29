@@ -199,6 +199,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
     }
 
     public void readSettings(WizardDescriptor wizard) {
+        this.wizard = wizard;
         if ( gui != null ) {
             // Try to preselect a folder
             FileObject preselectedFolder = Templates.getTargetFolder( wizard );            
