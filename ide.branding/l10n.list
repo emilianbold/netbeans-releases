@@ -2,6 +2,7 @@
 read global
 ${l10n-module}/Bundle.properties
 ${l10n-module}/autoupdate/libsrc/**/Bundle*.properties
+${l10n-module}/autoupdate/ui/src/**/Bundle*.properties
 ${l10n-module}/core/**/Bundle*.properties
 ${l10n-module}/release/*.html
 ${l10n-module}/release/*.pdf

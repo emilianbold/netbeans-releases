@@ -216,6 +216,11 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       basedir="autoupdate/libsrc"
       jarfile="${cluster}/modules/ext/updater.jar"
     />
+
+    <locjar 
+      basedir="autoupdate/ui/src"
+      jarfile="${cluster}/modules/org-netbeans-modules-autoupdate-ui.jar"
+    />
   </target>
   
   <target name="-jar-localized-module-jar" if="locjar.locales" unless="locjar.brands">
@@ -274,6 +279,15 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       </copy>
       <locjar basedir="build/classes-ml/autoupdate/libsrc"
               jarfile="${cluster}/modules/ext/updater.jar"/>
+
+      <mkdir dir="build/classes-ml/autoupdate/ui/src"/>
+      <copy todir="build/classes-ml/autoupdate/ui/src">
+          <fileset dir="${nbroot}/translatedfiles/src/ide/branding/autoupdate/ui/src">
+              <include name="**/*"/>
+          </fileset>
+      </copy>
+      <locjar basedir="build/classes-ml/autoupdate/ui/src"
+              jarfile="${cluster}/modules/org-netbeans-modules-autoupdate-ui.jar"/>
   </target>
   
     <target name="clean" depends="init" >
