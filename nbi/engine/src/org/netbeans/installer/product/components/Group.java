@@ -39,6 +39,7 @@ package org.netbeans.installer.product.components;
 import java.util.Locale;
 import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.utils.exceptions.InitializationException;
+import org.netbeans.installer.utils.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -47,9 +48,9 @@ import org.w3c.dom.Element;
  */
 public class Group extends RegistryNode {
     public Group() {
-        uid = "";
-        displayNames.put(Locale.getDefault(), "Product Tree Root");
-        descriptions.put(Locale.getDefault(), "");
+        uid = StringUtils.EMPTY_STRING;
+        displayNames.put(new Locale(StringUtils.EMPTY_STRING), "Product Tree Root");
+        descriptions.put(new Locale(StringUtils.EMPTY_STRING), StringUtils.EMPTY_STRING);
     }
     
     public boolean isEmpty() {

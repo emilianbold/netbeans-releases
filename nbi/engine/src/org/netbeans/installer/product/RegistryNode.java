@@ -51,6 +51,7 @@ import javax.swing.tree.TreePath;
 import org.netbeans.installer.product.filters.RegistryFilter;
 import org.netbeans.installer.product.filters.TrueFilter;
 import org.netbeans.installer.utils.FileProxy;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.FinalizationException;
@@ -113,7 +114,7 @@ public abstract class RegistryNode implements PropertyContainer {
     }
     
     public String getDisplayName(final Locale locale) {
-        return displayNames.get(locale);
+        return StringUtils.getLocalizedString(displayNames,locale);
     }
     
     public Map<Locale, String> getDisplayNames() {
@@ -133,7 +134,7 @@ public abstract class RegistryNode implements PropertyContainer {
     }
     
     public String getDescription(final Locale locale) {
-        return descriptions.get(locale);
+        return StringUtils.getLocalizedString(descriptions,locale);
     }
     
     public Map<Locale, String> getDescriptions() {

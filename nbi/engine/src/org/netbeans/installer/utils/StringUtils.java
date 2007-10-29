@@ -52,6 +52,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -572,7 +573,22 @@ public abstract class StringUtils {
                 return new Locale(parts[0], parts[1], parts[2]);
         }
     }
-    
+    public static String getLocalizedString(final Map <Locale, String> stringsMap, final Locale inLocale) {
+        final String message = stringsMap.get(inLocale);
+        if(message==null && !inLocale.equals(new Locale(EMPTY_STRING))) {
+            final Locale upLocale;
+            if(!inLocale.getVariant().equals(EMPTY_STRING)) {
+                upLocale = new Locale(inLocale.getLanguage(), inLocale.getCountry());
+            } else if(!inLocale.getCountry().equals(EMPTY_STRING)) {
+                upLocale = new Locale(inLocale.getLanguage());
+            } else {
+                upLocale = new Locale(EMPTY_STRING);
+            }
+            return getLocalizedString(stringsMap, upLocale);
+       } else {
+            return message;
+       }
+    }
     public static URL parseUrl(
             final String string) throws ParseException {
         try {

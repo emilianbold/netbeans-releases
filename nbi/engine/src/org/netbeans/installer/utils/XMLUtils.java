@@ -557,7 +557,7 @@ public abstract class XMLUtils {
         final Map<Locale, String> map = new HashMap<Locale, String>();
         
         final Element defaultElement = getChild(element, "default");
-        map.put(Locale.getDefault(), StringUtils.parseAscii(
+        map.put(new Locale(StringUtils.EMPTY_STRING), StringUtils.parseAscii(
                 defaultElement.getTextContent()));
         
         for (Element localizedElement: getChildren(element, "localized")) {
@@ -579,11 +579,11 @@ public abstract class XMLUtils {
         
         final Element defaultElement = document.createElement("default");
         defaultElement.setTextContent(StringUtils.convertToAscii(
-                map.get(Locale.getDefault())));
+                map.get(new Locale(StringUtils.EMPTY_STRING))));
         element.appendChild(defaultElement);
         
         for (Locale locale: map.keySet()) {
-            if (!map.get(locale).equals(map.get(Locale.getDefault()))) {
+            if (!map.get(locale).equals(map.get(new Locale(StringUtils.EMPTY_STRING)))) {
                 final Element localizedElement = document.createElement("localized");
                 
                 localizedElement.setAttribute("locale", locale.toString());

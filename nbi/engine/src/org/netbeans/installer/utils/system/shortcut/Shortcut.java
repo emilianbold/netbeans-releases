@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import org.netbeans.installer.utils.StringUtils;
 
 public abstract class Shortcut {
     private Map<Locale, String> names;
@@ -84,7 +85,7 @@ public abstract class Shortcut {
     }
     
     public String getName(final Locale locale) {
-        return names.get(locale);
+        return StringUtils.getLocalizedString(names,locale);
     }
     
     public void setName(final String name, final Locale locale) {
@@ -104,7 +105,7 @@ public abstract class Shortcut {
     }
     
     public String getDescription() {
-        return descriptions.get(Locale.getDefault());
+        return getDescription(Locale.getDefault());
     }
     
     public void setDescription(final String description) {
@@ -112,7 +113,7 @@ public abstract class Shortcut {
     }
     
     public String getDescription(final Locale locale) {
-        return descriptions.get(locale);
+        return StringUtils.getLocalizedString(descriptions,locale);
     }
     
     public void setDescription(final String description, final Locale locale) {
