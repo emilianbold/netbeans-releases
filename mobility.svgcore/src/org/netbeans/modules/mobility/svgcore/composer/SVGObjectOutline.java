@@ -111,18 +111,23 @@ public final class SVGObjectOutline {
             }
         }
     }
-    
-    public void highlight(Graphics g, int xOff, int yOff) {
+
+    public void highlight(Graphics g, int xOff, int yOff, Color color) {
         checkObject();
         
-        g.setColor(COLOR_HIGHLIGHT);
+        g.setColor(color);
         int [] xPoints = new int[4];
         int [] yPoints = new int[4];
+        
         for (int i = 0; i < 4; i++) {
-            xPoints[i] = (int) (xOff + m_coords[i][0]);
-            yPoints[i] = (int) (yOff + m_coords[i][1]);
+            xPoints[i] = Math.round(xOff + m_coords[i][0]);
+            yPoints[i] = Math.round(yOff + m_coords[i][1]);
         }
         g.fillPolygon( xPoints, yPoints, 4);        
+    }
+    
+    public void highlight(Graphics g, int xOff, int yOff) {
+        highlight(g, xOff, yOff, COLOR_HIGHLIGHT);
     }
     
     public static Rectangle getShapeBoundingBox(float [][] points) {

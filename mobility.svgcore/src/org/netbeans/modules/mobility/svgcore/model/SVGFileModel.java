@@ -89,6 +89,7 @@ import org.openide.util.NbBundle;
  * @author Pavel Benes
  */
 public final class SVGFileModel {
+    protected static final int      MAX_TOOLTIP_ATTR_SIZE = 100;
     protected static final String   XML_TAG            = "tag"; //NOI18N
     protected static final String   XML_EMPTY_TAG      = "empty_tag"; //NOI18N
     protected static final String   XML_ERROR_TAG      = "error"; //NOI18N
@@ -519,11 +520,11 @@ public final class SVGFileModel {
         return ElementMapping.isWrapperId(id);
     }
 
-    public synchronized String describeElement(String id, boolean showTag, boolean showAttributes, String lineSep) {
+    public synchronized String describeElement(String id) {
         DocumentElement de = getElementById(id);
         if (de != null) {
             checkIntegrity(de);
-            return describeElement(de, showTag, showAttributes, lineSep);
+            return describeElement(de);
         } else {
             return "";
         }
@@ -569,26 +570,27 @@ public final class SVGFileModel {
         return pos;
     }
 
-    public static String describeElement(DocumentElement el, boolean showTag, boolean showAttributes, String lineSep) {
+    protected static String describeElement(DocumentElement el) {
         StringBuilder sb = new StringBuilder();
 
-        if (showTag) {
-            sb.append(el.getName());
-        }
-
         AttributeSet attrs = el.getAttributes();
-        if (showAttributes) {
-            for (Enumeration names = attrs.getAttributeNames(); names.hasMoreElements();) {
-                String attrName = (String) names.nextElement();
-                sb.append(' ');
-                sb.append(attrName);
-                sb.append("=\""); //NOI18N
-                sb.append(attrs.getAttribute(attrName));
-                sb.append('"');
-                if (lineSep != null) {
-                    sb.append(lineSep);
+        for (Enumeration names = attrs.getAttributeNames(); names.hasMoreElements();) {
+            String attrName = (String) names.nextElement();
+            sb.append("&nbsp;"); //NOI18N
+            sb.append(attrName);
+            sb.append("=\""); //NOI18N
+            Object o = attrs.getAttribute(attrName);
+            if ( o != null) {
+                String value = o.toString();
+                if (value.length() > MAX_TOOLTIP_ATTR_SIZE) {
+                    sb.append(value.substring(0, MAX_TOOLTIP_ATTR_SIZE));
+                    sb.append("..."); //NOI18N
+                } else {
+                    sb.append(value);
                 }
             }
+            sb.append('"');
+            sb.append("&nbsp;<br>"); //NOI18N
         }
 
         return sb.toString();

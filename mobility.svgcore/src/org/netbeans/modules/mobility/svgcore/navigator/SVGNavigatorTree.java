@@ -130,37 +130,43 @@ public final class SVGNavigatorTree extends JTree {
     
     public void selectNode( String elemId, DocumentElement de) {
         m_selectedId = elemId;
-        if (de == null) {
-            de = m_dObj.getModel().getElementById(elemId);
-        }
+        
+        if ( elemId == null) {
+            getSelectionModel().clearSelection();
+            repaint();
+        } else {
+            if (de == null) {
+                de = m_dObj.getModel().getElementById(elemId);
+            }
 
-        if (de != null) {
-            SVGNavigatorNode rootNode = (SVGNavigatorNode) treeModel.getRoot();
-            SVGNavigatorNode node = rootNode.findNode(de);
-            if ( node == null) {
-                List<DocumentElement> parents = SVGFileModel.getParents(de);
-                int parentIndex = parents.size() - 1;
-                assert parentIndex >= 0 : "The element must have at least one parent";
-                node = rootNode.findNode( parents.get(parentIndex));
-                assert node != null : "Tree node not found";
-                
-                while( parentIndex > 0) {
-                    SVGNavigatorNode childNode = node.getChildByElemenent(parents.get(--parentIndex));
-                    if ( childNode != null) {
-                        node = childNode;
-                    } else {
-                        break;
+            if (de != null) {
+                SVGNavigatorNode rootNode = (SVGNavigatorNode) treeModel.getRoot();
+                SVGNavigatorNode node = rootNode.findNode(de);
+                if ( node == null) {
+                    List<DocumentElement> parents = SVGFileModel.getParents(de);
+                    int parentIndex = parents.size() - 1;
+                    assert parentIndex >= 0 : "The element must have at least one parent";
+                    node = rootNode.findNode( parents.get(parentIndex));
+                    assert node != null : "Tree node not found";
+
+                    while( parentIndex > 0) {
+                        SVGNavigatorNode childNode = node.getChildByElemenent(parents.get(--parentIndex));
+                        if ( childNode != null) {
+                            node = childNode;
+                        } else {
+                            break;
+                        }
                     }
                 }
-            }
-            
-            TreePath treePath = node.getNodePath();
-            makeVisible(treePath);
-            setSelectionPath(treePath);
-            Rectangle rect = getPathBounds(treePath);
-            scrollRectToVisible(rect);
-            repaint();
-        } 
+
+                TreePath treePath = node.getNodePath();
+                makeVisible(treePath);
+                setSelectionPath(treePath);
+                Rectangle rect = getPathBounds(treePath);
+                scrollRectToVisible(rect);
+                repaint();
+            } 
+        }
     }
     
     byte checkVisibility(DocumentElement docElem, boolean deepCheck) {

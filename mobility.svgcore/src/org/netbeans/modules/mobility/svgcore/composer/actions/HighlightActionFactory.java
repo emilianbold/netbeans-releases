@@ -44,7 +44,6 @@ import java.awt.AWTEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import javax.swing.Action;
-import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.ComposerAction;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
@@ -114,7 +113,7 @@ public final class HighlightActionFactory extends AbstractComposerActionFactory 
     public HighlightActionFactory(SceneManager sceneMgr) {
         super(sceneMgr);
     }
-
+        
     public synchronized ComposerAction startAction(AWTEvent e, boolean isOutsideEvent) {        
         if ( !isOutsideEvent && e.getID() == MouseEvent.MOUSE_MOVED) {
             if ( !m_sceneMgr.containsAction(HighlightAction.class)) {

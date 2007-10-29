@@ -45,8 +45,6 @@ import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -66,6 +64,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -107,6 +107,7 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
     private final JLabel                 msgLabel;    
     private       SVGDataObject          peerDO = null;
     private       NavigatorContentPanel  navigatorPanel = null; 
+    private       boolean                blockNotification = false;
         
     private SVGNavigatorContent() {
         setLayout(new BorderLayout());
@@ -120,9 +121,12 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
     }
 
     public void selectionChanged( SVGObject [] newSelection, SVGObject [] oldSelection, boolean isReadOnly) {
-        if (newSelection != null) {
-            select( newSelection[0].getElementId());
-        } 
+        blockNotification = true;
+        try {
+            select( newSelection != null ? newSelection[0].getElementId() : null);
+        } finally {
+            blockNotification = false;
+        }
     }
     
     public synchronized void navigate(final SVGDataObject d) {   
@@ -162,12 +166,11 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
     }
 
     synchronized void setContent( final SVGDataObject obj, final NavigatorContentPanel panel) {
-        //peerDO         = obj;
         navigatorPanel = panel;
                 
         SVGNavigatorContent.this.removeAll();
         if (panel != null) {
-            SVGNavigatorContent.this.add(panel, BorderLayout.CENTER);                                
+            SVGNavigatorContent.this.add(panel, BorderLayout.CENTER);  
         }
         SVGNavigatorContent.this.validate();                                
         SVGNavigatorContent.this.repaint();                                
@@ -245,22 +248,8 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
                         SVGNavigatorNode tna     = (SVGNavigatorNode)selPath.getLastPathComponent();                       
                         DocumentElement  de      = tna.getDocumentElement();
                         
-                        switch( e.getClickCount()) {
-                            case 1:
-                                TopComponent tc = m_doj.getMTVC();
-
-                                if ( tc != null) {
-                                    Lookup           lkp    = tc.getLookup();                                
-                                    SelectionCookie  cookie = lkp.lookup(SelectionCookie.class);
-                                    String           id     = getElementId(de);
-                                    if ( cookie != null && id != null) {
-                                        cookie.updateSelection(m_doj, id, de.getStartOffset(), false);
-                                    }
-                                }
-                                break;
-                            case 2:
-                                SVGSourceMultiViewElement.selectElement(m_doj, de.getStartOffset(), true);
-                                break;
+                        if ( e.getClickCount() == 2) {
+                            SVGSourceMultiViewElement.selectElement(m_doj, de.getStartOffset(), true);
                         }
                     }
                 }
@@ -270,6 +259,33 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
             final TreeSelectionModel selectionModel = new DefaultTreeSelectionModel();
             selectionModel.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
             tree.setSelectionModel(selectionModel);
+            
+            selectionModel.addTreeSelectionListener( new TreeSelectionListener() { 
+                public void valueChanged(TreeSelectionEvent e) {
+                    if ( !blockNotification) {
+                        TreePath selPath = e.getPath();
+                        int      index   = -1;                    
+                        String   id      = null;
+
+                        if ( selPath != null && !selectionModel.isSelectionEmpty()) {
+                            SVGNavigatorNode tna     = (SVGNavigatorNode)selPath.getLastPathComponent();                       
+                            DocumentElement  de      = tna.getDocumentElement();
+                            id     = getElementId(de);
+                            index  = de.getStartOffset();
+                        }
+                        TopComponent tc = m_doj.getMTVC();
+
+                        if ( tc != null) {
+                            Lookup           lkp    = tc.getLookup();                                
+                            SelectionCookie  cookie = lkp.lookup(SelectionCookie.class);
+                            if ( cookie != null && id != null) {
+                                cookie.updateSelection(m_doj, id, index, false);
+                            }
+                        }
+                    }
+                }
+            });
+            
             tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "open"); // NOI18N
             tree.getActionMap().put("open", new AbstractAction() { // NOI18N
                 public void actionPerformed(ActionEvent e) {
@@ -282,9 +298,8 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
             JScrollPane treeView = new JScrollPane(tree);
             treeView.setBorder(BorderFactory.createEmptyBorder());
             treeView.setViewportBorder(BorderFactory.createEmptyBorder());
-            
             add(treeView, BorderLayout.CENTER);
-                      
+            
             //add popup menu mouse listener
             MouseListener pmml = new MouseAdapter() {
                 public void mousePressed(final MouseEvent e) {

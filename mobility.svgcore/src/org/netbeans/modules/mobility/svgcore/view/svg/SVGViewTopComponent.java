@@ -1269,7 +1269,6 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
 
         public void stopAnimation(final SVGDataObject doj, final String id) {
             SwingUtilities.invokeLater(new Runnable() {
-
                 public void run() {
                     getPerseusController().stopAnimation(id);
                 }
@@ -1278,7 +1277,6 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
 
         public void updateSelection(final SVGDataObject doj, final String id, int startOff, boolean doubleClick) {
             SwingUtilities.invokeLater(new Runnable() {
-
                 public void run() {
                     getSceneManager().setSelection(id, false);
                 }

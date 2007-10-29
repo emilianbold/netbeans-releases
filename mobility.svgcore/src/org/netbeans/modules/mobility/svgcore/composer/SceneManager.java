@@ -165,7 +165,7 @@ public final class SceneManager {
     private transient List<ComposerActionFactory> m_actionFactories;
     private transient Stack<ComposerAction>       m_activeActions;
     private transient List<Action>                m_registeredActions;
-    public transient SelectActionFactory          m_selectActionFactory;
+    public transient  SelectActionFactory         m_selectActionFactory;
     private transient List<SelectionListener>     m_selectionListeners;
     private transient SVGImage                    m_svgImage;
     private transient SVGLocatableElement         m_popupElement = null;
@@ -463,6 +463,7 @@ public final class SceneManager {
             m_screenMgr.repaint();
         }
     }
+    
     public void setSelection(String id, boolean isDelayed) {
         if ( isDelayed) {
             m_selectedId = id;
@@ -588,13 +589,19 @@ public final class SceneManager {
     }
 
     public boolean containsAction( Class clazz) {
+        return findAction(clazz) != null;
+    }
+    
+    public ComposerAction findAction( Class clazz) {
         synchronized( m_activeActions) {
             for (int i = m_activeActions.size() - 1; i >= 0; i--) {
-                if ( clazz.isInstance( m_activeActions.get(i))) {
-                    return true;
+                ComposerAction action = m_activeActions.get(i);
+                
+                if ( clazz.isInstance( action)) {
+                    return action;
                 }
             }
-            return false;    
+            return null;    
         }
     }
     

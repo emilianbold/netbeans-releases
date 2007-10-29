@@ -224,9 +224,13 @@ public final class ScreenManager {
     }
 
     public boolean setHighlightObject(boolean highlightObject) {
-        boolean oldValue = m_highlightObject;
-        m_highlightObject = highlightObject;
-        return oldValue;
+        if ( highlightObject != m_highlightObject) {
+            m_highlightObject = highlightObject;
+            repaint();
+            return !highlightObject;
+        } else {
+            return highlightObject;
+        }
     }
     
     public boolean getHighlightObject() {

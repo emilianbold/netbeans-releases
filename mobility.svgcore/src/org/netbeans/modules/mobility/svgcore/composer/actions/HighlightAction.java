@@ -60,7 +60,7 @@ public final class HighlightAction extends AbstractComposerAction {
 
     public HighlightAction(ComposerActionFactory factory, SVGObject highlighted) {
         super(factory);
-        assert highlighted != null : "Null object for highlight";
+        assert highlighted != null : "Null object for highlight"; //NOI18N
         m_highlighted = highlighted;
         getScreenManager().getAnimatorView().setToolTipText(getTooltipText());
         m_highlighted.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
@@ -88,7 +88,7 @@ public final class HighlightAction extends AbstractComposerAction {
 
     public void paint(Graphics g, int x, int y, boolean isReadOnly) {
         if (!m_highlighted.isDeleted()) {
-            if (getScreenManager().getHighlightObject()) {
+            if ( !m_isCompleted && getScreenManager().getHighlightObject()) {
                 m_highlighted.getOutline().highlight(g, x, y);
             }
         } else {
@@ -115,9 +115,9 @@ public final class HighlightAction extends AbstractComposerAction {
                prefix = elem.getLocalName();
             }
             StringBuilder sb = new StringBuilder();
-            sb.append("<html>");  //NOI18N
+            sb.append("<html>&nbsp;");  //NOI18N
             sb.append(NbBundle.getMessage(SVGViewTopComponent.class, "LBL_Type", prefix)); //NOI18N
-            sb.append("<br>"); //NOI18N
+            sb.append("<br>&nbsp;"); //NOI18N
 
             String id = elem.getId();
             if (id != null){
@@ -125,8 +125,7 @@ public final class HighlightAction extends AbstractComposerAction {
                 sb.append("<br>"); //NOI18N
             }
             
-            sb.append(getDataObject().getModel().describeElement(
-                      selectedId, false, true, "<br>")); //NOI18N
+            sb.append(getDataObject().getModel().describeElement(selectedId /*, false, true, "<br>"*/)); //NOI18N
             sb.append("</html>"); //NOI18N
             return sb.toString();
         }

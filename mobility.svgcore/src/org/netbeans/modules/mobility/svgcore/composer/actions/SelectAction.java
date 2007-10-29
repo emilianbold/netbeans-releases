@@ -40,10 +40,10 @@
  */package org.netbeans.modules.mobility.svgcore.composer.actions;
 
 import java.awt.AWTEvent;
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerAction;
-import org.netbeans.modules.mobility.svgcore.composer.ComposerActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObjectOutline;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
@@ -53,12 +53,15 @@ import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
  * @author Pavel Benes
  */
 public final class SelectAction extends AbstractComposerAction {
+    private static final Color SELECTION_BODY_COLOR = new Color( 64, 64, 255, 64);
+    private static final Color SELECTION_OUTLINE_COLOR = new Color( 64, 64, 255, 128);
+
     private final SVGObject m_selected;
 
     public SelectAction(SelectActionFactory factory, SVGObject selected) {
         super(factory);
         m_selected = selected;
-        assert m_selected != null : "The selected object cannot be null";
+        assert m_selected != null : "The selected object cannot be null"; //NOI18N
         m_selected.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
     }
     
@@ -81,10 +84,18 @@ public final class SelectAction extends AbstractComposerAction {
         }
         return false;
     }
-
+    
     public void paint(Graphics g, int x, int y, boolean isReadOnly) {
-        if ( !isReadOnly && !m_isCompleted && !m_selected.isDeleted()) {
-            m_selected.getOutline().draw(g, x, y, SVGObjectOutline.SELECTOR_BODY, true);
+        if ( !m_isCompleted && !m_selected.isDeleted()) {
+            if ( isReadOnly) {
+                if ( getScreenManager().getHighlightObject()) {
+                    SVGObjectOutline outline = m_selected.getOutline();
+                    outline.highlight(g, x, y, SELECTION_BODY_COLOR);
+                    outline.draw(g, x, y, SELECTION_OUTLINE_COLOR, false);
+                }
+            } else {
+                m_selected.getOutline().draw(g, x, y, SVGObjectOutline.SELECTOR_BODY, true);
+            }
         }
     }
 
