@@ -58,14 +58,12 @@ public interface FileOwnerQueryImplementation {
      * @return a project which owns it, or null for no response
      */
     Project getOwner(URI file);
-    
+
     /**
      * Decide which project, if any, "owns" a given file.
      * @param file FileObject of an existing file
      * @return a project which owns it, or null for no response
      */
     Project getOwner(FileObject file);
-    
-    // XXX int getPriority();
-    
+
 }
