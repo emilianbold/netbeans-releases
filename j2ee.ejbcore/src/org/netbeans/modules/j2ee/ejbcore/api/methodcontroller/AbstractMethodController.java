@@ -382,11 +382,13 @@ public abstract class AbstractMethodController extends EjbMethodController {
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(Phase.ELEMENTS_RESOLVED);
                         TypeElement typeElement = controller.getElements().getTypeElement(className);
-                        Types types = controller.getTypes();
-                        for (TypeMirror interfaceType : typeElement.getInterfaces()) {
-                            Element element = types.asElement(interfaceType);
-                            String interfaceFqn = ((TypeElement) element).getQualifiedName().toString();
-                            result.add(interfaceFqn);
+                        if (typeElement != null) {
+                            Types types = controller.getTypes();
+                            for (TypeMirror interfaceType : typeElement.getInterfaces()) {
+                                Element element = types.asElement(interfaceType);
+                                String interfaceFqn = ((TypeElement) element).getQualifiedName().toString();
+                                result.add(interfaceFqn);
+                            }
                         }
                     }
                 }, true);
