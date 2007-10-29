@@ -57,6 +57,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Types;
+import com.sun.tools.javac.comp.TransTypes;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.util.Name;
@@ -235,6 +236,7 @@ public class SourceAnalyser {
         private final Name errorName;
         private final CompilationUnitTree cu;        
         private final Types types;
+        private final TransTypes trans;
         private final javax.tools.JavaFileObject sibling;
         private final String sourceName;
         private final boolean signatureFiles;
@@ -258,6 +260,7 @@ public class SourceAnalyser {
             this.errorName = Name.Table.instance(jt.getContext()).error;
             this.state = State.OTHER;
             this.types = com.sun.tools.javac.code.Types.instance(jt.getContext());
+            this.trans = TransTypes.instance(jt.getContext());
             this.cu = cu;
             this.signatureFiles = true;
             this.manager = manager;
@@ -279,6 +282,7 @@ public class SourceAnalyser {
             this.errorName = Name.Table.instance(jt.getContext()).error;
             this.state = State.OTHER;
             this.types = com.sun.tools.javac.code.Types.instance(jt.getContext());
+            this.trans = TransTypes.instance(jt.getContext());
             this.cu = cu;
             this.signatureFiles = false;
             this.manager = manager;
@@ -290,6 +294,10 @@ public class SourceAnalyser {
         
         final Types getTypes() {
             return types;
+        }
+        
+        final TransTypes getTransTypes () {
+            return trans;
         }
         
         public @Override Void scan(Tree node, Map<Pair<String,String>, Map<String, Set<ClassIndexImpl.UsageType>>> p) {
@@ -404,7 +412,7 @@ public class SourceAnalyser {
                 
                 output = new PrintWriter(new OutputStreamWriter(jfo.openOutputStream(), "UTF-8"));
                 
-                SymbolDumper.dump(output, types, clazz, enclosingElement);
+                SymbolDumper.dump(output, types, trans, clazz, enclosingElement);
                 
                 output.close();
                 

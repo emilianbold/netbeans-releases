@@ -40,10 +40,18 @@
  */
 package org.netbeans.modules.java.source.usages;
 
+import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Scope;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.CompletionFailure;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Types;
+import com.sun.tools.javac.comp.TransTypes;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
+import com.sun.tools.javac.util.JCDiagnostic.SimpleDiagnosticPosition;
+import com.sun.tools.javac.util.ListBuffer;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map.Entry;
@@ -266,17 +274,43 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
         }
     }
     
-    public static void dump(PrintWriter output, Types types, TypeElement type, Element enclosingElement) {
+    public static void dump(PrintWriter output, Types types, TransTypes trans, TypeElement type, Element enclosingElement) {
         SymbolDumper.dumpImpl(output, types, type, enclosingElement);
         
         output.append('\n');
+        Symbol.ClassSymbol sym = (Symbol.ClassSymbol)type;        
+        com.sun.tools.javac.util.List<Symbol> list = com.sun.tools.javac.util.List.nil();
+
+        for (Scope.Entry e = sym.members().elems; e != null; e = e.sibling) {
+            try {
+                if (e.sym.getKind().isClass() || e.sym.getKind().isInterface()) {
+                    //ignore innerclasses:
+                    continue;
+                }
+                
+                if (e.sym != null && ((e.sym.flags() & Flags.SYNTHETIC) == 0 || (e.sym.flags() & Flags.BRIDGE) != 0) && e.sym.owner == sym) {
+                    list = list.prepend(e.sym);
+                }
+            } catch (CompletionFailure cf) {}
+        }
+
         
-        for (Element e : type.getEnclosedElements()) {
-            if (e.getKind().isClass() || e.getKind().isInterface()) {
-                //ignore innerclasses:
-                continue;
+        for (Symbol symToDump : list) {
+            if ((symToDump.flags() & Flags.BRIDGE) != 0) {
+                symToDump.flags_field |= Flags.SYNTHETIC;
             }
-            SymbolDumper.dumpImpl(output, types, e);
+            SymbolDumper.dumpImpl(output, types, symToDump);
+        }
+        
+        ListBuffer<JCTree> bridges = new ListBuffer<JCTree>();
+        DiagnosticPosition pos = new SimpleDiagnosticPosition(-1);
+        trans.addBridges(pos, sym, bridges);
+        
+        for (JCTree bridge : bridges) {
+            if (bridge.getKind() == Tree.Kind.METHOD) {
+                assert ((JCTree.JCMethodDecl)bridge).sym != null;
+                SymbolDumper.dumpImpl(output, types, (Element)(((JCTree.JCMethodDecl)bridge).sym));
+            }
         }
         
         output.append('W');

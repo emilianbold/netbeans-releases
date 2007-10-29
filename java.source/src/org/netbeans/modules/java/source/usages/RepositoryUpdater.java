@@ -51,6 +51,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Env;
+import com.sun.tools.javac.comp.TransTypes;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Log;
@@ -1947,6 +1948,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         jt.analyze ();
                         dumpClasses((List<? extends ClassSymbol>)classes, fm, root.toExternalForm(), null,
                                 com.sun.tools.javac.code.Types.instance(jt.getContext()),
+                                TransTypes.instance(jt.getContext()),
                                 com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));
                         sa.analyse(trees, jt, fm, active, added);
 
@@ -2605,6 +2607,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         dumpClasses (listener.getEnteredTypes(),fileManager,
                                 rootFo.getURL().toExternalForm(), dirtyFiles,
                                 com.sun.tools.javac.code.Types.instance(jt.getContext()),
+                                TransTypes.instance(jt.getContext()),
                                 com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));
                         if (listener.lowMemory.getAndSet(false)) {
                             jt.finish();
@@ -2643,6 +2646,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         dumpClasses (listener.getEnteredTypes(), fileManager,
                                 rootFo.getURL().toExternalForm(), dirtyFiles,
                                 com.sun.tools.javac.code.Types.instance(jt.getContext()),
+                                TransTypes.instance(jt.getContext()),
                                 com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));
                         if (listener.lowMemory.getAndSet(false)) {
                             jt.finish();
@@ -2772,16 +2776,18 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     private static void dumpClasses (final List<? extends ClassSymbol> entered, final JavaFileManager fileManager,
         final String currentRoot, final Set<URI> dirtyFiles, final com.sun.tools.javac.code.Types javacTypes,
+        final TransTypes trans,
         final com.sun.tools.javac.util.Name.Table nameTable) throws IOException {
         for (ClassSymbol classSym : entered) {
             JavaFileObject source = classSym.sourcefile;            
-            dumpTopLevel(classSym, fileManager, source, currentRoot, dirtyFiles, javacTypes, nameTable);
+            dumpTopLevel(classSym, fileManager, source, currentRoot, dirtyFiles, javacTypes, trans, nameTable);
         }
     }
     
     private static void dumpTopLevel (final ClassSymbol classSym, final JavaFileManager fileManager, 
         final JavaFileObject source, final String currentRootURL, final Set<URI> dirtyFiles,
         final com.sun.tools.javac.code.Types types,
+        final TransTypes trans,
         final com.sun.tools.javac.util.Name.Table nameTable) throws IOException {
         assert source != null;
         if (classSym.getSimpleName() != nameTable.error && classSym.getEnclosingElement().getSimpleName() != nameTable.error) {
@@ -2803,7 +2809,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
             final PrintWriter out = new PrintWriter (new OutputStreamWriter(fobj.openOutputStream(),"UTF-8"));
             try {               
-                SymbolDumper.dump(out,types,classSym,null);
+                SymbolDumper.dump(out,types,trans,classSym,null);
             } finally {
                 out.close();
             }
@@ -2813,7 +2819,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             final List<Symbol> enclosedElements = classSym.getEnclosedElements();
             for (Symbol ee : enclosedElements) {
                 if (ee.getKind().isClass() || ee.getKind().isInterface()) {
-                    dumpClass ((ClassSymbol)ee,fileManager, source, types, nameTable, rsList);
+                    dumpClass ((ClassSymbol)ee,fileManager, source, types, trans, nameTable, rsList);
                 }
             }
             if (rsList != null) {
@@ -2835,7 +2841,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
             
     private static void dumpClass (final ClassSymbol classSym, final JavaFileManager fileManager, final JavaFileObject source, final com.sun.tools.javac.code.Types types,
-            final com.sun.tools.javac.util.Name.Table nameTable, final Set<? super String> rsList) throws IOException {
+            final TransTypes trans, final com.sun.tools.javac.util.Name.Table nameTable, final Set<? super String> rsList) throws IOException {
         if (classSym.getSimpleName() != nameTable.error) {
             final StringBuilder classNameBuilder = new StringBuilder ();
             ClassFileUtil.encodeClassName(classSym, classNameBuilder, '.');  //NOI18N
@@ -2843,7 +2849,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             final JavaFileObject fobj = fileManager.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT, binaryName, JavaFileObject.Kind.CLASS, source);
             final PrintWriter out = new PrintWriter (new OutputStreamWriter(fobj.openOutputStream(),"UTF-8"));
             try {               
-                SymbolDumper.dump(out,types,classSym,null);
+                SymbolDumper.dump(out,types,trans,classSym,null);
             } finally {
                 out.close();
             }
@@ -2853,7 +2859,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             final List<Symbol> enclosedElements = classSym.getEnclosedElements();
             for (Symbol ee : enclosedElements) {
                 if (ee.getKind().isClass() || ee.getKind().isInterface()) {
-                    dumpClass ((ClassSymbol)ee,fileManager, source, types, nameTable, rsList);
+                    dumpClass ((ClassSymbol)ee,fileManager, source, types, trans, nameTable, rsList);
                 }
             }
         }

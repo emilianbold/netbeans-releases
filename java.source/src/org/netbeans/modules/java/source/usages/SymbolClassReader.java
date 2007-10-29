@@ -42,6 +42,7 @@ package org.netbeans.modules.java.source.usages;
 
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.BoundKind;
+import com.sun.tools.javac.code.Flags;
 import static com.sun.tools.javac.code.Flags.*;
 import static com.sun.tools.javac.code.Kinds.*;
 import com.sun.tools.javac.code.Scope;
@@ -733,6 +734,13 @@ public class SymbolClassReader extends JavadocClassReader {
 
     private Symbol readExecutableMember(Reader r) throws IOException {
         long flags = readFlags(r);
+        
+        //Equivalent to ClassReader.adjustFlags ()
+        //When the mathod is a bridge and covariant return types are not allowed
+        //clean SYNTHETIC flag
+        if ((flags & Flags.BRIDGE) != 0 && !allowCovRetTypes) {
+            flags &= ~SYNTHETIC;
+        }
         
         typevars = typevars.dup(currentOwner);
         

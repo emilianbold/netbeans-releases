@@ -46,6 +46,7 @@ import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Types;
+import com.sun.tools.javac.comp.TransTypes;
 import com.sun.tools.javac.model.LazyTreeLoader;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.CouplingAbort;
@@ -158,7 +159,7 @@ public class TreeLoader extends LazyTreeLoader {
             else {
                 owner = clazz.owner;
             }
-            SymbolDumper.dump(writer, Types.instance(context), clazz, owner);
+            SymbolDumper.dump(writer, Types.instance(context), TransTypes.instance(context), clazz, owner);
         } finally {
             if (writer != null)
                 writer.close();
