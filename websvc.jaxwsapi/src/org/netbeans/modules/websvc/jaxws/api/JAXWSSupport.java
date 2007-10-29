@@ -92,7 +92,7 @@ public final class JAXWSSupport {
      */
     public static JAXWSSupport getJAXWSSupport(FileObject f) {
         if (f == null) {
-            throw new NullPointerException("Passed null to WebServicesSupport.getWebServicesSupport(FileObject)"); // NOI18N
+            throw new NullPointerException("Passed null to JAXWSSupport.getJAXWSSupport(FileObject)"); // NOI18N
         }
         Iterator it = implementations.allInstances().iterator();
         while (it.hasNext()) {
