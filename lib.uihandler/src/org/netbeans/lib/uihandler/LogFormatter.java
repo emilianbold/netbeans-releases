@@ -106,7 +106,7 @@ class LogFormatter extends XMLFormatter{
                 sb.append("&gt;");// NOI18N
             } else if (ch == '&') {
                 sb.append("&amp;");// NOI18N
-            } else if (ch < 0x20) { // #119820
+            } else if (ch < 0x20 && ch != '\t' && ch != '\r' && ch != '\n') { // #119820
                 sb.append('^').append((char) (ch + 0x40));
             } else {
                 sb.append(ch);
@@ -238,7 +238,7 @@ class LogFormatter extends XMLFormatter{
      * @param record the log record to be formatted.
      * @return a formatted log record
      */
-    public String format(LogRecord record) {
+    public @Override String format(LogRecord record) {
         StringBuffer sb = new StringBuffer(1000);
         sb.append("<record>\n");// NOI18N
         
