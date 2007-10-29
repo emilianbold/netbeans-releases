@@ -118,9 +118,9 @@ public class GlobalReferenceImpl<T extends ReferenceableWSDLComponent>
     
     public String getEffectiveNamespace() {
         if (getReferenced() != null) {
-            assert getReferenced() != null;
             return getReferenced().getModel().getDefinitions().getTargetNamespace();
         } else {
+            assert refString != null;
             return getParent().lookupNamespaceURI(getPrefix());
         }
     }
