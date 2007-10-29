@@ -47,6 +47,8 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
+import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 
 /**
  *
@@ -96,6 +98,49 @@ public class EntityMappingsUtilitiesTest extends EntityMappingsTestCase {
                 TypeMirror stringType = elements.getTypeElement("java.lang.String").asType();
                 TypeElement argTypeElement = EntityMappingsUtilities.getFirstTypeArgument(types.getDeclaredType(typeElement, stringType));
                 assertTrue(argTypeElement.getQualifiedName().contentEquals("java.lang.String"));
+            }
+        });
+    }
+
+    public void testHasFieldAccess() throws Exception {
+        TestUtilities.copyStringToFileObject(srcFO, "Customer.java",
+                "import javax.persistence.*;" +
+                "@Entity()" +
+                "public class Customer {" +
+                "   @Id()" +
+                "   private int id;" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "Customer2.java",
+                "import javax.persistence.*;" +
+                "@Entity()" +
+                "public class Customer2 {" +
+                "   @Id()" +
+                "   private int id;" +
+                "   @PrePersist()" +
+                "   public int prePersist() {" +
+                "   }" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "Customer3.java",
+                "import javax.persistence.*;" +
+                "@Entity()" +
+                "public class Customer3 {" +
+                "   private int id;" +
+                "   @Id()" +
+                "   public int getId() {" +
+                "       return id;" +
+                "   }" +
+                "}");
+        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        ClasspathInfo cpi = ClasspathInfo.create(srcFO);
+        final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
+        helper.runJavaSourceTask(new Runnable() {
+            public void run() {
+                TypeElement customer = helper.getCompilationController().getElements().getTypeElement("Customer");
+                assertTrue(EntityMappingsUtilities.hasFieldAccess(helper, customer.getEnclosedElements()));
+                TypeElement customer2 = helper.getCompilationController().getElements().getTypeElement("Customer2");
+                assertTrue(EntityMappingsUtilities.hasFieldAccess(helper, customer2.getEnclosedElements()));
+                TypeElement customer3 = helper.getCompilationController().getElements().getTypeElement("Customer3");
+                assertFalse(EntityMappingsUtilities.hasFieldAccess(helper, customer3.getEnclosedElements()));
             }
         });
     }

@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -67,6 +68,54 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.PrimaryKeyJoinColu
  */
 public class EntityMappingsUtilities {
 
+    /**
+     * Contains the JPA ORM annotations (cf. JPA spec, section 9.1). Only contains
+     * the ORM annotations that can appear <strong>in</strong> an entity,
+     * that is, <code>javax.persistence.Entity</code> is left out intentionally.
+     */
+    private static final Set<String> ORM_ANNOTATIONS = new HashSet<String>();
+
+    static {
+        ORM_ANNOTATIONS.add("javax.persistence.AssociationOverride");      // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.AssociationOverrides");     // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.AttributeOverride");        // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.AttributeOverrides");       // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.Basic");                    // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.Column");                   // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.DiscriminatorColumn");      // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.DiscriminatorValue");       // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.Embeddable");               // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.Embedded");                 // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.EmbeddedId");               // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.Enumerated");               // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.GeneratedValue");           // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.Id");                       // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.IdClass");                  // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.Inheritance");              // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.JoinColumn");               // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.JoinColumns");              // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.JoinTable");                // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.Lob");                      // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.ManyToMany");               // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.ManyToOne");                // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.MapKey");                   // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.MappedSuperclass");         // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.OneToMany");                // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.OneToOne");                 // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.OrderBy");                  // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.PrimaryKeyJoinColumn");     // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.PrimaryKeyJoinColumns");    // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.SecondaryTable");           // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.SecondaryTables");          // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.SequenceGenerator");        // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.Table");                    // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.TableGenerator");           // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.Temporal");                 // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.Transient");                // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.UniqueConstraint");         // NOI18N
+        ORM_ANNOTATIONS.add("javax.persistence.Version");                  // NOI18N
+    }
+
     public static boolean isTransient(Map<String, ? extends AnnotationMirror> annByType, Set<Modifier> modifiers) {
         return annByType.containsKey("javax.persistence.Transient") || modifiers.contains(Modifier.TRANSIENT); // NOI18N
     }
@@ -75,12 +124,12 @@ public class EntityMappingsUtilities {
         for (Element element : ElementFilter.methodsIn(elements)) {
             for (AnnotationMirror annotation : element.getAnnotationMirrors()) {
                 String annTypeName = helper.getAnnotationTypeName(annotation.getAnnotationType());
-                if (annTypeName != null && annTypeName.startsWith("javax.persistence.")) { // NOI18N
+                if (annTypeName != null && ORM_ANNOTATIONS.contains(annTypeName)) {
                     return false;
                 }
             }
         }
-        // if we got here, no methods were annotated with a JPA annotations
+        // if we got here, no methods were annotated with JPA ORM annotations
         // then either fields are annotated, or there are no annotations in the class
         // (in which case the default -- field access -- applies)
         return true;
