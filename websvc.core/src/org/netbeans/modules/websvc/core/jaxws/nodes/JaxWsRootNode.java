@@ -93,11 +93,11 @@ public class JaxWsRootNode extends AbstractNode implements PropertyChangeListene
     }
     
     public Image getIcon( int type ) {
-        return computeIcon( false, type );
+        return computeIcon( false );
     }
     
     public Image getOpenedIcon( int type ) {
-        return computeIcon( true, type );
+        return computeIcon( true );
     }
     
     /**
@@ -119,7 +119,7 @@ public class JaxWsRootNode extends AbstractNode implements PropertyChangeListene
         }
     }
 
-    private Image computeIcon( boolean opened, int type ) {        
+    private Image computeIcon( boolean opened) {        
         Icon icon = getFolderIcon(opened);
         Image image = ((ImageIcon)icon).getImage();
         image = Utilities.mergeImages(image, WEB_SERVICES_BADGE, 7, 7 );
