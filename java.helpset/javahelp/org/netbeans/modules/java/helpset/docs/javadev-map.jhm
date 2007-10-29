@@ -340,7 +340,8 @@
 
 
 <!--CSH for GUI Builder:-->
-
+<!-- Set Action property editor -->
+<mapID target="org.netbeans.modules.swingapp.ActionPropertyEditorPanel" url="gui/saf/gui_saf_action_csh.html">
 <!-- CSH page for event handler dialog box :-->
 <mapID target="gui.csh.handlers" url="gui/csh/gui_event_handler_dialog.html" />
 <!-- CSH page for Form Editor property Variables Modifier (also for the Java module's "Modifiers" property) :-->
