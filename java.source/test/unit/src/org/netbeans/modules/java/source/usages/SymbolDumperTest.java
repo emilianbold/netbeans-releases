@@ -48,6 +48,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Types;
+import com.sun.tools.javac.comp.TransTypes;
 import com.sun.tools.javac.jvm.ClassReader;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.util.Context;
@@ -268,7 +269,7 @@ public class SymbolDumperTest extends NbTestCase {
         PrintWriter pw = new PrintWriter(w);
         
         JavacTaskImpl jt = (JavacTaskImpl)SourceUtilsTestUtil.getJavacTaskFor(info);
-        SymbolDumper.dump(pw, Types.instance(jt.getContext()), (TypeElement) el, null);
+        SymbolDumper.dump(pw, Types.instance(jt.getContext()), TransTypes.instance(jt.getContext()), (TypeElement) el, null);
         
         pw.close();
         
@@ -835,12 +836,12 @@ public class SymbolDumperTest extends NbTestCase {
         public void validate(CompilationInfo info, Element t);
     }
     
-    private String dump(Types types, TypeElement type) {
+    private String dump(Types types, TransTypes trans, TypeElement type) {
         //!!!well:
         StringWriter w = new StringWriter();
         PrintWriter pw = new PrintWriter(w);
         
-        SymbolDumper.dump(pw, types, type, null);
+        SymbolDumper.dump(pw, types, trans, type, null);
         
         pw.close();
         return w.toString();
@@ -919,7 +920,7 @@ public class SymbolDumperTest extends NbTestCase {
                     
                     symbol[0] = cs;
                     JavacTaskImpl jt = (JavacTaskImpl)SourceUtilsTestUtil.getJavacTaskFor(parameter);
-                    newSig[0] = dump(Types.instance(jt.getContext()), cs);
+                    newSig[0] = dump(Types.instance(jt.getContext()), TransTypes.instance(jt.getContext()), cs);
                     infoOut[0] = parameter;
                 } finally {
                     l.countDown();
@@ -1150,7 +1151,7 @@ public class SymbolDumperTest extends NbTestCase {
                     parameter.toPhase(Phase.RESOLVED);
                     
                     JavacTaskImpl jt = (JavacTaskImpl)SourceUtilsTestUtil.getJavacTaskFor(parameter);
-                    newSig[0] = dump(Types.instance(jt.getContext()), cs);
+                    newSig[0] = dump(Types.instance(jt.getContext()), TransTypes.instance(jt.getContext()), cs);
                     
                     errors[0] = parameter.getDiagnostics();
                 } catch (Exception e) {
@@ -1434,7 +1435,7 @@ public class SymbolDumperTest extends NbTestCase {
             StringWriter w = new StringWriter();
             PrintWriter pw = new PrintWriter(w);
             
-            SymbolDumper.dump(pw, getTypes(), clazz, enclosingMethod);
+            SymbolDumper.dump(pw, getTypes(), getTransTypes(), clazz, enclosingMethod);
             
             pw.close();
             
