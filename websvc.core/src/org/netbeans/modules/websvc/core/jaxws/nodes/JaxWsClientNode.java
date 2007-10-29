@@ -140,31 +140,51 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
         return client.getWsdlUrl();
     }
     
-    private static final java.awt.Image WAITING_BADGE =
-            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/waiting.png"); // NOI18N
-    private static final java.awt.Image ERROR_BADGE =
-            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/error-badge.gif" ); //NOI18N
-    private static final java.awt.Image SERVICE_BADGE =
-            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.gif" ); //NOI18N
+    private static final String WAITING_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/waiting.png"; // NOI18N
+    private static final String ERROR_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/error-badge.gif"; //NOI18N
+    private static final String SERVICE_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.gif"; //NOI18N
+
+    private java.awt.Image cachedWaitingBadge;
+    private java.awt.Image cachedErrorBadge;
+    private java.awt.Image cachedServiceBadge;
     
     public java.awt.Image getIcon(int type) {
         if (((JaxWsClientChildren)getChildren()).getWsdlModel()!=null) {
-            return SERVICE_BADGE;
+            return getServiceImage();
         } else {
             WsdlModeler wsdlModeler = getWsdlModeler();
             if (wsdlModeler!=null && wsdlModeler.getCreationException()==null) {
                 if (modelGenerationFinished)
-                    return SERVICE_BADGE;
+                    return getServiceImage();
                 else
-                    return org.openide.util.Utilities.mergeImages(SERVICE_BADGE, WAITING_BADGE, 15, 8); 
+                    return org.openide.util.Utilities.mergeImages(getServiceImage(), getWaitingBadge(), 15, 8); 
             } else {
-                java.awt.Image dirtyNodeImage = org.openide.util.Utilities.mergeImages(SERVICE_BADGE, ERROR_BADGE, 6, 6);
+                java.awt.Image dirtyNodeImage = org.openide.util.Utilities.mergeImages(getServiceImage(), getErrorBadge(), 6, 6);
                 if (modelGenerationFinished)
                     return dirtyNodeImage;
                 else
-                    return org.openide.util.Utilities.mergeImages(dirtyNodeImage, WAITING_BADGE, 15, 8);
+                    return org.openide.util.Utilities.mergeImages(dirtyNodeImage, getWaitingBadge(), 15, 8);
             }
         }
+    }
+    
+    private java.awt.Image getServiceImage() {
+        if (cachedServiceBadge == null) {
+            cachedServiceBadge = org.openide.util.Utilities.loadImage(SERVICE_BADGE);
+        }            
+        return cachedServiceBadge;        
+    }
+    private java.awt.Image getErrorBadge() {
+        if (cachedErrorBadge == null) {
+            cachedErrorBadge = org.openide.util.Utilities.loadImage(ERROR_BADGE);
+        }            
+        return cachedErrorBadge;        
+    }
+    private java.awt.Image getWaitingBadge() {
+        if (cachedWaitingBadge == null) {
+            cachedWaitingBadge = org.openide.util.Utilities.loadImage(WAITING_BADGE);
+        }            
+        return cachedWaitingBadge;        
     }
     
     public java.awt.Image getOpenedIcon(int type){

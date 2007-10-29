@@ -127,7 +127,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 
 public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTesterCookie, ConfigureHandlerCookie {
 
@@ -189,28 +188,53 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
     public String getShortDescription() {
         return getWsdlURL();
     }
-    private static final java.awt.Image WAITING_BADGE = org.openide.util.Utilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/waiting.png"); // NOI18N
-    private static final java.awt.Image ERROR_BADGE = org.openide.util.Utilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/error-badge.gif"); //NOI18N
-    private static final java.awt.Image SERVICE_BADGE = org.openide.util.Utilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.gif"); //NOI18N
+    
+    private static final String WAITING_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/waiting.png"; // NOI18N
+    private static final String ERROR_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/error-badge.gif"; //NOI18N
+    private static final String SERVICE_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.gif"; //NOI18N
 
+    
+    private java.awt.Image cachedWaitingBadge;
+    private java.awt.Image cachedErrorBadge;
+    private java.awt.Image cachedServiceBadge;
+    
     public java.awt.Image getIcon(int type) {
         WsdlModeler wsdlModeler = ((JaxWsChildren) getChildren()).getWsdlModeler();
         if (wsdlModeler == null) {
-            return SERVICE_BADGE;
+            return getServiceImage();
         } else if (wsdlModeler.getCreationException() == null) {
             if (((JaxWsChildren) getChildren()).isModelGenerationFinished()) {
-                return SERVICE_BADGE;
+                return getServiceImage();
             } else {
-                return org.openide.util.Utilities.mergeImages(SERVICE_BADGE, WAITING_BADGE, 15, 8);
+                return org.openide.util.Utilities.mergeImages(getServiceImage(), getWaitingBadge(), 15, 8);
             }
         } else {
-            Image dirtyNodeImage = org.openide.util.Utilities.mergeImages(SERVICE_BADGE, ERROR_BADGE, 6, 6);
+            Image dirtyNodeImage = org.openide.util.Utilities.mergeImages(getServiceImage(), getErrorBadge(), 6, 6);
             if (((JaxWsChildren) getChildren()).isModelGenerationFinished()) {
                 return dirtyNodeImage;
             } else {
-                return org.openide.util.Utilities.mergeImages(dirtyNodeImage, WAITING_BADGE, 15, 8);
+                return org.openide.util.Utilities.mergeImages(dirtyNodeImage, getWaitingBadge(), 15, 8);
             }
         }
+    }
+    
+    private java.awt.Image getServiceImage() {
+        if (cachedServiceBadge == null) {
+            cachedServiceBadge = org.openide.util.Utilities.loadImage(SERVICE_BADGE);
+        }            
+        return cachedServiceBadge;        
+    }
+    private java.awt.Image getErrorBadge() {
+        if (cachedErrorBadge == null) {
+            cachedErrorBadge = org.openide.util.Utilities.loadImage(ERROR_BADGE);
+        }            
+        return cachedErrorBadge;        
+    }
+    private java.awt.Image getWaitingBadge() {
+        if (cachedWaitingBadge == null) {
+            cachedWaitingBadge = org.openide.util.Utilities.loadImage(WAITING_BADGE);
+        }            
+        return cachedWaitingBadge;        
     }
 
     void changeIcon() {
@@ -253,7 +277,7 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         if (f != null) {
             try {
                 DataObject d = DataObject.find(f);
-                oc = (OpenCookie) d.getCookie(OpenCookie.class);
+                oc = d.getCookie(OpenCookie.class);
             } catch (DataObjectNotFoundException de) {
                 ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
             }
@@ -283,7 +307,7 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
      * get URL for Web Service WSDL file
      */
     public String getWebServiceURL() {
-        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         InstanceProperties instanceProperties = provider.getInstanceProperties();
         if (instanceProperties == null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsNode.class, "MSG_MissingServer"), NotifyDescriptor.ERROR_MESSAGE));
@@ -576,7 +600,6 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
                         }
                     }
                     // cleaning java artifacts
-                    Project project = FileOwnerQuery.getOwner(srcRoot);
                     FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
                     try {
                         ExecutorTask wsimportTask = ActionUtils.runTarget(buildImplFo, new String[]{"wsimport-service-clean-" + serviceName}, null); //NOI18N
