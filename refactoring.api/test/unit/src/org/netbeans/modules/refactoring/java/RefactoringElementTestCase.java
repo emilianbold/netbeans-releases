@@ -30,7 +30,9 @@ package org.netbeans.modules.refactoring.java;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -38,6 +40,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringElementImplBridge;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.PositionBounds;
 
@@ -68,6 +71,26 @@ public class RefactoringElementTestCase extends LogTestCase{
         
     private void dumpElements(Collection<RefactoringElement> elems) {
         
+	RefactoringElement[] res = elems.toArray(new RefactoringElement[]{});
+	Arrays.sort(res, new Comparator<RefactoringElement>() {
+
+	    public int compare(RefactoringElement o1, RefactoringElement o2) {
+		PositionBounds p1 = o1.getPosition();
+		PositionBounds p2 = o2.getPosition();
+		int s1 = 0;
+		int s2 = 0;
+		if(p1!=null) {
+		    s1 = p1.getBegin().getOffset();		    
+		}
+		if(p2!=null) {
+		    s2 = p2.getBegin().getOffset();		    
+		}
+		if(s1<s2) return -1;
+		else if(s1>s2) return 1;
+		else return 0;				
+	    }
+	    
+	});
         for (RefactoringElement refactoringElement : elems) {
             ref("Display text: "+refactoringElement.getDisplayText());
             ref("text: "+refactoringElement.getText());
