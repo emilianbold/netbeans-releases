@@ -444,9 +444,10 @@ public class JPDAStart extends Task implements Runnable {
             if (url == null) continue;
             logger.fine("convertToSourcePath - class: " + url); // NOI18N
             try {
-                FileObject fos[] = SourceForBinaryQuery.findSourceRoots 
-                    (url).getRoots();
+                SourceForBinaryQuery.Result srcRootsResult = SourceForBinaryQuery.findSourceRoots(url);
+                FileObject fos[] = srcRootsResult.getRoots();
                 int j, jj = fos.length;
+                logger.fine("  source roots = "+java.util.Arrays.asList(fos)+"; jj = "+jj);
                 /* ?? (#60640)
                 if (jj == 0) { // no sourcepath defined
                     // Take all registered source roots
@@ -484,7 +485,10 @@ public class JPDAStart extends Task implements Runnable {
     private static URL fileToURL (File file, Project project) {
         try {
             FileObject fileObject = FileUtil.toFileObject (file);
-            if (fileObject == null) return null;
+            if (fileObject == null) {
+                project.log("Have no FileObject for "+file.getAbsolutePath(), Project.MSG_WARN);
+                return null;
+            }
             if (FileUtil.isArchiveFile (fileObject)) {
                 fileObject = FileUtil.getArchiveRoot (fileObject);
                 if (fileObject == null) {

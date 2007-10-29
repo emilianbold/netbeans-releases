@@ -320,15 +320,24 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             //e.printStackTrace ();
             return null;
         }
-        ClassPath cp = ClassPath.getClassPath (fo, ClassPath.SOURCE);
-        if (cp == null)
-            cp = ClassPath.getClassPath (fo, ClassPath.COMPILE);
-        if (cp == null) return null;
-        return cp.getResourceName (
+        String relativePath = smartSteppingSourcePath.getResourceName (
             fo, 
             directorySeparator,
             includeExtension
         );
+        if (relativePath == null) {
+            // fallback to FileObject's class path
+            ClassPath cp = ClassPath.getClassPath (fo, ClassPath.SOURCE);
+            if (cp == null)
+                cp = ClassPath.getClassPath (fo, ClassPath.COMPILE);
+            if (cp == null) return null;
+            relativePath = cp.getResourceName (
+                fo, 
+                directorySeparator,
+                includeExtension
+            );
+        }
+        return relativePath;
     }
     
     /**
