@@ -49,7 +49,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.openide.filesystems.FileObject;
-import org.netbeans.api.java.classpath.ClassPath;
 
 import org.netbeans.modules.dbschema.migration.archiver.XMLInputStream;
 
@@ -182,7 +181,7 @@ public class SchemaElementUtil {
     }
 
     private static FileObject findResource(FileObject sourceRoot, String name) {
-        ClassPath cp = ClassPath.getClassPath(sourceRoot, ClassPath.SOURCE);
-        return cp.findResource(NameUtil.getSchemaResourceName(name));
+        // issue 119537: only look for dbschema files in the source root
+        return sourceRoot.getFileObject(NameUtil.getSchemaResourceName(name));
     }
 }
