@@ -25,6 +25,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.jdesktop.beansbinding.AbstractBindingListener;
 import org.jdesktop.beansbinding.Binding;
+import org.jdesktop.beansbinding.PropertyStateEvent;
 
 /**
  * The application's main frame.
@@ -107,7 +108,7 @@ public class ShellView extends FrameView {
         // tracking changes to save
         bindingGroup.addBindingListener(new AbstractBindingListener() {
             @Override
-            public void targetEdited(Binding binding) {
+            public void targetChanged(Binding binding, PropertyStateEvent event) {
                 // save action observes saveNeeded property
                 setSaveNeeded(true);
             }
