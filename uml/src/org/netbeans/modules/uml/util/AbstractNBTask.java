@@ -72,7 +72,6 @@ public abstract class AbstractNBTask extends Thread
     
     protected boolean cancelled = false;
     protected long start;
-    private IProject m_CurrentProject;
     protected boolean success = true;
     private InputOutput inputOutput;
     private PrintWriter out;
@@ -82,6 +81,7 @@ public abstract class AbstractNBTask extends Thread
     private int counter = 0;
     private int logLevel = SUMMARY;
     private boolean logging = false;
+    private boolean finished = false;
     
     public final static String SETTING_KEY_TASK_NAME = "TASK_NAME"; // NOI18N
     public final static String SETTING_KEY_TOTAL_ITEMS = "TOTAL_ITEMS"; // NOI18N
@@ -180,6 +180,14 @@ public abstract class AbstractNBTask extends Thread
      */
     protected void finishLog()
     {
+        // there are some cases where the task "finish" gets called more than
+        // once and we want to prevent the finish message from being displayed
+        // more than once.
+        if (finished)
+            return;
+        
+        finished = true;
+        
         log(SUMMARY); // NOI18N
         log(SUMMARY, "================================"); // NOI18N
         
