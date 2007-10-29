@@ -291,9 +291,7 @@ public class AddEjbGroupDialog {
         }
         
         public HelpCtx getHelp() {
-            // todo help
-            //return new HelpCtx("projrave_ui_elements_server_nav_ejb_node");
-            return HelpCtx.DEFAULT_HELP;
+            return new HelpCtx("projrave_ejb_howtoejbs_ejb_add_to_IDE");
         }
         
         public boolean isValid() {
