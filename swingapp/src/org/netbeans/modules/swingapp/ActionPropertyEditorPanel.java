@@ -70,6 +70,7 @@ import org.netbeans.modules.swingapp.actions.AcceleratorKeyListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -80,7 +81,7 @@ import org.openide.util.Utilities;
  * property editor dialog) the ActionEditor class will do the actual saving.
  * @author  joshua.marinacci@sun.com
  */
-public class ActionPropertyEditorPanel extends javax.swing.JPanel {
+public class ActionPropertyEditorPanel extends javax.swing.JPanel implements HelpCtx.Provider {
     
     public static final String LARGE_ICON_KEY = "SwingLargeIconKey"; // NOI18N
     
@@ -1316,5 +1317,10 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
     private String getLocalizedString(String key) {
         return NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel."+key); // NOI18N
     }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(getClass().getName());
+    }
+            
 }
 
