@@ -3200,7 +3200,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 final Set<VariableElement> initializedFields = new LinkedHashSet<VariableElement>();
                 final Set<VariableElement> uninitializedFields = new LinkedHashSet<VariableElement>();
                 final List<ExecutableElement> constructors = new ArrayList<ExecutableElement>();
-                if (currentMember != null) {
+                if (currentMember != null && currentMember.getKind() == Tree.Kind.VARIABLE) {
                     Element e = trees.getElement(new TreePath(clsPath, currentMember));
                     if (e.getKind().isField())
                         initializedFields.add((VariableElement)e);
