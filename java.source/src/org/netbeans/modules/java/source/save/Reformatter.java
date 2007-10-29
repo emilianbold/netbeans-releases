@@ -2135,7 +2135,11 @@ public class Reformatter implements ReformatTask {
                                     diffs.addFirst(new Diff(offset + lastIdx, offset + idx + 1, null));
                                 lastIdx = idx + 1;
                             }
-                            if (lastIdx > 0) {
+                            if (lastIdx == 0 && after == 1) {
+                                String indent = getIndent();
+                                if (!indent.contentEquals(text))
+                                    diffs.addFirst(new Diff(offset, tokens.offset(), indent));                                
+                            } else if (lastIdx > 0 && lastIdx < lastToken.length()) {
                                 String indent = getIndent();
                                 if (!indent.contentEquals(text.substring(lastIdx)))
                                     diffs.addFirst(new Diff(offset + lastIdx, tokens.offset(), indent));
