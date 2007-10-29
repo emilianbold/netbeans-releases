@@ -308,7 +308,7 @@ public class UMLProjectProperties
             AntProjectHelper.PROJECT_PROPERTIES_PATH);
         
         String oldJavaArtifactRefStr =
-            (String)ep.get(this.REFERENCED_JAVA_PROJECT_ARTIFACTS);
+            (String)ep.get(UMLProjectProperties.REFERENCED_JAVA_PROJECT_ARTIFACTS);
         
         if (oldJavaArtifactRefStr != null && oldJavaArtifactRefStr.length() > 0)
         {
@@ -369,9 +369,6 @@ public class UMLProjectProperties
         
         ep.setProperty(
             UMLProjectProperties.REFERENCED_JAVA_PROJECT, javaSrcProjRefVal);
-        
-        File projDir = FileUtil.toFile(
-            updateHelper.getAntProjectHelper().getProjectDirectory());
         
         if (changed)
         {

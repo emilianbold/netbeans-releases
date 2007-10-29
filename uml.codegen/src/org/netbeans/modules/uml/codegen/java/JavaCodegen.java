@@ -87,37 +87,57 @@ public class JavaCodegen implements ICodeGenerator
     }
        
     public void generate(ITaskSupervisor task,
-         List<IElement> elements, String targetFolderName, Properties props) 
+        List<IElement> elements, String targetFolderName, Properties props)
     {
         boolean backup = Boolean.valueOf(
             props.getProperty("backup", "true")).booleanValue(); // NOI18N
-        
+
         boolean genMarkers = Boolean.valueOf(
             props.getProperty("generateMarkers", "true")).booleanValue(); // NOI18N
-        
+
         int errorsCount = 0;
         int total = elements.size();
 
         task.start(total);
         task.log(task.SUMMARY, getBundleMessage("MSG_CodeGenSelectedOptions")); // NOI18N
-        
+
         task.log(task.SUMMARY, LOG_INDENT +
-            getBundleMessage("MSG_SourceFolderLocation") + " -  " + targetFolderName); // NOI18N
-        
+            getBundleMessage("MSG_SourceFolderLocation") + " - " + targetFolderName); // NOI18N
+
         task.log(task.SUMMARY, LOG_INDENT +
             getBundleMessage("MSG_BackupSources") + " - " + backup); // NOI18N
-        
+
         task.log(task.SUMMARY, LOG_INDENT +
             getBundleMessage("MSG_GenerateMarkers") + " - " + genMarkers); // NOI18N
 
         task.log(task.SUMMARY, ""); // NOI18N
 
+        if (targetFolderName == null || targetFolderName.length() == 0)
+        {
+            task.log(task.TERSE, getBundleMessage("MSG_EmptyTargetSourcePath")); // NOI18N
+            task.fail();
+        }
+        
+        else
+        {
+            FileObject targetSrcFolderFO = 
+                FileUtil.toFileObject(new File(targetFolderName));
+
+            if (targetSrcFolderFO == null || !targetSrcFolderFO.isValid())
+            {
+                task.log(task.TERSE, getBundleMessage(
+                    "MSG_TargetSourcePathNotValid", targetFolderName));
+
+                task.fail();
+            }
+        }
+        
         int counter = 0;
         ScriptEngineManager mgr = new ScriptEngineManager();
         ScriptEngine engine = mgr.getEngineByName("freemarker");
         ClassInfo.eraseRefClasses();
-	
-        for (IElement pElement: elements)
+
+        for (IElement pElement : elements)
         {
             // has the task been canceled by the user?
             if (!task.proceed(1))
@@ -125,460 +145,525 @@ public class JavaCodegen implements ICodeGenerator
 
             counter++;
 
-            task.log(task.TERSE, NbBundle.getMessage(JavaCodegen.class, 
+            task.log(task.TERSE, NbBundle.getMessage(JavaCodegen.class,
                 "MSG_ProcessingElementCounterTotal", // NOI18N
                 counter, total) + ": ", false); // NOI18N
 
-            if (pElement == null) 
+            if (pElement == null)
             {
                 task.log(task.TERSE, getBundleMessage("MSG_SkipNullElement")); // NOI18N
                 continue;
             }
-            
+
             if (!(pElement instanceof IClassifier))
             {
-                task.log(task.TERSE, getBundleMessage(
-                    "MSG_SkipNotClassifierElement", 
+                task.log(task.TERSE, getBundleMessage("MSG_SkipNotClassifierElement",
                     ((INamedElement) pElement).getName())); // NOI18N
-                
                 continue;
             }
 
             IClassifier classifier = (IClassifier) pElement;
             if (classifier.getName().equalsIgnoreCase(getUnnamedElementPreference()))
             {
-                task.log(task.TERSE, getBundleMessage(
-                    "MSG_SkipUnnamedElement") + getUnnamedElementPreference());
+                task.log(task.TERSE, getBundleMessage("MSG_SkipUnnamedElement") +
+                    getUnnamedElementPreference());
                 continue;
             }
-            
+
             if (classifier.getName().length() == 0)
             {
-                task.log(task.TERSE, getBundleMessage(
-                    "MSG_SkipUnnamedElement") + getUnnamedElementPreference());
-                
+                task.log(task.TERSE, getBundleMessage("MSG_SkipUnnamedElement") + 
+                    getUnnamedElementPreference());
                 continue;
             }
 
-	    task.log(task.TERSE, classifier.getElementType() + " " // NOI18N
+            task.log(task.TERSE, classifier.getElementType() + " " // NOI18N
                 + classifier.getFullyQualifiedName(false) + " ... ", false); // NOI18N
 
-	    try 
-	    {	    	    
-		ClassInfo clinfo = new ClassInfo(classifier);
-		
-		// skip inner class/interface/enumeration elements
-		// as they are taken care of by their outer class code gen
-		if (clinfo.getOuterClass() != null)
-		{
-		    task.log(task.TERSE, ""); // NOI18N
-		    continue;
-		}  
-		clinfo.setMethodsAndMembers(classifier);
-		clinfo.setExportSourceFolderName(targetFolderName);
-		clinfo.setComment(classifier.getDocumentation());
-		
-		boolean checkAsc = false;
-		boolean genToTmp = false;
-		ArrayList<FileMapping> fmappings = new ArrayList<FileMapping>();
-		HashSet<File> targetFiles = new HashSet<File>();
-		Merger merger = new Merger(props);
+            try
+            {
+                ClassInfo clinfo = new ClassInfo(classifier);
 
-		// 2 possible places to get templates from - 
-		// registry and teplates subdir of the project 
-		FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-	    
-		FileObject root = fs.getRoot()
-		    .getFileObject(DomainTemplatesRetriever.TEMPLATES_BASE_FOLDER); // NOI18N
-		
-		String projTemplPath = clinfo.getOwningProject().getBaseDirectory()
-		    + File.separator + "templates" + File.separator + "java"; // NOI18N
-		
-		List<DomainTemplate> domainTemplates = DomainTemplatesRetriever
-		    .retrieveTemplates(clinfo.getClassElement());
-		
-		if (domainTemplates == null || domainTemplates.size() == 0)
-		{
-		    task.log(task.TERSE, getBundleMessage("MSG_ErrorNoTemplatesDefinedForElement")); // NOI18N
-		    errorsCount++;
-		    continue;
-  		} else {
-		    task.log(task.TERSE, ""); // NOI18N
-		}
-
-		Iterator<DomainTemplate> iterTemplates = domainTemplates.iterator();
-
-		while (iterTemplates.hasNext()) 
-		{
-		    try {
-		        DomainTemplate domainTemplate = iterTemplates.next();
-			FileObject templteFileObject;
-			File templateFile = new File(projTemplPath 
-			    + File.separator + domainTemplate.getTemplateFilename());
-			
-			if (templateFile.exists())
-			    templteFileObject = FileUtil.toFileObject(templateFile);
-			
-			else 
-			{
-			    templteFileObject = root.getFileObject(
-				domainTemplate.getTemplateFilename());
-			}
-			
-			templteFileObject.setAttribute(
-                            "javax.script.ScriptEngine", "freemarker"); // NOI18N
-                                        
-			FileMapping fmap = new FileMapping();
-			fmap.templateFileObject = templteFileObject;
-			fmap.domainTemplate = domainTemplate;
-			    
-			FileObject exportPkgFileObject = 
-			    clinfo.getExportPackageFileObject(
-			    domainTemplate.getFolderPath());
-			
-			if (exportPkgFileObject != null) {
-
-			    String ext = domainTemplate.getExtension();
-			    if (ext == null) 
-			    {
-				ext = templteFileObject.getExt();
-			    }
-			    if (ext != null) 
-			    {
-				if (ext.startsWith(".")) 
-				{
-				    ext = ext.substring(1);
-				}				
-				fmap.ext = ext;				
-			    } 
-
-			    // lets check for existing source 
-			    String extAdd = (fmap.ext != null ? "." + fmap.ext : "");
-			    String targetPackageFolderPath = FileUtil.toFile(exportPkgFileObject).getCanonicalPath();
-			    String targName = getOutputName(clinfo.getName(), domainTemplate) + extAdd;
-			    String targetFilePath = targetPackageFolderPath + SEP + targName;
-			    fmap.targetFilePath = targetFilePath;
-			    File targetFile = new File(targetFilePath);
-			    targetFiles.add(targetFile);
-			    if (targetFile.exists()) 
-			    {
-				fmap.existingSourcePath = targetFile.getCanonicalPath();
-				FileObject buFileObj = backupFile(targetFile);
-				if (buFileObj != null) 
-				{
-				    fmap.existingSourceBackupPath = FileUtil.toFile(buFileObj).getCanonicalPath();
-				}
-				ParsedInfo existingFileInfo = merger.parse(targetFilePath);
-				if (existingFileInfo != null)
-				{
-				    fmap.existingFileInfo = existingFileInfo;
-				    fmap.merge = true;
-				    genToTmp = true;
-				} 		
-				String exName = new File(targetFile.getCanonicalPath()).getName();
-				if (!exName.equals(targName)) {
-				    FileObject trgFO = FileUtil.toFileObject(targetFile);
-				    if (trgFO != null) 
-				    {
-					trgFO.delete();
-				    }
-				}
-			    } 
-			    else 
-			    {
-				checkAsc = true;
-			    }
-			} 
-			else 
-			{
-			    // TBD - couldn't create the package directory for some reason
-			    task.log(task.TERSE, getBundleMessage("MSG_ErrorCreatingPackageDir")); // NOI18N	
-			    errorsCount++;
-			    continue;
-			}
-			fmappings.add(fmap);
-		    }
-		    catch (IOException ex) 
-		    {
-			String excMsg = ex.getMessage();
-			if (excMsg == null) 
-			{
-			    excMsg = ex.getClass().getName();
-			}
-			task.log(task.TERSE, getBundleMessage("MSG_ErrorWhileProcessingElement") // NOI18N
-				 + " " + excMsg); // NOI18N
-			errorsCount++;
-			ex.printStackTrace();
-		    }					    
-		} 
-		
-		Hashtable<String, ParsedInfo> ascfiles = new Hashtable<String, ParsedInfo>();
-		if (checkAsc)
-		{
-		    List<IElement> sourceFiles = classifier.getSourceFiles();		    
-		    if (sourceFiles != null) 
-		    {
-			for (IElement src : sourceFiles) 
-			{
-			    if (! (src instanceof ISourceFileArtifact) )
-			    {
-				continue;
-			    }
-			    File ascFile = new File(((ISourceFileArtifact)src).getSourceFile());
-			    if (targetFiles.contains(ascFile)) 
-			    {
-				continue;
-			    }
-			    if (! inSubdir(new File(targetFolderName), ascFile))
-			    {
-				continue;
-			    }
-			    
-			    ParsedInfo ascInfo = merger.parse(ascFile.getCanonicalPath());
-			    if (ascInfo == null) 
-			    {
-				continue;
-			    }
-			    if (! inCorrectPackageSubdir(new File(targetFolderName), ascFile, ascInfo)) 
-			    {
-				continue;
-			    }
-			    List<String> ids = ascInfo.getDefinitiveClassIds();
-			    if (ids == null) 
-			    {
-				continue;
-			    }
-			    for(String id : ids) 
-			    {
-				if (id != null) 
-				{ 
-				    ascfiles.put(id, ascInfo);
-				}				
-			    }
-			}
-		    }	    
-		}
-
-		if (genToTmp) 
-		{
-		    clinfo.setExportSourceFolderName(getTempGenerationTargetDir());
-		} 
-
-		for(FileMapping fmap : fmappings)
-		{ 
-		    DomainTemplate domainTemplate = fmap.domainTemplate;	    
-			
-		    task.log(task.SUMMARY, LOG_INDENT 
-			+ NbBundle.getMessage(JavaCodegen.class, "MSG_SourceCodeGenerating", // NOI18N
-					      domainTemplate.getTemplateFilename()), false); // NOI18N
-		    try
-		    {
-			FileObject exportPkgFileObject = 
-			    clinfo.getExportPackageFileObject(
-		            domainTemplate.getFolderPath());
-			
-			if (exportPkgFileObject != null) 
-			{
-			    if (!genToTmp && fmap.existingSourcePath != null) 
-			    { 
-				FileUtil.toFileObject(new File(fmap.existingSourcePath)).delete(); 
-			    }
-
-			    HashMap<String, Object> parameters = new HashMap<String, Object>();
-			    parameters.put("classInfo", clinfo); // NOI18N
-			    parameters.put("modelElement", classifier); // NOI18N
+                // skip inner class/interface/enumeration elements
+                // as they are taken care of by their outer class code gen
+                if (clinfo.getOuterClass() != null)
+                {
+                    task.log(task.TERSE, ""); // NOI18N
+                    continue;
+                }
                 
-			    Hashtable<String, Object> codegenOptions = new Hashtable<String, Object>();
-			    codegenOptions.put("GENERATE_MARKER_ID", genMarkers); // NOI18N
-			    parameters.put("codegenOptions", codegenOptions); // NOI18N
-			    
-			    FileObject templFO = fmap.templateFileObject;		    
-			    engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
-			    engine.getContext().setAttribute(FileObject.class.getName(), templFO, ScriptContext.ENGINE_SCOPE);
-			    engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE).putAll(parameters);
+                clinfo.setMethodsAndMembers(classifier);
+                clinfo.setExportSourceFolderName(targetFolderName);
+                clinfo.setComment(classifier.getDocumentation());
 
-			    String pathto = 
-				FileUtil.toFile(exportPkgFileObject).getCanonicalPath() 
-				+ SEP 
-				+ getOutputName(clinfo.getName(), domainTemplate) 
-				+ ( fmap.ext != null ? "." + fmap.ext : "" ) ; 
-			    File fileto = new File(pathto);
-			    Writer w = new BufferedWriter(new FileWriter(fileto));
-			    engine.getContext().setWriter(w);
-			    InputStreamReader is = new InputStreamReader(templFO.getInputStream());
-			    engine.eval(is);
-			    is.close();
-			    w.close();
+                boolean checkAsc = false;
+                boolean genToTmp = false;
+                ArrayList<FileMapping> fmappings = new ArrayList<FileMapping>();
+                HashSet<File> targetFiles = new HashSet<File>();
+                Merger merger = new Merger(props);
 
-			    if (fileto.exists()) 
-			    {
-				fmap.generatedFilePath = fileto.getCanonicalPath();
-				task.log(task.TERSE, " " + getBundleMessage("MSG_OK")); // NOI18N	
-			    }	
-			    else 
-			    {
-				task.log(task.TERSE, 
-					 getBundleMessage("MSG_ErrorWhileSourceCodeGenerating"));
-				errorsCount++;
-			    }
-			}
-			else 
-			{
-			    // TBD - couldn't create the package directory for some reason
-			    task.log(task.TERSE, getBundleMessage("MSG_ErrorCreatingPackageDir")); // NOI18N	
-			    errorsCount++;
-			    continue;
-			}
-		    }
-		    catch (Exception e) 
-		    {
-			task.log(task.TERSE, getBundleMessage("MSG_ErrorWhileSourceCodeGenerating") // NOI18N
-				 + " " + e.getMessage());
-			errorsCount++;
-			e.printStackTrace();
-			continue;
-		    }
+                // 2 possible places to get templates from - 
+                // registry and teplates subdir of the project 
+                FileSystem fs = Repository.getDefault().getDefaultFileSystem();
 
-		    try 
-		    {
-			if ( ! (fmap.existingSourcePath == null && ascfiles.size() == 0) )
-			{
-			    fmap.generatedFileInfo = merger.parse(fmap.generatedFilePath);
-			    if (fmap.existingSourcePath != null)  
-			    {
-				task.log(task.SUMMARY, LOG_INDENT 
-					 + getBundleMessage("MSG_ExistingSource") // NOI18N
-					 + " -  " + fmap.existingSourcePath); 
-				    
-				if (fmap.existingFileInfo != null) 
-				{
-				    if (fmap.generatedFileInfo != null) 
-				    {
-					task.log(task.SUMMARY, LOG_INDENT 
-						 + getBundleMessage("MSG_SourceCodeMerging"), false); // NOI18N
-					merger.merge(fmap.generatedFileInfo, 
-						     fmap.generatedFilePath,
-						     fmap.existingFileInfo, 
-						     fmap.existingSourceBackupPath, 
-						     fmap.targetFilePath);    
-					task.log(task.TERSE, " " + getBundleMessage("MSG_OK")); // NOI18N
-				    } 
-				    else 
-				    {
-					fmap.merge = false;
-					task.log(task.SUMMARY, LOG_INDENT 
-						 + getBundleMessage("MSG_GeneratedSourceNotParseableOverwritten")); // NOI18N
-					continue;
-				    }
-				} 
-				else 
-				{
-				    task.log(task.SUMMARY, LOG_INDENT 
-					+ getBundleMessage("MSG_ExistingSourceNotParseableOverwritten")); // NOI18N
-				    continue;
-				}
-			    } 
-			    else 
-			    {
-				ParsedInfo ascInfo = extractById(ascfiles, fmap.generatedFileInfo);
-				if (ascInfo != null) {
-				    fmap.existingSourcePath = ascInfo.getFilePath();
-				    if (backup) 
-				    {
-					FileObject buFileObj 
-					    = backupFile(new File(ascInfo.getFilePath()));		
-					fmap.existingSourceBackupPath = FileUtil.toFile(buFileObj).getCanonicalPath();
-				    }
-				    fmap.merge = true;
-				    task.log(task.SUMMARY, LOG_INDENT 
-					     + getBundleMessage("MSG_ExistingSource") // NOI18N
-					     + " -  " + ascInfo.getFilePath()); 
-				    task.log(task.SUMMARY, LOG_INDENT 
-					     + getBundleMessage("MSG_SourceCodeMerging"), false); // NOI18N
-				    merger.merge(fmap.generatedFileInfo, 
-						 fmap.generatedFilePath,
-						 ascInfo, 
-						 ascInfo.getFilePath(), 
-						 fmap.targetFilePath);     				    
-				    task.log(task.TERSE, " " + getBundleMessage("MSG_OK")); // NOI18N
-				}
-			    } 
+                FileObject root = fs.getRoot().getFileObject(
+                    DomainTemplatesRetriever.TEMPLATES_BASE_FOLDER); // NOI18N
 
-			}
-		    
-		    } 
-		    catch (IOException ex) 
-		    {
-			task.log(task.TERSE, getBundleMessage("MSG_ErrorWhileSourceCodeMerging") // NOI18N
-				 + " " + ex.getMessage());
-			errorsCount++;
-			ex.printStackTrace();
-		    }			
-			
-		}
+                String projTemplPath = clinfo.getOwningProject().getBaseDirectory() 
+                    + File.separator + "templates" + File.separator + "java"; // NOI18N
 
-		List<IElement> sourceFiles = 
-		    classifier.getSourceFiles();		
-		if (sourceFiles != null) 
-		{
-		    for (IElement src : sourceFiles) 
-		    {
-			if (src instanceof ISourceFileArtifact) 
-			{
-			    classifier.removeSourceFile(((ISourceFileArtifact)src)
-							.getSourceFile());
-			}
-		    }
-		}
-	     
-	    		    
-		for(FileMapping fmap : fmappings)
-		{ 
-		    if (genToTmp) 
-		    {
-			if (! fmap.merge) 
-			{
-			    FileBuilder.copyFile(new File(fmap.generatedFilePath),
-						 new File(fmap.targetFilePath));
-			}		    
-		    }
-		    if (fmap.existingSourcePath != null) 
-		    {
-			File exf = new File(fmap.existingSourcePath);
-			if (! exf.equals(new File(fmap.targetFilePath))) 
-			{
-			    exf.delete();
-			}
-			else 
-			{
-			    
-			    if ( (! backup) && (fmap.merge) 
-				 && (fmap.existingSourceBackupPath != null)) 
-			    {
-				new File(fmap.existingSourceBackupPath).delete();
-			    }
-			}
-		    }
-		    classifier.addSourceFileNotDuplicate(fmap.targetFilePath);
-		}			    
-	    } 	    
-	    catch (Exception e) 
-	    {
-		String excMsg = e.getMessage();
-		if (excMsg == null) 
-		{
-		    excMsg = e.getClass().getName();
-		}
-		task.log(task.TERSE, getBundleMessage("MSG_ErrorWhileProcessingElement") // NOI18N
-                    + " " + excMsg);
-		errorsCount++;
-		e.printStackTrace();		
-	    }	    
-	    ClassInfo.eraseRefClass(classifier);
-	}
-	if (errorsCount > 0) {	    
-	    task.fail();
-	}
+                List<DomainTemplate> domainTemplates = DomainTemplatesRetriever
+                    .retrieveTemplates(clinfo.getClassElement());
+
+                if (domainTemplates == null || domainTemplates.size() == 0)
+                {
+                    task.log(task.TERSE, getBundleMessage(
+                        "MSG_ErrorNoTemplatesDefinedForElement")); // NOI18N
+                    
+                    errorsCount++;
+                    continue;
+                }
+                
+                else
+                    task.log(task.TERSE, ""); // NOI18N
+
+                Iterator<DomainTemplate> iterTemplates = domainTemplates.iterator();
+
+                while (iterTemplates.hasNext())
+                {
+                    try
+                    {
+                        DomainTemplate domainTemplate = iterTemplates.next();
+                        FileObject templteFileObject;
+                        
+                        File templateFile = new File(projTemplPath +
+                            File.separator + domainTemplate.getTemplateFilename());
+
+                        if (templateFile.exists())
+                            templteFileObject = FileUtil.toFileObject(templateFile);
+
+                        else
+                        {
+                            templteFileObject = root.getFileObject(
+                                    domainTemplate.getTemplateFilename());
+                        }
+                        
+                        templteFileObject.setAttribute(
+                            "javax.script.ScriptEngine", "freemarker"); // NOI18N
+
+                        FileMapping fmap = new FileMapping();
+                        fmap.templateFileObject = templteFileObject;
+                        fmap.domainTemplate = domainTemplate;
+
+                        FileObject exportPkgFileObject =
+                            clinfo.getExportPackageFileObject(
+                                domainTemplate.getFolderPath());
+
+                        if (exportPkgFileObject != null)
+                        {
+                            String ext = domainTemplate.getExtension();
+                            if (ext == null)
+                                ext = templteFileObject.getExt();
+
+                            if (ext != null)
+                            {
+                                if (ext.startsWith("."))
+                                    ext = ext.substring(1);
+
+                                fmap.ext = ext;
+                            }
+
+                            // lets check for existing source 
+                            String extAdd = (fmap.ext != null ? "." + fmap.ext : "");
+                            
+                            String targetPackageFolderPath = FileUtil.toFile(
+                                exportPkgFileObject).getCanonicalPath();
+                            
+                            String targName = getOutputName(
+                                clinfo.getName(), domainTemplate) + extAdd;
+                            
+                            String targetFilePath = 
+                                targetPackageFolderPath + SEP + targName;
+                            
+                            fmap.targetFilePath = targetFilePath;
+                            File targetFile = new File(targetFilePath);
+                            targetFiles.add(targetFile);
+                            if (targetFile.exists())
+                            {
+                                fmap.existingSourcePath = targetFile.getCanonicalPath();
+                                FileObject buFileObj = backupFile(targetFile);
+                                if (buFileObj != null)
+                                {
+                                    fmap.existingSourceBackupPath = FileUtil.
+                                        toFile(buFileObj).getCanonicalPath();
+                                }
+                                
+                                ParsedInfo existingFileInfo = 
+                                    merger.parse(targetFilePath);
+                                
+                                if (existingFileInfo != null)
+                                {
+                                    fmap.existingFileInfo = existingFileInfo;
+                                    fmap.merge = true;
+                                    genToTmp = true;
+                                }
+                                
+                                String exName = new File(
+                                    targetFile.getCanonicalPath()).getName();
+                                
+                                if (!exName.equals(targName))
+                                {
+                                    FileObject trgFO = FileUtil.toFileObject(targetFile);
+
+                                    if (trgFO != null)
+                                        trgFO.delete();
+                                }
+                            }
+                        
+                            else
+                                checkAsc = true;
+                        }
+                        
+                        else
+                        {
+                            // TBD - couldn't create the package directory for some reason
+                            task.log(task.TERSE, 
+                                getBundleMessage("MSG_ErrorCreatingPackageDir")); // NOI18N	
+                            
+                            errorsCount++;
+                            continue;
+                        }
+                        
+                        fmappings.add(fmap);
+                    }
+                    
+                    catch (IOException ex)
+                    {
+                        String excMsg = ex.getMessage();
+                        
+                        if (excMsg == null)
+                            excMsg = ex.getClass().getName();
+                        
+                        task.log(task.TERSE, getBundleMessage(
+                            "MSG_ErrorWhileProcessingElement") + " " + excMsg); // NOI18N
+                        
+                        errorsCount++;
+                        ex.printStackTrace();
+                    }
+                }
+
+                Hashtable<String, ParsedInfo> ascfiles = 
+                    new Hashtable<String, ParsedInfo>();
+                
+                if (checkAsc)
+                {
+                    List<IElement> sourceFiles = classifier.getSourceFiles();
+                    if (sourceFiles != null)
+                    {
+                        for (IElement src : sourceFiles)
+                        {
+                            if (!(src instanceof ISourceFileArtifact))
+                                continue;
+                            
+                            File ascFile = new File(((ISourceFileArtifact)src)
+                                .getSourceFile());
+                            
+                            if (targetFiles.contains(ascFile))
+                                continue;
+                            
+                            if (!inSubdir(new File(targetFolderName), ascFile))
+                                continue;
+
+                            ParsedInfo ascInfo = 
+                                merger.parse(ascFile.getCanonicalPath());
+
+                            if (ascInfo == null)
+                                continue;
+                            
+                            if (!inCorrectPackageSubdir(
+                                new File(targetFolderName), ascFile, ascInfo))
+                            {
+                                continue;
+                            }
+                            
+                            List<String> ids = ascInfo.getDefinitiveClassIds();
+                            if (ids == null)
+                                continue;
+                            
+                            for (String id : ids)
+                            {
+                                if (id != null)
+                                    ascfiles.put(id, ascInfo);
+                            }
+                        }
+                    }
+                }
+
+                if (genToTmp)
+                    clinfo.setExportSourceFolderName(getTempGenerationTargetDir());
+
+                for (FileMapping fmap : fmappings)
+                {
+                    DomainTemplate domainTemplate = fmap.domainTemplate;
+
+                    task.log(task.SUMMARY, LOG_INDENT + NbBundle.getMessage(
+                        JavaCodegen.class, "MSG_SourceCodeGenerating", // NOI18N
+                        domainTemplate.getTemplateFilename()), false); // NOI18N
+                    
+                    try
+                    {
+                        FileObject exportPkgFileObject =
+                            clinfo.getExportPackageFileObject(
+                                domainTemplate.getFolderPath());
+
+                        if (exportPkgFileObject != null)
+                        {
+                            if (!genToTmp && fmap.existingSourcePath != null)
+                            {
+                                FileUtil.toFileObject(new File(
+                                    fmap.existingSourcePath)).delete();
+                            }
+
+                            HashMap<String, Object> parameters = 
+                                new HashMap<String, Object>();
+
+                            parameters.put("classInfo", clinfo); // NOI18N
+                            parameters.put("modelElement", classifier); // NOI18N
+
+                            Hashtable<String, Object> codegenOptions = 
+                                new Hashtable<String, Object>();
+
+                            codegenOptions.put("GENERATE_MARKER_ID", genMarkers); // NOI18N
+                            parameters.put("codegenOptions", codegenOptions); // NOI18N
+
+                            FileObject templFO = fmap.templateFileObject;
+
+                            engine.getContext().getBindings(
+                                ScriptContext.ENGINE_SCOPE).clear();
+
+                            engine.getContext().setAttribute(
+                                FileObject.class.getName(), 
+                                templFO, ScriptContext.ENGINE_SCOPE);
+
+                            engine.getContext().getBindings(
+                                ScriptContext.ENGINE_SCOPE).putAll(parameters);
+
+                            String pathto = FileUtil.toFile(exportPkgFileObject)
+                                .getCanonicalPath() + SEP + getOutputName(
+                                clinfo.getName(), domainTemplate) + (
+                                fmap.ext != null ? "." + fmap.ext : "");
+
+                            File fileto = new File(pathto);
+                            Writer w = new BufferedWriter(new FileWriter(fileto));
+                            engine.getContext().setWriter(w);
+
+                            InputStreamReader is = new InputStreamReader(
+                                templFO.getInputStream());
+
+                            engine.eval(is);
+                            is.close();
+                            w.close();
+
+                            if (fileto.exists())
+                            {
+                                fmap.generatedFilePath = 
+                                    fileto.getCanonicalPath();
+
+                                task.log(task.TERSE, " " + 
+                                    getBundleMessage("MSG_OK")); // NOI18N	
+                            }
+
+                            else
+                            {
+                                task.log(task.TERSE, getBundleMessage(
+                                    "MSG_ErrorWhileSourceCodeGenerating"));
+
+                                errorsCount++;
+                            }
+                        }
+
+                        else
+                        {
+                            // TBD - couldn't create the package directory for some reason
+                            task.log(task.TERSE, getBundleMessage(
+                                "MSG_ErrorCreatingPackageDir")); // NOI18N	
+
+                            errorsCount++;
+                            continue;
+                        }
+                    }
+                    
+                    catch (Exception e)
+                    {
+                        task.log(task.TERSE, getBundleMessage(
+                            "MSG_ErrorWhileSourceCodeGenerating") // NOI18N
+                            + " " + e.getMessage());
+                        errorsCount++;
+                        e.printStackTrace();
+                        continue;
+                    }
+
+                    try
+                    {
+                        if (!(fmap.existingSourcePath == null && ascfiles.size() == 0))
+                        {
+                            fmap.generatedFileInfo = merger.parse(fmap.generatedFilePath);
+                            
+                            if (fmap.existingSourcePath != null)
+                            {
+                                task.log(task.SUMMARY, LOG_INDENT + 
+                                    getBundleMessage("MSG_ExistingSource") // NOI18N
+                                    + " -  " + fmap.existingSourcePath);
+
+                                if (fmap.existingFileInfo != null)
+                                {
+                                    if (fmap.generatedFileInfo != null)
+                                    {
+                                        task.log(task.SUMMARY, LOG_INDENT + 
+                                            getBundleMessage("MSG_SourceCodeMerging"), false); // NOI18N
+                                        
+                                        merger.merge(fmap.generatedFileInfo,
+                                            fmap.generatedFilePath,
+                                            fmap.existingFileInfo,
+                                            fmap.existingSourceBackupPath,
+                                            fmap.targetFilePath);
+                                        
+                                        task.log(task.TERSE, " " + 
+                                            getBundleMessage("MSG_OK")); // NOI18N
+                                    }
+                                    else
+                                    {
+                                        fmap.merge = false;
+                                        
+                                        task.log(task.SUMMARY, LOG_INDENT + 
+                                            getBundleMessage("MSG_GeneratedSourceNotParseableOverwritten")); // NOI18N
+                                        
+                                        continue;
+                                    }
+                                }
+                                
+                                else
+                                {
+                                    task.log(task.SUMMARY, LOG_INDENT + 
+                                        getBundleMessage("MSG_ExistingSourceNotParseableOverwritten")); // NOI18N
+                                    
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                ParsedInfo ascInfo = extractById(ascfiles, fmap.generatedFileInfo);
+                                if (ascInfo != null)
+                                {
+                                    fmap.existingSourcePath = ascInfo.getFilePath();
+                                    if (backup)
+                                    {
+                                        FileObject buFileObj = backupFile(
+                                            new File(ascInfo.getFilePath()));
+                                        
+                                        fmap.existingSourceBackupPath = 
+                                            FileUtil.toFile(buFileObj).getCanonicalPath();
+                                    }
+                                    
+                                    fmap.merge = true;
+                                    task.log(task.SUMMARY, LOG_INDENT + 
+                                        getBundleMessage("MSG_ExistingSource") // NOI18N
+                                        + " -  " + ascInfo.getFilePath());
+                                    
+                                    task.log(task.SUMMARY, LOG_INDENT + 
+                                        getBundleMessage("MSG_SourceCodeMerging"), false); // NOI18N
+                                    
+                                    merger.merge(fmap.generatedFileInfo,
+                                        fmap.generatedFilePath,
+                                        ascInfo,
+                                        ascInfo.getFilePath(),
+                                        fmap.targetFilePath);
+                                    
+                                    task.log(task.TERSE, " " + 
+                                        getBundleMessage("MSG_OK")); // NOI18N
+                                }
+                            }
+                        }
+                    }
+
+                    catch (IOException ex)
+                    {
+                        task.log(task.TERSE, getBundleMessage(
+                            "MSG_ErrorWhileSourceCodeMerging") + " " + // NOI18N
+                            ex.getMessage());
+                        
+                        errorsCount++;
+                        ex.printStackTrace();
+                    }
+                }
+
+                List<IElement> sourceFiles = classifier.getSourceFiles();
+                
+                if (sourceFiles != null)
+                {
+                    for (IElement src : sourceFiles)
+                    {
+                        if (src instanceof ISourceFileArtifact)
+                        {
+                            classifier.removeSourceFile((
+                                (ISourceFileArtifact) src).getSourceFile());
+                        }
+                    }
+                }
+
+
+                for (FileMapping fmap : fmappings)
+                {
+                    if (genToTmp)
+                    {
+                        if (!fmap.merge)
+                        {
+                            FileBuilder.copyFile(new File(fmap.generatedFilePath),
+                                new File(fmap.targetFilePath));
+                        }
+                    }
+                    
+                    if (fmap.existingSourcePath != null)
+                    {
+                        File exf = new File(fmap.existingSourcePath);
+                        if (!exf.equals(new File(fmap.targetFilePath)))
+                        {
+                            exf.delete();
+                        }
+                        else
+                        {
+
+                            if ((!backup) && (fmap.merge) && 
+                                (fmap.existingSourceBackupPath != null))
+                            {
+                                new File(fmap.existingSourceBackupPath).delete();
+                            }
+                        }
+                    }
+
+                    classifier.addSourceFileNotDuplicate(fmap.targetFilePath);
+                }
+            }
+            
+            catch (Exception e)
+            {
+                String excMsg = e.getMessage();
+                
+                if (excMsg == null)
+                    excMsg = e.getClass().getName();
+                
+                task.log(task.TERSE, getBundleMessage(
+                    "MSG_ErrorWhileProcessingElement") + " " + excMsg); // NOI18N
+                    
+                errorsCount++;
+                e.printStackTrace();
+            }
+
+            ClassInfo.eraseRefClass(classifier);
+        }
+        
+        if (errorsCount > 0)
+            task.fail();
     }
     
     

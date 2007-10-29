@@ -226,7 +226,7 @@ public class GenerateCodeAction extends CookieAction
             if (!displayDialogDescriptor(gcPanel, templatesEnabled))
                 return;
 
-	    gcPanel.storeProjectProperties();
+            gcPanel.storeProjectProperties();
         }
         
         // if UML project is dirty, save it first
@@ -321,8 +321,8 @@ public class GenerateCodeAction extends CookieAction
         
         final String destFolderName = prjProps.getCodeGenFolderLocation();
         final boolean backupSources = prjProps.isCodeGenBackupSources();
-	final boolean generateMarkers = prjProps.isCodeGenUseMarkers();
-	final boolean addMarkers = prjProps.isCodeGenAddMarkers();
+    	final boolean generateMarkers = prjProps.isCodeGenUseMarkers();
+        final boolean addMarkers = prjProps.isCodeGenAddMarkers();
         
         GenerateCodeTask task = new GenerateCodeTask(
             settings, selElements, parentProject.getName(), 

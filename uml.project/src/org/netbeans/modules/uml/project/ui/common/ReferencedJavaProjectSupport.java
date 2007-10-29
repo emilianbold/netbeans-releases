@@ -190,7 +190,6 @@ public class ReferencedJavaProjectSupport
     
     public String[] encodeSrcGroupsToStrings(JavaSourceRootsModel model)
     {
-        
         ArrayList result = new ArrayList();
         
         for (int i = 0; i <  model.getRowCount(); i++)
@@ -198,10 +197,11 @@ public class ReferencedJavaProjectSupport
             Boolean isChecked = (Boolean)model
                 .getValueAt(i, JavaSourceRootsUI.COL_INCLUDE_FLAG);
             
-            if (isChecked)
+            if (isChecked != null && isChecked)
             {
                 SourceGroup sg = (SourceGroup)model.getSourceGroup(i);
-                result.add(sg.getName());
+                if (sg != null)
+                    result.add(sg.getName());
             }
         }
         

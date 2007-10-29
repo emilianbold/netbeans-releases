@@ -165,7 +165,7 @@ public class AssociatedSourceProvider
                 Boolean isChecked = (Boolean)model
                     .getValueAt(i, JavaSourceRootsUI.COL_INCLUDE_FLAG);
                 
-                if (isChecked)
+                if (isChecked != null && isChecked)
                 {
                     SourceGroup sg = (SourceGroup)model.getSourceGroup(i);
                     result.add(sg);
