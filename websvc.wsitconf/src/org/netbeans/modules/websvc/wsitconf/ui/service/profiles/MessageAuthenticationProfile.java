@@ -69,7 +69,6 @@ import org.netbeans.modules.websvc.wsitmodelext.security.WssElement;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -190,7 +189,6 @@ public class MessageAuthenticationProfile
     public void enableSecureConversation(WSDLComponent component, boolean enable) {
         if (enable) {
             WSDLModel model = component.getModel();
-            WSDLComponentFactory wcf = model.getFactory();
 
             boolean isTransaction = model.isIntransaction();
             if (!isTransaction) {
@@ -216,7 +214,7 @@ public class MessageAuthenticationProfile
                 SecurityPolicyModelHelper.enableIncludeTimestamp(tb, true);
                 AlgoSuiteModelHelper.setAlgorithmSuite(tb, ComboConstants.BASIC128);
 
-                WSDLComponent internalSuppToken = SecurityTokensModelHelper.setSupportingTokens(p, 
+                SecurityTokensModelHelper.setSupportingTokens(p, 
                         ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);
                 
                 WssElement wss = SecurityPolicyModelHelper.enableWss(bp, true);
