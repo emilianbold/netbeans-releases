@@ -70,6 +70,7 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ForLoopTest("testRenameInInfiniteFor"));
 //        suite.addTest(new ForLoopTest("testReplaceStmtWithBlock1"));
 //        suite.addTest(new ForLoopTest("testReplaceStmtWithBlock2"));
+//        suite.addTest(new ForLoopTest("test120270"));
         return suite;
     }
 
@@ -464,6 +465,61 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
                         statement.getExpression()
                 );
                 workingCopy.rewrite(statement, var);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void test120270() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Main {\n" +
+            "\n" +
+            "    public void actionPerformed(ActionEvent e) {\n" +
+            "        for (int i; i < 10; i++)\n" +
+            "            Properties properties = System.getProperties();\n" +
+            "    }\n" +
+            "}\n" +
+            "\n");
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Main {\n" +
+            "\n" +
+            "    public void actionPerformed(ActionEvent e) {\n" +
+            "        for (int i = 0; i < 10; i++)\n" +
+            "            Properties properties = System.getProperties();\n" +
+            "    }\n" +
+            "}\n" +
+            "\n";
+        JavaSource src = getJavaSource(testFile);
+
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                List<? extends StatementTree> stmts = method.getBody().getStatements();
+                ForLoopTree foor = (ForLoopTree) stmts.get(0);
+                VariableTree vt = (VariableTree) foor.getInitializer().get(0);
+                VariableTree newVt = make.Variable(
+                        vt.getModifiers(),
+                        vt.getName(),
+                        vt.getType(),
+                        make.Literal(0)
+                );
+                workingCopy.rewrite(vt, newVt);
             }
 
             public void cancel() {
