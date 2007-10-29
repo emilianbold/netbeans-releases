@@ -41,6 +41,7 @@
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview;
 
 import java.awt.Dimension;
+import java.awt.Font;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
@@ -109,7 +110,7 @@ public class BaseSectionNodeInnerPanel extends SectionNodeInnerPanel {
      */
     @Override
     public Dimension getMaximumSize() {
-        return new Dimension(CustomSectionNodePanel.MAX_WIDTH, super.getMaximumSize().height);
+        return new Dimension(getScaledMaxWidth(), super.getMaximumSize().height);
     }
     
     /** Return correct preferred size.  Multiline JLabels cause the default
@@ -120,5 +121,30 @@ public class BaseSectionNodeInnerPanel extends SectionNodeInnerPanel {
         return new Dimension(getMinimumSize().width, super.getPreferredSize().height);
     }
     
+    /** MAXWIDTH is arbitrarily set to 600 pixels and this is good for the default
+     *  fontsize of 12.  For larger font sizes (e.g. --fontsize 16 24, etc.) this
+     *  needs to be scaled upwards (IZ 115372).  There is probably a better way
+     *  to do this, but this works for now.
+     */
+    private volatile static int scaledMaxWidth = 0;
     
+    protected int getScaledMaxWidth() {
+        int smw = scaledMaxWidth;
+        if(smw == 0) {
+            smw = scaledWidth(CustomSectionNodePanel.MAX_WIDTH);
+            scaledMaxWidth = smw;
+        }
+        return smw;
+    }
+    
+    private int scaledWidth(int width) {
+        Font f = getFont();
+        if(f != null) {
+            int fs = f.getSize();
+            if(fs > 12) {
+                width = width * fs / 12;
+            }
+        }
+        return width;
+    }
 }
