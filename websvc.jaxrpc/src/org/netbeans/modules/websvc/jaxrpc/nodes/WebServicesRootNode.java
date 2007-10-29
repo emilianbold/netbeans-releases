@@ -58,9 +58,10 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 public class WebServicesRootNode extends AbstractNode {
-    private static Image WEB_SERVICES_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/webservicegroup.png", true ); // NOI18N
-    private static Icon folderIconCache;
-    private static Icon openedFolderIconCache;
+    private static final String SERVICES_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/webservicegroup.png"; // NOI18N
+    private Image cachedServicesBadge;
+    private Icon folderIconCache;
+    private Icon openedFolderIconCache;
     
     public WebServicesRootNode(FileObject srcRoot) {
         super((srcRoot != null) ? new WebServicesChildren(new FileObject[]{srcRoot}) : Children.LEAF, createLookup(srcRoot));
@@ -68,11 +69,18 @@ public class WebServicesRootNode extends AbstractNode {
     }
     
     public Image getIcon( int type ) {
-        return computeIcon( false, type );
+        return computeIcon(false);
     }
     
     public Image getOpenedIcon( int type ) {
-        return computeIcon( true, type );
+        return computeIcon(true);
+    }
+    
+    private java.awt.Image getServicesBadge() {
+        if (cachedServicesBadge == null) {
+            cachedServicesBadge = Utilities.loadImage(SERVICES_BADGE);
+        }            
+        return cachedServicesBadge;        
     }
     
     /**
@@ -80,7 +88,7 @@ public class WebServicesRootNode extends AbstractNode {
      * @param opened should the icon represent opened folder
      * @return the folder icon
      */
-    static synchronized Icon getFolderIcon(boolean opened) {
+    private Icon getFolderIcon(boolean opened) {
         if (openedFolderIconCache == null) {
             Node n = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
             openedFolderIconCache = new ImageIcon(n.getOpenedIcon(BeanInfo.ICON_COLOR_16x16));
@@ -93,10 +101,10 @@ public class WebServicesRootNode extends AbstractNode {
         }
     }
     
-    private Image computeIcon( boolean opened, int type ) {
+    private Image computeIcon(boolean opened) {
         Icon icon = getFolderIcon(opened);
         Image image = ((ImageIcon)icon).getImage();
-        image = Utilities.mergeImages(image, WEB_SERVICES_BADGE, 7, 7 );
+        image = Utilities.mergeImages(image, getServicesBadge(), 7, 7 );
         return image;
     }
     

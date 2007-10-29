@@ -72,8 +72,8 @@ import org.openide.filesystems.FileEvent;
 
 public class WebServiceChildren extends Children.Keys {
     
-    private static final java.awt.Image OPERATION_BADGE =
-            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/wsoperation.png" ); //NOI18N
+    private static final String OPERATION_ICON = "org/netbeans/modules/websvc/core/webservices/ui/resources/wsoperation.png"; //NOI18N
+    private java.awt.Image cachedIcon;
     
     private WebserviceDescription webServiceDescription;
     private FileObject implClass;
@@ -94,7 +94,10 @@ public class WebServiceChildren extends Children.Keys {
                 
                 @java.lang.Override
                 public java.awt.Image getIcon(int type) {
-                    return OPERATION_BADGE;
+                    if (cachedIcon == null) {
+                        cachedIcon = org.openide.util.Utilities.loadImage(OPERATION_ICON);
+                    }
+                    return cachedIcon;
                 }
                 
                 @Override
