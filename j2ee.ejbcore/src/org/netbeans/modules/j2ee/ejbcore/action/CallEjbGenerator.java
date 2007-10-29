@@ -172,12 +172,14 @@ public class CallEjbGenerator {
             J2eeModuleProvider j2eeModuleProvider = enterpriseProject.getLookup().lookup(J2eeModuleProvider.class);
             String referencedEjbName = getEjbName(referencedFO, referencedClassName);
             try {
-                if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.WAR)) {
+                if (referencedClassName != null && j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.WAR)) {
                     j2eeModuleProvider.getConfigSupport().bindEjbReference(ejbReferenceName, referencedEjbName);
                 } else if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
                     String ejbName = getEjbName(referencingFO, referencingClassName);
                     String ejbType = getEjbType(referencingFO, referencingClassName);
-                    j2eeModuleProvider.getConfigSupport().bindEjbReferenceForEjb(ejbName, ejbType, ejbReferenceName, referencedEjbName);
+                    if (ejbName != null && ejbType != null) {
+                        j2eeModuleProvider.getConfigSupport().bindEjbReferenceForEjb(ejbName, ejbType, ejbReferenceName, referencedEjbName);
+                    }
                 }
             } catch (ConfigurationException ce) {
                 Logger.getLogger("global").log(Level.WARNING, null, ce);
@@ -542,7 +544,7 @@ public class CallEjbGenerator {
         return metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
             public String run(EjbJarMetadata metadata) throws Exception {
                 Ejb ejb = metadata.findByEjbClass(className);
-                return ejb.getEjbName();
+                return ejb == null ? null : ejb.getEjbName();
             }
         });
 
