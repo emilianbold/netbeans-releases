@@ -67,6 +67,7 @@ public final class MVDDataObject extends J2MEDataObject {
         cookies.add (editorSupport);
     }
 
+    @Override
     public Node createNodeDelegate () {
         return new MVDNode (this);
     }

@@ -184,7 +184,7 @@ public class ConverterCustom {
                 if (! name.startsWith (prefix))
                     continue;
                 name = name.substring (prefix.length ());
-                int index = name.indexOf ('#');
+                int index = name.indexOf ('#'); // NOI18N
                 if (index >= 0) { // NOI18N
                     prefix = "%%" + name.substring (0, index) + "_" + name.substring (index + 1) + "_"; // NOI18N
                     String found = null;

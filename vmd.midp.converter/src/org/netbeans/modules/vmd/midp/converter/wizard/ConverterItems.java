@@ -213,12 +213,12 @@ public class ConverterItems {
     }
 
     // Created: YES, Adds: NO
-    public static void convertChoiceGroup (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
+    static void convertChoiceGroup (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
         convertChoiceGroupCore (id2item, item, document.createComponent (ChoiceGroupCD.TYPEID));
     }
 
     // Created: NO, Adds: NO
-    public static void convertChoiceGroupCore (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent choiceGroup) {
+    static void convertChoiceGroupCore (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent choiceGroup) {
         convertItem (id2item, item, choiceGroup);
 
         String choiceTypeValue = item.getPropertyValue ("choiceType"); // NOI18N

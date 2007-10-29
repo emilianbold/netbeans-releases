@@ -124,7 +124,7 @@ class ConverterItem {
         return properties.containsKey (name);
     }
 
-
+    @Override
     public String toString () {
         return "ConverterItem: UID: "+ uid + ", ID: " + id + ", TypeID: " + typeid; // NOI18N
     }

@@ -80,6 +80,7 @@ import javax.swing.text.StyledDocument;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -97,9 +98,11 @@ public class Converter {
 
             final Node rootNode = XMLUtil.getRootNode (inputDesignFile);
             if (! "1.3".equals (XMLUtil.getAttributeValue (rootNode, "version"))) { // NOI18N
-                Debug.warning ("Unsupported version of the design file. The design has to saved in NetBeans 5.5 or newer."); // NOI18N
+                Debug.warning (NbBundle.getMessage(Converter.class, "Convert.oldDesign.error")); // NOI18N
+                errors.add(NbBundle.getMessage(Converter.class, "Convert.oldDesign.error")); // NOI18N
                 return errors;
             }
+            
             final List<ConverterItem> items = getConverterItems (rootNode);
 
             DataObject template = DataObject.find (Repository.getDefault ().getDefaultFileSystem ().findResource ("Templates/MIDP/ConverterVisualMIDlet.java")); // NOI18N

@@ -73,6 +73,7 @@ public final class ConvertAction extends CookieAction {
         };
     }
     
+    @Override
     protected void initialize() {
         super.initialize();
         // see org.openide.util.actions.SystemAction.iconResource() javadoc for more details
@@ -83,6 +84,7 @@ public final class ConvertAction extends CookieAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

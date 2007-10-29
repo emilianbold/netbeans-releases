@@ -190,9 +190,9 @@ public class ConverterUtil {
                     }
                     i += 4;
                     break;
-                case '"':
-                case '\'':
-                case '\\':
+                case '"': // NOI18N
+                case '\'': // NOI18N
+                case '\\': // NOI18N
                     sb.append(c);
                     break;
                 default:

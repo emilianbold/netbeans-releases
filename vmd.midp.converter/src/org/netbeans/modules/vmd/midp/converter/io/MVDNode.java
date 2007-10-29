@@ -74,6 +74,7 @@ public final class MVDNode extends FilterNode {
         return newActions;
     }
 
+    @Override
     public Action getPreferredAction () {
         return SystemAction.get (ConvertAction.class);
     }

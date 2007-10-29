@@ -52,7 +52,7 @@ import java.util.HashMap;
 public class ConverterElements {
 
     // Created: YES, Adds: NO
-    public static void convertListElement (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
+    static void convertListElement (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
         DesignComponent listElement = document.createComponent (ListElementEventSourceCD.TYPEID);
         Converter.convertObject (item, listElement);
 
@@ -68,7 +68,7 @@ public class ConverterElements {
     }
 
     // Created: YES, Adds: NO
-    public static void convertChoiceElement (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
+    static void convertChoiceElement (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
         DesignComponent choiceElement = document.createComponent (ChoiceElementCD.TYPEID);
         Converter.convertObject (item, choiceElement);
 

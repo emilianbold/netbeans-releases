@@ -70,7 +70,7 @@ import java.util.Map;
  */
 public class ConverterCode {
 
-    public static void convertCode (List<ConverterItem> items, StyledDocument styledDocument, final StyledDocument outputStyledDocument, DesignDocument document, String oldDesignName, String newDesignName) throws BadLocationException {
+    static void convertCode (List<ConverterItem> items, StyledDocument styledDocument, final StyledDocument outputStyledDocument, DesignDocument document, String oldDesignName, String newDesignName) throws BadLocationException {
         HashMap<String, String> replaceTable = createUserCodeConvertTable (items);
         replaceTable.put (oldDesignName, newDesignName);
         GuardedSectionManager manager = GuardedSectionManager.getInstance (styledDocument);
@@ -240,11 +240,11 @@ public class ConverterCode {
                     if (start < 0  ||  end < 0  ||  start >= end)
                         return;
 
-                    int bracket = controller.getText ().indexOf ('{', start);
+                    int bracket = controller.getText ().indexOf ('{', start); // NOI18N
 
                     if (bracket < 0 || bracket > end)
                         return;
-                    if (controller.getText ().charAt (end - 1) == '}')
+                    if (controller.getText ().charAt (end - 1) == '}') // NOI18N
                         end --;
                     indices[0] = bracket + 1;
                     indices[1] = end;

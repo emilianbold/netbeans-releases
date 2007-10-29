@@ -117,12 +117,12 @@ public class ConverterDisplayables {
     }
 
     // Created: YES, Adds: NO
-    public static void convertTextBox (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
+    static void convertTextBox (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
         convertTextBoxCore (id2item, item, document.createComponent (TextBoxCD.TYPEID));
     }
 
     // Created: NO, Adds: NO
-    public static void convertTextBoxCore (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent textbox) {
+    static void convertTextBoxCore (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent textbox) {
         convertScreen (id2item, item, textbox);
 
         ConverterUtil.convertStringWithUserCode (textbox, TextBoxCD.PROP_STRING, item.getPropertyValue ("string")); // NOI18N
@@ -132,14 +132,14 @@ public class ConverterDisplayables {
     }
 
     // Created: YES, Adds: NO
-    public static void convertList (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
+    static void convertList (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
         ComponentProducer producer = DocumentSupport.getComponentProducer (document, ListCD.TYPEID.toString ());
         DesignComponent list = producer.createComponent (document).getMainComponent ();
         convertListCore (id2item, item, list);
     }
 
     // Created: NO, Adds: NO
-    public static void convertListCore (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent list) {
+    static void convertListCore (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent list) {
         convertScreen (id2item, item, list);
 
         ConverterItem selectCommandActionItem = id2item.get (item.getPropertyValue ("selectCommandAction")); // NOI18N
@@ -199,12 +199,12 @@ public class ConverterDisplayables {
     }
 
     // Created: YES, Adds: NO
-    public static void convertAlert (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
+    static void convertAlert (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
         convertAlertCore (id2item, item, document.createComponent (AlertCD.TYPEID));
     }
 
     // Created: NO, Adds: NO
-    public static void convertAlertCore (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent alert) {
+    static void convertAlertCore (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent alert) {
         convertScreen (id2item, item, alert);
 
         ConverterUtil.convertStringWithUserCode (alert, AlertCD.PROP_STRING, item.getPropertyValue ("string")); // NOI18N
@@ -234,7 +234,7 @@ public class ConverterDisplayables {
     }
 
     // Created: NO, Adds: NO
-    public static void convertCanvas (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent canvas) {
+    static void convertCanvas (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignComponent canvas) {
         convertDisplayable (id2item, item, canvas);
 
         ConverterUtil.convertBoolean (canvas, CanvasCD.PROP_IS_FULL_SCREEN, item.getPropertyValue ("fullScreen")); // NOI18N
