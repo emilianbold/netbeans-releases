@@ -67,6 +67,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -93,6 +94,7 @@ public class PluginProperties  {
     private static final String LOG_LEVEL_KEY = "logLevel";  // NOI18N
     private static final String CHARSET_DISP_PREF_KEY = "charsetDisplayPreference"; // NOI18N
     private static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot"; //NOI18N
+    private static final String PROP_FIRST_RUN = "first_run";
     
     public static final String COBUNDLE_DEFAULT_INSTALL_PATH ="AS9.0";  //NOI18N
     public static final String COBUNDLE_DEFAULT_INSTALL_PATH2 ="AS8.2";  //NOI18N
@@ -168,10 +170,13 @@ public class PluginProperties  {
         String version = inProps.getProperty(PLUGIN_PROPERTIES_VERSION);//old style 5.0: we need to import and refresh
         boolean needToRegisterDefaultServer = false;
 
-        if ((version==null)||(version!=PLUGIN_CURRENT_VERSION)){ //we are currently on a 5.5
-            needToRegisterDefaultServer = true;
+        if (!NbPreferences.forModule(PluginProperties.class).getBoolean(PROP_FIRST_RUN, false)) {
+            if ((version==null)||(version!=PLUGIN_CURRENT_VERSION)){ //we are currently on a 5.5
+                needToRegisterDefaultServer = true;
+            }
+            NbPreferences.forModule(PluginProperties.class).putBoolean(PROP_FIRST_RUN, true);
         }
-              
+
         if (needToRegisterDefaultServer){
             final File platformRoot = new File(getDefaultInstallRoot());
             
@@ -583,7 +588,7 @@ public class PluginProperties  {
             
             
         }
-
+    
     /** Extract a String[] from a Properties
      *
      * The prefix identifies the root property name. Elements of
