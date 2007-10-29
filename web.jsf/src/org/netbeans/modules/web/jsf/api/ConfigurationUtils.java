@@ -72,17 +72,18 @@ public class ConfigurationUtils {
      * @return The ModelSource for the configuration file. If the file is not faces config file
      * or a version which is not handled, then returns null. 
      */
-    public static JSFConfigModel getConfigModel(FileObject confFile, boolean editable){
-        try     {
-            ModelSource modelSource = Utilities.createModelSource(confFile,editable);
-            JSFConfigModel configModel = JSFConfigModelFactory.getInstance().getModel(modelSource);
-            
-            return configModel;
-        } catch (CatalogModelException ex) {
-            java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-                    ex.getMessage(), ex);
+    public static JSFConfigModel getConfigModel(FileObject confFile, boolean editable) {
+        JSFConfigModel configModel = null;
+        if (confFile != null && confFile.isValid()) {
+            try {
+                ModelSource modelSource = Utilities.createModelSource(confFile,editable);
+                configModel = JSFConfigModelFactory.getInstance().getModel(modelSource);
+            } catch (CatalogModelException ex) {
+                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                        ex.getMessage(), ex);
+            }
         }
-        return null;
+        return configModel;
     }
     
     /**
