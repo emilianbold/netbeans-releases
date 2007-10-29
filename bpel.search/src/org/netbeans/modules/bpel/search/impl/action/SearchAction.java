@@ -84,7 +84,7 @@ public final class SearchAction extends NodeAction {
 
   private static synchronized void performAction(Node node) {
     Model model = getModel(node);
-    ShowCookie cookie = getCookie(node);
+    ShowCookie cookie = getShowCookie(node);
     Object view = getView();
 //out();
 //out("ShowCookie: " + cookie);
@@ -98,8 +98,13 @@ public final class SearchAction extends NodeAction {
     SearchManagerAccess.getManager().createSearch(list, getTargets(model), null, true);
   }
 
-  private static ShowCookie getCookie(Node node) {
-    return getDataObject(node).getCookie(ShowCookie.class);
+  private static ShowCookie getShowCookie(Node node) {
+    DataObject data = getDataObject(node);
+
+    if (data == null) {
+      return null;
+    }
+    return data.getCookie(ShowCookie.class);
   }
 
   private static Object getView() {
@@ -217,6 +222,9 @@ public final class SearchAction extends NodeAction {
   }
 
   private static DataObject getDataObject(Node node) {
+    if (node == null) {
+      return null;
+    }
     return (DataObject) node.getLookup().lookup(DataObject.class);
   }
 
@@ -244,7 +252,7 @@ public final class SearchAction extends NodeAction {
     return "org/netbeans/modules/bpel/search/impl/util/image/search.gif"; // NOI18N
   }
 
-  // -----------------------------------------------------------------------------------------
+  // ----------------------------------------------------------
   public static final class Manager
     extends org.netbeans.modules.print.api.PrintUtil.IconAction
   {
