@@ -353,6 +353,11 @@ public class CsmTracer {
 	indent();
 	print("DEFINITION: " + toString(fun.getDefinition(), false)); // NOI18N
 	print("SIGNATURE " + fun.getSignature()); // NOI18N
+//        if (CsmKindUtilities.isMethod(fun)) {
+//            if (((CsmMethod)fun).isVirtual()) {
+//                print("VIRTUAL"); // NOI18N
+//            }
+//        }
 	print("UNIQUE NAME " + fun.getUniqueName()); // NOI18N
         if (fun instanceof CsmFriendFunction) {
             print("REFERENCED FRIEND FUNCTION: " + toString(((CsmFriendFunction)fun).getReferencedFunction(), false)); // NOI18N
@@ -368,6 +373,11 @@ public class CsmTracer {
 		' ' + getBriefClassName(fun) + ' ' + getScopeString(fun)); // NOI18N
 	indent();
 	print("SIGNATURE " + fun.getSignature()); // NOI18N
+//        if (CsmKindUtilities.isMethod(fun)) {
+//            if (((CsmMethod)fun).isVirtual()) {
+//                print("VIRTUAL"); // NOI18N
+//            }
+//        }        
 	print("UNIQUE NAME " + fun.getUniqueName()); // NOI18N
 	print("DECLARATION: " + toString(decl, false)); // NOI18N
 	dumpParameters(fun.getParameters());
