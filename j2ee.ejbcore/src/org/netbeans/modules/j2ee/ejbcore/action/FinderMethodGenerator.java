@@ -118,7 +118,9 @@ public class FinderMethodGenerator extends AbstractMethodGenerator {
                     Collections.<Modifier>emptySet()
                     );
             FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, localHome);
-            addMethod(methodModelCopy, fileObject, localHome);
+            if (fileObject != null) {
+                addMethod(methodModelCopy, fileObject, localHome);
+            }
             
         }
         
@@ -140,7 +142,9 @@ public class FinderMethodGenerator extends AbstractMethodGenerator {
                     Collections.<Modifier>emptySet()
                     );
             FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, remoteHome);
-            addMethod(methodModelCopy, fileObject, remoteHome);
+            if (fileObject != null) {
+                addMethod(methodModelCopy, fileObject, remoteHome);
+            }
         }
         
         // write query to deplyment descriptor
