@@ -675,7 +675,14 @@ public class CasualDiff {
             if (oldT.init == null && newT.init != null) {
                 int end = endPos(oldT);
                 tokenSequence.move(end);
+                tokenSequence.moveNext();
+                if (!JavaTokenId.COMMA.equals(tokenSequence.token().id()) &&
+                    !JavaTokenId.SEMICOLON.equals(tokenSequence.token().id()))
+                {
+                    tokenSequence.movePrevious();
+                }
                 moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+                tokenSequence.moveNext();
                 copyTo(localPointer, localPointer = tokenSequence.offset());
                 printer.printVarInit(newT);
             }
