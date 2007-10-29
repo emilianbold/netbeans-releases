@@ -197,7 +197,7 @@ public abstract class WSCompletionItem  implements CompletionItem {
         private static final String COLOR = "<font color=#0000b2>"; //NOI18N
         private String leftText;
         private String itemName, itemType;
-        private static ImageIcon icon;
+        private ImageIcon icon;
         
         private EnumItem(String itemName, String itemType, int substitutionOffset) {
             super(substitutionOffset);
