@@ -104,6 +104,9 @@ final class JavadocQuery implements JavadocForBinaryQueryImplementation {
                             }
                         }
                     }
+                    if (resultURLs.size() == 0) {
+                        return null;
+                    }
                     return new FixedResult(resultURLs);
                 }
             }
