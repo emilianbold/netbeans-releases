@@ -255,7 +255,8 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
         //listen on the HTML parser and create javascript and css embeddings
         SyntaxParser.get(doc).addSyntaxParserListener(new EmbeddingUpdater(doc));
         //initialize JSP embedding updater
-        JspColoringUpdater.init(doc);
+        //just a prototype - better disable it for 6.0
+        //JspColoringUpdater.init(doc);
     }
     
     private void initLexerColoringListener(Document doc) {
