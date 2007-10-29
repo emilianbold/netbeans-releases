@@ -457,7 +457,7 @@
 <mapID target="org.netbeans.modules.i18n.InsertI18nStringAction" url="internationalize/manualinsert.html" />
 
     <!--Create Tests dialog box-->
-    <mapID target="org.netbeans.modules.junit.JUnitCfgOfCreate" url="junit/junit_csh__creatingtests.html" />  
+    <mapID target="org.netbeans.modules.junit.JUnitCfgOfCreate" url="junit/junit_csh_creatingtests.html" />  
     <!--JUnit Test Results Window -->
     <mapID target="org.netbeans.modules.junit.output.ResultWindow" url="junit/junit_resultswindow.html" /> 
     <!--JUnit New Test Problem window -->
