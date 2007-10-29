@@ -67,6 +67,6 @@ public final class EjbNodesFactoryImpl implements EjbNodesFactory {
     }
     
     public Node createMessageNode(String ejbClass, EjbJar ejbModule, Project project) {
-        return new MessageNode(ejbClass, ejbModule, project);
+        return MessageNode.create(ejbClass, ejbModule, project);
     }
 }

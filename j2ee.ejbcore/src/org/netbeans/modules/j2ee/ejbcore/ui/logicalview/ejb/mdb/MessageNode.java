@@ -76,13 +76,7 @@ public class MessageNode extends AbstractNode implements OpenCookie {
     private final PropertyChangeListener nameChangeListener;
     private final EjbViewController controller;
     
-    public MessageNode(String ejbClass, EjbJar ejbModule, Project project) {
-        this(new InstanceContent(), ejbClass, ejbModule, project);
-    }
-    
-    private MessageNode(InstanceContent content, final String ejbClass, EjbJar ejbModule, Project project) {
-        super(Children.LEAF, new AbstractLookup(content));
-        setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/mdb/MessageNodeIcon.gif");
+    public static MessageNode create(final String ejbClass, EjbJar ejbModule, Project project) {
         String ejbName = null;
         try {
             ejbName = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
@@ -94,6 +88,16 @@ public class MessageNode extends AbstractNode implements OpenCookie {
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
+        if (ejbName == null) {
+            return null;
+        } else {
+            return new MessageNode(new InstanceContent(), ejbClass, ejbName, ejbModule, project);
+        }
+    }
+    
+    private MessageNode(InstanceContent content, final String ejbClass, String ejbName, EjbJar ejbModule, Project project) {
+        super(Children.LEAF, new AbstractLookup(content));
+        setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/mdb/MessageNodeIcon.gif");
         setName(ejbName + "");
         controller = new EjbViewController(ejbClass, ejbModule);
         setDisplayName();
