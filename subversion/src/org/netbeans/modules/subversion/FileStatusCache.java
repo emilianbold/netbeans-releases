@@ -279,80 +279,91 @@ public class FileStatusCache implements ISVNNotifyListener {
         return files != null ? files.get(file) : null;
     }
 
-    private synchronized FileInformation refresh(File file, ISVNStatus repositoryStatus, boolean forceChangeEvent) {
-        File dir = file.getParentFile();
-        if (dir == null) {
-            return FILE_INFORMATION_NOTMANAGED; //default for filesystem roots 
-        }
-        Map<File, FileInformation> files = getScannedFiles(dir);
-        if (files == NOT_MANAGED_MAP && repositoryStatus == REPOSITORY_STATUS_UNKNOWN) return FILE_INFORMATION_NOTMANAGED;
-        FileInformation current = files.get(file);
+    private FileInformation refresh(File file, ISVNStatus repositoryStatus, boolean forceChangeEvent) {
         
-        ISVNStatus status = null;
-        try {
-            SvnClient client = Subversion.getInstance().getClient(false);
-            status = client.getSingleStatus(file);
-            if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {
-                status = null;
+        boolean refreshDone = false;
+        FileInformation current = null;
+        FileInformation fi = null;
+        File [] content = null; 
+                
+        synchronized (this) {
+            File dir = file.getParentFile();
+            if (dir == null) {
+                return FILE_INFORMATION_NOTMANAGED; //default for filesystem roots 
             }
-        } catch (SVNClientException e) {
-            // svnClientAdapter does not return SVNStatusKind.UNVERSIONED!!!
-            // unversioned resource is expected getSingleStatus()
-            // does not return SVNStatusKind.UNVERSIONED but throws exception instead            
-            // instead of throwing exception
-            if (SvnClientExceptionHandler.isUnversionedResource(e.getMessage()) == false) {
-                // missing or damaged entries
-                // or ignored file
-                SvnClientExceptionHandler.notifyException(e, false, false);
+            Map<File, FileInformation> files = getScannedFiles(dir);
+            if (files == NOT_MANAGED_MAP && repositoryStatus == REPOSITORY_STATUS_UNKNOWN) return FILE_INFORMATION_NOTMANAGED;
+            current = files.get(file);
+
+            ISVNStatus status = null;
+            try {
+                SvnClient client = Subversion.getInstance().getClient(false);
+                status = client.getSingleStatus(file);
+                if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {
+                    status = null;
+                }
+            } catch (SVNClientException e) {
+                // svnClientAdapter does not return SVNStatusKind.UNVERSIONED!!!
+                // unversioned resource is expected getSingleStatus()
+                // does not return SVNStatusKind.UNVERSIONED but throws exception instead            
+                // instead of throwing exception
+                if (SvnClientExceptionHandler.isUnversionedResource(e.getMessage()) == false) {
+                    // missing or damaged entries
+                    // or ignored file
+                    SvnClientExceptionHandler.notifyException(e, false, false);
+                }
             }
-        }
-        FileInformation fi = createFileInformation(file, status, repositoryStatus);
-        if (equivalent(fi, current)) {
-            if (forceChangeEvent) fireFileStatusChanged(file, current, fi);
-            return fi;
-        }
-        // do not include uptodate files into cache, missing directories must be included
-        if (current == null && !fi.isDirectory() && fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE) {
-            if (forceChangeEvent) fireFileStatusChanged(file, current, fi);
-            return fi;
+            fi = createFileInformation(file, status, repositoryStatus);
+            if (equivalent(fi, current)) {
+                refreshDone = true;
+            }
+            // do not include uptodate files into cache, missing directories must be included
+            if (!refreshDone && current == null && !fi.isDirectory() && fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE) {
+                refreshDone = true;
+            }
+
+            if(!refreshDone) {               
+                if (fi.getStatus() == FileInformation.STATUS_UNKNOWN && 
+                      current != null && current.isDirectory() && ( current.getStatus() == FileInformation.STATUS_VERSIONED_DELETEDLOCALLY || 
+                                                                    current.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY )) 
+                {
+                    // - if the file was deleted then all it's children have to be refreshed.
+                    // - we have to list the children before the turbo.writeEntry() call 
+                    //   as that unfortunatelly tends to purge them from the cache 
+                    content = listFiles(new File[] {file}, ~0);
+                } 
+
+                file = FileUtil.normalizeFile(file);
+                dir = FileUtil.normalizeFile(dir);
+                Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(files);
+                if (fi.getStatus() == FileInformation.STATUS_UNKNOWN) {
+                    newFiles.remove(file);
+                    turbo.writeEntry(file, FILE_STATUS_MAP, null);  // remove mapping in case of directories
+                }
+                else if (fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE && file.isFile()) {
+                    newFiles.remove(file);
+                } else {
+                    newFiles.put(file, fi);
+                }
+                assert newFiles.containsKey(dir) == false;
+                turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
+            }
         }
 
-        File [] content = null;                
-        if (fi.getStatus() == FileInformation.STATUS_UNKNOWN && 
-              current != null && current.isDirectory() && ( current.getStatus() == FileInformation.STATUS_VERSIONED_DELETEDLOCALLY || 
-                                                         current.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY )) 
-        {
-            // - if the file was deleted then all it's children have to be refreshed.
-            // - we have to list the children before the turbo.writeEntry() call 
-            //   as that unfortunatelly tends to purge them from the cache 
-            content = listFiles(new File[] {file}, ~0);
-        } 
-        
-        file = FileUtil.normalizeFile(file);
-        dir = FileUtil.normalizeFile(dir);
-        Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(files);
-        if (fi.getStatus() == FileInformation.STATUS_UNKNOWN) {
-            newFiles.remove(file);
-            turbo.writeEntry(file, FILE_STATUS_MAP, null);  // remove mapping in case of directories
-        }
-        else if (fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE && file.isFile()) {
-            newFiles.remove(file);
-        } else {
-            newFiles.put(file, fi);
-        }
-        assert newFiles.containsKey(dir) == false;
-        turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
-          
-        if(content == null && file.isDirectory() && needRecursiveRefresh(fi, current)) {
-            content = listFiles(file);
-        }
-        if ( content != null ) {
-            for (int i = 0; i < content.length; i++) {
-                refresh(content[i], REPOSITORY_STATUS_UNKNOWN);
+        if(!refreshDone) {
+            if(content == null && file.isDirectory() && needRecursiveRefresh(fi, current)) {
+                content = listFiles(file);
             }
-        }
-        
-        fireFileStatusChanged(file, current, fi);
+
+            if ( content != null ) {
+                for (int i = 0; i < content.length; i++) {
+                    refresh(content[i], REPOSITORY_STATUS_UNKNOWN);
+                }
+            }
+            fireFileStatusChanged(file, current, fi);    
+        } else if(forceChangeEvent) {
+            fireFileStatusChanged(file, current, fi);    
+        }                       
         return fi;
     }
 
