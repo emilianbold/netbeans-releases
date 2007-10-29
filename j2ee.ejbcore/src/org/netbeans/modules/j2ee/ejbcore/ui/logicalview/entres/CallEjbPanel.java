@@ -58,6 +58,7 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -142,7 +143,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
             }
         });
         
-        slPanel = new ServiceLocatorStrategyPanel(lastLocator);
+        slPanel = new ServiceLocatorStrategyPanel(lastLocator, ClasspathInfo.create(fileObject));
         slPanel.getUnreferencedServiceLocator().addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 validateReferences();

@@ -40,12 +40,17 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
+import java.util.Set;
+import javax.lang.model.element.TypeElement;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-//import org.netbeans.modules.j2ee.common.FQNSearch;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
+import org.netbeans.api.java.source.ClassIndex.SearchScope;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.openide.util.Utilities;
 
 
@@ -56,10 +61,13 @@ import org.openide.util.Utilities;
 public class ServiceLocatorStrategyPanel extends javax.swing.JPanel {
 
     public static final String IS_VALID = "ServiceLocatorStrategyPanel_isValid"; //NOI18N
+    
+    private final ClasspathInfo cpInfo;
 
     /** Creates new form ServiceLocatorStrategyPanel */
-    public ServiceLocatorStrategyPanel(String serviceLocatorName) {
+    public ServiceLocatorStrategyPanel(String serviceLocatorName, ClasspathInfo cpInfo) {
         initComponents();
+        this.cpInfo = cpInfo;
         if (serviceLocatorName != null) {
             unreferencedServiceLocator.doClick();
             className.setText(serviceLocatorName);
@@ -199,12 +207,18 @@ public class ServiceLocatorStrategyPanel extends javax.swing.JPanel {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         className.setEnabled(true);
         unreferencedServiceLocator.setSelected(true);
-        SwingUtilities.invokeLater (new Runnable() {
-            public void run() {
-                //TODO: RETOUCHE
-//                FQNSearch.showFastOpen(className);
+        final ElementHandle<TypeElement> handle = TypeElementFinder.find(cpInfo, new TypeElementFinder.Customizer() {
+            public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {                                            
+                return classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes);
+            }
+
+            public boolean accept(ElementHandle<TypeElement> typeHandle) {
+                return true;
             }
         });
+        if (handle != null) {
+            className.setText(handle.getQualifiedName());
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void unreferencedServiceLocatorItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_unreferencedServiceLocatorItemStateChanged

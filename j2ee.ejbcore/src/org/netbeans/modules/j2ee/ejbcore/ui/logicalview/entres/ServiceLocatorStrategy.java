@@ -78,38 +78,40 @@ import org.openide.util.Exceptions;
  */
 public class ServiceLocatorStrategy {
     private static final String CREATE_INVOCATION = ".create()"; //NOI18N
+    private final String serviceLocator;
     
-    private ServiceLocatorStrategy() {
+    private ServiceLocatorStrategy(String serviceLocator) {
+        this.serviceLocator = serviceLocator;
     }
     
-    public String genLocalEjbStringLookup(String jndiName, String homeName, FileObject fileObject, String className, boolean create) {
-        String initString = initString("getLocalHome", jndiName, fileObject, className, ""); //NOI18N
+    public String genLocalEjbStringLookup(String jndiName, String homeName, FileObject referencingFO, String referencingClass, boolean create) {
+        String initString = initString("getLocalHome", jndiName, referencingFO, referencingClass, serviceLocator, ""); //NOI18N
         return "return " + addCast(create, homeName, initString, CREATE_INVOCATION) + ";"; // NOI18N
     }
     
     public String genRemoteEjbStringLookup(String jndiName, String homeCls, FileObject fileObject, String className, boolean create) {
-        String initString = initString("getRemoteHome", jndiName, fileObject, className, "," + homeCls + ".class"); //NOI18N
+        String initString = initString("getRemoteHome", jndiName, fileObject, className, serviceLocator, "," + homeCls + ".class"); //NOI18N
         return "return " + addCast(create, homeCls, initString, CREATE_INVOCATION) + ";"; //NOI18N
     }
     
     public String genDestinationLookup(String jndiName, FileObject fileObject, String className) {
-        return initString("getDestination", jndiName, fileObject, className, ""); //NOI18N
+        return initString("getDestination", jndiName, fileObject, className, serviceLocator, ""); //NOI18N
     }
     
     public String genJMSFactory(String jndiName, FileObject fileObject, String className) {
-        return initString("getConnectionFactory", jndiName, fileObject, className, ""); //NOI18N
+        return initString("getConnectionFactory", jndiName, fileObject, className, serviceLocator, ""); //NOI18N
     }
     
     public String genDataSource(String jndiName, FileObject fileObject, String className) {
-        return initString("getDataSource", jndiName, fileObject, className, ""); //NOI18N
+        return initString("getDataSource", jndiName, fileObject, className, serviceLocator, ""); //NOI18N
     }
     
     public String genMailSession(String jndiName, FileObject fileObject, String className) {
-        return initString("getSession", jndiName, fileObject, className, ""); //NOI18N
+        return initString("getSession", jndiName, fileObject, className, serviceLocator, ""); //NOI18N
     }
     
     public static ServiceLocatorStrategy create(Project project, FileObject srcFile, String serviceLocator) {
-        return new ServiceLocatorStrategy();
+        return new ServiceLocatorStrategy(serviceLocator);
     }
     
     private ClassPath buildClassPathFromImportedProject(FileObject fileObject) {
@@ -140,15 +142,16 @@ public class ServiceLocatorStrategy {
         return newValue;
     }
     
-    private static String initString(String methodName, String jndiName, FileObject fileObject, String className, String otherParams) {
+    private static String initString(String methodName, String jndiName, FileObject referencingFO, String referencingClass, 
+            String serviceLocator, String otherParams) {
         String initString = null;
         try {
-            String staticCreation = getStaticLocator(fileObject, className);
+            String staticCreation = getStaticLocator(referencingFO, serviceLocator);
             if (staticCreation != null) {
-                initString = className + "." + staticCreation + "()." + methodName + //NOI18N
+                initString = serviceLocator + "." + staticCreation + "()." + methodName + //NOI18N
                              "(\"java:comp/env/" + jndiName + "\""+ otherParams +")"; //NOI18N
             } else {
-                    initString = findOrCreateArtifacts(fileObject, className) + "()." + methodName + //NOI18N
+                    initString = findOrCreateArtifacts(referencingFO, referencingClass, serviceLocator) + "()." + methodName + //NOI18N
                         "(\"java:comp/env/" + jndiName + "\"" + otherParams + ")"; //NOI18N
             }
         } catch (IOException ioe) {
@@ -157,7 +160,7 @@ public class ServiceLocatorStrategy {
         return initString;
     }
     
-    private static String findOrCreateArtifacts(FileObject fileObject, final String className) throws IOException {
+    private static String findOrCreateArtifacts(FileObject fileObject, final String className, final String serviceLocator) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final String[] methodName = new String[1];
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
@@ -172,7 +175,7 @@ public class ServiceLocatorStrategy {
                     }
                 }
                 TreeMaker treeMaker = workingCopy.getTreeMaker();
-                TypeElement fieldTypeElement = workingCopy.getElements().getTypeElement(className);
+                TypeElement fieldTypeElement = workingCopy.getElements().getTypeElement(serviceLocator);
                 if (methodName[0] == null) {
                     VariableTree variableTree = treeMaker.Variable(
                             treeMaker.Modifiers(Collections.singleton(Modifier.PRIVATE)),
@@ -181,14 +184,13 @@ public class ServiceLocatorStrategy {
                             null
                             );
                     ClassTree classTree = workingCopy.getTrees().getTree(target);
-                    ClassTree newClassTree = treeMaker.addClassMember(classTree, variableTree);
-                    workingCopy.rewrite(classTree, newClassTree);
+                    ClassTree newClassTree = treeMaker.insertClassMember(classTree, 0, variableTree);
 
                     MethodModel methodModel = MethodModel.create(
                             "getServiceLocator",
-                            className,
+                            serviceLocator,
                             "if (serviceLocator == null) {\n" +
-                            "serviceLocator = new " + className + "();\n" +
+                            "serviceLocator = new " + serviceLocator + "();\n" +
                             "}\n" +
                             "return serviceLocator;\n",
                             Collections.<MethodModel.Variable>emptyList(),
@@ -197,7 +199,7 @@ public class ServiceLocatorStrategy {
                             );
                     MethodTree methodTree = MethodModelSupport.createMethodTree(workingCopy, methodModel);
                     classTree = workingCopy.getTrees().getTree(target);
-                    newClassTree = treeMaker.addClassMember(classTree, methodTree);
+                    newClassTree = treeMaker.addClassMember(newClassTree, methodTree);
                     workingCopy.rewrite(classTree, newClassTree);
                     
                     methodName[0] = "getServiceLocator";
@@ -207,13 +209,13 @@ public class ServiceLocatorStrategy {
         return methodName[0];
     }
     
-    private static String getStaticLocator(FileObject fileObject, final String className) throws IOException {
-        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+    private static String getStaticLocator(FileObject referencingFO, final String serviceLocator) throws IOException {
+        JavaSource javaSource = JavaSource.forFileObject(referencingFO);
         final String[] methodName = new String[1];
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = controller.getElements().getTypeElement(className);
+                TypeElement typeElement = controller.getElements().getTypeElement(serviceLocator);
                 for (ExecutableElement executableElement : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
                     Set<Modifier> modifiers = executableElement.getModifiers();
                     if (modifiers.contains(Modifier.STATIC) && modifiers.contains(Modifier.PUBLIC) &&

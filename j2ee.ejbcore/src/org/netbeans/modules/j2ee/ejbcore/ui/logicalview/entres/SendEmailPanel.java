@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.java.source.ClasspathInfo;
 
 
 /**
@@ -59,9 +60,9 @@ public class SendEmailPanel extends javax.swing.JPanel {
     private final ServiceLocatorStrategyPanel slcPanel;
 
     /** Creates new form SendEmailPanel */
-    public SendEmailPanel(String lastLocator) {
+    public SendEmailPanel(String lastLocator, ClasspathInfo cpInfo) {
         initComponents();
-        slcPanel = new ServiceLocatorStrategyPanel(lastLocator);
+        slcPanel = new ServiceLocatorStrategyPanel(lastLocator, cpInfo);
         serviceLocatorPanel.add(slcPanel,BorderLayout.CENTER);
         slcPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {

@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -101,7 +102,8 @@ public class SendJMSMessageAction extends NodeAction {
                     holder.getModuleDestinations(),
                     holder.getServerDestinations(),
                     SendJMSMessageUiSupport.getMdbs(),
-                    erc.getServiceLocatorName());
+                    erc.getServiceLocatorName(),
+                    ClasspathInfo.create(srcFile));
             final DialogDescriptor dialogDescriptor = new DialogDescriptor(
                     sendJmsMessagePanel,
                     NbBundle.getMessage(SendJMSMessageAction.class,"LBL_SendJmsMessage"),

@@ -192,14 +192,15 @@ public class CallEjbGenerator {
     
     // private stuff ===========================================================
     
-    private ElementHandle<ExecutableElement> generateServiceLocatorLookup(FileObject fileObject, String className, String serviceLocatorName, boolean isLocal, boolean throwExceptions) {
+    private ElementHandle<ExecutableElement> generateServiceLocatorLookup(FileObject referencingFO, String referencingClassName, 
+            String serviceLocatorName, boolean isLocal, boolean throwExceptions) {
         try {
             return generateServiceLocatorJNDI(
-                    fileObject, 
-                    className, 
+                    referencingFO, 
+                    referencingClassName,
                     isLocal ? ejbReference.getLocalHome() : ejbReference.getRemoteHome(), 
                     ejbReferenceName, 
-                    true, 
+                    !isLocal, 
                     isLocal ? ejbReference.getLocal() : ejbReference.getRemote(), 
                     throwExceptions, 
                     serviceLocatorName
@@ -451,7 +452,7 @@ public class CallEjbGenerator {
         
     }
     
-    private ElementHandle<ExecutableElement> generateServiceLocatorJNDI(FileObject fileObject, final String className, String homeName, String refName,
+    private ElementHandle<ExecutableElement> generateServiceLocatorJNDI(FileObject referencingFO, final String referencingClassName, String homeName, String refName,
         boolean narrow, String componentName, boolean throwCheckedExceptions, String serviceLocatorName) throws IOException {
         String name = "lookup"+refName.substring(refName.lastIndexOf('/')+1);
         String body = null;
@@ -466,12 +467,12 @@ public class CallEjbGenerator {
                 exceptions.add("java.rmi.RemoteException"); //NOI18N
             }
         }
-        Project enterpriseProject = FileOwnerQuery.getOwner(fileObject);
-        ServiceLocatorStrategy sls = ServiceLocatorStrategy.create(enterpriseProject, fileObject, serviceLocatorName);
+        Project enterpriseProject = FileOwnerQuery.getOwner(referencingFO);
+        ServiceLocatorStrategy sls = ServiceLocatorStrategy.create(enterpriseProject, referencingFO, serviceLocatorName);
         if (narrow) {
-            body = sls.genRemoteEjbStringLookup(refName, homeName, fileObject, className, genCreate);
+            body = sls.genRemoteEjbStringLookup(refName, homeName, referencingFO, referencingClassName, genCreate);
         } else {
-            body = sls.genLocalEjbStringLookup(refName, homeName, fileObject, className, genCreate);
+            body = sls.genLocalEjbStringLookup(refName, homeName, referencingFO, referencingClassName, genCreate);
         }
         if (!throwCheckedExceptions) {
             Iterator exIt = exceptions.iterator();
@@ -493,18 +494,18 @@ public class CallEjbGenerator {
         }
             
         final MethodModel methodModel = MethodModel.create(
-                _RetoucheUtil.uniqueMemberName(fileObject, className, name, "ejb"),
+                _RetoucheUtil.uniqueMemberName(referencingFO, referencingClassName, name, "ejb"),
                 returnType,
                 body,
                 Collections.<MethodModel.Variable>emptyList(),
                 exceptions,
                 Collections.singleton(Modifier.PRIVATE)
                 );
-        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        JavaSource javaSource = JavaSource.forFileObject(referencingFO);
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = workingCopy.getElements().getTypeElement(className);
+                TypeElement typeElement = workingCopy.getElements().getTypeElement(referencingClassName);
                 MethodTree methodTree = MethodModelSupport.createMethodTree(workingCopy, methodModel);
                 ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
                 ClassTree newClassTree = workingCopy.getTreeMaker().addClassMember(classTree, methodTree);
@@ -512,7 +513,7 @@ public class CallEjbGenerator {
             }
         }).commit();
 
-        return _RetoucheUtil.getMethodHandle(javaSource, methodModel, className);
+        return _RetoucheUtil.getMethodHandle(javaSource, methodModel, referencingClassName);
 
     }
     

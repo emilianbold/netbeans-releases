@@ -54,6 +54,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -109,7 +110,7 @@ public class SendEmailAction extends NodeAction {
         
         EnterpriseReferenceContainer erc = enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
         
-        SendEmailPanel sendEmailPanel = new SendEmailPanel(erc.getServiceLocatorName()); //NOI18N
+        SendEmailPanel sendEmailPanel = new SendEmailPanel(erc.getServiceLocatorName(), ClasspathInfo.create(srcFile)); //NOI18N
         final DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 sendEmailPanel,
                 NbBundle.getMessage(SendEmailAction.class, "LBL_SpecifyMailResource"),

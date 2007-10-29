@@ -54,6 +54,7 @@ import java.util.TreeSet;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.DialogDescriptor;
@@ -79,7 +80,7 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
     private boolean copyDataSourceToProject = false;
     
     public SelectDatabasePanel(J2eeModuleProvider provider, String lastLocator, Map<String, Datasource> references,
-            Set<Datasource> moduleDatasources, Set<Datasource> serverDatasources) {
+            Set<Datasource> moduleDatasources, Set<Datasource> serverDatasources, ClasspathInfo cpInfo) {
         initComponents();
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SelectDatabasePanel.class, "ACSD_ChooseDatabase"));
         this.provider = provider;
@@ -97,7 +98,7 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
             }
         });
 
-        slPanel = new ServiceLocatorStrategyPanel(lastLocator);
+        slPanel = new ServiceLocatorStrategyPanel(lastLocator, cpInfo);
         serviceLocatorPanel.add(slPanel, BorderLayout.CENTER);
         slPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {

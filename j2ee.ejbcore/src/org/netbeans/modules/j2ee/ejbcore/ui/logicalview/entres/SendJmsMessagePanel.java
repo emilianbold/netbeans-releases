@@ -52,6 +52,7 @@ import java.util.Set;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -77,7 +78,7 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
     // private because correct initialization is needed
     private SendJmsMessagePanel(J2eeModuleProvider provider, Set<MessageDestination> moduleDestinations,
             Set<MessageDestination> serverDestinations, List<SendJMSMessageUiSupport.MdbHolder> mdbs,
-            String lastLocator) {
+            String lastLocator, ClasspathInfo cpInfo) {
         initComponents();
         
         this.provider = provider;
@@ -85,7 +86,7 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
         this.serverDestinations = serverDestinations;
         this.mdbs = mdbs;
         isDestinationCreationSupportedByServerPlugin = provider.getConfigSupport().supportsCreateMessageDestination();
-        slPanel = new ServiceLocatorStrategyPanel(lastLocator);
+        slPanel = new ServiceLocatorStrategyPanel(lastLocator, cpInfo);
     }
     
     /**
@@ -99,13 +100,14 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
      */
     public static SendJmsMessagePanel newInstance(final J2eeModuleProvider provider, final Set<MessageDestination> moduleDestinations,
             final Set<MessageDestination> serverDestinations, final List<SendJMSMessageUiSupport.MdbHolder> mdbs,
-            final String lastLocator) {
+            final String lastLocator, ClasspathInfo cpInfo) {
         SendJmsMessagePanel sjmp = new SendJmsMessagePanel(
                 provider,
                 moduleDestinations,
                 serverDestinations,
                 mdbs,
-                lastLocator);
+                lastLocator,
+                cpInfo);
         sjmp.initialize();
         sjmp.verifyAndFire();
         sjmp.handleConnectionFactory();

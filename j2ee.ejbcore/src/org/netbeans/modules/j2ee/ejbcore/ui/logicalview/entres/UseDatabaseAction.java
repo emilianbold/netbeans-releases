@@ -53,6 +53,7 @@ import java.util.Set;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -125,7 +126,8 @@ public class UseDatabaseAction extends NodeAction {
                 enterpriseReferenceContainer.getServiceLocatorName(),
                 holder.getReferences(),
                 holder.getModuleDataSources(),
-                holder.getServerDataSources());
+                holder.getServerDataSources(),
+                ClasspathInfo.create(fileObject));
         final DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 selectDatabasePanel,
                 NbBundle.getMessage(UseDatabaseAction.class, "LBL_ChooseDatabase"), //NOI18N
