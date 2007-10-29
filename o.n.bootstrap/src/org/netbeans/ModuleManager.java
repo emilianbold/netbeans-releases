@@ -1354,7 +1354,7 @@ public final class ModuleManager {
     Set<Union2<Dependency,InvalidException>> missingDependencies(Module probed) {
         return missingDependencies(probed, true);
     }
-    Set<Union2<Dependency,InvalidException>> missingDependencies(Module probed, boolean withNeeds) {
+    private Set<Union2<Dependency,InvalidException>> missingDependencies(Module probed, boolean withNeeds) {
         // We need to synchronize here because though this method may be called
         // only within a read mutex, it can write to moduleProblems. Other places
         // where moduleProblems are used are write-mutex only and so do not have
