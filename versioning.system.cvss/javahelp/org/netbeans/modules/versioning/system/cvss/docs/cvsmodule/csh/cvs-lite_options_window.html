@@ -17,49 +17,44 @@
         <p><small><a href="#seealso">See Also</a></small></p>
         
         <p>The CVS Versioning Options window provides an interface allowing you to apply arbitrary 
-            metadata to files or directories by adding, removing, or modifying the format of 
-            versioning labels for versioned files. You can also adjust CVS settings in the IDE,
-            such as excluding new files from commit actions automatically, or limiting the
-            number of characters per line in commit messages.</p>
+            metadata to files or directories by adding, removing, or modifying the status label 
+            format of versioning labels for versioned files. You can also adjust CVS settings in 
+            the IDE, such as excluding new files from commit actions automatically, or limiting 
+            the number of characters per line in commit messages.</p>
            
         <p>To open the Versioning Options window, choosing Tools &gt; Options from the main 
             menu, then select the Miscellaneous option from the top navigation bar. Within the 
             Miscellaneous category, select the Versioning tab located along the top of the pane.
             Then, under Versioning Systems on the left side of the pane, select CVS.</p>
         
-        <h4>To change the status label format for versioned files:</h4>
-            
+        <p>The following fields are displayed:</p>
+        
         <ul>
-            <li>In the Status Label Format text box, enter the format in which you want the status 
-                labels to be displayed. You can enter your own label(s), otherwise specify a 
-                CVS-reserved label by clicking <a href="cvs-lite_add_var_dialog.html">Add Variable</a> 
-                and selecting from the available options.</li>
+            <li><strong>Status Label Format</strong>. Enables you to enter arbitrary metadata 
+                to files. You can apply your own labels to files and specify the order in which
+                you want them to appear.</li>
+            <li><strong>Apply &quot;Exclude From Commit&quot; On New Files Automatically</strong>. 
+                Toggle this option to exclude new files from any commit actions automatically. (You
+                can manually specify their commit through the 
+                <a href="cvs-lite_commit_dialog.html">Commit dialog</a>.)</li>
+            <li><strong>Wrap Commit Messages To (characters)</strong>. Specify whether to wrap 
+                commit messages following a specified number of characters.</li>            
         </ul>
         
         <ul class="note">
-            <li>In order to make versioning labels visible, choose View from the main menu, then select
-                the Show Versioning Labels option. Versioning labels display in light grey text to 
-                the immediate right of versioned files in the Projects, Files, Favorites windows.</li>
-        </ul>        
-        
-        <h4>To automatically exclude new files from commit actions:</h4>
-        
-        <ul>
-            <li>Select the <strong>Apply &quot;Exclude from Commit&quot; On New Files Automatically</strong>
-            option. When selected, newly created files will have to be manually included in commit actions.</li>
+            <li>To make use of CVS-reserved status labels, click Add Variable to open the 
+                <a href="csh/cvs-lite_add_var_dialog.html">Add Variable</a> dialog. You can 
+                select from a list of available keywords.</li>
+            <li>In order to make versioning labels visible, choose View from the main menu, 
+                then select the Show Versioning Labels option. Versioning labels display in 
+                light grey text to the immediate right of versioned files in the Projects, 
+                Files, Favorites windows.</li>                
         </ul>
-                
-        <h4>To limit the number of characters per line in commit messages:</h4>
-        
-        <ul>
-            <li>Select the <strong>Wrap Commit Messages To (characters)</strong> option.</li>
-            <li>In the adjacent text box, enter the number of characters to indicate the 
-                length of each line. Commit messages longer than the specified number of 
-                characters will be wrapped to multiple lines.</li>
-        </ul>        
-    
+
         <dl>
             <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../cvs-lite_overview.html">Working with CVS</a></dd>
+            <dd><a href="../cvs-lite_quickref.html">CVS Tasks: Quick Reference</a></dd>            
         </dl>
         
         <hr>

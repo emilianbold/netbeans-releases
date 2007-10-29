@@ -18,6 +18,7 @@
         <tocitem text="Viewing File Status Information" target="cvs-lite_status" />
         <tocitem text="Working with Version Histories" target="cvs-lite_histories" />
         <tocitem text="Setting Up CVS" target="cvs-lite_setup" />
+        <tocitem text="Adjusting Settings in the IDE" target="cvs-lite_settings" />
         <tocitem text="Checking Out Files from a Remote Repository" target="cvs-lite_checkout" />
         <tocitem text="Placing Projects Under Version Control" target="cvs-lite_import" />                
         <tocitem text="Updating Files in a Local Working Directory" target="cvs-lite_updating" />

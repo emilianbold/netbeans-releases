@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 
 <!--
-*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -29,7 +29,10 @@
     <mapID target="cvs-lite_histories" url="cvsmodule/cvs-lite_histories.html" />
 
     <!-- Setting Up CVS -->
-    <mapID target="cvs-lite_setup" url="cvsmodule/cvs-lite_setup.html" />        
+    <mapID target="cvs-lite_setup" url="cvsmodule/cvs-lite_setup.html" /> 
+
+    <!-- Adjusting CVS Settings in the IDE -->
+    <mapID target="cvs-lite_settings" url="cvsmodule/cvs-lite_settings.html" />
 
     <!-- Checking Out Files from a Remote Repository -->
     <mapID target="cvs-lite_checkout" url="cvsmodule/cvs-lite_checkout.html" />
@@ -92,9 +95,6 @@
     <!-- Edit CVS Root dialog -->
     <mapID target="org.netbeans.modules.versioning.system.cvss.ui.wizards.CvsRootPanel" url="cvsmodule/csh/cvs-lite_editroot_dialog.html" />
 
-    <!-- Proxy dialog -->
-    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxySelector" url="cvsmodule/csh/cvs-lite_proxy_dialog.html" />
-
     <!-- Browse Modules dialog -->
     <mapID target="org.netbeans.modules.versioning.system.cvss.ui.selectors.ModuleSelector" url="cvsmodule/csh/cvs-lite_chkoutmodules_dialog.html" />
 
@@ -147,10 +147,6 @@
     <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
     <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
     <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.diff.ExportDiffAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
-    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.TagAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
-    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.BranchAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
-    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.SwitchBranchAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
-    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.MergeBranchAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
     <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.log.AnnotationsAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
     <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
     <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />

@@ -17,22 +17,27 @@
 	<p><small><a href="#seealso">See Also</a></small></p>
         
 	<p>The Change CVS Root dialog box enables you to modify the path to the CVS repository which you 
-            are working in. You can access this dialog box by choosing Versioning &gt; CVS &gt; Change CVS 
-            Root from the main menu.</p>
+            are working in. You can access this dialog box by selecting a versioned project or folder 
+            and choosing Versioning &gt; CVS &gt; Change CVS Root from the main menu.</p>
             
 	<p>For reference, the Change CVS Root dialog box displays the working copy on your system, as well 
             as the CVS Root you are currently registered with.</p>
         
-        <h4>To modify the CVS Root:</h4>
+        <p>Specify the following parameters in the dialog box:</p>
             
 	<ul>
-	    <li>In the <strong>New CVS Root</strong> field, enter a new root type and location. You can select
-                a root location from the drop-down list (if previous entries have been made), otherwise type in
-                a new root type and location. Alternatively, click the Edit button to open the 
+	    <li><strong>New CVS Root</strong>. Enter a new root type and location. You can select a 
+                root location from the drop-down list (if previous entries have been made), otherwise 
+                type in a new root type and location. Alternatively, click the Edit button to open the 
                 <a href="cvs-lite_editroot_dialog.html">Edit CVS Root dialog box</a>.</li>
-            <li>Click Change. The new CVS Root is registered in the IDE, and will be applied the next time 
-                you attempt to connect to the repository.</li>
 	</ul>
+ 
+        <ul class="note">
+            <li>Because the Versioning menu is context-sensitive, the Change CVS Root option is only 
+                active when you have previously selected a versioned project or folder.</li>
+            <li>Upon clicking Change, the new CVS Root is registered in the IDE, and will be applied 
+                the next time you attempt to connect to the repository.</li>
+        </ul>
         
 	<dl>
 	    <dt>
