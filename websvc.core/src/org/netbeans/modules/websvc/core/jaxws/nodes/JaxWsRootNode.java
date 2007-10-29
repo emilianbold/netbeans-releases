@@ -78,9 +78,10 @@ public class JaxWsRootNode extends AbstractNode implements PropertyChangeListene
     private PropertyEvaluator evaluator;
     private Project project;
     private boolean jsr109Supported;
-    private static final Image WEB_SERVICES_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/webservicegroup.png", true ); // NOI18N
-    static Icon folderIconCache;
-    static Icon openedFolderIconCache;
+    private static final String SERVICES_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/webservicegroup.png"; // NOI18N
+    private Icon folderIconCache;
+    private Icon openedFolderIconCache;
+    private java.awt.Image cachedServicesBadge;
     
     public JaxWsRootNode(Project project, JaxWsModel jaxWsModel, FileObject[] srcRoots) {
         super(new JaxWsRootChildren(jaxWsModel,srcRoots), Lookups.fixed(project));
@@ -100,12 +101,19 @@ public class JaxWsRootNode extends AbstractNode implements PropertyChangeListene
         return computeIcon( true );
     }
     
+    private java.awt.Image getServicesImage() {
+        if (cachedServicesBadge == null) {
+            cachedServicesBadge = Utilities.loadImage(SERVICES_BADGE);
+        }            
+        return cachedServicesBadge;        
+    }
+    
     /**
      * Returns Icon of folder on active platform
      * @param opened should the icon represent opened folder
      * @return the folder icon
      */
-    static synchronized Icon getFolderIcon (boolean opened) {
+    private Icon getFolderIcon (boolean opened) {
         if (openedFolderIconCache == null) {
             Node n = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
             openedFolderIconCache = new ImageIcon(n.getOpenedIcon(BeanInfo.ICON_COLOR_16x16));
@@ -122,7 +130,7 @@ public class JaxWsRootNode extends AbstractNode implements PropertyChangeListene
     private Image computeIcon( boolean opened) {        
         Icon icon = getFolderIcon(opened);
         Image image = ((ImageIcon)icon).getImage();
-        image = Utilities.mergeImages(image, WEB_SERVICES_BADGE, 7, 7 );
+        image = Utilities.mergeImages(image, getServicesImage(), 7, 7 );
         return image;        
     }
 

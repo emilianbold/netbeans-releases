@@ -68,7 +68,11 @@ import org.openide.util.lookup.Lookups;
 public class JaxWsClientRootNode extends AbstractNode {
 
  
-    private static final Image WEB_SERVICES_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/webservicegroup.png", true ); // NOI18N
+    private static final String SERVICES_BADGE = "org/netbeans/modules/websvc/core/webservices/ui/resources/webservicegroup.png"; // NOI18N
+    
+    private Icon folderIconCache;
+    private Icon openedFolderIconCache;
+    private java.awt.Image cachedServicesBadge;
     private final DataFolder srcFolder;
     
     public JaxWsClientRootNode(JaxWsModel jaxWsModel, FileObject srcRoot) {
@@ -82,11 +86,18 @@ public class JaxWsClientRootNode extends AbstractNode {
     }
     
     public Image getIcon( int type ) {
-        return computeIcon( false, type );
+        return computeIcon(false);
     }
     
     public Image getOpenedIcon( int type ) {
-        return computeIcon( true, type );
+        return computeIcon(true);
+    }
+    
+    private java.awt.Image getServicesImage() {
+        if (cachedServicesBadge == null) {
+            cachedServicesBadge = Utilities.loadImage(SERVICES_BADGE);
+        }            
+        return cachedServicesBadge;        
     }
     
     /**
@@ -94,24 +105,24 @@ public class JaxWsClientRootNode extends AbstractNode {
      * @param opened should the icon represent opened folder
      * @return the folder icon
      */
-    static synchronized Icon getFolderIcon (boolean opened) {
-        if (JaxWsRootNode.openedFolderIconCache == null) {
+    private Icon getFolderIcon (boolean opened) {
+        if (openedFolderIconCache == null) {
             Node n = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
-            JaxWsRootNode.openedFolderIconCache = new ImageIcon(n.getOpenedIcon(BeanInfo.ICON_COLOR_16x16));
-            JaxWsRootNode.folderIconCache = new ImageIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
+            openedFolderIconCache = new ImageIcon(n.getOpenedIcon(BeanInfo.ICON_COLOR_16x16));
+            folderIconCache = new ImageIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
         }
         if (opened) {
-            return JaxWsRootNode.openedFolderIconCache;
+            return openedFolderIconCache;
         }
         else {
-            return JaxWsRootNode.folderIconCache;
+            return folderIconCache;
         }
     }
 
-    private Image computeIcon( boolean opened, int type ) {        
+    private Image computeIcon( boolean opened) {        
         Icon icon = getFolderIcon(opened);
         Image image = ((ImageIcon)icon).getImage();
-        image = Utilities.mergeImages(image, WEB_SERVICES_BADGE, 7, 7 );
+        image = Utilities.mergeImages(image, getServicesImage(), 7, 7 );
         return image;        
     }
 
