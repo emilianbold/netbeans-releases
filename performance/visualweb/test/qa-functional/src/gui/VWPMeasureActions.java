@@ -59,8 +59,10 @@ public class VWPMeasureActions  {
         
         suite.addTest(new OpenProjectFirstPage("testOpenSmallProjectFirstPage","Open Small Project First Page"));
         suite.addTest(new OpenProjectFirstPage("testOpenLargeProjectFirstPage","Open Large Project First Page"));
-        
-        suite.addTest(new TypingInCSSEditor("measureTime","Type a character in CSS Editor"));
+
+// manual results differ from automated        
+//        suite.addTest(new TypingInCSSEditor("measureTime","Type a character in CSS Editor"));
+
         suite.addTest(new CSSRuleAddTest("measureTime","Measure time to add and modify CSS rule"));
         suite.addTest(new PasteCSSText("measureTime","Measure time to Paste text into CSS editor"));
         
