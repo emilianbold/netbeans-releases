@@ -197,7 +197,9 @@ public class LanguagesEditorKit extends NbEditorKit {
             //new IndentAction (),
             new InstantRenameAction(),
             new LanguagesGenerateFoldPopupAction (),
-            new org.netbeans.modules.languages.features.ToggleCommentAction()
+            new org.netbeans.modules.languages.features.ToggleCommentAction(),
+            new org.netbeans.modules.languages.features.CodeCommentAction(),
+            new org.netbeans.modules.languages.features.CodeUncommentAction()
         };
         return TextAction.augmentList (
             super.createActions (), 
