@@ -85,72 +85,69 @@ import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 
 /**
- *
  * @author mkleint
  */
 public class ModulesNodeFactory implements NodeFactory {
-    
-    /** Creates a new instance of ImportantFilesNodeFactory */
-    public ModulesNodeFactory() {
-    }
-    
+
+    public ModulesNodeFactory() {}
+
     public NodeList createNodes(Project p) {
         SuiteProject prj = p.getLookup().lookup(SuiteProject.class);
         assert prj != null;
         return NodeFactorySupport.fixedNodeList(new ModulesNode(prj));
     }
-    
+
     private static String getMessage(final String key) {
         return NbBundle.getMessage(SuiteLogicalView.class, key);
     }
-    
+
 
     /** Represent <em>Modules</em> node in the Suite Logical View. */
     static final class ModulesNode extends AbstractNode {
-        
+
         private SuiteProject suite;
-        
+
         ModulesNode(final SuiteProject suite) {
             super(new ModuleChildren(suite));
             this.suite = suite;
             setName("modules"); // NOI18N
             setDisplayName(getMessage("CTL_Modules"));
         }
-        
-        public Action[] getActions(boolean context) {
+
+        public @Override Action[] getActions(boolean context) {
             return new Action[] {
                 new AddNewSuiteComponentAction(suite),
                 new AddNewLibraryWrapperAction(suite),
                 new AddSuiteComponentAction(suite),
             };
         }
-        
+
         private Image getIcon(boolean opened) {
-            Image badge = Utilities.loadImage("org/netbeans/modules/apisupport/project/suite/resources/module-badge.gif", true);
+            Image badge = Utilities.loadImage("org/netbeans/modules/apisupport/project/suite/resources/module-badge.png", true);
             return Utilities.mergeImages(UIUtil.getTreeFolderIcon(opened), badge, 9, 9);
         }
-        
-        public Image getIcon(int type) {
+
+        public @Override Image getIcon(int type) {
             return getIcon(false);
         }
-        
-        public Image getOpenedIcon(int type) {
+
+        public @Override Image getOpenedIcon(int type) {
             return getIcon(true);
         }
-        
+
         static final class ModuleChildren extends Children.Keys<NbModuleProject> implements ChangeListener {
-            
+
             private final SuiteProject suite;
-            
+
             public ModuleChildren(SuiteProject suite) {
                 suite.getLookup().lookup(SubprojectProvider.class).addChangeListener(this);
                 this.suite = suite;
             }
-            
-            protected void addNotify() {
+
+            protected @Override void addNotify() {
                 updateKeys();
             }
-            
+
             private void updateKeys() {
                 // e.g.(?) Explorer view under Children.MUTEX subsequently calls e.g.
                 // SuiteProject$Info.getSimpleName() which acquires ProjectManager.mutex(). And
@@ -166,33 +163,33 @@ public class ModulesNodeFactory implements NodeFactory {
                     }
                 });
             }
-            
-            protected void removeNotify() {
+
+            protected @Override void removeNotify() {
                 suite.getLookup().lookup(SubprojectProvider.class).removeChangeListener(this);
                 setKeys(Collections.<NbModuleProject>emptySet());
             }
-            
+
             protected Node[] createNodes(NbModuleProject p) {
                 return new Node[] {new SuiteComponentNode(p)};
             }
-            
+
             public void stateChanged(ChangeEvent ev) {
                 updateKeys();
             }
-            
+
         }
-        
+
     }
-    
+
     private static final class AddSuiteComponentAction extends AbstractAction {
-        
+
         private final SuiteProject suite;
-        
+
         public AddSuiteComponentAction(final SuiteProject suite) {
             super(getMessage("CTL_AddModule"));
             this.suite = suite;
         }
-        
+
         public void actionPerformed(ActionEvent evt) {
             NbModuleProject project = UIUtil.chooseSuiteComponent(
                     WindowManager.getDefault().getMainWindow(),
@@ -211,40 +208,40 @@ public class ModulesNodeFactory implements NodeFactory {
                 }
             }
         }
-        
+
     }
-    
+
     private static final class AddNewSuiteComponentAction extends AbstractAction {
-        
+
         private final SuiteProject suite;
-        
+
         public AddNewSuiteComponentAction(final SuiteProject suite) {
             super(getMessage("CTL_AddNewModule"));
             this.suite = suite;
         }
-        
+
         public void actionPerformed(ActionEvent evt) {
             NewNbModuleWizardIterator iterator = NewNbModuleWizardIterator.createSuiteComponentIterator(suite);
             UIUtil.runProjectWizard(iterator, "CTL_NewModuleProject"); // NOI18N
         }
-        
+
     }
-    
+
     static final class AddNewLibraryWrapperAction extends AbstractAction {
-        
+
         private final Project suiteProvider;
         private final NbModuleProject target;
-        
+
         public AddNewLibraryWrapperAction(final Project suiteProvider, final NbModuleProject target) {
             super(getMessage("CTL_AddNewLibrary"));
             this.suiteProvider = suiteProvider;
             this.target = target;
         }
-        
+
         public AddNewLibraryWrapperAction(final Project suiteProvider) {
             this(suiteProvider, null);
         }
-        
+
         public void actionPerformed(ActionEvent evt) {
             NbModuleProject project = UIUtil.runLibraryWrapperWizard(suiteProvider);
             if (project != null && target != null) {
@@ -256,15 +253,15 @@ public class ModulesNodeFactory implements NodeFactory {
                 }
             }
         }
-        
+
     }
-    
+
     /** Represent one module (a suite component) node. */
     private static final class SuiteComponentNode extends AbstractNode {
-        
+
         private final static Action REMOVE_ACTION = new RemoveSuiteComponentAction();
         private final static Action OPEN_ACTION = new OpenProjectAction();
-        
+
         public SuiteComponentNode(final NbModuleProject suiteComponent) {
             super(Children.LEAF, Lookups.fixed(new Object[] {suiteComponent}));
             ProjectInformation info = ProjectUtils.getInformation(suiteComponent);
@@ -273,29 +270,29 @@ public class ModulesNodeFactory implements NodeFactory {
             setIconBaseWithExtension(NbModuleProject.NB_PROJECT_ICON_PATH);
             info.addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    if (evt.getPropertyName() == ProjectInformation.PROP_DISPLAY_NAME) {
+                    if (ProjectInformation.PROP_DISPLAY_NAME.equals(evt.getPropertyName())) {
                         SuiteComponentNode.this.setDisplayName((String) evt.getNewValue());
-                    } else if (evt.getPropertyName() == ProjectInformation.PROP_NAME) {
+                    } else if (ProjectInformation.PROP_NAME.equals(evt.getPropertyName())) {
                         SuiteComponentNode.this.setName((String) evt.getNewValue());
                     }
                 }
             });
         }
-        
-        public Action[] getActions(boolean context) {
+
+        public @Override Action[] getActions(boolean context) {
             return new Action[] {
                 OPEN_ACTION, REMOVE_ACTION
             };
         }
-        
-        public Action getPreferredAction() {
+
+        public @Override Action getPreferredAction() {
             return OPEN_ACTION;
         }
-        
+
     }
-    
+
     private static final class RemoveSuiteComponentAction extends NodeAction {
-        
+
         protected void performAction(Node[] activatedNodes) {
             for (int i = 0; i < activatedNodes.length; i++) {
                 final NbModuleProject suiteComponent =
@@ -325,27 +322,27 @@ public class ModulesNodeFactory implements NodeFactory {
                 }
             }
         }
-        
+
         protected boolean enable(Node[] activatedNodes) {
             return true;
         }
-        
+
         public String getName() {
             return getMessage("CTL_RemoveModule");
         }
-        
+
         public HelpCtx getHelpCtx() {
             return HelpCtx.DEFAULT_HELP;
         }
-        
-        protected boolean asynchronous() {
+
+        protected @Override boolean asynchronous() {
             return false;
         }
-        
+
     }
-    
+
     private static final class OpenProjectAction extends CookieAction {
-        
+
         protected void performAction(Node[] activatedNodes) {
             final Project[] projects = new Project[activatedNodes.length];
             for (int i = 0; i < activatedNodes.length; i++) {
@@ -359,27 +356,27 @@ public class ModulesNodeFactory implements NodeFactory {
                 }
             });
         }
-        
+
         public String getName() {
             return getMessage("CTL_OpenProject");
         }
-        
+
         public HelpCtx getHelpCtx() {
             return HelpCtx.DEFAULT_HELP;
         }
-        
-        protected boolean asynchronous() {
+
+        protected @Override boolean asynchronous() {
             return false;
         }
-        
+
         protected int mode() {
             return CookieAction.MODE_ALL;
         }
-        
+
         protected Class[] cookieClasses() {
             return new Class[] { Project.class };
         }
-        
+
     }
-    
+
 }
