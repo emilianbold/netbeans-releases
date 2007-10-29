@@ -264,7 +264,7 @@ public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSD
         if (parent instanceof Message) {
             Message target = (Message)parent;
             if (operation == Operation.ADD) {
-                target.addPart(child);
+                addChild(Message.PART_PROPERTY, child);
             } else if (operation == Operation.REMOVE) {
                 target.removePart(child);
             } else if (operation == null) {
@@ -328,7 +328,7 @@ public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSD
                 parent instanceof SolicitResponseOperation;
 
             if (operationWithFaults && operation == Operation.ADD) {
-                target.addFault(child);
+                addChild(target.FAULT_PROPERTY, child);
             } else if (operation == Operation.REMOVE) {
                 target.removeFault(child);
             } else if (operation == null) {
@@ -343,7 +343,7 @@ public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSD
         if (parent instanceof PortType) {
             PortType target = (PortType)parent;
             if (operation == Operation.ADD) {
-                target.addOperation(child);
+                addChild(target.OPERATION_PROPERTY, child);
             } else if (operation == Operation.REMOVE) {
                 target.removeOperation(child);
             } else if (operation == null) {
