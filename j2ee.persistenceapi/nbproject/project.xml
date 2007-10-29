@@ -90,6 +90,11 @@
                         <test/>
                     </test-dependency>
                     <test-dependency>
+                        <!-- for the nbinst: protocol -->
+                        <code-name-base>org.netbeans.core.startup</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.j2ee.metadata</code-name-base>
                         <compile-dependency/>
                         <test/>
