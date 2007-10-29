@@ -227,7 +227,7 @@ public final class ProjectOperations {
      *         <code>false</code> otherwise
      */
     public static boolean isMoveOperationSupported(Project prj) {
-        return true; // XXX ???
+        return true; // XXX ??? #120418
     }
     
 }
