@@ -87,7 +87,8 @@ public class UnitDetails extends DetailsPanel{
                     URL icon = Utilities.getCategoryIcon(c);
                     text += "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\"><tr>";
                     text += "<td><img src=\""+ icon.toExternalForm() +"\"></img></td>";
-                    text += "<td>&nbsp;&nbsp;<b>"+ categoryName+ "</b></td>";
+                    text += "<td>&nbsp;&nbsp;</td>";
+                    text += "<td><b>"+ categoryName+ "</b></td>";
                     text += "</tr></table><br>";
                 }
                                 
