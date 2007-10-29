@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
@@ -70,7 +69,7 @@ public class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 16;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 17;
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
     }

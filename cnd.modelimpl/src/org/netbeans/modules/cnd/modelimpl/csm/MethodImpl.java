@@ -57,8 +57,10 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod<T> {
 
     private final CsmVisibility visibility;
-    private boolean _static = false;
-    private boolean _abstract = false;
+    private int _attributes = 0;
+    private static final int STATIC = 1 << 0;
+    private static final int ABSTRACT = 1 << 1;
+    private static final int VIRTUAL = 1 << 2;
 
     public MethodImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
         this(ast, cls, visibility, true);
@@ -72,8 +74,11 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod<T> {
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.LITERAL_static:
-                setStatic(true);                    
-                break;
+                    setStatic(true);                    
+                    break;
+                case CPPTokenTypes.LITERAL_virtual:
+                    setVirtual(true);
+                    break;
             }
         }
         if (register) {
@@ -90,19 +95,35 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod<T> {
     }
 
     public boolean isStatic() {
-        return _static;
+        return (_attributes & STATIC) == STATIC;
     }
     
     public boolean isAbstract() {
-        return _abstract;
+        return (_attributes & ABSTRACT) == ABSTRACT;
     }
     
     public void setAbstract(boolean _abstract) {
-        this._abstract = _abstract;
+        if (_abstract) {
+            this._attributes |= ABSTRACT;
+        } else {
+            this._attributes &= ~ABSTRACT;
+        }
     }
     
     public void setStatic(boolean _static) {
-        this._static = _static;
+        if (_static) {
+            this._attributes |= STATIC;
+        } else {
+            this._attributes &= ~STATIC;
+        }
+    }
+    
+    private void setVirtual(boolean _virtual) {
+        if (_virtual) {
+            this._attributes |= VIRTUAL;
+        } else {
+            this._attributes &= ~VIRTUAL;
+        }
     }
     
     public boolean isExplicit() {
@@ -112,9 +133,11 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod<T> {
     
     public boolean isVirtual() {
         //TODO: implement!
-        return false;
+        // returns direct "virtual" keyword presence
+        return (_attributes & VIRTUAL) == VIRTUAL;
     }
 
+    @Override
     public boolean isConst() {
 	return super.isConst();
     }
@@ -122,18 +145,17 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod<T> {
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeVisibility(this.visibility, output);
-        output.writeBoolean(this._abstract);
-        output.writeBoolean(this._static);
+        output.writeInt(_attributes);
     }
     
     public MethodImpl(DataInput input) throws IOException {
         super(input);
         this.visibility = PersistentUtils.readVisibility(input);
-        this._abstract = input.readBoolean();
-        this._static = input.readBoolean();
+        this._attributes = input.readInt();
     }      
 }
 
