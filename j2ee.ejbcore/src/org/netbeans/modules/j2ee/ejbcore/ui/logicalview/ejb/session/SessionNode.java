@@ -88,7 +88,7 @@ public final class SessionNode extends AbstractNode implements OpenCookie {
     private final PropertyChangeListener nameChangeListener;
     private final EjbViewController ejbViewController;
     
-    public static SessionNode create(String ejbClass, EjbJar ejbModule, Project project) {
+    public static SessionNode create(final String ejbClass, EjbJar ejbModule, Project project) {
         JavaSource javaSource = null;
         FileObject[] javaSources = ejbModule.getJavaSources();
         if (javaSources.length > 0) {
@@ -100,12 +100,6 @@ public final class SessionNode extends AbstractNode implements OpenCookie {
             javaSource = JavaSource.create(cpInfo);
         }
         assert javaSource != null;
-        return new SessionNode(new InstanceContent(), javaSource, ejbClass, ejbModule);
-    }
-    
-    private SessionNode(InstanceContent instanceContent, JavaSource javaSource, final String ejbClass, EjbJar ejbModule) {
-        super(new SessionChildren(javaSource, ejbClass, ejbModule), new AbstractLookup(instanceContent));
-        setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/session/SessionNodeIcon.gif");
         String ejbName = null;
         try {
             ejbName = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
@@ -117,6 +111,17 @@ public final class SessionNode extends AbstractNode implements OpenCookie {
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
+        if (ejbName == null) {
+            return null;
+        } else {
+            return new SessionNode(new InstanceContent(), javaSource, ejbClass, ejbName, ejbModule);
+        }
+    }
+    
+    private SessionNode(InstanceContent instanceContent, JavaSource javaSource, final String ejbClass, String ejbName, EjbJar ejbModule) {
+        super(new SessionChildren(javaSource, ejbClass, ejbModule), new AbstractLookup(instanceContent));
+        setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/session/SessionNodeIcon.gif");
+        
         setName(ejbName + "");
         ejbViewController = new EjbViewController(ejbClass, ejbModule);
         setDisplayName();

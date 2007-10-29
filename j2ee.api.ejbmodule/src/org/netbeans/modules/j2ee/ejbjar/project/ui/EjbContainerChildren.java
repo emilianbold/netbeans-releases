@@ -157,20 +157,20 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
     }
 
     protected Node[] createNodes(Key key) {
-        Node[] node = null;
+        Node node = null;
         if (key.ejbType == Key.EjbType.SESSION) {
             // do not create node for web service
             if (!key.isWebService && nodeFactory != null) {
-                node =  new Node[] { nodeFactory.createSessionNode(key.ejbClass, ejbModule, project) };
+                node = nodeFactory.createSessionNode(key.ejbClass, ejbModule, project);
             }
         }
         if (key.ejbType == Key.EjbType.ENTITY && nodeFactory != null) {
-            node = new Node[] { nodeFactory.createEntityNode(key.ejbClass, ejbModule, project) };
+            node = nodeFactory.createEntityNode(key.ejbClass, ejbModule, project);
         }
         if (key.ejbType == Key.EjbType.MESSAGE_DRIVEN && nodeFactory != null) {
-            node = new Node[] { nodeFactory.createMessageNode(key.ejbClass, ejbModule, project) };
+            node = nodeFactory.createMessageNode(key.ejbClass, ejbModule, project);
         }
-        return node == null ? new Node[0] : node;
+        return node == null ? new Node[0] : new Node[] { node };
     }
 
     public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
