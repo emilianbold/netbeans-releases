@@ -78,6 +78,14 @@ import org.openide.nodes.Node;
 public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, CsmProgressListener {
     private boolean isRootNamespase;
     
+    public NamespaceKeyArray(ChildrenUpdater childrenUpdater, CsmProject project){
+        super(childrenUpdater, project, PersistentKey.createGlobalNamespaceKey(project));
+        if (!project.isArtificial()) {
+            CsmModelAccessor.getModel().addProgressListener(this);
+            isRootNamespase = true;
+        }
+    }
+
     public NamespaceKeyArray(ChildrenUpdater childrenUpdater, CsmNamespace namespace){
         super(childrenUpdater, namespace.getProject(),PersistentKey.createKey(namespace));
         CsmProject project = namespace.getProject();

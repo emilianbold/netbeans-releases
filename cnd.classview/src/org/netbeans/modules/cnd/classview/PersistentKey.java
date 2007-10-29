@@ -95,6 +95,10 @@ public final class PersistentKey {
         }
     }
     
+    public static PersistentKey createGlobalNamespaceKey(CsmProject project){
+        return new PersistentKey("", project, NAMESPACE, false); // NOI18N
+    }
+    
     public static PersistentKey createKey(CsmIdentifiable object){
         if (object instanceof CsmNamespace){
             CsmNamespace ns = (CsmNamespace) object;

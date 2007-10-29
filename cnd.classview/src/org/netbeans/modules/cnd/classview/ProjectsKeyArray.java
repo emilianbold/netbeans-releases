@@ -191,7 +191,7 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
         Node node = null;
         try {
             node = new ProjectNode(project,
-                   new NamespaceKeyArray(childrenUpdater,project.getGlobalNamespace()));
+                   new NamespaceKeyArray(childrenUpdater,project));
         } catch (AssertionError ex){
             ex.printStackTrace();
         } catch (Exception ex) {
