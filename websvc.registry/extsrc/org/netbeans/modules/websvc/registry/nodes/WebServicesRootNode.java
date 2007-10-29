@@ -45,14 +45,11 @@ import org.openide.actions.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.websvc.registry.actions.*;
 import org.netbeans.modules.websvc.registry.model.WebServiceGroup;
 import org.netbeans.modules.websvc.registry.model.WebServiceListModel;
-import java.awt.Image;
-import javax.swing.ImageIcon;
 import javax.swing.Action;
 
 /**
