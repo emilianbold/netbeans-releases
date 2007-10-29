@@ -120,7 +120,7 @@ public class VWPContentModelProvider implements PageContentModelProvider {
     public void removeModel(VWPContentModel model) {
         Set<Entry<FileObject, Reference<VWPContentModel>>> entrySet = map.entrySet();
         for (Entry<FileObject, Reference<VWPContentModel>> entry : entrySet) {
-            if (entry.getValue() != null && entry.getValue().get().equals(model)) {
+            if (entry != null && entry.getValue() != null && entry.getValue().get().equals(model)) {
                 map.remove(entry.getKey());
                 break;
             }
