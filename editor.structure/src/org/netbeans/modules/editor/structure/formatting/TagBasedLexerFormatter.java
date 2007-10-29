@@ -271,20 +271,19 @@ public abstract class TagBasedLexerFormatter {
             int[] newIndents = new int[transferData.getNumberOfLines()];
 
             for (int i = 0; i < transferData.getNumberOfLines(); i++) {
-                if (transferData.isFormattable(i)){
+                if (lastLineIsCurrentLanguage != currentLanguage[i]) {
+                    // crosspoint
+                    lastLineIsCurrentLanguage = currentLanguage[i];
+                    lastCrossPoint = i;
+                }
+
+                if (!transferData.isFormattable(i)) {
                     newIndents[i] = transferData.getOriginalIndent(i);
                 } else {
-
-                    if (lastLineIsCurrentLanguage != currentLanguage[i]) {
-                        // crosspoint
-                        lastLineIsCurrentLanguage = currentLanguage[i];
-                        lastCrossPoint = i;
-                    }
-
-                    if (lastLineIsCurrentLanguage) {
-                            newIndents[i] = previousIndents[lastCrossPoint] + absoluteIndents[i];
-                    } else {
+                    if (currentLanguage[i]) {
                         newIndents[i] = previousIndents[i] + absoluteIndents[i];
+                    } else {
+                        newIndents[i] = previousIndents[lastCrossPoint] + absoluteIndents[i];
                     }
                 }
             }
@@ -616,11 +615,13 @@ public abstract class TagBasedLexerFormatter {
         public void init(BaseDocument doc) throws BadLocationException {
             numberOfLines = TagBasedLexerFormatter.getNumberOfLines(doc);
             formattableLines = new boolean[numberOfLines];
+            Arrays.fill(formattableLines, true);
             originalIndents = new int[numberOfLines];
             transformedOffsets = new int[numberOfLines];
             
             for (int i = 0; i < numberOfLines; i++) {
                 originalIndents[i] = getExistingIndent(doc, i);
+                //transformedOffsets[i] = originalIndents[i];
             }
             
             doc.putProperty(DOC_PROPERTY, this);
