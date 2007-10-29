@@ -124,8 +124,8 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <public-packages>
-                <package>org.netbeans.api.editor.indent</package>
-                <package>org.netbeans.spi.editor.indent</package>
+                <package>org.netbeans.modules.editor.indent.api</package>
+                <package>org.netbeans.modules.editor.indent.spi</package>
             </public-packages>
         </data>
     </configuration>

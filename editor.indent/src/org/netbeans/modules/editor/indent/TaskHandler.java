@@ -61,10 +61,10 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.MarkBlockChain;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
-import org.netbeans.spi.editor.indent.Context;
-import org.netbeans.spi.editor.indent.ExtraLock;
-import org.netbeans.spi.editor.indent.IndentTask;
-import org.netbeans.spi.editor.indent.ReformatTask;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.ExtraLock;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.netbeans.modules.editor.indent.spi.ReformatTask;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 

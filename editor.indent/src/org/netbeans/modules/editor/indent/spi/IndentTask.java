@@ -39,49 +39,58 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.indent;
+package org.netbeans.modules.editor.indent.spi;
 
-import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
-import org.netbeans.modules.editor.indent.spi.Context;
+import javax.swing.text.BadLocationException;
 
 /**
- * Accessor for the package-private functionality of bookmarks API.
+ * Indent task performs indentation on a single or multiple lines.
+ * <br/>
+ * Typically it is used to fix indentation after newline was inserted
+ * or to fix indentation for a selected block of code.
  *
  * @author Miloslav Metelka
- * @version 1.00
  */
 
-public abstract class IndentSpiPackageAccessor {
-    
-    private static IndentSpiPackageAccessor INSTANCE;
-    
-    public static IndentSpiPackageAccessor get() {
-        if (INSTANCE == null) {
-            // Enforce the static initializer in Context class to be run
-            try {
-                Class.forName(Context.class.getName(), true, Context.class.getClassLoader());
-            } catch (ClassNotFoundException e) { }
-        }
-        return INSTANCE;
-    }
+public interface IndentTask {
 
     /**
-     * Register the accessor. The method can only be called once
-     * - othewise it throws IllegalStateException.
+     * Perform reindentation of the line(s) of {@link Context#document()}
+     * between {@link Context#startOffset()} and {@link Context#endOffset()}.
+     * <br/>
+     * It is called from AWT thread and it should process synchronously. It is used
+     * after a newline is inserted after the user presses Enter
+     * or when a current line must be reindented e.g. when Tab is pressed in emacs mode.
+     * <br/>
+     * The method should use information from the context and modify
+     * indentation at the given offset in the document.
      * 
-     * @param accessor instance.
+     * @throws BadLocationException in case the indent task attempted to insert/remove
+     *  at an invalid offset or e.g. into a guarded section.
      */
-    public static void register(IndentSpiPackageAccessor accessor) {
-        if (INSTANCE != null) {
-            throw new IllegalStateException("Already registered"); // NOI18N
-        }
-        INSTANCE = accessor;
+    void reindent() throws BadLocationException;
+    
+    /**
+     * Get an extra locking or null if no extra locking is necessary.
+     */
+    ExtraLock indentLock();
+
+    /**
+     * Indent task factory produces indent tasks for the given context.
+     * <br/>
+     * It should be registered in MimeLookup via xml layer in "/Editors/&lt;mime-type&gt;"
+     * folder.
+     */
+    public interface Factory {
+
+        /**
+         * Create indenting task.
+         *
+         * @param context non-null indentation context.
+         * @return indenting task or null if the factory cannot handle the given context.
+         */
+        IndentTask createTask(Context context);
+
     }
-    
-    public abstract Context createContext(TaskHandler.MimeItem mimeItem);
-    
-    public abstract Context.Region createContextRegion(MutablePositionRegion region);
-    
-    public abstract MutablePositionRegion positionRegion(Context.Region region);
-    
+
 }

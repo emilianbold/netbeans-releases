@@ -49,7 +49,7 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.editor.indent.Reformat;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;

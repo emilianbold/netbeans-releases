@@ -37,10 +37,9 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.editor.indent.IndentUtils;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.languages.Context;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
@@ -53,9 +52,9 @@ import org.netbeans.modules.languages.Feature.Type;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.Utils;
-import org.netbeans.spi.editor.indent.Context.Region;
-import org.netbeans.spi.editor.indent.ExtraLock;
-import org.netbeans.spi.editor.indent.IndentTask;
+import org.netbeans.modules.editor.indent.spi.Context.Region;
+import org.netbeans.modules.editor.indent.spi.ExtraLock;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
 import org.openide.ErrorManager;
 import org.openide.text.NbDocument;
 
@@ -67,15 +66,15 @@ import org.openide.text.NbDocument;
 public class IndentFactory implements IndentTask.Factory {
 
     
-    public IndentTask createTask (org.netbeans.spi.editor.indent.Context context) {
+    public IndentTask createTask (org.netbeans.modules.editor.indent.spi.Context context) {
         return new GLFIndentTask (context);
     }
 
     private static class GLFIndentTask implements IndentTask {
         
-        private org.netbeans.spi.editor.indent.Context context;
+        private org.netbeans.modules.editor.indent.spi.Context context;
         
-        private GLFIndentTask (org.netbeans.spi.editor.indent.Context context) {
+        private GLFIndentTask (org.netbeans.modules.editor.indent.spi.Context context) {
             this.context = context;
         }
 
@@ -145,7 +144,7 @@ public class IndentFactory implements IndentTask.Factory {
         }
 
         private int indent (
-            org.netbeans.spi.editor.indent.Context context,
+            org.netbeans.modules.editor.indent.spi.Context context,
             StyledDocument      document, 
             Object[]            params, 
             int                 ln, 
@@ -210,7 +209,7 @@ public class IndentFactory implements IndentTask.Factory {
         private static int computeIndent (
             int                     ln,
             StyledDocument          document,
-            org.netbeans.spi.editor.indent.Context context,
+            org.netbeans.modules.editor.indent.spi.Context context,
             Object[]                params
         ) throws BadLocationException {
             int start = NbDocument.findLineOffset (document, ln);
@@ -262,7 +261,7 @@ public class IndentFactory implements IndentTask.Factory {
         private static boolean startsWithBrace (
             int                     ln,
             StyledDocument          document,
-            org.netbeans.spi.editor.indent.Context context,
+            org.netbeans.modules.editor.indent.spi.Context context,
             Object[]                params,
             Set<Integer>            whitespaces
         ) throws BadLocationException {

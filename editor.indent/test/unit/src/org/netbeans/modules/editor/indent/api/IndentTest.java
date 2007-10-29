@@ -39,19 +39,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.indent;
+package org.netbeans.modules.editor.indent.api;
 
-import java.awt.event.ActionEvent;
-import javax.swing.Action;
-import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
+import org.netbeans.modules.editor.indent.api.Indent;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.editor.BaseKit;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
@@ -60,51 +57,36 @@ import org.netbeans.modules.editor.indent.spi.IndentTask;
  *
  * @author Miloslav Metelka
  */
-public class IndentActionsTest extends NbTestCase {
+public class IndentTest extends NbTestCase {
     
-    private static final String MIME_TYPE = "text/x-test-actions";
+    private static final String MIME_TYPE = "text/x-test";
 
-    public IndentActionsTest(String name) {
+    public IndentTest(String name) {
         super(name);
     }
 
-    public void testIndentActions() {
-        // Must run in AWT thread (BaseKit.install() checks for that)
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(
-                new Runnable() {
-                    public void run() {
-                        testIndentActions();
-                    }
-                }
-            );
-            return;
-        }
-
-        assertTrue(SwingUtilities.isEventDispatchThread());
+    public void testFindIndentTaskFactory() throws BadLocationException {
         TestIndentTask.TestFactory factory = new TestIndentTask.TestFactory();
         
         MockServices.setServices(MockMimeLookup.class);
         MockMimeLookup.setInstances(MimePath.parse(MIME_TYPE), factory);
         
-        TestKit kit = new TestKit();
-        JEditorPane pane = new JEditorPane();
-        pane.setEditorKit(kit);
-        assertEquals(MIME_TYPE, pane.getDocument().getProperty("mimeType"));
-        //doc.putProperty("mimeType", MIME_TYPE);
-        
-        // Test insert new line action
-        Action a = kit.getActionByName(BaseKit.insertBreakAction);
-        assertNotNull(a);
-        a.actionPerformed(new ActionEvent(pane, 0, ""));
+        Document doc = new PlainDocument();
+        doc.putProperty("mimeType", MIME_TYPE);
+        Indent indent = Indent.get(doc);
+        indent.lock();
+        try {
+            //doc.atomicLock();
+            try {
+                indent.reindent(0);
+            } finally {
+                //doc.atomicUnlock();
+            }
+        } finally {
+            indent.unlock();
+        }
         // Check that the factory was used
         assertTrue(TestIndentTask.TestFactory.lastCreatedTask.indentPerformed);
-
-        // Test reformat action
-         a = kit.getActionByName(BaseKit.formatAction);
-        assertNotNull(a);
-        a.actionPerformed(new ActionEvent(pane, 0, ""));
-
     }
 
     private static final class TestIndentTask implements IndentTask {
@@ -158,14 +140,6 @@ public class IndentActionsTest extends NbTestCase {
         public void unlock() {
             assertTrue(locked);
             locked = false;
-        }
-        
-    }
-    
-    private static final class TestKit extends NbEditorKit {
-        
-        public @Override String getContentType() {
-            return MIME_TYPE;
         }
         
     }

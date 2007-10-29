@@ -63,7 +63,7 @@ import org.netbeans.editor.ext.java.JavaFormatter;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter;
 import org.netbeans.modules.web.core.syntax.formatting.JspJavaFormatter;
-import org.netbeans.spi.editor.indent.Context;
+import org.netbeans.modules.editor.indent.spi.Context;
 import static org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter.JoinedTokenSequence;
 
 /**

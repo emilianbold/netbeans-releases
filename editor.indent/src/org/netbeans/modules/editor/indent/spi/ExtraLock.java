@@ -39,49 +39,37 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.indent;
-
-import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
-import org.netbeans.modules.editor.indent.spi.Context;
+package org.netbeans.modules.editor.indent.spi;
 
 /**
- * Accessor for the package-private functionality of bookmarks API.
+ * Extra locking may be necessary for indentation/reformatting
+ * before the document gets write-locked and the actual
+ * indentation/reformatting gets started.
+ * <br/>
+ * For example java infrastructure requires this.
+ * <br/>
+ * The infrastructure guarantees this processing:
+ * <pre>
+ *   extraLock.lock();
+ *   try {
+ *       doc.atomicLock(); // either BaseDocument or e.g. NbDocument.runAtomic()
+ *       try {
+ *           // indent or reformat ...
+ *       } finally {
+ *           doc.atomicUnlock();
+ *       }
+ *   } finally {
+ *       extraLock.unlock();
+ *   }
+ * </pre>
  *
  * @author Miloslav Metelka
- * @version 1.00
  */
 
-public abstract class IndentSpiPackageAccessor {
-    
-    private static IndentSpiPackageAccessor INSTANCE;
-    
-    public static IndentSpiPackageAccessor get() {
-        if (INSTANCE == null) {
-            // Enforce the static initializer in Context class to be run
-            try {
-                Class.forName(Context.class.getName(), true, Context.class.getClassLoader());
-            } catch (ClassNotFoundException e) { }
-        }
-        return INSTANCE;
-    }
+public interface ExtraLock {
 
-    /**
-     * Register the accessor. The method can only be called once
-     * - othewise it throws IllegalStateException.
-     * 
-     * @param accessor instance.
-     */
-    public static void register(IndentSpiPackageAccessor accessor) {
-        if (INSTANCE != null) {
-            throw new IllegalStateException("Already registered"); // NOI18N
-        }
-        INSTANCE = accessor;
-    }
-    
-    public abstract Context createContext(TaskHandler.MimeItem mimeItem);
-    
-    public abstract Context.Region createContextRegion(MutablePositionRegion region);
-    
-    public abstract MutablePositionRegion positionRegion(Context.Region region);
+    void lock();
+        
+    void unlock();
     
 }

@@ -51,7 +51,7 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Modifier;
 import javax.swing.text.Document;
-import org.netbeans.api.editor.indent.Reformat;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;

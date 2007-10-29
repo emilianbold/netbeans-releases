@@ -57,7 +57,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.spi.editor.indent.Context;
+import org.netbeans.modules.editor.indent.spi.Context;
 
 /**
  * Handling embedded languages:

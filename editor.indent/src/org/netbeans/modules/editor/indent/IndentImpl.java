@@ -48,8 +48,8 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.editor.indent.Indent;
-import org.netbeans.api.editor.indent.Reformat;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 

@@ -71,7 +71,7 @@ made subject to such option by the copyright holder.
  <answer id="arch-overall">
   <p>
    Editor Indentation module defines 
-   <api name="EditorIndentationAPI" group="java" type="export" category="official"/>
+   <api name="EditorIndentationAPI" group="java" type="export" category="devel"/>
    providing indentation and reformatting services to the clients.
    <br/>
    It also contains SPI allowing the modules to register language-specific
@@ -156,7 +156,7 @@ wishing to explicitly fix indentation of e.g. a newly inserted code into a Swing
 The same code is used after inserting a newline into a document.
 </p>
 The 
-<a href="@org-netbeans-modules-editor-indent@/org/netbeans/api/editor/indent/Indent.html">Indent</a>
+<a href="@org-netbeans-modules-editor-indent@/org/netbeans/modules/editor/indent/api/Indent.html">Indent</a>
 is an entry point for performing reindentation. The following code should be used by clients:
 <pre>
 Indent indent = Indent.get(doc);
@@ -182,7 +182,7 @@ extra changes to code according to formatting rules. For example add newlines
  or additional whitespace or add/remove extra braces etc.
 </p>
 The 
-<a href="@org-netbeans-modules-editor-indent@/org/netbeans/api/editor/indent/Reformat.html">Reformat</a>
+<a href="@org-netbeans-modules-editor-indent@/org/netbeans/modules/editor/indent/api/Reformat.html">Reformat</a>
 class should be used:
 <pre>
 Reformat reformat = Reformat.get(doc);

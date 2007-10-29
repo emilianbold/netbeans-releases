@@ -31,9 +31,9 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.gsf.Formatter;
 import org.netbeans.api.gsf.FormattingPreferences;
-import org.netbeans.spi.editor.indent.Context;
-import org.netbeans.spi.editor.indent.ExtraLock;
-import org.netbeans.spi.editor.indent.IndentTask;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.ExtraLock;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
 
 public class GsfIndentTask implements IndentTask {
 

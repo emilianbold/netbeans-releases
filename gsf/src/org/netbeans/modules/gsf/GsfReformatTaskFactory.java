@@ -27,8 +27,8 @@
  */
 package org.netbeans.modules.gsf;
 
-import org.netbeans.spi.editor.indent.Context;
-import org.netbeans.spi.editor.indent.ReformatTask;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.ReformatTask;
 
 public class GsfReformatTaskFactory implements ReformatTask.Factory {
     public ReformatTask createTask(Context context) {

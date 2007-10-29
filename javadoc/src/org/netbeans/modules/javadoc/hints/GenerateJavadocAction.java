@@ -55,7 +55,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.TextAction;
-import org.netbeans.api.editor.indent.Indent;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;

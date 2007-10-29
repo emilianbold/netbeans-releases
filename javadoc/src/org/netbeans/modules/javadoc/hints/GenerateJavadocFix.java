@@ -50,7 +50,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.editor.indent.Indent;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.ElementHandle;

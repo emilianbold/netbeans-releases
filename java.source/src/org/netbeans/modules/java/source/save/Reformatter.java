@@ -57,9 +57,9 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
-import org.netbeans.spi.editor.indent.Context;
-import org.netbeans.spi.editor.indent.ExtraLock;
-import org.netbeans.spi.editor.indent.ReformatTask;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.ExtraLock;
+import org.netbeans.modules.editor.indent.spi.ReformatTask;
 
 /**
  *

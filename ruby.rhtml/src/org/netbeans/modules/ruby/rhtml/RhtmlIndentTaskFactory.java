@@ -28,8 +28,8 @@
  */
 package org.netbeans.modules.ruby.rhtml;
 
-import org.netbeans.spi.editor.indent.Context;
-import org.netbeans.spi.editor.indent.IndentTask;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
 
 /**
  * Indent task factory for RHTML files

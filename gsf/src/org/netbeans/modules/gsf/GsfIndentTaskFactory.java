@@ -28,8 +28,8 @@
  */
 package org.netbeans.modules.gsf;
 
-import org.netbeans.spi.editor.indent.Context;
-import org.netbeans.spi.editor.indent.IndentTask;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
 
 public class GsfIndentTaskFactory implements IndentTask.Factory {
     public IndentTask createTask(Context context) {

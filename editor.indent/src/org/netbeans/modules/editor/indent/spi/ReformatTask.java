@@ -39,49 +39,58 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.indent;
+package org.netbeans.modules.editor.indent.spi;
 
-import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
-import org.netbeans.modules.editor.indent.spi.Context;
+import javax.swing.text.BadLocationException;
 
 /**
- * Accessor for the package-private functionality of bookmarks API.
+ * Reformat task performs actual reformatting within offset bounds of the given context.
  *
  * @author Miloslav Metelka
- * @version 1.00
  */
 
-public abstract class IndentSpiPackageAccessor {
-    
-    private static IndentSpiPackageAccessor INSTANCE;
-    
-    public static IndentSpiPackageAccessor get() {
-        if (INSTANCE == null) {
-            // Enforce the static initializer in Context class to be run
-            try {
-                Class.forName(Context.class.getName(), true, Context.class.getClassLoader());
-            } catch (ClassNotFoundException e) { }
-        }
-        return INSTANCE;
-    }
+public interface ReformatTask {
 
     /**
-     * Register the accessor. The method can only be called once
-     * - othewise it throws IllegalStateException.
+     * Perform reformatting of the {@link Context#document()}
+     * between {@link Context#startOffset()} and {@link Context#endOffset()}.
+     * <br/>
+     * This method may be called several times repetitively for different areas
+     * of a reformatted area.
+     * <br/>
+     * It is called from AWT thread and it should process synchronously. It is used
+     * after a newline is inserted after the user presses Enter
+     * or when a current line must be reindented e.g. when Tab is pressed in emacs mode.
+     * <br/>
+     * The method should use information from the context and modify
+     * indentation at the given offset in the document.
      * 
-     * @param accessor instance.
+     * @throws BadLocationException in case the formatter attempted to insert/remove
+     *  at an invalid offset or e.g. into a guarded section.
      */
-    public static void register(IndentSpiPackageAccessor accessor) {
-        if (INSTANCE != null) {
-            throw new IllegalStateException("Already registered"); // NOI18N
-        }
-        INSTANCE = accessor;
+    void reformat() throws BadLocationException;
+
+    /**
+     * Get an extra locking or null if no extra locking is necessary.
+     */
+    ExtraLock reformatLock();
+    
+    /**
+     * Reformat task factory produces reformat tasks for the given context.
+     * <br/>
+     * It should be registered in MimeLookup via xml layer in "/Editors/&lt;mime-type&gt;"
+     * folder.
+     */
+    public interface Factory {
+
+        /**
+         * Create reformatting task.
+         *
+         * @param context non-null indentation context.
+         * @return reformatting task or null if the factory cannot handle the given context.
+         */
+        ReformatTask createTask(Context context);
+
     }
-    
-    public abstract Context createContext(TaskHandler.MimeItem mimeItem);
-    
-    public abstract Context.Region createContextRegion(MutablePositionRegion region);
-    
-    public abstract MutablePositionRegion positionRegion(Context.Region region);
-    
+
 }

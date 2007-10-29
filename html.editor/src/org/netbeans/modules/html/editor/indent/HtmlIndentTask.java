@@ -47,9 +47,9 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.ext.html.HTMLLexerFormatter;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.spi.editor.indent.Context;
-import org.netbeans.spi.editor.indent.ExtraLock;
-import org.netbeans.spi.editor.indent.IndentTask;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.ExtraLock;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
 
 /**
  * Implementation of IndentTask for text/html mimetype.

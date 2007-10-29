@@ -105,6 +105,29 @@ is the proper place.
 
     <changes>
 
+        <change id="repackaging.to.unofficial.packages">
+            <summary>API/SPI repackaged to move it from the oficcial Netbeans API packages</summary>
+            <version major="1" minor="4"/>
+            <date day="29" month="10" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility source="incompatible" binary="incompatible" deletion="yes" addition="yes" modification="no"/>
+            <description>
+                <p>
+                    The API/SPI classes were moved from the official <code>org.netbeans.api</code>
+                    and <code>org.netbeans.spi</code> packages and the major version of the
+                    module was set to <code>0</code> to indicate the <code>development</code>
+                    stability of the APIs.
+                </p>
+                <p>
+                    There was not enought time in the Netbeans 6.0 release timeframe for us
+                    to fully stabilize the APIs offered by this module. Therefore we
+                    decided to release the <b>development</b> version of the APIs and
+                    convey full API review in the next release cycle.
+                </p>
+            </description>
+            <issue number="116022"/>
+        </change>
+
         <change id="Context.indentRegions">
             <summary>Added several methods to Context class</summary>
             <version major="1" minor="2"/>
