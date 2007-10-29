@@ -284,6 +284,8 @@ public class Reformatter implements ReformatTask {
             tokens.moveEnd();
             tokens.movePrevious();
             this.endPos = tokens.offset();
+            if (tokens.token().id() != WHITESPACE || tokens.token().text().toString().indexOf('\n') < 0)
+                diffs.addFirst(new Diff(text.length(), text.length(), NEWLINE));
             tokens.moveStart();
             tokens.moveNext();
         }
