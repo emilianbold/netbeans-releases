@@ -83,7 +83,7 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <!-- needed by the tests of o.n.m.j2ee.metadata.model.suppor.t Should not be necessary,
+                        <!-- needed by the tests of o.n.m.j2ee.metadata.model.support. Should not be necessary,
                         should be able to recursively depend on its tests -->
                         <code-name-base>org.openide.util</code-name-base>
                         <compile-dependency/>
