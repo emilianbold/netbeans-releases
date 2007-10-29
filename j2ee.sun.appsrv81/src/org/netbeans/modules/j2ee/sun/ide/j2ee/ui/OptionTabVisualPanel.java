@@ -93,7 +93,7 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
         startupTimeoutLabel.setLabelFor(startupTimeoutValue);
         org.openide.awt.Mnemonics.setLocalizedText(startupTimeoutLabel, org.openide.util.NbBundle.getMessage(OptionTabVisualPanel.class, "LBL_STARTUP_TIMEOUT")); // NOI18N
 
-        startupTimeoutValue.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        startupTimeoutValue.setHorizontalAlignment(javax.swing.JTextField.LEFT);
         startupTimeoutValue.setText(org.openide.util.NbBundle.getMessage(OptionTabVisualPanel.class, "OptionTabVisualPanel.startupTimeoutValue.text")); // NOI18N
         startupTimeoutValue.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -112,7 +112,7 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
         deploymentTimeoutLabel.setLabelFor(deploymentTimeoutValue);
         org.openide.awt.Mnemonics.setLocalizedText(deploymentTimeoutLabel, org.openide.util.NbBundle.getMessage(OptionTabVisualPanel.class, "LBL_DEPLOYMENT_TIMEOUT")); // NOI18N
 
-        deploymentTimeoutValue.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        deploymentTimeoutValue.setHorizontalAlignment(javax.swing.JTextField.LEFT);
         deploymentTimeoutValue.setText(org.openide.util.NbBundle.getMessage(OptionTabVisualPanel.class, "OptionTabVisualPanel.deploymentTimeoutValue.text")); // NOI18N
         deploymentTimeoutValue.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -126,7 +126,6 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(enableDirectoryDeployment, org.openide.util.NbBundle.getMessage(OptionTabVisualPanel.class, "CB_DIR_DEPLOY")); // NOI18N
-        enableDirectoryDeployment.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableDirectoryDeployment.setMargin(new java.awt.Insets(0, 0, 0, 0));
         enableDirectoryDeployment.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -140,7 +139,6 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(enableDriverDeployment, org.openide.util.NbBundle.getMessage(OptionTabVisualPanel.class, "CB_DRIVER_DEPLOY")); // NOI18N
-        enableDriverDeployment.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableDriverDeployment.setMargin(new java.awt.Insets(0, 0, 0, 0));
         enableDriverDeployment.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -175,8 +173,8 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
                             .add(startupTimeoutLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(deploymentTimeoutValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
-                            .add(startupTimeoutValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)))
+                            .add(deploymentTimeoutValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 77, Short.MAX_VALUE)
+                            .add(startupTimeoutValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 77, Short.MAX_VALUE)))
                     .add(enableDirectoryDeployment)
                     .add(enableDriverDeployment))
                 .addContainerGap())
