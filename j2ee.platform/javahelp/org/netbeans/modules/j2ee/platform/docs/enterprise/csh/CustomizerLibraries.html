@@ -33,19 +33,27 @@
  
 <p>In the Libraries page, you can set the following properties:</p>
 <ul>
-    <li><b>Embedded Classpath Elements.</b> You use this page to explicitly specify the libraries 
-    to be included in the enterprise application's runtime classpath for the purpose of debugging
-    your enterprise application.
-    Elements added in this page are not packaged as part of the application.    
-    <p>Your enterprise application may require elements such as special libraries 
+    <li><b>Embedded Classpath Elements.</b> You use this page to specify any projects, subprojects or libraries 
+    not listed in the Packaging page that you want the IDE to include in the classpath of the enterprise application when you debug the application.
+    <p>You use the Packaging page to specify the libraries that are packaged 
+    in the EAR archive when you build your enterprise application.
+    However, your enterprise application may require elements such as special libraries 
     (such as JDBC drivers or additional libraries), JARs or other projects that are not 
-    listed in the Packaging category and are not packaged as part of your project.
+    listed in the Packaging page.
     If you want to step through these elements when debugging the application,
-    you need to explicitly add the elements to the classpath in this page.</p>
+    you need to explicitly specify the elements in the Libraries page.</p>
+
+    <p>For example, the Packaging page may specify that your WAR archive will be bundled in the EAR archive.
+    However, the web application may require a subproject that is not packaged in the WAR 
+    archive but which will be copied to the EAR archive when you build the enterprise application. 
+    If you want to be able to step through the subproject when debugging the enterprise application, 
+    you need to explicitly specify the subproject in the Libraries page.</p>
+
     </li>
 </ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="../../ejb/debug/debug_ejb.html">Debugging an EJB Module</a></dd>
     <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_stand_about.html">About Standard Projects</a></dd>
     <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_classpath.html">Managing the Classpath</a></dd>
     <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_dependencies.html">Creating Dependencies Between Projects</a></dd>

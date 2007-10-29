@@ -54,6 +54,14 @@
     Since the IDE does not know which enterprise applications an EJB module project 
     belongs to, running the Debug command on an EJB module project deploys it 
     as a stand-alone module.</li>
+  <li>When debugging an enterprise application, if your application contains any projects
+    not listed in the Packaging page of the enterprise application,
+    you need to explicitly specify these projects if you want the IDE to include 
+    them in the classpath when you debug the application.
+    To specify the projects to include, right-click the enterprise application project node
+    in the Projects window and choose Properties.
+    In the Properties dialog box, select the Libraries category 
+    and add the projects to the Embedded Classpath Elements list.</li>
   <li>The debugger windows filter out any information from method calls running 
     on the server.</li>
 </ul>
