@@ -104,6 +104,7 @@ class AST2Bytecode {
         SourcePositions sp = trees.getSourcePositions();
         //List<Tree> treeNodes = linearizeTree(expTrees);
         if (treeNodes == null) return null;
+        if (indexes == null) return null;
         int length = treeNodes.size();
         List<EditorContext.Operation> operations = new ArrayList<EditorContext.Operation>(length);
         LineMap lineMap = cu.getLineMap();
