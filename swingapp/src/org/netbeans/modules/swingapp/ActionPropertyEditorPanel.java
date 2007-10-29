@@ -876,9 +876,14 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
     }
     
     private void setFromTextField(JTextField textField, ProxyAction act, String key) {
-        if(textField.getText() != null && !textField.getText().trim().equals("")) {
-            act.putValue(key,textField.getText());
+        String txt = textField.getText();
+        if (txt != null) {
+            txt = txt.trim();
+            if (txt.equals("")) { // NOI18N
+                txt = null;
+            }
         }
+        act.putValue(key, txt);
     }
     
     private String getSelectedClassname() {
