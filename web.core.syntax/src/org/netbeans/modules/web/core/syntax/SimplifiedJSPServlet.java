@@ -247,12 +247,15 @@ public class SimplifiedJSPServlet {
             try {
                 DataObject includedFileDO = DataObject.find(includedFile);
                 EditorCookie editor = includedFileDO.getCookie(EditorCookie.class);
-                SimplifiedJSPServlet simplifiedServlet = new SimplifiedJSPServlet(editor.openDocument());
+                
+                if (editor != null) {
+                    SimplifiedJSPServlet simplifiedServlet = new SimplifiedJSPServlet(editor.openDocument());
 
-                simplifiedServlet.process();
+                    simplifiedServlet.process();
 
-                importedDeclarations.append(simplifiedServlet.mergedDeclarations);
-                importedScriptlets.append(simplifiedServlet.mergedScriptlets);
+                    importedDeclarations.append(simplifiedServlet.mergedDeclarations);
+                    importedScriptlets.append(simplifiedServlet.mergedScriptlets);
+                }
             } catch (Exception e) {
                 logger.log(Level.WARNING, e.getMessage(), e);
             }
