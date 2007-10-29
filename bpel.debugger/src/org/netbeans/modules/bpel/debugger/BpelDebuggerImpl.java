@@ -50,12 +50,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
-import javax.xml.namespace.QName;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.modules.bpel.debugger.api.AttachingCookie;
 import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
 import org.netbeans.modules.bpel.debugger.BpelDebuggerEngineProvider;
 import org.netbeans.modules.bpel.debugger.api.DebugException;
@@ -72,6 +70,7 @@ import org.netbeans.modules.bpel.debugger.breakpoints.SBYNActivityBreakpoint;
 import org.netbeans.modules.bpel.debugger.breakpoints.SBYNBreakpoint;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
+import org.openide.util.NbBundle;
 
 /**
  * This class provides the central debugging control for the BPEL debugger.
@@ -170,19 +169,23 @@ public class BpelDebuggerImpl extends BpelDebugger {
         
         if (oldState == BpelDebugger.STATE_STARTING) {
             if (getException() != null) {
-                // TODO:change to NLS
-                traceDebugException("Unable to start a debug session", getException());
+                traceDebugException(NbBundle.getMessage(
+                        BpelDebuggerImpl.class, 
+                        "ERR_UnableToStartSession"), getException());
             } else {
-                //TODO:change to NLS
-                getTracer().println("Stop connecting");
+                getTracer().println(NbBundle.getMessage(
+                        BpelDebuggerImpl.class, 
+                        "MSG_StopConnecting"));
             }
         } else {
             if (getException() != null) {
-                // TODO:change to NLS
-                traceDebugException("Debug session terminated", getException());
+                traceDebugException(NbBundle.getMessage(
+                        BpelDebuggerImpl.class, 
+                        "ERR_SessionTerminated"), getException());
             } else {
-                // TODO:change to NLS
-                getTracer().println("Debug session finished"); 
+                getTracer().println(NbBundle.getMessage(
+                        BpelDebuggerImpl.class, 
+                        "MSG_SessionFinished")); 
             }
         }
 
@@ -224,13 +227,19 @@ public class BpelDebuggerImpl extends BpelDebugger {
 
     public void setRunning(String host, int port) {
         if (BDIDebugConnector.getDebugConnector(host, port) != null) {
-            //TODO:change to NLS
-            setException(new DebugException("Already connected to " + host + ":" + port));
+            setException(new DebugException(NbBundle.getMessage(
+                        BpelDebuggerImpl.class, 
+                        "ERR_AlreadyConnected",
+                        host,
+                        "" + port)));
             return;
         }
         
-        //TODO:change to NLS
-        getTracer().println("Connecting to " + host + ":" + port);
+        getTracer().println(NbBundle.getMessage(
+                    BpelDebuggerImpl.class, 
+                    "MSG_Connecting",
+                    host,
+                    "" + port));
         mConnector = new BDIDebugConnector(this);
         if (!mConnector.isInitialized()) {
             setException(new DebugException(mConnector.getException()));
@@ -239,15 +248,19 @@ public class BpelDebuggerImpl extends BpelDebugger {
         
         mConnector.attach(host, port);
         if (!mConnector.isAttached()) {
-            //TODO: change to NLS
-            setException(new DebugException("Unable to connect to " + host + ":" + port, mConnector.getException()));
+            setException(new DebugException(NbBundle.getMessage(
+                    BpelDebuggerImpl.class, 
+                    "ERR_UnableToConnect",
+                    host,
+                    "" + port), mConnector.getException()));
             return;
         }
         
         synchronizeBreakpoints();
         
-        //TODO:change to NLS
-        getTracer().println("Debug session started");
+        getTracer().println(NbBundle.getMessage(
+                    BpelDebuggerImpl.class, 
+                    "MSG_SessionStarted"));
         setState(STATE_RUNNING);
     }
     
@@ -422,9 +435,12 @@ public class BpelDebuggerImpl extends BpelDebugger {
     
     private void traceDebugException(String message, DebugException dex) {
         if (dex == null) {
-            getTracer().println(message);
+            getTracer().println(message); // the message is already localized
             return;
         }
+        
+        final String sep = NbBundle.getMessage(
+                BpelDebuggerImpl.class, "ERR_Separator");
         
         StringBuffer sb = new StringBuffer(200);
         if (message != null) {
@@ -432,7 +448,7 @@ public class BpelDebuggerImpl extends BpelDebugger {
         }
         if (dex.getMessage() != null) {
             if (sb.length() > 0) {
-                sb.append(" : ");
+                sb.append(sep);
             }
             sb.append(dex.getMessage());
         }
@@ -447,7 +463,7 @@ public class BpelDebuggerImpl extends BpelDebugger {
             
             if (cause.getMessage() != null) {
                 if (sb.length() > 0) {
-                    sb.append(" : ");
+                    sb.append(sep);
                 }
                 sb.append(cause.getMessage());
             }
