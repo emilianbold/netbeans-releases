@@ -193,7 +193,7 @@ public class RepositoryListenerImpl implements RepositoryListener {
     private void scheduleClosing(final String unitName,  final Set<String> requiredUnits) {
 	ModelImpl.instance().enqueueModelTask(new Runnable() {
 	    public void run() {
-		if( TraceFlags.TRACE_REPOSITORY_LISTENER ) System.err.printf("RepositoryListener: closing implicitely opened unit%s\n", unitName);
+		if( TraceFlags.TRACE_REPOSITORY_LISTENER ) System.err.printf("RepositoryListener: closing implicitely opened unit %s\n", unitName);
 		RepositoryUtils.closeUnit(unitName, Collections.EMPTY_SET);
 	    }
 	}, "Closing implicitly opened project"); // NOI18N
