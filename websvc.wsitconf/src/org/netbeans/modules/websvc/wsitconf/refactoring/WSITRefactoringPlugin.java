@@ -51,6 +51,7 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -65,6 +66,7 @@ import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.util.Lookup;
@@ -110,81 +112,88 @@ abstract class WSITRefactoringPlugin<T extends AbstractRefactoring> extends Prog
         Problem result = null;
         ClasspathInfo cpInfo = getClasspathInfo();
         JavaSource source = JavaSource.create(cpInfo, treePathHandle[0].getFileObject());
-        fireProgressListenerStart(AbstractRefactoring.PREPARE, 5);
-        try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                
-                public void cancel() {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-                
-                public void run(CompilationController info) throws Exception {
-                    info.toPhase(JavaSource.Phase.RESOLVED);
-                    for (TreePathHandle tph : treePathHandle) {
-                        Element el = tph.resolveElement(info);
-                        FileObject file = SourceUtils.getFile(el, info.getClasspathInfo());
+                fireProgressListenerStart(AbstractRefactoring.PREPARE, 5);
+                try {
+                    source.runUserActionTask(new CancellableTask<CompilationController>() {
 
-                        switch (el.getKind()) {
-                        case METHOD: {
-                            fireProgressListenerStep();
-                            Element javaClass = el.getEnclosingElement();
-                            if (isWebSvcFromWsdl(javaClass)) return;
-                            fireProgressListenerStep();
-                            JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(file);
-                            if (supp == null) return;
-                            fireProgressListenerStep();
-                            WSDLModel model = null;
-                            try {
-                                model = WSITModelSupport.getModelForServiceFromJava(file, supp, false, null);
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
-                            fireProgressListenerStep();
-                            if (model == null) return;
-                            refactoringElements.add(refactoring, createMethodRE(el.getSimpleName().toString(), model));
-                            fireProgressListenerStep();
-                            break;
-                        } case CLASS:
-                        case INTERFACE:
-                        case ANNOTATION_TYPE:
-                        case ENUM: {
-                            fireProgressListenerStep();
-                            if (isWebSvcFromWsdl(el)) return;
-                            fireProgressListenerStep();
-                            JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(file);
-                            if (supp == null) return;
-                            WSDLModel model = null;
-                            fireProgressListenerStep();
-                            try {
-                                model = WSITModelSupport.getModelForServiceFromJava(file, supp, false, null);
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
-                            fireProgressListenerStep();
-                            if (model == null){
-                                return;
-                            }
-                            refactoringElements.addFileChange(refactoring, createClassRE(model));
-                            fireProgressListenerStep();
-                            break;
+                        public void cancel() {
+                            throw new UnsupportedOperationException("Not supported yet.");
                         }
+
+                        public void run(CompilationController info) throws Exception {
+                            info.toPhase(JavaSource.Phase.RESOLVED);
+                            for (TreePathHandle tph : treePathHandle) {
+                                Element el = tph.resolveElement(info);
+                                if (el == null) return;
+                                ElementHandle elh = ElementHandle.create(el);
+                                FileObject file = SourceUtils.getFile(elh, info.getClasspathInfo());
+
+                                if (file == null) {
+                                    ErrorManager.getDefault().log(
+                                            ErrorManager.INFORMATIONAL, "WSIT: Null instance returned from SourceUtils.getFile; element not found " + el);
+                                }
+                                
+                                switch (elh.getKind()) {
+                                case METHOD: {
+                                    fireProgressListenerStep();
+                                    Element javaClass = el.getEnclosingElement();
+                                    if (isWebSvcFromWsdl(javaClass)) return;
+                                    fireProgressListenerStep();
+                                    JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(file);
+                                    if (supp == null) return;
+                                    fireProgressListenerStep();
+                                    WSDLModel model = null;
+                                    try {
+                                        model = WSITModelSupport.getModelForServiceFromJava(file, supp, false, null);
+                                    } catch (IOException ex) {
+                                        ex.printStackTrace();
+                                    } catch (Exception ex) {
+                                        ex.printStackTrace();
+                                    }
+                                    fireProgressListenerStep();
+                                    if (model == null) return;
+                                    refactoringElements.add(refactoring, createMethodRE(el.getSimpleName().toString(), model));
+                                    fireProgressListenerStep();
+                                    break;
+                                } case CLASS:
+                                case INTERFACE:
+                                case ANNOTATION_TYPE:
+                                case ENUM: {
+                                    fireProgressListenerStep();
+                                    if (isWebSvcFromWsdl(el)) return;
+                                    fireProgressListenerStep();
+                                    JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(file);
+                                    if (supp == null) return;
+                                    WSDLModel model = null;
+                                    fireProgressListenerStep();
+                                    try {
+                                        model = WSITModelSupport.getModelForServiceFromJava(file, supp, false, null);
+                                    } catch (IOException ex) {
+                                        ex.printStackTrace();
+                                    } catch (Exception ex) {
+                                        ex.printStackTrace();
+                                    }
+                                    fireProgressListenerStep();
+                                    if (model == null){
+                                        return;
+                                    }
+                                    refactoringElements.addFileChange(refactoring, createClassRE(model));
+                                    fireProgressListenerStep();
+                                    break;
+                                }
+                            }
                         }
                     }
-                }
-            }, true);
-        } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
-        } finally {
-            fireProgressListenerStop();
-        }
+                }, true);
+            } catch (IOException ioe) {
+                throw (RuntimeException) new RuntimeException().initCause(ioe);
+            } finally {
+                fireProgressListenerStop();
+            }
         
         return result;
     }
-    
+            
     protected abstract RefactoringElementImplementation createMethodRE(String methodName, WSDLModel model);
     protected abstract RefactoringElementImplementation createClassRE(WSDLModel model);
 
