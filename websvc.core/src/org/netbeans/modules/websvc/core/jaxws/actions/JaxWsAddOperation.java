@@ -46,7 +46,6 @@ import org.netbeans.modules.websvc.core.AddWsOperationHelper;
 import org.netbeans.modules.websvc.core.AddOperationCookie;
 import org.openide.filesystems.FileObject;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -60,7 +59,6 @@ import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /** JaxWsAddOperation.java
@@ -129,11 +127,10 @@ public class JaxWsAddOperation implements AddOperationCookie {
     
     private String getPackageName(FileObject fo) {
         Project project = FileOwnerQuery.getOwner(fo);
-        Sources sources = (Sources)project.getLookup().lookup(Sources.class);
+        Sources sources = project.getLookup().lookup(Sources.class);
         if (sources!=null) {
             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             if (groups!=null) {
-                List<FileObject> roots = new ArrayList<FileObject>();
                 for (SourceGroup group: groups) {
                     FileObject rootFolder = group.getRootFolder();
                     if (FileUtil.isParentOf(rootFolder, fo)) {

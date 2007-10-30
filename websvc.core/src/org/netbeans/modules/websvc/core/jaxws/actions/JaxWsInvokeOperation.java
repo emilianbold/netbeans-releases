@@ -53,10 +53,8 @@ import org.openide.nodes.Node;
  */
 public class JaxWsInvokeOperation implements InvokeOperationCookie {
     
-    private Project project;
     /** Creates a new instance of JaxWsAddOperation */
-    public JaxWsInvokeOperation(Project project) {
-        this.project=project;
+    public JaxWsInvokeOperation() {
     }
     
     /*
@@ -67,7 +65,7 @@ public class JaxWsInvokeOperation implements InvokeOperationCookie {
     }
     
     private DataObject getCurrentDataObject(Node n) {
-        return (DataObject) n.getCookie(DataObject.class);
+        return n.getCookie(DataObject.class);
     }
 
     public boolean isWebServiceOperation(Node node) {

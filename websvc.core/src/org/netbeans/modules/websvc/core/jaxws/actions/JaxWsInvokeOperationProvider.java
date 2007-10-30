@@ -66,13 +66,13 @@ public class JaxWsInvokeOperationProvider implements InvokeOperationActionProvid
                 projectType == ProjectInfo.CAR_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)) ||
                 (projectInfo.isJwsdpSupported())
                 ) {
-            return new JaxWsInvokeOperation(project);
+            return new JaxWsInvokeOperation();
         } else if (JaxWsUtils.isEjbJavaEE5orHigher(projectInfo)) {
-            return new JaxWsInvokeOperation(project);
+            return new JaxWsInvokeOperation();
         }
         // Tomcat on J2EE14 project Case
         if (projectType == ProjectInfo.WEB_PROJECT_TYPE && !Util.isJavaEE5orHigher(project) && isJaxWsLibraryOnRuntimeClasspath(targetSource)) {
-            return new JaxWsInvokeOperation(project);
+            return new JaxWsInvokeOperation();
         }
         return null;
     }
