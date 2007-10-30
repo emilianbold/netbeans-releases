@@ -283,8 +283,6 @@ public final class EmbeddingContainer<T extends TokenId> {
         // before possible next updating of the token list.
         TokenListList tll = tokenHierarchyOperation.existingTokenListList(etl.languagePath());
         if (tll != null) {
-            // Ask for token count to force tokens creation
-            etl.tokenCount();
             // Update tll by embedding creation
             new TokenHierarchyUpdate(eventInfo).updateCreateEmbedding(etl);
         } else { // tll == null
