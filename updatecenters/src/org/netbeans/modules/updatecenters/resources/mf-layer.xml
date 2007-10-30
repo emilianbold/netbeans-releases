@@ -44,16 +44,13 @@ made subject to such option by the copyright holder.
 <filesystem>
 
   <folder name="Services">
-<!--    <folder name="Hidden">
-      <file name="org-netbeans-modules-autoupdate-AutoModuleNewType.instance"/>
-    </folder>-->
-
+      
     <folder name="AutoupdateType">
       <!-- this ordering left because backward compatibility with deserialized autoupdate types -->
       <file name="standard-update-provider.instance">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.updatecenters.resources.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
-        <attr name="url_key" stringvalue="URL_au_110566"/>
+        <attr name="url_key" stringvalue="URL_LatestBuild"/>
         <attr name="category" stringvalue="STANDARD"/>
         <attr name="enabled" boolvalue="true"/>
         <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
