@@ -49,6 +49,7 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 import junit.framework.*;
 import org.netbeans.junit.*;
+import org.openide.util.Lookup.Result;
 
 /** Runs all NbLookupTest tests on ProxyLookup and adds few additional.
  */
@@ -61,7 +62,7 @@ implements AbstractLookupBaseHid.Impl {
     public static Test suite() {
         return new NbTestSuite (ProxyLookupTest.class);
         
-        //return new ProxyLookupTest("testChangeOfNodeDoesNotFireChangeInActionMapWithBeforeLookup"); 
+//        return new ProxyLookupTest("testArrayIndexAsInIssue119292");
     }
     
     /** Creates an lookup for given lookup. This class just returns 
@@ -357,5 +358,60 @@ implements AbstractLookupBaseHid.Impl {
         } finally {
             holder = null;
         }
+    }
+    
+    public void testArrayIndexAsInIssue119292() throws Exception {
+        final ProxyLookup pl = new ProxyLookup();
+        final int[] cnt = { 0 };
+        
+        class L extends Lookup {
+            L[] set;
+            Lookup l;
+            
+            public L(String s) {
+                l = Lookups.singleton(s);
+            }
+            
+            @Override
+            public <T> T lookup(Class<T> clazz) {
+                return l.lookup(clazz);
+            }
+
+            @Override
+            public <T> Result<T> lookup(Template<T> template) {
+                return l.lookup(template);
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (set != null) {
+                    cnt[0]++;
+                    pl.setLookups(set);
+                }
+                return super.equals(obj);
+            }
+
+            @Override
+            public int hashCode() {
+                int hash = 3;
+                return hash;
+            }
+        }
+
+        Result<String> res = pl.lookupResult(String.class);
+        assertEquals(Collections.EMPTY_LIST, res.allItems());
+        
+        L[] old = { new L("A"), new L("B") };
+        L[] now = { new L("C") };
+        
+        pl.setLookups(old);
+        cnt[0] = 0;
+        
+        old[0].set = new L[0];
+        pl.setLookups(now);
+
+        assertEquals("No call to equals", 0, cnt[0]);
+        
+        assertEquals("Still assigned to C", Collections.singletonList("C"), res.allInstances());
     }
 }

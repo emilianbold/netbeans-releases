@@ -49,8 +49,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.event.EventListenerList;
 import org.openide.util.Lookup;
@@ -88,6 +90,7 @@ public class ProxyLookup extends Lookup {
         this(EMPTY_ARR);
     }
 
+    @Override
     public String toString() {
         return "ProxyLookup(class=" + getClass() + ")->" + Arrays.asList(getLookups(false)); // NOI18N
     }
@@ -115,6 +118,14 @@ public class ProxyLookup extends Lookup {
             return arr;
         }
     }
+
+    private Set<Lookup> identityHashSet(Collection<Lookup> current) {
+        Map<Lookup,Void> map = new IdentityHashMap<Lookup, Void>();
+        for (Lookup lookup : current) {
+            map.put(lookup, null);
+        }
+        return map.keySet();
+    }
     
     /** Called from setLookups and constructor. 
      * @param lookups the lookups to setup
@@ -140,14 +151,14 @@ public class ProxyLookup extends Lookup {
      */
     protected final void setLookups(Lookup... lookups) {
         Collection<Reference<R>> arr;
-        HashSet<Lookup> newL;
-        HashSet<Lookup> current;
+        Set<Lookup> newL;
+        Set<Lookup> current;
         Lookup[] old;
-
+        
         synchronized (this) {
             old = getLookups(false);
-            current = new HashSet<Lookup>(Arrays.asList(old));
-            newL = new HashSet<Lookup>(Arrays.asList(lookups));
+            current = identityHashSet(Arrays.asList(old));
+            newL = identityHashSet(Arrays.asList(lookups));
 
             setLookupsNoFire(lookups);
             
@@ -158,7 +169,7 @@ public class ProxyLookup extends Lookup {
 
             arr = new ArrayList<Reference<R>>(results.values());
 
-            HashSet<Lookup> removed = new HashSet<Lookup>(current);
+            Set<Lookup> removed = identityHashSet(current);
             removed.removeAll(newL); // current contains just those lookups that have disappeared
             newL.removeAll(current); // really new lookups
 
@@ -208,10 +219,10 @@ public class ProxyLookup extends Lookup {
     public final <T> T lookup(Class<T> clazz) {
         beforeLookup(new Template<T>(clazz));
 
-        Lookup[] lookups = this.getLookups(false);
+        Lookup[] tmpLkps = this.getLookups(false);
 
-        for (int i = 0; i < lookups.length; i++) {
-            T o = lookups[i].lookup(clazz);
+        for (int i = 0; i < tmpLkps.length; i++) {
+            T o = tmpLkps[i].lookup(clazz);
 
             if (o != null) {
                 return o;
@@ -221,13 +232,14 @@ public class ProxyLookup extends Lookup {
         return null;
     }
 
+    @Override
     public final <T> Item<T> lookupItem(Template<T> template) {
         beforeLookup(template);
 
-        Lookup[] lookups = this.getLookups(false);
+        Lookup[] tmpLkps = this.getLookups(false);
 
-        for (int i = 0; i < lookups.length; i++) {
-            Item<T> o = lookups[i].lookupItem(template);
+        for (int i = 0; i < tmpLkps.length; i++) {
+            Item<T> o = tmpLkps[i].lookupItem(template);
 
             if (o != null) {
                 return o;
@@ -302,6 +314,7 @@ public class ProxyLookup extends Lookup {
 
         /** When garbage collected, remove the template from the has map.
          */
+        @Override
         protected void finalize() {
             unregisterTemplate(template);
         }
@@ -395,11 +408,9 @@ public class ProxyLookup extends Lookup {
         /** Just delegates.
          */
         public void addLookupListener(LookupListener l) {
-            if (listeners == null) {
-                synchronized (this) {
-                    if (listeners == null) {
-                        listeners = new EventListenerList();
-                    }
+            synchronized (this) {
+                if (listeners == null) {
+                    listeners = new EventListenerList();
                 }
             }
 
@@ -427,6 +438,7 @@ public class ProxyLookup extends Lookup {
          * @return set of Class objects
          */
         @SuppressWarnings("unchecked")
+        @Override
         public java.util.Set<Class<? extends T>> allClasses() {
             return (java.util.Set<Class<? extends T>>) computeResult(1);
         }
@@ -436,6 +448,7 @@ public class ProxyLookup extends Lookup {
          * @return collection of Lookup.Item
          */
         @SuppressWarnings("unchecked")
+        @Override
         public java.util.Collection<? extends Item<T>> allItems() {
             return computeResult(2);
         }
@@ -655,11 +668,13 @@ public class ProxyLookup extends Lookup {
             }
         }
 
+        @Override
         public Collection<? extends Item<T>> allItems() {
             assert false;
             return null;
         }
 
+        @Override
         public Set<Class<? extends T>> allClasses() {
             assert false;
             return null;
