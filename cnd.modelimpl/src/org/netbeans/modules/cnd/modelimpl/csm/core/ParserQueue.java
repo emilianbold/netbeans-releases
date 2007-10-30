@@ -228,6 +228,16 @@ public final class ParserQueue {
             }
             return ret;
         }
+
+        public String toString(boolean detailed) {
+            StringBuilder builder = new StringBuilder();
+            Entry cur = head;
+            while (cur != null) {
+                builder.append(cur.toString(detailed));
+                cur = cur.next;
+            }
+            return builder.toString();
+        }
     }
     
     private static class ProjectData {
@@ -320,7 +330,7 @@ public final class ParserQueue {
                     entry.setPreprocStateIfNeed(ppState);
                 }
             } else {
-		assert (queue.find(file) == null) : "The queue should not contain the file " + file; // NOI18N
+		assert (queue.find(file) == null) : "The queue should not contain the file " + traceState4File(file, files);// NOI18N
                 files.add(file);
             }
             if (entry == null) {
@@ -331,6 +341,17 @@ public final class ParserQueue {
             lock.notifyAll();
         }
 	ProgressSupport.instance().fireFileInvalidated(file);
+    }
+
+    private String traceState4File(FileImpl file, Set/*<FileImpl>*/ files) {
+        StringBuilder builder = new StringBuilder(" "); // NOI18N
+        builder.append(file);
+        builder.append(" of project ").append(file.getProjectImpl()); // NOI18N
+        builder.append(" content of projects files set:\n"); // NOI18N
+        builder.append(files);
+        builder.append("\nqueue content is:\n"); // NOI18N
+        builder.append(queue.toString(false));
+        return builder.toString();
     }
     
     /**
@@ -358,7 +379,7 @@ public final class ParserQueue {
                     entry.setPreprocStateIfNeed(ppState);
                 }
             } else {
-		assert (queue.find(file) == null) : "The queue should not contain the file " + file; // NOI18N
+		assert (queue.find(file) == null) : "The queue should not contain the file " + traceState4File(file, files); // NOI18N
                 files.add(file);
             }
             if (entry == null) {
