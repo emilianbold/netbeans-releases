@@ -151,6 +151,7 @@ final class ResultPanelOutput extends JScrollPane
     
     /**
      */
+    @Override
     public void addNotify() {
         super.addNotify();
         
@@ -406,6 +407,7 @@ final class ResultPanelOutput extends JScrollPane
     
     /**
      */
+    @Override
     public boolean requestFocusInWindow() {
         return textPane.requestFocusInWindow();
     }
