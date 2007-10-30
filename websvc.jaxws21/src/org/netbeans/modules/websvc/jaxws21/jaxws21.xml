@@ -69,6 +69,6 @@ made subject to such option by the copyright holder.
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21/docs/jaxws-2_1-api-doc.zip!/</resource>
+        <resource>jar:nbinst:///docs/jaxws-2_1-api-doc.zip!/</resource>
     </volume>
 </library>
