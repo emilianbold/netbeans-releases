@@ -63,7 +63,7 @@ public class EditWSAttributesPanel extends javax.swing.JPanel {
     public EditWSAttributesPanel() {
         initComponents();
         initComponents();
-        treeMap = new TreeMap(new AlphabeticalComparator());
+        treeMap = new TreeMap<String, WSEditor>(new AlphabeticalComparator());
         description = new StringBuffer("");
         descLabel.setText(NbBundle.getMessage(EditWSAttributesPanel.class, "MSG_NO_EDITORS"));
     }

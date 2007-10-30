@@ -76,6 +76,7 @@ public final class WSEditAttributesAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -83,9 +84,9 @@ public final class WSEditAttributesAction extends NodeAction {
     private WSEditorProviderRegistry populateWSEditorProviderRegistry(){
         WSEditorProviderRegistry registry = WSEditorProviderRegistry.getDefault();
         if(registry.getEditorProviders().isEmpty()){
-            Lookup.Result results = Lookup.getDefault().
-                    lookup(new Lookup.Template(WSEditorProvider.class));
-            Collection<WSEditorProvider> services = results.allInstances();
+            Lookup.Result<WSEditorProvider> results = Lookup.getDefault().
+                    lookup(new Lookup.Template<WSEditorProvider>(WSEditorProvider.class));
+            Collection<? extends WSEditorProvider> services = results.allInstances();
             //System.out.println("###number of providers: " + services.size());
             for(WSEditorProvider provider : services){
                 registry.register(provider);

@@ -109,7 +109,7 @@ public class WebServiceType implements WizardDescriptor.Panel, WizardDescriptor.
         return component.valid(wizardDescriptor);
     }
 
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     
     public void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
@@ -137,9 +137,9 @@ public class WebServiceType implements WizardDescriptor.Panel, WizardDescriptor.
     
     private void fireChange() {
         ChangeEvent e = new ChangeEvent(this);
-        Iterator it = listeners.iterator();
+        Iterator<ChangeListener> it = listeners.iterator();
         while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(e);
+            it.next().stateChanged(e);
         }
     }
 

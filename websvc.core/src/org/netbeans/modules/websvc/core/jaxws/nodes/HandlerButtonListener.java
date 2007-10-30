@@ -45,6 +45,7 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -56,7 +57,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
-import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
 import javax.swing.table.TableModel;
 import org.netbeans.api.java.source.CancellableTask;
@@ -201,7 +201,7 @@ public class HandlerButtonListener implements ActionListener{
                                         classTree.getSimpleName(),
                                         classTree.getTypeParameters(),
                                         classTree.getExtendsClause(),
-                                        (List<ExpressionTree>)classTree.getImplementsClause(),
+                                        classTree.getImplementsClause(),
                                         classTree.getMembers());
                                 workingCopy.rewrite(classTree, modifiedClass);
                             }

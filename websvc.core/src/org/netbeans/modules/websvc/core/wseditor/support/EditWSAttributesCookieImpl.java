@@ -146,9 +146,9 @@ public class EditWSAttributesCookieImpl implements EditWSAttributesCookie{
     private void populateWSEditorProviderRegistry(){
         WSEditorProviderRegistry registry = WSEditorProviderRegistry.getDefault();
         if(registry.getEditorProviders().isEmpty()){
-            Lookup.Result results = Lookup.getDefault().
-                    lookup(new Lookup.Template(WSEditorProvider.class));
-            Collection<WSEditorProvider> services = results.allInstances();
+            Lookup.Result<WSEditorProvider> results = Lookup.getDefault().
+                    lookup(new Lookup.Template<WSEditorProvider>(WSEditorProvider.class));
+            Collection<? extends WSEditorProvider> services = results.allInstances();
             //System.out.println("###number of editors: " + services.size());
             for(WSEditorProvider provider : services){
                 registry.register(provider);
