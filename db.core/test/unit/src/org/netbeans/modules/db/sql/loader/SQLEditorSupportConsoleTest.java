@@ -166,7 +166,7 @@ public class SQLEditorSupportConsoleTest extends NbTestCase {
     private static final class MySQLDataLoader extends UniFileLoader {
     
         public MySQLDataLoader() {
-            super("org.netbeans.modules.db.sql.loader.MySQLDataLoader");
+            super("org.netbeans.modules.db.sql.loader.SQLEditorSupportConsoleTest$MySQLDataObject");
         }
     
         protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
