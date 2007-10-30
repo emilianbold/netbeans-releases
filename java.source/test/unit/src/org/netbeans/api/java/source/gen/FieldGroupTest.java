@@ -42,6 +42,8 @@ package org.netbeans.api.java.source.gen;
 
 import java.io.File;
 import com.sun.source.tree.*;
+import java.util.EnumSet;
+import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.junit.NbTestSuite;
@@ -76,6 +78,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new FieldGroupTest("testFieldGroupInBodyCast1"));
 //        suite.addTest(new FieldGroupTest("testFieldGroupInBodyCast2"));
 //        suite.addTest(new FieldGroupTest("test114571"));
+//        suite.addTest(new FieldGroupTest("testFieldGroupModifiers"));
         return suite;
     }
     
@@ -662,7 +665,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
     }
     
     // test 114571
-    public void Xtest114571() throws Exception {
+    public void test114571() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package javaapplication1;\n" +
@@ -691,11 +694,47 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
                 NewClassTree nct = (NewClassTree) var.getInitializer();
                 ExpressionTree ident = nct.getIdentifier();
                 workingCopy.rewrite(ident, make.setLabel(ident, "MOC"));
+                workingCopy.rewrite(var.getType(), make.Identifier("MOC"));
                 
                 var = (VariableTree) clazz.getMembers().get(2);
                 nct = (NewClassTree) var.getInitializer();
                 ident = nct.getIdentifier();
                 workingCopy.rewrite(ident, make.setLabel(ident, "MOC"));
+                workingCopy.rewrite(var.getType(), make.Identifier("MOC"));
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void XtestFieldGroupModifiers() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "class MyOuterClass {\n" +
+            "    public boolean a, b, c\n" +
+            "}\n"
+            );
+        String golden = 
+            "package javaapplication1;\n" +
+            "\n" +
+            "class MyOuterClass {\n" +
+            "    private boolean a;\n" + 
+            "    public boolean b, c;\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                
+                VariableTree var = (VariableTree) clazz.getMembers().get(1);
+                workingCopy.rewrite(var.getModifiers(), make.Modifiers(EnumSet.of(Modifier.PRIVATE)));
             }
         };
         testSource.runModificationTask(task).commit();

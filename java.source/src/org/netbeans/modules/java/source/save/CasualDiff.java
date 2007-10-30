@@ -2044,41 +2044,69 @@ public class CasualDiff {
         List<JCVariableDecl> fieldGroup = new ArrayList<JCVariableDecl>();
         boolean enumConstants = false;
         for (JCTree tree : list) {
-            if (Kind.METHOD == tree.getKind()) {
-                // filter syntetic constructors, i.e. constructors which are in
-                // the tree, but not available in the source.
-                if ((((JCMethodDecl)tree).mods.flags & Flags.GENERATEDCONSTR) != 0)
-                    continue;
-            } else if (Kind.VARIABLE == tree.getKind()) {
+            if (Kind.VARIABLE == tree.getKind()) {
                 JCVariableDecl var = (JCVariableDecl) tree;
                 if ((var.mods.flags & Flags.ENUM) != 0) {
                     // collect enum constants, make a field group from them
                     // and set the flag.
                     fieldGroup.add(var);
                     enumConstants = true;
-                    continue;
                 } else {
-                    // collect field group, make a field group
-                    if (isCommaSeparated(var)) {
+                    if (!fieldGroup.isEmpty()) {
+                        int oldPos = getOldPos(fieldGroup.get(0));
+                        
+                        if (oldPos != (-1) && oldPos == getOldPos(var) && fieldGroup.get(0).getModifiers() == var.getModifiers()) {
+                            //seems like a field group:
+                            fieldGroup.add(var);
+                        } else {
+                            if (fieldGroup.size() > 1) {
+                                result.add(new FieldGroupTree(fieldGroup, enumConstants));
+                            } else {
+                                result.add(fieldGroup.get(0));
+                            }
+                            fieldGroup = new ArrayList<JCVariableDecl>();
+                            enumConstants = false;
+                                
+                            fieldGroup.add(var);
+                        }
+                    } else {
                         fieldGroup.add(var);
-                        continue;
                     }
                 }
+                continue;
+            }
+            
+            if (!fieldGroup.isEmpty()) {
+                if (fieldGroup.size() > 1) {
+                    result.add(new FieldGroupTree(fieldGroup, enumConstants));
+                } else {
+                    result.add(fieldGroup.get(0));
+                }
+                fieldGroup = new ArrayList<JCVariableDecl>();
+                enumConstants = false;
+            }
+            
+            if (Kind.METHOD == tree.getKind()) {
+                // filter syntetic constructors, i.e. constructors which are in
+                // the tree, but not available in the source.
+                if ((((JCMethodDecl)tree).mods.flags & Flags.GENERATEDCONSTR) != 0)
+                    continue;
             } else if (Kind.BLOCK == tree.getKind()) {
                 JCBlock block = (JCBlock) tree;
                 if (block.stats.isEmpty() && block.pos == -1 && block.flags == 0) 
                     // I believe this is an sythetic block
                     continue;
             }
-            if (!fieldGroup.isEmpty()) {
-                result.add(new FieldGroupTree(fieldGroup, enumConstants));
-                fieldGroup = new ArrayList<JCVariableDecl>();
-                enumConstants = false;
-            }
+            
             result.add(tree);
         }
-        if (!fieldGroup.isEmpty())
-            result.add(new FieldGroupTree(fieldGroup, enumConstants));
+        if (!fieldGroup.isEmpty()) {
+            if (fieldGroup.size() > 1) {
+                result.add(new FieldGroupTree(fieldGroup, enumConstants));
+            } else {
+                result.add(fieldGroup.get(0));
+            }
+        }
         return result;
     }
     
