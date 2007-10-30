@@ -97,7 +97,6 @@ import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModelFactor
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.GlobalBindings;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -192,11 +191,6 @@ public class JaxWsUtils {
         implClassFo.setAttribute("jax-ws-service", Boolean.TRUE);
         implClassFo.setAttribute("jax-ws-service-provider", Boolean.TRUE);
         DataObject.find(implClassFo).setValid(false);
-        
-        ClassPath classPath = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);
-        String serviceImplPath = classPath.getResourceName(implClassFo, '.', false);
-        String portJavaName = port.getJavaName();
-        String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf("."));
         
         final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
         JavaSource targetSource = JavaSource.forFileObject(implClassFo);
@@ -526,7 +520,6 @@ public class JaxWsUtils {
         if (clientProject==targetProject) {
             return true;
         } else {
-            ProjectClassPathExtender pce = targetProject.getLookup().lookup(ProjectClassPathExtender.class);
             AntArtifactProvider antArtifactProvider = clientProject.getLookup().lookup(AntArtifactProvider.class);
             if (antArtifactProvider!=null) {
                 AntArtifact jarArtifact = getJarArtifact(antArtifactProvider);
