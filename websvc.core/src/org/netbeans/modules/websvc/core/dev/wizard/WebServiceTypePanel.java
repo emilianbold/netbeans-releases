@@ -83,7 +83,6 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
     
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
-    private boolean isWaitingForScan = false;
     private boolean jsr109Supported;
     private boolean jsr109oldSupported;
     private boolean jwsdpSupported;
@@ -247,6 +246,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
             LogicalViewProvider lvp = allProjects[i].getLookup().lookup(LogicalViewProvider.class);
             Node projectView = lvp.createLogicalView();
             ejbProjectNodes.add(new FilterNode(projectView, new EJBListViewChildren(allProjects[i])) {
+                @Override
                 public Action[] getActions(boolean context) {
                     return new Action[0];
                 }
