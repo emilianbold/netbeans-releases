@@ -56,7 +56,7 @@ import org.netbeans.api.gsf.GsfLanguage;
 import org.netbeans.api.gsf.HintsProvider;
 import org.netbeans.api.gsf.StructureScanner;
 //import org.netbeans.spi.palette.PaletteController;
-import org.netbeans.modules.retouche.editor.semantic.ColoringManager;
+import org.netbeans.modules.gsfret.editor.semantic.ColoringManager;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;

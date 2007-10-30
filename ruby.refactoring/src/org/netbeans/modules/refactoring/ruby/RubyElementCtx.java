@@ -57,7 +57,7 @@ import org.jruby.ast.SymbolNode;
 import org.netbeans.api.gsf.Element;
 import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.retouche.source.CompilationInfo;
+import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.Arity;
 import org.netbeans.modules.ruby.AstPath;

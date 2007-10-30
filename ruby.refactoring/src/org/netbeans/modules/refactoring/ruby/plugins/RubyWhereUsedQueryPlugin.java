@@ -79,12 +79,12 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.retouche.source.ClasspathInfo;
-import org.netbeans.api.retouche.source.CompilationController;
-import org.netbeans.api.retouche.source.CompilationInfo;
-import org.netbeans.api.retouche.source.Source;
-import org.netbeans.api.retouche.source.UiUtils;
-import org.netbeans.api.retouche.source.WorkingCopy;
+import org.netbeans.napi.gsfret.source.ClasspathInfo;
+import org.netbeans.napi.gsfret.source.CompilationController;
+import org.netbeans.napi.gsfret.source.CompilationInfo;
+import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.napi.gsfret.source.UiUtils;
+import org.netbeans.napi.gsfret.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.ruby.RetoucheUtils;
 import org.netbeans.modules.refactoring.ruby.WhereUsedElement;
@@ -175,7 +175,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
             }
             
             public void run(CompilationController info) throws Exception {
-                info.toPhase(org.netbeans.api.retouche.source.Phase.RESOLVED);
+                info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
                 //System.out.println("TODO - compute a full set of files to be checked... for now just lamely using the project files");
                 //set.add(info.getFileObject());
                 // (This currently doesn't need to run in a compilation controller since I'm not using parse results at all...)
@@ -356,7 +356,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
         public void run(WorkingCopy compiler) throws IOException {
             if (cancelled)
                 return ;
-            compiler.toPhase(org.netbeans.api.retouche.source.Phase.RESOLVED);
+            compiler.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
 
             Error error = null;
             

@@ -401,28 +401,27 @@ public class LanguageRegistry implements Iterable<Language> {
     private void initializeLanguage(Language language) {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
 
-        String oldNavFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-retouche-navigation-GsfStructurePanel.instance";
+        String navFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance";
 
-        // Delete the old navigator description - I have moved the class name
-        FileObject fo = fs.findResource(oldNavFileName);
-
-        if (fo != null) {
-            try {
-                fo.delete();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        String navFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-retouche-navigation-ClassMemberPanel.instance";
-
-        fo = fs.findResource(navFileName);
+        FileObject fo = fs.findResource(navFileName);
 
         if (fo == null) {
             try {
                 FileUtil.createData(fs.getRoot(), navFileName);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+            
+            String oldNavFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-retouche-navigation-ClassMemberPanel.instance";
+            // Delete the old navigator description - I have moved the class name
+            FileObject old = fs.findResource(oldNavFileName);
+
+            if (old != null) {
+                try {
+                    old.delete();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }
@@ -472,14 +471,29 @@ public class LanguageRegistry implements Iterable<Language> {
         }
 
         // init code folding bar
-        if ((root.getFileObject("SideBar/org-netbeans-modules-editor-retouche-GsfCodeFoldingSideBarFactory.instance") == null) && (l.getParser() != null)) {
+        if ((root.getFileObject("SideBar/org-netbeans-modules-editor-gsfret-GsfCodeFoldingSideBarFactory.instance") == null) && (l.getParser() != null)) {
             // XXX Don't construct a new parser just to see this!
             try {
                 //FileUtil.createData (root, "FoldManager/org-netbeans-editor-CustomFoldManager$Factory.instance");
-                FileUtil.createData(root, "FoldManager/org-netbeans-modules-retouche-editor-fold-GsfFoldManagerFactory.instance");
-                FileUtil.createData(root, "SideBar/org-netbeans-modules-editor-retouche-GsfCodeFoldingSideBarFactory.instance").setAttribute("position", 1200);
+                FileUtil.createData(root, "FoldManager/org-netbeans-modules-gsfret-editor-fold-GsfFoldManagerFactory.instance");
+                FileUtil.createData(root, "SideBar/org-netbeans-modules-editor-gsfret-GsfCodeFoldingSideBarFactory.instance").setAttribute("position", 1200);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+            
+            // Delete old names present up to and including beta2
+            FileObject oldSidebar = root.getFileObject("SideBar/org-netbeans-modules-editor-retouche-GsfCodeFoldingSideBarFactory.instance");
+
+            if (oldSidebar != null) {
+                try {
+                    oldSidebar.delete();
+                    oldSidebar = root.getFileObject("FoldManager/org-netbeans-modules-retouche-editor-fold-GsfFoldManagerFactory.instance");
+                    if (oldSidebar != null) {
+                        oldSidebar.delete();
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
 
@@ -488,17 +502,27 @@ public class LanguageRegistry implements Iterable<Language> {
         if (hyperlinkProvider == null) {
             try {
                 hyperlinkProvider = FileUtil.createData(root, "HyperlinkProviders/GsfHyperlinkProvider.instance");
-                hyperlinkProvider.setAttribute("instanceClass", "org.netbeans.modules.retouche.editor.hyperlink.GsfHyperlinkProvider");
+                hyperlinkProvider.setAttribute("instanceClass", "org.netbeans.modules.gsfret.editor.hyperlink.GsfHyperlinkProvider");
                 hyperlinkProvider.setAttribute("instanceOf", "org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt");
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-        } else if ("org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider".equals(hyperlinkProvider.getAttribute("instanceOf"))) {
-            // Userdir upgrade
-            try {
-                hyperlinkProvider.setAttribute("instanceOf", "org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt");
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+        } else { 
+            if ("org.netbeans.modules.retouche.editor.hyperlink.GsfHyperlinkProvider".equals(hyperlinkProvider.getAttribute("instanceClass"))) {
+                // Userdir upgrade
+                try {
+                    hyperlinkProvider.setAttribute("instanceClass", "org.netbeans.modules.gsfret.editor.hyperlink.GsfHyperlinkProvider");
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            if ("org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider".equals(hyperlinkProvider.getAttribute("instanceOf"))) {
+                // Userdir upgrade
+                try {
+                    hyperlinkProvider.setAttribute("instanceOf", "org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt");
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
 
@@ -586,28 +610,47 @@ public class LanguageRegistry implements Iterable<Language> {
         }
 
         // Service to show if file is compileable or not
-        if (root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-retouche-hints-GsfUpToDateStateProviderFactory.instance") == null) {
+        if (root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-gsfret-hints-GsfUpToDateStateProviderFactory.instance") == null) {
             try {
-                FileUtil.createData(root, "UpToDateStatusProvider/org-netbeans-modules-retouche-hints-GsfUpToDateStateProviderFactory.instance");
+                FileUtil.createData(root, "UpToDateStatusProvider/org-netbeans-modules-gsfret-hints-GsfUpToDateStateProviderFactory.instance");
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+            
+            // Delete old name present up to and including beta2
+            FileObject old = root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-retouche-hints-GsfUpToDateStateProviderFactory.instance");
+            if (old != null) {
+                try {
+                    old.delete();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
 
         // I'm not sure what this is used for - perhaps to turn orange when there are unused imports etc.
-        if (root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-retouche-editor-semantic-OccurrencesMarkProviderCreator.instance") == null) {
+        if (root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-gsfret-editor-semantic-OccurrencesMarkProviderCreator.instance") == null) {
             try {
-                FileUtil.createData(root, "UpToDateStatusProvider/org-netbeans-modules-retouche-editor-semantic-OccurrencesMarkProviderCreator.instance");
+                FileUtil.createData(root, "UpToDateStatusProvider/org-netbeans-modules-gsfret-editor-semantic-OccurrencesMarkProviderCreator.instance");
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+            // Delete old name present up to and including beta2
+            FileObject old = root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-retouche-editor-semantic-OccurrencesMarkProviderCreator.instance");
+            if (old != null) {
+                try {
+                    old.delete();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
 
-        /* XXX breaks ValidateLayerConsistencyTest.testInstantiateAllInstances: Editors/text/x-ruby/org-netbeans-modules-retouche-hints-GsfHintsProvider.instance thrown exception java.lang.ClassNotFoundException: Cannot instantiate org.netbeans.modules.retouche.hints.GsfHintsProvider
+        /* XXX breaks ValidateLayerConsistencyTest.testInstantiateAllInstances: Editors/text/x-ruby/org-netbeans-modules-gsfret-hints-GsfHintsProvider.instance thrown exception java.lang.ClassNotFoundException: Cannot instantiate org.netbeans.modules.gsfret.hints.GsfHintsProvider
         // Editor hints -- this may not be necessary - might already be done from the java source tasks factory...
         String hintsFilename =
         "Editors/" + l.getMimeType() +
-        "/org-netbeans-modules-retouche-hints-GsfHintsProvider.instance";
+        "/org-netbeans-modules-gsfret-hints-GsfHintsProvider.instance";
         if (fs.findResource(hintsFilename) == null) {
         try {
         FileObject fo = FileUtil.createData(fs.getRoot(), hintsFilename);
@@ -639,13 +682,23 @@ public class LanguageRegistry implements Iterable<Language> {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            String provider = "org-netbeans-modules-retouche-editor-completion-GsfCompletionProvider.instance";
+            String provider = "org-netbeans-modules-gsfret-editor-completion-GsfCompletionProvider.instance";
             FileObject completionProvider = root.getFileObject(completionProviders + "/" + provider);
             if (completionProvider == null) {
                 try {
                     completion.createData(provider);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
+                }
+                
+                // Delete old name present up to and including beta2
+                FileObject old = completion.getFileObject("org-netbeans-modules-retouche-editor-completion-GsfCompletionProvider.instance");
+                if (old != null) {
+                    try {
+                        old.delete();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
         }
@@ -667,19 +720,38 @@ public class LanguageRegistry implements Iterable<Language> {
         }
 
         // init code templates
-        if (root.getFileObject("CodeTemplateProcessorFactories") == null) {
+        if (root.getFileObject("CodeTemplateProcessorFactories/org-netbeans-modules-gsfret-editor-codetemplates-GsfCodeTemplateProcessor$Factory.instance") == null) {
             try {
-                FileObject fo = FileUtil.createData(root, "CodeTemplateProcessorFactories/org-netbeans-modules-retouche-editor-codetemplates-GsfCodeTemplateProcessor$Factory.instance");
+                FileObject fo = FileUtil.createData(root, "CodeTemplateProcessorFactories/org-netbeans-modules-gsfret-editor-codetemplates-GsfCodeTemplateProcessor$Factory.instance");
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+            
+            // Delete old name present up to and including beta2
+            FileObject old = root.getFileObject("CodeTemplateProcessorFactories/org-netbeans-modules-retouche-editor-codetemplates-GsfCodeTemplateProcessor$Factory.instance");
+            if (old != null) {
+                try {
+                    old.delete();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
         // init code templates filters
-        if (root.getFileObject("CodeTemplateFilterFactories") == null) {
+        if (root.getFileObject("CodeTemplateFilterFactories/org-netbeans-modules-gsfret-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance") == null) {
             try {
-                FileObject fo = FileUtil.createData(root, "CodeTemplateFilterFactories/org-netbeans-modules-retouche-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance");
+                FileObject fo = FileUtil.createData(root, "CodeTemplateFilterFactories/org-netbeans-modules-gsfret-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance");
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+            // Delete old name present up to and including beta2
+            FileObject old = root.getFileObject("CodeTemplateFilterFactories/org-netbeans-modules-retouche-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance");
+            if (old != null) {
+                try {
+                    old.delete();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
 

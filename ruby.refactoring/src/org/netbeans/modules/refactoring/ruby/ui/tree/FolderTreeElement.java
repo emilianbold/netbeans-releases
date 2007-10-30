@@ -49,7 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.retouche.source.UiUtils;
+import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.netbeans.modules.refactoring.spi.ui.*;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;

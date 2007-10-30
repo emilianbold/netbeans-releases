@@ -69,11 +69,11 @@ public class DisableHintFix implements Fix {
         if (caretPos == -1) {
             provider.computeHints(info, result);
             HintsController.setErrors(info.getFileObject(), 
-                    "org.netbeans.modules.retouche.hints.infrastructure.HintsTask", result);
+                    "org.netbeans.modules.gsfret.hints.infrastructure.HintsTask", result);
         } else {
             provider.computeSuggestions(info, result, caretPos);
             HintsController.setErrors(info.getFileObject(), 
-                    "org.netbeans.modules.retouche.hints.infrastructure.SuggestionsTask", result);
+                    "org.netbeans.modules.gsfret.hints.infrastructure.SuggestionsTask", result);
         }
         
         return null;

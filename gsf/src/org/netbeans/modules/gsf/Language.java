@@ -54,7 +54,7 @@ import org.netbeans.api.gsf.Formatter;
 import org.netbeans.api.gsf.Indexer;
 import org.netbeans.api.gsf.StructureScanner;
 //import org.netbeans.spi.palette.PaletteController;
-import org.netbeans.modules.retouche.editor.semantic.ColoringManager;
+import org.netbeans.modules.gsfret.editor.semantic.ColoringManager;
 
 
 /**

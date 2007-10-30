@@ -49,9 +49,9 @@ import org.netbeans.api.gsf.CancellableTask;
 import org.netbeans.api.gsf.ElementHandle;
 import org.netbeans.api.gsfpath.classpath.ClassPath;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.api.retouche.source.ClasspathInfo;
-import org.netbeans.api.retouche.source.CompilationController;
-import org.netbeans.api.retouche.source.Source;
+import org.netbeans.napi.gsfret.source.ClasspathInfo;
+import org.netbeans.napi.gsfret.source.CompilationController;
+import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.ruby.*;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -228,7 +228,7 @@ public class MoveRefactoringPlugin extends RubyRefactoringPlugin {
             System.out.println("TODO");
             throw new RuntimeException("not yet implemented!");
 //                        parameter.toPhase(Phase.ELEMENTS_RESOLVED);
-//        parameter.toPhase(org.netbeans.api.retouche.source.Phase.ELEMENTS_RESOLVED);
+//        parameter.toPhase(org.netbeans.napi.gsfret.source.Phase.ELEMENTS_RESOLVED);
 //                        List<? extends Tree> trees= parameter.getCompilationUnit().getTypeDecls();
 //                        for (Tree t: trees) {
 //                            if (t.getKind() == Tree.Kind.CLASS) {

@@ -64,10 +64,10 @@ import org.netbeans.api.gsf.Element;
 import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.gsf.Error;
 import org.netbeans.api.gsf.Severity;
-import org.netbeans.api.retouche.source.ClasspathInfo;
-import org.netbeans.api.retouche.source.CompilationController;
-import org.netbeans.api.retouche.source.ModificationResult.Difference;
-import org.netbeans.api.retouche.source.Source;
+import org.netbeans.napi.gsfret.source.ClasspathInfo;
+import org.netbeans.napi.gsfret.source.CompilationController;
+import org.netbeans.napi.gsfret.source.ModificationResult.Difference;
+import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.refactoring.ruby.RetoucheUtils;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -109,12 +109,12 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.retouche.source.ClasspathInfo;
-import org.netbeans.api.retouche.source.CompilationController;
-import org.netbeans.api.retouche.source.ModificationResult;
-import org.netbeans.api.retouche.source.ModificationResult.Difference;
-import org.netbeans.api.retouche.source.Source;
-import org.netbeans.api.retouche.source.WorkingCopy;
+import org.netbeans.napi.gsfret.source.ClasspathInfo;
+import org.netbeans.napi.gsfret.source.CompilationController;
+import org.netbeans.napi.gsfret.source.ModificationResult;
+import org.netbeans.napi.gsfret.source.ModificationResult.Difference;
+import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.napi.gsfret.source.WorkingCopy;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.refactoring.ruby.plugins.RetoucheCommit;
 import org.netbeans.modules.refactoring.ruby.DiffElement;
@@ -176,7 +176,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                     }
                     
                     public void run(CompilationController co) throws Exception {
-                        co.toPhase(org.netbeans.api.retouche.source.Phase.RESOLVED);
+                        co.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
                         org.jruby.ast.Node root = AstUtilities.getRoot(co);
                         if (root != null) {
                             RubyParseResult rpr = (RubyParseResult)co.getParserResult();
@@ -226,7 +226,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
     protected Problem preCheck(CompilationController info) throws IOException {
         Problem preCheckProblem = null;
         fireProgressListenerStart(refactoring.PRE_CHECK, 4);
-        info.toPhase(org.netbeans.api.retouche.source.Phase.RESOLVED);
+        info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
 //        Element el = treePathHandle.resolveElement(info);
 //        preCheckProblem = isElementAvail(treePathHandle, info);
 //        if (preCheckProblem != null) {
@@ -309,7 +309,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
     
     protected Problem fastCheckParameters(CompilationController info) throws IOException {
         Problem fastCheckProblem = null;
-        info.toPhase(org.netbeans.api.retouche.source.Phase.RESOLVED);
+        info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
         ElementKind kind = treePathHandle.getKind();
 //        
         String newName = refactoring.getNewName();
@@ -429,7 +429,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         
         fireProgressListenerStart(refactoring.PARAMETERS_CHECK, 8 + 3*steps);
         
-        info.toPhase(org.netbeans.api.retouche.source.Phase.RESOLVED);
+        info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
 //        Element element = treePathHandle.resolveElement(info);
         
         fireProgressListenerStep();
@@ -504,7 +504,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                         set.addAll(RetoucheUtils.getRubyFilesInProject(info.getFileObject()));
                     }
 //                    final ClassIndex idx = info.getClasspathInfo().getClassIndex();
-//                    info.toPhase(org.netbeans.api.retouche.source.Phase.RESOLVED);
+//                    info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
 //                    Element el = treePathHandle.resolveElement(info);
 //                    ElementKind kind = el.getKind();
 //                    ElementHandle<TypeElement> enclosingType;
@@ -762,7 +762,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         @Override
         public void scan() {
             // TODO - do I need to force state to resolved?
-            //compiler.toPhase(org.netbeans.api.retouche.source.Phase.RESOLVED);
+            //compiler.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
 
             diffs = new ArrayList<Difference>();
             RubyElementCtx searchCtx = treePathHandle;

@@ -58,7 +58,7 @@ import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.gsf.HtmlFormatter;
 import org.netbeans.api.gsf.NameKind;
 import org.netbeans.api.gsfpath.classpath.ClassPath;
-import org.netbeans.api.retouche.source.Source;
+import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
@@ -66,7 +66,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.DefaultLanguage;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
-import org.netbeans.modules.retouche.source.usages.Index;
+import org.netbeans.modules.gsfret.source.usages.Index;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.openide.filesystems.FileObject;
 

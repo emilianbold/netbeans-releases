@@ -48,8 +48,8 @@ import javax.swing.text.Position.Bias;
 import org.netbeans.api.gsf.Modifier;
 
 import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.retouche.source.CompilationInfo;
-import org.netbeans.api.retouche.source.UiUtils;
+import org.netbeans.napi.gsfret.source.CompilationInfo;
+import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.refactoring.ruby.ui.tree.ElementGripFactory;

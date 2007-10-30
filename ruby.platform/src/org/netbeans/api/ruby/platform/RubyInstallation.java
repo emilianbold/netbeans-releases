@@ -69,7 +69,7 @@ import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.retouche.source.usages.ClassIndexManager;
+import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -209,7 +209,7 @@ public class RubyInstallation {
             // Let RepositoryUpdater and friends know where they can root preindexing
             // This should be done in a cleaner way.
             if (ruby != null) {
-                org.netbeans.modules.retouche.source.usages.Index.setPreindexRootUrl(getRubyHomeUrl());
+                org.netbeans.modules.gsfret.source.usages.Index.setPreindexRootUrl(getRubyHomeUrl());
             }
         }
 
@@ -1139,7 +1139,7 @@ public class RubyInstallation {
 
         // Let RepositoryUpdater and friends know where they can root preindexing
         // This should be done in a cleaner way.
-        org.netbeans.modules.retouche.source.usages.Index.setPreindexRootUrl(getRubyHomeUrl());
+        org.netbeans.modules.gsfret.source.usages.Index.setPreindexRootUrl(getRubyHomeUrl());
 
         if (pcs != null) {
             pcs.firePropertyChange("roots", null, null); // NOI18N

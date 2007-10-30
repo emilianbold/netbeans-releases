@@ -60,9 +60,9 @@ import javax.swing.JPanel;
 import org.netbeans.api.gsf.CancellableTask;
 import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.gsf.Modifier;
-import org.netbeans.api.retouche.source.CompilationController;
-import org.netbeans.api.retouche.source.Phase;
-import org.netbeans.api.retouche.source.Source;
+import org.netbeans.napi.gsfret.source.CompilationController;
+import org.netbeans.napi.gsfret.source.Phase;
+import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.modules.refactoring.ruby.RubyElementCtx;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 

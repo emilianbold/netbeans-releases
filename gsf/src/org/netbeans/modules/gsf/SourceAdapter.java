@@ -45,10 +45,10 @@ import java.io.IOException;
 import org.netbeans.api.gsf.CancellableTask;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.SourceModel;
-import org.netbeans.api.retouche.source.CompilationController;
-import org.netbeans.api.retouche.source.Phase;
-import org.netbeans.api.retouche.source.Source;
-import org.netbeans.modules.retouche.source.usages.RepositoryUpdater;
+import org.netbeans.napi.gsfret.source.CompilationController;
+import org.netbeans.napi.gsfret.source.Phase;
+import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.modules.gsfret.source.usages.RepositoryUpdater;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 

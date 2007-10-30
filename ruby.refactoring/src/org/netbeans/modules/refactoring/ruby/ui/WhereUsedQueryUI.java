@@ -44,7 +44,7 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.retouche.source.CompilationInfo;
+import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.ruby.RetoucheUtils;

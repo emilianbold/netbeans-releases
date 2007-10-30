@@ -20,10 +20,10 @@
           <file name="org-netbeans-modules-gsf-hints-fixable_error.xml" url="parser_annotation_err.xml"/>
 
           <!--
-            <file name="org-netbeans-modules-editor-retouche-is_overridden.xml" url="is-overridden-annotation.xml"/>
-            <file name="org-netbeans-modules-editor-retouche-has_implementations.xml" url="has-implementations-annotation.xml" />
-            <file name="org-netbeans-modules-editor-retouche-overrides.xml" url="overrides-annotation.xml"/>
-            <file name="org-netbeans-modules-editor-retouche-implements.xml" url="implements-annotation.xml" />
+            <file name="org-netbeans-modules-editor-gsfret-is_overridden.xml" url="is-overridden-annotation.xml"/>
+            <file name="org-netbeans-modules-editor-gsfret-has_implementations.xml" url="has-implementations-annotation.xml" />
+            <file name="org-netbeans-modules-editor-gsfret-overrides.xml" url="overrides-annotation.xml"/>
+            <file name="org-netbeans-modules-editor-gsfret-implements.xml" url="implements-annotation.xml" />
            -->
         </folder>
     </folder>    

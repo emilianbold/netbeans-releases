@@ -352,7 +352,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.ruby.rhtml</friend>
                 <friend>org.netbeans.modules.javafx.dataloader</friend>
-                <package>org.netbeans.api.retouche.source</package>
+                <package>org.netbeans.napi.gsfret.source</package>
             </friend-packages>
         </data>
     </configuration>
