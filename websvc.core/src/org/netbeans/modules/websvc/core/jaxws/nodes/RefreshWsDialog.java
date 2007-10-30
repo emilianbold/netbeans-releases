@@ -111,8 +111,7 @@ public class RefreshWsDialog extends javax.swing.JPanel {
      * but does not give a choice as to refreshing the nodes (i.e. the nodes are
      * always refreshed.
      */
-    public static String openWithOKButtonOnly(boolean downloadWsdl, String implClass, String url){
-        String title = NbBundle.getMessage(RefreshWsDialog.class, "MSG_ConfirmServiceRefresh");
+    public static String openWithOKButtonOnly(boolean downloadWsdl, String implClass, String url) {
         RefreshWsDialog delDialog = new RefreshWsDialog(downloadWsdl, implClass, url);
         NotifyDescriptor desc = new NotifyDescriptor.Message(delDialog, NotifyDescriptor.INFORMATION_MESSAGE);
         DialogDisplayer.getDefault().notify(desc);

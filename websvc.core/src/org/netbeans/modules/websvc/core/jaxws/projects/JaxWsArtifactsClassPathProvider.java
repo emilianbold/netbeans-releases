@@ -46,7 +46,6 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -112,7 +111,6 @@ public class JaxWsArtifactsClassPathProvider implements ClassPathProvider {
     }
     
     private ClassPath getClassPath(String classPathType) {
-        Sources sources = project.getLookup().lookup(Sources.class);
         SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (groups.length > 0) {
             return ClassPath.getClassPath(groups[0].getRootFolder(), classPathType);

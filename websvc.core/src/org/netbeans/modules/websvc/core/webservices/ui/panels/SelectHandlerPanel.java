@@ -45,7 +45,6 @@ import javax.swing.JPanel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.util.NbBundle;
 import java.beans.PropertyChangeEvent;
@@ -63,7 +62,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 
 /**
@@ -99,12 +97,11 @@ public class SelectHandlerPanel extends JPanel implements ExplorerManager.Provid
     }
     
     private void populateTree(){
-        LogicalViewProvider lvp = (LogicalViewProvider)project.getLookup().lookup(LogicalViewProvider.class);
+        LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
         Node projectView = lvp.createLogicalView();
         Children.Array children = new Children.Array();
         FilterNode filter = new FilterNode(projectView, new SourceListViewChildren());
         children.add(new FilterNode[] {filter});
-        Node root = new AbstractNode(children);
         manager.setRootContext(filter);
         
     }

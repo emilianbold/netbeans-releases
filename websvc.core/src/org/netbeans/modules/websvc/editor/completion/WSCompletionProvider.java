@@ -147,8 +147,6 @@ public class WSCompletionProvider implements CompletionProvider {
             
             anchorOffset = env.getOffset();
             TreePath path = env.getPath();
-
-            Tree leaf = path.getLeaf();
             
             switch(path.getLeaf().getKind()) {
                 case ANNOTATION:
