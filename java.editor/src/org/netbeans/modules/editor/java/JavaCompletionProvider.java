@@ -1420,12 +1420,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     // no package content? Check for unimported class
                                     ClassIndex ci = controller.getClasspathInfo().getClassIndex();
                                     if (el.getEnclosedElements().isEmpty() && ci.getPackageNames(el.getSimpleName() + ".", true, EnumSet.allOf(ClassIndex.SearchScope.class)).isEmpty()) {
-                                        Set<ElementHandle<TypeElement>> tes = ci.getDeclaredTypes(el.getSimpleName().toString(), ClassIndex.NameKind.SIMPLE_NAME, EnumSet.allOf(ClassIndex.SearchScope.class));
-                                        if (tes.size() == 1) {
-                                            TypeElement te = tes.iterator().next().resolve(controller);
-                                            if (te != null) {
+                                        Trees trees = controller.getTrees();
+                                        Scope scope = env.getScope();
+                                        for (ElementHandle<TypeElement> teHandle : ci.getDeclaredTypes(el.getSimpleName().toString(), ClassIndex.NameKind.SIMPLE_NAME, EnumSet.allOf(ClassIndex.SearchScope.class))) {
+                                            TypeElement te = teHandle.resolve(controller);
+                                            if (te != null && trees.isAccessible(scope, te))
                                                 addMembers(env, te.asType(), te, kinds, baseType, inImport, insideNew);
-                                            }
                                         }
                                     }
                                 }
