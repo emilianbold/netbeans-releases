@@ -261,9 +261,7 @@ public class LLSyntaxAnalyser {
                     if (!skipErrors) {
                         if (node == null)
                             root = node = ASTNode.create (language, "Root", whitespaces, offset);
-                        if (newRule == -1)
-                            throw new ParseException ("No rule for " + nt + " and " + input.next (1) + " " + input.next (2) + ".", root);
-                        throw new ParseException ("Too many choices for " + nt + " and " + input.next (1) + " " + input.next (2) + ".", root);
+                        throw new ParseException ("Syntax error (nt: " + nt + ", tokens: " + input.next (1) + " " + input.next (2) + ".", root);
                     }
                     if (input.eof ()) {
                         if (node == null)
