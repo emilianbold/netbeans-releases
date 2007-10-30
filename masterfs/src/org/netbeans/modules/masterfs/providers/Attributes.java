@@ -72,7 +72,7 @@ public class Attributes extends DefaultAttributes {
 
     private final String attributePrefix;
     private AbstractFileSystem.List list;
-    private static final boolean BACKWARD_COMPATIBILITY = true;
+    private static final boolean BACKWARD_COMPATIBILITY = false;
     private static File rootForAttributes;
 
 
