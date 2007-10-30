@@ -129,6 +129,7 @@
 
 <mapID target="gui.saf.about" url="gui/saf/gui_saf_about.html" />
 <mapID target="gui.saf.working" url="gui/saf/gui_saf_working.html" />
+<mapID target="gui.saf.resources" url="gui/saf/gui_saf_resources.html" />
 
 <mapID target="gui.layouts.about" url="gui/layout_managers/gui_layoutmanagers.html" />
 <mapID target="gui.layouts.setting" url="gui/layout_managers/gui_settinglayout.html" />
@@ -184,7 +185,9 @@
 <mapID target="editor.navigation" url="editing/editor_navigation.html" />
 <mapID target="usersguide.files.search" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_search.html" />
 <mapID target="usersguide.find_regexp" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/find_regexp.html" />
+
 <mapID target="internation.internation" url="internationalize/international.html" />
+<mapID target="i18n.automatic" url="internationalize/i18n_automatic.html" />
 <mapID target="internation.maninsert" url="internationalize/manualinsert.html" />
 <mapID target="internation.formed" url="internationalize/formedstrings.html" />
 <mapID target="internation.addparams" url="internationalize/addparams.html" />
@@ -341,7 +344,7 @@
 
 <!--CSH for GUI Builder:-->
 <!-- Set Action property editor -->
-<mapID target="org.netbeans.modules.swingapp.ActionPropertyEditorPanel" url="gui/saf/gui_saf_action_csh.html">
+<mapID target="org.netbeans.modules.swingapp.ActionPropertyEditorPanel" url="gui/saf/gui_saf_action_csh.html" />
 <!-- CSH page for event handler dialog box :-->
 <mapID target="gui.csh.handlers" url="gui/csh/gui_event_handler_dialog.html" />
 <!-- CSH page for Form Editor property Variables Modifier (also for the Java module's "Modifiers" property) :-->

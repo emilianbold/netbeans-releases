@@ -160,6 +160,7 @@
     <tocitem text="Swing Application Framework">    
         <tocitem text="About" target="gui.saf.about" />
         <tocitem text="Working With the Swing Application Framework" target="gui.saf.working" />
+        <tocitem text="About Resources" target="gui.saf.resources" />
     </tocitem>    
     <tocitem text="Working with Layout Managers">    
     <tocitem text="About Layout Managers" target="gui.layouts.about" />
@@ -183,6 +184,7 @@
     </tocitem>
     <tocitem text="Internationalizing Source Code">
     <tocitem text="About" target="internation.internation"/>
+    <tocitem text="Automatically Internationalizing at Design Time" target="i18n.automatic"/>
     <tocitem text="Internationalizing a Single File" target="internation.singlefile" />
     <tocitem text="Internationalizing a Set of Files With the Internationalization Wizard" target="internation.wizard" />
     <tocitem text="Inserting an Internationalized String Into Source Code" target="internation.maninsert" />
