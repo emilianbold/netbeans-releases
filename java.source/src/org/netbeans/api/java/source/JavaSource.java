@@ -147,6 +147,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.SpecificationVersion;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -376,7 +377,15 @@ public final class JavaSource {
                 && fileObject.getAttribute("template") == Boolean.TRUE) {
                 return null;
             }
+            DataObject od = DataObject.find(fileObject);
+            
+            if (od.getLookup().lookup(CloneableEditorSupport.class) == null) {
+                return null;
+            }
         } catch (FileStateInvalidException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+            return null;
+        } catch (DataObjectNotFoundException ex) {
             LOGGER.log(Level.FINE, null, ex);
             return null;
         }
