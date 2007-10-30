@@ -130,18 +130,11 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
                 if(syntaxElement != null) {
                     if(syntaxElement.getCompletionContext() == JspSyntaxSupport.DIRECTIVE_COMPLETION_CONTEXT) {
                         // <%@include file="xxx"%> hyperlink usecase
-                        if(((SyntaxElement.Directive)syntaxElement).getName().equals("include")) {
-                            //find attribute name
-                            while (tokenSequence.movePrevious() && tokenSequence.token().id() != JspTokenId.TAG) {
-                                if(tokenSequence.token().id() == JspTokenId.ATTRIBUTE) {
-                                    if(tokenSequence.token().text().toString().equals("file")) {
-                                        return true;
-                                    } else {
-                                        return false;
-                                    }
-                                }
-                                
-                            }
+                        SyntaxElement.Directive sed = (SyntaxElement.Directive)syntaxElement;
+                        if("include".equals(sed.getName())) {
+                            return containsAttribute(tokenSequence, "file");
+                        } else if("page".equals(sed.getName())) {
+                            return containsAttribute(tokenSequence, "errorPage");
                         }
                     }
                     if(syntaxElement.getCompletionContext() == JspSyntaxSupport.TAG_COMPLETION_CONTEXT) {
@@ -200,6 +193,20 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
         }
     }
     
+    private boolean containsAttribute(TokenSequence tokenSequence, String attributeName) {
+        //find attribute name
+        while (tokenSequence.movePrevious() && tokenSequence.token().id() != JspTokenId.TAG) {
+            if (tokenSequence.token().id() == JspTokenId.ATTRIBUTE) {
+                if (tokenSequence.token().text().toString().equals(attributeName)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Should determine the span of hyperlink on given offset. Generally, if
      * isHyperlinkPoint returns true for a given parameters, this class should
@@ -262,14 +269,15 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
                     return new int[] {elTokenSequence.offset(), elEnd};
                 }
             }
-            // dynamic or static include, forward.
-            // remove all white space between the value.
-            int tokenOffset = 0;
-            String image = token.text().toString();
-            while (tokenOffset < image.length() && bdoc.isWhitespace(image.charAt(tokenOffset)))
-                tokenOffset++;
-            tokenOffset++;
-            return new int[]{token.offset(tokenHierarchy)+tokenOffset, token.offset(tokenHierarchy) + token.length()-2};
+
+            //the token image always contains the quotation marks e.g. "test.css"
+            if(token.length() > 2) {
+                //there is somethin between the qutation marks
+                return new int[]{token.offset(tokenHierarchy) + 1, token.offset(tokenHierarchy) + token.length() - 1};
+            } else {
+                //empty value
+                return null;
+            }
         }
         
     }
