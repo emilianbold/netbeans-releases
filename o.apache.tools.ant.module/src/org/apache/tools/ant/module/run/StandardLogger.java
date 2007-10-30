@@ -239,7 +239,7 @@ public final class StandardLogger extends AntLogger {
             }
             if (!session.isExceptionConsumed(t)) {
                 session.consumeException(t);
-                while (t.getClass().getName().equals("org.apache.tools.ant.BuildException")) { // http://issues.apache.org/bugzilla/show_bug.cgi?id=43398
+                while (isBuildException(t)) { // http://issues.apache.org/bugzilla/show_bug.cgi?id=43398
                     Throwable cause = t.getCause();
                     if (cause != null && cause.toString().equals(t.getMessage())) {
                         t = cause;
@@ -247,7 +247,7 @@ public final class StandardLogger extends AntLogger {
                         break;
                     }
                 }
-                if (t.getClass().getName().equals("org.apache.tools.ant.BuildException") && session.getVerbosity() < AntEvent.LOG_VERBOSE) { // NOI18N
+                if (isBuildException(t) && session.getVerbosity() < AntEvent.LOG_VERBOSE) {
                     // Stack trace probably not required.
                     // Check for hyperlink to handle e.g. <fail>
                     // which produces a BE whose toString is the location + message.
@@ -268,6 +268,16 @@ public final class StandardLogger extends AntLogger {
             }
         }
         event.consume();
+    }
+    private static boolean isBuildException(Throwable t) {
+        Class c = t.getClass();
+        while (c != Throwable.class) {
+            if (c.getName().equals("org.apache.tools.ant.BuildException")) { // NOI18N
+                return true;
+            }
+            c = c.getSuperclass();
+        }
+        return false;
     }
     
     /** Formats the millis in a human readable String.
