@@ -188,6 +188,10 @@ public class FileModelTest extends TraceModelTestBase {
     public void testUnresolvedPersistence() throws Exception {
         performTest("unresolved_persistence.cc"); // NOI18N
     }
+
+    public void test0x01() throws Exception {
+        performTest("0x01.c"); // NOI18N
+    }
     
     /////////////////////////////////////////////////////////////////////
     // FAILS

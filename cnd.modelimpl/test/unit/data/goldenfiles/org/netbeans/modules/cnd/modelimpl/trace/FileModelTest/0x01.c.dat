@@ -1,0 +1,46 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE 0x01.c
+Includes:
+    <no includes>
+Macros:
+    <no macros>
+FUNCTION foo [2:1/17-2:19/35] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: null
+    SIGNATURE foo(char*)
+    UNIQUE NAME F:foo(char*)
+    PARAMETERS:
+        p [2:10/26-2:17/33]  TYPE: *char TEXT=char*  [2:10/26-2:15/31]  INIT: null  SCOPE: foo 
+    RETURNS void TEXT=void  [2:1/17-2:5/21]
+FUNCTION DEFINITION foo  [4:1/37-6:2/70] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE foo()
+    UNIQUE NAME f:foo()
+    DECLARATION: foo  [4:1/37-6:2/70]
+    PARAMETERS:
+    RETURNS void TEXT=void  [4:1/37-4:5/41]
+    STATEMENT COMPOUND  [4:12/48-6:2/70] SCOPE: foo 
+        STATEMENT EXPRESSION  [5:9/51-5:17/59] SCOPE: Stmt  [4:12/48-6:2/70] text: 'foo("")'
+
+========== Dumping model of PROJECT DummyProject
+FUNCTION foo [2:1/17-2:19/35] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: null
+    SIGNATURE foo(char*)
+    UNIQUE NAME F:foo(char*)
+    PARAMETERS:
+        p [2:10/26-2:17/33]  TYPE: *char TEXT=char*  [2:10/26-2:15/31]  INIT: null  SCOPE: foo 
+    RETURNS void TEXT=void  [2:1/17-2:5/21]
+FUNCTION DEFINITION foo  [4:1/37-6:2/70] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE foo()
+    UNIQUE NAME f:foo()
+    DECLARATION: foo  [4:1/37-6:2/70]
+    PARAMETERS:
+    RETURNS void TEXT=void  [4:1/37-4:5/41]
+    STATEMENT COMPOUND  [4:12/48-6:2/70] SCOPE: foo 
+        STATEMENT EXPRESSION  [5:9/51-5:17/59] SCOPE: Stmt  [4:12/48-6:2/70] text: 'foo("")'
+
