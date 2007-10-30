@@ -46,11 +46,11 @@ import java.util.Map;
 import org.netbeans.api.editor.fold.FoldType;
 
 
-public class Folds {
+class Folds {
     
     private static Map<String,WeakReference<FoldType>> nameToFoldType = new HashMap<String,WeakReference<FoldType>>();
     
-    public static synchronized FoldType getFoldType (String name) {
+    static synchronized FoldType getFoldType (String name) {
         if (name == null) return null;
         WeakReference<FoldType> wr = nameToFoldType.get (name);
         FoldType ft = wr == null ? null : wr.get ();
