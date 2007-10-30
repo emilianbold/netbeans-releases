@@ -79,6 +79,6 @@ public class FileBrowserProducer extends MidpComponentProducer {
     
     @Override
     public boolean checkValidity(DesignDocument document) {
-        return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.List"); // NOI18N
+        return MidpJavaSupport.checkValidity(document, "javax.microedition.io.file.FileSystemRegistry"); // NOI18N
     }
 }
