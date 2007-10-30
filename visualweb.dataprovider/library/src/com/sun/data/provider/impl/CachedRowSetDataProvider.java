@@ -1129,6 +1129,7 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
                     metaData = null;
                     fieldKeys = null;
                     fieldKeysMap = null;
+                    executed = false;
                     fireProviderChanged();
                 }
         }

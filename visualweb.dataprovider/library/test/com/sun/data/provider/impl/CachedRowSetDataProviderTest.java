@@ -139,10 +139,11 @@ public class CachedRowSetDataProviderTest extends TestCase {
      */
     public void testCommandChange() throws Exception {
        CachedRowSetXImpl rowset = new CachedRowSetXImpl(); 
-       rowset.setUrl("jdbc:derby:mydb;create=true");
        
        CachedRowSetDataProvider provider = new CachedRowSetDataProvider();
        provider.setCachedRowSet(rowset);
+
+       rowset.setUrl("jdbc:derby:mydb;create=true");
        
        /** 
         * Select only one row and one extra column
@@ -150,6 +151,7 @@ public class CachedRowSetDataProviderTest extends TestCase {
        rowset.setCommand("SELECT " + IDNAME + ", " + COL1NAME +
                " FROM " + TABLENAME +
                " WHERE " + IDNAME + " = 2");
+       
        rowset.setTableName(TABLENAME);
        
        checkRows(provider, 1, 2);
