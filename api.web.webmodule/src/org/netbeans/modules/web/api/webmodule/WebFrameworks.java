@@ -54,7 +54,7 @@ import org.openide.util.lookup.Lookups;
  **/
 public final class WebFrameworks {
 
-    private static String FRAMEWORK_PATH = "j2ee/webtier/framework"; //NOI18N
+    private static final String FRAMEWORK_PATH = "j2ee/webtier/framework"; //NOI18N
 
     private WebFrameworks() {}
 
@@ -63,7 +63,7 @@ public final class WebFrameworks {
      *
      * @return a list of all registered {@link org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider}s; never null.
      */
-    public static List <WebFrameworkProvider> getFrameworks(){
+    public static List <WebFrameworkProvider> getFrameworks() {
        Collection <? extends WebFrameworkProvider> providers =
                 Lookups.forPath(FRAMEWORK_PATH).lookupAll(WebFrameworkProvider.class);
         return new ArrayList<WebFrameworkProvider>(providers);
