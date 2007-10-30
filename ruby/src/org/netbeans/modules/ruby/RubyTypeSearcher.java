@@ -64,6 +64,9 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -181,8 +184,21 @@ public class RubyTypeSearcher implements TypeSearcher {
                 NbUtilities.open(cls.getFileObject(), node.getPosition().getStartOffset(), cls.getName());
                 return;
             }
+            
+            FileObject fileObject = cls.getFileObject();
+            if (fileObject == null) {
+                NotifyDescriptor nd =
+                    new NotifyDescriptor.Message(NbBundle.getMessage(RubyTypeSearcher.class, "FileDeleted"), 
+                    NotifyDescriptor.Message.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(nd);
+                // TODO: Try to remove the item from the index? Can't fix yet because the url is wiped
+                // out by getFileObject (to avoid checking file existence multiple times; use a boolean
+                // flag for that instead)
+                
+                return;
+            }
 
-            helper.open(cls.getFileObject(), cls);
+            helper.open(fileObject, cls);
         }
 
         public String getContextName() {
