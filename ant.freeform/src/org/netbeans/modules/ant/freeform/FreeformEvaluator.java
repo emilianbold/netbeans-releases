@@ -43,6 +43,7 @@ package org.netbeans.modules.ant.freeform;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,6 +59,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
+import org.openide.util.Parameters;
 import org.w3c.dom.Element;
 
 /**
@@ -69,7 +71,7 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
 
     private final FreeformProject project;
     private PropertyEvaluator delegate;
-    private final List<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final Set<PropertyEvaluator> intermediateEvaluators = new HashSet<PropertyEvaluator>();
     
     public FreeformEvaluator(FreeformProject project) throws IOException {
@@ -139,25 +141,13 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
     }
     
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        listeners.add(listener);
+        Parameters.notNull("listener", listener); // NOI18N
+        pcs.addPropertyChangeListener(listener);
     }
     
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        listeners.remove(listener);
-    }
-    
-    private void fireChange(String prop) {
-        PropertyChangeListener[] _listeners;
-        synchronized (this) {
-            if (listeners.isEmpty()) {
-                return;
-            }
-            _listeners = listeners.toArray(new PropertyChangeListener[listeners.size()]);
-        }
-        PropertyChangeEvent ev = new PropertyChangeEvent(this, prop, null, null);
-        for (PropertyChangeListener l : _listeners) {
-            l.propertyChange(ev);
-        }
+        Parameters.notNull("listener", listener); // NOI18N
+        pcs.removePropertyChangeListener(listener);
     }
     
     public void configurationXmlChanged(AntProjectEvent ev) {
@@ -173,7 +163,7 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
             // Something else? E.g. IAE when parsing <properties> block.
             ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
         }
-        fireChange(null);
+        pcs.firePropertyChange(null, null, null);
     }
     
     public void propertiesChanged(AntProjectEvent ev) {
@@ -189,7 +179,7 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
         } else {
             // If a properties file changes on disk, we refire that from the delegate.
             assert source == delegate : "Got change from " + source + " rather than current delegate " + delegate;
-            fireChange(propertyChangeEvent.getPropertyName());
+            pcs.firePropertyChange(propertyChangeEvent.getPropertyName(), null, null);
         }
     }
     
