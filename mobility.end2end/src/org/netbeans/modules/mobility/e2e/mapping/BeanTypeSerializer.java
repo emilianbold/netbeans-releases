@@ -321,6 +321,10 @@ public class BeanTypeSerializer implements JavonSerializer {
         Set<ClassData> result = new HashSet<ClassData>();
         result.add( rootClassData );
         usedTypes.add( rootClassData );
+        ClassData parent = rootClassData.getParent();
+        if( parent != null && parent.getSerializer() != null && !usedTypes.contains( parent )) {
+            usedTypes.addAll( parent.getSerializer().getReferencedTypes( parent, usedTypes ));
+        }
         for( FieldData fieldCD : rootClassData.getFields()) {
             ClassData cd = fieldCD.getType();
             if( !usedTypes.contains( cd )) {
