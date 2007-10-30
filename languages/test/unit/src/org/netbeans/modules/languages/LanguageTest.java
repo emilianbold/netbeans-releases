@@ -20,7 +20,6 @@ import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.ParseException;
-import org.netbeans.modules.languages.TokenType;
 import org.netbeans.modules.languages.parser.Parser;
 import org.netbeans.modules.languages.parser.Parser.Cookie;
 import org.netbeans.modules.languages.parser.Pattern;
@@ -60,11 +59,10 @@ public class LanguageTest extends TestCase {
             null
         );
         assertEquals (2, language.getFeatures ("feature").size ());
-        try {
-            language.getFeature ("feature");
-            assert (false);
-        } catch (IllegalArgumentException e) {}
-        
+        Feature feature = language.getFeature ("feature");
+        assertTrue (feature.getSelector ().toString ().equals ("selector") ||
+                    feature.getSelector ().toString ().equals ("selector2")
+        );
     }
     
     public void testFeatures3 () {
