@@ -107,10 +107,15 @@ public abstract class AbstractNamedComponentReference<T extends NamedReferenceab
             assert referencedT != null;
             String namespace = getEffectiveNamespace();
             prefix = getParent().lookupPrefix(namespace);
-            if (prefix == null && referencedT instanceof AbstractDocumentComponent) {
+            if (namespace != null && prefix == null && referencedT instanceof AbstractDocumentComponent) {
                 AbstractDocumentComponent target = (AbstractDocumentComponent) referencedT;
                 prefix = target.lookupPrefix(namespace);
-                getParent().addPrefix(prefix, namespace);
+                if (prefix != null) {
+                    getParent().addPrefix(prefix, namespace);
+                } else {
+                    //TODO investigate; this happen when apply design pattern case
+                    //Thread.dumpStack();
+                }
             }
             localName = super.getReferenced().getName();
             if (prefix == null || prefix.length() == 0) {
