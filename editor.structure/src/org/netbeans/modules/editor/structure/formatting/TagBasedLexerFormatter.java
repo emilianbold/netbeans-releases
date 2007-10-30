@@ -515,7 +515,7 @@ public abstract class TagBasedLexerFormatter {
     }
 
     protected Token getTokenAtOffset(JoinedTokenSequence tokenSequence, int tagTokenOffset) {
-        if (tokenSequence != null) {
+        if (tokenSequence != null && tagTokenOffset >= 0) {
             int originalOffset = tokenSequence.offset();
             tokenSequence.move(tagTokenOffset);
 
