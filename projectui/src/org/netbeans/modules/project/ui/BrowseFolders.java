@@ -45,8 +45,10 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.JButton;
@@ -323,6 +325,12 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
                     l.add(f);
                 }
             }
+            Collections.sort(l, new Comparator<FileObject>() { // #116545
+                Collator COLL = Collator.getInstance();
+                public int compare(FileObject f1, FileObject f2) {
+                    return COLL.compare(f1.getNameExt(), f2.getNameExt());
+                }
+            });
             setKeys(l);
         }
 
@@ -363,7 +371,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
                 Node selection[] = browsePanel.getExplorerManager().getSelectedNodes();
                 
                 if ( selection != null && selection.length > 0 ) {
-                    DataObject dobj = (DataObject)selection[0].getLookup().lookup( DataObject.class );
+                    DataObject dobj = selection[0].getLookup().lookup(DataObject.class);
                     if ( dobj != null ) {
                         FileObject fo = dobj.getPrimaryFile();
                         if ( fo.isFolder() ) {
