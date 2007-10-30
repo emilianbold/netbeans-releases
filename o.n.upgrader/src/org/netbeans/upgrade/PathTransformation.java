@@ -58,11 +58,20 @@ public class PathTransformation {
         if (isCreator) {
             return transformCreatorPath(path);
         }
+
+        boolean i118364 = path.startsWith("Templates/Classes/");//NOI18N
+        if (i118364) {
+            return transformTemplatePath118364(path);
+        }
+        
         return path;
     }
     
+    private String transformTemplatePath118364(String path) {    
+        return path.replace("Templates/Classes/", "Templates/Oldies/Classes/");//NOI18N
+    }
     //CREATOR
-    public String transformCreatorPath(String path) {
+    private String transformCreatorPath(String path) {
         String keyToReplace = null;
         String[] keysToReplace = new String[] {"context.xml"};//NOI18N
         for (String key : keysToReplace) {

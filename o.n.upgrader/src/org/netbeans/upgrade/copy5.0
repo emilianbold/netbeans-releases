@@ -109,7 +109,7 @@ include Toolbars/.*
 exclude Toolbars/Progress/.*
 
 include Templates/J2MEProjectConfigurations/.*\.cfg
-
+include Templates/Classes/.*
 exclude MVD/.*
 exclude Windows2Local/Components/DesignInspector.settings
 exclude Windows2Local/Groups/mvd/DesignInspector.wstcgrp
