@@ -46,6 +46,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import java.text.MessageFormat;
 import java.util.Collections;
@@ -97,10 +98,11 @@ public final class ContainerManagedJTANonInjectableInWeb extends EntityManagerGe
                 "     <res-auth>Container</res-auth>\n" +
                 "</resource-ref>\n";
 
-        
-        getTreeMaker().addComment(newMethod.getBody().getStatements().get(0), 
+        MethodTree method = (MethodTree) importFQNs(newMethod);
+        getTreeMaker().addComment(method.getBody().getStatements().get(0), 
                 Comment.create(Comment.Style.BLOCK, 0, 0, 4, addToWebXmlComment), true);
-        return getTreeMaker().addClassMember(getClassTree(), importFQNs(newMethod));
+
+        return getTreeMaker().addClassMember(getClassTree(), method);
     }
 
     private String getMethodBody(FieldInfo em){
