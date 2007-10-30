@@ -72,9 +72,12 @@ SKIP:css_comment
 SKIP:css_whitespace
 
 S = declarations;
-declarations = declaration ";" declarations;
-declarations = declaration;
+declarations = declaration declarations1;
 declarations = ;
+declarations1 = ;
+declarations1 = ";" declarations2;
+declarations2 = declaration declarations1;
+declarations2 = ;
 declaration = <GAP> | key ":" expr [prio];
 key = <css_identifier>;
 expr = <GAP> | term (operator term)*;
