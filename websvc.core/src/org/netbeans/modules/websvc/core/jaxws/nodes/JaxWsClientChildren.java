@@ -74,7 +74,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
-public class JaxWsClientChildren extends Children.Keys {
+public class JaxWsClientChildren extends Children.Keys<WsdlService> {
     Client client;
     WsdlModel wsdlModel;
     
@@ -105,23 +105,21 @@ public class JaxWsClientChildren extends Children.Keys {
         }
     }
     
+    @Override
     protected void removeNotify() {
-        setKeys(Collections.EMPTY_SET);
+        setKeys(Collections.<WsdlService>emptySet());
     }
        
     private void updateKeys() {
-        List keys=null;
+        List<WsdlService> keys=null;
         if (wsdlModel!=null) {
             keys=wsdlModel.getServices();
         }
-        setKeys(keys==null?new ArrayList():keys);
+        setKeys(keys == null ? new ArrayList<WsdlService>() : keys);
     }
 
-    protected Node[] createNodes(Object key) {
-        if(key instanceof WsdlService) {
-            return new Node[] {new ServiceNode((WsdlService)key)};
-        }
-        return new Node[0];
+    protected Node[] createNodes(WsdlService key) {
+        return new Node[] {new ServiceNode(key)};
     }
     
     void refreshKeys(boolean downloadWsdl) {

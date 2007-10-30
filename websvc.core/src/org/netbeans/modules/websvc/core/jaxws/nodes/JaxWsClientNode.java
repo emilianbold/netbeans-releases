@@ -136,6 +136,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
         content.add(new EditWSAttributesCookieImpl(this, jaxWsModel));
     }
     
+    @Override
     public String getShortDescription() {
         return client.getWsdlUrl();
     }
@@ -148,6 +149,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
     private java.awt.Image cachedErrorBadge;
     private java.awt.Image cachedServiceBadge;
     
+    @Override
     public java.awt.Image getIcon(int type) {
         if (((JaxWsClientChildren)getChildren()).getWsdlModel()!=null) {
             return getServiceImage();
@@ -187,6 +189,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
         return cachedWaitingBadge;        
     }
     
+    @Override
     public java.awt.Image getOpenedIcon(int type){
         return getIcon( type);
     }
@@ -218,11 +221,13 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
         return null;
     }
     
+    @Override
     public Action getPreferredAction() {
         return SystemAction.get(OpenAction.class);
     }
     
     // Create the popup menu:
+    @Override
     public Action[] getActions(boolean context) {
         return new SystemAction[] {
             SystemAction.get(OpenAction.class),
@@ -240,15 +245,18 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
         };
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
     // Handle deleting:
+    @Override
     public boolean canDestroy() {
         return true;
     }
 
+    @Override
     public void destroy() throws java.io.IOException {
         String clientName = client.getName();
 //        NotifyDescriptor.Confirmation notifyDesc =

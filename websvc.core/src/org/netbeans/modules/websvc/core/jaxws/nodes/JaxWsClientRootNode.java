@@ -73,22 +73,18 @@ public class JaxWsClientRootNode extends AbstractNode {
     private Icon folderIconCache;
     private Icon openedFolderIconCache;
     private java.awt.Image cachedServicesBadge;
-    private final DataFolder srcFolder;
     
     public JaxWsClientRootNode(JaxWsModel jaxWsModel, FileObject srcRoot) {
         super(new JaxWsClientRootChildren(jaxWsModel,srcRoot), createLookup(srcRoot));
         setDisplayName(NbBundle.getBundle(JaxWsClientRootNode.class).getString("LBL_ServiceReferences"));
-        if(srcRoot.isFolder()) {
-            srcFolder = DataFolder.findFolder(srcRoot);
-        } else {
-            srcFolder = null;
-        }
     }
     
+    @Override
     public Image getIcon( int type ) {
         return computeIcon(false);
     }
     
+    @Override
     public Image getOpenedIcon( int type ) {
         return computeIcon(true);
     }
@@ -126,6 +122,7 @@ public class JaxWsClientRootNode extends AbstractNode {
         return image;        
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         return new Action[]{
             CommonProjectActions.newFileAction(),
@@ -138,6 +135,7 @@ public class JaxWsClientRootNode extends AbstractNode {
         };
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

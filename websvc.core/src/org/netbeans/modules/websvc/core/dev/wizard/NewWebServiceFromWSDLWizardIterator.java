@@ -81,7 +81,7 @@ public class NewWebServiceFromWSDLWizardIterator implements TemplateWizard.Itera
         return new NewWebServiceFromWSDLWizardIterator();
     }
 
-    public Set instantiate(TemplateWizard wiz) throws IOException {
+    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
         FileObject template = Templates.getTemplate( wiz );
         DataObject dTemplate = DataObject.find( template );                
         
@@ -96,7 +96,7 @@ public class NewWebServiceFromWSDLWizardIterator implements TemplateWizard.Itera
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient TemplateWizard wiz;
-    private transient WizardDescriptor.Panel bottomPanel;
+    private transient WizardDescriptor.Panel<WizardDescriptor> bottomPanel;
 
     public void initialize(TemplateWizard wiz) {
         this.wiz = wiz;
@@ -106,7 +106,7 @@ public class NewWebServiceFromWSDLWizardIterator implements TemplateWizard.Itera
 
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
         bottomPanel = new WebServiceFromWSDL(wiz, project);
-        WizardDescriptor.Panel firstPanel; //special case: use Java Chooser
+        WizardDescriptor.Panel<WizardDescriptor> firstPanel; //special case: use Java Chooser
         if (sourceGroups.length == 0)
             firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, bottomPanel));
         else
@@ -188,7 +188,7 @@ public class NewWebServiceFromWSDLWizardIterator implements TemplateWizard.Itera
         index--;
     }
     
-    public WizardDescriptor.Panel current() {
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
         return panels[index];
     }
     

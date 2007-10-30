@@ -133,7 +133,7 @@ public class WebServiceClientWizardIterator implements TemplateWizard.Iterator {
         return NbBundle.getMessage(WebServiceClientWizardIterator.class, "LBL_WebServiceClient"); // NOI18N
     }
 
-    public WizardDescriptor.Panel current() {
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
        return panels[index];
     }
 

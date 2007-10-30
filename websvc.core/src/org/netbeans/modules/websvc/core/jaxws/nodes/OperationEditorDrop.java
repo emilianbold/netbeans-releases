@@ -69,7 +69,6 @@ public class OperationEditorDrop implements ActiveEditorDrop {
         if (mimeType!=null && ("text/x-java".equals(mimeType) || "text/x-jsp".equals(mimeType) )) { //NOI18N
             
             try {
-                boolean enableDnD=false;
                 Node clientNode = operationNode.getParentNode().getParentNode().getParentNode();
                 FileObject srcRoot = clientNode.getLookup().lookup(FileObject.class);
                 Project clientProject = FileOwnerQuery.getOwner(srcRoot);

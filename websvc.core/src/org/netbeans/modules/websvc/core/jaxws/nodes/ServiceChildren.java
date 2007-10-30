@@ -52,34 +52,33 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
-public class ServiceChildren extends Children.Keys {
+public class ServiceChildren extends Children.Keys<WsdlPort> {
     WsdlService wsdlService;
     
     public ServiceChildren(WsdlService wsdlService) {
         this.wsdlService=wsdlService;
     }
     
+    @Override
     protected void addNotify() {
         updateKeys();
     }
     
+    @Override
     protected void removeNotify() {
-        setKeys(Collections.EMPTY_SET);
+        setKeys(Collections.<WsdlPort>emptySet());
     }
     
     private void updateKeys() {
-        List keys =  wsdlService.getPorts();
-        setKeys(keys==null?new ArrayList():keys);
+        List<WsdlPort> keys =  wsdlService.getPorts();
+        setKeys(keys == null ? new ArrayList<WsdlPort>() : keys);
     }
     
-    protected Node[] createNodes(Object key) {
-        if(key instanceof WsdlPort) {
-            WsdlPort wsdlPort = (WsdlPort)key;
-            if(wsdlPort.getAddress() != null){  //Determine if it is a SOAP port
-                return new Node[] {new PortNode((WsdlPort)key)};
+    protected Node[] createNodes(WsdlPort key) {
+            if(key.getAddress() != null){  //Determine if it is a SOAP port
+                return new Node[] {new PortNode(key)};
             }
-        }
-        return new Node[0];
+            return new Node[0];
     }
     
 }

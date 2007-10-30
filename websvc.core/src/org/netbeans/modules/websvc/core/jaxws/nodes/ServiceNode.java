@@ -44,7 +44,6 @@ import java.awt.Image;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
@@ -70,19 +69,23 @@ public class ServiceNode extends AbstractNode {
         content.add(service);
     }
     
+    @Override
     public Image getIcon(int type){
         return Utilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/webservice.png"); //NOI18N
     }
     
+    @Override
     public Image getOpenedIcon(int type){
         return getIcon( type);
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
     // Handle deleting:
+    @Override
     public boolean canDestroy() {
         return false;
     }

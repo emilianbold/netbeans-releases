@@ -97,7 +97,7 @@ public class NewWebServiceWizardIterator implements TemplateWizard.Iterator /*, 
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient TemplateWizard wiz;
-    private transient WizardDescriptor.Panel bottomPanel;
+    private transient WizardDescriptor.Panel<WizardDescriptor> bottomPanel;
 
 //convert Java class not implemented for 5.5 release
 //    private int serviceType = WizardProperties.FROM_SCRATCH;
@@ -202,7 +202,7 @@ public class NewWebServiceWizardIterator implements TemplateWizard.Iterator /*, 
         index--;
     }
     
-    public WizardDescriptor.Panel current() {
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
         return panels[index];
     }
     

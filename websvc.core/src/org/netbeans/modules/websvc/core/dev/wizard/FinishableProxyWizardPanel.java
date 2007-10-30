@@ -50,11 +50,11 @@ import org.openide.WizardDescriptor;
  *
  * @author mkuchtiak
  */
-public class FinishableProxyWizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
+public class FinishableProxyWizardPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
     
-    private WizardDescriptor.Panel original;
+    private WizardDescriptor.Panel<WizardDescriptor> original;
     /** Creates a new instance of ProxyWizardPanel */
-    public FinishableProxyWizardPanel(WizardDescriptor.Panel original) {
+    public FinishableProxyWizardPanel(WizardDescriptor.Panel<WizardDescriptor> original) {
         this.original=original;
         
     }
@@ -67,11 +67,11 @@ public class FinishableProxyWizardPanel implements WizardDescriptor.Panel, Wizar
         original.removeChangeListener(l);
     }
 
-    public void storeSettings(Object settings) {
+    public void storeSettings(WizardDescriptor settings) {
         original.storeSettings(settings);
     }
 
-    public void readSettings(Object settings) {
+    public void readSettings(WizardDescriptor settings) {
         original.readSettings(settings);
     }
 

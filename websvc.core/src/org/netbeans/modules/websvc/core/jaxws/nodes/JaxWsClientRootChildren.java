@@ -52,7 +52,7 @@ import org.openide.nodes.Node;
 import java.beans.PropertyChangeListener;
 import org.openide.util.RequestProcessor;
 
-public class JaxWsClientRootChildren extends Children.Keys {
+public class JaxWsClientRootChildren extends Children.Keys<Client> {
     JaxWsModel jaxWsModel;
     Client[] clients;
     JaxWsListener listener;
@@ -69,19 +69,21 @@ public class JaxWsClientRootChildren extends Children.Keys {
         this.srcRoot=srcRoot;
     }
     
+    @Override
     protected void addNotify() {
         listener = new JaxWsListener();
         jaxWsModel.addPropertyChangeListener(listener);
         updateKeys();
     }
     
+    @Override
     protected void removeNotify() {
-        setKeys(Collections.EMPTY_SET);
+        setKeys(Collections.<Client>emptySet());
         jaxWsModel.removePropertyChangeListener(listener);
     }
        
     private void updateKeys() {
-        List keys = new ArrayList();
+        List<Client> keys = new ArrayList<Client>();
         clients = jaxWsModel.getClients();
         if (clients != null) {
             for (int i = 0; i < clients.length; i++) {
@@ -91,11 +93,8 @@ public class JaxWsClientRootChildren extends Children.Keys {
         setKeys(keys);
     }
 
-    protected Node[] createNodes(Object key) {
-        if(key instanceof Client) {
-            return new Node[] {new JaxWsClientNode(jaxWsModel, (Client)key, srcRoot)};
-        }
-        return new Node[0];
+    protected Node[] createNodes(Client key) {
+        return new Node[] {new JaxWsClientNode(jaxWsModel, key, srcRoot)};
     }
     
     class JaxWsListener implements PropertyChangeListener {

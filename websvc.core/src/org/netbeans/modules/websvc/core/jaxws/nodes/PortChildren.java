@@ -52,33 +52,32 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
-public class PortChildren extends Children.Keys {
+public class PortChildren extends Children.Keys<WsdlOperation> {
     WsdlPort wsdlPort;
     
     public PortChildren(WsdlPort wsdlPort) {
         this.wsdlPort=wsdlPort;
     }
     
+    @Override
     protected void addNotify() {
         super.addNotify();
         updateKeys();
     }
     
+    @Override
     protected void removeNotify() {
-        setKeys(Collections.EMPTY_SET);
+        setKeys(Collections.<WsdlOperation>emptyList());
         super.removeNotify();
     }
        
     private void updateKeys() {
-        List keys =  wsdlPort.getOperations();
-        setKeys(keys==null?new ArrayList():keys);
+        List<WsdlOperation> keys =  wsdlPort.getOperations();
+        setKeys(keys == null ? new ArrayList<WsdlOperation>() : keys);
     }
 
-    protected Node[] createNodes(Object key) {
-        if(key instanceof WsdlOperation) {
-            return new Node[] {new OperationNode((WsdlOperation)key)};
-        }
-        return new Node[0];
+    protected Node[] createNodes(WsdlOperation key) {
+        return new Node[] {new OperationNode(key)};
     }
 
 }

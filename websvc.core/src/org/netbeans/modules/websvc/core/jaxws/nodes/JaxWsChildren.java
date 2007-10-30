@@ -111,12 +111,6 @@ import org.xml.sax.SAXException;
  *  Children of the web service node, namely,
  *  the operations of the webservice
  */
-
-/*
- *  Children of the web service node, namely,
- *  the operations of the webservice
- */
-
 public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener  */{
     private java.awt.Image cachedIcon;   
     private static final String OPERATION_ICON = "org/netbeans/modules/websvc/core/webservices/ui/resources/wsoperation.png"; //NOI18N

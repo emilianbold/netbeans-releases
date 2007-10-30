@@ -92,7 +92,6 @@ public class ClientHandlerButtonListener implements ActionListener{
     private Node node;
     private JaxWsModel jaxWsModel;
     private FileObject bindingHandlerFO;
-    private String wsdlRelativePath;
     private String bindingsHandlerFile;
     
     
@@ -239,6 +238,7 @@ public class ClientHandlerButtonListener implements ActionListener{
     }
 }
 
+//TODO: UNUSED METHOD => DEAD CODE???
 private boolean isInModel(String className, ListModel model){
     for(int i = 0; i < model.getSize(); i++){
         String cls = (String)model.getElementAt(i);
@@ -249,6 +249,7 @@ private boolean isInModel(String className, ListModel model){
     return false;
 }
 
+//TODO: UNUSED METHOD => DEAD CODE???
 private boolean isNewHandler(String className, BindingsHandlerChain handlerChain){
     if(handlerChain != null){
         Collection<BindingsHandler> handlers = handlerChain.getHandlers();

@@ -52,7 +52,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
-public class WsdlNodeChildren extends Children.Keys {
+public class WsdlNodeChildren extends Children.Keys<WsdlService> {
     WsdlModel model;
     
     public WsdlNodeChildren(WsdlModel model) {
@@ -67,20 +67,17 @@ public class WsdlNodeChildren extends Children.Keys {
     
     @Override
     protected void removeNotify() {
-        setKeys(Collections.EMPTY_SET);
+        setKeys(Collections.<WsdlService>emptySet());
         super.removeNotify();
     }
        
     private void updateKeys() {
-        List keys =  model.getServices();
-        setKeys(keys==null?new ArrayList():keys);
+        List<WsdlService> keys =  model.getServices();
+        setKeys(keys == null ? new ArrayList<WsdlService>() : keys);
     }
 
-    protected Node[] createNodes(Object key) {
-        if(key instanceof WsdlService) {
-            return new Node[] {new ServiceNode((WsdlService)key)};
-        }
-        return new Node[0];
+    protected Node[] createNodes(WsdlService key) {
+        return new Node[] {new ServiceNode(key)};
     }
 
 }

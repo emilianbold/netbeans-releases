@@ -93,10 +93,12 @@ public class JaxWsRootNode extends AbstractNode implements PropertyChangeListene
         }
     }
     
+    @Override
     public Image getIcon( int type ) {
         return computeIcon( false );
     }
     
+    @Override
     public Image getOpenedIcon( int type ) {
         return computeIcon( true );
     }
@@ -134,6 +136,7 @@ public class JaxWsRootNode extends AbstractNode implements PropertyChangeListene
         return image;        
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         return new Action[]{
             CommonProjectActions.newFileAction(),
@@ -146,6 +149,7 @@ public class JaxWsRootNode extends AbstractNode implements PropertyChangeListene
         };
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

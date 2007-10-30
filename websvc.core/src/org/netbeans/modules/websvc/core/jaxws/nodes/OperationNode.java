@@ -77,23 +77,28 @@ public class OperationNode extends AbstractNode {
         editorDrop = new OperationEditorDrop(this);
     }
     
+    @Override
     public Image getIcon(int type){
         return Utilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/wsoperation.png"); //NOI18N
     }
     
+    @Override
     public Image getOpenedIcon(int type){
         return getIcon( type);
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
     // Handle deleting:
+    @Override
     public boolean canDestroy() {
         return false;
     }
 
+    @Override
     public Transferable clipboardCopy() throws IOException {
 
         ExTransferable t = ExTransferable.create( super.clipboardCopy() );

@@ -58,7 +58,7 @@ import org.openide.util.HelpCtx;
  *
  * @author radko
  */
-public class WebServiceType implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel, WizardDescriptor.ValidatingPanel, ChangeListener {
+public class WebServiceType implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor>, WizardDescriptor.ValidatingPanel<WizardDescriptor>, ChangeListener {
 
     private WebServiceTypePanel component;
     private WizardDescriptor wizardDescriptor;
@@ -87,8 +87,8 @@ public class WebServiceType implements WizardDescriptor.Panel, WizardDescriptor.
         return new HelpCtx(WebServiceType.class);
     }
 
-    public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;
+    public void readSettings(WizardDescriptor settings) {
+        wizardDescriptor = settings;
         component.read (wizardDescriptor);
         
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
@@ -98,10 +98,9 @@ public class WebServiceType implements WizardDescriptor.Panel, WizardDescriptor.
             wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); // NOI18N
     }
 
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
-        ((WizardDescriptor) d).putProperty("NewProjectWizard_Title", null); // NOI18N
+    public void storeSettings(WizardDescriptor settings) {
+        component.store(settings);
+        settings.putProperty("NewProjectWizard_Title", null); // NOI18N
     }
 
     public boolean isValid() {

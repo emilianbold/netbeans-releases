@@ -52,9 +52,7 @@ import org.openide.nodes.Node;
 import java.beans.PropertyChangeListener;
 import org.openide.util.RequestProcessor;
 
-
-
-public class JaxWsRootChildren extends Children.Keys {
+public class JaxWsRootChildren extends Children.Keys<Service> {
     JaxWsModel jaxWsModel;
     Service[] services;
     JaxWsListener listener;
@@ -71,19 +69,21 @@ public class JaxWsRootChildren extends Children.Keys {
         this.srcRoots=srcRoots;
     }
     
+    @Override
     protected void addNotify() {
         listener = new JaxWsListener();
         jaxWsModel.addPropertyChangeListener(listener);
         updateKeys();
     }
     
+    @Override
     protected void removeNotify() {
-        setKeys(Collections.EMPTY_SET);
+        setKeys(Collections.<Service>emptySet());
         jaxWsModel.removePropertyChangeListener(listener);
     }
        
     private void updateKeys() {
-        List keys = new ArrayList();
+        List<Service> keys = new ArrayList<Service>();
         services = jaxWsModel.getServices();
         if (services != null) {
             for (int i = 0; i < services.length; i++) {
@@ -94,14 +94,12 @@ public class JaxWsRootChildren extends Children.Keys {
         setKeys(keys);
     }
 
-    protected Node[] createNodes(Object key) {
-        if(key instanceof Service) {
-            String implClass = ((Service)key).getImplementationClass();
-            for (FileObject srcRoot:srcRoots) {
-                FileObject implClassFo = getImplementationClass(implClass, srcRoot);
-                if (implClassFo!=null)
-                    return new Node[] {new JaxWsNode(jaxWsModel, (Service)key, srcRoot, implClassFo)};
-            }
+    protected Node[] createNodes(Service key) {
+        String implClass = key.getImplementationClass();
+        for (FileObject srcRoot:srcRoots) {
+            FileObject implClassFo = getImplementationClass(implClass, srcRoot);
+            if (implClassFo!=null)
+                return new Node[] {new JaxWsNode(jaxWsModel, key, srcRoot, implClassFo)};
         }
         return new Node[0];
     }

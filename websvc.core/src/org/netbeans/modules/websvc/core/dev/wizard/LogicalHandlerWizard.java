@@ -61,10 +61,9 @@ import org.netbeans.modules.j2ee.common.Util;
 public class LogicalHandlerWizard implements WizardDescriptor.InstantiatingIterator {
     public int currentPanel = 0;
     private WizardDescriptor.Panel [] wizardPanels;
-    private WizardDescriptor.Panel firstPanel; //special case: use Java Chooser
+    private WizardDescriptor.Panel<WizardDescriptor> firstPanel; //special case: use Java Chooser
     private WizardDescriptor wiz;
     private Project project;
-    private String handlerName;
     public static final String JAVAC_CLASSPATH = "javac.classpath"; //NOI18N
     
     public static LogicalHandlerWizard create() {
@@ -156,12 +155,12 @@ public class LogicalHandlerWizard implements WizardDescriptor.InstantiatingItera
     
     /** Dummy implementation of WizardDescriptor.Panel required in order to provide Help Button
      */
-    private class BottomPanel implements WizardDescriptor.Panel {
+    private class BottomPanel implements WizardDescriptor.Panel<WizardDescriptor> {
         
-        public void storeSettings(Object settings) {
+        public void storeSettings(WizardDescriptor settings) {
         }
         
-        public void readSettings(Object settings) {
+        public void readSettings(WizardDescriptor settings) {
         }
         
         public java.awt.Component getComponent() {
