@@ -84,6 +84,7 @@ public class JsfJavaDataObject extends MultiDataObject implements JsfJavaDataObj
         set.add(OpenCookie.class, this);
         set.add(EditCookie.class, this);
         set.add(EditorCookie.class, this);
+        set.add(JsfJavaEditorSupport.class, this);
     }
 
     /** Gets the superclass cookie, without hacking save cookie. */
@@ -128,7 +129,7 @@ public class JsfJavaDataObject extends MultiDataObject implements JsfJavaDataObj
                 openEdit = new OpenEdit();
             }
             return klass.cast(openEdit);
-        }else if (EditorCookie.class.equals(klass)) {
+        }else if (EditorCookie.class.equals(klass) || JsfJavaEditorSupport.class.equals(klass)) {
             return klass.cast(getJsfJavaEditorSupport());
         }else {
             return null;
