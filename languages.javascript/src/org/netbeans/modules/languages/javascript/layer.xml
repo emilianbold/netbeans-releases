@@ -102,6 +102,15 @@ made subject to such option by the copyright holder.
     <folder name="Editors">
         <folder name="text">
             <folder name="javascript">
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="FontAndColors.xml" url="FontAndColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
                 <folder name="Popup">
                     <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance">
                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
@@ -119,7 +128,7 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="900"/>
                     </file>        
-                    </folder>
+                </folder>
                 <folder name="FoldManager">
                     <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
                 </folder>
@@ -127,7 +136,12 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="1500"/>
                     </file>
-                    </folder>
+                </folder>
+                <folder name="UpToDateStatusProvider">
+                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                </folder>
                 <file name="Settings.settings" url="LanguagesOptions.settings"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
                 <file name="language.nbs" url="JavaScript.nbs">
@@ -135,10 +149,54 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
             <folder name="x-string">
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="FontAndColors.xml" url="FontAndColorsString.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
                 <file name="language.nbs" url="String.nbs"/>
+                <folder name="FoldManager">
+                    <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
+                </folder>
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                </folder>
+                <folder name="UpToDateStatusProvider">
+                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                </folder>
             </folder>
             <folder name="x-json">
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="FontAndColors.xml" url="FontAndColorsJSON.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+                <folder name="FoldManager">
+                    <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
+                </folder>
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                </folder>
+                <folder name="UpToDateStatusProvider">
+                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                </folder>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
                 <folder name="FoldManager">
                     <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
@@ -147,7 +205,12 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="1500"/>
                     </file>
-                    </folder>
+                </folder>
+                <folder name="UpToDateStatusProvider">
+                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                </folder>
                 <file name="Settings.settings" url="LanguagesOptions.settings"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
                 <file name="language.nbs" url="JSON.nbs">

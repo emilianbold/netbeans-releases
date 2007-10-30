@@ -53,6 +53,20 @@ made subject to such option by the copyright holder.
     <folder name="Editors">
         <folder name="text">
             <folder name="bat">
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="FontAndColors.xml" url="FontAndColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.bat.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+                <folder name="UpToDateStatusProvider">
+                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                </folder>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.bat.Bundle"/>
                 <file name="language.nbs" url="Bat.nbs">
                     <attr name="icon" stringvalue="org/netbeans/modules/languages/bat/bat_script_16.png"/>

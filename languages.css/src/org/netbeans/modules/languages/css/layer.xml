@@ -39,12 +39,61 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-css">
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="FontAndColors.xml" url="FontAndColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.css.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+                <folder name="FoldManager">
+                    <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
+                </folder>
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                </folder>
+                <folder name="UpToDateStatusProvider">
+                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                </folder>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.css.Bundle"/>
                 <file name="language.nbs" url="CSS.nbs">
                     <attr name="icon" stringvalue="org/netbeans/modules/languages/css/style_sheet_16.png"/>
                 </file>
             </folder>
             <folder name="x-css-inlined">
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="FontAndColors.xml" url="FontAndColorsInlinedCSS.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.css.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+                <folder name="FoldManager">
+                    <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
+                </folder>
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                </folder>
+                <folder name="UpToDateStatusProvider">
+                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                </folder>
+                <folder name="ToolTips">
+                    <file name="org-netbeans-modules-languages-features-ToolTipAnnotation.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                </folder>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.css.Bundle"/>
                 <file name="language.nbs" url="CSS_inlined.nbs">
                     <attr name="icon" stringvalue="org/netbeans/modules/languages/css/style_sheet_16.png"/>
