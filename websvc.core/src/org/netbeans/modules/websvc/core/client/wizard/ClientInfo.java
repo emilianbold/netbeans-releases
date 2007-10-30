@@ -725,7 +725,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             // Normalize selection, in case it's unspecified.
             Integer source = (Integer) d.getProperty(ClientWizardProperties.WSDL_SOURCE);
             if(source == null || source.intValue() < WSDL_FROM_PROJECT || source.intValue() > WSDL_FROM_URL) {
-                source = new Integer(WSDL_FROM_PROJECT);
+                source = Integer.valueOf(WSDL_FROM_PROJECT);
             }
             
             this.wsdlSource = source.intValue();

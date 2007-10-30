@@ -41,9 +41,11 @@
 
 package org.netbeans.modules.websvc.core.client.wizard;
 
-import java.io.*;
-import java.util.*;
 import java.awt.Component;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.NoSuchElementException;
+import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.websvc.core.ClientCreator;
@@ -107,7 +109,7 @@ public class WebServiceClientWizardIterator implements TemplateWizard.Iterator {
             assert c instanceof JComponent;
             JComponent jc = (JComponent)c;
             // Step #.
-            jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+            jc.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(i)); // NOI18N
             // Step name (actually the whole list for reference).
             jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
         }
@@ -118,11 +120,9 @@ public class WebServiceClientWizardIterator implements TemplateWizard.Iterator {
         panels = null;
     }
     
-    public Set/*FileObject*/ instantiate(TemplateWizard wiz) throws IOException {
+    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
         FileObject template = Templates.getTemplate( wiz );
         DataObject dTemplate = DataObject.find( template );                
-        // jax-rpc split
-        //new WebServiceClientCreator(project,wiz).create();
         ClientCreator creator = CreatorProvider.getClientCreator(project, wiz);
         if (creator!=null) creator.createClient();
                 

@@ -72,7 +72,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.netbeans.modules.j2ee.common.Util;
 import org.openide.util.Task;
 import org.netbeans.modules.websvc.core.ClientCreator;
 
@@ -101,7 +100,6 @@ public class JaxWsClientCreator implements ClientCreator {
     public void createClient() throws IOException {
         
         final boolean isJsr109Supported = isJsr109Supported();
-        final boolean isJsr109OldSupported = isJsr109OldSupported();
         final boolean isJWSDPSupported = isJWSDPSupported();
         
         // Use Progress API to display generator messages.
@@ -110,14 +108,8 @@ public class JaxWsClientCreator implements ClientCreator {
         task = new Task(new Runnable() {
             public void run() {
                 try {
-//                    String jaxVersion = (String) wiz.getProperty(ClientWizardProperties.JAX_VERSION);
-//                    if (jaxVersion.equals(WizardProperties.JAX_WS)) {
-                        handle.start();
-                        generate15Client((isJsr109Supported || isJWSDPSupported), handle);
-//                    } else {
-//                        handle.start(100);
-//                        generate14Client(handle);
-//                    }
+                    handle.start();
+                    generate15Client((isJsr109Supported || isJWSDPSupported), handle);
                 } catch (IOException exc) {
                     //finish progress bar
                     handle.finish();
