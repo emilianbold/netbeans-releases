@@ -44,9 +44,9 @@ package org.netbeans.modules.editor.java;
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
 
-import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Future;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.Types;
@@ -84,6 +84,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private CodeTemplateInsertRequest request;
 
     private CompilationInfo cInfo = null;
+    private Future<Void> initTask = null;
     private TreePath treePath = null;
     private Scope scope = null;
     private TypeElement enclClass = null;
@@ -562,59 +563,58 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         }
     }
     
-    private boolean initParsing() {
-        if (cInfo == null) {
+    private synchronized boolean initParsing() {
+        if (cInfo == null && initTask == null) {
             JTextComponent c = request.getComponent();
             final int caretOffset = c.getCaret().getDot();
             JavaSource js = JavaSource.forDocument(c.getDocument());
             if (js != null) {
                 try {
-                    if (SourceUtils.isScanInProgress()) {
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaCodeTemplateFilter.class, "JCT-scanning-in-progress")); //NOI18N
-                        Toolkit.getDefaultToolkit().beep();                        
-                    } else {
-                        js.runUserActionTask(new Task<CompilationController>() {
-                            
-                            public void run(final CompilationController controller) throws IOException {
-                                controller.toPhase(JavaSource.Phase.RESOLVED);
+                    initTask = js.runWhenScanFinished(new Task<CompilationController>() {
+
+                        public void run(final CompilationController controller) throws IOException {
+                            controller.toPhase(JavaSource.Phase.RESOLVED);
+                            synchronized(JavaCodeTemplateProcessor.this) {
                                 cInfo = controller;
-                                final TreeUtilities tu = cInfo.getTreeUtilities();
-                                treePath = tu.pathFor(caretOffset);
-                                scope = tu.scopeFor(caretOffset);
-                                enclClass = scope.getEnclosingClass();
-                                final boolean isStatic = enclClass != null ? tu.isStaticContext(scope) : false;
-                                if (enclClass == null) {
-                                    CompilationUnitTree cut = treePath.getCompilationUnit();
-                                    Iterator<? extends Tree> it = cut.getTypeDecls().iterator();
-                                    if (it.hasNext())
-                                        enclClass = (TypeElement)cInfo.getTrees().getElement(TreePath.getPath(cut, it.next()));
-                                }
-                                final Trees trees = controller.getTrees();
-                                final SourcePositions sp = trees.getSourcePositions();
-                                final Collection<? extends Element> illegalForwardRefs = Utilities.getForwardReferences(treePath, caretOffset, sp, trees);;
-                                final ExecutableElement method = scope.getEnclosingMethod();
-                                ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
-                                    public boolean accept(Element e, TypeMirror t) {
-                                        switch (e.getKind()) {
-                                        case LOCAL_VARIABLE:
-                                            if (isStatic && e.getSimpleName().contentEquals("this") || e.getSimpleName().contentEquals("super")) //NOI18N
-                                                return false;
-                                        case EXCEPTION_PARAMETER:
-                                        case PARAMETER:
-                                            return (method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&
-                                                    !illegalForwardRefs.contains(e);
-                                        case FIELD:
-                                            if (illegalForwardRefs.contains(e))
-                                                return false;
-                                        default:
-                                            return (!isStatic || e.getModifiers().contains(Modifier.STATIC)) && tu.isAccessible(scope, e, t);
-                                        }
-                                    }
-                                };
-                                locals = cInfo.getElementUtilities().getLocalMembersAndVars(scope, acceptor);
                             }
-                        },false);
-                    }
+                            final TreeUtilities tu = cInfo.getTreeUtilities();
+                            treePath = tu.pathFor(caretOffset);
+                            scope = tu.scopeFor(caretOffset);
+                            enclClass = scope.getEnclosingClass();
+                            final boolean isStatic = enclClass != null ? tu.isStaticContext(scope) : false;
+                            if (enclClass == null) {
+                                CompilationUnitTree cut = treePath.getCompilationUnit();
+                                Iterator<? extends Tree> it = cut.getTypeDecls().iterator();
+                                if (it.hasNext())
+                                    enclClass = (TypeElement)cInfo.getTrees().getElement(TreePath.getPath(cut, it.next()));
+                            }
+                            final Trees trees = controller.getTrees();
+                            final SourcePositions sp = trees.getSourcePositions();
+                            final Collection<? extends Element> illegalForwardRefs = Utilities.getForwardReferences(treePath, caretOffset, sp, trees);;
+                            final ExecutableElement method = scope.getEnclosingMethod();
+                            ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+                                public boolean accept(Element e, TypeMirror t) {
+                                    switch (e.getKind()) {
+                                    case LOCAL_VARIABLE:
+                                        if (isStatic && e.getSimpleName().contentEquals("this") || e.getSimpleName().contentEquals("super")) //NOI18N
+                                            return false;
+                                    case EXCEPTION_PARAMETER:
+                                    case PARAMETER:
+                                        return (method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&
+                                                !illegalForwardRefs.contains(e);
+                                    case FIELD:
+                                        if (illegalForwardRefs.contains(e))
+                                            return false;
+                                    default:
+                                        return (!isStatic || e.getModifiers().contains(Modifier.STATIC)) && tu.isAccessible(scope, e, t);
+                                    }
+                                }
+                            };
+                            locals = cInfo.getElementUtilities().getLocalMembersAndVars(scope, acceptor);
+                        }
+                    },false);
+                    if (!initTask.isDone())
+                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaCodeTemplateFilter.class, "JCT-scanning-in-progress")); //NOI18N
                 } catch(IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
