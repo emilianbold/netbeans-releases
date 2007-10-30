@@ -50,8 +50,10 @@ import javax.swing.text.Document;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManager.State;
+import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.modules.languages.Feature;
 
 
@@ -124,6 +126,8 @@ public class ContextASTEvaluator extends ASTEvaluator {
     }
 
     public void evaluate (State state, List<ASTItem> path, Feature feature) {
+        SyntaxContext sc = SyntaxContext.create (document, ASTPath.create (path));
+        if (!feature.getBoolean ("condition", sc, true)) return;
         String type = (String) feature.getValue ("type");
         ASTItem leaf = path.get (path.size () - 1);
         DatabaseContext context = getCurrentContext (document, leaf.getOffset ());

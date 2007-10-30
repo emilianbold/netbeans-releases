@@ -96,10 +96,10 @@ public class DeclarationASTEvaluator extends ASTEvaluator {
 
     public void evaluate (State state, List<ASTItem> path, Feature feature) {
         SyntaxContext sc = SyntaxContext.create (document, ASTPath.create (path));
+        if (!feature.getBoolean ("condition", sc, true)) return;
         String name = ((String) feature.getValue ("name", sc)).trim ();
         String type = (String) feature.getValue ("type", sc);
         if (name != null && name.length() > 0) {
-            //S ystem.out.println("add " + name + " " + item);
             String local = (String) feature.getValue ("local", sc);
             ASTItem leaf = path.get (path.size () - 1);
             DatabaseContext context = ContextASTEvaluator.getCurrentContext (document, leaf.getOffset ());
@@ -117,10 +117,15 @@ public class DeclarationASTEvaluator extends ASTEvaluator {
                     con = context;
                 }
             }
-            DatabaseDefinition databaseDefinition = new DatabaseDefinition (name, type, leaf.getOffset (), leaf.getEndOffset ());
-            con.addDefinition (databaseDefinition);
-//            System.out.println("add " + databaseDefinition + " to " + con);
-            UsagesASTEvaluator.addDatabaseDefinition (document, databaseDefinition);
+            DatabaseDefinition original = con.getDefinition (name, leaf.getOffset ());
+            if (original != null) {
+                original.addUsage (new DatabaseUsage(name, leaf.getOffset (), leaf.getEndOffset ()));
+            } else {
+                DatabaseDefinition definition = new DatabaseDefinition (name, type, leaf.getOffset (), leaf.getEndOffset ());
+                con.addDefinition (definition);
+                //S ystem.out.println("add " + definition + " to " + con);
+                UsagesASTEvaluator.addDatabaseDefinition (document, definition);
+            }
         }
     }
 

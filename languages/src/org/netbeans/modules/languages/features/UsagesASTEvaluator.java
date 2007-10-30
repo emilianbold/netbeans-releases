@@ -108,6 +108,7 @@ class UsagesASTEvaluator extends ASTEvaluator {
     }
     
     private List<DatabaseItem> unresolvedUsages;
+    private List<Boolean> unresolvedUsages_declaration_precedes_ussage;
 
     public void beforeEvaluation (State state, ASTNode root) {
         unresolvedUsages = null;
@@ -117,16 +118,20 @@ class UsagesASTEvaluator extends ASTEvaluator {
     public void afterEvaluation (State state, ASTNode root) {
         if (unresolvedUsages != null) {
             Iterator<DatabaseItem> it = unresolvedUsages.iterator ();
+            Iterator<Boolean> it2 = unresolvedUsages_declaration_precedes_ussage.iterator ();
             while (it.hasNext ()) {
                 if (parserManager != null && parserManager.getState () == State.PARSING)
                     return;
                 DatabaseUsage usage = (DatabaseUsage) it.next ();
                 DatabaseContext context = (DatabaseContext) it.next ();
+                boolean declaration_precedes_ussage = it2.next ();
                 DatabaseDefinition definition = context.getDefinition (
                     usage.getName (), 
                     usage.getOffset ()
                 );
+                //S ystem.out.println("add2 " + usage + " (" + definition + ") to " + context);
                 if (definition != null) {
+                    if (declaration_precedes_ussage && definition.getOffset () > usage.getOffset ()) continue;
                     definition.addUsage (usage);
                     context.addUsage (usage);
                     usage.setDatabaseDefinition (definition);
@@ -147,10 +152,14 @@ class UsagesASTEvaluator extends ASTEvaluator {
 
     public void evaluate (State state, List<ASTItem> path, Feature feature) {
         SyntaxContext sc = SyntaxContext.create (document, ASTPath.create (path));
+        if (!feature.getBoolean ("condition", sc, true)) return;
         ASTItem leaf = path.get (path.size () - 1);
         DatabaseContext context = ContextASTEvaluator.getCurrentContext (document, leaf.getOffset ());
-        String name = (String) feature.getValue ("name", sc);
+        String name = ((String) feature.getValue ("name", sc)).trim ();
+        boolean declaration_precedes_ussage = feature.getBoolean ("declaration_precedes_ussage", true);
         DatabaseDefinition definition = context.getDefinition (name, leaf.getOffset ());
+        if (definition != null && definition.getOffset () == leaf.getOffset ()) return;
+        if (definition != null && declaration_precedes_ussage && definition.getOffset () > leaf.getOffset ()) return;
         DatabaseUsage usage = new DatabaseUsage (name, leaf.getOffset (), leaf.getEndOffset ());
         //S ystem.out.println("add " + usage + " (" + definition + ") to " + context);
         if (definition != null) {
@@ -163,10 +172,13 @@ class UsagesASTEvaluator extends ASTEvaluator {
                 definitions.remove (definition);
             }
         } else {
-            if (unresolvedUsages == null)
+            if (unresolvedUsages == null) {
                 unresolvedUsages = new ArrayList<DatabaseItem> ();
+                unresolvedUsages_declaration_precedes_ussage = new ArrayList<Boolean> ();
+            }
             unresolvedUsages.add (usage);
             unresolvedUsages.add (context);
+            unresolvedUsages_declaration_precedes_ussage.add (declaration_precedes_ussage);
         }
     }
 
