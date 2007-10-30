@@ -304,7 +304,7 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
         
         ListBuffer<JCTree> bridges = new ListBuffer<JCTree>();
         DiagnosticPosition pos = new SimpleDiagnosticPosition(-1);
-//        trans.addBridges(pos, sym, bridges);
+        trans.getBridges(pos, sym, bridges);
         
         for (JCTree bridge : bridges) {
             if (bridge.getKind() == Tree.Kind.METHOD) {
