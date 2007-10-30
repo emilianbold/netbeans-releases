@@ -76,6 +76,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
+import javax.swing.plaf.UIResource;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -233,7 +234,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             }
             initialized = true;
     }
-    private static class JLabelRenderer extends JLabel implements ListCellRenderer {
+    private static class JLabelRenderer extends JLabel implements ListCellRenderer, UIResource {
         public JLabelRenderer () {
             setOpaque(true);
         }
@@ -261,6 +262,13 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             }
             
             return this;
+        }
+        
+        // #89393: GTK needs name to render cell renderer "natively"
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;  // NOI18N
         }
     }
     
