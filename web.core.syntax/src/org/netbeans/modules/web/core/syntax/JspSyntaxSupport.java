@@ -430,8 +430,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         }//eof JSP tag
         
         if(tcp.contains(ELTokenContext.contextPath)) {
-            //we are in expression language - we do not provide any code completion so far
-            if (visible) return COMPLETION_HIDE;
+            if(first == '.') {
+                return COMPLETION_POPUP;
+            }
         }
         
         return COMPLETION_HIDE;
