@@ -74,6 +74,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.transform.TransformerFactory;
@@ -182,6 +184,9 @@ public class ConfiguredTest extends TestCase {
         mSoapConnFactory = SOAPConnectionFactory.newInstance();
         mConnection = mSoapConnFactory.createConnection();
         mMessageFactory = MessageFactory.newInstance();
+        
+        // #114295 Disable warning message for NB 6.0
+        Logger.getLogger("org.netbeans.modules.editor.impl.KitsTracker").setLevel(Level.SEVERE);
         
         // TEST
         //System.setProperty ("sun.net.client.defaultReadTimeout", "2000");
