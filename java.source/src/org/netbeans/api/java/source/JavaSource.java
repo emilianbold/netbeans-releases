@@ -379,7 +379,9 @@ public final class JavaSource {
             }
             DataObject od = DataObject.find(fileObject);
             
-            if (od.getLookup().lookup(CloneableEditorSupport.class) == null) {
+            EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
+            
+            if (!(ec instanceof CloneableEditorSupport)) {
                 return null;
             }
         } catch (FileStateInvalidException ex) {
