@@ -21,7 +21,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="templateNameCheckBox" pref="371" max="32767" attributes="0"/>
+                      <Component id="templateNameCheckBox" pref="373" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="39" max="-2" attributes="0"/>
@@ -35,7 +35,7 @@
                               <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
                               <Component id="stereotypeLabel" min="-2" pref="53" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="stereotypeValue" pref="121" max="32767" attributes="0"/>
+                              <Component id="stereotypeValue" pref="112" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
@@ -74,9 +74,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="elementTypeLabel">
       <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Tahoma" size="10" style="2"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/uml/codegen/ui/customizer/Bundle.properties" key="LBL_ElementType" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -84,17 +81,11 @@
     </Component>
     <Component class="javax.swing.JLabel" name="elementTypeValue">
       <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Tahoma" size="10" style="2"/>
-        </Property>
         <Property name="text" type="java.lang.String" value="&lt;elementType&gt;"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="stereotypeLabel">
       <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Tahoma" size="10" style="2"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/uml/codegen/ui/customizer/Bundle.properties" key="LBL_Stereotype" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -102,9 +93,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="stereotypeValue">
       <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Tahoma" size="10" style="2"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/uml/codegen/ui/customizer/Bundle.properties" key="LBL_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
