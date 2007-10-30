@@ -45,6 +45,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -566,7 +567,8 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
             if (o instanceof JavaElement) {
                 String filterText = filterTextField.getText();
                 if (Utils.patternMatch((JavaElement)o, filterText, filterText.toLowerCase())) {
-                    javaHierarchyTree.setSelectionRow(row);                    
+                    javaHierarchyTree.setSelectionRow(row);
+                    javaHierarchyTree.scrollRowToVisible(row);
                     return;
                 }
             }
