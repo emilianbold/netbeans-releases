@@ -94,7 +94,11 @@ public class JspUtils {
         return "text/x-java"; // NOI18N
     }
     
+    /**
+     * @param fo A FileObject representing a JSP like file.
+     */
     public static JSPColoringData getJSPColoringData (Document doc, FileObject fo) {
+        //TODO: assert that the fo really represents a JSP like file
         JSPColoringData result = null;
         if (doc != null && fo != null && fo.isValid()){
             JspContextInfo context = JspContextInfo.getContextInfo (fo);
@@ -104,16 +108,32 @@ public class JspUtils {
         return result;
     }
     
+    /** 
+     * @param fo A FileObject representing a JSP like file.
+     */
     public static JspParserAPI.ParseResult getCachedParseResult(Document doc, FileObject fo, boolean successfulOnly, boolean preferCurrent, boolean forceParse) {
-        return JspContextInfo.getContextInfo (fo).getCachedParseResult (doc, fo, successfulOnly, preferCurrent);
+        //TODO: assert that the fo really represents a JSP like file
+        JspContextInfo contextInfo = JspContextInfo.getContextInfo(fo);
+        if(contextInfo == null) {
+            return null;
+        } else {
+            return contextInfo.getCachedParseResult(doc, fo, successfulOnly, preferCurrent);
+        }
     }
     
+    /** 
+     * @param fo A FileObject representing a JSP like file.
+     */
     public static JspParserAPI.ParseResult getCachedParseResult(Document doc, FileObject fo, boolean successfulOnly, boolean preferCurrent) {
         return getCachedParseResult(doc, fo, successfulOnly, preferCurrent, false);
     }
     
+    /** 
+     * @param fo A FileObject representing a JSP like file.
+     */
     public static URLClassLoader getModuleClassLoader(Document doc, FileObject fo) {
-        return JspContextInfo.getContextInfo (fo).getModuleClassLoader (doc, fo);
+        //TODO: assert that the fo really represents a JSP like file
+        return JspContextInfo.getContextInfo(fo).getModuleClassLoader(doc, fo);
     }
     
     /** Returns the root of the web module containing the given file object.
@@ -128,6 +148,7 @@ public class JspUtils {
      *   is not on the path from resource to the root
      */
     public static FileObject guessWebModuleRoot (Document doc, FileObject fo) {
+        //TODO: assert that the fo really represents a JSP like file
         return JspContextInfo.getContextInfo (fo).guessWebModuleRoot (doc, fo);
     }
     
@@ -135,6 +156,7 @@ public class JspUtils {
      * Returns null in case of a failure (exception, no web module, no parser etc.)
      */
     public static Map getTaglibMap(Document doc, FileObject fo) {
+        //TODO: assert that the fo really represents a JSP like file
         return JspContextInfo.getContextInfo (fo).getTaglibMap (doc, fo);
     }
     
