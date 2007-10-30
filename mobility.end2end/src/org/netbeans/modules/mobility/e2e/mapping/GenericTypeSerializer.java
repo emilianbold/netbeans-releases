@@ -292,7 +292,8 @@ public class GenericTypeSerializer implements JavonSerializer {
             } else {
                 String serializationCode = "";
                 serializationCode += "int g_" + id + "_length = in.readInt();\n";
-                serializationCode += genericsType + " g_" + id + "_result = new " + genericsType + "();\n";
+                serializationCode += genericsType + " g_" + id + "_result = new ArrayList<" + 
+                        parameterType.getSerializer().instanceOf( mapping, parameterType ) + ">();\n";
                 serializationCode += "for( int i = 0; i < g_" + id + "_length; i++ ) {\n";
                 serializationCode += "g_" + id + "_result.add((" + parameterType.getSerializer().instanceOf( mapping, parameterType ) + ") readObject( in ));\n";
                 serializationCode += "}\n";

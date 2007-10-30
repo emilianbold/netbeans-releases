@@ -179,16 +179,23 @@ public class ProxyGenerator {
                     serviceClassName = service.getJavaName();
                     portGetterName = wsdlPort.getPortGetter();
                     portClassName = wsdlPort.getJavaName();
-                    org.netbeans.modules.mobility.e2e.classdata.ClassData cd = registry.getClassData( wsdlPort.getJavaName());
-                    servicePackage = cd.getPackage();
-                    for( Node operationNode : portNode.getChildren().getNodes()) {
-                        WsdlOperation wsdlOperation = operationNode.getLookup().lookup( WsdlOperation.class );
-                        org.netbeans.modules.mobility.e2e.classdata.MethodData methodData = null;
-                        for( org.netbeans.modules.mobility.e2e.classdata.MethodData md : cd.getMethods()) {
-                            if( md.getName().equals( wsdlOperation.getJavaName())) {
-                                methodList.add( md );
+                    if( portClassName.equals( pd.getType())) {
+                        org.netbeans.modules.mobility.e2e.classdata.ClassData cd = registry.getClassData( wsdlPort.getJavaName());
+                        servicePackage = cd.getPackage();
+                        for( Node operationNode : portNode.getChildren().getNodes()) {
+                            WsdlOperation wsdlOperation = operationNode.getLookup().lookup( WsdlOperation.class );
+                            org.netbeans.modules.mobility.e2e.classdata.MethodData methodData = null;
+                            for( org.netbeans.modules.mobility.e2e.classdata.MethodData md : cd.getMethods()) {
+                                if( md.getName().equals( wsdlOperation.getJavaName())) {
+                                    for( OperationData op : pd.getOperations()) {
+                                        if( md.getName().equals( op.getMethodName())) {
+                                            methodList.add( md );
+                                        }
+                                    }
+                                }
                             }
                         }
+                        break;
                     }
                 }
             }
