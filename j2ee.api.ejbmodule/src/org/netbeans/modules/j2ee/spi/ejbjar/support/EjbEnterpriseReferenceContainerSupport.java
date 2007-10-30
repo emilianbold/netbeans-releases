@@ -42,6 +42,8 @@
 package org.netbeans.modules.j2ee.spi.ejbjar.support;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -149,7 +151,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
                         return ejbRefName;
                     }
                     if (local) {
-                        refName = getUniqueName(model, Ejb.EJB_LOCAL_REF, EjbRef.EJB_REF_NAME, ejbRefName);
+                        refName = getUniqueEjbLocalRefName(model, ejbRefName);
                         EjbLocalRef ejbRef = model.newEjbLocalRef();
                         ejbRef.setEjbRefName(refName);
                         ejbRef.setEjbRefType(ejbReference.getEjbRefType());
@@ -160,7 +162,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
                         }
                         model.addEjbLocalRef(ejbRef);
                     } else {
-                        refName = getUniqueName(model, Ejb.EJB_REF, EjbRef.EJB_REF_NAME, ejbRefName);
+                        refName = getUniqueEjbRefName(model, ejbRefName);
                         EjbRef ejbRef = model.newEjbRef();
                         ejbRef.setEjbRefName(refName);
                         ejbRef.setEjbRefType(ejbReference.getEjbRefType());
@@ -236,7 +238,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
                     String resourceRefName = ref.getResRefName();
                     if (javax.sql.DataSource.class.getName().equals(ref.getResType())) {
                         if (!isJdbcConnectionAlreadyUsed(ejb, ref)) {
-                            resourceRefName = getUniqueName(ejb, Ejb.RESOURCE_REF, ResourceRef.RES_REF_NAME,ref.getResRefName());
+                            resourceRefName = getUniqueResRefName(ejb, ref.getResRefName());
                             ResourceRef resourceRef = ejb.newResourceRef();
                             EnterpriseReferenceSupport.populate(ref, resourceRefName, resourceRef);
                             ejb.addResourceRef(resourceRef);
@@ -244,7 +246,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
                         }
                     } else {
                         if (!isResourceRefUsed(ejb, ref)) {
-                            resourceRefName = getUniqueName(ejb, Ejb.RESOURCE_REF, ResourceRef.RES_REF_NAME,ref.getResRefName());
+                            resourceRefName = getUniqueResRefName(ejb, ref.getResRefName());
                             ResourceRef resourceRef = ejb.newResourceRef();
                             EnterpriseReferenceSupport.populate(ref, resourceRefName, resourceRef);
                             ejb.addResourceRef(resourceRef);
@@ -281,14 +283,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
                         Logger.getLogger("global").log(Level.INFO, null, ex);
                     }
                     
-                    String destinationRefName = getUniqueName(
-                            
-                            
-                            
-                            ejb,
-                            Ejb.MESSAGE_DESTINATION_REF,
-                            MessageDestinationRef.MESSAGE_DESTINATION_REF_NAME,ref.getMessageDestinationRefName()
-                            );
+                    String destinationRefName = getUniqueMessageDestRefName(ejb, ref.getMessageDestinationRefName());
                     try {
                         MessageDestinationRef messageDestinationRef = ejb.newMessageDestinationRef();
                         EnterpriseReferenceSupport.populate(ref, destinationRefName, messageDestinationRef);
@@ -341,13 +336,49 @@ public final class EjbEnterpriseReferenceContainerSupport {
             return false;
         }
         
-        private String getUniqueName(Ejb bean, String beanName, String property, String originalValue) {
+        private String getUnigueName(Set<String> existingNames, String originalValue) {
             String proposedValue = originalValue;
             int index = 1;
-            while (bean.findBeanByName(beanName, property, proposedValue) != null) {
-                proposedValue = originalValue+Integer.toString(index++);
+            while (existingNames.contains(proposedValue)) {
+                proposedValue = originalValue + Integer.toString(index++);
             }
             return proposedValue;
+        }
+        
+        private String getUniqueResRefName(Ejb bean, String originalValue) {
+            Set<String> resRefNames = new HashSet<String>();
+            for (ResourceRef resourceRef : bean.getResourceRef()) {
+                resRefNames.add(resourceRef.getResRefName());
+            }
+            return getUnigueName(resRefNames, originalValue);
+        }
+        
+        private String getUniqueEjbRefName(Ejb bean, String originalValue) {
+            Set<String> ejbRefNames = new HashSet<String>();
+            for (EjbRef ejbRef : bean.getEjbRef()) {
+                ejbRefNames.add(ejbRef.getEjbRefName());
+            }
+            return getUnigueName(ejbRefNames, originalValue);
+        }
+        
+        private String getUniqueEjbLocalRefName(Ejb bean, String originalValue) {
+            Set<String> ejbLocalRefNames = new HashSet<String>();
+            for (EjbLocalRef ejbLocalRef : bean.getEjbLocalRef()) {
+                ejbLocalRefNames.add(ejbLocalRef.getEjbRefName());
+            }
+            return getUnigueName(ejbLocalRefNames, originalValue);
+        }
+        
+        private String getUniqueMessageDestRefName(Ejb bean, String originalValue) {
+            Set<String> messageDestRefNames = new HashSet<String>();
+            try {
+                for (MessageDestinationRef messageDestRef : bean.getMessageDestinationRef()) {
+                    messageDestRefNames.add(messageDestRef.getMessageDestinationRefName());
+                }
+            } catch (VersionNotSupportedException vnse) {
+                Exceptions.printStackTrace(vnse);
+            }
+            return getUnigueName(messageDestRefNames, originalValue);
         }
         
         private static boolean isDescriptorMandatory(String j2eeVersion) {

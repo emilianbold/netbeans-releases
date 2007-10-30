@@ -138,21 +138,21 @@ public class SendEmailAction extends NodeAction {
         if (option == NotifyDescriptor.OK_OPTION) {
             try {
                 
-                // TODO: for now I am leaving explicit creation of resource element in model here,
-                // because model builder doesn't handle @Resource annotation.
-                // Later it should be conditional - disabled for Java EE 5 projects
-                // and it should be autodiscovered by annotation listening.
-                String jndiName = generateJNDILookup(sendEmailPanel.getJndiName(), erc, srcFile, beanClass.getQualifiedName());
-                if (jndiName != null) {
-                    String serviceLocator = sendEmailPanel.getServiceLocator();
-                    ServiceLocatorStrategy serviceLocatorStrategy = null;
-                    if (serviceLocator != null) {
-                        serviceLocatorStrategy = ServiceLocatorStrategy.create(enterpriseProject, srcFile, serviceLocator);
-                    }
-                    generateMethods(enterpriseProject, srcFile, beanClass.getQualifiedName(), jndiName, sendEmailPanel.getJndiName(), serviceLocatorStrategy);
-                    if (serviceLocator != null) {
-                        erc.setServiceLocatorName(serviceLocator);
-                    }
+                String serviceLocator = sendEmailPanel.getServiceLocator();
+                ServiceLocatorStrategy serviceLocatorStrategy = null;
+                if (serviceLocator != null) {
+                    serviceLocatorStrategy = ServiceLocatorStrategy.create(enterpriseProject, srcFile, serviceLocator);
+                }
+                generateMethods(
+                        enterpriseProject, 
+                        srcFile, 
+                        beanClass.getQualifiedName(), 
+                        Utils.isJavaEE5orHigher(enterpriseProject) ? null : generateJNDILookup(sendEmailPanel.getJndiName(), erc, srcFile, beanClass.getQualifiedName()), 
+                        sendEmailPanel.getJndiName(), 
+                        serviceLocatorStrategy
+                        );
+                if (serviceLocator != null) {
+                    erc.setServiceLocatorName(serviceLocator);
                 }
             } catch (IOException ioe) {
                 NotifyDescriptor ndd = new NotifyDescriptor.Message(ioe.getMessage(),
@@ -185,6 +185,7 @@ public class SendEmailAction extends NodeAction {
         return erc.addResourceRef(resourceReference, fileObject, className);
     }
     
+    // jndiName is ignored for Java EE 5, simpleName is used
     private void generateMethods(Project project, FileObject fileObject, String className, 
             String jndiName, String simpleName, ServiceLocatorStrategy slStrategy) throws IOException{
         String memberName = _RetoucheUtil.uniqueMemberName(fileObject, className, simpleName, "mailResource"); //NOI18N
