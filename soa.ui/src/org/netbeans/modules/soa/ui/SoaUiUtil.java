@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.RootPaneContainer;
 import org.openide.filesystems.FileObject;
+import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
 import org.netbeans.modules.soa.ui.form.InitialFocusProvider;
 import org.openide.cookies.SaveCookie;
@@ -299,7 +300,9 @@ public class SoaUiUtil {
       try {
         document.insertString(19, " encoding=\"" + encoding + "\"", null);
       }
-      catch (BadLocationException e) {}
+      catch (BadLocationException e) {
+        ErrorManager.getDefault().notify(e);
+      }
 
       SaveCookie save = data.getCookie(SaveCookie.class);
       
