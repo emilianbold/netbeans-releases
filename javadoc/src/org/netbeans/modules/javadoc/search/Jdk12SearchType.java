@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,33 +41,22 @@
 
 package org.netbeans.modules.javadoc.search;
 
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectOutputStream;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 import org.openide.filesystems.FileObject;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /* Base class providing search for JDK1.2/1.3 documentation
  * @author Petr Hrebejk, Petr Suchomel
  */
-public class Jdk12SearchType extends JavadocSearchType {
+public class Jdk12SearchType extends JavadocSearchType implements Serializable{
 
     private boolean caseSensitive = true;
 
     /** generated Serialized Version UID */
-    static final long serialVersionUID =-2453877778724454324L;
-
-    /** Returns human presentable name
-     * @return human presentable name
-    */
-    public String displayName() {
-        return NbBundle.getBundle( Jdk12SearchType.class ).getString("CTL_Jdk12_search_eng");   //NOI18N
-    }
-
-    /** Returns HelpCtx
-     * @return help
-     */    
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (Jdk12SearchType.class);
-    }
+    private static final long serialVersionUID = -2453877778724454324L;
     
     /** Getter for property caseSensitive.
      * @return Value of property caseSensitive.
@@ -82,7 +71,7 @@ public class Jdk12SearchType extends JavadocSearchType {
     public void setCaseSensitive(boolean caseSensitive) {
         boolean oldVal = this.caseSensitive;
         this.caseSensitive = caseSensitive;
-        this.firePropertyChange("caseSensitive", oldVal ? Boolean.TRUE : Boolean.FALSE, caseSensitive ? Boolean.TRUE : Boolean.FALSE);   //NOI18N
+//        this.firePropertyChange("caseSensitive", oldVal ? Boolean.TRUE : Boolean.FALSE, caseSensitive ? Boolean.TRUE : Boolean.FALSE);   //NOI18N
     }
 
     public FileObject getDocFileObject( FileObject apidocRoot ) {
@@ -116,4 +105,43 @@ public class Jdk12SearchType extends JavadocSearchType {
         //XXX returns always true, must be the last JavadocType
         return true;
     }
+    
+    /**
+     * Replaces old serialized service type with a dummy instance to prevent
+     * exceptions from the Lookup
+     */
+    @Deprecated
+    protected final Object readResolve() throws ObjectStreamException {
+        // replace old serializable component with dummy instance
+        // to prevent exceptions from the Lookup
+        return new JavadocSearchType() {
+
+            @Override
+            public FileObject getDocFileObject(FileObject apidocRoot) {
+                return null;
+            }
+
+            @Override
+            public IndexSearchThread getSearchThread(String toFind,
+                    FileObject fo,
+                    IndexSearchThread.DocIndexItemConsumer diiConsumer) {
+                
+                return null;
+            }
+
+            @Override
+            public boolean accepts(FileObject apidocRoot, String encoding) {
+                return false;
+            }
+        };
+    }
+
+    /**
+     * Warns not to serialize it.
+     */
+    @Deprecated
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        throw new NotSerializableException(this.getClass().getName());
+    }
+
 }

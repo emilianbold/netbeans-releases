@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.javadoc.search;
 
+import java.awt.EventQueue;
 import java.io.Externalizable;
 import java.io.ObjectStreamException;
 import java.net.URL;
@@ -149,7 +150,7 @@ public final class IndexSearch
         splitPanel = new JSplitPane (JSplitPane.VERTICAL_SPLIT);
         splitPanel.setPreferredSize(PREFFERED_SIZE);
         
-        splitPanel.setDividerLocation(oldSplit / 100.0);
+        //splitPanel.setDividerLocation(oldSplit / 100.0);
         //previous line does not work
         //setDividerLocation must be set in open
         setDividerLocation = true;
@@ -215,8 +216,8 @@ public final class IndexSearch
         byReferenceButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/refSort.gif"))); // NOI18N
         byTypeButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/typeSort.gif"))); // NOI18N
         byNameButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/alphaSort.gif"))); // NOI18N
-        quickViewButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/list_html.gif"))); // NOI18N
-        quickViewButton.setSelectedIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/list_only.gif"))); // NOI18N
+        quickViewButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/list_only.gif"))); // NOI18N
+        quickViewButton.setSelectedIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/list_html.gif"))); // NOI18N
 
         javax.swing.ButtonGroup bg = new javax.swing.ButtonGroup();
         bg.add( byReferenceButton );
@@ -247,6 +248,7 @@ public final class IndexSearch
         Mnemonics.setLocalizedText(helpButton, NbBundle.getMessage(IndexSearch.class,"CTL_SEARCH_ButtonHelp"));
         
         initAccessibility();
+        resolveButtonState();
     }
     
     public int getPersistenceType() {
@@ -603,6 +605,7 @@ public final class IndexSearch
     }
 
 
+    @Override
     public void open() {
         super.open();
 
@@ -617,8 +620,25 @@ public final class IndexSearch
         searchComboBox.getEditor().selectAll();
         
         if (setDividerLocation) {
-            splitPanel.setDividerLocation(oldSplit / 100.0);
             setDividerLocation = false;
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    splitPanel.setDividerLocation(oldSplit / 100.0);
+                }
+            });
+        }
+    }
+
+    @Override
+    protected void componentClosed() {
+        super.componentClosed();
+        if (!quickViewButton.isSelected()) {
+            int split = ds.getIdxSearchSplit();
+            double proportional = (double) splitPanel.getDividerLocation() / (splitPanel.getHeight() - splitPanel.getDividerSize());
+            final int currSplit = (int) (proportional * 100.0);
+            if (split != currSplit) {
+                ds.setIdxSearchSplit(currSplit);
+            }
         }
     }
 
@@ -640,23 +660,13 @@ public final class IndexSearch
 
     public void resolveButtonState() {
 
-        final String sort = ds.getIdxSearchSort();
+        currentSort = ds.getIdxSearchSort();
         final boolean noHtml = ds.isIdxSearchNoHtml();
-        final int split = ds.getIdxSearchSplit();
 
-        currentSort = sort;
-
-        javax.swing.SwingUtilities.invokeLater( new Runnable() {
-                                                    public void run() {
-                                                        byNameButton.setSelected( sort.equals( "A" ) ); // NOI18N
-                                                        byReferenceButton.setSelected( sort.equals( "R" ) ); // NOI18N
-                                                        byTypeButton.setSelected( sort.equals( "T" ) ); // NOI18N
-
-                                                        quickViewButton.setSelected( !noHtml );
-
-                                                        splitPanel.setDividerLocation(split / 100.0);
-                                                    }
-                                                } );
+        byNameButton.setSelected(currentSort.equals("A")); // NOI18N
+        byReferenceButton.setSelected(currentSort.equals("R")); // NOI18N
+        byTypeButton.setSelected(currentSort.equals("T")); // NOI18N
+        quickViewButton.setSelected(!noHtml);
     }
     
     /**

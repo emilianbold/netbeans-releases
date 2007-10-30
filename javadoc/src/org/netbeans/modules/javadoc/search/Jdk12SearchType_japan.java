@@ -47,8 +47,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 
 /* Base class providing search for JDK1.2/1.3 documentation
@@ -56,29 +54,15 @@ import org.openide.filesystems.FileObject;
  *
  * @author Petr Hrebejk, Petr Suchomel
  */
-public class Jdk12SearchType_japan extends Jdk12SearchType {
+public final class Jdk12SearchType_japan extends Jdk12SearchType {
 
     private String  japanEncoding;
 
     /** generated Serialized Version UID */
-    static final long serialVersionUID =-2453877778724454324L;
+    private static final long serialVersionUID =-2453877778724454324L;
     
     private static final String JDK12_ALLCLASSES_JA = "\u3059\u3079\u3066\u306e\u30af\u30e9\u30b9"; // NOI18N
 
-    /** Returns human presentable name
-     * @return human presentable name
-    */
-    public String displayName() {
-        return NbBundle.getBundle( Jdk12SearchType_japan.class ).getString("CTL_Jdk12_search_eng_ja");   //NOI18N
-    }
-
-    /** Returns HelpCtx
-     * @return help
-     */    
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (Jdk12SearchType_japan.class);
-    }
-    
     /** Getter for property encoding.
      * @return Value of property encoding.
     */
@@ -92,7 +76,7 @@ public class Jdk12SearchType_japan extends Jdk12SearchType {
     public void setJapanEncoding(java.lang.String japanEncoding) {
         String old = this.japanEncoding;
         this.japanEncoding = japanEncoding;
-        firePropertyChange("japanEncoding", old, japanEncoding);   //NOI18N
+//        firePropertyChange("japanEncoding", old, japanEncoding);   //NOI18N
     }    
         
     /** Returns Java doc search thread for doument
@@ -102,11 +86,13 @@ public class Jdk12SearchType_japan extends Jdk12SearchType {
      * @return IndexSearchThread
      * @see IndexSearchThread
      */    
+    @Override
     public IndexSearchThread getSearchThread( String toFind, FileObject fo, IndexSearchThread.DocIndexItemConsumer diiConsumer ){
         //here you can send one more parameter .. getJapanEncoding
         return new SearchThreadJdk12_japan ( toFind, fo, diiConsumer, isCaseSensitive(), getJapanEncoding() );
     }    
 
+    @Override
     public boolean accepts(org.openide.filesystems.FileObject root, String encoding) {
         if (encoding == null) {
             return false;

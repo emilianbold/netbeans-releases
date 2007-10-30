@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,7 +45,6 @@ import java.util.*;
 import java.util.regex.*;
 
 import org.openide.filesystems.FileObject;
-import org.openide.ServiceType;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 
@@ -56,10 +55,7 @@ import org.openide.ErrorManager;
  * @author  Petr Suchomel
  * @version 1.1
  */
-public abstract class JavadocSearchType extends ServiceType {
-
-    /** generated Serialized Version UID */
-    static final long serialVersionUID =-7643543247564581246L;
+public abstract class JavadocSearchType {
 
     /** Tries to find javadoc index files in given directory
      * @param apidocRoot Folder where to look for index files where to find index files
