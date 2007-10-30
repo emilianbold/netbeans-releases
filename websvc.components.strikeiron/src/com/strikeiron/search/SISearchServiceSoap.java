@@ -24,7 +24,7 @@
  * Contributor(s):
  * 
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  * 
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package com.strikeiron.search;
 
 import javax.jws.WebMethod;
