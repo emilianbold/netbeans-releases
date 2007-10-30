@@ -58,7 +58,6 @@ import org.openide.util.Lookup;
  *
  * @author Vladimir Kvashin
  */
-
 public abstract class AbstractCsmNode extends AbstractNode {
 
     public AbstractCsmNode(Children children, Lookup lookup) {
@@ -71,11 +70,20 @@ public abstract class AbstractCsmNode extends AbstractNode {
     
     public abstract CsmObject getCsmObject();
 
+    @Override
     public Image getIcon(int param) {
-	CsmObject csmObj = getCsmObject();
-        return (csmObj == null) ? super.getIcon(param) : CsmImageLoader.getImage(csmObj);
+        try {
+            CsmObject csmObj = getCsmObject();
+            return (csmObj == null) ? super.getIcon(param) : CsmImageLoader.getImage(csmObj);
+        } catch (AssertionError ex){
+            ex.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return super.getIcon(param);
     }
     
+    @Override
     public Image getOpenedIcon(int param) {
         return getIcon(param);
     }
