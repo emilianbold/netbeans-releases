@@ -69,6 +69,8 @@ import org.openide.util.test.MockLookup;
  * @author quynguyen
  */
 public class SetupUtils {
+    private static DataLoader jspLoader = null;
+    private static DataLoader javaLoader = null;
     
     public static Project setup(File workDir) throws IOException {
         File userDir = new File(workDir, "userdir");
@@ -79,9 +81,15 @@ public class SetupUtils {
         DataLoaderPool pool = new SetupUtils.DefaultPool();
         MockLookup.setInstances(pool);
         
-        DataLoader loader = new JsfJspDataLoader();
-        DataLoader javaLoader = new JsfJavaDataLoader();
-        MockLookup.setInstances(pool, loader, javaLoader);
+        if (jspLoader == null) {
+            jspLoader = new JsfJspDataLoader();
+        }
+        
+        if (javaLoader == null) {
+            javaLoader = new JsfJavaDataLoader();
+        }
+        
+        MockLookup.setInstances(pool, jspLoader, javaLoader);
         
         String zipResource = "VWJavaEE5.zip";
         String zipPath = SetupUtils.class.getResource(zipResource).getPath();

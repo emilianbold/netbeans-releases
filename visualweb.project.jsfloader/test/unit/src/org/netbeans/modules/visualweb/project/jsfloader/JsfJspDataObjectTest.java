@@ -118,6 +118,31 @@ public class JsfJspDataObjectTest extends NbTestCase {
                 support, instance.getCookie(JsfJspEditorSupport.class));
     }
     
+    public void testGetCookie() throws Exception {
+        System.out.println("getCookie");
+        FileObject jspPage = projectRoot.getFileObject("web/Page1.jsp");
+        JsfJspDataObject instance = (JsfJspDataObject)DataObject.find(jspPage);
+        
+        // test getCookie
+        EditorCookie editorCookie = instance.getCookie(EditorCookie.class);
+        OpenCookie openCookie = instance.getCookie(OpenCookie.class);
+        EditCookie editCookie = instance.getCookie(EditCookie.class);
+        
+        assertNotNull("OpenCookie is null", openCookie);
+        assertNotNull("EditCookie is null", editCookie);
+        assertNotNull("EditorCookie is null", editorCookie);
+        
+        Lookup lookup = instance.getLookup();
+        
+        assertEquals("getLookup and getCookie should return the same OpenCookie", 
+                openCookie, lookup.lookup(OpenCookie.class));
+        assertEquals("getLookup and getCookie should return the same EditCookie", 
+                editCookie, lookup.lookup(EditCookie.class));
+        assertEquals("getLookup and getCookie should return the same EditorCookie", 
+                editorCookie, lookup.lookup(EditorCookie.class));
+    }
+    
+    
     public void testCorrespondingJsfJava() throws Exception {
         System.out.println("correspondingJsfJavaFile");
         FileObject jspPage = projectRoot.getFileObject("web/Page1.jsp");
