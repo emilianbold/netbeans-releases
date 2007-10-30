@@ -672,7 +672,10 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
 
 private void installGeneratorsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installGeneratorsButtonActionPerformed
     // Bring up remote gem installer with a "generator" filter
-    GemAction.showGemManager("generator$"); // NOI18N
+    boolean changed = GemAction.showGemManager("generator$"); // NOI18N
+    if (changed) {
+        run();
+    }
 }//GEN-LAST:event_installGeneratorsButtonActionPerformed
     
     
