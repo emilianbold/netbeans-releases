@@ -58,8 +58,13 @@ public class JspBreakpointsReader implements Properties.Reader {
 
         JspLineBreakpoint b = null;
         if (typeID.equals (JspLineBreakpoint.class.getName ())) {
+            String url = properties.getString(JspLineBreakpoint.PROP_URL, null);
+            // #110349 - ignore loading of breakpoints which do not have URL
+            if (url == null || url.trim().length() == 0) {
+                return null;
+            }
             b = JspLineBreakpoint.create (
-                properties.getString(JspLineBreakpoint.PROP_URL, null),
+                url,
                 properties.getInt(JspLineBreakpoint.PROP_LINE_NUMBER, 1)
             );
             b.setCondition(properties.getString (JspLineBreakpoint.PROP_CONDITION, ""));
