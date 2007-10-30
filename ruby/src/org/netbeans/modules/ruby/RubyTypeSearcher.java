@@ -47,6 +47,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.jruby.ast.Node;
@@ -62,6 +63,9 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.elements.IndexedClass;
+import org.netbeans.modules.ruby.elements.IndexedElement;
+import org.netbeans.modules.ruby.elements.IndexedMethod;
+import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.DialogDisplayer;
@@ -78,42 +82,151 @@ public class RubyTypeSearcher implements TypeSearcher {
     public RubyTypeSearcher() {
     }
     
-    //public Set<ElementHandle<Element>> getDeclaredTypes(Index gsfIndex,
-    //public Set<? extends Element> getDeclaredTypes(Index gsfIndex,
+    private static boolean isAllUpper( String text ) {
+        for( int i = 0; i < text.length(); i++ ) {
+            char c = text.charAt(i);
+            if (!Character.isUpperCase(c) && c != ':' ) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    private static Pattern camelCasePattern = Pattern.compile("(?:\\p{javaUpperCase}(?:\\p{javaLowerCase}|\\p{Digit}|\\:|\\.|\\$)*){2,}"); // NOI18N
+    
+    private static boolean isCamelCase(String text) {
+         return camelCasePattern.matcher(text).matches();
+    }
+    
+    private NameKind cachedKind;
+    private String cachedString = "/";
+    
+    private NameKind adjustKind(NameKind kind, String text) {
+        if (text.equals(cachedString)) {
+            return cachedKind;
+        }
+        if (kind == NameKind.CASE_INSENSITIVE_PREFIX) {
+            if ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) {
+                kind = NameKind.CAMEL_CASE;            
+            }
+        }
+
+        cachedString = text;
+        cachedKind = kind;
+        return kind;
+    }
+    
     public Set<? extends GsfTypeDescriptor> getDeclaredTypes(Index gsfIndex,
                                                         String textForQuery,
                                                         NameKind kind,
                                                         EnumSet<SearchScope> scope, Helper helper) {
+        // In addition to just computing the declared types here, we perform some additional
+        // "second guessing" of the query. In particular, we want to allow double colons
+        // to be part of the query names (to specify full module names), but since colon is
+        // treated by the Open Type dialog as a regexp char, it will turn it into a regexp query
+        // for example. Thus, I look at the query string and I might turn it into a different kind
+        // of query. (We also allow #method suffixes which are handled here.)
+        
+        
+        if (textForQuery.endsWith("::")) {
+            textForQuery = textForQuery.substring(0, textForQuery.length()-2);
+        } else if (textForQuery.endsWith(":")) {
+            textForQuery = textForQuery.substring(0, textForQuery.length()-1);
+        }
+        
         RubyIndex index = RubyIndex.get(gsfIndex);
         if (index == null) {
             return Collections.emptySet();
         }
+
+        kind = adjustKind(kind, textForQuery);
         
-        if (kind == NameKind.CASE_INSENSITIVE_PREFIX || kind == NameKind.CASE_INSENSITIVE_REGEXP) {
+        if (kind == NameKind.CASE_INSENSITIVE_PREFIX /*|| kind == NameKind.CASE_INSENSITIVE_REGEXP*/) {
             textForQuery = textForQuery.toLowerCase();
         }
         
-        Set<IndexedClass> classes = index.getClasses(textForQuery, kind, true, false, false, scope, null);
-        //return classes;
+        String method = null;
+        int methodIndex = textForQuery.indexOf('#');
+        if (methodIndex != -1) {
+            method = textForQuery.substring(methodIndex+1);
+            textForQuery = textForQuery.substring(0, methodIndex);
+        }
+        
+        Set<IndexedClass> classes = null;
+        if (method == null || textForQuery.length() > 0) {
+            classes = index.getClasses(textForQuery, kind, true, false, false, scope, null);
+        }
         
         Set<RubyTypeDescriptor> result = new HashSet<RubyTypeDescriptor>();
-        for (IndexedClass cls : classes) {
-            result.add(new RubyTypeDescriptor(cls, helper));
+        
+        if (method != null) {
+            // Query methods
+            Set<IndexedMethod> methods = index.getMethods(method, null, kind, scope);
+            for (IndexedMethod m : methods) {
+                if (textForQuery.length() > 0 && m.getClz() != null) {
+                    String in = m.getClz();
+                    switch (kind) {
+                    case CASE_INSENSITIVE_REGEXP:
+                    case REGEXP:
+                        try {
+                            if (in.indexOf("::") != -1 && textForQuery.indexOf("::") == -1) { // NOI18N
+                                // Try matching each
+                                boolean matches = false;
+                                for (String c : in.split("::")) { // NOI18N
+                                    if (c.matches(textForQuery)) {
+                                        matches = true;
+                                        break;
+                                    }
+                                }
+                                
+                                if (!matches) {
+                                    continue;
+                                }
+                            } else if (!in.matches(textForQuery)) {
+                                continue;
+                            }
+                        } catch (Exception e) {
+                            // Silently ignore errors in regexps since they can come from the user
+                        }
+                        break;
+                    case CASE_INSENSITIVE_PREFIX:
+                        if (!in.regionMatches(true, 0, textForQuery, 0, textForQuery.length())) {
+                            continue;
+                        }
+                        break;
+                    case PREFIX:
+                        if (!in.regionMatches(false, 0, textForQuery, 0, textForQuery.length())) {
+                            continue;
+                        }
+                        break;
+                    case EXACT_NAME:
+                        if (!in.equalsIgnoreCase(textForQuery)) {
+                            continue;
+                        }
+                    }
+                }
+                result.add(new RubyTypeDescriptor(m, helper));
+            }
+        } else {
+            for (IndexedClass cls : classes) {
+                result.add(new RubyTypeDescriptor(cls, helper));
+            }
         }
         
         return result;
     }
     
     private class RubyTypeDescriptor extends GsfTypeDescriptor {
-        private final IndexedClass cls;
+        private final IndexedElement element;
         private String projectName;
         private Icon projectIcon;
         private final Helper helper;
         private boolean isLibrary;
         private static final String RUBY_KEYWORD = "org/netbeans/modules/ruby/jruby.png"; //NOI18N
         
-        public RubyTypeDescriptor(IndexedClass cls, Helper helper) {
-            this.cls = cls;
+        public RubyTypeDescriptor(IndexedElement element, Helper helper) {
+            this.element = element;
             this.helper = helper;
         }
 
@@ -121,14 +234,14 @@ public class RubyTypeSearcher implements TypeSearcher {
             if (projectName == null) {
                 initProjectInfo();
             }
-            if (isLibrary) {
-                return new ImageIcon(org.openide.util.Utilities.loadImage(RUBY_KEYWORD));
-            }
-            return helper.getIcon(cls);
+            //if (isLibrary) {
+            //    return new ImageIcon(org.openide.util.Utilities.loadImage(RUBY_KEYWORD));
+            //}
+            return helper.getIcon(element);
         }
 
         public String getTypeName() {
-            return cls.getName();
+            return element.getName();
         }
 
         public String getProjectName() {
@@ -139,7 +252,7 @@ public class RubyTypeSearcher implements TypeSearcher {
         }
 
         private void initProjectInfo() {
-            FileObject fo = cls.getFileObject();
+            FileObject fo = element.getFileObject();
             if (fo != null) {
                 File f = FileUtil.toFile(fo);
                 String lib = RubyInstallation.getInstance().getRubyLib();
@@ -156,7 +269,7 @@ public class RubyTypeSearcher implements TypeSearcher {
                 }
             } else {
                 isLibrary = true;
-                Logger.getLogger(RubyTypeSearcher.class.getName()).fine("No fileobject for " + cls.toString() + " with fileurl=" + cls.getFileUrl());
+                Logger.getLogger(RubyTypeSearcher.class.getName()).fine("No fileobject for " + element.toString() + " with fileurl=" + element.getFileUrl());
             }
             if (projectName == null) {
                 projectName = "";
@@ -174,18 +287,18 @@ public class RubyTypeSearcher implements TypeSearcher {
         }
 
         public FileObject getFileObject() {
-            return cls.getFileObject();
+            return element.getFileObject();
         }
 
         public void open() {
-            Node node = AstUtilities.getForeignNode(cls, null);
+            Node node = AstUtilities.getForeignNode(element, null);
             
             if (node != null) {
-                NbUtilities.open(cls.getFileObject(), node.getPosition().getStartOffset(), cls.getName());
+                NbUtilities.open(element.getFileObject(), node.getPosition().getStartOffset(), element.getName());
                 return;
             }
             
-            FileObject fileObject = cls.getFileObject();
+            FileObject fileObject = element.getFileObject();
             if (fileObject == null) {
                 NotifyDescriptor nd =
                     new NotifyDescriptor.Message(NbBundle.getMessage(RubyTypeSearcher.class, "FileDeleted"), 
@@ -197,16 +310,16 @@ public class RubyTypeSearcher implements TypeSearcher {
                 
                 return;
             }
-
-            helper.open(fileObject, cls);
+            
+            helper.open(fileObject, element);
         }
 
         public String getContextName() {
             // XXX This is lame - move formatting logic to the goto action!
             StringBuilder sb = new StringBuilder();
-            String require = cls.getRequire();
-            String fqn = cls.getFqn();
-            if (cls.getName().equals(fqn)) {
+            String require = element.getRequire();
+            String fqn = element.getFqn();
+            if (element.getName().equals(fqn)) {
                 fqn = null;
             }
             if (fqn != null || require != null) {
@@ -230,7 +343,7 @@ public class RubyTypeSearcher implements TypeSearcher {
         }
 
         public Element getElement() {
-            return cls;
+            return element;
         }
 
         public int getOffset() {
@@ -238,7 +351,7 @@ public class RubyTypeSearcher implements TypeSearcher {
         }
 
         public String getSimpleName() {
-            return cls.getName();
+            return element.getName();
         }
 
         public String getOuterName() {

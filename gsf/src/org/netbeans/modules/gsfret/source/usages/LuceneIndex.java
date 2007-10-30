@@ -159,18 +159,27 @@ class LuceneIndex extends Index {
         this.directory = FSDirectory.getDirectory(refCacheRoot, lockFactory);
     }
 
-    private void regExpSearch (final Pattern pattern, final Term startTerm, final IndexReader in, final Set<Term> toSearch) throws IOException {        
+    private void regExpSearch (final Pattern pattern, Term startTerm, final IndexReader in, final Set<Term> toSearch/*, final AtomicBoolean cancel*/, boolean caseSensitive) throws IOException/*, InterruptedException*/ {        
         final String startText = startTerm.text();
-        final StringBuilder startBuilder = new StringBuilder ();
-        startBuilder.append(startText.charAt(0));
-        for (int i=1; i<startText.length(); i++) {
-            char c = startText.charAt(i);
-            if (!Character.isJavaIdentifierPart(c)) {
-                break;
+        String startPrefix;
+        if (startText.length() > 0) { 
+            final StringBuilder startBuilder = new StringBuilder ();
+            startBuilder.append(startText.charAt(0));
+            for (int i=1; i<startText.length(); i++) {
+                char c = startText.charAt(i);
+                if (!Character.isJavaIdentifierPart(c)) {
+                    break;
+                }
+                startBuilder.append(c);
             }
-            startBuilder.append(c);
+            // TODO - if startText==startPrefix keep startTerm alone
+            startPrefix = startBuilder.toString();
+            // TODO: The java version of lucene index reassigned the start term here
+            // startTerm = caseSensitive ? DocumentUtil.simpleNameTerm(startPrefix) : DocumentUtil.caseInsensitiveNameTerm(startPrefix);
         }
-        final String startPrefix = startBuilder.toString();
+        else {
+            startPrefix=startText;
+        }
         final String camelField = startTerm.field();
         final TermEnum en = in.terms(startTerm);
         try {
@@ -191,7 +200,7 @@ class LuceneIndex extends Index {
         }
     }
     
-    private void prefixSearch (Term nameTerm, final IndexReader in, final Set<Term> toSearch) throws IOException {
+    private void prefixSearch(Term nameTerm, final IndexReader in, final Set<Term> toSearch/*, final AtomicBoolean cancel*/) throws IOException/*, InterruptedException*/ {
         final String prefixField = nameTerm.field();
         final String name = nameTerm.text();
         final TermEnum en = in.terms(nameTerm);
@@ -218,45 +227,47 @@ class LuceneIndex extends Index {
         
         if (!isValid(false)) {
             return false;
-        }        
-        Searcher searcher = new IndexSearcher (this.getReader());
+        }
         try {
-            Hits hits;
-            if (resourceName == null) {
-                synchronized (this) {
-                    if (this.rootTimeStamp != null) {
-                        return rootTimeStamp.longValue() >= timeStamp;
-                    }
-                }
-                hits = searcher.search(new TermQuery(DocumentUtil.rootDocumentTerm()));
-            }
-            else {
-                hits = searcher.search(DocumentUtil.binaryNameQuery(resourceName));
-            }
-
-            assert hits.length() <= 1;
-            if (hits.length() == 0) {
-                return false;
-            }
-            else {                    
-                try { 
-                    Hit hit = (Hit) hits.iterator().next();
-                    long cacheTime = DocumentUtil.getTimeStamp(hit.getDocument());
-                    if (resourceName == null) {
-                        synchronized (this) {
-                            this.rootTimeStamp = new Long (cacheTime);
+            Searcher searcher = new IndexSearcher (this.getReader());
+            try {
+                Hits hits;
+                if (resourceName == null) {
+                    synchronized (this) {
+                        if (this.rootTimeStamp != null) {
+                            return rootTimeStamp.longValue() >= timeStamp;
                         }
                     }
-                    return cacheTime >= timeStamp;
-                } catch (ParseException pe) {
-                    throw new IOException ();
+                    hits = searcher.search(new TermQuery(DocumentUtil.rootDocumentTerm()));
                 }
+                else {
+                    hits = searcher.search(DocumentUtil.binaryNameQuery(resourceName));
+                }
+
+                assert hits.length() <= 1;
+                if (hits.length() == 0) {
+                    return false;
+                }
+                else {                    
+                    try { 
+                        Hit hit = (Hit) hits.iterator().next();
+                        long cacheTime = DocumentUtil.getTimeStamp(hit.getDocument());
+                        if (resourceName == null) {
+                            synchronized (this) {
+                                this.rootTimeStamp = new Long (cacheTime);
+                            }
+                        }
+                        return cacheTime >= timeStamp;
+                    } catch (ParseException pe) {
+                        throw new IOException ();
+                    }
+                }
+            } finally {
+                searcher.close();
             }
         } catch (java.io.FileNotFoundException fnf) {
             this.clear();
             return false;
-        } finally {
-            searcher.close();
         }
     }
         
@@ -271,8 +282,8 @@ class LuceneIndex extends Index {
             }
         }
         return res;
-     }    
-
+    }    
+    
     public synchronized void clear () throws IOException {
         this.close ();
         final String[] content = this.directory.list();
@@ -282,9 +293,13 @@ class LuceneIndex extends Index {
     }
     
     public synchronized void close () throws IOException {
-        if (this.reader != null) {
-            this.reader.close();
-            this.reader = null;
+        try {
+            if (this.reader != null) {
+                this.reader.close();
+                this.reader = null;
+            }
+        } finally {
+           this.directory.close();
         }
     }
     
@@ -491,48 +506,59 @@ class LuceneIndex extends Index {
                 }
             case CAMEL_CASE:
                 if (name.length() == 0) {
-                    throw new IllegalArgumentException ();
-                }        
+                    gsfSearch(primaryField, name, NameKind.CASE_INSENSITIVE_PREFIX, scope, result);
+                    return;
+                }
                 {
-                final StringBuilder patternString = new StringBuilder ();                        
-                char startChar = 0;
-                for (int i=0; i<name.length(); i++) {
-                    char c = name.charAt(i);
-                    //todo: maybe check for upper case, I18N????
-                    if (i == 0) {
-                        startChar = c;
+                    StringBuilder sb = new StringBuilder();
+                    String prefix = null;
+                    int lastIndex = 0;
+                    int index;
+                    do {
+                        index = findNextUpper(name, lastIndex + 1);
+                        String token = name.substring(lastIndex, index == -1 ? name.length(): index);
+                        if ( lastIndex == 0 ) {
+                            prefix = token;
+                        }
+                        sb.append(token); 
+                        // TODO - add in Ruby chars here?
+                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N         
+                        lastIndex = index;
                     }
-                    patternString.append(c);
-                    if (i == name.length()-1) {
-                        patternString.append("\\w*");  // NOI18N
+                    while(index != -1);
+
+                    final Pattern pattern = Pattern.compile(sb.toString());
+                    final Term nameTerm = new Term(primaryField, prefix);
+                    regExpSearch(pattern,nameTerm,in,toSearch/*,cancel*/, true);
+                }
+                break;
+            case CASE_INSENSITIVE_REGEXP:
+                if (name.length() == 0) {
+                    gsfSearch(primaryField, name, NameKind.CASE_INSENSITIVE_PREFIX, scope, result);
+                    return;
+                }
+                else {   
+                    final Pattern pattern = Pattern.compile(name,Pattern.CASE_INSENSITIVE);
+                    if (Character.isJavaIdentifierStart(name.charAt(0))) {
+                        regExpSearch(pattern, new Term (primaryField, name.toLowerCase()), in, toSearch/*,cancel*/, false);      //XXX: Locale
                     }
                     else {
-                        patternString.append("[\\p{Lower}\\p{Digit}]*");  // NOI18N
+                        regExpSearch(pattern, new Term (primaryField, ""), in, toSearch/*, cancel*/, false);      //NOI18N
                     }
-                }
-                final Pattern pattern = Pattern.compile(patternString.toString());
-                Term t = new Term (primaryField, Character.toString(startChar));
-                regExpSearch(pattern, t, in, toSearch);
-                break;
-                }
-            case CASE_INSENSITIVE_REGEXP:
-                if (name.length() == 0 || !Character.isJavaIdentifierStart(name.charAt(0))) {
-                    throw new IllegalArgumentException ();
-                }
-                {   
-                    final Pattern pattern = Pattern.compile(name,Pattern.CASE_INSENSITIVE);
-                    final Term nameTerm = new Term (primaryField, name.toLowerCase());
-                    regExpSearch(pattern, nameTerm, in, toSearch);      //XXX: Locale
                     break;
                 }
             case REGEXP:
-                if (name.length() == 0 || !Character.isJavaIdentifierStart(name.charAt(0))) {
-                    throw new IllegalArgumentException (name);
-                }                
-                {   
-                    final Pattern pattern = Pattern.compile(name);                    
-                    final Term nameTerm = new Term (primaryField, name);
-                    regExpSearch(pattern, nameTerm, in, toSearch);
+                if (name.length() == 0) {
+                    gsfSearch(primaryField, name, NameKind.PREFIX, scope, result);
+                    return;
+                } else {
+                    final Pattern pattern = Pattern.compile(name);
+                    if (Character.isJavaIdentifierStart(name.charAt(0))) {
+                        regExpSearch(pattern, new Term (primaryField, name), in, toSearch/*, cancel*/, true);
+                    }
+                    else {
+                        regExpSearch(pattern, new Term (primaryField, ""), in, toSearch/*, cancel*/, true);             //NOI18N
+                    }
                     break;
                 }
             default:
@@ -567,6 +593,17 @@ class LuceneIndex extends Index {
             result.add(map);
         }
     }
+
+    private static int findNextUpper(String text, int offset ) {
+        
+        for( int i = offset; i < text.length(); i++ ) {
+            if ( Character.isUpperCase(text.charAt(i)) ) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
     
     // TODO: Create a filtered DocumentSearchResult here which
     // contains matches for a given document.

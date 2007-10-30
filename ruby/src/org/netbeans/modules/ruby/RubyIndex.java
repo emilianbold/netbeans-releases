@@ -46,22 +46,18 @@ import java.net.MalformedURLException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedMap;
+import java.util.regex.Pattern;
 
 import org.netbeans.api.gsf.Index;
 import org.netbeans.modules.ruby.elements.IndexedField;
 import static org.netbeans.api.gsf.Index.*;
-import org.netbeans.api.gsf.Modifier;
 import org.netbeans.api.gsf.NameKind;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.elements.IndexedClass;
@@ -214,12 +210,50 @@ public final class RubyIndex {
             // Lucene returns some inexact matches, TODO investigate why this is necessary
             if ((kind == NameKind.PREFIX) && !clz.startsWith(name)) {
                 continue;
+            } else if (kind == NameKind.CASE_INSENSITIVE_PREFIX && !clz.regionMatches(true, 0, name, 0, name.length())) {
+                continue;
             }
 
             if (classFqn != null) {
                 if (kind == NameKind.CASE_INSENSITIVE_PREFIX ||
                         kind == NameKind.CASE_INSENSITIVE_REGEXP) {
                     if (!classFqn.equalsIgnoreCase(map.getValue(RubyIndexer.FIELD_IN))) {
+                        continue;
+                    }
+                } else if (kind == NameKind.CAMEL_CASE) {
+                    String in = map.getValue(RubyIndexer.FIELD_IN);
+                    if (in != null) {
+                        // Superslow, make faster 
+                        StringBuilder sb = new StringBuilder();
+                        String prefix = null;
+                        int lastIndex = 0;
+                        int index;
+                        do {
+
+                            int nextUpper = -1;
+                            for( int i = lastIndex+1; i < classFqn.length(); i++ ) {
+                                if ( Character.isUpperCase(classFqn.charAt(i)) ) {
+                                    nextUpper = i;
+                                    break;
+                                }
+                            }
+                            index = nextUpper;
+                            String token = classFqn.substring(lastIndex, index == -1 ? classFqn.length(): index);
+                            if ( lastIndex == 0 ) {
+                                prefix = token;
+                            }
+                            sb.append(token); 
+                            // TODO - add in Ruby chars here?
+                            sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N         
+                            lastIndex = index;
+                        }
+                        while(index != -1);
+
+                        final Pattern pattern = Pattern.compile(sb.toString());
+                        if (!pattern.matcher(in).matches()) {
+                            continue;
+                        }
+                    } else {
                         continue;
                     }
                 } else {
@@ -335,6 +369,8 @@ public final class RubyIndex {
             // Lucene returns some inexact matches, TODO investigate why this is necessary
             if ((kind == NameKind.PREFIX) && !clz.startsWith(name)) {
                 continue;
+            } else if (kind == NameKind.CASE_INSENSITIVE_PREFIX && !clz.regionMatches(true, 0, name, 0, name.length())) {
+                continue;
             }
 
             String cfqn = map.getValue(RubyIndexer.FIELD_FQN_NAME);
@@ -415,6 +451,25 @@ public final class RubyIndex {
                     // Lucene returns some inexact matches, TODO investigate why this is necessary
                     if ((kind == NameKind.PREFIX) && !signature.startsWith(name)) {
                         continue;
+                    } else if (kind == NameKind.CASE_INSENSITIVE_PREFIX && !signature.regionMatches(true, 0, name, 0, name.length())) {
+                        continue;
+                    } else if (kind == NameKind.CASE_INSENSITIVE_REGEXP) {
+                        int len = signature.length();
+                        int end = signature.indexOf('(');
+                        if (end == -1) {
+                            end = signature.indexOf(';');
+                            if (end == -1) {
+                                end = len;
+                            }
+                        }
+                        String n = end != len ? signature.substring(0, end) : signature;
+                        try {
+                            if (!n.matches(name)) {
+                                continue;
+                            }
+                        } catch (Exception e) {
+                            // Silently ignore regexp failures in the search expression
+                        }
                     } else if (originalKind == NameKind.EXACT_NAME) {
                         // Make sure the name matches exactly
                         // We know that the prefix is correct from the first part of
@@ -443,7 +498,11 @@ public final class RubyIndex {
                     }
 
                     // Lucene returns some inexact matches, TODO investigate why this is necessary
-                    if ((kind == NameKind.PREFIX) && !signature.startsWith(name)) {
+                    if (kind == NameKind.PREFIX && !signature.startsWith(name)) {
+                        continue;
+                    } else if (kind == NameKind.CASE_INSENSITIVE_PREFIX && !signature.regionMatches(true, 0, name, 0, name.length())) {
+                        continue;
+                    } else if (kind == NameKind.CASE_INSENSITIVE_REGEXP && !signature.matches(name)) {
                         continue;
                     } else if (originalKind == NameKind.EXACT_NAME) {
                         // Make sure the name matches exactly
@@ -583,7 +642,9 @@ public final class RubyIndex {
             if (r != null) {
                 for (String require : r) {
                     // Lucene returns some inexact matches, TODO investigate why this is necessary
-                    if ((kind == NameKind.PREFIX) && !require.startsWith(name)) {
+                    if (kind == NameKind.PREFIX && !require.startsWith(name)) {
+                        continue;
+                    } else if (kind == NameKind.CASE_INSENSITIVE_PREFIX && !require.regionMatches(true, 0, name, 0, name.length())) {
                         continue;
                     }
                     assert map != null;

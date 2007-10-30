@@ -225,38 +225,38 @@ class DocumentUtil {
         return new Term (FIELD_RESOURCE_NAME,ROOT_NAME);
     }
     
-    public static Term simpleBinaryNameTerm (final String resourceFileName) {
-        assert resourceFileName != null;
-        return new Term (FIELD_BINARY_NAME, resourceFileName);
-    }   
-    
-    public static Term packageNameTerm (final String packageName) {
-        assert packageName != null;
-        return new Term (FIELD_PACKAGE_NAME, packageName);
-    }
-    
-    public static Term referencesTerm (String resourceName, final Set<ClassIndexImpl.UsageType> usageType) {
-        assert resourceName  != null;
-        if (usageType != null) {
-            resourceName = encodeUsage (resourceName, usageType, WILDCARD).toString();
-        }
-        else {
-            StringBuilder sb = new StringBuilder (resourceName);
-            sb.append(MASK_ANY_USAGE);
-            resourceName = sb.toString();
-        }
-        return new Term (FIELD_REFERENCES, resourceName);
-    }
-    
-    public static Term simpleNameTerm (final String resourceSimpleName) {
-        assert resourceSimpleName != null;
-        return new Term (FIELD_SIMPLE_NAME, resourceSimpleName);
-    }
-    
-    public static Term caseInsensitiveNameTerm (final String caseInsensitiveName) {
-        assert caseInsensitiveName != null;
-        return new Term (FIELD_CASE_INSENSITIVE_NAME, caseInsensitiveName);
-    }    
+//    public static Term simpleBinaryNameTerm (final String resourceFileName) {
+//        assert resourceFileName != null;
+//        return new Term (FIELD_BINARY_NAME, resourceFileName);
+//    }   
+//    
+//    public static Term packageNameTerm (final String packageName) {
+//        assert packageName != null;
+//        return new Term (FIELD_PACKAGE_NAME, packageName);
+//    }
+//    
+//    public static Term referencesTerm (String resourceName, final Set<ClassIndexImpl.UsageType> usageType) {
+//        assert resourceName  != null;
+//        if (usageType != null) {
+//            resourceName = encodeUsage (resourceName, usageType, WILDCARD).toString();
+//        }
+//        else {
+//            StringBuilder sb = new StringBuilder (resourceName);
+//            sb.append(MASK_ANY_USAGE);
+//            resourceName = sb.toString();
+//        }
+//        return new Term (FIELD_REFERENCES, resourceName);
+//    }
+//    
+//    public static Term simpleNameTerm (final String resourceSimpleName) {
+//        assert resourceSimpleName != null;
+//        return new Term (FIELD_SIMPLE_NAME, resourceSimpleName);
+//    }
+//    
+//    public static Term caseInsensitiveNameTerm (final String caseInsensitiveName) {
+//        assert caseInsensitiveName != null;
+//        return new Term (FIELD_CASE_INSENSITIVE_NAME, caseInsensitiveName);
+//    }    
     
     //Factories for lucene document
     public static Document createDocument (final String binaryName, final long timeStamp, List<String> references) {
