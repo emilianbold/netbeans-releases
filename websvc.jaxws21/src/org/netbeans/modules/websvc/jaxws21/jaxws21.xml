@@ -66,5 +66,9 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst:///modules/ext/jaxws21/sjsxp.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/stax-ex.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/streambuffer.jar!/</resource>
-    </volume>  
+    </volume>
+    <volume>
+        <type>javadoc</type>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21/docs/jaxws-2_1-api-doc.zip!/</resource>
+    </volume>
 </library>
