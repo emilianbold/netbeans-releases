@@ -258,6 +258,18 @@ public abstract class JavaCompletionItem implements CompletionItem {
     }
 
     public boolean instantSubstitution(JTextComponent component) {
+        if (component != null) {
+            try {
+                int caretOffset = component.getSelectionEnd();
+                if (caretOffset > substitutionOffset) {
+                    String text = component.getDocument().getText(substitutionOffset, caretOffset - substitutionOffset);
+                    if (!getInsertPrefix().toString().startsWith(text)) {
+                        return false;
+                    }
+                }
+            }
+            catch (BadLocationException ble) {}
+        }
         defaultAction(component);
         return true;
     }
@@ -2163,6 +2175,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return JavaCompletionProvider.createDocTask(elementHandle);
         }
 
+        public boolean instantSubstitution(JTextComponent component) {
+            return false;
+        }
+        
         protected void substituteText(final JTextComponent c, int offset, int len, String toAdd) {
             String add = ")"; //NOI18N
             if (toAdd != null && !add.startsWith(toAdd))
