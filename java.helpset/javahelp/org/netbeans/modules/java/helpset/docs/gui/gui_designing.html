@@ -18,15 +18,8 @@
         by form nodes&nbsp;(<img src="images/form.gif" alt="Image of a form icon">)
         in the Projects, Files, and Favorites windows. 
         </p>
-        <ul class="note"> 
-            <li>In order for the interfaces you create with the GUI Builder to work
-            outside of the IDE, you must include the Swing Layout Extensions
-            library when deploying your applications. It must also be on the GUI 
-            application's classpath at runtime. For more information, 
-            see <a href="gui_deploying.html">Deploying Java GUI Applications</a>.</li>
-        </ul>  
-             
-        <h3>Using the GUI Builder</h3>
+ 
+     <h3>Using the GUI Builder</h3>
         <p>Whenever you open a GUI form, the IDE displays it in a Editor tab with
         toggle buttons enabling you to switch between Source and Design views. The
         Design view enables you to work with GUI forms visually while the Source view
@@ -45,6 +38,16 @@
             all new forms you create. If you want to use another layout manager, you can do so by 
             right-clicking the container, choosing Set Layout, and then choosing 
             the desired layout manager.</li>
+            <li>In order for interfaces that you create with the GroupLayout layout 
+            manager to run 
+            outside of the IDE, they must have the Swing Layout Extensions
+            library available. The Swing Layout Extension Library is included in 
+            version 6 of the Java Platform, so no additional steps are needed if 
+            you develop the application with JDK 6 and deploy in environments that 
+            have version 6 of the JRE. If you are developing for earlier versions of 
+            the Java Platform, you must bundle the Swing Layout Extension Library 
+            with the application. For more information, 
+            see <a href="gui_deploying.html">Deploying Java GUI Applications</a>.</li>
         </ul>
 
         <h3>Guarded Blocks </h3>

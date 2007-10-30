@@ -47,27 +47,27 @@
                     This enables you to enter a method name in the Action's Method field. When you 
             click OK to exit the dialog box, a skeleton action is created for you.</p></li>
             <li><b>Action's Class</b>. If you are creating a new action, use this 
-                combo box to select the class in which to place the action.</li>
+            combo box to select the class in which to place the action.</li>
             <li><b>Action's Method</b>. If you are creating a new action, use this 
-                text field to name the action method to be generated.</li>
+            text field to name the action method to be generated.</li>
             <li><b>Background Task</b>. If selected, the action is run in the background. 
-            This is useful if the action might take a long time to complete and you 
-        want the user to be able to do other things in the UI while the action completes.</li>                
-                <li><b>Attributes, Basic Tab:</b>
+                This is useful if the action might take a long time to complete and you 
+            want the user to be able to do other things in the UI while the action completes.</li>                
+            <li><b>Attributes, Basic Tab:</b>
                 <ul>
                     <li><b>Text</b>. Type the text that you want to be used for the 
                     action in visual components, such as buttons and menu items.</li>
                     <li><b>Tool Tip</b>. Type any text that you would like to appear 
                     when the user mouses over any components associated with the action.</li>
                     <li><b>Accelerator</b>. Provide a keyboard shortcut for the action. To 
-                    specify the shortcut you want to use, select the Letter field and 
-                    type the shortcut as you 
-                would when using the shortcut. The checkboxes for any modifier keys 
-                that you use, such as Ctrl and Shift, are selected automatically.
-</li>    
+                        specify the shortcut you want to use, select the Letter field and 
+                        type the shortcut as you 
+                        would when using the shortcut. The checkboxes for any modifier keys 
+                        that you use, such as Ctrl and Shift, are selected automatically.
+                    </li>    
                     <li><b>Icon</b>. If desired, associate icons for the action. 
-                    Use the Small Icon and Large Icon buttons to navigate to the icons 
-                that you want to use.</li>            
+                        Use the Small Icon and Large Icon buttons to navigate to the icons 
+                    that you want to use.</li>            
             </ul>            </li>
             <li><b>Attributes, Advanced Tab:</b>
                 <ul>
@@ -78,8 +78,9 @@
                     to exit the dialog box, a skeleton propery will be created for you.</li>
                     <li><b>Selected Property</b>. If desired, select a Boolean 
                         bean property, the value of which determines whether the 
-                        action is selected or not. If you have not yet created such a property, 
-                        type a name for the property in the text field. After you click OK 
+                        action is selected or not. This option only applies to 
+                        components that have a <tt>selected</tt> bean property, such as JRadioButton and 
+                        JToggleButton. After you click OK 
                     to exit the dialog box, a skeleton propery will be created for you.</li>
                     <li><b>Blocking Type</b>. Enables you block user interaction 
                         with the user interface while a task is completing. 
@@ -87,7 +88,7 @@
                         the blocking applies. For example, you can block the whole application 
                         or just a window or component. Blocking types only apply to 
                         actions that you have specified as background tasks.
-                </li>    
+                    </li>    
                     <li><b>Blocking Dialog Title</b>. Specify a title for the dialog 
                     box that appears to warn the user that a task is not yet completed.</li>    
                     <li><b>Blocking Dialog Message</b>. Specify text to show in the dialog 
