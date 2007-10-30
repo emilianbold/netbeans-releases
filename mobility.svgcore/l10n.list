@@ -1,0 +1,3 @@
+# mobility/svg/core
+read global
+mobility/svg/core/src/**/*.html

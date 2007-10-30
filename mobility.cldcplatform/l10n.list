@@ -1,0 +1,3 @@
+# mobility/cldcplatform
+read global
+mobility/cldcplatform/src/**/customwizard/*.html
