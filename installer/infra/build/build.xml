@@ -1701,69 +1701,69 @@ jarsigner.storepass=${jarsigner.storepass}
         <mkdir dir="${output.dir}/bundles/jdk"/>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${output.dir}/bundles/jdk/jdk-1_5_0_13-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-windows.exe">
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_14-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-windows.exe">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.5.0.13.5"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
+	    <component uid="jdk" version="1.5.0.14.3"/>
+	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${output.dir}/bundles/jdk/jdk-1_5_0_13-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-linux.sh">
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_14-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-linux.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.5.0.13.5"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
+	    <component uid="jdk" version="1.5.0.14.3"/>
+	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${output.dir}/bundles/jdk/jdk-1_5_0_13-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-solaris-x86.sh">
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_14-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-solaris-x86.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.5.0.13.5"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
+	    <component uid="jdk" version="1.5.0.14.3"/>
+	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${output.dir}/bundles/jdk/jdk-1_5_0_13-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-solaris-sparc.sh">
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_14-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-solaris-sparc.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.5.0.13.5"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
+	    <component uid="jdk" version="1.5.0.14.3"/>
+	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
         </create-bundle>
 
         <!-- JavaSE + JDK6 bundles -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${output.dir}/bundles/jdk/jdk6-u3-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-windows.exe">
+                       target="${output.dir}/bundles/jdk/jdk6-u4-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-windows.exe">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.6.0.3.5"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
+	    <component uid="jdk" version="1.6.0.4.6"/>
+	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${output.dir}/bundles/jdk/jdk6-u3-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-linux.sh">
+                       target="${output.dir}/bundles/jdk/jdk6-u4-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-linux.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.6.0.3.5"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
+	    <component uid="jdk" version="1.6.0.4.6"/>
+	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${output.dir}/bundles/jdk/jdk6-u3-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-solaris-x86.sh">
+                       target="${output.dir}/bundles/jdk/jdk6-u4-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-solaris-x86.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.6.0.3.5"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
+	    <component uid="jdk" version="1.6.0.4.6"/>
+	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${output.dir}/bundles/jdk/jdk6-u3-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-solaris-sparc.sh">
+                       target="${output.dir}/bundles/jdk/jdk6-u4-${nb.files.prefix}-${build.number}${nb.build.suffix}-javase-solaris-sparc.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.6.0.3.5"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
+	    <component uid="jdk" version="1.6.0.4.6"/>
+	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
         </create-bundle>
     </target>
 
