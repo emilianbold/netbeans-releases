@@ -11,11 +11,16 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 import junit.framework.*;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Input;
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.OneWayOperation;
 import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.TestCatalogModel;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.Util;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.impl.GlobalReferenceImpl;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 
 /**
@@ -71,5 +76,30 @@ public class WSDLComponentBaseTest extends TestCase {
         assertEquals(null, ((AbstractDocumentComponent)op.getInput()).lookupNamespaceURI(""));
 
         assertNotNull(op.getInput().getMessage().get());
+    }
+
+    public void testAddOperationNoNamespace() throws Exception {
+        WSDLModel model = Util.loadWSDLModel("resources/definitionsNoTargetN_valid.wsdl");
+        Definitions definitions = model.getDefinitions();
+        assertNull(definitions.getTargetNamespace());
+        
+        OneWayOperation op = model.getFactory().createOneWayOperation();
+        op.setName("noNamespaceOp");
+        Input in = model.getFactory().createInput();
+        Message m = model.findComponentByName("goodBasicWSDLOperationRequest", Message.class);
+        in.setMessage(in.createReferenceTo(m, Message.class));
+        op.setInput(in);
+        
+        model.startTransaction();
+        PortType portType = definitions.getPortTypes().iterator().next();
+        portType.addOperation(op);
+        model.endTransaction();
+        
+        op = model.findComponentByName("noNamespaceOp", OneWayOperation.class);
+        assertNotNull(op);
+        assertEquals(null, ((AbstractDocumentComponent)op.getInput()).lookupNamespaceURI(""));
+        ((GlobalReferenceImpl)op.getInput().getMessage()).refresh();
+        assertNotNull(op.getInput().getMessage().get());
+        assertEquals(m.getName(), op.getInput().getMessage().getRefString());
     }
 }
