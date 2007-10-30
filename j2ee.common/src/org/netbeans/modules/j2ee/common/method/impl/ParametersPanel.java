@@ -116,6 +116,8 @@ public final class ParametersPanel extends javax.swing.JPanel {
                 updateButtons();
             }
         });
+        
+        updateButtons();
     }
     
     public List<MethodModel.Variable> getParameters() {

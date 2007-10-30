@@ -46,12 +46,29 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.TypeElement;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
+import org.netbeans.api.java.source.ClassIndex.SearchKind;
+import org.netbeans.api.java.source.ClassIndex.SearchScope;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ui.TypeElementFinder;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,10 +78,12 @@ import org.openide.util.NbBundle;
 public final class ExceptionsPanel extends javax.swing.JPanel {
     
     private final ExceptionsTableModel tableModel;
+    private final ClasspathInfo cpInfo;
     
-    public ExceptionsPanel(List<String> parameters) {
+    public ExceptionsPanel(List<String> parameters, ClasspathInfo cpInfo) {
         initComponents();
         tableModel = new ExceptionsTableModel(parameters);
+        this.cpInfo = cpInfo;
         table.setModel(tableModel);
 
         table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
@@ -83,6 +102,8 @@ public final class ExceptionsPanel extends javax.swing.JPanel {
                 updateButtons();
             }
         });
+        
+        updateButtons();
     }
     
     public List<String> getExceptions() {
@@ -103,6 +124,7 @@ public final class ExceptionsPanel extends javax.swing.JPanel {
         removeButton = new javax.swing.JButton();
         upButton = new javax.swing.JButton();
         downButton = new javax.swing.JButton();
+        editButton = new javax.swing.JButton();
 
         table.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -144,6 +166,13 @@ public final class ExceptionsPanel extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(ExceptionsPanel.class, "ExceptionsPanel.editButton.text_1")); // NOI18N
+        editButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -155,12 +184,13 @@ public final class ExceptionsPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(addButton)
                     .add(removeButton)
+                    .add(editButton)
                     .add(upButton)
                     .add(downButton))
                 .addContainerGap())
         );
 
-        layout.linkSize(new java.awt.Component[] {addButton, downButton, removeButton, upButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        layout.linkSize(new java.awt.Component[] {addButton, downButton, editButton, removeButton, upButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -171,7 +201,9 @@ public final class ExceptionsPanel extends javax.swing.JPanel {
                         .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeButton)
-                        .add(22, 22, 22)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(editButton)
+                        .add(18, 18, 18)
                         .add(upButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(downButton))
@@ -218,16 +250,30 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 }//GEN-LAST:event_removeButtonActionPerformed
 
 private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-    int index = tableModel.addException();
-    table.getSelectionModel().setSelectionInterval(index, index);
-    table.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
-    updateButtons();
+    ElementHandle<TypeElement> handle = browseExceptions();
+    if (handle != null) {
+        int index = tableModel.addException(handle.getQualifiedName());
+        table.getSelectionModel().setSelectionInterval(index, index);
+        table.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
+        updateButtons();
+    }
 }//GEN-LAST:event_addButtonActionPerformed
+
+private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
+    ElementHandle<TypeElement> handle = browseExceptions();
+    if (handle != null) {
+        int index = table.getSelectedRow();
+        table.getSelectionModel().setSelectionInterval(index, index);
+        table.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
+        tableModel.setValueAt(handle.getQualifiedName(), index, 0);
+    }
+}//GEN-LAST:event_editButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton downButton;
+    private javax.swing.JButton editButton;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton removeButton;
     private javax.swing.JTable table;
@@ -239,8 +285,52 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         boolean oneSelected = table.getSelectedRowCount() == 1;
         
         removeButton.setEnabled(oneSelected);
+        editButton.setEnabled(oneSelected);
         upButton.setEnabled(oneSelected && (selIndex > 0));
         downButton.setEnabled(oneSelected && (selIndex < tableModel.getRowCount() - 1));
+    }
+    
+    private static Set<ElementHandle<TypeElement>> getImplementors(ElementHandle<TypeElement> parent, ClassIndex classIndex) {
+        Set<ElementHandle<TypeElement>> directImplementors = classIndex.getElements(
+                parent,
+                EnumSet.of(SearchKind.IMPLEMENTORS),
+                EnumSet.of(SearchScope.SOURCE, SearchScope.DEPENDENCIES));
+        Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>(directImplementors);
+        for (ElementHandle<TypeElement> elementHandle : directImplementors) {
+            result.addAll(getImplementors(elementHandle, classIndex));
+        }
+        return result;
+    }
+    
+    private ElementHandle<TypeElement> browseExceptions() {
+        return TypeElementFinder.find(cpInfo, new TypeElementFinder.Customizer() {
+            public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {                                            
+                ClassIndex classIndex = classpathInfo.getClassIndex();
+                final List<ElementHandle<TypeElement>> handle = new ArrayList<ElementHandle<TypeElement>>();
+                JavaSource javaSource = JavaSource.create(cpInfo);
+                try {
+                    javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+                        public void run(CompilationController controller) throws IOException {
+                            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                            TypeElement throwableElement = controller.getElements().getTypeElement(Throwable.class.getName());
+                            handle.add(ElementHandle.create(throwableElement));
+                        }
+                    }, true);
+                    Set<ElementHandle<TypeElement>> implementors = getImplementors(handle.get(0), classIndex);
+                    Set<ElementHandle<TypeElement>> types = new HashSet<ElementHandle<TypeElement>>(
+                            classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes));
+                    types.retainAll(implementors);
+                    return types;
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+                return Collections.<ElementHandle<TypeElement>>emptySet();
+            }
+
+            public boolean accept(ElementHandle<TypeElement> typeHandle) {
+                return true;
+            }
+        });
     }
     
     // accessible for test
@@ -256,9 +346,9 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             return exceptions;
         }
         
-        public int addException() {
+        public int addException(String exceptionName) {
             int index = exceptions.size();
-            exceptions.add(""); // NOI18N
+            exceptions.add(exceptionName);
             fireTableRowsInserted(index, index);
             return index;
         }
