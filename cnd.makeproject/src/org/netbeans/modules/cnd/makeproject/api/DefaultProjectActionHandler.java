@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
@@ -366,7 +368,11 @@ public class DefaultProjectActionHandler implements ActionListener {
                             pdp.getConfigurationDescriptor().setModified();
                         // Set executable in pae
                         if (pae.getID() == ProjectActionEvent.RUN) {
+                            CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+                            if (compilerSet != null && compilerSet.getCompilerFlavor() != CompilerFlavor.MinGW) {
+                                // IZ 120352
                             executable = FilePathAdaptor.naturalize(executable);
+                            }
                             pae.setExecutable(executable);
                         }
                         else {

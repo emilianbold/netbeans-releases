@@ -57,6 +57,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.actions.BuildToolsAction;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
@@ -346,6 +347,11 @@ public class MakeActionProvider implements ActionProvider {
                             path = FilePathAdaptor.naturalize(path);
                             path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
                             path = FilePathAdaptor.naturalize(path);
+                            CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(conf.getCompilerSet().getValue());
+                            if (compilerSet != null && compilerSet.getCompilerFlavor() == CompilerFlavor.MinGW) {
+                                // IZ 120352
+                                path = FilePathAdaptor.normalize(path);
+                        }
                         }
                     } else {
                         // Always absolute
