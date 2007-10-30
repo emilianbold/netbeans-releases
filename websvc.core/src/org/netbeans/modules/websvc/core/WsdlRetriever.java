@@ -58,7 +58,13 @@ import java.util.Iterator;
 
 import java.util.List;
 import java.util.ArrayList;
-import javax.net.ssl.*;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.xml.retriever.Retriever;
@@ -433,6 +439,7 @@ public class WsdlRetriever implements Runnable {
             schemaNames = new ArrayList<String>();
         }
         
+        @Override
         public void startElement(String uri, String localname, String qname, Attributes attributes) throws SAXException {
             if(W3C_WSDL_SCHEMA.equals(uri) || W3C_WSDL_SCHEMA_SLASH.equals(uri)) {
                 if("service".equals(localname)) { // NOI18N
@@ -456,6 +463,7 @@ public class WsdlRetriever implements Runnable {
             }
         }
         
+        @Override
         public void endElement(String uri, String localname, String qname) throws SAXException {
             if(W3C_WSDL_SCHEMA.equals(uri) || W3C_WSDL_SCHEMA_SLASH.equals(uri)) {
                 if("types".equals(localname)) { // NOI18N
