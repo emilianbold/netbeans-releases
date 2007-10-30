@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.xml.xam.ui.customizer;
 
+import java.awt.Color;
 import java.util.Collection;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -97,6 +98,7 @@ public class MessagePanel extends javax.swing.JPanel implements MessageDisplayer
 		switch(type)
 		{
 			case ERROR:
+                                messageLabel.setForeground(Color.RED);
 				messageLabel.setIcon(new ImageIcon(Utilities.loadImage(
 						"org/netbeans/modules/xml/xam/ui/resources/error.gif"))); // NOI18N
 				break;
