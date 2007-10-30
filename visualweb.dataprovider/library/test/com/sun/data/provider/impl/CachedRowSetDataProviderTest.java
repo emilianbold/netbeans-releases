@@ -6,8 +6,8 @@
 package com.sun.data.provider.impl;
 
 import com.sun.data.provider.FieldKey;
-import com.sun.data.provider.RowKey;
 import com.sun.sql.rowset.CachedRowSetXImpl;
+import java.io.File;
 import junit.framework.TestCase;
 
 
@@ -45,15 +45,61 @@ public class CachedRowSetDataProviderTest extends TestCase {
     protected void setUp() throws Exception {
         try {
             super.setUp();
+            
+            // Comment this out to turn off debugging
+            LOGGER.setLevel(Level.FINE);
+
             initDatabase();
+        } catch ( SQLException sqle ) {
+            reportSQLException(sqle);
         } catch ( Throwable t ) {
             LOGGER.log(Level.SEVERE, "Failed to set up test", t);
             throw new Exception(t);
         }
     }
+    
+    private void reportSQLException(SQLException sqle) {
+        LOGGER.log(Level.SEVERE, null, sqle);
+        
+        if ( sqle.getNextException() != null ) {
+            reportSQLException(sqle.getNextException());
+        }
+    }
 
     protected void tearDown() throws Exception {
         super.tearDown();
+        
+        // Remove the test database so it's not left lying around
+        String userdir = System.getProperty("user.dir");
+        File dbdir = new File (userdir + "/" + "mydb");
+        
+        LOGGER.log(Level.INFO, "userdir is " + userdir);
+        
+        deleteRecursively(dbdir);
+        
+        File logfile = new File(userdir + "/derby.log");
+        if ( logfile.exists() ) { 
+            logfile.delete();
+        }
+    }
+    
+    private void deleteRecursively(File file) throws Exception {
+        if ( !file.exists() ) {
+            return;
+        }
+        
+        if ( ! file.isDirectory() ) {
+            file.delete();
+            return;
+        }
+        
+        File [] children = file.listFiles();
+        
+        for ( int i = 0 ; i < children.length ; i++ ) {
+            deleteRecursively(children[i]);
+        }
+        
+        file.delete();
     }
     
     private void initDatabase() throws Exception {
@@ -63,7 +109,7 @@ public class CachedRowSetDataProviderTest extends TestCase {
         try {
             conn.prepareStatement("DROP TABLE " + TABLENAME).execute();
         } catch ( SQLException sqle ) {
-            LOGGER.log(Level.INFO, null, sqle);
+            LOGGER.log(Level.FINE, null, sqle);
         }
         
         String create = "CREATE TABLE " + TABLENAME + "(" + 
@@ -106,16 +152,15 @@ public class CachedRowSetDataProviderTest extends TestCase {
                " WHERE " + IDNAME + " = 2");
        rowset.setTableName(TABLENAME);
        
-       FieldKey[] keys = provider.getFieldKeys();
-       
-
        checkRows(provider, 1, 2);
        
        rowset.setCommand("SELECT " + IDNAME + " FROM " +
                TABLENAME );
        
        
-       checkRows(provider, this.NUMROWS, 1);
+       checkRows(provider, NUMROWS, 1);
+       
+       provider.close();
     }
     
     private void checkRows(CachedRowSetDataProvider provider,
