@@ -126,7 +126,6 @@ import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 
 public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTesterCookie, ConfigureHandlerCookie {
 
@@ -177,6 +176,7 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         project = FileOwnerQuery.getOwner(srcRoot);
     }
 
+    @Override
     public String getDisplayName() {
         if (service.getWsdlUrl() != null) {
             return NbBundle.getMessage(JaxWsNode.class, "LBL_serviceNodeName", service.getServiceName(), service.getPortName());
@@ -185,6 +185,7 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         }
     }
 
+    @Override
     public String getShortDescription() {
         return getWsdlURL();
     }
@@ -198,6 +199,7 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
     private java.awt.Image cachedErrorBadge;
     private java.awt.Image cachedServiceBadge;
     
+    @Override
     public java.awt.Image getIcon(int type) {
         WsdlModeler wsdlModeler = ((JaxWsChildren) getChildren()).getWsdlModeler();
         if (wsdlModeler == null) {
@@ -241,6 +243,7 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         fireIconChange();
     }
 
+    @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }
@@ -257,20 +260,6 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         return null;
     }
 
-    private <T extends Node.Cookie> T getCookieFromImplBean(Class<T> type) {
-        T oc = null;
-        FileObject f = getImplBean();
-        if (f != null) {
-            try {
-                DataObject d = DataObject.find(f);
-                oc = (T) d.getCookie(type);
-            } catch (DataObjectNotFoundException de) {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
-            }
-        }
-        return oc;
-    }
-
     private OpenCookie getOpenCookie() {
         OpenCookie oc = null;
         FileObject f = getImplBean();
@@ -285,20 +274,24 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         return oc;
     }
 
+    @Override
     public Action getPreferredAction() {
         return SystemAction.get(OpenAction.class);
     }
 
     // Create the popup menu:
+    @Override
     public Action[] getActions(boolean context) {
         return new SystemAction[]{SystemAction.get(OpenAction.class), SystemAction.get(JaxWsRefreshAction.class), null, SystemAction.get(AddOperationAction.class), null, SystemAction.get(WsTesterPageAction.class), null, SystemAction.get(WSEditAttributesAction.class), null, SystemAction.get(ConfigureHandlerAction.class), null, SystemAction.get(DeleteAction.class), null, SystemAction.get(PropertiesAction.class)};
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
     // Handle deleting:
+    @Override
     public boolean canDestroy() {
         return true;
     }
@@ -379,7 +372,6 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
     }
 
     private String getNonJsr109Uri(Object moduleType) throws UnsupportedEncodingException {
-        JAXWSSupport support = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
         if (J2eeModule.WAR.equals(moduleType)) {
             WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
             FileObject webInfFo = webModule.getWebInf();
@@ -438,7 +430,6 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
     }
 
     private String findUrlPattern(WebApp webApp, String implementationClass) {
-        Servlet[] servlets = webApp.getServlet();
         for (Servlet servlet : webApp.getServlet()) {
             if (implementationClass.equals(servlet.getServletClass())) {
                 String servletName = servlet.getServletName();
@@ -521,14 +512,14 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
             if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
                 foundWsAnnotation = true;
                 Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
-                for (ExecutableElement ex : expressions.keySet()) {
-                    if (ex.getSimpleName().contentEquals("serviceName")) {
-                        serviceName[0] = (String) expressions.get(ex).getValue();
+                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry: expressions.entrySet()) {
+                    if (entry.getKey().getSimpleName().contentEquals("serviceName")) {
+                        serviceName[0] = (String) expressions.get(entry.getKey()).getValue();
                         if (serviceName[0] != null) {
                             serviceName[0] = URLEncoder.encode(serviceName[0], "UTF-8"); //NOI18N
                         }
-                    } else if (ex.getSimpleName().contentEquals("name")) {
-                        name[0] = (String) expressions.get(ex).getValue();
+                    } else if (entry.getKey().getSimpleName().contentEquals("name")) {
+                        name[0] = (String) expressions.get(entry.getKey()).getValue();
                         if (name[0] != null) {
                             name[0] = URLEncoder.encode(name[0], "UTF-8");
                         }
@@ -564,6 +555,7 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         }
     }
 
+    @Override
     public void destroy() throws java.io.IOException {
         String serviceName = service.getName();
         NotifyDescriptor.Confirmation notifyDesc = new NotifyDescriptor.Confirmation(NbBundle.getMessage(JaxWsNode.class, "MSG_CONFIRM_DELETE", serviceName));
@@ -647,6 +639,7 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
     /**
      * Adds possibility to display custom delete dialog
      */
+    @Override
     public Object getValue(String attributeName) {
         Object retValue;
         if (attributeName.equals("customDelete")) {
@@ -675,12 +668,12 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                AnnotationMirror handlerAnnotation = getAnnotation(controller, srcUtils, "javax.jws.HandlerChain");
+                AnnotationMirror handlerAnnotation = getAnnotation(controller, srcUtils, "javax.jws.HandlerChain"); //NOI18N
                 if (handlerAnnotation != null) {
                     isNew[0] = false;
                     Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = handlerAnnotation.getElementValues();
                     for (ExecutableElement ex : expressions.keySet()) {
-                        if (ex.getSimpleName().contentEquals("file")) {
+                        if (ex.getSimpleName().contentEquals("file")) {   //NOI18N
                             handlerFileName[0] = (String) expressions.get(ex).getValue();
                             break;
                         }
@@ -776,14 +769,17 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         content.add(implBeanClass);
     }
 
+    @Override
     public boolean canCopy() {
         return true;
     }
 
+    @Override
     public boolean canCut() {
         return true;
     }
 
+    @Override
     public Transferable clipboardCopy() throws IOException {
         URL url = new URL(getWsdlURL());
         boolean connectionOK = false;

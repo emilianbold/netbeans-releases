@@ -46,6 +46,7 @@ import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -173,9 +174,9 @@ public class MethodVisitor {
                 isWebMethod = true;
                 //Now determine if "exclude" is present and set to true
                 Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
-                for(ExecutableElement ex:expressions.keySet()) {
-                    if (ex.getSimpleName().contentEquals("exclude")) { //NOI18N
-                        String value = (String)expressions.get(ex).getValue();
+                for(Entry<? extends ExecutableElement, ? extends AnnotationValue> entry: expressions.entrySet()) {
+                    if (entry.getKey().getSimpleName().contentEquals("exclude")) { //NOI18N
+                        String value = (String)expressions.get(entry.getKey()).getValue();
                         if ("true".equals(value)){
                             isWebMethod = false;
                             break;
@@ -202,9 +203,9 @@ public class MethodVisitor {
         for (AnnotationMirror anMirror : methodAnnotations) {
             if (info.getTypes().isSameType(methodAnotationEl.asType(), anMirror.getAnnotationType())) {
                 Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
-                for(ExecutableElement ex:expressions.keySet()) {
-                    if (ex.getSimpleName().contentEquals("operationName")) { //NOI18N
-                        String name = (String)expressions.get(ex).getValue();
+                for(Entry<? extends ExecutableElement, ? extends AnnotationValue> entry: expressions.entrySet()) {
+                    if (entry.getKey().getSimpleName().contentEquals("operationName")) { //NOI18N
+                        String name = (String)expressions.get(entry.getKey()).getValue();
                         if (operationName.equals(name)){
                             return true;
                         }
