@@ -482,6 +482,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     private Cancellable enqueue(RequestProcessor processor, final Runnable task, final String taskName) {
         return processor.post(new Runnable() {
             public void run() {
+		String oldName = Thread.currentThread().getName();
                 Thread.currentThread().setName(taskName); // NOI18N
 		try {
 		    task.run();
@@ -489,6 +490,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
 		catch( Throwable thr ) {
 		    DiagnosticExceptoins.register(thr);
 		    thr.printStackTrace();
+		}
+		finally {
+		    Thread.currentThread().setName(oldName);
 		}
             }
         });
