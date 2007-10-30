@@ -105,18 +105,36 @@ public class AutoupdateCheckScheduler {
     
     private static void scheduleRefreshProviders () {
         assert ! SwingUtilities.isEventDispatchThread () : "Cannot run refreshProviders in EQ!";
+        Collection<RequestProcessor.Task> refreshTasks = new HashSet<RequestProcessor.Task> ();
         for (UpdateUnitProvider p : UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (true)) {
-            try {
-                p.refresh (null, true);
-                PluginManagerUI pluginManagerUI = PluginManagerAction.getPluginManagerUI ();
-                if (pluginManagerUI != null) {
-                    pluginManagerUI.updateUnitsChanged();
-                }
-            } catch (IOException ioe) {
-                err.log (Level.INFO, ioe.getMessage (), ioe);
-            }
+            RequestProcessor.Task t = RequestProcessor.getDefault ().post (getRefresher (p));
+            refreshTasks.add (t);
         }
+        err.log (Level.FINEST, "Waiting for all refreshTasks...");
+        for (RequestProcessor.Task t : refreshTasks) {
+            t.waitFinished ();
+        }
+        err.log (Level.FINEST, "Waiting for all refreshTasks is done.");
         RequestProcessor.getDefault ().post (doCheckAvailableUpdates, 500);
+    }
+    
+    private static Runnable getRefresher (final UpdateUnitProvider p) {
+        return new Runnable () {
+            public void run () {
+                try {
+                    err.log (Level.FINE, "Start refresh " + p.getName () + "[" + p.getDisplayName () + "]");
+                    p.refresh (null, true);
+                    PluginManagerUI pluginManagerUI = PluginManagerAction.getPluginManagerUI ();
+                    if (pluginManagerUI != null) {
+                        pluginManagerUI.updateUnitsChanged();
+                    }
+                } catch (IOException ioe) {
+                    err.log (Level.INFO, ioe.getMessage (), ioe);
+                } finally {
+                    err.log (Level.FINEST, "Refresh of " + p.getName () + "[" + p.getDisplayName () + "]" + " is finish.");
+                }
+            }
+        };
     }
     
     private static Runnable doCheckAvailableUpdates = new Runnable () {

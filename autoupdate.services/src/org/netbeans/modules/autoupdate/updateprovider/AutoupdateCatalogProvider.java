@@ -136,6 +136,7 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
         updateCenter = newUpdateCenter;
     }
     
+    @Override
     public String toString () {
         return displayName + "[" + codeName + "] to " + updateCenter;
     }

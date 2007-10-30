@@ -94,7 +94,7 @@ public class AutoupdateCatalogCache {
     }
     
     public URL writeCatalogToCache (String codeName, URL original) throws IOException {
-        synchronized(AutoupdateCatalogCache.class) {
+        synchronized(codeName.intern ()) {
             URL url = null;
             File dir = getCatalogCache ();
             assert dir != null && dir.exists () : "Cache directory must exist.";
