@@ -42,8 +42,13 @@
 package org.netbeans.modules.web.project.ui;
 
 import java.awt.Image;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
@@ -72,10 +77,12 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  *
@@ -265,7 +272,10 @@ public final class DocBaseNodeFactory implements NodeFactory {
 
     private static abstract class BaseNode extends FilterNode {
         private static Image WEB_PAGES_BADGE = Utilities.loadImage( "org/netbeans/modules/web/project/ui/resources/webPagesBadge.gif" ); //NOI18N
-        
+        /**
+         * The MIME type of Java files.
+         */
+        private static final String JAVA_MIME_TYPE = "text/x-java"; //NO18N
         private Action actions[];
         protected final Project project;
         
@@ -273,7 +283,7 @@ public final class DocBaseNodeFactory implements NodeFactory {
             super(folder.getNodeDelegate(), folder.createNodeChildren(new VisibilityQueryDataFilter()));
             this.project = project;
         }
-        
+
         @Override
         public Image getIcon(int type) {        
             return computeIcon(false, type);
@@ -317,6 +327,30 @@ public final class DocBaseNodeFactory implements NodeFactory {
                 actions[8] = new PreselectPropertiesAction(project, "Sources"); //NOI18N
             }
             return actions;
+        }
+
+        @Override
+        public PasteType getDropType(Transferable t, int action, int index) {
+            try {
+                if (t.isDataFlavorSupported(DataFlavor.javaFileListFlavor)){
+                    Object data = t.getTransferData(DataFlavor.javaFileListFlavor);
+                    if (data != null) {
+                        List list = (List) data;
+                        for (Object each : list) {
+                            FileObject file = FileUtil.toFileObject((File) each);
+                            if (JAVA_MIME_TYPE.equals(file.getMIMEType())) { //NO18N
+                                // don't allow java files, see #119968
+                                return null;
+                            }
+                        }
+                    }
+                }
+            } catch (UnsupportedFlavorException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return super.getDropType(t, action, index);
         }
     }
 
