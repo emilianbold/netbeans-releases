@@ -228,7 +228,9 @@ public final class _RetoucheUtil {
 
     /**
      * Generates unique member name in class-scope
-     * @param javaClass scope for uniqueness
+     * 
+     * @param fileObject file containing class acting as scope for uniqueness
+     * @param className name of class acting as scope for uniqueness
      * @param memberName suggested member name
      * @param defaultValue default value applied if member name cannot be converted to legal Java identifier
      * @return given member name if no such member exists or given member name without any illegal characters extended with unique number
