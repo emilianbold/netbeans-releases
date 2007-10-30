@@ -42,13 +42,17 @@ package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
-import com.sun.source.tree.Tree;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.netbeans.modules.java.source.transform.Transformer;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TestUtilities;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileStateInvalidException;
 
@@ -75,6 +79,7 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
         return suite;
     }
     
+    @Override
     protected void setUp() throws FileStateInvalidException, Exception {
         super.setUp();
         testFile = getFile(getSourceDir(), getSourcePckg() + "ImportClass1.java");
@@ -82,137 +87,197 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
 
     public void testFirstAddition() throws IOException, FileStateInvalidException {
         System.err.println("testFirstAddition");
-        process(new Transformer<Void, Object>() {
-            public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
                 List<ImportTree> imports = new ArrayList<ImportTree>();
                 imports.add(make.Import(make.Identifier("java.util.List"), false));
                 imports.add(make.Import(make.Identifier("java.util.Set"), false));
                 CompilationUnitTree unit = make.CompilationUnit(
-                        node.getPackageName(),
+                        cut.getPackageName(),
                         imports,
-                        node.getTypeDecls(),
-                        node.getSourceFile()
+                        cut.getTypeDecls(),
+                        cut.getSourceFile()
                 );
-                copy.rewrite(node, unit);
-                return null;
+                workingCopy.rewrite(cut, unit);
             }
-        });
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testFirstAddition_ImportFormatTest.pass");
     }
 
     public void testAddFirstImport() throws IOException, FileStateInvalidException {
         System.err.println("testAddFirstImport");
-        process(new Transformer<Void, Object>() {
-            public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                List<ImportTree> imports = new ArrayList<ImportTree>(node.getImports());
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
                 imports.add(0, make.Import(make.Identifier("java.util.AbstractList"), false));
                 CompilationUnitTree unit = make.CompilationUnit(
-                        node.getPackageName(),
+                        cut.getPackageName(),
                         imports,
-                        node.getTypeDecls(),
-                        node.getSourceFile()
+                        cut.getTypeDecls(),
+                        cut.getSourceFile()
                 );
-                copy.rewrite(node, unit);
-                return null;
+                workingCopy.rewrite(cut, unit);
             }
-        });
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testAddFirstImport_ImportFormatTest.pass");
     }
     
 
     public void testAddLastImport() throws IOException, FileStateInvalidException {
-        process(new Transformer<Void, Object>() {
-            public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                List<ImportTree> imports = new ArrayList<ImportTree>(node.getImports());
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
                 imports.add(make.Import(make.Identifier("java.io.IOException"), false));
                 CompilationUnitTree unit = make.CompilationUnit(
-                        node.getPackageName(),
+                        cut.getPackageName(),
                         imports,
-                        node.getTypeDecls(),
-                        node.getSourceFile()
+                        cut.getTypeDecls(),
+                        cut.getSourceFile()
                 );
-                copy.rewrite(node, unit);
-                return null;
+                workingCopy.rewrite(cut, unit);
             }
-        });
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testAddLastImport_ImportFormatTest.pass");
     }
     
     public void testRemoveInnerImport() throws IOException, FileStateInvalidException {
-        process(new Transformer<Void, Object>() {
-            public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                List<ImportTree> imports = new ArrayList<ImportTree>(node.getImports());
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
                 imports.remove(1);
                 CompilationUnitTree unit = make.CompilationUnit(
-                        node.getPackageName(),
+                        cut.getPackageName(),
                         imports,
-                        node.getTypeDecls(),
-                        node.getSourceFile()
+                        cut.getTypeDecls(),
+                        cut.getSourceFile()
                 );
-                copy.rewrite(node, unit);
-                return null;
+                workingCopy.rewrite(cut, unit);
             }
-        });
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testRemoveInnerImport_ImportFormatTest.pass");
     }
     
     public void testRemoveFirstImport() throws IOException, FileStateInvalidException {
-        process(new Transformer<Void, Object>() {
-            public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                List<ImportTree> imports = new ArrayList<ImportTree>(node.getImports());
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
                 imports.remove(0);
                 CompilationUnitTree unit = make.CompilationUnit(
-                        node.getPackageName(),
+                        cut.getPackageName(),
                         imports,
-                        node.getTypeDecls(),
-                        node.getSourceFile()
+                        cut.getTypeDecls(),
+                        cut.getSourceFile()
                 );
-                copy.rewrite(node, unit);
-                return null;
+                workingCopy.rewrite(cut, unit);
             }
-        });
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testRemoveFirstImport_ImportFormatTest.pass");
     }
 
     public void testRemoveLastImport() throws IOException, FileStateInvalidException {
-        process(new Transformer<Void, Object>() {
-            public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                List<ImportTree> imports = new ArrayList<ImportTree>(node.getImports());
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
                 imports.remove(1);
                 CompilationUnitTree unit = make.CompilationUnit(
-                        node.getPackageName(),
+                        cut.getPackageName(),
                         imports,
-                        node.getTypeDecls(),
-                        node.getSourceFile()
+                        cut.getTypeDecls(),
+                        cut.getSourceFile()
                 );
-                copy.rewrite(node, unit);
-                return null;
+                workingCopy.rewrite(cut, unit);
             }
-        });
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testRemoveLastImport_ImportFormatTest.pass");
     }
     
     public void testRemoveAllRemaning() throws IOException, FileStateInvalidException {
-        process(new Transformer<Void, Object>() {
-            public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
                 CompilationUnitTree unit = make.CompilationUnit(
-                        node.getPackageName(),
+                        cut.getPackageName(),
                         Collections.EMPTY_LIST,
-                        node.getTypeDecls(),
-                        node.getSourceFile()
+                        cut.getTypeDecls(),
+                        cut.getSourceFile()
                 );
-                copy.rewrite(node, unit);
-                return null;
+                workingCopy.rewrite(cut, unit);
             }
-        });
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testRemoveAllRemaning_ImportFormatTest.pass");
     }
 
     
     public void testAddSeveral() throws IOException, FileStateInvalidException {
-        process(new Transformer<Void, Object>() {
-            public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                List<ImportTree> imports = (List<ImportTree>) node.getImports();
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                List<ImportTree> imports = (List<ImportTree>) cut.getImports();
                 imports.add(make.Import(make.Identifier("java.util.List"), false));
                 imports.add(make.Import(make.Identifier("java.util.Set"), false));
                 imports.add(make.Import(make.Identifier("javax.swing.CellRendererPane"), false));
@@ -223,97 +288,137 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
                 imports.add(make.Import(make.Identifier("javax.swing.JFileChooser"), false));
                 imports.add(make.Import(make.Identifier("javax.swing.AbstractAction"), false));
                 CompilationUnitTree unit = make.CompilationUnit(
-                        node.getPackageName(),
+                        cut.getPackageName(),
                         imports,
-                        node.getTypeDecls(),
-                        node.getSourceFile()
+                        cut.getTypeDecls(),
+                        cut.getSourceFile()
                 );
-                copy.rewrite(node, unit);
-                return null;
+                workingCopy.rewrite(cut, unit);
             }
-        });
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testAddSeveral_ImportFormatTest.pass");
     }
     
     public void testRemoveInside() throws IOException, FileStateInvalidException {
-        process(new Transformer<Void, Object>() {
-            public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                List<ImportTree> imports = new ArrayList<ImportTree>(node.getImports());
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
                 imports.remove(4);
                 CompilationUnitTree unit = make.CompilationUnit(
-                        node.getPackageName(),
+                        cut.getPackageName(),
                         imports,
-                        node.getTypeDecls(),
-                        node.getSourceFile()
+                        cut.getTypeDecls(),
+                        cut.getSourceFile()
                 );
-                copy.rewrite(node, unit);
-                return null;
+                workingCopy.rewrite(cut, unit);
             }
-        });
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testRemoveInside_ImportFormatTest.pass");
     }
     
     public void testMoveFirst() throws IOException, FileStateInvalidException {
-        process(new Transformer<Void, Object>() {
-            public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                List<ImportTree> imports = new ArrayList<ImportTree>(node.getImports());
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
                 ImportTree oneImport = imports.remove(0);
                 imports.add(3, oneImport);
                 CompilationUnitTree unit = make.CompilationUnit(
-                        node.getPackageName(),
+                        cut.getPackageName(),
                         imports,
-                        node.getTypeDecls(),
-                        node.getSourceFile()
+                        cut.getTypeDecls(),
+                        cut.getSourceFile()
                 );
-                copy.rewrite(node, unit);
-                return null;
+                workingCopy.rewrite(cut, unit);
             }
-        });
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testMoveFirst_ImportFormatTest.pass");
     }
     
     public void testMoveLast() throws IOException, FileStateInvalidException {
-        process(new Transformer<Void, Object>() {
-            public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                List<ImportTree> imports = new ArrayList<ImportTree>(node.getImports());
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
                 ImportTree oneImport = imports.remove(7);
                 imports.add(1, oneImport);
                 CompilationUnitTree unit = make.CompilationUnit(
-                        node.getPackageName(),
+                        cut.getPackageName(),
                         imports,
-                        node.getTypeDecls(),
-                        node.getSourceFile()
+                        cut.getTypeDecls(),
+                        cut.getSourceFile()
                 );
-                copy.rewrite(node, unit);
-                return null;
+                workingCopy.rewrite(cut, unit);
             }
-        });
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testMoveLast_ImportFormatTest.pass");
     }
     
     public void testReplaceLine() throws IOException, FileStateInvalidException {
-        process(new Transformer<Void, Object>() {
-            public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                List<ImportTree> imports = new ArrayList<ImportTree>(node.getImports());
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
                 ImportTree oneImport = imports.remove(4);
                 imports.add(4, make.Import(make.Identifier("java.util.Collection"), false));
                 CompilationUnitTree unit = make.CompilationUnit(
-                        node.getPackageName(),
+                        cut.getPackageName(),
                         imports,
-                        node.getTypeDecls(),
-                        node.getSourceFile()
+                        cut.getTypeDecls(),
+                        cut.getSourceFile()
                 );
-                copy.rewrite(node, unit);
-                return null;
+                workingCopy.rewrite(cut, unit);
             }
-        });
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testReplaceLine_ImportFormatTest.pass");
     }
 
     public void testSort() throws IOException, FileStateInvalidException {
-        process(new Transformer<Void, Object>() {
-            public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
-                List<ImportTree> imports = new ArrayList<ImportTree>(node.getImports());
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
                 ImportTree oneImport = imports.remove(4);
                 imports.add(4, make.Import(make.Identifier("java.util.Collection"), false));
                 Collections.sort(imports, new Comparator() {
@@ -327,20 +432,29 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
                         return i1.toString().compareTo(i2.toString());
                     }
 
+                    @Override
                     public boolean equals(Object obj) {
                         return this == obj ? true : false;
                     }
+
+                    @Override
+                    public int hashCode() {
+                        int hash = 7;
+                        return hash;
+                    }
                 });
                 CompilationUnitTree unit = make.CompilationUnit(
-                        node.getPackageName(),
+                        cut.getPackageName(),
                         imports,
-                        node.getTypeDecls(),
-                        node.getSourceFile()
+                        cut.getTypeDecls(),
+                        cut.getSourceFile()
                 );
-                copy.rewrite(node, unit);
-                return null;
+                workingCopy.rewrite(cut, unit);
             }
-        });
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertFiles("testSort_ImportFormatTest.pass");
     }
     
