@@ -6,7 +6,9 @@ Comment: The file lib/classic-debug.rb is based on the debug.rb file from Ruby p
 Description: Contains library intermediating communication between the debug-commons backends and Java frontend.
 Origin: http://debug-commons.rubyforge.org/
 
-Copyright (c) 2007 debug-commons team
+The MIT License
+
+Copyright (c) 2007, debug-commons team
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
