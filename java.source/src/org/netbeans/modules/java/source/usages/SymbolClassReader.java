@@ -106,6 +106,7 @@ public class SymbolClassReader extends JavadocClassReader {
     private JavacTypes jTypes;
     private Log logger;
     private Source source;
+    private boolean sigEnterPhase;
     
     private char[] buffer;
     private int currentBufferIndex;
@@ -418,7 +419,7 @@ public class SymbolClassReader extends JavadocClassReader {
         enterMember(owner, innerClass);
     }
 
-    private List<TypeVar> readTypeParams(Symbol owner, Reader r, boolean sigEnterPhase) throws IOException {
+    private List<TypeVar> readTypeParams(Symbol owner, Reader r) throws IOException {
         int read;
         List<TypeVar> result = List.<TypeVar>nil();
         while ((read = r.read()) != '>') {
@@ -477,10 +478,19 @@ public class SymbolClassReader extends JavadocClassReader {
     private List<TypeVar> readTypeParamsWithName(Reader r, Symbol owner) throws IOException {
         LoggingReader lr = new LoggingReader(r);
         
-        readTypeParams(owner, lr, true);
-        StringReader copy = new StringReader(lr.logged.toString());
-        List<TypeVar> result = readTypeParams(owner, copy, false);
+        boolean oldSigEnterPhase = sigEnterPhase;
         
+        sigEnterPhase = true;
+        
+        try {
+            readTypeParams(owner, lr);
+        } finally {
+            sigEnterPhase = oldSigEnterPhase;
+        }
+        
+        StringReader copy = new StringReader(lr.logged.toString());
+        List<TypeVar> result = readTypeParams(owner, copy);
+
         copy.close();
         
         return result.reverse();
@@ -599,7 +609,11 @@ public class SymbolClassReader extends JavadocClassReader {
             case 'R':
                 return new ErrorType(readPlainNameIntoTable(r), syms.noSymbol);
             case 'Q':
-                return findTypeVar(readPlainNameIntoTable(r));
+                Name name = readPlainNameIntoTable(r);
+                if (sigEnterPhase)
+                    return Type.noType;
+                else
+                    return findTypeVar(name);
             case '+':
                 return new WildcardType(readType(r, r.read()), BoundKind.EXTENDS, syms.boundClass);
             case '-':
