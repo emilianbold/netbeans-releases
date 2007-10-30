@@ -44,15 +44,9 @@ package org.netbeans.modules.websvc.core.dev.wizard;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
@@ -62,26 +56,11 @@ import org.openide.nodes.Node;
 public final class EJBListViewChildren extends Children.Keys {
 
     public static final String KEY_EJBS = "ejbKey"; //NOI18N
-    
-    private Sources sources;
-    private ClassPath cp;
-    private Project project;
+        private Project project;
 
     public EJBListViewChildren(Project project) {
         assert project != null;
         this.project = project;
-        sources = ProjectUtils.getSources(project);
-        assert sources != null;
-        cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(getRoots());
-    }
-
-    private FileObject[] getRoots() {
-        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        FileObject[] roots = new FileObject[groups.length];
-        for (int i = 0; i < groups.length; i++) {
-            roots[i] = groups[i].getRootFolder();
-        }
-        return roots;
     }
 
     @Override

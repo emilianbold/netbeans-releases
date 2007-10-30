@@ -244,7 +244,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         List<Node> ejbProjectNodes = new LinkedList<Node>();
         
         for (int i = 0; i < allProjects.length; i++) {
-            LogicalViewProvider lvp = (LogicalViewProvider) allProjects[i].getLookup().lookup(LogicalViewProvider.class);
+            LogicalViewProvider lvp = allProjects[i].getLookup().lookup(LogicalViewProvider.class);
             Node projectView = lvp.createLogicalView();
             ejbProjectNodes.add(new FilterNode(projectView, new EJBListViewChildren(allProjects[i])) {
                 public Action[] getActions(boolean context) {
@@ -327,7 +327,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
     
     
     void store(WizardDescriptor d) {
-        d.putProperty(WizardProperties.WEB_SERVICE_TYPE, new Integer(getServiceType()));
+        d.putProperty(WizardProperties.WEB_SERVICE_TYPE, Integer.valueOf(getServiceType()));
         if (getServiceType() == WizardProperties.ENCAPSULATE_SESSION_BEAN)
             d.putProperty(WizardProperties.DELEGATE_TO_SESSION_BEAN, sessionBeanNodes);
     }
@@ -431,7 +431,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         List<Project> filteredResults = new ArrayList<Project>(allProjects.length);
         for (int i = 0; i < allProjects.length; i++) {
             boolean isEJBModule = false;
-            J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) allProjects[i].getLookup().lookup(J2eeModuleProvider.class);
+            J2eeModuleProvider j2eeModuleProvider = allProjects[i].getLookup().lookup(J2eeModuleProvider.class);
             if (j2eeModuleProvider != null && j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
                 isEJBModule = true;
             }

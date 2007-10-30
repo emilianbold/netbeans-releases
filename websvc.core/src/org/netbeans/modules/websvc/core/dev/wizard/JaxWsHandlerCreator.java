@@ -42,7 +42,6 @@
 package org.netbeans.modules.websvc.core.dev.wizard;
 
 import java.io.IOException;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.core.HandlerCreator;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -57,13 +56,11 @@ import org.openide.util.RequestProcessor;
  * @author Rico, Milan Kuchtiak
  */
 public class JaxWsHandlerCreator implements HandlerCreator {
-    private Project project;
     private WizardDescriptor wiz;
     /**
      * Creates a new instance of WebServiceClientCreator
      */
-    public JaxWsHandlerCreator(Project project, WizardDescriptor wiz) {
-        this.project = project;
+    public JaxWsHandlerCreator(WizardDescriptor wiz) {
         this.wiz = wiz;
     }
         
@@ -76,7 +73,7 @@ public class JaxWsHandlerCreator implements HandlerCreator {
         DataObject dobj = dTemplate.createFromTemplate(df, handlerName);
 
         //open in the editor
-        final EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+        final EditorCookie ec = dobj.getCookie(EditorCookie.class);
         RequestProcessor.getDefault().post(new Runnable(){
             public void run(){
                 ec.open();
@@ -93,7 +90,7 @@ public class JaxWsHandlerCreator implements HandlerCreator {
         DataObject dobj = dTemplate.createFromTemplate(df, handlerName);
 
         //open in the editor
-        final EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+        final EditorCookie ec = dobj.getCookie(EditorCookie.class);
         RequestProcessor.getDefault().post(new Runnable(){
             public void run(){
                 ec.open();

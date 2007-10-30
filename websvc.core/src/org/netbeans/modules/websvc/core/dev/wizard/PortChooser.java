@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.websvc.core.dev.wizard;
 
-import java.awt.Container;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.border.EtchedBorder;
@@ -69,7 +68,6 @@ public class PortChooser extends javax.swing.JPanel {
         jPanelBeanTree.add(nodeDisplayPanel);
         nodeDisplayPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pce) {
-                Node[] nodes = nodeDisplayPanel.getSelectedNodes();
                 validateNodes();
             }
         });
@@ -162,7 +160,7 @@ public class PortChooser extends javax.swing.JPanel {
                 return false;
             }
             
-            PortNode port = (PortNode) nodes[0].getLookup().lookup(PortNode.class);
+            PortNode port = nodes[0].getLookup().lookup(PortNode.class);
             // non-port node is selected
             if (port == null) {
                 setErrorMessage(NbBundle.getMessage(PortChooser.class, "LBL_NodeIsNotPort")); //NOI18N

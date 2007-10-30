@@ -170,15 +170,8 @@ public class JaxWsServiceCreator implements ServiceCreator {
         Runnable r = new Runnable() {
             public void run() {
                 try {
-//                    if (Util.isJavaEE5orHigher(project) ||
-//                            (!jsr109Supported && projectType == WEB_PROJECT_TYPE && !jsr109oldSupported)
-//                            || jwsdpSupported) {
-                        handle.start();
-                        generateWsFromWsdl15(handle);
-//                    } else {
-//                        handle.start(100);
-//                        generateWsFromWsdl14(handle);
-//                    }
+                    handle.start();
+                    generateWsFromWsdl15(handle);
                 } catch (Exception e) {
                     //finish progress bar
                     handle.finish();
@@ -326,7 +319,6 @@ public class JaxWsServiceCreator implements ServiceCreator {
         final URL wsdlURL = wsdlUrl;
         final WsdlService service = (WsdlService) wiz.getProperty(WizardProperties.WSDL_SERVICE);
         if (service==null) {
-            JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(projectInfo.getProject().getProjectDirectory());
             FileObject targetFolder = Templates.getTargetFolder(wiz);
             String targetName = Templates.getTargetName(wiz);
             WsdlServiceHandler handler = (WsdlServiceHandler)wiz.getProperty(WizardProperties.WSDL_SERVICE_HANDLER);

@@ -69,7 +69,6 @@ public class EjbChooser extends javax.swing.JPanel {
         jPanelBeanTree.add(nodeDisplayPanel);
         nodeDisplayPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pce) {
-                Node[] nodes = nodeDisplayPanel.getSelectedNodes();
                 validateNodes();
             }
         });

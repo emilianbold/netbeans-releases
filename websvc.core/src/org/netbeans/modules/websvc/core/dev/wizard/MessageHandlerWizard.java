@@ -90,7 +90,7 @@ public class MessageHandlerWizard implements WizardDescriptor.InstantiatingItera
         c.putClientProperty("WizardPanel_contentData", //NOI18N
                 HANDLER_STEPS);
         c.putClientProperty("WizardPanel_contentSelectedIndex", //NOI18N
-                new Integer(0));
+                Integer.valueOf(0));
         c.getAccessibleContext().setAccessibleDescription
                 (HANDLER_STEPS[0]);
         wizardPanels = new WizardDescriptor.Panel[] {firstPanel};

@@ -134,7 +134,7 @@ public class NewWebServiceFromWSDLWizardIterator implements TemplateWizard.Itera
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(i)); // NOI18N
                 // Step name (actually the whole list for reference).
                 jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
             }
@@ -167,7 +167,7 @@ public class NewWebServiceFromWSDLWizardIterator implements TemplateWizard.Itera
     }
 
     public String name() {
-        return MessageFormat.format(NbBundle.getMessage(NewWebServiceWizardIterator.class, "LBL_WizardStepsCount"), (new Integer(index + 1)).toString(), (new Integer(panels.length)).toString()); //NOI18N
+        return MessageFormat.format(NbBundle.getMessage(NewWebServiceWizardIterator.class, "LBL_WizardStepsCount"), Integer.valueOf(index + 1).toString(), Integer.valueOf(panels.length).toString()); //NOI18N
     }
     
     public boolean hasNext() {

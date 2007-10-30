@@ -429,7 +429,6 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         
         if (!wsdlFilePath.startsWith("http://") && !wsdlFilePath.startsWith("https://") && !wsdlFilePath.startsWith("www.")) { //NOI18N
             File f = new File(wsdlFilePath);
-            String wsdlFileText = f.getAbsolutePath();
             f = getCanonicalFile(f);
             if(f == null) {
                 wizardDescriptor.putProperty("WizardPanel_errorMessage",  // NOI18N
@@ -475,21 +474,6 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         } else{
             wizardDescriptor.putProperty("WizardPanel_errorMessage",  ""); // NOI18N
         }
-        // Retouche
-        //        if (JavaMetamodel.getManager().isScanInProgress()) {
-        //            if (!isWaitingForScan) {
-        //                isWaitingForScan = true;
-        //                RequestProcessor.getDefault().post(new Runnable() {
-        //                    public void run() {
-        //                        JavaMetamodel.getManager().waitScanFinished();
-        //                        isWaitingForScan = false;
-        //                        fireChange();
-        //                    }
-        //                });
-        //            }
-        //            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_ScanningInProgress")); //NOI18N
-        //            return false;
-        //        } else
         wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
         
         return true;
@@ -503,7 +487,6 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         } else {
             d.putProperty(WizardProperties.WSDL_FILE_PATH,wsdlLocation);
         }
-        //d.putProperty(WizardProperties.WSDL_FILE_PATH, jTextFieldWSDLFile.getText().trim());
         d.putProperty(WizardProperties.WSDL_MODEL, wsdlModel);
         d.putProperty(WizardProperties.WSDL_MODELER, wsdlModeler);
         d.putProperty(WizardProperties.WSDL_SERVICE, service);
@@ -548,7 +531,6 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         } else {
             if (!wsdlFilePath.startsWith("http://") && !wsdlFilePath.startsWith("https://") && !wsdlFilePath.startsWith("www.")) { //NOI18N
                 File f = new File(wsdlFilePath);
-                String wsdlFileText = f.getAbsolutePath();
                 f = getCanonicalFile(f);
                 if(f == null) {
                     jButtonBrowsePort.setEnabled(false);
