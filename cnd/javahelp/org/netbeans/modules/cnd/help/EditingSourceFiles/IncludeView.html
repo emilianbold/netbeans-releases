@@ -10,7 +10,7 @@ type="text/css">
 <title>Using the Include Hierarchy Window</title>
 </head>
 <body>
-<h2>Using the Include Window</h2>
+<h2>Using the Include Hierarchy Window</h2>
 <p><small> <a href="#seealso">See Also</a></small></p> 
 <p>The Include Hierarchy window lets you inspect all header and source files that are directly 
 or indirectly included in a source file, or all source and header files that 
@@ -19,53 +19,64 @@ directly or indirectly include a header file.</p>
 the IDE. If you open the Include Hierarchy window in the IDE when the 
 Type Hierarchy window is open, the Include Hierarchy window replaces 
 the Type Hierarchy window.</p>
-<p><b>To list all the header and source files 
-included in a source file, or all the source and header files that include a
-header file:</b>
+<p><b>To open the Include Hierarchy window:</b>
 <ol>
-<li>In the Source Editor, right-click in the source file or header file.</li>
+<li>Open the source or header file.
+<li>In the Source Editor, do one of the following:
+<ul>
+<li>To show the include hierarchy for the file, right-click anywhere 
+in the file. </li>
+<li>To show the include hierarchy for a file that is included via a <tt>#include</tt> directive,
+click on the directive.  
+</li>
+</ul>
 <li>To display the include hierarchy in a window in the IDE, choose 
-View Include Hierarchy. The Include window opens to the right of 
+View Include Hierarchy. The Hierarchy window opens to the right of 
 Source Editor window.</li>
 <li>To display the include hierarchy in a pop-up window, choose 
-Inspect Include Hierarchy. The pop-up Include window opens.
+Inspect Include Hierarchy. The pop-up Hierarchy window opens.
 </li>
 </ol>
-For a source file, the default hierarchy display is a plain list of all directly 
+<p>For a source file, the default hierarchy display is a plain list of all directly 
 and indirectly included files. For a header file, the default hierarchy display is a plain list of files 
-that directly include the header file.</p>
-<p><b>To list all of the source and header files that directly or indirectly include 
-the same included file:</b>
-<ol>
-<li>In the Source Editor, right-click in an include directive in a 
-source or header file.
-<li>To display the list of including files in a window in the IDE, choose 
-View Include Hierarchy. The Include window opens to the right of 
-Source Editor window.</li>
-<li>To display the list of including files in a pop-up window, choose 
-Inspect Include Hierarchy. The pop-up Include window opens.
-</li>
-</ol>
-By default, the include hierarchy is displayed as a plain list of 
-the files that directly or indirectly include the header file.
+that directly include the header file. For an included file, the 
+default hierarchy is a plain list of 
+the files that directly or indirectly include the file.
 </p>
 <p>Buttons at the bottom of the Include Hierarchy window allow you to 
 change the display:
-<ul>
-<li><b>Refresh button.</b>(IDE window only) Updates the hierarchy display.</li>
-<li><b>Who Includes This File button.</b> Changes the list to the files
-that include the file (the default view for header files).</li>
-<li><b>Who Is Included in the File button.</b> Changes the list to the 
-files that are included in the file (the default view for source files).</li>
-<li><b>Recursive Include button.</b> Changes the list from only files that directly 
-include or are included to all files that include or are included.</li>
-<li><b>Direct Only Include button.</b> Changes the list from all files that 
-include or are include to only files that directly include or are included.</li>
-<li><b>Tree View button.</b> Changes the plain list to a 
-tree view.</li>
-<li><b>Plain List button.</b> Changes the tree view to a 
-plain list.</li>
-</ul>
+</p>
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists  
+the button. The right column lists the description.">
+<tr valign="top">
+<th scope="col" align="left">Button</th>
+<th scope="col" align="left">Description</th>
+</tr>
+<tr valign="top">
+<td><img src="../images/refresh.png" alt="Refresh button"></td>
+<td>(IDE window only) Updates the hierarchy display.</td>
+</tr>
+<tr>
+<td><img src="../images/who_includes.png" alr="Who Includes This File button"></td>
+<td>Changes the list to the files
+that include the file (the default view for header files).</td>
+</tr>
+<tr>
+<td><img src="../images/who_is_included.png" alt="Who Is Included in the File button"></td> 
+<td>Changes the list to the 
+files that are included in the file (the default view for source files).</td>
+</tr>
+<tr>
+<td><img src="../images/direct_only.png" alt="Recursive Include/Direct Only Include button"></td> 
+<td>Toggles between the list of only files that directly 
+include or are included, and the list of all files that include or are included.</li>
+</tr>
+<tr>
+<td><img src="../images/tree.png" alt="Tree View/Plain List button"></td> 
+<td>Toggles between a plain list and a 
+tree view.</td>
+</tr>
+</table>
 <table summary="related topics">
 <tr valign="top">
 <th colspan=2 align=left><a name="seealso">See Also</a></th>

@@ -48,7 +48,8 @@
 				<file title="advanced_options.html"/>
 				<file title="base_directory.html"/>
 				<file title="basic_options.html"/>
-				<file title="build_output_directory.html"/>				<file title="compiler_paths.html"/>
+				<file title="build_output_directory.html"/>
+				<file title="compiler_paths.html"/>
 				<file title="compiling_preference.html"/>
 				<file title="CreatingMakefile.html"/>
 				<file title="custom_make.html"/>
