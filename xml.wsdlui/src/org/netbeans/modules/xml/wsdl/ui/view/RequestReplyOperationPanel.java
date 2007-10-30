@@ -135,30 +135,43 @@ public class RequestReplyOperationPanel extends javax.swing.JPanel implements Op
 
         portTypeNameLabel.setLabelFor(portTypeNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(portTypeNameLabel, org.openide.util.NbBundle.getMessage(RequestReplyOperationPanel.class, "RequestReplyOperationPanel.portTypeNameLabel.text")); // NOI18N
+        portTypeNameLabel.setToolTipText(org.openide.util.NbBundle.getMessage(RequestReplyOperationPanel.class, "RequestReplyOperationPanel.portTypeNameLabel.toolTipText")); // NOI18N
 
         OperationNameLabel.setLabelFor(operationNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(OperationNameLabel, org.openide.util.NbBundle.getMessage(RequestReplyOperationPanel.class, "RequestReplyOperationPanel.OperationNameLabel.text")); // NOI18N
+        OperationNameLabel.setToolTipText(org.openide.util.NbBundle.getMessage(RequestReplyOperationPanel.class, "RequestReplyOperationPanel.OperationNameLabel.toolTipText")); // NOI18N
 
         operationTypeLabel.setLabelFor(operationTypeComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(operationTypeLabel, org.openide.util.NbBundle.getMessage(RequestReplyOperationPanel.class, "RequestReplyOperationPanel.operationTypeLabel.text")); // NOI18N
+        operationTypeLabel.setToolTipText(org.openide.util.NbBundle.getMessage(RequestReplyOperationPanel.class, "RequestReplyOperationPanel.operationTypeLabel.toolTipText")); // NOI18N
 
         operationTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Request-Response Operation", "One-Way Operation" }));
+        operationTypeComboBox.setToolTipText(org.openide.util.NbBundle.getMessage(RequestReplyOperationPanel.class, "RequestReplyOperationPanel.operationTypeComboBox.toolTipText")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(inputLabel, org.openide.util.NbBundle.getMessage(RequestReplyOperationPanel.class, "RequestReplyOperationPanel.inputLabel.text")); // NOI18N
+        inputLabel.setToolTipText(org.openide.util.NbBundle.getMessage(RequestReplyOperationPanel.class, "RequestReplyOperationPanel.inputLabel.toolTipText")); // NOI18N
 
         inputPanel.setLayout(new javax.swing.BoxLayout(inputPanel, javax.swing.BoxLayout.Y_AXIS));
+
+        inputMessageNameConfigurationPanel1.setToolTipText(org.openide.util.NbBundle.getMessage(RequestReplyOperationPanel.class, "RequestReplyOperationPanel.inputMessageNameConfigurationPanel1.toolTipText")); // NOI18N
         inputPanel.add(inputMessageNameConfigurationPanel1);
         inputPanel.add(inputMessagePartsConfigurationTable);
 
         org.openide.awt.Mnemonics.setLocalizedText(outputLabel, org.openide.util.NbBundle.getMessage(RequestReplyOperationPanel.class, "RequestReplyOperationPanel.outputLabel.text")); // NOI18N
+        outputLabel.setToolTipText(org.openide.util.NbBundle.getMessage(RequestReplyOperationPanel.class, "RequestReplyOperationPanel.outputLabel.toolTipText")); // NOI18N
 
         outputPanel.setLayout(new javax.swing.BoxLayout(outputPanel, javax.swing.BoxLayout.Y_AXIS));
+
+        outputMessageNameConfigurationPanel1.setToolTipText(org.openide.util.NbBundle.getMessage(RequestReplyOperationPanel.class, "RequestReplyOperationPanel.outputMessageNameConfigurationPanel1.toolTipText")); // NOI18N
         outputPanel.add(outputMessageNameConfigurationPanel1);
         outputPanel.add(outputMessagePartsConfigurationTable);
 
         org.openide.awt.Mnemonics.setLocalizedText(faultLabel, org.openide.util.NbBundle.getMessage(RequestReplyOperationPanel.class, "RequestReplyOperationPanel.faultLabel.text")); // NOI18N
+        faultLabel.setToolTipText(org.openide.util.NbBundle.getMessage(RequestReplyOperationPanel.class, "RequestReplyOperationPanel.faultLabel.toolTipText")); // NOI18N
 
         faultPanel.setLayout(new javax.swing.BoxLayout(faultPanel, javax.swing.BoxLayout.Y_AXIS));
+
+        faultMessageNameConfigurationPanel1.setToolTipText(org.openide.util.NbBundle.getMessage(RequestReplyOperationPanel.class, "RequestReplyOperationPanel.outputMessageNameConfigurationPanel1.toolTipText")); // NOI18N
         faultPanel.add(faultMessageNameConfigurationPanel1);
         faultPanel.add(faultMessagePartsConfigurationTable);
 

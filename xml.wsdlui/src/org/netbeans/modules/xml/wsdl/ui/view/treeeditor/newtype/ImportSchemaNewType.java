@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype;
 
+import java.awt.Dialog;
 import java.io.IOException;
 import java.util.Collection;
 
@@ -126,10 +127,13 @@ public class ImportSchemaNewType extends NewType {
                 customizer, NbBundle.getMessage(ImportSchemaNewType.class,
                 "LBL_NewType_ImportCustomizer"), true);
         descriptor.setValid(false);
-        Object result = DialogDisplayer.getDefault().notify(descriptor);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(descriptor.getTitle());
+        dialog.setVisible(true);
+        
         
         // If okay, add the import to the model.
-        if (result == DialogDescriptor.OK_OPTION) {
+        if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
             // The customizer has, by this time, already made its changes
             // to the model, so there is nothing for us to do here.
             if (def.getTypes() == null) {

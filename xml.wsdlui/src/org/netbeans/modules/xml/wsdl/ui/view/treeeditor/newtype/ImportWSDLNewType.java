@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype;
 
+import java.awt.Dialog;
 import java.io.IOException;
 import java.util.Collection;
 
@@ -98,8 +99,11 @@ public class ImportWSDLNewType extends NewType {
                 customizer, NbBundle.getMessage(ImportWSDLNewType.class,
                 "LBL_NewType_ImportCustomizer"), true);
         descriptor.setValid(false);
-        Object result = DialogDisplayer.getDefault().notify(descriptor);
-
+        
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+        dlg.getAccessibleContext().setAccessibleDescription(dlg.getTitle());
+        dlg.setVisible(true);
+        
         // Creator will have created the import(s) by now.
         // In either case, end the transaction.
         model.endTransaction();

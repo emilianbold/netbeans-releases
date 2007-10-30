@@ -42,6 +42,7 @@
 package org.netbeans.modules.xml.wsdl.ui.view.property;
 
 import java.awt.Component;
+import java.awt.Dialog;
 import java.beans.FeatureDescriptor;
 import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.xml.wsdl.model.Import;
@@ -79,7 +80,9 @@ public class ImportLocationPropertyEditor extends PropertyEditorSupport
                 customizer, NbBundle.getMessage(ImportLocationPropertyEditor.class,
                 "ImportLocationPropertyPanel_COMMON_MSG_HEADER"), true);
         descriptor.setValid(false);
-        return DialogDisplayer.getDefault().createDialog(descriptor);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(descriptor.getTitle());
+        return dialog;
     }
 
     public boolean supportsCustomEditor() {

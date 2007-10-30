@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
@@ -68,6 +68,9 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/xml/wsdl/ui/view/Bundle.properties" key="OneWayOperationPanel.portTypeNameLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/xml/wsdl/ui/view/Bundle.properties" key="OneWayOperationPanel.portTypeNameLabel.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="portTypeNameTextField">
@@ -79,6 +82,9 @@
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/xml/wsdl/ui/view/Bundle.properties" key="OneWayOperationPanel.OperationNameLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/xml/wsdl/ui/view/Bundle.properties" key="OneWayOperationPanel.OperationNameLabel.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -95,6 +101,9 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/xml/wsdl/ui/view/Bundle.properties" key="OneWayOperationPanel.operationTypeLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/xml/wsdl/ui/view/Bundle.properties" key="OneWayOperationPanel.operationTypeLabel.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="operationTypeComboBox">
@@ -104,6 +113,9 @@
             <StringItem index="0" value="Request-Response Operation"/>
             <StringItem index="1" value="One-Way Operation"/>
           </StringArray>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/xml/wsdl/ui/view/Bundle.properties" key="OneWayOperationPanel.operationTypeComboBox.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -115,6 +127,9 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/xml/wsdl/ui/view/Bundle.properties" key="OneWayOperationPanel.inputLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/xml/wsdl/ui/view/Bundle.properties" key="OneWayOperationPanel.inputLabel.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
     <Container class="javax.swing.JPanel" name="inputPanel">
@@ -124,6 +139,11 @@
       </Layout>
       <SubComponents>
         <Component class="org.netbeans.modules.xml.wsdl.ui.view.MessageNameConfigurationPanel" name="inputMessageNameConfigurationPanel1">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/xml/wsdl/ui/view/Bundle.properties" key="OneWayOperationPanel.inputMessageNameConfigurationPanel1.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new MessageNameConfigurationPanel(this.inputMessagePartsConfigurationTable);"/>
             <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value="inputMessagePartsConfigurationTable = new org.netbeans.modules.xml.wsdl.ui.view.CommonMessageConfigurationPanel(mProject, namespaceToPrefixMap, mModel);"/>

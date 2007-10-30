@@ -134,7 +134,7 @@ public class CommonAddExtensibilityAttributeAction extends CommonNodeAction {
 
 
                 Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-/*                dd.setClosingOptions(new Object[]{DialogDescriptor.CANCEL_OPTION});*/
+                dialog.getAccessibleContext().setAccessibleDescription(dd.getTitle());
                 dd.setValid(false);
 
                 dialog.setVisible(true);

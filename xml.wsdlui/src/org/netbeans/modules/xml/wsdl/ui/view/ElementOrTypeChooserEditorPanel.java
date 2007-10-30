@@ -179,6 +179,7 @@ public class ElementOrTypeChooserEditorPanel extends javax.swing.JPanel {
         descriptor.setButtonListener(al);
         descriptor.setValid(false);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(descriptor.getTitle());
         dialog.setVisible(true);
         dialog.toFront();
     }
