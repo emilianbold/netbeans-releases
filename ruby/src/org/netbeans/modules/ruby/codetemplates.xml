@@ -32,10 +32,10 @@ end]]></code>
     </codetemplate>
     <codetemplate abbreviation="begin" descriptionId="ct_begin" contexts="ruby">
 <code><![CDATA[begin
-  ${selection line}${cursor}
-rescue ${Exception} => ${1 unusedlocal defaults="ex,boom,bang,var"}
+  ${selection line}rescue ${Exception} => ${1 unusedlocal defaults="ex,boom,bang,var"}
   ${code}
-end]]></code>
+end
+${cursor}]]></code>
   </codetemplate>
   <codetemplate abbreviation="doc" descriptionId="ct_doc">
     <code>
