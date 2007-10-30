@@ -1902,13 +1902,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     
     FileContainer getFileContainer() {
         FileContainer fc = (FileContainer) RepositoryUtils.get(fileContainerKey);
-        if( fc == null ) {
-            System.err.printf("Failed to get FileContainer by key %s\n", fileContainerKey);
-        }
+	assert fc != null : "Failed to get FileContainer by key " + fileContainerKey;
         return fc;
     }
     
     public GraphContainer getGraphStorage() {
-        return (GraphContainer) RepositoryUtils.get(graphStorageKey);
+        GraphContainer gc = (GraphContainer) RepositoryUtils.get(graphStorageKey);
+	assert gc != null : "Failed to get GraphContainer by key " + graphStorageKey;
+	return gc;
     }
 }
