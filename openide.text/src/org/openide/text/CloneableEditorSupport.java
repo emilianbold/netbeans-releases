@@ -2264,8 +2264,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
                 try { // scroll to show reasonable part of the document
                     Rectangle r = ePane.modelToView(offset);
-                    r.height *= 5; 
-                    ePane.scrollRectToVisible(r);
+                    if (r != null) {
+                        r.height *= 5; 
+                        ePane.scrollRectToVisible(r);
+                    }
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
