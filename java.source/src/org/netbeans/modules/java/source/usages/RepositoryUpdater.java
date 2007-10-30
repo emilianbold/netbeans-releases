@@ -333,14 +333,18 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
     }
     
-    private synchronized void submitBatch () {
-        if (this.currentWork == null) {                    
-            this.currentWork = Work.batch();
-            submit (this.currentWork);
+    private void submitBatch () {
+        Work _currentWork;
+        synchronized (this) {
+            if (this.currentWork == null) {                    
+                this.currentWork = _currentWork = Work.batch();                
+            }
+            else {
+                this.dirty = true;
+                return;
+            }
         }
-        else {
-            this.dirty = true;
-        }
+        submit (_currentWork);
     }
     
     public synchronized boolean isScanInProgress() {
@@ -365,9 +369,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
     }
     
-    private synchronized void resetDirty () {
-        this.dirty = false;
-        this.currentWork = null;
+    private synchronized void resetDirty (final Work ticket) {
+        assert ticket != null;
+        if (ticket == this.currentWork) {
+            this.dirty = false;
+            this.currentWork = null;
+        }
     }
     
     
@@ -1095,6 +1102,13 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     private final class CompileWorker implements CancellableTask<CompilationInfo> {
                 
+        /**
+         * Used as a identity for resetDirty, which should reset currentWork only
+         * when the currentWork == ticket. The ticket is the same as initial work,
+         * unfortunately the work is not final and changes when the initial scan is interrupted,
+         * so we need a new final field.
+         */
+        private final Work ticket;
         private Work work;
         private List<URL> state;
         private Set<URL> oldRoots;
@@ -1109,6 +1123,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         public CompileWorker (Work work ) {
             assert work != null;
             this.work = work;
+            this.ticket = work;
             this.canceled = new AtomicBoolean (false);
             this.dirtyCrossFiles = new HashSet<URI>();
             this.ignoreExcludes = new HashSet<URL>();
@@ -1200,7 +1215,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 throw (IllegalStateException) ise.initCause(tse);
                             } finally {
                                 if (!completed) {
-                                    resetDirty();
+                                    resetDirty(ticket);
                                 }
                             }
                         }
@@ -1278,7 +1293,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 completed = true;
                             } finally {
                                 if (!completed && !continuation) {
-                                    resetDirty ();
+                                    resetDirty (ticket);
                                 }
                             }                            
                             final ClassIndexManager cim = ClassIndexManager.getDefault();
