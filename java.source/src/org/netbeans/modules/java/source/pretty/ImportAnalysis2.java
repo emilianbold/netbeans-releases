@@ -125,7 +125,8 @@ public class ImportAnalysis2 {
 
     public void classEntered(ClassTree clazz) {
         Set<Element> visible = new HashSet<Element>();
-
+        visible.add(model.getElement(clazz));
+        
         addAll(clazz.getExtendsClause(), visible);
 
         for (Tree t : clazz.getImplementsClause()) {
