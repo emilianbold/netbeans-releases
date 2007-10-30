@@ -335,7 +335,7 @@ MARK:ERROR: {
 PROPERTIES {
     navigator_sort:"true"; 
     #traceSteps:"true";
-    printRules:"true";
+    #printRules:"true";
     #printFirst:"true";
 }
 
