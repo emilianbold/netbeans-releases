@@ -104,7 +104,7 @@ public class SchemaComponentImplTest extends TestCase {
         TestCatalogModel.getDefault().clearDocumentPool();
     }
     
-    public void NOFromSameModel() throws Exception {
+    public void testFromSameModel() throws Exception {
         SchemaModel cur_model = ((SchemaComponentImpl)schema).getModel();
         SchemaModel new_model = Util.loadSchemaModel(TEST_XSD2);
         boolean modelcheck = ((SchemaComponentImpl)schema).fromSameModel(new_model.getSchema());
@@ -114,7 +114,7 @@ public class SchemaComponentImplTest extends TestCase {
         assertEquals("model is the same", true, modelcheck);
     }
 
-    public void NOSetAnnotation() throws IOException  {
+    public void testSetAnnotation() throws IOException  {
         SchemaModel model = ((SchemaComponentImpl)schema).getModel();
         Collection<SchemaComponent> comps = schema.getChildren();
         assertEquals("# children for schema", 5, comps.size());
@@ -145,7 +145,7 @@ public class SchemaComponentImplTest extends TestCase {
         assertEquals("#1 child for schema DOM is annotation", "annotation", ann.getLocalName());
     }
     
-    public void NOGetAnnotations() throws IOException {
+    public void testGetAnnotations() throws IOException {
         SchemaModel model = ((SchemaComponentImpl)schema).getModel();
         Annotation a = model.getFactory().createAnnotation();
         model.startTransaction();
@@ -155,7 +155,7 @@ public class SchemaComponentImplTest extends TestCase {
         assertNotNull("only one annotation should be present", ann);
     }
     
-    public void NOSetGlobalReference() throws Exception {
+    public void testSetGlobalReference() throws Exception {
         SchemaModel mod = Util.loadSchemaModel("resources/ipo.xsd");
         Schema schema = mod.getSchema();
         SchemaComponentFactory fact = mod.getFactory();
@@ -201,7 +201,7 @@ public class SchemaComponentImplTest extends TestCase {
         assertEquals("ref should have prefix", "ipo:myAttrGroup2", v);
     }
     
-    public void NOSetAndGetID() throws Exception {
+    public void testSetAndGetID() throws Exception {
         assertNull("id attribute is optional", schema.getId());
         schema.getModel().startTransaction();
         String v = "testSEtAndGetID";
@@ -210,7 +210,7 @@ public class SchemaComponentImplTest extends TestCase {
         assertEquals("testSetAndGetID.setID", v, schema.getId());
     }
     
-    public void NOCanPaste() throws Exception {
+    public void testCanPaste() throws Exception {
         SchemaModel mod = Util.loadSchemaModel("resources/PurchaseOrder.xsd");
         Schema schema  = mod.getSchema();
         GlobalComplexType gct = schema.getChildren(GlobalComplexType.class).get(0);
@@ -220,7 +220,7 @@ public class SchemaComponentImplTest extends TestCase {
         assertFalse(gct.canPaste(le));
     }
 
-    public void NOCanPasteRedefine() throws Exception {
+    public void testCanPasteRedefine() throws Exception {
         SchemaModel model1 = Util.loadSchemaModel("resources/PurchaseOrder_redefine.xsd");
         Schema schema  = model1.getSchema();
         Redefine redefine = schema.getRedefines().iterator().next();
@@ -232,7 +232,7 @@ public class SchemaComponentImplTest extends TestCase {
         assertFalse(redefine.canPaste(seq));
     }
 
-    public void NOAddToSelfClosingSchema() throws Exception {
+    public void testAddToSelfClosingSchema() throws Exception {
         SchemaModelImpl refmod = (SchemaModelImpl) Util.loadSchemaModel("resources/Empty_selfClosing.xsd");
         assertEquals(0, refmod.getSchema().getPeer().getChildNodes().getLength());
         
@@ -254,7 +254,7 @@ public class SchemaComponentImplTest extends TestCase {
         assertEquals(3, schema.getPeer().getChildNodes().getLength());
     }
     
-    public void NONamespaceConsolidation() throws Exception {
+    public void testNamespaceConsolidation() throws Exception {
         SchemaModel model = Util.loadSchemaModel("resources/Empty.xsd");
         SchemaModel model2 = Util.loadSchemaModel("resources/Empty_loanApp.xsd");
         
