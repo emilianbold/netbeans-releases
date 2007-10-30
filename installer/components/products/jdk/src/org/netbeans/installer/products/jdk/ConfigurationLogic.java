@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.List;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
@@ -49,6 +50,10 @@ import static org.netbeans.installer.utils.StringUtils.QUOTE;
 import static org.netbeans.installer.utils.StringUtils.BACK_SLASH;
 import static org.netbeans.installer.utils.StringUtils.EMPTY_STRING;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.applications.JavaUtils;
+import static org.netbeans.installer.utils.applications.JavaUtils.JDK_KEY;
+import static org.netbeans.installer.utils.applications.JavaUtils.JRE_KEY;
+import static org.netbeans.installer.utils.applications.JavaUtils.JAVAHOME_VALUE;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
@@ -56,7 +61,9 @@ import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.helper.RemovalMode;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.progress.Progress;
+import static org.netbeans.installer.utils.system.windows.WindowsRegistry.HKLM;
 import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.WizardComponent;
 
@@ -72,7 +79,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public ConfigurationLogic() throws InitializationException {
         wizardComponents = Wizard.loadWizardComponents(
                 WIZARD_COMPONENTS_URI,
-                getClass().getClassLoader());
+                getClass().getClassLoader());        
     }
     
     public void install(
@@ -82,22 +89,30 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         try {
             File logFile = LogManager.getLogFile();
+            File jdkLogFile = null;
+            File jreLogFile = null;
             
             if(logFile!=null) {
-                String name = logFile.getName();
-                String ext;
-                if(name.lastIndexOf(".")==-1) {
-                    name += "_jdk.log";
+                String nameJdk = logFile.getName();
+                String nameJre = logFile.getName();
+                
+                if(nameJdk.lastIndexOf(".")==-1) {
+                    nameJdk += "_jdk.log";
+                    nameJre += "_jre.log";
                 } else {
-                    ext = name.substring(name.lastIndexOf("."));
-                    name = name.substring(0, name.lastIndexOf(".")) +
+                    String ext = nameJdk.substring(nameJdk.lastIndexOf("."));
+                    nameJdk = nameJdk.substring(0, nameJdk.lastIndexOf(".")) +
                             "_jdk" + ext;
+                    nameJre = nameJre.substring(0, nameJre.lastIndexOf(".")) +
+                            "_jre" + ext;
                 }
                 
-                logFile = new File(LogManager.getLogFile().getParentFile(),name);
+                jdkLogFile = new File(LogManager.getLogFile().getParentFile(),nameJdk);
+                jreLogFile = new File(LogManager.getLogFile().getParentFile(),nameJre);
             }
             if(!SystemUtils.isWindows()) {
-                logFile = null;
+                jdkLogFile = null;
+                jreLogFile = null;
             }
             String [] commands = null;
             ExecutionResults results = null;
@@ -105,18 +120,31 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             boolean jreInstallation = false;
             
             if(SystemUtils.isWindows()) {
-                results = runJDKInstallerWindows(location, installer, logFile, progress);
-                if(results.getErrorCode()==0) {
-                    jreInstallation = true;
+                final File jdk = JavaUtils.findJDKHome(getProduct().getVersion());
+                if (jdk == null) {
+                    results = runJDKInstallerWindows(location, installer, jdkLogFile, progress);
                     progress.addPercentage(30);
-                    progress.setDetail(PROGRESS_DETAIL_RUNNING_JRE_INSTALLER);
-                    final File jreInstaller = findJREWindowsInstaller();
-                    if(jreInstaller!=null) {
-                        results = runJREInstallerWindows(jreInstaller);
+                    
+                    if(results.getErrorCode()==0) {
+                        final File jre = JavaUtils.findJreHome(getProduct().getVersion());
+                        if(jre == null) {
+                            jreInstallation = true;
+                            progress.setDetail(PROGRESS_DETAIL_RUNNING_JRE_INSTALLER);
+                            final File jreInstaller = findJREWindowsInstaller();
+                            if(jreInstaller!=null) {
+                                results = runJREInstallerWindows(jreInstaller,jreLogFile);
+                            }
+                        } else {
+                            LogManager.log("... jre " + getProduct().getVersion() +
+                                    " is already installed, skipping its configuration");
+                        }
                     }
+                } else {
+                    LogManager.log("... jdk " + getProduct().getVersion() +
+                            " is already installed, skipping JDK and JRE configuration");
                 }
             } else {
-                results = runJDKInstallerUnix(location, installer, logFile, progress);
+                results = runJDKInstallerUnix(location, installer, jdkLogFile, progress);
             }
             
             if(results.getErrorCode()!=0) {
@@ -149,7 +177,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     SystemUtils.getTempDirectory().getAbsolutePath(),
                     EnvironmentScope.PROCESS,
                     false);
-            
+            LogManager.log("... JDK installation log file : " + logFile);
             final String loggingOption = (logFile!=null) ?
                 "/log " + BACK_SLASH + QUOTE  + logFile.getAbsolutePath()  + BACK_SLASH + QUOTE +" ":
                 EMPTY_STRING;
@@ -226,15 +254,18 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         return results;
     }
     
-    private ExecutionResults runJREInstallerWindows(File jreInstaller) throws InstallationException {
+    private ExecutionResults runJREInstallerWindows(File jreInstaller, File logFile) throws InstallationException {
         final String [] command = new String [] {
             "msiexec.exe",
             "/qn",
             "/i",
             jreInstaller.getPath(),
             "IEXPLORER=1",
-            "MOZILLA=1"
+            "MOZILLA=1",
+            "/log",
+            logFile.getAbsolutePath()
         };
+        LogManager.log("... JRE installation log file : " + logFile);
         try {
             SystemUtils.setEnvironmentVariable("TEMP",
                     SystemUtils.getTempDirectory().getAbsolutePath(),
@@ -345,7 +376,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     @Override
     public int getLogicPercentage() {
-        return 50;
+        return 90;
     }
     
     @Override
@@ -355,6 +386,18 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public RemovalMode getRemovalMode() {
         return RemovalMode.ALL;
     }
+    
+    @Override
+    public String validateInstallation() {
+        if(super.validateInstallation()!=null) {
+            LogManager.log("JDK validation:");
+            LogManager.log(super.validateInstallation());
+            getProduct().setStatus(Status.NOT_INSTALLED);
+            getProduct().getParent().removeChild(getProduct());
+        }
+        return null;
+    }
+
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String WIZARD_COMPONENTS_URI =

@@ -219,7 +219,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 
                 try {
                     
-                    if (product.getLogic().registerInSystem()) {
+                    if (product.getLogic().registerInSystem() || product.getUid().equals("jdk")) {
                         String property = panel.getProperty(
                                 product.getUid().equals("nb-base") ?
                                     INSTALLATION_FOLDER_NETBEANS_PROPERTY :

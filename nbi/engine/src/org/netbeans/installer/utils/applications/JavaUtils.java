@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -16,13 +16,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -179,7 +179,7 @@ public class JavaUtils {
             
             if (jdkInfo != null) {
                 LogManager.log("... put jdk info to the Java map");
-                knownJdks.put(location, jdkInfo);                
+                knownJdks.put(location, jdkInfo);
             } else {
                 LogManager.log("... can`t get jdkInfo from " + location);
             }
@@ -247,6 +247,41 @@ public class JavaUtils {
         updateCurrentVersion();
     }
     
+    public static File findJDKHome(Version jdkVersion) {
+        return findJavaHome(JDK_KEY, jdkVersion);
+    }
+    public static File findJreHome(Version jdkVersion) {
+        return findJavaHome(JRE_KEY, jdkVersion);
+    }
+    
+    private static File findJavaHome(String javaKey, Version jdkVersion) {
+        File result = null;
+        try {
+            if(SystemUtils.isWindows()) {
+                final String version = jdkVersion.toJdkStyle();
+                LogManager.log("... checking if JDK " + version + " is already installed");
+                WindowsRegistry winreg = ((WindowsNativeUtils) SystemUtils.getNativeUtils()).getWindowsRegistry();
+                if(winreg.keyExists(HKLM, javaKey, version)) {
+                    final String versKey = javaKey + winreg.SEPARATOR + version;
+                    if(winreg.valueExists(HKLM, versKey, JAVAHOME_VALUE)) {
+                        final String javaHome = winreg.getStringValue(HKLM, versKey,JAVAHOME_VALUE);
+                        if(JavaUtils.getInfo(new File(javaHome))!=null) {
+                            result = new File(javaHome);
+                        } else {
+                            LogManager.log("... no Java at " + javaHome);
+                        }
+                    } else {
+                        LogManager.log("... cannot find JavaHome value for this Java");
+                    }
+                } else {
+                    LogManager.log("... cannot find key for this Java");
+                }
+            }
+        } catch (NativeException e) {
+            LogManager.log(e);
+        }
+        return result;
+    }
     // private //////////////////////////////////////////////////////////////////////
     private static int getJDKRegistrySection(WindowsRegistry registry) throws NativeException {
         return (registry.canModifyKey(HKLM,JDK_KEY) ? HKLM : HKCU);
@@ -448,6 +483,8 @@ public class JavaUtils {
     // Constants
     public static final String JDK_KEY =
             "SOFTWARE\\JavaSoft\\Java Development Kit"; // NOI18N
+    public static final String JRE_KEY =
+            "SOFTWARE\\JavaSoft\\Java Runtime Environment"; // NOI18N
     
     public static final String JAVAHOME_VALUE
             = "JavaHome"; // NOI18N

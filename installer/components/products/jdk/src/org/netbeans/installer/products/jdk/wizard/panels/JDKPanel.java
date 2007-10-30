@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -16,13 +16,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -36,31 +36,11 @@
 
 package org.netbeans.installer.products.jdk.wizard.panels;
 
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.io.File;
-import javax.swing.ComboBoxModel;
-import javax.swing.JFileChooser;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import org.netbeans.installer.utils.helper.swing.NbiButton;
-import org.netbeans.installer.utils.helper.swing.NbiLabel;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.helper.Version;
-import org.netbeans.installer.utils.helper.swing.NbiComboBox;
-import org.netbeans.installer.utils.helper.swing.NbiDirectoryChooser;
-import org.netbeans.installer.utils.helper.swing.NbiTextField;
-import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationValidator;
-import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationsComboBoxEditor;
-import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationsComboBoxModel;
+import org.netbeans.installer.wizard.components.actions.SearchForJavaAction;
 import org.netbeans.installer.wizard.components.panels.DestinationPanel;
 import org.netbeans.installer.wizard.components.panels.DestinationPanel.DestinationPanelUi;
-import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
 import org.netbeans.installer.wizard.containers.SwingContainer;
@@ -81,7 +61,7 @@ public class JDKPanel extends DestinationPanel {
         setProperty(DESTINATION_LABEL_TEXT_PROPERTY,
                 DEFAULT_DESTINATION_LABEL_TEXT);
         setProperty(DESTINATION_BUTTON_TEXT_PROPERTY,
-                DEFAULT_DESTINATION_BUTTON_TEXT);       
+                DEFAULT_DESTINATION_BUTTON_TEXT);
     }
     
     @Override
@@ -117,7 +97,7 @@ public class JDKPanel extends DestinationPanel {
     public static class JDKDestinationPanelSwingUi extends DestinationPanelSwingUi {
         protected JDKPanel panel;
         
-       public JDKDestinationPanelSwingUi(
+        public JDKDestinationPanelSwingUi(
                 final JDKPanel panel,
                 final SwingContainer container) {
             super(panel, container);
@@ -137,18 +117,25 @@ public class JDKPanel extends DestinationPanel {
         @Override
         protected void saveInput() {
             super.saveInput();
+            final Object objectContext = panel.getWizard().getContext().get(Product.class);
+            if(objectContext != null && objectContext instanceof Product) {
+                Product jdk = (Product) objectContext;                
+                SearchForJavaAction.addJavaLocation(
+                        jdk.getInstallationLocation(),
+                        jdk.getVersion(),
+                        JDK_VENDOR);
+            }
         }
-        
         @Override
         protected String validateInput() {
             String errorMessage = super.validateInput();
-                       
+            
             return errorMessage;
         }
         
         // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
-           
+            
         }
     }
     
@@ -167,5 +154,9 @@ public class JDKPanel extends DestinationPanel {
             "JDKP.destination.label.text"); // NOI18N
     public static final String DEFAULT_DESTINATION_BUTTON_TEXT =
             ResourceUtils.getString(JDKPanel.class,
-            "JDKP.destination.button.text"); // NOI18N  
+            "JDKP.destination.button.text"); // NOI18N
+    public static final String JDK_VENDOR = 
+            ResourceUtils.getString(JDKPanel.class,
+            "JDKP.jdk.vendor"); // NOI18N
+    
 }
