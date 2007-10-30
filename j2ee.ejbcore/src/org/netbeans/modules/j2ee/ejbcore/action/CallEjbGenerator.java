@@ -308,7 +308,7 @@ public class CallEjbGenerator {
                 fileObject, 
                 className, 
                 "javax.ejb.EJB", 
-                name,
+                _RetoucheUtil.uniqueMemberName(fileObject, className, name, "ejb"),
                 fieldTypeClass, 
                 isDefaultRefName ? null : Collections.singletonMap("name", strippedRefName), // XXX still not sure about this, is needed?
                 InjectionTargetQuery.isStaticReferenceRequired(fileObject, className)
@@ -327,7 +327,7 @@ public class CallEjbGenerator {
                 fileObject, 
                 className, 
                 "javax.ejb.EJB", 
-                homeFieldName,
+                _RetoucheUtil.uniqueMemberName(fileObject, className, homeFieldName, "ejb"),
                 homeName, 
                 isDefaultRefName ? null : Collections.singletonMap("name", strippedRefName), // XXX still not sure about this, is needed?
                 InjectionTargetQuery.isStaticReferenceRequired(fileObject, className)
