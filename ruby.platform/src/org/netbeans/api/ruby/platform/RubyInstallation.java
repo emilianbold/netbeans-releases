@@ -976,6 +976,14 @@ public class RubyInstallation {
     public String getRDoc() {
         if (rdoc == null) {
             rdoc = findGemExecutable("rdoc"); // NOI18N
+            if (rdoc == null && !isJRubySet()) {
+                String name = new File(getRuby(true)).getName();
+                if (name.startsWith("ruby")) { // NOI18N
+                    String suffix = name.substring(4);
+                    // Try to find with suffix (#120441)
+                    rdoc = findGemExecutable("rdoc" + suffix); 
+                }
+            }
         }
         return rdoc;
     }

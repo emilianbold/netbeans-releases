@@ -137,6 +137,16 @@ public class RubyInstallationTest extends NbTestCase {
         assertNotNull(ri.findGemExecutable("rdebug-ide"));
     }
 
+    public void testFindRDoc() throws Exception {
+        RubyInstallation ri = setUpRubyWithGems();
+        assertNotNull("rdoc found", ri.getRDoc());
+    }
+
+    public void testFindRDocWithSuffix() throws Exception {
+        RubyInstallation ri = setUpRubyWithGems(false, "1.8.6-p110");
+        assertNotNull("rdoc found", ri.getRDoc());
+    }
+
     public void testFindGemExecutableWith_GEM_HOME() throws Exception {
         File gemRepo = new File(getWorkDir(), "gemrepo");
         File gemRepoBinF = new File(gemRepo, "bin");
@@ -152,13 +162,20 @@ public class RubyInstallationTest extends NbTestCase {
     }
 
     private RubyInstallation setUpRubyWithGems(boolean rubygemsRepo) throws Exception {
+        return setUpRubyWithGems(rubygemsRepo, "");
+        
+    }
+    
+    private RubyInstallation setUpRubyWithGems(final boolean rubygemsRepo, final String suffix) throws Exception {
         File home = getWorkDir();
 
         // Build a fake ruby structure
         File bin = new File(home, "bin");
         bin.mkdirs();
-        File ruby = new File(bin, "ruby");
+        File ruby = new File(bin, "ruby" + suffix);
         ruby.createNewFile();
+        File rdoc = new File(bin, "rdoc" + suffix);
+        rdoc.createNewFile();
 
         if (rubygemsRepo) {
             // Build a fake rubygems repository
