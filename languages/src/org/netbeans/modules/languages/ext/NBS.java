@@ -42,6 +42,7 @@
 package org.netbeans.modules.languages.ext;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import org.netbeans.api.languages.ASTItem;
@@ -103,4 +104,32 @@ public class NBS {
             library = LibrarySupport.create (DOC);
         return library;
     }
+
+    public static boolean tokenComand (SyntaxContext context) {
+        ASTPath path = context.getASTPath ();
+        if (path.size () < 3) return false;
+        ASTNode node = (ASTNode) path.get (path.size () - 3);
+        ASTToken keywordToken = node.getTokenType ("keyword");
+        return keywordToken != null && keywordToken.getIdentifier ().equals ("TOKEN");
+    }
+
+    public static boolean notTokenComand (SyntaxContext context) {
+        ASTPath path = context.getASTPath ();
+        Iterator<ASTItem> it = path.listIterator ();
+        while (it.hasNext ()) {
+            ASTItem item = it.next ();
+            if (item instanceof ASTNode) {
+                ASTNode node = (ASTNode) item;
+                if (node.getNT ().equals ("command")) {
+                    ASTToken keywordToken = node.getTokenType ("keyword");
+                    return keywordToken != null && !keywordToken.getIdentifier ().equals ("TOKEN");
+                }
+            }
+        }
+        return false;
+    }
 }
+
+
+
+

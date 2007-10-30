@@ -59,6 +59,9 @@ TOKEN:keyword:(
     "PROPERTIES" | 
     "REFORMAT" |
     "SELECTION" |
+    "SEMANTIC_CONTEXT" |
+    "SEMANTIC_DECLARATION" |
+    "SEMANTIC_USAGE" |
     "SKIP" | 
     "STORE" | 
     "TOKEN" | 
@@ -107,8 +110,8 @@ token2 = regularExpression token3;
 token2 = properties;
 token3 = ":" state;
 token3 = ;
-state = "<" <identifier> ">";
 tokenState = state tokenState1;
+state = "<" <identifier> ">";
 tokenState1 = "{" tokenGroup;
 tokenState1 = ":" token;
 tokenGroup = tokensInGroup "}";
@@ -141,13 +144,15 @@ reInClass1 = ;
 reInClassMinus = "-" <string>;
 reInClassMinus = ;
                     
-grammarRule = <identifier> "=" grRightSide ";";
+grammarRule = grammarRuleNT "=" grRightSide ";";
+grammarRuleNT = <identifier>;
 grRightSide = grChoice grRightSide1;
 grRightSide1 = "|" grChoice grRightSide1;
 grRightSide1 = ;
 grChoice = grPart grChoice;
 grChoice = ;
-grPart = <identifier> grOperator;
+grPart = ntRef grOperator;
+ntRef = <identifier>;
 grPart = tokenDef grOperator;
 grPart = <string> grOperator;
 grPart = "[" grRightSide "]";
@@ -156,7 +161,8 @@ grOperator = "+";
 grOperator = "*";
 grOperator = "?";
 grOperator = ;
-tokenDef = "<" <identifier> tokenDef1 ">";
+tokenDef = "<" tokenDefName tokenDef1 ">";
+tokenDefName = <identifier>;
 tokenDef1 = "," <string>;
 tokenDef1 = ;
                     
@@ -164,6 +170,9 @@ command = <keyword> command0;
 command0 = ":" selector [":" value];
 command0 = value;
 value = class | <string> | properties | regularExpression;
+class = <identifier> class1;
+class1 = "." <identifier> class1;
+class1 = ;
 properties = "{" properties1 "}";
 properties1 = property properties1;
 properties1 = ;
@@ -171,18 +180,20 @@ property = <identifier> ":" propertyValue ";";
 propertyValue = <string>;
 propertyValue = class;
 propertyValue = regularExpression;
-selector = class ("," class)*;                    
-class = <identifier> class1;
-class1 = "." <identifier> class1;
-class1 = ;
+selector = selectorPart ("," selectorPart)*;                    
+selectorPart = selectorIdentifier selectorPart1;
+selectorPart1 = "." selectorIdentifier selectorPart1;
+selectorPart1 = ;
+selectorIdentifier = <identifier>;
 
 
-NAVIGATOR:token: {
-    display_name: "<html><b><font color=000099>TOKEN</font></b>: $identifier$</html>";
+
+AST {
+    removeSimple:"!selector,tokenName,tokenDefName,grammarRuleNT,ntRef,selectorIdentifier";
 }
 
-NAVIGATOR:groupToken: {
-    display_name: "<html><b><font color=000099>TOKEN</font></b>: $identifier$</html>";
+NAVIGATOR:token: {
+    display_name: "<html><b><font color=000099>TOKEN</font></b>: $tokenName$</html>";
 }
 
 NAVIGATOR:command: {
@@ -232,6 +243,40 @@ MARK:ERROR: {
 MARK:error: {
     type:"Error";
     message:"LBL_UNEXPECTED_CHARACTER";
+}
+
+SEMANTIC_DECLARATION:grammarRuleNT: {
+    name:"$$";
+    type:"variable";
+}
+
+SEMANTIC_DECLARATION:tokenName: {
+    name:"$$";
+    type:"variable";
+}
+
+SEMANTIC_DECLARATION:command0.selector: {
+    name:"$$";
+    type:"variable";
+    condition: org.netbeans.modules.languages.ext.NBS.tokenComand;
+}
+
+SEMANTIC_USAGE:selectorIdentifier: {
+    name:"$$";
+    type:"variable";
+    condition: org.netbeans.modules.languages.ext.NBS.notTokenComand;
+    declaration_precedes_ussage:"false";
+}
+
+SEMANTIC_USAGE:ntRef: {
+    name:"$$";
+    type:"variable";
+    declaration_precedes_ussage:"false";
+}
+SEMANTIC_USAGE:tokenDefName: {
+    name:"$$";
+    type:"variable";
+    declaration_precedes_ussage:"false";
 }
 
 BUNDLE "org.netbeans.modules.languages.resources.Bundle"
