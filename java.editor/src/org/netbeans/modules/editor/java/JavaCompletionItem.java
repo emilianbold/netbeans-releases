@@ -73,6 +73,7 @@ import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -82,7 +83,8 @@ import org.openide.xml.XMLUtil;
 public abstract class JavaCompletionItem implements CompletionItem {
     
     protected static int SMART_TYPE = 1000;
-        
+    private static final String GENERATE_TEXT = NbBundle.getMessage(JavaCompletionItem.class, "generate_Lbl");
+
     public static final JavaCompletionItem createKeywordItem(String kwd, String postfix, int substitutionOffset, boolean smartType) {
         return new KeywordItem(kwd, 0, postfix, substitutionOffset, smartType);
     }
@@ -1412,9 +1414,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String IMPL_BADGE_PATH = "org/netbeans/modules/java/editor/resources/implement_badge.png";
         private static final String OVRD_BADGE_PATH = "org/netbeans/modules/java/editor/resources/override_badge.png";
         
+        private static final String OVERRIDE_TEXT = NbBundle.getMessage(JavaCompletionItem.class, "override_Lbl");
+        private static final String IMPLEMENT_TEXT = NbBundle.getMessage(JavaCompletionItem.class, "implement_Lbl");
+        
         private static ImageIcon implementBadge = new ImageIcon(org.openide.util.Utilities.loadImage(IMPL_BADGE_PATH));
         private static ImageIcon overrideBadge = new ImageIcon(org.openide.util.Utilities.loadImage(OVRD_BADGE_PATH));
         private static ImageIcon merged_icon[][] = new ImageIcon[2][4];
+        
         
         private boolean implement;
         private String leftText;
@@ -1425,8 +1431,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected String getLeftHtmlText() {
-            if (leftText == null)
-                leftText = super.getLeftHtmlText() + (implement ? " - implement" : " - override");
+            if (leftText == null) {
+                leftText = super.getLeftHtmlText() + " - ";
+                leftText += (implement ? IMPLEMENT_TEXT : OVERRIDE_TEXT);
+            }
             return leftText;
         }
         
@@ -1497,7 +1505,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             StringBuilder sb = new StringBuilder();
             sb.append(super.toString());
             sb.append(" - ");
-            sb.append(implement ? "implement" : "override");
+            sb.append(implement ? IMPLEMENT_TEXT : OVERRIDE_TEXT);
             return sb.toString();
         }
 
@@ -1575,7 +1583,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     lText.append(simpleName);
                     lText.append(COLOR_END);
                 }
-                lText.append(") - generate"); //NOI18N
+                lText.append(") - "); //NOI18N
+                lText.append(GENERATE_TEXT);
                 leftText = lText.toString();
             }
             return leftText;
@@ -1667,7 +1676,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sb.append(' ');
                 sb.append(simpleName);
             }
-            sb.append(") - generate"); //NOI18N
+            sb.append(") - "); //NOI18N
+            sb.append(GENERATE_TEXT);
             return sb.toString();
         }
 
@@ -2759,7 +2769,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String CONSTRUCTOR_COLOR = "<font color=#b28b00>"; //NOI18N
         private static final String PARAMETER_NAME_COLOR = "<font color=#b200b2>"; //NOI18N
         private static ImageIcon icon;
-
+        
         private List<ElementHandle<VariableElement>> fieldHandles;
         private String simpleName;
         private List<ParamDesc> params;
@@ -2818,8 +2828,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         lText.append(", "); //NOI18N
                     }
                 }
-                lText.append(')'); //NOI18N
-                lText.append(" - generate"); //NOI18N
+                lText.append(") - "); //NOI18N
+                lText.append(GENERATE_TEXT);
                 leftText = lText.toString();
             }
             return leftText;
@@ -2887,8 +2897,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     sb.append(", "); //NOI18N
                 }
             }
-            sb.append(')'); //NOI18N
-            sb.append(" - generate"); //NOI18N
+            sb.append(") - "); //NOI18N
+            sb.append(GENERATE_TEXT);
             return sb.toString();
         }
         
