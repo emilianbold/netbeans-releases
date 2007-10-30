@@ -247,7 +247,7 @@ public class RepositoryUtils {
     }
     
     public static void closeUnit(String unitName,  Set<String> requiredUnits) {
-	closeUnit(unitName, requiredUnits, TraceFlags.PERSISTENT_REPOSITORY);
+	closeUnit(unitName, requiredUnits, ! TraceFlags.PERSISTENT_REPOSITORY);
     }
 
     public static void closeUnit(String unitName,  Set<String> requiredUnits, boolean cleanRepository) {
@@ -256,7 +256,7 @@ public class RepositoryUtils {
     }
     
     public static void closeUnit(Key key, Set<String> requiredUnits) {
-	closeUnit(key, requiredUnits, TraceFlags.PERSISTENT_REPOSITORY);
+	closeUnit(key, requiredUnits, ! TraceFlags.PERSISTENT_REPOSITORY);
     }
     
     public static void closeUnit(Key key, Set<String> requiredUnits, boolean cleanRepository) {
