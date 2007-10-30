@@ -221,7 +221,7 @@ public class PositionRegion {
     private static void assertPositionsValid(Position startPos, Position endPos) {
         assert (startPos.getOffset() <= endPos.getOffset())
             : "startPosition=" + startPos.getOffset() + " > endPosition=" // NOI18N
-                + endPos;
+                + endPos.getOffset();
     }
 
 }

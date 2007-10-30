@@ -75,7 +75,7 @@ import org.openide.util.Lookup;
  */
 public final class TaskHandler {
     
-    // -J-Dorg.netbeans.modules.editor.indent.TaskHandler.level=300
+    // -J-Dorg.netbeans.modules.editor.indent.TaskHandler.level=FINE
     private static final Logger LOG = Logger.getLogger(TaskHandler.class.getName());
     
     private final boolean indent;
@@ -129,6 +129,8 @@ public final class TaskHandler {
     }
 
     void setGlobalBounds(Position startPos, Position endPos) {
+        assert (startPos.getOffset() <= endPos.getOffset())
+                : "startPos=" + startPos.getOffset() + " < endPos=" + endPos.getOffset();
         this.startPos = startPos;
         this.endPos = endPos;
     }
@@ -376,20 +378,33 @@ public final class TaskHandler {
                     if (endOffset >= doc.getLength())
                         endOffset = Integer.MAX_VALUE;
                     int startOffset = handler.startPos().getOffset();
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("indentRegions: startOffset=" + startOffset + ", endOffset=" + endOffset + '\n'); //NOI18N
+                    }
+
                     List<TokenSequence<?>> tsl = TokenHierarchy.get(doc).tokenSequenceList(languagePath,
                             startOffset, endOffset);
                     for (TokenSequence<?> ts : tsl) {
                         ts.moveStart();
                         if (ts.moveNext()) { // At least one token
-                            int regionStartOffset = Math.max(ts.offset(), startOffset);
+                            int regionStartOffset = ts.offset();
                             ts.moveEnd(); // At least one token exists
                             ts.movePrevious();
-                            int regionEndOffset = Math.min(ts.offset() + ts.token().length(), endOffset);
-                            MutablePositionRegion region = new MutablePositionRegion(
-                                    doc.createPosition(regionStartOffset),
-                                    doc.createPosition(regionEndOffset)
-                            );
-                            indentRegions.add(IndentSpiPackageAccessor.get().createContextRegion(region));
+                            int regionEndOffset = ts.offset() + ts.token().length();
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("  Region[" + indentRegions.size() + // NOI18N
+                                        "]: startOffset=" + regionStartOffset + ", endOffset=" + regionEndOffset + '\n'); //NOI18N
+                            }
+                            // Only within global boundaries
+                            if (regionStartOffset <= endOffset && regionEndOffset >= startOffset) {
+                                regionStartOffset = Math.max(regionStartOffset, startOffset);
+                                regionEndOffset = Math.min(regionEndOffset, endOffset);
+                                MutablePositionRegion region = new MutablePositionRegion(
+                                        doc.createPosition(regionStartOffset),
+                                        doc.createPosition(regionEndOffset)
+                                );
+                                indentRegions.add(IndentSpiPackageAccessor.get().createContextRegion(region));
+                            }
                         }
                     }
                 } else { // used when no token hierarchy exists
