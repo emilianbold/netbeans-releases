@@ -159,7 +159,7 @@ made subject to such option by the copyright holder.
     <bind actionName="to-lower-case" key="D-U$L"/>
     <bind actionName="to-upper-case" key="D-U$U"/>
     <bind actionName="toggle-comment" key="D-SLASH"/>
-    <bind actionName="toggle-comment" key="OS-W"/>
+    <bind actionName="toggle-comment" key="DS-C"/>
     <bind actionName="toggle-highlight-search" key="OS-H"/>
     <bind actionName="toggle-typing-mode" key="INSERT"/>
     <bind actionName="tooltip-show" key="D-P"/>
