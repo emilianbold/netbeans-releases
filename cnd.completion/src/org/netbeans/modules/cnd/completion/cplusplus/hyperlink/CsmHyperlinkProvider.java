@@ -57,6 +57,8 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 
@@ -133,6 +135,11 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                     } else {
                         // it's better to jump to definition
                         item = definition;
+                    }
+                } else {
+                    CsmReference ref = CsmFunctionDefinitionResolver.getDefault().getFunctionDefinition((CsmFunction)csmObject);
+                    if (ref != null){
+                        item = ref;
                     }
                 }
             }else if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
