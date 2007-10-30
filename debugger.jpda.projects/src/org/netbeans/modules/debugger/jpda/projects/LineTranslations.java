@@ -120,6 +120,8 @@ class LineTranslations {
             DataObject.getRegistry ().removeChangeListener (changedFilesListener);
             changedFilesListener = null;
         }
+        originalBreakpointLines.remove(timeStamp);
+        breakpointListeners.remove(timeStamp);
     }
     
     /**

@@ -351,18 +351,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             vm.redefineClasses (map);
 
             // update breakpoints
-            Session s = getSession();
-            DebuggerEngine de = s.getEngineForLanguage ("Java");
-            BreakpointsEngineListener bel = null;
-            List lazyListeners = de.lookup(null, LazyActionsManagerListener.class);
-            for (int li = 0; li < lazyListeners.size(); li++) {
-                Object service = lazyListeners.get(li);
-                if (service instanceof BreakpointsEngineListener) {
-                    bel = (BreakpointsEngineListener) service;
-                    break;
-                }
-            }
-            bel.fixBreakpointImpls ();
+            fixBreakpoints();
             
             // 2) pop obsoleted frames
             JPDAThread t = getCurrentThread ();
@@ -387,6 +376,22 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
             
         }
+    }
+    
+    public void fixBreakpoints() {
+        Session s = getSession();
+        DebuggerEngine de = s.getEngineForLanguage ("Java");
+        BreakpointsEngineListener bel = null;
+        List lazyListeners = de.lookup(null, LazyActionsManagerListener.class);
+        for (int li = 0; li < lazyListeners.size(); li++) {
+            Object service = lazyListeners.get(li);
+            if (service instanceof BreakpointsEngineListener) {
+                bel = (BreakpointsEngineListener) service;
+                break;
+            }
+        }
+        EditorContextBridge.getContext().disposeTimeStamp(this);
+        bel.fixBreakpointImpls ();
     }
     
     public Session getSession() {
