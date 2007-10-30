@@ -42,9 +42,12 @@
 package org.netbeans.lib.editor.codetemplates;
 
 import java.awt.Color;
-import javax.swing.text.Document;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.DrawContext;
 import org.netbeans.editor.DrawLayer;
@@ -63,7 +66,7 @@ final class CodeTemplateDrawLayer extends DrawLayer.AbstractLayer {
     
     public static final int VISIBILITY = 5000;
     
-    private static final Coloring COLORING = new Coloring(null, null, new Color(138, 191, 236));
+    private static final Coloring defaultSyncedTextBlocksHighlight = new Coloring(null, null, new Color(138, 191, 236));
     
     private static int instanceCounter;
     
@@ -90,7 +93,7 @@ final class CodeTemplateDrawLayer extends DrawLayer.AbstractLayer {
         handler = paramImpl.getHandler();
     }
     
-    public void init(DrawContext ctx) {
+    public @Override void init(DrawContext ctx) {
         coloring = null;
         JTextComponent c = ctx.getEditorUI().getComponent();
         regionStartPosition = null;
@@ -135,7 +138,7 @@ final class CodeTemplateDrawLayer extends DrawLayer.AbstractLayer {
                             regionEndPosition);
                     textFramePropertyAssigned = true;
                 }
-                coloring = colorBackground ? COLORING : null;
+                coloring = colorBackground ? getSyncedTextBlocksHighlight() : null;
                 setNextActivityChangeOffset(regionEndOffset);
 
             } else if (fragmentOffset == regionEndOffset) {
@@ -174,4 +177,9 @@ final class CodeTemplateDrawLayer extends DrawLayer.AbstractLayer {
         }
     }
 
+    private static Coloring getSyncedTextBlocksHighlight() {
+        FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
+        AttributeSet as = fcs.getFontColors("synchronized-text-blocks"); //NOI18N
+        return as == null ? defaultSyncedTextBlocksHighlight : Coloring.fromAttributeSet(as);
+    }
 }

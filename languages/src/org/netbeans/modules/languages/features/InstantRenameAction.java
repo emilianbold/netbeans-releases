@@ -55,8 +55,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
-import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.AttributesUtilities;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.Highlighting;
@@ -122,15 +125,12 @@ public class InstantRenameAction extends BaseAction implements KeyListener, Docu
         return InstantRenameAction.class;
     }
     
-    private static AttributeSet highlightAS = null;
+    private static final AttributeSet defaultSyncedTextBlocksHighlight = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(138, 191, 236));
     
     private static AttributeSet getHighlightAS () {
-        if (highlightAS == null) {
-            SimpleAttributeSet as = new SimpleAttributeSet ();
-            as.addAttribute (StyleConstants.Background, new Color (138, 191, 236));
-            highlightAS = as;
-        }
-        return highlightAS;
+        FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
+        AttributeSet as = fcs.getFontColors("synchronized-text-blocks"); //NOI18N
+        return as == null ? defaultSyncedTextBlocksHighlight : as;
     }
 
     private static void removeHighlights (
@@ -141,7 +141,7 @@ public class InstantRenameAction extends BaseAction implements KeyListener, Docu
             public void run () {
                 Iterator<Highlight> it = highlights.iterator ();
                 while (it.hasNext ())
-                    it.next ().remove ();;
+                    it.next ().remove ();
             }
         });
     }

@@ -68,7 +68,10 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
@@ -127,7 +130,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 		regions.add(current);
 	    }
 	    
-            bag.addHighlight(start, end, COLORING);
+            bag.addHighlight(start, end, getSyncedTextBlocksHighlight());
 	}
 	
 	if (mainRegion == null) {
@@ -424,7 +427,13 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	target = null;
     }
 
-    private static final AttributeSet COLORING = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(138, 191, 236));
+    private static final AttributeSet defaultSyncedTextBlocksHighlight = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(138, 191, 236));
+    
+    private static AttributeSet getSyncedTextBlocksHighlight() {
+        FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
+        AttributeSet as = fcs.getFontColors("synchronized-text-blocks"); //NOI18N
+        return as == null ? defaultSyncedTextBlocksHighlight : as;
+    }
     
     public static PositionsBag getHighlightsBag(Document doc) {
         PositionsBag bag = (PositionsBag) doc.getProperty(InstantRenamePerformer.class);
