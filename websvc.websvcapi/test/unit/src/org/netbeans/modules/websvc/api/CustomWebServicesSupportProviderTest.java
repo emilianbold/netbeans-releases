@@ -70,6 +70,7 @@ public class CustomWebServicesSupportProviderTest extends NbTestCase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         File f = getWorkDir();
@@ -85,6 +86,7 @@ public class CustomWebServicesSupportProviderTest extends NbTestCase {
         assertNotNull("no ws FileObject", nows);
     }
     
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
         ws.delete();
@@ -93,7 +95,7 @@ public class CustomWebServicesSupportProviderTest extends NbTestCase {
     
     public void testProviders() throws Exception {
         Lookup.Result res = Lookup.getDefault().lookup(new Lookup.Template(WebServicesSupportProvider.class));
-        assertEquals("there should be 2 instances - one from websvc/websvcapi and one from tests", 2, res.allInstances ().size ());
+        assertEquals("there should be 1 instance - the one from tests", 1, res.allInstances ().size ());
     }
     
     public void testGetWebServicesSupport() throws Exception {
