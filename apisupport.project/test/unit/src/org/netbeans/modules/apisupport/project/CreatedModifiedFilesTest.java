@@ -507,7 +507,42 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         assertLayerContent(supposedContent, 
                 new File(getWorkDir(), "module/src/org/example/module/resources/layer.xml"));
     }
-    
+
+    public void testLayerEntryOverlappingFilenames() throws Exception { // #85138
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
+        FileObject content = FileUtil.createMemoryFileSystem().getRoot().createData("x");
+        CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
+        Operation op = cmf.createLayerEntry("file", content, null, null, null);
+        cmf.add(op);
+        assertEquals("[src/org/example/module/resources/layer.xml]", Arrays.toString(op.getModifiedPaths()));
+        assertEquals("[src/org/example/module/resources/file]", Arrays.toString(op.getCreatedPaths()));
+        assertEquals("[]", Arrays.toString(op.getInvalidPaths()));
+        cmf.run();
+        assertEquals("[src/org/example/module/resources/layer.xml]", Arrays.toString(cmf.getModifiedPaths()));
+        assertEquals("[src/org/example/module/resources/file]", Arrays.toString(cmf.getCreatedPaths()));
+        assertEquals("[]", Arrays.toString(cmf.getInvalidPaths()));
+        assertNotNull(project.getProjectDirectory().getFileObject("src/org/example/module/resources/file"));
+        // #1: cannot add the same layer path twice.
+        cmf = new CreatedModifiedFiles(project);
+        op = cmf.createLayerEntry("file", content, null, null, null);
+        cmf.add(op);
+        assertEquals("[]", Arrays.toString(op.getModifiedPaths()));
+        assertEquals("[]", Arrays.toString(op.getCreatedPaths()));
+        assertEquals("[file]", Arrays.toString(op.getInvalidPaths()));
+        // #2: if files of the same basename are added twice, uniquify external file.
+        cmf = new CreatedModifiedFiles(project);
+        op = cmf.createLayerEntry("dir/file", content, null, null, null);
+        cmf.add(op);
+        assertEquals("[src/org/example/module/resources/layer.xml]", Arrays.toString(op.getModifiedPaths()));
+        assertEquals("[src/org/example/module/resources/file_1]", Arrays.toString(op.getCreatedPaths()));
+        assertEquals("[]", Arrays.toString(op.getInvalidPaths()));
+        cmf.run();
+        assertEquals("[src/org/example/module/resources/layer.xml]", Arrays.toString(cmf.getModifiedPaths()));
+        assertEquals("[src/org/example/module/resources/file_1]", Arrays.toString(cmf.getCreatedPaths()));
+        assertEquals("[]", Arrays.toString(cmf.getInvalidPaths()));
+        assertNotNull(project.getProjectDirectory().getFileObject("src/org/example/module/resources/file_1"));
+    }
+
     public static void assertRelativePath(String expectedPath, String[] paths) {
         TestCase.assertEquals("one path", 1, paths.length);
         TestCase.assertEquals("created, modified paths", expectedPath, paths[0]);

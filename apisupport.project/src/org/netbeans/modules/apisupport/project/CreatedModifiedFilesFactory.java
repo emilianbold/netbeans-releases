@@ -501,10 +501,10 @@ public final class CreatedModifiedFilesFactory {
     
     private static final class CreateLayerEntry extends OperationBase {
         
-        private CreatedModifiedFiles.Operation createBundleKey;
-        private CreatedModifiedFiles.Operation layerOp;
+        private final CreatedModifiedFiles.Operation createBundleKey;
+        private final CreatedModifiedFiles.Operation layerOp;
         
-        public CreateLayerEntry(CreatedModifiedFiles cmf, Project project, final String layerPath,
+        public CreateLayerEntry(final CreatedModifiedFiles cmf, final Project project, final String layerPath,
                 final FileObject content,
                 final Map<String,String> tokens, final String localizedDisplayName, final Map<String,Object> attrs) {
             
@@ -546,11 +546,32 @@ public final class CreatedModifiedFilesFactory {
             } else {
                 externalFiles = Collections.emptySet();
             }
-            layerOp = new LayerModifications(project, op, externalFiles, cmf);
+            FileSystem layer = cmf.getLayerHandle().layer(false);
+            if (layer != null && layer.findResource(layerPath) != null) {
+                layerOp = new CreatedModifiedFiles.Operation() {
+                    public void run() throws IOException {
+                        throw new IOException("cannot run"); // NOI18N
+                    }
+                    public String[] getModifiedPaths() {
+                        return new String[0];
+                    }
+                    public String[] getCreatedPaths() {
+                        return new String[0];
+                    }
+                    public String[] getInvalidPaths() {
+                        // #85138: make sure we do not overwrite an existing entry.
+                        return new String[] {layerPath};
+                    }
+                };
+            } else {
+                layerOp = new LayerModifications(project, op, externalFiles, cmf);
+            }
             addPaths(layerOp);
             if (localizedDisplayName != null) {
                 this.createBundleKey = new BundleKey(getProject(), layerPath, localizedDisplayName);
                 addPaths(this.createBundleKey);
+            } else {
+                createBundleKey = null;
             }
         }
         
