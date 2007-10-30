@@ -214,12 +214,15 @@ public class JBStartServer extends StartServer implements ProgressObject{
 
                 try {
                     String serverDir = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
+                    String rootDir = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
 
-                    if (serverDir == null) {
+                    // FIXME this seems to be a workaround for the bad api
+                    // as you can't register the server atomically with all required properties
+                    if (serverDir == null || rootDir == null) {
                         result = false;
                         return;
                     }
-                    
+
                     checkingServerDir = new File(serverDir).getCanonicalPath();
                 } catch (IllegalStateException ex) {
                     Logger.getLogger("global").log(Level.INFO, null, ex);
