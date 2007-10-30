@@ -96,6 +96,7 @@ public class CppSettings extends SharedClassObject {
     
     private String path = null;
 
+    private static CppSettings cppSettings = null;
 
     /** Initialize each property */
     protected void initialize() {
@@ -107,7 +108,11 @@ public class CppSettings extends SharedClassObject {
     
     /** Return the signleton cppSettings */
     public static CppSettings getDefault() {
-	return (CppSettings) findObject(CppSettings.class, true);
+        // See IZ 120502
+        if (cppSettings == null) {
+            cppSettings = (CppSettings) findObject(CppSettings.class, true);
+    }
+        return cppSettings;
     }
     
     /**
