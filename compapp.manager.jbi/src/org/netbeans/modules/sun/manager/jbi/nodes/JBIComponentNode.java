@@ -44,14 +44,11 @@ package org.netbeans.modules.sun.manager.jbi.nodes;
 import org.netbeans.modules.sun.manager.jbi.management.JBIComponentType;
 import java.awt.Image;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
+import java.util.logging.Logger;
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.swing.Action;
@@ -69,7 +66,6 @@ import org.netbeans.modules.sun.manager.jbi.actions.ShutdownAction;
 import org.netbeans.modules.sun.manager.jbi.actions.StartAction;
 import org.netbeans.modules.sun.manager.jbi.actions.StopAction;
 import org.netbeans.modules.sun.manager.jbi.actions.UninstallAction;
-import org.netbeans.modules.sun.manager.jbi.actions.UpgradeAction;
 import org.netbeans.modules.sun.manager.jbi.nodes.property.SchemaBasedConfigPropertySupportFactory;
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
@@ -86,7 +82,6 @@ import org.openide.actions.PropertiesAction;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-import org.w3c.dom.Document;
 
 /**
  * Abstract Node class for a JBI Component.
@@ -118,6 +113,8 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     
     // This is not persistent across sessions.
     private static boolean confirmComponentShutdownDuringUpgrade = true;
+    
+    private static Logger logger = Logger.getLogger("org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode"); // NOI18N
     
         
     public JBIComponentNode(final AppserverJBIMgmtController controller,
@@ -246,11 +243,16 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                         getPropertySupport(configSchema, compName, this, attr, info);
                 
                 if (support == null) {
+                    // Most likely this is a property that is not supported, 
+                    // like Application Configuraitons in NetBeans 6.0.
+                    // Instead of making the user nervous, we only log the error
+                    // quietly.
                     String msg = "Fail to get property support for " + 
-                            compName + ":" + attrName;
-                    NotifyDescriptor d = new NotifyDescriptor.Message(
-                            msg, NotifyDescriptor.WARNING_MESSAGE);
-                    DialogDisplayer.getDefault().notify(d);
+                            attrName + " on component " + compName;
+//                    NotifyDescriptor d = new NotifyDescriptor.Message(
+//                            msg, NotifyDescriptor.WARNING_MESSAGE);
+//                    DialogDisplayer.getDefault().notify(d);
+                    logger.warning(msg);
                 } else {
                     supports.add(support);
                 }
