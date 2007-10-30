@@ -48,4 +48,10 @@ made subject to such option by the copyright holder.
             <file name="postgresql.xml" url="postgresql.xml"/>
         </folder>
     </folder>
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="MySQLDriver.xml" url="MySQLDriver.xml"/>
+            <file name="PostgreSQLDriver.xml" url="PostgreSQLDriver.xml"/>
+        </folder>
+    </folder>
 </filesystem>
