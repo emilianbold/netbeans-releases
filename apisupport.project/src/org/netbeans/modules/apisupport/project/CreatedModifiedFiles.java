@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -177,8 +176,7 @@ public final class CreatedModifiedFiles {
             layerHandle.setAutosave(false);
         }
         try {
-            for (Iterator it = operations.iterator(); it.hasNext(); ) {
-                Operation op = (Operation) it.next();
+            for (Operation op : operations) {
                 op.run();
             }
             if (layerHandle != null) {
