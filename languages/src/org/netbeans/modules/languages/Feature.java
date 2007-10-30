@@ -332,12 +332,13 @@ public class Feature {
                 try {
                     TokenSequence tokenSequence = Utils.getTokenSequence (document, context.getOffset ());
                     Token token = tokenSequence.token ();
-                    stoken = ASTToken.create (
-                        null,
-                        token.id ().ordinal (),
-                        token.text ().toString (),
-                        tokenSequence.offset ()
-                    );
+                    if (token != null) 
+                        stoken = ASTToken.create (
+                            null,
+                            token.id ().ordinal (),
+                            token.text ().toString (),
+                            tokenSequence.offset ()
+                        );
                 } finally {
                     document.readUnlock ();
                 }
