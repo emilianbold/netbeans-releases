@@ -66,13 +66,11 @@ import javax.swing.JFileChooser;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.WindowManager;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -359,11 +357,9 @@ public class AddDriverDialog extends javax.swing.JPanel {
                         (URL[])drvs.toArray(new URL[drvs.size()]),
                         this.getClass().getClassLoader());
                 
-                for (int i = 0; i < drvs.size(); i++) {
+                for (int i = 0; i < dlm.size(); i++) {
                     try {
-                        URL url = (URL)drvs.get(i);
-
-                        File file = new File(new URI(url.toExternalForm()));
+                        String file  = (String)dlm.get(i);
                         JarFile jf = new JarFile(file);
                         try {
                             Enumeration entries = jf.entries();
@@ -382,8 +378,6 @@ public class AddDriverDialog extends javax.swing.JPanel {
                             jf.close();
                         }
                     } catch (IOException exc) {
-                        //PENDING
-                    } catch (URISyntaxException use) {
                         //PENDING
                     }
                 }
