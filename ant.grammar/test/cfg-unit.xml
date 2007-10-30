@@ -48,9 +48,6 @@ made subject to such option by the copyright holder.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
-                <!-- #50160: consistently failing for no known reason. -->
-                <exclude name="**/AntGrammarTest.class/testRegularAttrCompletion"/>
-                <exclude name="**/AntGrammarTest.class/testEnumeratedValueCompletion"/>
             </patternset>
         </testset>
     </testbag>
