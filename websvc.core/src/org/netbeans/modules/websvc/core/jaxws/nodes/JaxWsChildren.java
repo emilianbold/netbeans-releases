@@ -41,12 +41,17 @@
 package org.netbeans.modules.websvc.core.jaxws.nodes;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.StringTokenizer;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -99,7 +104,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import java.io.IOException;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Binding;
 import org.xml.sax.SAXException;
 
@@ -156,6 +160,7 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
         return publicMethods;
     }
 
+    @Override
     protected void addNotify() {
         if (isFromWsdl()) {
             try {
@@ -206,6 +211,7 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
             assert(implClass != null);
             if (fcl == null) {
                 fcl = new FileChangeAdapter() {
+                    @Override
                     public void fileChanged(FileEvent fe) {
                         updateKeys();
                     }
@@ -217,6 +223,7 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
         }
     }
     
+    @Override
     protected void removeNotify() {
         if (wsdlModeler!=null) {
             wsdlModeler.removeWsdlChangeListener(wsdlChangeListener);
@@ -230,7 +237,7 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
     
     private void updateKeys() {
         if (isFromWsdl()) {
-            List keys = new ArrayList();
+            List<WsdlOperation> keys = new ArrayList<WsdlOperation>();
             if (wsdlModel!=null) {
                 WsdlService wsdlService = wsdlModel.getServiceByName(service.getServiceName());
                 if (wsdlService!=null) {
@@ -292,9 +299,9 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
                                                 for (AnnotationMirror an:annotations) {
                                                     if (controller.getTypes().isSameType(webMethodEl.asType(), an.getAnnotationType())) {
                                                         java.util.Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = an.getElementValues();
-                                                        for(ExecutableElement ex:expressions.keySet()) {
-                                                            if (ex.getSimpleName().contentEquals("operationName")) { //NOI18N
-                                                                webOperation.setOperationName((String)expressions.get(ex).getValue());
+                                                        for(Entry<? extends ExecutableElement, ? extends AnnotationValue> entry: expressions.entrySet()) {
+                                                            if (entry.getKey().getSimpleName().contentEquals("operationName")) { //NOI18N
+                                                                webOperation.setOperationName((String)expressions.get(entry.getKey()).getValue());
                                                             }
                                                         }
                                                     }
@@ -425,7 +432,6 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
     void refreshKeys(boolean downloadWsdl, final boolean refreshImplClass, String newWsdlUrl) {
         if (!isFromWsdl()) return;
         super.addNotify();
-        List keys=null;
         try {
             // copy to local wsdl first
             JAXWSSupport support = getJAXWSSupport();

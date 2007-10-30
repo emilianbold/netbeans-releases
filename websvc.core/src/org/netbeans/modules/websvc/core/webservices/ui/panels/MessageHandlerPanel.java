@@ -197,14 +197,14 @@ public class MessageHandlerPanel extends javax.swing.JPanel {
                 Map<String, Integer> selectedClasses = wsHandlerDialog.getSelectedClasses();
                 if (selectedClasses.size() > 0) {
                     int newSelectedRow = 0;
-                    Set<String> classes = selectedClasses.keySet();
-                    for (String selectedClass : classes) {
-                        Integer type = selectedClasses.get(selectedClass);
+                    Set<Map.Entry<String, Integer>> classes = selectedClasses.entrySet();
+                    for (Map.Entry<String, Integer> selectedClass : classes) {
+                        Integer type = selectedClasses.get(selectedClass.getKey());
                         if (type == WSHandlerDialog.JAXWS_LOGICAL_HANDLER) {
-                            handlerTableModel.insertRow(++protocolIndex, new Object[]{selectedClass, type});
+                            handlerTableModel.insertRow(++protocolIndex, new Object[]{selectedClass.getKey(), type});
                             newSelectedRow = protocolIndex;
                         } else {
-                            handlerTableModel.addRow(new Object[]{selectedClass, type});
+                            handlerTableModel.addRow(new Object[]{selectedClass.getKey(), type});
                             newSelectedRow = handlerTableModel.getRowCount() - 1;
                         }
                     }
@@ -380,6 +380,7 @@ private void moveDownHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
             super(columnNames, rowCount);
         }
 
+        @Override
         public boolean isCellEditable(int row, int column) {
             return false;
         }
