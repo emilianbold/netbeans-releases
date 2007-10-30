@@ -390,6 +390,11 @@ public class ComputeImports {
         }
         
         public boolean filter(CompilationInfo info, Map<String, List<TypeElement>> rawCandidates, Map<String, List<TypeElement>> candidates) {
+            return false;
+        }
+        
+        //IZ 102613 -- bugous 'discouraged' hints
+        public boolean Xfilter(CompilationInfo info, Map<String, List<TypeElement>> rawCandidates, Map<String, List<TypeElement>> candidates) {
             List<TypeElement> left = null;
             List<TypeElement> right = null;
             boolean leftReadOnly = false;
@@ -441,6 +446,11 @@ public class ComputeImports {
         }
         
         public boolean filter(CompilationInfo info, Map<String, List<TypeElement>> rawCandidates, Map<String, List<TypeElement>> candidates) {
+            return false;
+        }
+        
+        //IZ 102613 -- bugous 'discouraged' hints
+        private boolean Xfilter(CompilationInfo info, Map<String, List<TypeElement>> rawCandidates, Map<String, List<TypeElement>> candidates) {
             List<TypeElement> cands = candidates.get(simpleName);
             
             if (cands == null || cands.isEmpty())
