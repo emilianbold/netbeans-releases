@@ -43,18 +43,16 @@ package org.netbeans.modules.junit.output;
 
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.accessibility.AccessibleContext;
+import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
-import javax.swing.text.StyledDocument;
+import javax.swing.text.Document;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -112,18 +110,11 @@ final class ResultPanelOutput extends JScrollPane
     }
     
     /** */
-    private final Style outputStyle, errOutputStyle;
-    //private final Style headingStyle;
-    
+    private final JEditorPane textPane;
     /** */
-    private final JTextPane textPane;
-    /** */
-    private final StyledDocument doc;
+    private final Document doc;
     /** */
     private final ResultDisplayHandler displayHandler;
-    
-    /** */
-    boolean newLinePending = false;
     
     private Timer timer = null;
     
@@ -142,8 +133,10 @@ final class ResultPanelOutput extends JScrollPane
             System.out.println("ResultPanelOutput.<init>");
         }
         
-        textPane = new JTextPane();
-        doc = textPane.getStyledDocument();
+        textPane = new JEditorPane();
+        textPane.setFont(new Font("monospaced", Font.PLAIN, getFont().getSize()));
+        textPane.setEditorKit(new OutputEditorKit());
+        textPane.setDocument(doc = new OutputDocument());
         textPane.setEditable(false);
         setViewportView(textPane);
         
@@ -152,19 +145,6 @@ final class ResultPanelOutput extends JScrollPane
                 NbBundle.getMessage(getClass(), "ACSN_OutputTextPane"));//NOI18N
         accessibleContext.setAccessibleDescription(
                 NbBundle.getMessage(getClass(), "ACSD_OutputTextPane"));//NOI18N
-        
-        Style defaultStyle = StyleContext.getDefaultStyleContext()
-                             .getStyle(StyleContext.DEFAULT_STYLE);
-        
-        outputStyle = doc.addStyle("output", defaultStyle);             //NOI18N
-        StyleConstants.setFontFamily(outputStyle, "Monospaced");        //NOI18N
-        StyleConstants.setForeground(outputStyle, unselectedFg);
-        
-        errOutputStyle = doc.addStyle("error", outputStyle);
-        StyleConstants.setForeground(errOutputStyle, unselectedErr);
-        
-        //headingStyle = doc.addStyle("heading", outputStyle);          //NOI18N
-        //StyleConstants.setUnderline(headingStyle, true);
         
         this.displayHandler = displayHandler;
     }
@@ -278,12 +258,12 @@ final class ResultPanelOutput extends JScrollPane
             timerRunning = false;
         }
     }
-    
+
     /**
      */
     void displayOutput(final Object[] output) {
         assert EventQueue.isDispatchThread();
-        
+
         if (LOG) {
             System.out.println("ResultPanelOutput.displayOutput(...):");
             for (int i = 0; output[i] != null; i++) {
@@ -305,15 +285,10 @@ final class ResultPanelOutput extends JScrollPane
     /**
      */
     private void displayOutputLine(final String text, final boolean error) {
-        final Style textStyle = error ? errOutputStyle : outputStyle;
-        
         try {
-            if (newLinePending) {
-                doc.insertString(doc.getLength(), "\n", outputStyle);   //NOI18N
-                newLinePending = false;
-            }
-            doc.insertString(doc.getLength(), text, textStyle);
-            newLinePending = true;
+            doc.insertString(doc.getLength(),
+                             text + "\n",                               //NOI18N
+                             error ? OutputDocument.attrs : null);
         } catch (BadLocationException ex) {
             ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
         }
