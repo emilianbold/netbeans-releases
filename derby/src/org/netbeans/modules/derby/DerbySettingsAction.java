@@ -64,7 +64,7 @@ public class DerbySettingsAction extends CallableSystemAction {
     }
 
     public String getName() {
-        return NbBundle.getBundle(CreateDatabaseAction.class).getString("LBL_Settings");
+        return NbBundle.getBundle(CreateDatabaseAction.class).getString("LBL_SettingsAction");
     }
 
     public HelpCtx getHelpCtx() {

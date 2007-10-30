@@ -51,6 +51,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import org.openide.awt.DynamicMenuContent;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
@@ -70,7 +71,7 @@ public class DerbyDatabaseAction extends AbstractAction implements Presenter.Men
     private JMenuItem menuPresenter = null;
     
     public DerbyDatabaseAction() {
-        super(NbBundle.getMessage(DerbyDatabaseAction.class, "LBL_DerbyDatabase"));
+        super(NbBundle.getMessage(DerbyDatabaseAction.class, "LBL_DerbyDatabaseAction"));
     }
     
     public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -86,7 +87,8 @@ public class DerbyDatabaseAction extends AbstractAction implements Presenter.Men
     private final class MenuPresenter extends JMenu implements DynamicMenuContent, MenuListener {
         
         public MenuPresenter() {
-            super((String)getValue(Action.NAME));
+            super();
+            Mnemonics.setLocalizedText(this, (String)getValue(Action.NAME));
             addMenuListener(this);
         }
         
