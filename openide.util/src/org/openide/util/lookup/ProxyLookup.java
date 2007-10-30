@@ -155,6 +155,9 @@ public class ProxyLookup extends Lookup {
         Set<Lookup> current;
         Lookup[] old;
         
+        Map<Result,LookupListener> toRemove = new IdentityHashMap<Lookup.Result, LookupListener>();
+        Map<Result,LookupListener> toAdd = new IdentityHashMap<Lookup.Result, LookupListener>();
+        
         synchronized (this) {
             old = getLookups(false);
             current = identityHashSet(Arrays.asList(old));
@@ -181,10 +184,19 @@ public class ProxyLookup extends Lookup {
             for (Reference<R> ref : arr) {
                 R r = ref.get();
                 if (r != null) {
-                    r.lookupChange(newL, removed, old, lookups);
+                    r.lookupChange(newL, removed, old, lookups, toAdd, toRemove);
                 }
             }
         }
+        
+        // better to do this later than in synchronized block
+        for (Map.Entry<Result, LookupListener> e : toRemove.entrySet()) {
+            e.getKey().removeLookupListener(e.getValue());
+        }
+        for (Map.Entry<Result, LookupListener> e : toAdd.entrySet()) {
+            e.getKey().addLookupListener(e.getValue());
+        }
+
 
         // this cannot be done from the synchronized block
         ArrayList<Object> evAndListeners = new ArrayList<Object>();
@@ -362,7 +374,10 @@ public class ProxyLookup extends Lookup {
          * @param remove set of removed lookups
          * @param current array of current lookups
          */
-        protected void lookupChange(Set added, Set removed, Lookup[] old, Lookup[] current) {
+        protected void lookupChange(
+            Set added, Set removed, Lookup[] old, Lookup[] current, 
+            Map<Result,LookupListener> toAdd, Map<Result,LookupListener> toRemove
+        ) {
             synchronized (this) {
                 if (weakL.results == null) {
                     // not computed yet, do not need to do anything
@@ -370,12 +385,12 @@ public class ProxyLookup extends Lookup {
                 }
 
                 // map (Lookup, Lookup.Result)
-                HashMap<Lookup,Result<T>> map = new HashMap<Lookup,Result<T>>(old.length * 2);
+                Map<Lookup,Result<T>> map = new IdentityHashMap<Lookup,Result<T>>(old.length * 2);
 
                 for (int i = 0; i < old.length; i++) {
                     if (removed.contains(old[i])) {
                         // removed lookup
-                        weakL.results[i].removeLookupListener(weakL);
+                        toRemove.put(weakL.results[i], weakL);
                     } else {
                         // remember the association
                         map.put(old[i], weakL.results[i]);
@@ -388,7 +403,7 @@ public class ProxyLookup extends Lookup {
                     if (added.contains(current[i])) {
                         // new lookup
                         arr[i] = current[i].lookup(template);
-                        arr[i].addLookupListener(weakL);
+                        toAdd.put(arr[i], weakL);
                     } else {
                         // old lookup
                         arr[i] = map.get(current[i]);

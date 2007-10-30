@@ -62,7 +62,7 @@ implements AbstractLookupBaseHid.Impl {
     public static Test suite() {
         return new NbTestSuite (ProxyLookupTest.class);
         
-//        return new ProxyLookupTest("testArrayIndexAsInIssue119292");
+        //return new ProxyLookupTest("testArrayIndexWithAddRemoveListenerAsInIssue119292");
     }
     
     /** Creates an lookup for given lookup. This class just returns 
@@ -413,5 +413,79 @@ implements AbstractLookupBaseHid.Impl {
         assertEquals("No call to equals", 0, cnt[0]);
         
         assertEquals("Still assigned to C", Collections.singletonList("C"), res.allInstances());
+    }
+    
+    public void testArrayIndexWithAddRemoveListenerAsInIssue119292() throws Exception {
+        final ProxyLookup pl = new ProxyLookup();
+        final int[] cnt = { 0 };
+        
+        class L extends Lookup {
+            L[] set;
+            Lookup l;
+            
+            public L(String s) {
+                l = Lookups.singleton(s);
+            }
+            
+            @Override
+            public <T> T lookup(Class<T> clazz) {
+                return l.lookup(clazz);
+            }
+
+            @Override
+            public <T> Result<T> lookup(Template<T> template) {
+                Result<T> r = l.lookup(template);
+                return new R<T>(r);
+            }
+
+            final class R<T> extends Result<T> {
+                private Result<T> delegate;
+
+                public R(Result<T> delegate) {
+                    this.delegate = delegate;
+                }
+                
+                @Override
+                public void addLookupListener(LookupListener l) {
+                    cnt[0]++;
+                    if (set != null) {
+                        pl.setLookups(set);
+                    }
+                    delegate.addLookupListener(l);
+                }
+
+                @Override
+                public void removeLookupListener(LookupListener l) {
+                    cnt[0]++;
+                    if (set != null) {
+                        pl.setLookups(set);
+                    }
+                    delegate.removeLookupListener(l);
+                }
+
+                @Override
+                public Collection<? extends T> allInstances() {
+                    return delegate.allInstances();
+                }
+            }
+        }
+
+        Result<String> res = pl.lookupResult(String.class);
+        assertEquals(Collections.EMPTY_LIST, res.allItems());
+        
+        L[] old = { new L("A"), new L("B") };
+        L[] now = { new L("C") };
+        
+        pl.setLookups(old);
+        cnt[0] = 0;
+        
+        old[0].set = new L[0];
+        pl.setLookups(now);
+
+        if (cnt[0] == 0) {
+            fail("There should be calls to listeners");
+        }
+        
+        assertEquals("C is overriden from removeLookupListener", Collections.emptyList(), res.allInstances());
     }
 }
