@@ -43,6 +43,14 @@ package org.netbeans.modules.j2ee.common.method.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -56,11 +64,18 @@ public final class ValidatingPropertyChangeListener implements PropertyChangeLis
     private final MethodCustomizerPanel panel;
     private final NotifyDescriptor notifyDescriptor;
     private final boolean checkInterfaces;
+    private final Collection<MethodModel> existingMethods;
+    private final Set<String> existingMethodsNames; // just for faster validation, if such name exists, more detailed validation follows
     
-    public ValidatingPropertyChangeListener(MethodCustomizerPanel panel, NotifyDescriptor notifyDescriptor) {
+    public ValidatingPropertyChangeListener(MethodCustomizerPanel panel, NotifyDescriptor notifyDescriptor, Collection<MethodModel> existingMethods) {
         this.panel = panel;
         this.notifyDescriptor = notifyDescriptor;
         this.checkInterfaces = panel.supportsInterfacesChecking();
+        this.existingMethods = existingMethods;
+        this.existingMethodsNames = new HashSet<String>();
+        for (MethodModel methodModel : existingMethods) {
+            existingMethodsNames.add(methodModel.getName());
+        }
     }
     
     public void propertyChange(PropertyChangeEvent event) {
@@ -91,10 +106,42 @@ public final class ValidatingPropertyChangeListener implements PropertyChangeLis
             }
             if (local && remote) {
                 setWarning(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "LBL_commonImplForBothInterfaces"));
-                return true;
+            }
+        }
+        // existing methods
+        if (existingMethodsNames.contains(name)) {
+            List<MethodModel.Variable> proposedParams = panel.getParameters();
+            for (MethodModel methodModel : existingMethods) {
+                if (sameParams(proposedParams, methodModel.getParameters())) {
+                    setError(NbBundle.getMessage(ValidatingPropertyChangeListener.class, "ERROR_methodExists"));
+                    return false;
+                }
             }
         }
         unsetError();
+        return true;
+    }
+    
+    private boolean sameParams(List<MethodModel.Variable> proposedParams, List<MethodModel.Variable> existingParams) {
+        if (existingParams.size() == proposedParams.size()) {
+            for (int i = 0; i < existingParams.size(); i++) {
+                String existingType = existingParams.get(i).getType();
+                String proposedType = proposedParams.get(i).getType();
+                int existingIndex = existingType.lastIndexOf('.');
+                int proposedIndex = proposedType.lastIndexOf('.');
+                // try to get right result even if comparing String and java.lang.String; compare only simple names
+                if (existingIndex == -1 && proposedIndex != -1) {
+                    proposedType = proposedType.substring(proposedIndex + 1);
+                } else if (existingIndex != -1 && proposedIndex == -1) {
+                    existingType = existingType.substring(existingIndex + 1);
+                }
+                if (!existingType.equals(proposedType)) {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
         return true;
     }
     

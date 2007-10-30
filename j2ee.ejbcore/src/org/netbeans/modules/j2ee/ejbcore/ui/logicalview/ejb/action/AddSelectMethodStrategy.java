@@ -100,7 +100,7 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
                 methodModel,
                 ClasspathInfo.create(fileObject),
                 ejbMethodController.createDefaultQL(methodModel),
-                Collections.<MethodModel>emptySet() //TODO: RETOUCHE collect all methods
+                _RetoucheUtil.getMethods(fileObject, className)
                 );
     }
     

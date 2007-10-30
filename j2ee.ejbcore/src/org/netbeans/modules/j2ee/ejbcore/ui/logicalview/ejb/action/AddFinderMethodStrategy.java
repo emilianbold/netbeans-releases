@@ -141,7 +141,7 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
                 methodsNode == null ? ejbMethodController.hasLocal() : methodsNode.isLocal(),
                 methodsNode == null ? ejbMethodController.hasRemote() : !methodsNode.isLocal(),
                 ejbMethodController.createDefaultQL(methodModel),
-                Collections.<MethodModel>emptySet()
+                _RetoucheUtil.getMethods(fileObject, className)
                 );
     }
 

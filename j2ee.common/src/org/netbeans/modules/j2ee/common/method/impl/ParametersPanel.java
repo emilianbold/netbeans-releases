@@ -79,6 +79,8 @@ public final class ParametersPanel extends javax.swing.JPanel {
         NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.LBL_Final"),
     };
     
+    public static final String SELECTION = "selection"; // NOI18N
+    
     private final ParamsTableModel tableModel;
 
     public ParametersPanel(ClasspathInfo cpInfo, List<MethodModel.Variable> parameters) {
@@ -96,6 +98,7 @@ public final class ParametersPanel extends javax.swing.JPanel {
         typeCombo.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 tableModel.setValueAt(e.getItem(), table.getSelectedRow(), COL_TYPE_INDEX);
+                firePropertyChange(SELECTION, null, null);
             }
         });
         

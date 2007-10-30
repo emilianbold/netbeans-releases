@@ -69,7 +69,6 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
@@ -79,6 +78,7 @@ import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -379,6 +379,27 @@ public final class _RetoucheUtil {
         }, true);
 
         return result[0];
+    }
+
+    public static Set<MethodModel> getMethods(FileObject fileObject, final String className) {
+        final Set<MethodModel> result = new HashSet<MethodModel>();
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        try {
+            javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+                public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement typeElement = controller.getElements().getTypeElement(className);
+                    if (typeElement != null) {
+                        for (ExecutableElement executableElement : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
+                            result.add(MethodModelSupport.createMethodModel(controller, executableElement));
+                        }
+                    }
+                }
+            }, true);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+        return result;
     }
     
 }

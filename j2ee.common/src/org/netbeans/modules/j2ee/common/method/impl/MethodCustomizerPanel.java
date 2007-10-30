@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.common.method.impl;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,6 +70,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
     public static final String NAME = "name";
     public static final String RETURN_TYPE = "returnType";
     public static final String INTERFACES = "interfaces";
+    public static final String PARAMETERS = "parameters";
     // immutable method prototype
     private final MethodModel methodModel;
     private final ParametersPanel parametersPanel;
@@ -117,6 +119,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
         // listeners
         nameTextField.getDocument().addDocumentListener(new SimpleListener(NAME));
         returnTypeTextField.getDocument().addDocumentListener(new SimpleListener(RETURN_TYPE));
+        parametersPanel.addPropertyChangeListener(new SimpleListener(PARAMETERS));
         SimpleListener interfacesListener = new SimpleListener(INTERFACES);
         localRadio.addActionListener(interfacesListener);
         remoteRadio.addActionListener(interfacesListener);
@@ -514,7 +517,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
      * After receiving event, client can get property value by
      * calling {@link #getProperty(String)}
      */
-    private class SimpleListener implements DocumentListener, ActionListener {
+    private class SimpleListener implements DocumentListener, ActionListener, PropertyChangeListener {
 
         private final String propertyName;
 
@@ -537,10 +540,14 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
             fire();
         }
 
+        public void propertyChange(PropertyChangeEvent evt) {
+            fire();
+        }
+        
         private void fire() {
             firePropertyChange(propertyName, null, null);
         }
-        
+
     }
     
 }
