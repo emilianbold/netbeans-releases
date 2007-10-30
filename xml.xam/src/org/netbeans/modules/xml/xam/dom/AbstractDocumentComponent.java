@@ -506,8 +506,7 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
     }
     
     protected Attribute createPrefixAttribute(String prefix) {
-        assert prefix != null;
-        if (prefix.length() == 0) {
+        if (prefix == null || prefix.length() == 0) {
             return new PrefixAttribute(XMLConstants.XMLNS_ATTRIBUTE);
         } else {
             return new PrefixAttribute("xmlns:"+prefix); //NOI18N

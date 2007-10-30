@@ -88,7 +88,9 @@ public class GlobalReferenceImpl<T extends ReferenceableWSDLComponent>
             String namespace = getEffectiveNamespace();
             WSDLModel model = wparent.getWSDLModel();
             T target = null;
-            if (namespace != null && namespace.equals(model.getDefinitions().getTargetNamespace())) {
+            String targetNamespace = model.getDefinitions().getTargetNamespace();
+            if ((namespace == null && targetNamespace == null) ||
+                (namespace != null && namespace.equals(targetNamespace))) {
                 target = new FindReferencedVisitor<T>(model.getDefinitions()).find(localName, getType());
             }
             if (target == null) {

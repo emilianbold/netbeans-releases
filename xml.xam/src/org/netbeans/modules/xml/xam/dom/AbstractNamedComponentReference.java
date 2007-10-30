@@ -103,8 +103,15 @@ public abstract class AbstractNamedComponentReference<T extends NamedReferenceab
      */
     public synchronized String getRefString() {
         if (refString == null) {
-            assert super.getReferenced() != null;
-            prefix = getParent().lookupPrefix(getEffectiveNamespace());
+            T referencedT = super.getReferenced();
+            assert referencedT != null;
+            String namespace = getEffectiveNamespace();
+            prefix = getParent().lookupPrefix(namespace);
+            if (prefix == null && referencedT instanceof AbstractDocumentComponent) {
+                AbstractDocumentComponent target = (AbstractDocumentComponent) referencedT;
+                prefix = target.lookupPrefix(namespace);
+                getParent().addPrefix(prefix, namespace);
+            }
             localName = super.getReferenced().getName();
             if (prefix == null || prefix.length() == 0) {
                 refString = localName;

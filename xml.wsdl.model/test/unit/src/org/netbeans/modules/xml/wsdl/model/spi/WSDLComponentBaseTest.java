@@ -11,10 +11,12 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 import junit.framework.*;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.TestCatalogModel;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.Util;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 
 /**
  *
@@ -58,5 +60,16 @@ public class WSDLComponentBaseTest extends TestCase {
         assertEquals(2, map.keySet().size());
         assertEquals( "HelloService", map.get(new QName("name")));
         assertEquals("urn:HelloService/wsdl", map.get(new QName("targetNamespace")));
+    }
+
+    public void testNoNamespace() throws Exception {
+        WSDLModel model = Util.loadWSDLModel("resources/definitionsNoTargetN_valid.wsdl");
+        Definitions definitions = model.getDefinitions();
+        assertNull(definitions.getTargetNamespace());
+        
+        Operation op = model.findComponentByName("goodBasicWSDLOperation", Operation.class);
+        assertEquals(null, ((AbstractDocumentComponent)op.getInput()).lookupNamespaceURI(""));
+
+        assertNotNull(op.getInput().getMessage().get());
     }
 }
