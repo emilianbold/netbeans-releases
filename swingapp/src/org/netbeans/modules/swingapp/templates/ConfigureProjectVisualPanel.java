@@ -51,7 +51,6 @@ import java.io.File;
 import java.net.URL;
 import javax.swing.JFileChooser;
 import javax.swing.KeyStroke;
-import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
@@ -67,6 +66,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -185,12 +185,13 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
             createdFolderTextField.setText(projectFolder + File.separatorChar + projectName);
 
             if (e.getDocument() == projectNameTextField.getDocument()) {
-                String packageName = projectName.toLowerCase();
+                String projClassName = getClassNameFromProject(projectName);
+                String packageName = projClassName.toLowerCase();
                 String appClassName;
-                if (!packageName.contains("application") && !projectName.endsWith("App")) { // NOI18N
-                    appClassName = projectName + "App"; // NOI18N
+                if (!packageName.contains("application") && !projClassName.endsWith("App")) { // NOI18N
+                    appClassName = projClassName + "App"; // NOI18N
                 } else {
-                    appClassName = projectName;
+                    appClassName = projClassName;
                 }
                 if (Character.isLowerCase(appClassName.charAt(0))) {
                     appClassName = appClassName.substring(0, 1).toUpperCase() + appClassName.substring(1);
@@ -203,6 +204,24 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
         if (!configuring) {
             wizardPanel.visualPanelChanged(false);
         }
+    }
+
+    private static String getClassNameFromProject(String projectName) {
+        if (!Utilities.isJavaIdentifier(projectName)) {
+            StringBuilder buf = new StringBuilder(projectName.length());
+            for (int i=0; i < projectName.length(); i++) {
+                char c = projectName.charAt(i);
+                if (buf.length() == 0) {
+                    if (Character.isJavaIdentifierStart(c)) {
+                        buf.append(c);
+                    }
+                } else if (Character.isJavaIdentifierPart(c)) {
+                    buf.append(c);
+                }
+            }
+            return (buf.length() > 0) ? buf.toString() : "MyApplication"; // NOI18N
+        }
+        return projectName;
     }
 
     private Node getTemplatesRootNode() {

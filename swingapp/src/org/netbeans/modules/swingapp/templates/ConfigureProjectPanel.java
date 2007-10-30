@@ -176,6 +176,12 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel, WizardDesc
                 return false;
             }
         }
+        // check for package name (can't use default package)
+        if (appClassName.indexOf('.') <= 0) {
+            wizard.putProperty("WizardPanel_errorMessage", // NOI18N
+                    NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_InvalidDefaultPackage")); // NOI18N
+            return false;
+        }
 
         wizard.putProperty("WizardPanel_errorMessage", null); // NOI18N
 
