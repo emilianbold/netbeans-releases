@@ -53,6 +53,12 @@ public class ForkedJavaOverride extends Java {
 
     public ForkedJavaOverride() {
         redirector = new NbRedirector(this);
+        super.setFork(true);
+    }
+
+    @Override
+    public void setFork(boolean fork) {
+        // #47465: ignore! Does not work to be set to false.
     }
 
     private class NbRedirector extends Redirector {
