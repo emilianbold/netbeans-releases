@@ -100,12 +100,6 @@ public class FolderInstanceTest extends NbTestCase {
         
         clearWorkDir ();
         
-        FileObject[] arr = Repository.getDefault ().getDefaultFileSystem ().getRoot ().getChildren ();
-        for (int i = 0; i < arr.length; i++) {
-            arr[i].delete ();
-        }
-        
-        
         err = Logger.getLogger("TEST-" + getName());
     }
 
@@ -129,7 +123,7 @@ public class FolderInstanceTest extends NbTestCase {
      * @param cookie add cookie or not
      */
     private void doTestListenersCount (boolean cookie) throws Exception {  
-        FileSystem lfs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
+        FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), new String[0]);
 
         FileObject bb = lfs.findResource("/AA");
         err.info("Found resource: " + bb);
