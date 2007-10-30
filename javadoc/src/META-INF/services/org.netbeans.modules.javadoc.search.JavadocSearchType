@@ -1,0 +1,4 @@
+org.netbeans.modules.javadoc.search.Jdk12SearchType_japan
+#position=100
+org.netbeans.modules.javadoc.search.Jdk12SearchType
+#no position for Jdk12SearchType since it must be the last service
