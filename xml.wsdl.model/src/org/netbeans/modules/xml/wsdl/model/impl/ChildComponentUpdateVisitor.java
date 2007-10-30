@@ -116,7 +116,7 @@ public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSD
         if (parent instanceof Definitions) {
             Definitions target = (Definitions)parent;
             if (operation == Operation.ADD) {
-                target.addBinding(child);
+                addChild(target.BINDING_PROPERTY, child);
             } else if (operation == Operation.REMOVE) {
                 target.removeBinding(child);
             } else if (operation == null) {
@@ -131,7 +131,7 @@ public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSD
         if (parent instanceof Definitions) {
             Definitions target = (Definitions)parent;
             if (operation == Operation.ADD) {
-                target.addMessage(child);
+                addChild(target.MESSAGE_PROPERTY, child);
             } else if (operation == Operation.REMOVE) {
                 target.removeMessage(child);
             } else if (operation == null) {
@@ -146,7 +146,7 @@ public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSD
         if (parent instanceof Definitions) {
             Definitions target = (Definitions)parent;
             if (operation == Operation.ADD) {
-                target.addService(child);
+                addChild(target.SERVICE_PROPERTY, child);
             } else if (operation == Operation.REMOVE) {
                 target.removeService(child);
             } else if (operation == null) {
@@ -161,7 +161,7 @@ public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSD
         if (parent instanceof Definitions) {
             Definitions target = (Definitions)parent;
             if (operation == Operation.ADD) {
-                target.addPortType(child);
+                addChild(target.PORT_TYPE_PROPERTY, child);
             } else if (operation == Operation.REMOVE) {
                 target.removePortType(child);
             } else if (operation == null) {
@@ -176,7 +176,7 @@ public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSD
         if (parent instanceof Definitions) {
             Definitions target = (Definitions)parent;
             if (operation == Operation.ADD) {
-                target.addImport(child);
+                addChild(target.IMPORT_PROPERTY, child);
             } else if (operation == Operation.REMOVE) {
                 target.removeImport(child);
             } else if (operation == null) {
@@ -191,7 +191,7 @@ public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSD
         if (parent instanceof Service) {
             Service target = (Service)parent;
             if (operation == Operation.ADD) {
-                target.addPort(child);
+                addChild(target.PORT_PROPERTY, child);
             } else if (operation == Operation.REMOVE) {
                 target.removePort(child);
             } else if (operation == null) {
@@ -206,7 +206,7 @@ public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSD
         if (parent instanceof Binding) {
             Binding target = (Binding)parent;
             if (operation == Operation.ADD) {
-                target.addBindingOperation(child);
+                addChild(target.BINDING_OPERATION_PROPERTY, child);
             } else if (operation == Operation.REMOVE) {
                 target.removeBindingOperation(child);
             } else if (operation == null) {
@@ -249,7 +249,7 @@ public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSD
         if (parent instanceof BindingOperation) {
             BindingOperation target = (BindingOperation)parent;
             if (operation == Operation.ADD) {
-                target.addBindingFault(child);
+                addChild(BindingOperation.BINDING_FAULT_PROPERTY, child);
             } else if (operation == Operation.REMOVE) {
                 target.removeBindingFault(child);
             } else if (operation == null) {

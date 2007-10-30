@@ -9,7 +9,7 @@
         <part name="part2" type="xsd:string"/>
         <part name="part3" type="xsd:string"/>
     </message>
-    <message name="newWSDLOperationReply">
+    <message name="reply1">
         <part name="part1" type="xsd:string"/>
     </message>
     <message name="ItineraryFault">

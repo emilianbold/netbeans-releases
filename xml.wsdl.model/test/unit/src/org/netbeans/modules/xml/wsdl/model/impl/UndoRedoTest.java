@@ -73,6 +73,8 @@ public class UndoRedoTest extends NbTestCase {
             }
             assertTrue("Expect property change event on "+propertyName+" with "+old+" and "+now, false);
         }
+
+        public void reset() { events.clear(); }
     }
     
     public static class TestComponentListener implements ComponentListener {
@@ -122,7 +124,7 @@ public class UndoRedoTest extends NbTestCase {
             assertEquals("Event count", count, events.size());
         }
         
-        public void reset() { events.clear(); events = null; }
+        public void reset() { events.clear(); }
         
     }
     
@@ -138,6 +140,7 @@ public class UndoRedoTest extends NbTestCase {
     
     protected void tearDown() throws Exception {
         if (listener != null) listener.reset();
+        if (plistener != null) plistener.reset();
         TestCatalogModel.getDefault().clearDocumentPool();
     }
     
@@ -145,7 +148,34 @@ public class UndoRedoTest extends NbTestCase {
         return new FindReferencedVisitor<T>(model.getDefinitions()).find(name, type);
     }
 
-    public void testOperations() throws Exception {
+    public void testRenameMessage() throws Exception {
+        WSDLModel model = Util.loadWSDLModel("resources/testOrderingUndoRedo.wsdl");
+        setup(model);
+     
+        Definitions d = model.getDefinitions();
+        List<Message> messages = new ArrayList<Message>(d.getMessages());
+        assertEquals("newWSDLOperationRequest", messages.get(0).getName());
+        assertEquals("newWSDLOperationReply", messages.get(1).getName());
+        assertEquals("ItineraryFault", messages.get(2).getName());
+     
+        Util.setDocumentContentTo(model, "resources/testOrderingUndoRedo_2.wsdl");
+        model.sync();
+     
+        messages = new ArrayList<Message>(d.getMessages());
+        assertEquals("newWSDLOperationRequest", messages.get(0).getName());
+        assertEquals("reply1", messages.get(1).getName());
+        assertEquals("ItineraryFault", messages.get(2).getName());
+
+        Util.setDocumentContentTo(model, "resources/testOrderingUndoRedo.wsdl");
+        model.sync();
+     
+        messages = new ArrayList<Message>(d.getMessages());
+        assertEquals("newWSDLOperationRequest", messages.get(0).getName());
+        assertEquals("newWSDLOperationReply", messages.get(1).getName());
+        assertEquals("ItineraryFault", messages.get(2).getName());
+    }
+
+    public void testDeleteMessagePart() throws Exception {
         WSDLModel model = Util.loadWSDLModel("resources/testOrderingUndoRedo.wsdl");
         setup(model);
      

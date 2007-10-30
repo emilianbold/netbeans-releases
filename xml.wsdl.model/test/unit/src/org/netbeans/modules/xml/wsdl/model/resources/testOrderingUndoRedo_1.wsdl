@@ -11,6 +11,9 @@
     <message name="newWSDLOperationReply">
         <part name="part1" type="xsd:string"/>
     </message>
+    <message name="ItineraryFault">
+        <part name="faultMessage" element="tns:itineraryFault"/>
+    </message>  
     <portType name="newWSDLPortType">
         <operation name="newWSDLOperation">
             <input name="input1" message="tns:newWSDLOperationRequest"/>
