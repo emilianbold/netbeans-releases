@@ -7,6 +7,7 @@
 
 package org.netbeans.modules.languages;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.netbeans.api.languages.ParseException;
+import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.languages.parser.Parser;
 
 
@@ -139,7 +141,7 @@ public class NBSLanguageReaderTest extends TestCase {
             reader.getTokenTypes ();
             assert (false);
         } catch (ParseException ex) {
-            assertEquals ("test.nbs 5,20: No rule for <identifier,'a'> in rePart.", ex.getMessage ());
+            assertEquals ("test.nbs 5,20: Syntax error (nt: rePart, tokens: <identifier,'a'> <whitespace,' '>.", ex.getMessage ());
         }
     }
     
@@ -174,7 +176,9 @@ public class NBSLanguageReaderTest extends TestCase {
                 tokensMap.put (tokenType.getTypeID (), tokenType.getType ());
             }
             Language language = Language.create ("test/test", tokensMap, reader.getFeatures (), Parser.create (tokenTypes));
-            assertEquals (20, reader.getRules (language).size ());
+            List<Rule> grammarRules = reader.getRules (language);
+            assertEquals (20, grammarRules.size ());
+            LLSyntaxAnalyser.create (language, grammarRules, Collections.<Integer>emptySet ());
             assert (false);
         } catch (ParseException ex) {
             assertEquals ("endTag grammar rule not defined!", ex.getMessage ());

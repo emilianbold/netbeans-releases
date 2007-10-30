@@ -52,14 +52,22 @@ public class FirstTest extends TestCase {
         }))));
         First first = First.create (rules, language);
         System.out.println(first);
-        assertEquals (1, first.getRule (language.getNTID ("A"), TokenInputUtils.create (new ASTToken[] {
-            ASTToken.create (language, 0, "a", 0),
-            ASTToken.create (language, 1, "b", 0)
-        })));
-        assertEquals (2, first.getRule (language.getNTID ("A"), TokenInputUtils.create (new ASTToken[] {
-            ASTToken.create (language, 0, "a", 0),
-            ASTToken.create (language, 2, "c", 0)
-        })));
+        assertEquals (1, first.getRule (
+            language.getNTID ("A"), 
+            TokenInputUtils.create (new ASTToken[] {
+                ASTToken.create (language, 0, "a", 0),
+                ASTToken.create (language, 1, "b", 0)
+            }),
+            Collections.<Integer>emptySet ()
+        ));
+        assertEquals (2, first.getRule (
+            language.getNTID ("A"), 
+            TokenInputUtils.create (new ASTToken[] {
+                ASTToken.create (language, 0, "a", 0),
+                ASTToken.create (language, 2, "c", 0)
+            }),
+            Collections.<Integer>emptySet ()
+        ));
     }
     
     public void testFirst2 () throws ParseException {
@@ -97,31 +105,55 @@ public class FirstTest extends TestCase {
         }))));
         First first = First.create (rules, language);
         
-        assertEquals (3, first.getRule (0, TokenInputUtils.create (new ASTToken[] {
-            ASTToken.create (language, 1, "b", 0),
-            ASTToken.create (language, 3, "d", 0),
-            ASTToken.create (language, 0, "a", 0)
-        })));
-        assertEquals (1, first.getRule (0, TokenInputUtils.create (new ASTToken[] {
-            ASTToken.create (language, 1, "b", 0),
-            ASTToken.create (language, 3, "d", 0),
-            ASTToken.create (language, 2, "c", 0)
-        })));
-        assertEquals (0, first.getRule (0, TokenInputUtils.create (new ASTToken[] {
-            ASTToken.create (language, 3, "d", 0),
-            ASTToken.create (language, 1, "b", 0)
-        })));
-        assertEquals (2, first.getRule (0, TokenInputUtils.create (new ASTToken[] {
-            ASTToken.create (language, 3, "d", 0),
-            ASTToken.create (language, 2, "c", 0)
-        })));
-        assertEquals (-2, first.getRule (0, TokenInputUtils.create (new ASTToken[] {
-            ASTToken.create (language, 3, "d", 0)
-        })));
-        assertEquals (-2, first.getRule (0, TokenInputUtils.create (new ASTToken[] {
-            ASTToken.create (language, 1, "b", 0),
-            ASTToken.create (language, 1, "b", 0)
-        })));
+        assertEquals (3, first.getRule (
+            0,
+            TokenInputUtils.create (new ASTToken[] {
+                ASTToken.create (language, 1, "b", 0),
+                ASTToken.create (language, 3, "d", 0),
+                ASTToken.create (language, 0, "a", 0)
+            }),
+            Collections.<Integer>emptySet ()
+        ));
+        assertEquals (1, first.getRule (
+            0, 
+            TokenInputUtils.create(new ASTToken[] {
+                ASTToken.create (language, 1, "b", 0),
+                ASTToken.create (language, 3, "d", 0),
+                ASTToken.create (language, 2, "c", 0)
+            }),
+            Collections.<Integer>emptySet ()
+        ));
+        assertEquals (0, first.getRule (
+            0, 
+            TokenInputUtils.create (new ASTToken[] {
+                ASTToken.create (language, 3, "d", 0),
+                ASTToken.create (language, 1, "b", 0)
+            }),
+            Collections.<Integer>emptySet ()
+        ));
+        assertEquals (2, first.getRule (
+            0, 
+            TokenInputUtils.create (new ASTToken[] {
+                ASTToken.create (language, 3, "d", 0),
+                ASTToken.create (language, 2, "c", 0)
+            }),
+            Collections.<Integer>emptySet ()
+        ));
+        assertEquals (-2, first.getRule (
+            0, 
+            TokenInputUtils.create (new ASTToken[] {
+                ASTToken.create (language, 3, "d", 0)
+            }),
+            Collections.<Integer>emptySet ()
+        ));
+        assertEquals (-2, first.getRule (
+            0, 
+            TokenInputUtils.create(new ASTToken[] {
+                ASTToken.create (language, 1, "b", 0),
+                ASTToken.create (language, 1, "b", 0)
+            }),
+            Collections.<Integer>emptySet ()
+        ));
         System.out.println(first);
     }
 }
