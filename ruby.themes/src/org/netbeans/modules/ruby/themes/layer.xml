@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="FontsColors">
                     <folder name="DarkPastels">
                         <folder name="Defaults">
-                            <file name="org-netbeans-modules-editor-rhtml-token-colorings.xml" url="blank.xml"/>
+                            <file name="org-netbeans-modules-editor-rhtml-token-colorings.xml" url="DarkPastels-RHTML-fontsColors.xml"/>
                         </folder>
                     </folder>
                 </folder>
