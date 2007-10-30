@@ -614,7 +614,7 @@ public class ClassData extends ElementDataObject
         try
         {
             FileOutputStream fo = new FileOutputStream(file);
-            OutputStreamWriter out = new OutputStreamWriter(fo);
+            OutputStreamWriter out = new OutputStreamWriter(fo, ENCODING);
             
             out.write(getHTMLHeader());
             out.write("<BODY BGCOLOR=\"white\">\r\n"); // NOI18N
@@ -863,6 +863,8 @@ public class ClassData extends ElementDataObject
                 out.write("</TABLE>\r\n&nbsp;\r\n"); // NOI18N
             }
             
+
+
             // constructor summary
             
             IOperation[] constructors = getConstructors();

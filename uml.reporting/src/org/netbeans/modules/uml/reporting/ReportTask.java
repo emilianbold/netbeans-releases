@@ -103,6 +103,7 @@ public class ReportTask extends Thread implements Cancellable
     private IElement startingPoint;
     private ProjectTreeBuilderImpl m_Builder;
     private boolean success = true;
+    public static String ENCODING = "UTF-8";
     
     private static InputOutput inputOutput = IOProvider.getDefault().getIO(
         NbBundle.getMessage(ReportTask.class, "TITLE_ReportOutput"),false);
@@ -415,7 +416,7 @@ public class ReportTask extends Thread implements Cancellable
         try
         {
             FileOutputStream fo = new FileOutputStream(f);
-            OutputStreamWriter writer = new OutputStreamWriter(fo);
+            OutputStreamWriter writer = new OutputStreamWriter(fo, ENCODING);
             writer.write(content);
             writer.flush();
             writer.close();
@@ -702,7 +703,8 @@ public class ReportTask extends Thread implements Cancellable
         String content = buffer.toString();
         template = template.replace("%DIAGRAM_CONTENT%", content); // NOI18N
         template = template.replaceAll("%CHARSET%", // NOI18N
-            System.getProperty("file.encoding")); // NOI18N
+                ENCODING);
+//            System.getProperty("file.encoding")); // NOI18N
         filename = getReportDir() + File.separator + "alldiagrams.html"; // NOI18N
         makePage(filename, template.toString());
         
@@ -712,8 +714,8 @@ public class ReportTask extends Thread implements Cancellable
         template = buffer.toString();
         template = template.replaceAll("%ALL_ELEMENTS%", // NOI18N
                 NbBundle.getMessage(ElementDataObject.class, "Category_AllElements")); // NOI18N
-        template = template.replaceAll("%CHARSET%", // NOI18N
-                System.getProperty("file.encoding")); // NOI18N
+        template = template.replaceAll("%CHARSET%", ENCODING); // NOI18N
+//                System.getProperty("file.encoding")); // NOI18N
                 
         buffer = new StringBuilder();
         
@@ -761,8 +763,8 @@ public class ReportTask extends Thread implements Cancellable
                 NbBundle.getMessage(ElementDataObject.class, "Category_AllDiagrams")); // NOI18N
         template = template.replaceAll("%PACKAGES%", // NOI18N
                 NbBundle.getMessage(ElementDataObject.class, "Category_Package")); // NOI18N
-        template = template.replaceAll("%CHARSET%",  // NOI18N
-                System.getProperty("file.encoding")); // NOI18N
+        template = template.replaceAll("%CHARSET%", ENCODING); // NOI18N
+//                System.getProperty("file.encoding")); // NOI18N
         StringBuilder buff = new StringBuilder();
         
         items = new ITreeItem[packages.size()];
@@ -807,8 +809,8 @@ public class ReportTask extends Thread implements Cancellable
                 NbBundle.getMessage(ElementDataObject.class, "Header_Diagram")); // NOI18N
         template = template.replaceAll("%HELP%",  // NOI18N
                 NbBundle.getMessage(ElementDataObject.class, "Header_Help")); // NOI18N
-        template = template.replaceAll("%CHARSET%",  // NOI18N
-                System.getProperty("file.encoding")); // NOI18N
+        template = template.replaceAll("%CHARSET%", ENCODING);  // NOI18N
+//                System.getProperty("file.encoding")); // NOI18N
         
         buff = new StringBuilder();
         
@@ -967,7 +969,7 @@ public class ReportTask extends Thread implements Cancellable
             ErrorManager.getDefault().log(e.getMessage());
         }
     }
-    
+      
     
     private static class DisplayNameComparator implements Comparator
     {

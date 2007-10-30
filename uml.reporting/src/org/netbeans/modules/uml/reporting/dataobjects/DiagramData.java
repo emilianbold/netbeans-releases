@@ -384,7 +384,7 @@ public class DiagramData extends ElementDataObject
         try
         {
             FileOutputStream fo = new FileOutputStream(f);
-            OutputStreamWriter writer = new OutputStreamWriter(fo);
+            OutputStreamWriter writer = new OutputStreamWriter(fo, ENCODING);
             writer.write(content);
             writer.flush();
             writer.close();
@@ -426,7 +426,8 @@ public class DiagramData extends ElementDataObject
         page.append("	<HEAD>\n"); // NOI18N
         
         page.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=" +  // NOI18N
-                System.getProperty("file.encoding") + "\">\n"); // NOI18N
+//                System.getProperty("file.encoding") + "\">\n"); // NOI18N
+                ENCODING + "\">\n"); // NOI18N
         
         String str = "<TITLE>" + diagName + "</TITLE>\n"; // NOI18N
         page.append(str + "\n"); // NOI18N

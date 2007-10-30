@@ -92,7 +92,7 @@ public class EnumerationData extends DataTypeData
         try
         {
             FileOutputStream fo = new FileOutputStream(file);
-            OutputStreamWriter out = new OutputStreamWriter(fo);
+            OutputStreamWriter out = new OutputStreamWriter(fo, ENCODING);
             String doc = "";
             
             out.write(getHTMLHeader());

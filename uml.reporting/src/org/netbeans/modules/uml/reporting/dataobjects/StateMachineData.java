@@ -146,7 +146,7 @@ public class StateMachineData extends ClassData
         try
         {
             FileOutputStream fo = new FileOutputStream(file);
-            OutputStreamWriter out = new OutputStreamWriter(fo);
+            OutputStreamWriter out = new OutputStreamWriter(fo, ENCODING);
             
             out.write(getHTMLHeader());
             out.write("<BODY BGCOLOR=\"white\">\r\n"); // NOI18N

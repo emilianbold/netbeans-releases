@@ -127,6 +127,7 @@ public class ElementDataObject implements Report
     public static String navBar3;
     public static String navBar4;
     public static String navBar5;
+    public static String ENCODING = ReportTask.ENCODING;
     
     static
     {
@@ -859,7 +860,7 @@ public class ElementDataObject implements Report
         return buff.toString();
     }
     
-    
+   
     public boolean toReport(File file)
     {
         if (getElement()==null)
@@ -869,7 +870,7 @@ public class ElementDataObject implements Report
         try
         {
             FileOutputStream fo = new FileOutputStream(file);
-            OutputStreamWriter out = new OutputStreamWriter(fo);
+            OutputStreamWriter out = new OutputStreamWriter(fo, ENCODING);
             
             out.write(getHTMLHeader());
             out.write("<BODY BGCOLOR=\"white\">\r\n"); // NOI18N
@@ -967,6 +968,7 @@ public class ElementDataObject implements Report
     
     protected String getCharset()
     {
-        return System.getProperty("file.encoding"); // NOI18N
+//        return System.getProperty("file.encoding"); // NOI18N
+        return ENCODING;
     }
 }
