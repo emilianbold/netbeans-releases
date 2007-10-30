@@ -62,19 +62,23 @@ public class PortNode extends AbstractNode {
         setDisplayName(port.getName());
     }
     
+    @Override
     public Image getIcon(int type){
         return Utilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/wsport.png"); //NOI18N
     }
     
+    @Override
     public Image getOpenedIcon(int type){
         return getIcon( type);
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
     // Handle deleting:
+    @Override
     public boolean canDestroy() {
         return false;
     }

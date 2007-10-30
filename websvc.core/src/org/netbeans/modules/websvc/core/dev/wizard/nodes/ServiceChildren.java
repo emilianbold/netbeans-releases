@@ -59,11 +59,13 @@ public class ServiceChildren extends Children.Keys {
         this.wsdlService=wsdlService;
     }
     
+    @Override
     protected void addNotify() {
         super.addNotify();
         updateKeys();
     }
     
+    @Override
     protected void removeNotify() {
         setKeys(Collections.EMPTY_SET);
         super.removeNotify();

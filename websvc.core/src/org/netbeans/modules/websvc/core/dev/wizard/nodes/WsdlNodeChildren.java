@@ -59,11 +59,13 @@ public class WsdlNodeChildren extends Children.Keys {
         this.model=model;
     }
     
+    @Override
     protected void addNotify() {
         super.addNotify();
         updateKeys();
     }
     
+    @Override
     protected void removeNotify() {
         setKeys(Collections.EMPTY_SET);
         super.removeNotify();

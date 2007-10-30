@@ -60,19 +60,23 @@ public class WsdlNode extends AbstractNode {
         setDisplayName("WSDL model");
     }
     
+    @Override
     public Image getIcon(int type){
         return Utilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/webservice.png"); //NOI18N
     }
     
+    @Override
     public Image getOpenedIcon(int type){
         return getIcon( type);
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
     // Handle deleting:
+    @Override
     public boolean canDestroy() {
         return false;
     }
