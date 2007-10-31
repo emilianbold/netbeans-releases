@@ -63,6 +63,7 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -110,6 +111,8 @@ public class EucJPReadPageTest extends NbTestCase {
     }
     
     public void testKFranksFile() throws Exception {
+        String jaText = "\u30b3\u30de\u30f3\u30c9";
+        
         InputStream is = getClass().getResourceAsStream("index_ja.html");
         assertNotNull("index_ja found", is);
         
@@ -121,26 +124,28 @@ public class EucJPReadPageTest extends NbTestCase {
         
         List<Object> data = Arrays.asList(DD.d.getOptions());
         assertEquals("three objects: " + data, 3, DD.d.getOptions().length);
-        StringBuilder sb = null;
         for (Object o : DD.d.getOptions()) {
             assertEquals("is jbutton", JButton.class, o.getClass());
             JButton b = (JButton)o;
             String t = b.getText();
-            if (sb == null) {
-                sb = new StringBuilder();
-                for (int i = 0; i < t.length(); i++) {
-                    if (t.charAt(i) > 128 || t.charAt(i) < 32) {
-                        sb.append(t.charAt(i));
-                        System.err.println((int) t.charAt(i));
-                    }
-                }
-            }
             
-            if (t.indexOf(sb.toString()) == -1) {
-                fail("Expecting the right text: " + t);
+            if (t.indexOf(jaText) == -1) {
+                failUTF("Expecting the right text (" + jaText + ": " + t);
             }
         }
         
+    }
+    
+    private static void failUTF(String err) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < err.length(); i++) {
+            if (err.charAt(i) < 128) {
+                sb.append(err.charAt(i));
+            } else {
+                sb.append("\\u" + Integer.toString(err.charAt(i), 16));
+            }
+        }
+        fail(sb.toString());
     }
     
     public static final class DD extends DialogDisplayer {
