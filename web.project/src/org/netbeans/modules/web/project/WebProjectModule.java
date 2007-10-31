@@ -86,9 +86,9 @@ public class WebProjectModule extends ModuleInstall {
                             // old jsp api, and the compiler is not then able compile some jsp pages with tag lib declarations
                             .append(InstalledFileLocator.getDefault().locate("modules/ext/servlet2.5-jsp2.1-api.jar", null, false)) //NOI18N
                             .append(":${").append(WebProjectProperties.J2EE_PLATFORM_CLASSPATH).append("}:") // NOI18N
-                            .append(InstalledFileLocator.getDefault().locate("modules/ext/glassfish-jspparser.jar", null, false)) //NOI18N
+                            .append(InstalledFileLocator.getDefault().locate("modules/ext/glassfish-jspparser-2.0.jar", null, false)) //NOI18N
                             .append(':') // NOI18N
-                            .append(InstalledFileLocator.getDefault().locate("modules/ext/glassfish-logging.jar", null, false)) //NOI18N
+                            .append(InstalledFileLocator.getDefault().locate("modules/ext/glassfish-logging-2.0.jar", null, false)) //NOI18N
                             .append(':') // NOI18N
                             .append(InstalledFileLocator.getDefault().locate("modules/ext/commons-logging-1.0.4.jar", null, false)) //NOI18N
                             .append(':') // NOI18N
@@ -97,7 +97,7 @@ public class WebProjectModule extends ModuleInstall {
                     String jspc_cp = sb.toString();
                     if (jspc_cp_old == null || !jspc_cp_old.equals(jspc_cp)) {
                         ep.setProperty(JSPC_CLASSPATH, jspc_cp);
-                        changed = true;
+                            changed = true;
                     }
                     File copy_files = InstalledFileLocator.getDefault().locate("ant/extra/copyfiles.jar", null, false); //NOI18N
                     if (copy_files == null) {

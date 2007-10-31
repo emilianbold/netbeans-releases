@@ -55,8 +55,8 @@ made subject to such option by the copyright holder.
                 <package>com.sun.org.apache.commons.logging.impl</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/glassfish-logging.jar</runtime-relative-path>
-                <binary-origin>external/glassfish-logging.jar</binary-origin>
+                <runtime-relative-path>ext/glassfish-logging-2.0.jar</runtime-relative-path>
+                <binary-origin>external/glassfish-logging-2.0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

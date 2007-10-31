@@ -74,16 +74,16 @@ made subject to such option by the copyright holder.
         <!-- glassfish-jspparser.jar -->
         <mkdir dir="./glassfishjspparser"/>
         <unzip src="${glassfish_location}/lib/appserv-rt.jar" dest="./glassfishjspparser/"/>
-        <delete file="./glassfish-jspparser.jar" />
+        <delete file="./glassfish-jspparser-2.0.jar" />
         <zip  basedir="./glassfishjspparser" 
         includes="org/apache/jasper/**, com/sun/el/**, com/sun/appserv/ClassLoaderUtil.class, com/sun/appserv/server/util/PreprocessorUtil.class" 
-            zipfile="./external/glassfish-jspparser.jar" />
+            zipfile="./external/glassfish-jspparser-2.0.jar" />
         
         <!-- glassfish-logging.jar -->
         <mkdir dir="./glassfishlogging"/>
-        <delete file="./glassfish-logging.jar" />
+        <delete file="./glassfish-logging-2.0.jar" />
         <zip  basedir="./glassfishjspparser" includes="com/sun/org/apache/commons/logging/**" 
-            zipfile="../libs/glassfish_logging/external/glassfish-logging.jar" />
+            zipfile="../libs/glassfish_logging/external/glassfish-logging-2.0.jar" />
         
         <delete dir="./glassfishjspparser" />
         <delete dir="./glassfishlogging" />

@@ -9,8 +9,8 @@
                 <binary-origin>../jsf-1_2/build/external/jsf-1.2/jsf-impl.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/glassfish-jspparser.jar</runtime-relative-path>
-                <binary-origin>../../jspparser/external/glassfish-jspparser.jar</binary-origin>
+                <runtime-relative-path>ext/glassfish-jspparser-2.0.jar</runtime-relative-path>
+                <binary-origin>../../jspparser/external/glassfish-jspparser-2.0.jar</binary-origin>
             </class-path-extension>
             <module-dependencies>
                 <dependency>
