@@ -65,6 +65,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.DuplicateException;
 import org.netbeans.Events;
 import org.netbeans.InvalidException;
@@ -115,7 +116,9 @@ final class ModuleList {
      * Safer; only slows down startup in case quickie parse of XML statuses fails for some reason.
      */
     private static final boolean VALIDATE_XML = true;
-    
+
+    private static final Logger LOG = Logger.getLogger(ModuleList.class.getName());
+
     /** associated module manager */
     private final ModuleManager mgr;
     /** Modules/ folder containing XML data */
@@ -142,7 +145,7 @@ final class ModuleList {
         this.mgr = mgr;
         this.folder = folder;
         this.ev = ev;
-        Util.err.fine("ModuleList created, storage in " + folder);
+        LOG.fine("ModuleList created, storage in " + folder);
     }
     
     /** Read an initial list of modules from disk according to their stored settings.
@@ -188,7 +191,7 @@ final class ModuleList {
                     try {
                         props = readStatus(new BufferedInputStream(is));
                         if (props == null) {
-                            Util.err.warning("Note - failed to parse " + children[i] + " the quick way, falling back on XMLReader");
+                            LOG.warning("Note - failed to parse " + children[i] + " the quick way, falling back on XMLReader");
                             is.close();
                             is = children[i].getInputStream();
                             InputSource src = new InputSource(is);
@@ -214,12 +217,12 @@ final class ModuleList {
                     try {
                         jarFile = findJarByName(jar, name);
                     } catch (FileNotFoundException fnfe) {
-                        //Util.err.fine("Cannot find: " + fnfe.getMessage());
+                        //LOG.fine("Cannot find: " + fnfe.getMessage());
                         ev.log(Events.MISSING_JAR_FILE, new File(fnfe.getMessage()));
                         try {
                             children[i].delete();
                         } catch (IOException ioe) {
-                            Util.err.log(Level.WARNING, null, ioe);
+                            LOG.log(Level.WARNING, null, ioe);
                         }
                         continue;
                     }
@@ -268,22 +271,22 @@ final class ModuleList {
                     status.diskProps = props;
                     statuses.put(name, status);
                 } catch (Exception e) {
-                    Util.err.log(Level.WARNING, "Error encountered while reading " + children[i], e);
+                    LOG.log(Level.WARNING, "Error encountered while reading " + children[i], e);
                 }
             } else {
-                Util.err.fine("Strange file encountered in modules folder: " + children[i]);
+                LOG.fine("Strange file encountered in modules folder: " + children[i]);
             }
             ev.log( Events.MODULES_FILE_PROCESSED, children[i] );
         }
-        if (Util.err.isLoggable(Level.FINE)) {
-            Util.err.fine("read initial XML files: statuses=" + statuses);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("read initial XML files: statuses=" + statuses);
         }
         ev.log(Events.FINISH_READ, read);
         // Handle changes in the Modules/ folder on disk by parsing & applying them.
         folder.addFileChangeListener(FileUtil.weakFileChangeListener (listener, folder));
                 }});
         } catch (IOException ioe) {
-            Util.err.log(Level.WARNING, null, ioe);
+            LOG.log(Level.WARNING, null, ioe);
         }
         return read;
     }
@@ -338,7 +341,7 @@ final class ModuleList {
             installNew(maybeEnable);
             ev.log(Events.FINISH_AUTO_RESTORE, maybeEnable);
         }
-        Util.err.fine("ModuleList.trigger: enabled new modules, flushing changes...");
+        LOG.fine("ModuleList.trigger: enabled new modules, flushing changes...");
         triggered = true;
         flushInitial();
         ev.log(Events.PERF_END, "ModuleList.trigger"); // NOI18N
@@ -362,14 +365,14 @@ final class ModuleList {
                 // no existing Modules/ *.xml. In such a case B will already
                 // have been turned on when restoring A; harmless to remove
                 // it from the list here.
-                Util.err.fine("#17295 fix active for " + m.getCodeNameBase());
+                LOG.fine("#17295 fix active for " + m.getCodeNameBase());
                 it.remove();
             } else if (!m.isValid()) {
                 // Again can also happen if the user upgrades from one version
                 // of a module to another. In this case ModuleList correctly removed
                 // the old dead module from the manager's list, however it is still
                 // in the set of modules to restore.
-                Util.err.fine("#17471 fix active for " + m.getCodeNameBase());
+                LOG.fine("#17471 fix active for " + m.getCodeNameBase());
                 it.remove();
             }
         }
@@ -401,7 +404,7 @@ final class ModuleList {
         try {
             mgr.enable(modules);
         } catch (InvalidException ie) {
-            Util.err.log(Level.WARNING, null, ie);
+            LOG.log(Level.WARNING, null, ie);
             Module bad = ie.getModule();
             if (bad == null) throw new IllegalStateException();
             ev.log(Events.FAILED_INSTALL_NEW_UNEXPECTED, bad, ie);
@@ -433,14 +436,14 @@ final class ModuleList {
      */
     void installPrepare(Module m, ModuleInstall inst) {
         if (! (m.getHistory() instanceof ModuleHistory)) {
-            Util.err.fine(m + " had strange history " + m.getHistory() + ", ignoring...");
+            LOG.fine(m + " had strange history " + m.getHistory() + ", ignoring...");
             return;
         }
         ModuleHistory hist = (ModuleHistory)m.getHistory();
         // We might have loaded something from externalizedModules.ser before.
         byte[] compatSer = compatibilitySers.get(inst.getClass().getName());
         if (compatSer != null) {
-            Util.err.fine("Had some old-style state for " + m);
+            LOG.fine("Had some old-style state for " + m);
             if (isReallyExternalizable(inst.getClass())) {
                 // OK, maybe it was not useless, let's see...
                 // Compare virgin state to what we had; if different, load
@@ -450,10 +453,10 @@ final class ModuleList {
                     new NbObjectOutputStream(baos).writeObject(inst);
                     baos.close();
                     if (Utilities.compareObjects(compatSer, baos.toByteArray())) {
-                        Util.err.fine("Old-style state for " + m + " was gratuitous");
+                        LOG.fine("Old-style state for " + m + " was gratuitous");
                         // leave hist.installerState null
                     } else {
-                        Util.err.fine("Old-style state for " + m + " was useful, loading it...");
+                        LOG.fine("Old-style state for " + m + " was useful, loading it...");
                         // Make sure it is recorded as "changed" in history by writing something
                         // fake now. In installPostpare, we will load the new installer state
                         // and call setInstallerState again, so the result will be written to disk.
@@ -464,21 +467,21 @@ final class ModuleList {
                         if (o != inst) throw new ClassCastException("Stored " + o + " but expecting " + inst); // NOI18N
                     }
                 } catch (Exception e) {
-                    Util.err.log(Level.WARNING, null, e);
+                    LOG.log(Level.WARNING, null, e);
                     // Try later to continue.
                     hist.setInstallerState(new byte[0]);
                 } catch (LinkageError le) {
-                    Util.err.log(Level.WARNING, null, le);
+                    LOG.log(Level.WARNING, null, le);
                     // Try later to continue.
                     hist.setInstallerState(new byte[0]);
                 }
             } else {
-                Util.err.fine(m + " did not want to store install state");
+                LOG.fine(m + " did not want to store install state");
                 // leave hist.installerState null
             }
         } else if (hist.getInstallerState() != null) {
             // We already have some state, load it now.
-            Util.err.fine("Loading install state for " + m);
+            LOG.fine("Loading install state for " + m);
             try {
                 InputStream is = new ByteArrayInputStream(hist.getInstallerState());
                 // Note: NBOOS requires the system class loader to be in order.
@@ -497,18 +500,18 @@ final class ModuleList {
                 if (o != inst) throw new ClassCastException("Stored " + o + " but expecting " + inst); // NOI18N
             } catch (Exception e) {
                 // IOException, ClassNotFoundException, and maybe unchecked stuff
-                Util.err.log(Level.WARNING, null, e);
+                LOG.log(Level.WARNING, null, e);
                 // Nothing else to do, hope that the install object was not corrupted
                 // by the failed deserialization! If it was, it cannot be saved now.
             } catch (LinkageError le) {
-                Util.err.log(Level.WARNING, null, le);
+                LOG.log(Level.WARNING, null, le);
             }
         } else {
             // Virgin installer. First we check if it really cares about serialization
             // at all, because it not we do not want to waste time forcing it.
             if (isReallyExternalizable(inst.getClass())) {
-                Util.err.fine("Checking pre-install state of " + m);
-                Util.err.warning("Warning: use of writeExternal (or writeReplace) in " + inst.getClass().getName() + " is deprecated; use normal settings instead");
+                LOG.fine("Checking pre-install state of " + m);
+                LOG.warning("Warning: use of writeExternal (or writeReplace) in " + inst.getClass().getName() + " is deprecated; use normal settings instead");
                 try {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream(1000);
                     new NbObjectOutputStream(baos).writeObject(inst);
@@ -519,17 +522,17 @@ final class ModuleList {
                     // polluting the disk.
                     hist.setInstallerState(baos.toByteArray());
                 } catch (Exception e) {
-                    Util.err.log(Level.WARNING, null, e);
+                    LOG.log(Level.WARNING, null, e);
                     // Remember that it is *supposed* to be serializable to something.
                     hist.setInstallerState(new byte[0]);
                 } catch (LinkageError le) {
-                    Util.err.log(Level.WARNING, null, le);
+                    LOG.log(Level.WARNING, null, le);
                     hist.setInstallerState(new byte[0]);
                 }
             } else {
                 // It does not want to store anything. Leave the installer state null
                 // and continue.
-                Util.err.fine(m + " did not want to store install state");
+                LOG.fine(m + " did not want to store install state");
             }
         }
     }
@@ -572,7 +575,7 @@ final class ModuleList {
      */
     void installPostpare(Module m, ModuleInstall inst) {
         if (! (m.getHistory() instanceof ModuleHistory)) {
-            Util.err.fine(m + " had strange history " + m.getHistory() + ", ignoring...");
+            LOG.fine(m + " had strange history " + m.getHistory() + ", ignoring...");
             return;
         }
         ModuleHistory hist = (ModuleHistory)m.getHistory();
@@ -585,22 +588,22 @@ final class ModuleList {
                 byte[] nue = baos.toByteArray();
                 if (Utilities.compareObjects(old, nue)) {
                     // State has not changed.
-                    Util.err.fine(m + " did not change installer state (" + old.length + " bytes), not writing anything");
+                    LOG.fine(m + " did not change installer state (" + old.length + " bytes), not writing anything");
                 } else {
                     // It did change. Store new version.
-                    Util.err.fine(m + " changed installer state after loading");
+                    LOG.fine(m + " changed installer state after loading");
                     hist.setInstallerState(nue);
                 }
             } catch (Exception e) {
-                Util.err.log(Level.WARNING, null, e);
+                LOG.log(Level.WARNING, null, e);
                 // We could not compare, so don't bother writing out any old state.
                 //hist.setInstallerState(null);
             } catch (LinkageError le) {
-                Util.err.log(Level.WARNING, null, le);
+                LOG.log(Level.WARNING, null, le);
             }
         } else {
             // Nothing stored (does not writeExternal), do nothing.
-            Util.err.fine(m + " has no saved state");
+            LOG.fine(m + " has no saved state");
         }
     }
     
@@ -627,7 +630,7 @@ final class ModuleList {
             private String paramName;
             private StringBuffer data = new StringBuffer();
 	    
-            public void startElement(String uri,
+            public @Override void startElement(String uri,
                                      String localname,
                                      String qname,
                                      Attributes attrs) throws SAXException {
@@ -647,12 +650,12 @@ final class ModuleList {
                 }
             }
 	    
-            public void characters(char[] ch, int start, int len) {
+            public @Override void characters(char[] ch, int start, int len) {
                 if(modName != null  && paramName != null)
                     data.append( ch, start, len );
             }
             
-            public void endElement (String uri, String localname, String qname)
+            public @Override void endElement (String uri, String localname, String qname)
                 throws SAXException
             {
                 if ("param".equals(qname)) { // NOI18N
@@ -692,7 +695,7 @@ final class ModuleList {
      */
     private Object processStatusParam(String k, String v) throws NumberFormatException {
         if (k == "release") { // NOI18N
-            return new Integer(v);
+            return Integer.parseInt(v);
         } else if (k == "enabled" // NOI18N
                    || k == "autoload" // NOI18N
                    || k == "eager" // NOI18N
@@ -738,7 +741,7 @@ final class ModuleList {
             } else {
                 throw new IOException("Unrecognized origin " + origin + " for " + jar); // NOI18N
             }
-            Util.err.warning("Upgrading 'jar' param from " + jar + " to " + newjar + " and removing 'origin' " + origin);
+            LOG.warning("Upgrading 'jar' param from " + jar + " to " + newjar + " and removing 'origin' " + origin);
             m.put("jar", newjar); // NOI18N
         }
     }
@@ -759,17 +762,17 @@ final class ModuleList {
     private Map<String, Object> readStatus(InputStream is) throws IOException {
         Map<String,Object> m = new HashMap<String,Object>(15);
         if (!expect(is, MODULE_XML_INTRO)) {
-            Util.err.fine("Could not read intro");
+            LOG.fine("Could not read intro");
             return null;
         }
         String name = readTo(is, '"');
         if (name == null) {
-            Util.err.fine("Could not read code name base");
+            LOG.fine("Could not read code name base");
             return null;
         }
         m.put("name", name.intern()); // NOI18N
         if (!expect(is, MODULE_XML_INTRO_END)) {
-            Util.err.fine("Could not read stuff after cnb");
+            LOG.fine("Could not read stuff after cnb");
             return null;
         }
         // Now we have <param>s some number of times, finally </module>.
@@ -780,49 +783,49 @@ final class ModuleList {
             case ' ':
                 // <param>
                 if (!expect(is, MODULE_XML_DIV2)) {
-                    Util.err.fine("Could not read up to param");
+                    LOG.fine("Could not read up to param");
                     return null;
                 }
                 String k = readTo(is, '"');
                 if (k == null) {
-                    Util.err.fine("Could not read param");
+                    LOG.fine("Could not read param");
                     return null;
                 }
                 k = k.intern();
                 if (is.read() != '>') {
-                    Util.err.fine("No > at end of <param> " + k);
+                    LOG.fine("No > at end of <param> " + k);
                     return null;
                 }
                 String v = readTo(is, '<');
                 if (v == null) {
-                    Util.err.fine("Could not read value of " + k);
+                    LOG.fine("Could not read value of " + k);
                     return null;
                 }
                 if (!expect(is, MODULE_XML_DIV3)) {
-                    Util.err.fine("Could not read end of param " + k);
+                    LOG.fine("Could not read end of param " + k);
                     return null;
                 }
                 try {
                     m.put(k, processStatusParam(k, v));
                 } catch (NumberFormatException nfe) {
-                    Util.err.fine("Number misparse: " + nfe);
+                    LOG.fine("Number misparse: " + nfe);
                     return null;
                 }
                 break;
             case '<':
                 // </module>
                 if (!expect(is, MODULE_XML_END)) {
-                    Util.err.fine("Strange ending");
+                    LOG.fine("Strange ending");
                     return null;
                 }
                 if (is.read() != -1) {
-                    Util.err.fine("Trailing garbage");
+                    LOG.fine("Trailing garbage");
                     return null;
                 }
                 // Success!
                 break PARSE;
             default:
-                Util.err.fine("Strange stuff after <param>s: " + c);
+                LOG.fine("Strange stuff after <param>s: " + c);
                 return null;
             }
         }
@@ -977,7 +980,7 @@ final class ModuleList {
                         throw new IOException("Will not clobber external changes in " + nue.file); // NOI18N
                     }
                 }
-                Util.err.fine("ModuleList: (re)writing " + nue.file);
+                LOG.fine("ModuleList: (re)writing " + nue.file);
                 FileLock lock = nue.file.lock();
                 try {
                     OutputStream os = nue.file.getOutputStream(lock);
@@ -1037,7 +1040,7 @@ final class ModuleList {
                 FileObject xml = folder.getFileObject(nameDashes, "xml"); // NOI18N
                 if (xml == null) {
                     // Could be that the XML was already deleted externally, etc.
-                    Util.err.fine("ModuleList: " + m + "'s XML already gone from disk");
+                    LOG.fine("ModuleList: " + m + "'s XML already gone from disk");
                     return;
                 }
                 //if (xml == null) throw new IOException("No such XML file: " + nameDashes + ".xml"); // NOI18N
@@ -1046,7 +1049,7 @@ final class ModuleList {
                     // XXX should this throw an exception, or just warn??
                     throw new IOException("Unapproved external change to " + xml); // NOI18N
                 }
-                Util.err.fine("ModuleList: deleting " + xml);
+                LOG.fine("ModuleList: deleting " + xml);
                 /*
                 if (xml.lastModified().getTime() != expectedTime) {
                     // Someone wrote to the file since we did. Don't delete it blindly!
@@ -1056,7 +1059,7 @@ final class ModuleList {
                 xml.delete();
                 FileObject ser = folder.getFileObject(nameDashes, "ser"); // NOI18N
                 if (ser != null) {
-                    Util.err.fine("(and also " + ser + ")");
+                    LOG.fine("(and also " + ser + ")");
                     ser.delete();
                 }
             }
@@ -1087,7 +1090,7 @@ final class ModuleList {
      * Called within write mutex by trigger().
      */
     private void flushInitial() {
-        Util.err.fine("Flushing initial module list...");
+        LOG.fine("Flushing initial module list...");
         // Find all modules for which we have status already. Treat
         // them as possibly changed, and attach listeners.
         Iterator it = mgr.getModules().iterator();
@@ -1114,8 +1117,8 @@ final class ModuleList {
      */
     private void moduleListChanged() {
         synchronized (statuses) {
-            if (Util.err.isLoggable(Level.FINE)) {
-                Util.err.fine("ModuleList: moduleListChanged; statuses=" + statuses);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("ModuleList: moduleListChanged; statuses=" + statuses);
             }
             // Newly added modules first.
             for (Module m : mgr.getModules()) {
@@ -1126,12 +1129,12 @@ final class ModuleList {
                 final String name = m.getCodeNameBase();
                 if (statuses.get(name) == null) {
                     // Yup, it's new. Write it out.
-                    Util.err.fine("moduleListChanged: added: " + m);
+                    LOG.fine("moduleListChanged: added: " + m);
                     try {
                         statuses.put(name, writeOut(m, null));
                         m.addPropertyChangeListener(listener);
                     } catch (IOException ioe) {
-                        Util.err.log(Level.WARNING, null, ioe);
+                        LOG.log(Level.WARNING, null, ioe);
                         // XXX Now what? Keep it in our list or what??
                     }
                 }
@@ -1147,18 +1150,18 @@ final class ModuleList {
                         // Deleted, but a new module with the same code name base
                         // was created (#5922 e.g.). So change the module reference
                         // in the status and write out any changes to disk.
-                        Util.err.fine("moduleListChanged: recreated: " + nue);
+                        LOG.fine("moduleListChanged: recreated: " + nue);
                         nue.addPropertyChangeListener(listener);
                         status.module = nue;
                         moduleChanged(nue, status);
                     } else {
                         // Newly deleted.
-                        Util.err.fine("moduleListChanged: deleted: " + status.module);
+                        LOG.fine("moduleListChanged: deleted: " + status.module);
                         it.remove();
                         try {
                             deleteFromDisk(status.module, status);
                         } catch (IOException ioe) {
-                            Util.err.log(Level.WARNING, null, ioe);
+                            LOG.log(Level.WARNING, null, ioe);
                         }
                     }
                 }
@@ -1174,22 +1177,20 @@ final class ModuleList {
      */
     private void moduleChanged(Module m, DiskStatus status) {
         synchronized (status) {
-            if (Util.err.isLoggable(Level.FINE)) {
-                Util.err.fine("ModuleList: moduleChanged: " + m);
-            }
+            LOG.log(Level.FINE, "moduleChanged: {0}", m);
             Map<String,Object> newProps = computeProperties(m);
             if (! Utilities.compareObjects(status.diskProps, newProps)) {
-                if (Util.err.isLoggable(Level.FINE)) {
+                if (LOG.isLoggable(Level.FINE)) {
                     Set<Map.Entry<String,Object>> changes = new HashSet<Map.Entry<String,Object>>(newProps.entrySet());
                     changes.removeAll(status.diskProps.entrySet());
-                    Util.err.fine("ModuleList: changes are " + changes);
+                    LOG.fine("ModuleList: changes are " + changes);
                 }
                 // We need to write changes.
                 status.diskProps = newProps;
                 try {
                     writeOut(m, status);
                 } catch (IOException ioe) {
-                    Util.err.log(Level.WARNING, null, ioe);
+                    LOG.log(Level.WARNING, null, ioe);
                     // XXX now what? continue to manage it anyway?
                 }
             }
@@ -1251,8 +1252,8 @@ final class ModuleList {
             Object src = evt.getSource();
             if (!listening) {
                 // #27106: do not react to our own changes while we are making them
-                if (Util.err.isLoggable(Level.FINE)) {
-                    Util.err.fine("ModuleList: ignoring own change " + prop + " from " + src);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("ModuleList: ignoring own change " + prop + " from " + src);
                 }
                 return;
             }
@@ -1283,14 +1284,14 @@ final class ModuleList {
                 }
                 moduleChanged(m, status);
             } else {
-                Util.err.fine("Unexpected property change: " + evt + " prop=" + prop + " src=" + src);
+                LOG.fine("Unexpected property change: " + evt + " prop=" + prop + " src=" + src);
             }
         }
         
         // SAX stuff.
         
         public void warning(SAXParseException e) throws SAXException {
-            Util.err.log(Level.WARNING, null, e);
+            LOG.log(Level.WARNING, null, e);
         }
         public void error(SAXParseException e) throws SAXException {
             throw e;
@@ -1317,8 +1318,8 @@ final class ModuleList {
         
         public void fileDeleted(FileEvent ev) {
             if (isOurs(ev)) {
-                if (Util.err.isLoggable(Level.FINE)) {
-                    Util.err.fine("ModuleList: got expected deletion " + ev);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("ModuleList: got expected deletion " + ev);
                 }
                 return;
             }
@@ -1328,8 +1329,8 @@ final class ModuleList {
         
         public void fileDataCreated(FileEvent ev) {
             if (isOurs(ev)) {
-                if (Util.err.isLoggable(Level.FINE)) {
-                    Util.err.fine("ModuleList: got expected creation " + ev);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("ModuleList: got expected creation " + ev);
                 }
                 return;
             }
@@ -1350,7 +1351,7 @@ final class ModuleList {
             if ("xml".equals(ext)) { // NOI18N
                 String codenamebase = name.replace('-', '.');
                 DiskStatus status = statuses.get(codenamebase);
-                Util.err.fine("ModuleList: outside file creation event for " + codenamebase);
+                LOG.fine("ModuleList: outside file creation event for " + codenamebase);
                 if (status != null) {
                     // XXX should this really happen??
                     status.dirty = true;
@@ -1366,7 +1367,7 @@ final class ModuleList {
                 // Removed module.
                 String codenamebase = name.replace('-', '.');
                 DiskStatus status = statuses.get(codenamebase);
-                Util.err.fine("ModuleList: outside file deletion event for " + codenamebase);
+                LOG.fine("ModuleList: outside file deletion event for " + codenamebase);
                 if (status != null) {
                     // XXX should this ever happen?
                     status.dirty = true;
@@ -1379,8 +1380,8 @@ final class ModuleList {
         
         public void fileChanged(FileEvent ev) {
             if (isOurs(ev)) {
-                if (Util.err.isLoggable(Level.FINE)) {
-                    Util.err.fine("ModuleList: got expected modification " + ev);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("ModuleList: got expected modification " + ev);
                 }
                 return;
             }
@@ -1391,7 +1392,7 @@ final class ModuleList {
                 // Changed module.
                 String codenamebase = name.replace('-', '.');
                 DiskStatus status = statuses.get(codenamebase);
-                Util.err.fine("ModuleList: outside file modification event for " + codenamebase + ": " + ev);
+                LOG.fine("ModuleList: outside file modification event for " + codenamebase + ": " + ev);
                 if (status != null) {
                     status.dirty = true;
                 } else {
@@ -1440,7 +1441,7 @@ final class ModuleList {
             synchronized (this) {
                 pendingRun = false;
             }
-            Util.err.fine("ModuleList: will process outstanding external XML changes");
+            LOG.fine("ModuleList: will process outstanding external XML changes");
             mgr.mutexPrivileged().enterWriteAccess();
             try {
                 folder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
@@ -1479,16 +1480,16 @@ final class ModuleList {
                         }
                     }
                 });
-                Util.err.fine("ModuleList: finished processing outstanding external XML changes");
+                LOG.fine("ModuleList: finished processing outstanding external XML changes");
             } catch (IOException ioe) {
-                Util.err.log(Level.WARNING, null, ioe);
+                LOG.log(Level.WARNING, null, ioe);
             } finally {
                 mgr.mutexPrivileged().exitWriteAccess();
             }
         }
         // All the steps called from the run() method to handle disk changes:
         private Map<String,FileObject> prepareXMLFiles() {
-            Util.err.fine("ModuleList: prepareXMLFiles");
+            LOG.fine("ModuleList: prepareXMLFiles");
             Map<String,FileObject> xmlfiles = new HashMap<String,FileObject>(100);
             FileObject[] kids = folder.getChildren();
             for (int i = 0; i < kids.length; i++) {
@@ -1499,7 +1500,7 @@ final class ModuleList {
             return xmlfiles;
         }
         private Map<String,Map<String,Object>> prepareDirtyProps(Map<String,FileObject> xmlfiles) throws IOException {
-            Util.err.fine("ModuleList: prepareDirtyProps");
+            LOG.fine("ModuleList: prepareDirtyProps");
             Map<String,Map<String,Object>> dirtyprops = new HashMap<String,Map<String,Object>>(100);
             Iterator<Map.Entry<String,FileObject>> it = xmlfiles.entrySet().iterator();
             while (it.hasNext()) {
@@ -1528,7 +1529,7 @@ final class ModuleList {
             return dirtyprops;
         }
         private void stepCheckReloadable(Map<String,Map<String,Object>> dirtyprops) {
-            Util.err.fine("ModuleList: stepCheckReloadable");
+            LOG.fine("ModuleList: stepCheckReloadable");
             Iterator<Map.Entry<String,Map<String,Object>>> it = dirtyprops.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry<String,Map<String,Object>> entry = it.next();
@@ -1540,14 +1541,14 @@ final class ModuleList {
                     boolean diskReloadable = (diskReloadableB != null ? diskReloadableB.booleanValue() : false);
                     boolean memReloadable = status.module.isReloadable();
                     if (memReloadable != diskReloadable) {
-                        Util.err.fine("Disk change in reloadable for " + cnb + " from " + memReloadable + " to " + diskReloadable);
+                        LOG.fine("Disk change in reloadable for " + cnb + " from " + memReloadable + " to " + diskReloadable);
                         status.module.setReloadable(diskReloadable);
                     }
                 }
             }
         }
         private void stepCreate(Map<String,FileObject> xmlfiles, Map<String,Map<String,Object>> dirtyprops) throws IOException {
-            Util.err.fine("ModuleList: stepCreate");
+            LOG.fine("ModuleList: stepCreate");
             Iterator<Map.Entry<String,FileObject>> it = xmlfiles.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry<String,FileObject> entry = it.next();
@@ -1591,7 +1592,7 @@ final class ModuleList {
             }
         }
         private void stepEnable(Map<String,Map<String,Object>> dirtyprops) throws IOException {
-            Util.err.fine("ModuleList: stepEnable");
+            LOG.fine("ModuleList: stepEnable");
             Set<Module> toenable = new HashSet<Module>();
             Iterator<Map.Entry<String,Map<String,Object>>> it = dirtyprops.entrySet().iterator();
             while (it.hasNext()) {
@@ -1609,7 +1610,7 @@ final class ModuleList {
             installNew(toenable);
         }
         private void stepDisable(Map<String,Map<String,Object>> dirtyprops) throws IOException {
-            Util.err.fine("ModuleList: stepDisable");
+            LOG.fine("ModuleList: stepDisable");
             Set<Module> todisable = new HashSet<Module>();
             for (Map.Entry<String,Map<String,Object>> entry: dirtyprops.entrySet()) {
                 String cnb = entry.getKey();
@@ -1634,7 +1635,7 @@ final class ModuleList {
             mgr.disable(todisable);
         }
         private void stepDelete(Map<String,FileObject> xmlfiles) throws IOException {
-            Util.err.fine("ModuleList: stepDelete");
+            LOG.fine("ModuleList: stepDelete");
             Set<Module> todelete = new HashSet<Module>();
             Iterator<Map.Entry<String,DiskStatus>> it = statuses.entrySet().iterator();
             while (it.hasNext()) {
@@ -1678,7 +1679,7 @@ final class ModuleList {
             }
         }
         private void stepCheckMisc(Map/*<String,Map<String,Object>>*/ dirtyprops) {
-            Util.err.fine("ModuleList: stepCheckMisc");
+            LOG.fine("ModuleList: stepCheckMisc");
             String[] toCheck = {"jar", "autoload", "eager", "release", "specversion"}; // NOI18N
             Iterator it = dirtyprops.entrySet().iterator();
             while (it.hasNext()) {
@@ -1701,7 +1702,7 @@ final class ModuleList {
             // There is NO step 7!
         }
         private void stepUpdateProps(Map<String,Map<String,Object>> dirtyprops) {
-            Util.err.fine("ModuleList: stepUpdateProps");
+            LOG.fine("ModuleList: stepUpdateProps");
 	    for (Map.Entry<String,Map<String,Object>> entry: dirtyprops.entrySet()) {
                 String cnb = entry.getKey();
                 DiskStatus status = statuses.get(cnb);
@@ -1712,7 +1713,7 @@ final class ModuleList {
             }
         }
         private void stepMarkClean() {
-            Util.err.fine("ModuleList: stepMarkClean");
+            LOG.fine("ModuleList: stepMarkClean");
             Iterator it = statuses.values().iterator();
             while (it.hasNext()) {
                 DiskStatus status = (DiskStatus)it.next();
@@ -1739,7 +1740,7 @@ final class ModuleList {
         /** if true, the XML was changed on disk by someone else */
         public boolean dirty = false;
         /** for debugging: */
-        public String toString() {
+        public @Override String toString() {
             return "DiskStatus[module=" + module + // NOI18N
                 ",valid=" + module.isValid() + // NOI18N
                 ",file=" + file + /*",lastApprovedChange=" + new Date(lastApprovedChange) +*/ // NOI18N
