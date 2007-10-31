@@ -68,6 +68,9 @@ ERROR_INPUTOUPUT=7
 ERROR_FREESPACE=8
 ERROR_INTEGRITY=9
 ERROR_MISSING_RESOURCES=10
+ERROR_JVM_EXTRACTION=11
+ERROR_JVM_UNPACKING=12
+ERROR_VERIFY_BUNDLED_JVM=13
 
 VERIFY_OK=1
 VERIFY_NOJAVA=2
@@ -81,9 +84,14 @@ MSG_ERROR_FREESPACE="nlu.freespace"
 MSG_ERROP_MISSING_RESOURCE="nlu.missing.external.resource"
 MSG_ERROR_TMPDIR="nlu.cannot.create.tmpdir"
 
+MSG_ERROR_EXTRACT_JVM="nlu.cannot.extract.bundled.jvm"
+MSG_ERROR_UNPACK_JVM_FILE="nlu.cannot.unpack.jvm.file"
+MSG_ERROR_VERIFY_BUNDLED_JVM="nlu.error.verify.bundled.jvm"
+
 MSG_RUNNING="nlu.running"
 MSG_STARTING="nlu.starting"
 MSG_EXTRACTING="nlu.extracting"
+MSG_PREPARE_JVM="nlu.prepare.jvm"
 MSG_JVM_SEARCH="nlu.jvm.search"
 MSG_ARG_JAVAHOME="nlu.arg.javahome"
 MSG_ARG_VERBOSE="nlu.arg.verbose"
@@ -558,8 +566,47 @@ extractTestJVMFile() {
 }
 
 installJVM() {
+	message "$MSG_PREPARE_JVM"	
 	jvmFile="$1"
-	# install JVM and set LAUNCHER_JAVA_EXE here
+	jvmDir=`dirname "$jvmFile"`/_jvm
+	mkdir "$jvmDir"
+        chmod +x "$jvmFile" > /dev/null  2>&1
+	jvmFileEscaped=`escapeString "$jvmFile"`
+        jvmDirEscaped=`escapeString "$jvmDir"`
+	cmd="$jvmFileEscaped -d $jvmDirEscaped"
+        runCommand "$cmd"
+        	
+	if [ $? != 0 ] ; then
+	        message "$MSG_ERROR_EXTRACT_JVM"
+		exitProgram $ERROR_JVM_EXTRACTION
+	fi
+	files=`find "$jvmDir" -name "*.jar.pack.gz" -print`
+	debug "Packed files : $files"
+	f="$files"
+	fileCounter=1;
+	while [ -n "$f" ] ; do
+		f=`echo "$files" | sed -n "${fileCounter}p" 2>/dev/null`
+		debug "... next file is $f"				
+		if [ -n "$f" ] ; then
+			debug "... packed file  = $f"
+			unpacked=`echo "$f" | sed s/\.pack\.gz//`
+			debug "... unpacked file = $unpacked"
+			fEsc=`escapeString "$f"`
+			uEsc=`escapeString "$unpacked"`
+			cmd="$jvmDirEscaped/bin/unpack200 $fEsc $uEsc"
+			runCommand "$cmd"
+			if [ $? != 0 ] ; then
+			    message "$MSG_ERROR_UNPACK_JVM_FILE" "$f"
+			    exitProgram $ERROR_JVM_UNPACKING
+			fi		
+		fi					
+		fileCounter=`expr "$fileCounter" + 1`
+	done
+		
+	verifyJVM "$jvmDir"
+	if [ -z "$LAUNCHER_JAVA_EXE" ] ; then
+		message "$MSG_ERROR_VERIFY_BUNDLED_JVM"
+	fi
 }
 
 resolveResourcePath() {
@@ -740,7 +787,7 @@ searchJava() {
 		    	debug "... next location $argJavaHome"
 			
 			if [ $fileType -eq 0 ] ; then # bundled
-				installJVM  "$argJavaHome"
+				installJVM  "$argJavaHome"				
 	        	fi
 
 			argJavaHome=`escapeString "$argJavaHome"`
@@ -906,8 +953,8 @@ verifyJavaHome() {
             javaExe="$java/$arg"	    
 
             if [ -x "$javaExe" ] ; then		
-
-                command="$javaExe -classpath $testJVMclasspath $testJVMclass"
+                javaExeEscaped=`escapeString "$javaExe"`
+                command="$javaExeEscaped -classpath $testJVMclasspath $testJVMclass"
 
                 debug "Executing java verification command..."
 		debug "$command"
@@ -1261,6 +1308,27 @@ prepareAppArguments() {
 }
 
 
+runCommand() {
+	cmd="$1"
+	debug "Running command : $cmd"
+	if [ -n "$OUTPUT_FILE" ] ; then
+		#redirect all stdout and stderr from the running application to the file
+		eval "$cmd" >> "$OUTPUT_FILE" 2>&1
+	elif [ 1 -eq $SILENT_MODE ] ; then
+		# on silent mode redirect all out/err to null
+		eval "$cmd" > /dev/null 2>&1	
+	elif [ 0 -eq $USE_DEBUG_OUTPUT ] ; then
+		# redirect all output to null
+		# do not redirect errors there but show them in the shell output
+		eval "$cmd" > /dev/null	
+	else
+		# using debug output to the shell
+		# not a silent mode but a verbose one
+		eval "$cmd"
+	fi
+	return $?
+}
+
 executeMainClass() {
 	prepareClasspath
 	prepareJVMArguments
@@ -1275,21 +1343,7 @@ executeMainClass() {
 	command="$launcherJavaExeEscaped $LAUNCHER_JVM_ARGUMENTS -Djava.io.tmpdir=$tmpdirEscaped -classpath $classpathEscaped $mainClassEscaped $LAUNCHER_APP_ARGUMENTS"
 
 	debug "Running command : $command"
-	if [ -n "$OUTPUT_FILE" ] ; then
-		#redirect all stdout and stderr from the running application to the file
-		eval "$command" >> "$OUTPUT_FILE" 2>&1
-	elif [ 1 -eq $SILENT_MODE ] ; then
-		# on silent mode redirect all out/err to null
-		eval "$command" > /dev/null 2>&1	
-	elif [ 0 -eq $USE_DEBUG_OUTPUT ] ; then
-		# redirect all output to null
-		# do not redirect errors there but show them in the shell output
-		eval "$command" > /dev/null	
-	else
-		# using debug output to the shell
-		# not a silent mode but a verbose one
-		eval "$command"
-	fi
+	runCommand "$command"
 	exitCode=$?
 	debug "... java process finished with code $exitCode"
 	exitProgram $exitCode
