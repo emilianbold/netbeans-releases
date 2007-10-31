@@ -45,7 +45,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
 import javax.swing.Timer;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -66,7 +65,11 @@ public class RepositoryListenerImpl implements RepositoryListener {
     
     /** Interval, in seconds, after which implicitely opened unit should be closed */
     private static final int IMPLICIT_CLOSE_INTERVAL = Integer.getInteger("cnd.implicit.close.interval", 10); // NOI18N
-    
+     
+    private static final String TRACE_PROJECT_NAME = System.getProperty("cnd.repository.trace.project"); //NOI18N    
+    private static final boolean TRACE_PROJECT = (TRACE_PROJECT_NAME != null && TRACE_PROJECT_NAME.length() > 0);
+ 
+   
     /** A shutdown hook to guarantee that repository is shutted down */
     private static class RepositoryShutdownHook extends Thread {
 	
@@ -74,6 +77,7 @@ public class RepositoryListenerImpl implements RepositoryListener {
 	    setName("Repository Shutdown Hook Thread"); // NOI18N
 	}
 	
+	@Override
 	public void run() {
 	    RepositoryUtils.shutdown();
 	}
@@ -126,10 +130,14 @@ public class RepositoryListenerImpl implements RepositoryListener {
     public static RepositoryListenerImpl instance() {
 	return instance;
     }
-    
+
+
     /** RepositoryListener implementation */
     public boolean unitOpened(final String unitName) {
 	if( TraceFlags.TRACE_REPOSITORY_LISTENER ) System.err.printf("RepositoryListener: unitOpened %s\n", unitName);
+	if( TRACE_PROJECT && TRACE_PROJECT_NAME.equals(unitName)) {
+	    System.err.printf("Watched project %s is opening\n", unitName);
+	}
 	synchronized (lock) {
 	    if( ! explicitelyOpened.contains(unitName) ) {
 		if( TraceFlags.TRACE_REPOSITORY_LISTENER ) System.err.printf("RepositoryListener: implicit open !!! %s\n", unitName);
@@ -142,6 +150,9 @@ public class RepositoryListenerImpl implements RepositoryListener {
     /** RepositoryListener implementation */
     public void unitClosed(final String unitName) {
 	if( TraceFlags.TRACE_REPOSITORY_LISTENER ) System.err.printf("RepositoryListener: unitClosed %s\n", unitName);
+	if( TRACE_PROJECT && TRACE_PROJECT_NAME.equals(unitName)) {
+	    System.err.printf("Watched project %s is explicitly closing\n", unitName);
+	}
 	synchronized (lock) {
 	    killTimer(unitName);
 	    explicitelyOpened.remove(unitName);
@@ -194,6 +205,9 @@ public class RepositoryListenerImpl implements RepositoryListener {
 	ModelImpl.instance().enqueueModelTask(new Runnable() {
 	    public void run() {
 		if( TraceFlags.TRACE_REPOSITORY_LISTENER ) System.err.printf("RepositoryListener: closing implicitely opened unit %s\n", unitName);
+		if( TRACE_PROJECT && TRACE_PROJECT_NAME.equals(unitName)) {
+		    System.err.printf("Watched project %s is implicitely closing\n", unitName);
+		}
 		RepositoryUtils.closeUnit(unitName, Collections.EMPTY_SET);
 	    }
 	}, "Closing implicitly opened project"); // NOI18N
