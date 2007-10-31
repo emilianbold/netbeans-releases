@@ -473,11 +473,7 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
     
     <target name="-post-init-clean">
-        <delete failonerror="false">
-		<fileset dir="${basedir}/cache/raw">
-			<exclude name="**/sun_java_wireless_toolkit-*"/>
-                </fileset>
-        </delete>
+        <delete dir="${basedir}/cache/raw" failonerror="false"/>
         <delete failonerror="false">
             <fileset dir="${basedir}/cache/packaged">
                 <!-- nb components -->
