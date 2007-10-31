@@ -395,9 +395,9 @@ function download(option) {
         basename="bundles/";
     }
     //if ((platform == "macosx-x86") || (platform != "macosx-ppc")) {
-    //  basename  += "{nb.files.prefix}-{build.number}";
+    //  basename  += "{nb.files.prefix}-{build.number}{nb.build.suffix}";
     //} else {
-	basename  += "{nb.files.prefix}-{build.number}";
+	basename  += "{nb.files.prefix}-{build.number}{nb.build.suffix}";
     //}
 
     var file_name = "start.html?" + basename;

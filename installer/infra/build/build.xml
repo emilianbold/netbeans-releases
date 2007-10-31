@@ -1847,10 +1847,14 @@ jarsigner.storepass=${jarsigner.storepass}
         <mkdir dir="${output.dir}/js"/>
         <mkdir dir="${output.dir}/css"/>
 
+	<set property="nb.build.suffix.replacement"  
+               source="nb.build.suffix.replacement"/>
+
         <replace 
             dir="${nbi.netbeans.dir}/infra/build/web">
              <replacefilter token="${build.number.token}"    value="${build.number.replacement}"/>
 	     <replacefilter token="${nb.files.prefix.token}" value="${nb.files.prefix.replacement}"/>
+	     <replacefilter token="${nb.build.suffix.token}" value="${nb.build.suffix.replacement}"/>
 	</replace>
         
 
