@@ -280,6 +280,7 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                 return this;
             }
         });
+        projectList.setPreferredSize(new java.awt.Dimension(0, 200));
         jScrollPane1.setViewportView(projectList);
         projectList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "ProjectList")); // NOI18N
         projectList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "DESC_ProjectList")); // NOI18N
@@ -326,19 +327,14 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                                     .add(folderLabel))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(locationCB, 0, 351, Short.MAX_VALUE)
-                                    .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, folderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE))
+                                    .add(locationCB, 0, 415, Short.MAX_VALUE)
+                                    .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, folderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                             .add(projectLabel))
                         .add(7, 7, 7))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(createJmakiCheckBox)
-                                .add(18, 18, 18)
-                                .add(overwriteCheckBox))
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 480, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                     .add(layout.createSequentialGroup()
@@ -346,10 +342,16 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                         .add(browseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 110, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 602, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(refLabel)
                 .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(createJmakiCheckBox)
+                .add(18, 18, 18)
+                .add(overwriteCheckBox)
+                .addContainerGap(168, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -372,16 +374,17 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(refLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
                         .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeButton))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 105, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(createJmakiCheckBox)
-                    .add(overwriteCheckBox)))
+                    .add(overwriteCheckBox))
+                .addContainerGap(68, Short.MAX_VALUE))
         );
 
         projectLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClientStubsSetupPanelVisual.class, "Project")); // NOI18N
