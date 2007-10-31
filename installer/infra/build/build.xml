@@ -1853,7 +1853,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="generate-bundles">
 	<property name="welcome.type" value="NWP.welcome.page.type"/>
         <antcall target="generate-netbeans-bundles"/>
-        <!--<antcall target="generate-jdk-bundles"/>-->
+        <antcall target="generate-jdk-bundles"/>
         <!--<antcall target="generate-javatoolsbundle-bundles"/>-->
     </target>
 
@@ -1866,7 +1866,7 @@ jarsigner.storepass=${jarsigner.storepass}
         <antcall target="build-runtimes"/>
 	<!--<antcall target="build-wtk"/>-->
         <!--<antcall target="build-javaeesdk"/>-->
-        <!--<antcall target="build-jdk"/>-->
+        <antcall target="build-jdk"/>
 
         <antcall target="export-temp-registry"/>
         
