@@ -131,6 +131,11 @@ public class ConnectAction extends DatabaseAction {
         boolean advancedPanel = false;
         boolean okPressed = false;
         
+        // This flag is used to detect whether there was a failure to connect
+        // when using the progress bar.  The flag is set in the property
+        // change listener when the status changes to "failed".          
+        boolean failed = false;
+        
         public void showDialog(final ConnectionNodeInfo nfo, boolean showDialog) {
             String user = nfo.getUser();
             String pwd = nfo.getPassword();
@@ -337,9 +342,21 @@ public class ConnectAction extends DatabaseAction {
                                 if (dialog != null) {
                                     dialog.setVisible(false);
                                 }
+                                
+                                // We want to bring up the Connect dialog if the
+                                // attempt to connect using the progress bar fails.
+                                // But we can't do it here because we can't control
+                                // what processing the DatabaseConnection does 
+                                // after posting this failure notification.  So
+                                // we set a flag and wait for the connect process
+                                // to fully complete, and *then* raise the Connect
+                                // dialog.
+                                failed = true;
                             }
                         }
                     };
+                    
+                    failed = false;
                     
                     dbcon.addPropertyChangeListener(connectionListener);
                     dbcon.connect();
@@ -347,11 +364,25 @@ public class ConnectAction extends DatabaseAction {
                     progress.start();
                     progress.switchToIndeterminate();
                     dialog.setVisible(true);
-                    progress.finish();
+                    progress.finish();                    
                     dialog.dispose();
+                    
+                    if ( failed ) {
+                        // If the connection fails with a progress bar only, then 
+                        // display the full Connect dialog so the user can give it
+                        // another shot after changing some values, like the username
+                        // or password.
+                        showDialog(nfo, true);                        
+                    }
                 } catch (Exception exc) {
                     String message = MessageFormat.format(bundle().getString("ERR_UnableToConnect"), new String[] {exc.getMessage()}); // NOI18N
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                    
+                    // If the connection fails with a progress bar only, then 
+                    // display the full Connect dialog so the user can give it
+                    // another shot after changing some values, like the username
+                    // or password.
+                    showDialog(nfo, true);
                 }
         }
 
