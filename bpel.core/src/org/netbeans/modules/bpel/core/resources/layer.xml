@@ -43,16 +43,16 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
     <folder name="Templates">
-        <folder name="SOA">
+        <folder name="SOA_BPEL">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.core.wizard.Bundle"/>
-            <attr name="position" intvalue="1550"/>
+            <attr name="position" intvalue="102"/>
             <file name="Process.bpel" url="templates/EmptyBPEL.template">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/bpel/core/resources/bp_file.gif"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.core.wizard.Bundle"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.bpel.core.wizard.NewBpelFileIterator"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/bpel/core/wizard/createBpelFile.html"/>
-                <attr name="templateCategory" stringvalue="SOA"/>
+                <attr name="templateCategory" stringvalue="SOA_BPEL"/>
             </file>
         </folder>
     </folder>    

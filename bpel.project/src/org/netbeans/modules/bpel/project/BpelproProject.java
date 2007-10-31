@@ -551,13 +551,13 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
         
         private static final String[] TYPES = new String[] {
-            "SOA",         // NOI18N
+            "SOA_BPEL",         // NOI18N
             "XML",         // NOI18N
             "simple-files" // NOI18N
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
-            "Templates/SOA/Process.bpel",        // NOI18N
+            "Templates/SOA_BPEL/Process.bpel",        // NOI18N
             "Templates/XML/retrieveXMLResource", // NOI18N
             "Templates/XML/WSDL.wsdl",           // NOI18N
         };
