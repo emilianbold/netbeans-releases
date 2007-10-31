@@ -993,20 +993,6 @@ public class RubyInstallation {
         return rdoc;
     }
 
-    public boolean isValidRDoc(boolean warn) {
-        String rdocPath = getRDoc();
-        boolean valid = (rdocPath != null) && new File(rdocPath).exists();
-
-        if (warn && !valid) {
-            String msg = NbBundle.getMessage(RubyInstallation.class, "NotInstalledCmd", "rdoc"); // NOI18N
-            NotifyDescriptor nd =
-                new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-        }
-
-        return valid;
-    }
-    
     public String getRails() {
         if (rails == null) {
             rails = findGemExecutable("rails"); // NOI18N

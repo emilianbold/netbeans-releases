@@ -527,10 +527,6 @@ public class RubyActionProvider implements ActionProvider {
         }
         
         if (COMMAND_RDOC.equals(command)) {
-            if (!RubyInstallation.getInstance().isValidRDoc(true)) {
-                return;
-            }
-
             LifecycleManager.getDefault().saveAll();
             File pwd = FileUtil.toFile(project.getProjectDirectory());
 
