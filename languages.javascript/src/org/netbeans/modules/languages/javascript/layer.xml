@@ -133,14 +133,10 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
                 </folder>
                 <folder name="SideBar">
-                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance"/>
                 </folder>
                 <folder name="UpToDateStatusProvider">
-                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"/>
                 </folder>
                 <file name="Settings.settings" url="LanguagesOptions.settings"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
@@ -164,14 +160,10 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
                 </folder>
                 <folder name="SideBar">
-                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance"/>
                 </folder>
                 <folder name="UpToDateStatusProvider">
-                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"/>
                 </folder>
             </folder>
             <folder name="x-json">
@@ -193,23 +185,17 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <folder name="UpToDateStatusProvider">
-                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"/>
                 </folder>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
                 <folder name="FoldManager">
                     <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
                 </folder>
                 <folder name="SideBar">
-                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance"/>
                 </folder>
                 <folder name="UpToDateStatusProvider">
-                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"/>
                 </folder>
                 <file name="Settings.settings" url="LanguagesOptions.settings"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
