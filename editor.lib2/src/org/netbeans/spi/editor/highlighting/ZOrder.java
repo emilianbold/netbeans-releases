@@ -216,4 +216,17 @@ public final class ZOrder {
     public ZOrder forPosition(int position) {
         return new ZOrder(this.rack, position);
     }
+    
+    public @Override String toString() {
+        String s = "Unknown_rack"; //NOI18N
+        switch(rack) {
+            case  0: s = "BOTTOM_RACK"; break; //NOI18N
+            case 10: s = "SYNTAX_RACK"; break; //NOI18N
+            case 20: s = "CARET_RACK"; break; //NOI18N
+            case 30: s = "DEFAULT_RACK"; break; //NOI18N
+            case 40: s = "SHOW_OFF_RACK"; break; //NOI18N
+            case 50: s = "TOP_RACK"; break; //NOI18N
+        }
+        return s + "(" + position + ")"; //NOI18N
+    }
 }
