@@ -218,10 +218,11 @@ public final class DiskRepositoryManager extends AbstractDiskRepository implemen
         try {
             rwLock.writeLock().lock();
         
-            if (cleanRepository) {
-                queue.clearQueue(new ValidatorCleaner(unitName));
-            } else {
-                queue.clearQueue(new ValidatorSaver(unitName));                
+	    Collection<RepositoryQueue.Entry> removedEntries = queue.clearQueue(new UnitFilter(unitName));
+            if (!cleanRepository) {
+		for( RepositoryQueue.Entry entry : removedEntries ) {
+		    write(entry.getKey(), entry.getValue());
+		}
             }
             
             AbstractDiskRepository repository = repositories.remove(unitName);
@@ -256,7 +257,7 @@ public final class DiskRepositoryManager extends AbstractDiskRepository implemen
         boolean saveAll = true;
         try {
             rwLock.writeLock().lock();
-            queue.clearQueue(new ValidatorSaveAll(saveAll));  
+            cleanAndWriteQueue();
             iterateWith(new CloseVisitor());
             repositories.clear();
         } finally {
@@ -275,10 +276,17 @@ public final class DiskRepositoryManager extends AbstractDiskRepository implemen
     public void debugClear() {
         try {
             rwLock.writeLock().lock();
-            queue.clearQueue(new ValidatorSaveAll(true));  
+            cleanAndWriteQueue();
         } finally {
             rwLock.writeLock().unlock();
         }        
+    }
+    
+    private void cleanAndWriteQueue() {
+	Collection<RepositoryQueue.Entry> removedEntries = queue.clearQueue(new AllFilter());
+	for( RepositoryQueue.Entry entry : removedEntries ) {
+	    write(entry.getKey(), entry.getValue());
+	}
     }
 
     public void cleanCaches() {
@@ -302,85 +310,25 @@ public final class DiskRepositoryManager extends AbstractDiskRepository implemen
         void visit(AbstractDiskRepository repository) throws IOException ;
     }
 
-    private static class ValidatorCleaner implements RepositoryQueue.Validator {
+    private static class UnitFilter implements RepositoryQueue.Filter {
 
         private String unitName;
 
-        public ValidatorCleaner(String unitName) {
-            super();
+        public UnitFilter(String unitName) {
             this.unitName = unitName;
         }
 
-        public boolean isValid(Key key, Persistent value) {
-            return !key.getUnit().equals(unitName);
+        public boolean accept(Key key, Persistent value) {
+            return key.getUnit().equals(unitName);
         }
     }
     
-   private class ValidatorSaveAll implements RepositoryQueue.Validator {
-       private boolean saveAll;
-
-
-        public ValidatorSaveAll(boolean saveAll) {
-            super();
-            this.saveAll = saveAll;
-        }
-
-        public boolean isValid(Key key, Persistent value) {
-            if (this.saveAll) {
-                write(key, value);
-            }
-            return false;
+   private class AllFilter implements RepositoryQueue.Filter {
+        public boolean accept(Key key, Persistent value) {
+            return true;
         }
     }    
 
-    private class ValidatorSaver implements RepositoryQueue.Validator {
-
-        private String unitName;
-
-        public ValidatorSaver(String unitName) {
-            super();
-            this.unitName = unitName;
-        }
-
-        public boolean isValid(Key key, Persistent value) {
-            boolean result = !key.getUnit().equals(unitName);
-            if (!result) {
-                write(key, value);
-            }
-            return result;
-        }
-    }
-
-    private static class VisitorUnitCloser implements Visitor {
-
-        private String unitName;
-
-        private boolean cleanRepository;
-
-        public VisitorUnitCloser(String unitName, boolean cleanRepository) {
-            super();
-            this.unitName = unitName;
-            this.cleanRepository = cleanRepository;
-        }
-
-        public void visit(AbstractDiskRepository repository) throws IOException {
-            repository.close();
-        }
-    }
-
-    static private class MaintenanceVisitor implements Visitor {
-            public boolean unfulfilled = false;
-            private final long timeout;
-
-            MaintenanceVisitor(final long timeout) {
-                this.timeout = timeout;
-            }
-            
-            public void visit(AbstractDiskRepository repository) throws IOException {
-                    unfulfilled |= repository.maintenance(timeout);
-            }
-        }
-    
     static private class CloseVisitor implements Visitor {
 
         public CloseVisitor() {

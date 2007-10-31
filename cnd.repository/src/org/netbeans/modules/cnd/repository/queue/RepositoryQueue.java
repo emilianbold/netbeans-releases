@@ -41,9 +41,8 @@
 
 package org.netbeans.modules.cnd.repository.queue;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
@@ -83,24 +82,47 @@ public class RepositoryQueue extends KeyValueQueue<Key, Persistent> {
         // do nothing
     }
     
-    public void clearQueue (Validator validator) {
+    /**
+     * Removes all queue entries that are accepted by the given filter.
+     * @param filter a filter that deceides whether the entry should be removed
+     * (if its accept returns true, entry should be removed)
+     * @return a set of objects that are removed from queue
+     */
+    public Collection<RepositoryQueue.Entry> clearQueue (Filter filter) {
        synchronized (lock) {
-            // don't use Iterator.remove here
-            Collection<Key> copy = new HashSet<Key>(map.keySet());
-            
-            for (Iterator<Key> it = copy.iterator(); it.hasNext();) {
-                Key key = it.next();
-                Persistent value = map.get(key).getValue();
-
-                if (!validator.isValid(key, value)) {
-                    remove(key);
-                }
-            }
-        }
+	   Collection<RepositoryQueue.Entry> removed = new ArrayList<Entry>();
+	   // collecting entried to remove
+	   for( Entry entry : map.values() ) {
+	       if( filter.accept(entry.getKey(), entry.getValue()) ) {
+		   removed.add(entry);
+	       }
+	   }
+	   // remove entries
+	   for( Entry entry : removed ) {
+	       remove(entry.getKey());
+	   }
+	   return removed;
+       }
     }
 
-    public interface Validator {
-        boolean isValid(Key key, Persistent entry);
+    /**
+     * A filter for queue elements.
+     * An instances of this interface may be passed to a method 
+     * that manipulates entries (e.g. removes them, as the clearQueue method does).
+     * In the case accept() returns true, the given action (i.e. removal) is performed,
+     * otherwise it isn't done
+     */
+    public interface Filter {
+	/**
+	 * Is called for each entry in the queue.
+	 * 
+	 * @param key the given entry key
+	 * @param entry the given entry value
+	 * 
+	 * @return true if the action (e.g. deletion) should be attempt, 
+	 * otherwise false
+	 */
+        boolean accept(Key key, Persistent value);
     }
     
 }
