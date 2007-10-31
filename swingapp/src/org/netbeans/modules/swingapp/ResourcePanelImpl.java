@@ -267,7 +267,7 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
         boolean enabled = isEditingEnabled();
         i18nCheckBox.setEnabled(enabled);
         classRadio.setEnabled(enabled);
-        applicationRadio.setEnabled(enabled);
+        applicationRadio.setEnabled(enabled && resources.getLevel(DesignResourceMap.APP_LEVEL) != null);
         keyCombo.setEnabled(enabled);
         valueTextField.setEnabled(enabled);
     }
