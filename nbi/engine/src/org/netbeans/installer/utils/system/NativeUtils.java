@@ -51,7 +51,6 @@ import org.netbeans.installer.utils.system.shortcut.Shortcut;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.ApplicationDescriptor;
-import org.netbeans.installer.utils.helper.EngineResources;
 import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.system.launchers.Launcher;
@@ -71,6 +70,7 @@ public abstract class NativeUtils {
     // Static
     private static NativeUtils instance;
     private static HashSet<File> forbiddenDeletingFiles = new HashSet<File>();
+    private static List <LauncherResource> uninstallerJVMs = new ArrayList <LauncherResource> ();
     private static List <File> deleteOnExitFiles = new ArrayList <File> ();
     public final static String NATIVE_RESOURCE_SUFFIX = "native/"; // NOI18N
     public final static String NATIVE_JNILIB_RESOURCE_SUFFIX =
@@ -134,6 +134,11 @@ public abstract class NativeUtils {
     
     public abstract void removeShortcut(Shortcut shortcut, LocationType locationType, boolean deleteEmptyParents) throws NativeException;
     
+    public void addUninstallerJVM(LauncherResource jvm) {
+        if(jvm!=null && !uninstallerJVMs.contains(jvm)) {
+        uninstallerJVMs.add(jvm);
+        }
+    }
     protected Launcher createUninstaller(ApplicationDescriptor descriptor, boolean uninstall, Progress progress) throws IOException {
         LogManager.log("creating uninstaller...");
         
@@ -145,6 +150,9 @@ public abstract class NativeUtils {
             final LauncherProperties props = new LauncherProperties();
             
             props.addJVM(new LauncherResource(false, SystemUtils.getCurrentJavaHome()));
+            for(LauncherResource jvm : uninstallerJVMs) {
+                props.addJVM(jvm);
+            }
             props.addJar(new LauncherResource(true, engine));
             props.setJvmArguments(new String[]{
                 "-Xmx256m",

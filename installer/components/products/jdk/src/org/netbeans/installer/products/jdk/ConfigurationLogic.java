@@ -63,6 +63,7 @@ import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.helper.RemovalMode;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.progress.Progress;
+import org.netbeans.installer.utils.system.launchers.LauncherResource;
 import static org.netbeans.installer.utils.system.windows.WindowsRegistry.HKLM;
 import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.WizardComponent;
@@ -79,7 +80,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public ConfigurationLogic() throws InitializationException {
         wizardComponents = Wizard.loadWizardComponents(
                 WIZARD_COMPONENTS_URI,
-                getClass().getClassLoader());        
+                getClass().getClassLoader());
     }
     
     public void install(
@@ -123,9 +124,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 final File jdk = JavaUtils.findJDKHome(getProduct().getVersion());
                 if (jdk == null) {
                     results = runJDKInstallerWindows(location, installer, jdkLogFile, progress);
+                    addUninsallationJVM(results, location);
+                    
                     progress.addPercentage(30);
                     
                     if(results.getErrorCode()==0) {
+                        
                         final File jre = JavaUtils.findJreHome(getProduct().getVersion());
                         if(jre == null) {
                             jreInstallation = true;
@@ -133,6 +137,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                             final File jreInstaller = findJREWindowsInstaller();
                             if(jreInstaller!=null) {
                                 results = runJREInstallerWindows(jreInstaller,jreLogFile);
+                                addUninsallationJVM(results, JavaUtils.findJreHome(getProduct().getVersion()));
                             }
                         } else {
                             LogManager.log("... jre " + getProduct().getVersion() +
@@ -145,7 +150,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 }
             } else {
                 results = runJDKInstallerUnix(location, installer, jdkLogFile, progress);
+                addUninsallationJVM(results, location);
             }
+            
             
             if(results.getErrorCode()!=0) {
                 throw new InstallationException(
@@ -238,6 +245,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         ResourceUtils.getString(ConfigurationLogic.class,
                         ERROR_INSTALL_CANNOT_MOVE_DATA_KEY),e);
             }
+            
+            
         } catch (IOException e) {
             throw new InstallationException(
                     ResourceUtils.getString(ConfigurationLogic.class,
@@ -253,7 +262,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
         return results;
     }
-    
+    private void addUninsallationJVM(ExecutionResults results, File location) {
+        if(results!=null && results.getErrorCode()==0 && location!=null) {
+            SystemUtils.getNativeUtils().addUninstallerJVM(new LauncherResource(false, location));
+        }
+    }
     private ExecutionResults runJREInstallerWindows(File jreInstaller, File logFile) throws InstallationException {
         final String [] command = new String [] {
             "msiexec.exe",
@@ -275,7 +288,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     SystemUtils.getTempDirectory().getAbsolutePath(),
                     EnvironmentScope.PROCESS,
                     false);
-            
             return SystemUtils.executeCommand(command);
         } catch (IOException e) {
             throw new InstallationException(
@@ -397,7 +409,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
         return null;
     }
-
+    
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String WIZARD_COMPONENTS_URI =
