@@ -160,14 +160,10 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
                 </folder>
                 <folder name="SideBar">
-                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance"/>
                 </folder>
                 <folder name="UpToDateStatusProvider">
-                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"/>
                 </folder>
                 <folder name="Popup">
                     <file name="ViewAction.instance">

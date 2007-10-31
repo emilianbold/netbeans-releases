@@ -63,9 +63,7 @@ made subject to such option by the copyright holder.
                     </folder>
                 </folder>
                 <folder name="UpToDateStatusProvider">
-                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"/>
                 </folder>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.bat.Bundle"/>
                 <file name="language.nbs" url="Bat.nbs">

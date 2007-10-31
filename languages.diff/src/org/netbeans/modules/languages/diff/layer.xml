@@ -43,14 +43,10 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
                 </folder>
                 <folder name="SideBar">
-                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance"/>
                 </folder>
                 <folder name="UpToDateStatusProvider">
-                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"/>
                 </folder>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.diff.Bundle"/>
                 <file name="language.nbs" url="Diff.nbs">

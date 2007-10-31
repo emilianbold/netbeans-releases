@@ -52,14 +52,10 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
                 </folder>
                 <folder name="SideBar">
-                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance"/>
                 </folder>
                 <folder name="UpToDateStatusProvider">
-                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"/>
                 </folder>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.css.Bundle"/>
                 <file name="language.nbs" url="CSS.nbs">
@@ -80,19 +76,13 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
                 </folder>
                 <folder name="SideBar">
-                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance"/>
                 </folder>
                 <folder name="UpToDateStatusProvider">
-                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    <file name="org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance"/>
                 </folder>
                 <folder name="ToolTips">
-                    <file name="org-netbeans-modules-languages-features-ToolTipAnnotation.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    <file name="org-netbeans-modules-languages-features-ToolTipAnnotation.instance"/>
                 </folder>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.css.Bundle"/>
                 <file name="language.nbs" url="CSS_inlined.nbs">
