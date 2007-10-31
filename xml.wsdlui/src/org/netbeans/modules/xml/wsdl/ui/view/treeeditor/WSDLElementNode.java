@@ -578,7 +578,7 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
      * @return  true if model is valid, false otherwise.
      */
     protected boolean isValid() {
-        return mElement.getModel() != null;
+        return getWSDLComponent() != null && getWSDLComponent().isInDocumentModel() && mElement.getModel().getState() == WSDLModel.State.VALID;
     }
 
     /**
@@ -617,7 +617,7 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
     }
 
     private final void refreshSheet(Sheet sheet) {
-        if (getWSDLComponent() != null && !getWSDLComponent().isInDocumentModel()) return; 
+        if (!isValid()) return; 
         refreshAttributesSheetSet(sheet);
         refreshOtherAttributesSheetSet(sheet);
         Cookie cookie = getCookie(WSDLAttributeCookie.class);
