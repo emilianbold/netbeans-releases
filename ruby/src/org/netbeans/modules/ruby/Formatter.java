@@ -154,10 +154,20 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
     
     private int getTokenBalanceDelta(TokenId id, Token<? extends GsfTokenId> token,
             BaseDocument doc, TokenSequence<? extends GsfTokenId> ts, boolean includeKeywords) {
-        if (id == RubyTokenId.LPAREN || id == RubyTokenId.LBRACKET || id == RubyTokenId.LBRACE ||
-                // In some cases, the [ shows up as an identifier, for example in this expression:
-                //  for k, v in sort{|a1, a2| a1[0].id2name <=> a2[0].id2name}
-                (id == RubyTokenId.IDENTIFIER && (token.text().toString().equals("[")))) { // NOI18N
+        if (id == RubyTokenId.IDENTIFIER) {
+            // In some cases, the [ shows up as an identifier, for example in this expression:
+            //  for k, v in sort{|a1, a2| a1[0].id2name <=> a2[0].id2name}
+            if (token.length() == 1) {
+                char c = token.text().charAt(0);
+                if (c == '[') {
+                    return 1;
+                } else if (c == ']') {
+                    // I've seen "]" come instead of a RBRACKET too - for example in RHTML:
+                    // <%if session[:user]%>
+                    return -1;
+                }
+            }
+        } else if (id == RubyTokenId.LPAREN || id == RubyTokenId.LBRACKET || id == RubyTokenId.LBRACE) {
             return 1;
         } else if (id == RubyTokenId.RPAREN || id == RubyTokenId.RBRACKET || id == RubyTokenId.RBRACE) {
             return -1;
