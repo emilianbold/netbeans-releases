@@ -111,7 +111,7 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
     
     /** Needs to override getValue in order to force refresh
      */
-    public Object getValue( String key ) {
+    public @Override Object getValue( String key ) {
         init ();
         if ( needsRefresh ) {
             doRefresh();
@@ -121,7 +121,7 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
     
     /** Needs to override isEnabled in order to force refresh
      */
-    public boolean isEnabled() {
+    public @Override boolean isEnabled() {
         init ();
         if ( needsRefresh ) {
             doRefresh();
