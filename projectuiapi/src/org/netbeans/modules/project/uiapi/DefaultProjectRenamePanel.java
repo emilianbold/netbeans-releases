@@ -236,6 +236,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
     // </editor-fold>//GEN-END:initComponents
 
     private void alsoRenameFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_alsoRenameFolderActionPerformed
+        updateProjectFolder();
         validateDialog();
     }//GEN-LAST:event_alsoRenameFolderActionPerformed
     
@@ -279,7 +280,12 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
     
     private void updateProjectFolder() {
         File location = FileUtil.toFile(project.getProjectDirectory().getParent());
-        File projectFolderFile = new File(location, projectName.getText());
+        File projectFolderFile;
+        if (alsoRenameFolder.isSelected()) {
+            projectFolderFile = new File(location, projectName.getText());
+        } else {
+            projectFolderFile = new File(location, project.getProjectDirectory().getName());
+        }
         
         projectFolder.setText(projectFolderFile.getAbsolutePath());
     }
