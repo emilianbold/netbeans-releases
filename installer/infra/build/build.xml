@@ -1696,7 +1696,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </delete>
     </target>
 
-    <target name="get-bundled-jvm">
+    <target name="get-bundled-jvms">
 	<mkdir dir="${basedir}/cache/jvm"/>
 	<get src="${binary.cache.host}/bundledjvm/jre-1_5_0_13-solaris-i586.sh"
 	     dest="${basedir}/cache/jvm/jre-1_5_0_13-solaris-i586.sh"
@@ -1712,7 +1712,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	     usetimestamp="true"/>
     </target>
 
-    <target name="generate-jdk-bundles" depends="-get-bundled-jvms">
+    <target name="generate-jdk-bundles" depends="get-bundled-jvms">
 	<!-- JavaSE + JDK5 bundles --> 
         <mkdir dir="${output.dir}/bundles/jdk"/>
         <create-bundle root="${output.dir}/registry-temp" 
