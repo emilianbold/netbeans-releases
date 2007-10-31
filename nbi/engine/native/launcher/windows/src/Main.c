@@ -239,14 +239,8 @@ void showErrorW(LauncherProperties * props, const char * error, const DWORD varA
     DWORD counter=0;
     WCHAR * result = NULL;
     va_list ap;
-    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "!!!!!ERROR!!!!", 1);
-    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, error, 1);
     
     getI18nPropertyTitleDetail(props, error, & errorTitle, &errorMessage);
-    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "!!!!!TITLE!!!!", 1);
-    writeMessageW(props, OUTPUT_LEVEL_DEBUG, 1, errorTitle, 1);
-    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "!!!!!MESSAGE!!!!", 1);
-    writeMessageW(props, OUTPUT_LEVEL_DEBUG, 1, errorMessage, 1);
     totalLength=getLengthW(errorMessage);
     
     va_start(ap, varArgsNumber);
@@ -258,11 +252,9 @@ void showErrorW(LauncherProperties * props, const char * error, const DWORD varA
     va_end(ap);
     result = newpWCHAR(totalLength + 1);
     va_start(ap, varArgsNumber);
-    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "adding message...", 1);
     if(errorMessage!=NULL) {
         wvsprintfW(result, errorMessage, ap);
     }
-    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "...done", 1);
     va_end(ap);
     
     if(!isSilent(props)) {
