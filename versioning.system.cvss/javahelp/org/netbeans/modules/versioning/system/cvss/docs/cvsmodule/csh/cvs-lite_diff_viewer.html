@@ -12,7 +12,7 @@
     </head>
     
     <body>
-	<h2>CVS: Diff Viewer</h2
+	<h2>CVS: Diff Viewer</h2>
         
 	<p><small><a href="#seealso">See Also</a></small></p>
         
@@ -25,12 +25,12 @@
             also be accessed by selecting the Diff view for a revision in the 
             <a href="cvs-lite_history_viewer.html">History Viewer</a>.</p>
         
-        <p>The Diff Viewer tool bar enables you to perform the following functions:</p>
+        <p>The Diff Viewer toolbar enables you to perform the following functions:</p>
 
         <ul>
-            <li><strong>Change viewing criteria</strong>. Choose whether to view files containing 
-                changes from the local working copy, the repository, as well as both simultaneously.
-                To do so, click the appropriate icon:
+            <li><strong>Change viewing criteria</strong>. You can choose whether to view files 
+                containing changes from the local working copy, the repository, as well as both 
+                simultaneously.
             
                 <ul>
                     <li><img src="../images/locally_mod.png" alt="locally modified icon">: 
@@ -40,9 +40,9 @@
                         <li><img src="../images/both_mod.png" alt="locally and remotely modified icon">: 
                         Show both locally and remotely modified files.</li>            
                 </ul></li>
-                
-            <li><strong>Navigate among differences found in the compared files</strong>. Choose to 
-                view differences as they appear from top to bottom by clicking the appropriate icon:
+
+            <li><strong>Navigate among differences found in the compared files</strong>. You can
+                view differences as they appear from top to bottom.
                 
                 <ul>
                     <li><img src="../images/diff-prev.png" alt="previous difference button">: Go to 
@@ -52,8 +52,8 @@
                 </ul></li>
         
             <li><strong>Perform refresh/update</strong>. You can refresh the status of the diff in 
-                the event that changes to your local working directory have been made externally. You
-                can update the status of repository versions of files listed in the diff:
+                the event that changes to your local working directory have been made externally. 
+                You can also update the status of repository versions of files listed in the diff.
             
                 <ul>
                     <li><img src="../images/refresh.png" alt="refresh diff button">: Refresh Diff.</li>
@@ -61,7 +61,7 @@
                         from the repository.</li>
                 </ul></li>
                 
-            <li><strong>Perform commit</strong>. You can commit any changes you have made locally:
+            <li><strong>Perform commit</strong>. You can commit any changes you have made locally.
             
                 <ul>
                     <li><img src="../images/commit.png" alt="commit button">: Commit the selected 
@@ -70,9 +70,9 @@
         </ul>
         
         <p>When you choose to open the Diff Viewer on a selected item, all files contained in the 
-            item display in the table located above the graphical viewer (In the event that you select
-            a single file, only that file is displayed). The table lists all modified files and 
-            organizes information based on the following column headings:</p>
+            item display in the table located above the graphical viewer (In the event that you 
+            select a single file, only that file is displayed). The table lists all modified files 
+            and organizes information based on the following column headings:</p>
             
         <ul>
             <li><strong>File</strong>. The name of the file.</li>
@@ -80,46 +80,49 @@
             <li><strong>Location</strong>. The relative path of the file found in the repository.</li>
         </ul>
         
-        <p>To view differences between two versions of a file, select the table row corresponding to 
-            the desired file.</p>
+        <p>Upon selecting a file from the table, the Diff Viewer displays differences between two 
+            versions of a file, select the table row corresponding to the desired file.</p>
         
-        <p>The Diff Viewer highlights changes in the files using the following color encoding:</p>
-        
+        <p>The Diff Viewer highlights changes in the files using the following color encoding.</p>
+
         <ul>
-            <li><strong>Blue</strong> 
-                ( <span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> ).
+            <li><span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> 
+                <strong>Blue</strong>.
                 Indicates lines that have been changed since the earlier revision</li>
-            <li><strong>Green</strong> 
-                ( <span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> ).
+            <li><span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> 
+                <strong>Green</strong>.
                 Indicates lines that have been added since the earlier revision</li>
-            <li><strong>Red</strong> 
-                ( <span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> ).
+            <li><span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                <strong>Red</strong>.
                 Indicates lines that have been removed since the earlier revision</li>
         </ul>
         
         <ul class="note">
-            <li>The above color settings are set by default within the IDE. You can modify 
-                these settings by choosing Tools &gt; Options from the main menu, then clicking
-                Advanced Options. Expand IDE Configuration &gt; Server and External Tool Settings
-                &gt; Diff and Merge Types &gt; Diff Visualizers &gt; Graphical Diff Viewer.
+            <li>Color settings used to denote version differences are set by default within the IDE. 
+                You can modify these settings by choosing Tools &gt; Options from the main menu, then 
+                clicking Advanced Options. Expand IDE Configuration &gt; Server and External Tool 
+                Settings &gt; Diff and Merge Types &gt; Diff Visualizers &gt; Graphical Diff Viewer. 
                 From the right panel, you can select the colors of your choice.</li>
-        </ul>
-                
-        <p>The following icons enable you to make changes directly within the Diff Viewer:</p>
+        </ul>        
+        
+        <p>The following icons enable you to make changes directly within the Diff Viewer</p>
         
         <ul>
-            <li><strong>Replace</strong> (<img src="../images/insert.png" alt="replace icon">).
-                Inserts the highlighted text from the previous revision into the current revision</li>
-            <li><strong>Move All</strong> (<img src="../images/arrow.png" alt="move all icon">).
-                Reverts the file's current version to the state of the selected previous version.
-            <li><strong>Remove</strong> (<img src="../images/remove.png" alt="remove icon">).
+            <li><img src="../images/insert.png" alt="replace icon"> <strong>Replace</strong>. 
+                Inserts the highlighted text from the previous revision into the current 
+                revision</li>
+            <li><img src="../images/arrow.png" alt="move all icon"> <strong>Move All</strong>. 
+                Reverts the file's current version to the state of the selected previous 
+                version.</li>
+            <li>&nbsp;<img src="../images/remove.png" alt="remove icon"> <strong>Remove</strong>. 
                 Removes the highlighted text from the current version so that it mirrors the 
-                previous version.
+                previous version.</li>
         </ul>
  
 	<dl>
 	    <dt><a name="seealso">See Also</a></dt>
-	    <dd><a href="../cvs-lite_diff.html">Comparing File Revisions in CVS</a></dd>
+	    <dd><a href="../cvs-lite_diff.html">Comparing File Revisions</a></dd>
+            <dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/local-history/hist_browsing.html">Browsing Local File History</a></dd>
 	</dl>
         
 	<hr>
