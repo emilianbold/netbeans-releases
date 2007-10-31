@@ -109,9 +109,31 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
         selectAction = ActionFactory.createSelectAction(selectProvider);
         dndAction = new DnDAction();
         focusAction = ActionFactory.createCycleFocusAction(mycycleFocusProvider);
-
+        
+        //IZ 93508 fixes mouse wheel scroll.
+        getActions().addAction(ActionFactory.createWheelPanAction());
+        
         getPriorActions().addAction(focusAction);
-        //getActions().addAction(selectAction);
+        
+        //Add a scene select action, which brings focus to the graph component.
+        getActions().addAction(ActionFactory.createSelectAction(new SelectProvider() {
+        
+            public void select(Widget widget, Point localLocation,
+                    boolean invertSelection) {
+                getView().requestFocusInWindow();
+            }
+        
+            public boolean isSelectionAllowed(Widget widget, Point localLocation,
+                    boolean invertSelection) {
+                return true;
+            }
+        
+            public boolean isAimingAllowed(Widget widget, Point localLocation,
+                    boolean invertSelection) {
+                return true;
+            }
+        
+        }));
         getActions().addAction(buttonAction);
         getActions().addAction(dndAction);
         
@@ -255,6 +277,7 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
         public void select(Widget widget, Point localLocation, 
                 boolean invertSelection) 
         {
+            getView().requestFocusInWindow();
             Object object = findObject(widget);
 
             if (object != null) {

@@ -49,7 +49,6 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.HierarchyBoundsAdapter;
 import java.awt.event.HierarchyEvent;
-import java.awt.event.MouseWheelListener;
 import java.util.Collections;
 
 import javax.swing.AbstractAction;
@@ -113,11 +112,7 @@ public class GraphView extends JPanel {
         zoomer = new ZoomManager(scene);
 
         JComponent sceneView = scene.createView();
-        // dirty hack to fix issue 93508
-        if (sceneView instanceof MouseWheelListener) {
-            sceneView.removeMouseWheelListener((MouseWheelListener) sceneView);
-        }        
-        
+
         collaborationsWidget = scene.getCollaborationsWidget();
         messagesWidget = scene.getMessagesWidget();
         // Note that the arrangement of collaborationsWidget and
