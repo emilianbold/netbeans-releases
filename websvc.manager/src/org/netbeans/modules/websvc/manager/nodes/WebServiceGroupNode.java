@@ -54,11 +54,15 @@ import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.websvc.manager.model.WebServiceGroup;
 import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import java.awt.Image;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
 import org.netbeans.modules.websvc.manager.util.ManagerUtil;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.Utilities; 
 import org.openide.util.datatransfer.PasteType;
@@ -80,14 +84,33 @@ public class WebServiceGroupNode extends AbstractNode implements Node.Cookie {
     public boolean canRename() {
         return websvcGroup.isUserDefined();
     }
-    
+
+    private Image getUserDirFolderImage(int type) {
+        FileObject folder = FileUtil.toFileObject(new File(System.getProperty("netbeans.user"))); //NOI18N
+        if (folder != null) {
+            DataFolder df = DataFolder.findFolder(folder);
+            if (df != null) {
+                return df.getNodeDelegate().getIcon(type);
+            }
+        }
+        return null;
+    }
+
     @Override
     public Image getIcon(int type){
+        Image standardFolderImage = getUserDirFolderImage(type);
+        if (standardFolderImage != null) {
+            return standardFolderImage;
+        }
         return Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/folder-closed.png");
     }
     
     @Override
     public Image getOpenedIcon(int type){
+        Image standardFolderImage = getUserDirFolderImage(type);
+        if (standardFolderImage != null) {
+            return standardFolderImage;
+        }
         return Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/folder-open.png");
     }
     
