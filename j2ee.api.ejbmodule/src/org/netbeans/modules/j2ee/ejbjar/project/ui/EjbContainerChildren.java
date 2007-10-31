@@ -233,6 +233,29 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
             }
             return keys;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Key other = (Key) obj;
+            if (this.ejbClass != other.ejbClass && (this.ejbClass == null || !this.ejbClass.equals(other.ejbClass))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 79 * hash + (this.ejbClass != null ? this.ejbClass.hashCode() : 0);
+            return hash;
+        }
+
         
     }
     
