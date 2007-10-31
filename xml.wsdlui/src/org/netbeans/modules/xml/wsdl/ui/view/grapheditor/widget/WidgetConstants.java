@@ -62,6 +62,10 @@ public interface WidgetConstants {
     /** The minimum widget for the top-level widgets (e.g. collaborations). */
     public int PARTNERLLINKTYPE_MINIMUM_WIDTH = 625;
     
+    public int ROLE_WIDGET_MINIMUM_WIDTH = 225;
+    
+    public int PORTTYPE_MINIMUM_WIDTH = 190;
+    
     /** Minimum width for partnerlinktypes and messages header*/
     public int HEADER_MINIMUM_WIDTH = 700;
     
@@ -109,6 +113,8 @@ public interface WidgetConstants {
     
     public Border EMPTY_2PX_BORDER = BorderFactory.createEmptyBorder(2, 4, 2, 4);
     public Layout HEADER_LAYOUT = new LeftRightLayout (32);
+    public int RECTANGLE_WIDGET_THICKNESS = 2;
+    public int OPERATION_WIDGET_BORDER_THICKNESS = 3;
 
     
     

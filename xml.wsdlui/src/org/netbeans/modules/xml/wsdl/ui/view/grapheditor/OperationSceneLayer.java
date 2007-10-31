@@ -50,7 +50,7 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor;
 
-import java.awt.Dimension;
+import java.awt.Color;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,6 +58,7 @@ import java.util.List;
 
 import javax.swing.SwingUtilities;
 
+import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
@@ -84,12 +85,13 @@ public class OperationSceneLayer extends Widget {
     
     private static final int OPERATION_GAP = 25;
     private final PartnerLinkTypeContentWidget mOuterWidget;
-    private Widget dummyOperationWidget;
+    private Widget rightHitPointOperationWidget;
     private PortType leftPortType;
     private PortType rightPortType;
     private Widget dummyEndWidget;
     private final Widget rightsideWidgetsHolder;
     private final Widget leftsideWidgetsHolder;
+    private Widget leftHitPointOperationWidget;
     
     public OperationSceneLayer(Scene scene, PartnerLinkTypeContentWidget outerWidget) {
         super(scene);
@@ -112,18 +114,31 @@ public class OperationSceneLayer extends Widget {
     
     private void init() {
         
-        dummyOperationWidget = new Widget(getScene());
-        
+        rightHitPointOperationWidget = new Widget(getScene());
+        Border operationBorder = BorderFactory.createEmptyBorder(WidgetConstants.OPERATION_WIDGET_BORDER_THICKNESS);
         RectangleWidget rectangleWidget = new RectangleWidget(getScene(), 12, 70);
         rectangleWidget.setThickness(4);
         rectangleWidget.setColor(WidgetConstants.HIT_POINT_BORDER);
-        dummyOperationWidget.addChild(new Widget(getScene()), 1);
-        dummyOperationWidget.setBorder(BorderFactory.createEmptyBorder(3));
-        dummyOperationWidget.addChild(rectangleWidget);
+        Layout layout = LayoutFactory.createHorizontalFlowLayout();
+        rightHitPointOperationWidget.setLayout(layout);
+        rightHitPointOperationWidget.setBorder(operationBorder);
+        rightHitPointOperationWidget.addChild(new Widget(getScene()), 1);
+        rightHitPointOperationWidget.addChild(rectangleWidget);
+        
+        leftHitPointOperationWidget = new Widget(getScene());
+        RectangleWidget leftRectangleWidget = new RectangleWidget(getScene(), 12, 70);
+        leftRectangleWidget.setThickness(4);
+        leftRectangleWidget.setColor(WidgetConstants.HIT_POINT_BORDER);
+        leftHitPointOperationWidget.setLayout(layout);
+        leftHitPointOperationWidget.setBorder(operationBorder);
+        leftHitPointOperationWidget.addChild(leftRectangleWidget);
+        leftHitPointOperationWidget.addChild(new Widget(getScene()), 1);
+        
         dummyEndWidget = new Widget(getScene());
-        dummyEndWidget.setPreferredBounds(new Rectangle(0, OPERATION_GAP));//67 = height of a operation widget
+        dummyEndWidget.setPreferredBounds(new Rectangle(0, OPERATION_GAP));
         refreshOperations();
-        setMinimumSize(new Dimension(400, 0));
+        
+
     }
 
     /**
@@ -221,19 +236,21 @@ public class OperationSceneLayer extends Widget {
 
 
     public void showBlankWidget(boolean right) {
-        dummyOperationWidget.removeFromParent();
+        removeBlankWidget();
         dummyEndWidget.removeFromParent();
-        dummyOperationWidget.setLayout(LayoutFactory.createHorizontalFlowLayout());
+        
+        
         if (right) {
-            rightsideWidgetsHolder.addChild(dummyOperationWidget);
+            rightsideWidgetsHolder.addChild(rightHitPointOperationWidget);
         } else {
-            leftsideWidgetsHolder.addChild(dummyOperationWidget);
+            leftsideWidgetsHolder.addChild(leftHitPointOperationWidget);
         }
         addChild(dummyEndWidget);
     }
 
     public void removeBlankWidget() {
-        dummyOperationWidget.removeFromParent();
+        rightHitPointOperationWidget.removeFromParent();
+        leftHitPointOperationWidget.removeFromParent();
     }
 
     public void updateOperations(boolean rightSided) {
