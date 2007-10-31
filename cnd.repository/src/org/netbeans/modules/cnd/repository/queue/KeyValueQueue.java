@@ -156,10 +156,6 @@ public class KeyValueQueue<K, V> extends BaseQueue {
         map.remove(polled.getKey());
     }
     
-    public boolean contains(K key) {
-        return map.containsKey(key);
-    }
-    
     public void remove(K key) {
 	if( needsTrace() ) System.err.printf("%s: Removing %s\n", getTraceName(), key);
 	synchronized( lock ) {
