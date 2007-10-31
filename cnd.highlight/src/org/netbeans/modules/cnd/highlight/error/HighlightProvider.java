@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
@@ -62,10 +63,10 @@ import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
 import org.netbeans.editor.BaseDocument;
 import javax.swing.text.Position;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.cnd.highlight.CppHighlightsLayerFactory;
 import org.openide.text.Annotation;
 import org.openide.util.NbBundle;
@@ -223,60 +224,61 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
     }
     
     private void checkClosed(){
-        checkClosed(TopComponent.getRegistry().getCurrentNodes());
+        checkClosed(EditorRegistry.componentList());
     }
-    
-    private void checkClosed(Node[] arr){
-        if (arr != null) {
-            Set<CsmFile> opened = new HashSet<CsmFile>();
-            for (int j = 0; j < arr.length; j++) {
-                CsmFile file = CsmUtilities.getCsmFile(arr[j], false);
-                if (file != null) {
-                    opened.add(file);
+
+    private void checkClosed(List<? extends JTextComponent> panes) {
+        if (annotations.size() == 0) {
+            return;
+        }
+        Set<CsmFile> opened = new HashSet<CsmFile>();
+        for (JTextComponent component : panes) {
+            Document doc = component.getDocument();
+            CsmFile file = CsmUtilities.getCsmFile(doc, false);
+            if (file != null && file.isParsed()) {
+                opened.add(file);
+            }
+        }
+        List<CsmFile> toDelete = new ArrayList<CsmFile>();
+        for(Iterator<CsmFile> it = annotations.keySet().iterator(); it.hasNext();){
+            CsmFile file = it.next();
+            if (!opened.contains(file)){
+                toDelete.add(file);
+            }
+        }
+        for( Iterator<CsmFile> it = toDelete.iterator(); it.hasNext(); ) {
+            CsmFile file = it.next();
+            DataObject dao = CsmUtilities.getDataObject(file);
+            Document doc = null;
+            if (dao != null) {
+                EditorCookie editor = dao.getCookie(EditorCookie.class);
+                if (editor != null) {
+                    doc =  editor.getDocument();
                 }
             }
-            List<CsmFile> toDelete = new ArrayList<CsmFile>();
-            for(Iterator<CsmFile> it = annotations.keySet().iterator(); it.hasNext();){
-                CsmFile file = it.next();
-                if (!opened.contains(file)){
-                    toDelete.add(file);
-                }
-            }
-            for( Iterator<CsmFile> it = toDelete.iterator(); it.hasNext(); ) {
-                CsmFile file = it.next();
-                DataObject dao = CsmUtilities.getDataObject(file);
-                Document doc = null;
-                if (dao != null) {
-                    EditorCookie editor = dao.getCookie(EditorCookie.class);
-                    if (editor != null) {
-                        doc =  editor.getDocument();
-                    }
-                }
-                if (doc instanceof BaseDocument){
+            if (doc instanceof BaseDocument){
                     removeAnnotations((BaseDocument)doc, file);
-                } else {
-                    removeAnnotations(null, file);
-                }
+            } else {
+                removeAnnotations(null, file);
             }
         }
     }
     
     private void checkNodes(){
-        checkNodes(TopComponent.getRegistry().getCurrentNodes());
+        checkNodes(EditorRegistry.componentList());
     }
-    
-    private void checkNodes(Node[] arr){
-        if (arr != null) {
-            for (int j = 0; j < arr.length; j++) {
-                CsmFile file = CsmUtilities.getCsmFile(arr[j], false);
-                if (file != null && file.isParsed()) {
-                    //if (TRACE_ANNOTATIONS)  System.out.println("Activate node: "+file.getName()); // NOI18N
-                    checkFile(file);
-                }
+
+    private void checkNodes(List<? extends JTextComponent> panes){
+        for (JTextComponent component : panes) {
+            Document doc = component.getDocument();
+            CsmFile file = CsmUtilities.getCsmFile(doc, false);
+            if (file != null && file.isParsed()) {
+                //if (TRACE_ANNOTATIONS)  System.out.println("Activate node: "+file.getName()); // NOI18N
+                checkFile(file);
             }
         }
     }
-    
+
     private boolean isNeededUpdateAnnotations(BaseDocument doc, CsmFile file) {
         if (doc == null || file == null) {
             return false;
