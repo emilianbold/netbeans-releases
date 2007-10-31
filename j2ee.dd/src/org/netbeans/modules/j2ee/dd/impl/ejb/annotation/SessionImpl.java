@@ -205,10 +205,14 @@ public class SessionImpl extends PersistentObject implements Session {
             }
         }
         
-        if (interfaces.size() == 1 && beanLocalAnnotation == null && beanRemoteAnnotation == null &&
+        if (interfaces.size() == 1 && beanRemoteAnnotation == null &&
                 annotatedLocalInterfaces.size() == 0 && annotatedRemoteInterfaces.size() == 0) {
             businessLocal = new String[] { interfaces.get(0).getQualifiedName().toString() };
             businessRemote = new String[] {};
+        } else if (interfaces.size() == 1 && beanLocalAnnotation == null && beanRemoteAnnotation != null &&
+                annotatedLocalInterfaces.size() == 0 && annotatedRemoteInterfaces.size() == 0) {
+            businessLocal = new String[] {};
+            businessRemote = new String[] { interfaces.get(0).getQualifiedName().toString() };
         } else {
             if (beanLocalAnnotation != null) {
                 List<String> annotationsValues = getClassesFromLocalOrRemote(beanLocalAnnotation);
