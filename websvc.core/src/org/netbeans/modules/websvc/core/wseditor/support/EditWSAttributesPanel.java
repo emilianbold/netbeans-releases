@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.core.wseditor.support;
 
+import java.awt.Component;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeMap;
@@ -80,9 +81,11 @@ public class EditWSAttributesPanel extends javax.swing.JPanel {
         Set<String> titles = treeMap.keySet();
         for(String title : titles){
             WSEditor editor = treeMap.get(title);
-            jTabbedPane1.addTab(title, editor.createWSEditorComponent(node, jaxWsModel));
+            Component c = editor.createWSEditorComponent(node, jaxWsModel);
+            jTabbedPane1.addTab(title, c);
             String desc = editor.getDescription();
             if(desc != null && !desc.trim().equals("")){
+                c.getAccessibleContext().setAccessibleDescription(desc);
                 description.append(" " );
                 description.append(desc);
             }
