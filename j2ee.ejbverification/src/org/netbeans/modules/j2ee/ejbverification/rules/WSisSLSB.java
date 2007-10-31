@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.j2ee.ejbverification.rules;
 
+import com.sun.source.tree.ClassTree;
 import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.element.AnnotationMirror;
@@ -67,6 +68,10 @@ public class WSisSLSB extends EJBVerificationRule {
                 EJBAPIAnnotations.WEB_SERVICE);
         
         if (annWebService != null){
+            ClassTree classTree = ctx.getComplilationInfo().getTrees().getTree(ctx.getClazz());
+            if (ctx.getComplilationInfo().getTreeUtilities().isInterface(classTree)){
+                return null; // ok, interfaces can have @WebService without ejb annotations
+            }
             if (ctx.getEjb() instanceof Session){
                 Session session = (Session)ctx.getEjb();
                 
