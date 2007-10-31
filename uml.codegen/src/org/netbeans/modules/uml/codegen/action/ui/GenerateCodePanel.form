@@ -26,27 +26,32 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" max="-2" attributes="0">
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="targetProject" max="32767" attributes="1"/>
-                          <Component id="srcFolder" alignment="0" pref="73" max="32767" attributes="1"/>
+                  <Component id="scrollPlaceHolder" alignment="0" pref="385" max="32767" attributes="0"/>
+                  <Component id="templatesLabel" alignment="0" pref="385" max="32767" attributes="0"/>
+                  <Component id="statusLabel" alignment="1" pref="385" max="32767" attributes="0"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="showDialogCheckBox" alignment="0" pref="302" max="32767" attributes="0"/>
+                          <Component id="addMarkersCheck" alignment="0" pref="302" max="32767" attributes="2"/>
+                          <Component id="generateMarkersCheck" alignment="0" pref="302" max="32767" attributes="2"/>
+                          <Component id="backupSourcesCheck" alignment="0" pref="302" max="32767" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                  <Component id="srcFolder" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="targetProject" alignment="0" max="32767" attributes="1"/>
+                              </Group>
+                              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="srcFolderCombo" pref="219" max="32767" attributes="2"/>
+                                  <Component id="targetProjectCombo" alignment="0" pref="219" max="32767" attributes="2"/>
+                              </Group>
+                          </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="srcFolderCombo" pref="347" max="32767" attributes="1"/>
-                          <Component id="targetProjectCombo" alignment="0" pref="347" max="32767" attributes="1"/>
-                      </Group>
+                      <EmptySpace min="-2" pref="83" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="scrollPlaceHolder" alignment="0" pref="463" max="32767" attributes="0"/>
-                  <Component id="showDialogCheckBox" alignment="0" pref="463" max="32767" attributes="0"/>
-                  <Component id="addMarkersCheck" alignment="0" pref="463" max="32767" attributes="0"/>
-                  <Component id="templatesLabel" alignment="0" pref="463" max="32767" attributes="0"/>
-                  <Component id="generateMarkersCheck" alignment="1" pref="463" max="32767" attributes="0"/>
-                  <Component id="backupSourcesCheck" alignment="0" pref="463" max="32767" attributes="0"/>
-                  <Component id="statusLabel" alignment="1" pref="463" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
@@ -57,15 +62,15 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="targetProjectCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="targetProject" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="targetProjectCombo" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="srcFolderCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="srcFolder" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="srcFolderCombo" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
               <Component id="backupSourcesCheck" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="generateMarkersCheck" min="-2" max="-2" attributes="0"/>
@@ -79,7 +84,7 @@
               <Component id="scrollPlaceHolder" min="-2" pref="226" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="statusLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="20" max="32767" attributes="0"/>
+              <EmptySpace pref="24" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
