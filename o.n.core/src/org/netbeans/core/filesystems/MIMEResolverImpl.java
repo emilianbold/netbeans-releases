@@ -390,6 +390,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
                     component.endElement(namespaceURI, localName, qName);
                     if (componentDelimiter.equals(qName)) {
                         state = IN_RESOLVER;
+                        component.setDocumentLocator(null);
                     }
                     break;
             }
