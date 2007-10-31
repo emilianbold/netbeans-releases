@@ -122,6 +122,7 @@ public class ExternalBindingPanel extends SaveableSectionInnerPanel {
         return false;
     }
     
+    @Override
     public boolean jaxwsIsDirty(){
         return jaxwsIsDirty;
     }
@@ -149,14 +150,15 @@ public class ExternalBindingPanel extends SaveableSectionInnerPanel {
         }
         
         //add new binding files
-        for(String bindingName : addedBindings.keySet()){
-            FileObject bindingFO = addedBindings.get(bindingName);
+        for(Map.Entry<String, FileObject> bindingEntrySet: addedBindings.entrySet()){
+            String bindingName = bindingEntrySet.getKey();
+            FileObject bindingFO = bindingEntrySet.getValue();
             if(bindingFO != null){
                 String normalizedBindingName = bindingName;
                 String ext = bindingFO.getExt();
                 if(!ext.equals("")){
-                    int index = bindingName.indexOf(ext);
-                    normalizedBindingName = bindingName.substring(0, index - 1);
+                    int index = normalizedBindingName.indexOf(ext);
+                    normalizedBindingName = normalizedBindingName.substring(0, index - 1);
                 }
                 try{
                     FileObject copiedBinding = FileUtil.copyFile(bindingFO, bindingsFolder,
