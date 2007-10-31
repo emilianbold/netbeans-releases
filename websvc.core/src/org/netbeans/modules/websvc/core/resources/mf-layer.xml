@@ -49,20 +49,6 @@ made subject to such option by the copyright holder.
         <folder name="WebServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.client.wizard.Bundle"/>
             <attr name="position" intvalue="1500"/>
-            <!--
-            <file name="WSDL.wsdl" url="nbres:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/WSDL.template">
-                <attr name="position" intvalue="600"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.NewWSDLWizardIterator"/>
-                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/wizard/newWSDL.html"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.client.wizard.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/client/resources/wsdl_16.png"/>
-                <attr name="templateCategory" stringvalue="wsdl"/>
-            </file>
-            <file name="WSDL_import.wsdl" url="nbres:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/WSDL_import.template">
-                <attr name="position" intvalue="0"/>
-            </file>
-            -->
             <file name="WebServiceClient">
                 <attr name="position" intvalue="500"/>
                 <attr name="template" boolvalue="true"/>
@@ -126,69 +112,7 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
-    <folder name="Loaders">
-        <folder name="text">
-            <folder name="x-wsdl+xml">
-                <folder name="Actions">
-                    <file name="org-openide-actions-EditAction.instance">
-                        <attr name="position" intvalue="200"/>
-                    </file>
-                    <file name="org-openide-actions-FileSystemAction.instance">
-                        <attr name="position" intvalue="300"/>
-                    </file>
-                    <file name="sep-1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="700"/>
-                    </file>
-                    <file name="org-openide-actions-CutAction.instance">
-                        <attr name="position" intvalue="800"/>
-                    </file>
-                    <file name="org-openide-actions-CopyAction.instance">
-                        <attr name="position" intvalue="900"/>
-                    </file>
-                    <file name="org-openide-actions-PasteAction.instance">
-                        <attr name="position" intvalue="1000"/>
-                    </file>
-                    <file name="sep-2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1100"/>
-                    </file>
-                    <file name="org-openide-actions-DeleteAction.instance">
-                        <attr name="position" intvalue="1200"/>
-                    </file>
-                    <file name="sep-3.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1400"/>
-                    </file>
-                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
-                    <file name="sep-4.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1600"/>
-                    </file>
-                     <!--                   
-                    <attr name="sep-4.instance/org-netbeans-modules-xml-tools-actions-CheckAction.instance" boolvalue="true"/>
-                    <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
-                    <attr name="org-netbeans-modules-xml-tools-actions-CheckAction.instance/org-netbeans-modules-xml-tools-actions-ValidateAction.instance" boolvalue="true" />
-                    <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
-                    <attr name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance/sep-5.instance" boolvalue="true"/>
-                    -->
-                    <file name="sep-5.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1900"/>
-                    </file> 
-                    <file name="org-openide-actions-ToolsAction.instance">
-                        <attr name="position" intvalue="2000"/>
-                    </file>
-                    <file name="org-openide-actions-PropertiesAction.instance">
-                        <attr name="position" intvalue="2100"/>
-                    </file>
-                </folder>
-            </folder>
-        </folder>
-    </folder>
+
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
