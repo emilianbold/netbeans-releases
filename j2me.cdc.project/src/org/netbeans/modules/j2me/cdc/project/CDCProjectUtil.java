@@ -43,8 +43,10 @@ package org.netbeans.modules.j2me.cdc.project;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +71,8 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2me.cdc.platform.CDCDevice;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -154,7 +158,16 @@ public class CDCProjectUtil {
         
         /* Here is the trick to include not build dependent projects */
         ArrayList<ClassPath> srcRoots=new ArrayList<ClassPath>();
+        final ArrayList<FileObject> srcRootsFO=new ArrayList<FileObject>();
         srcRoots.add(ClassPath.getClassPath (root, ClassPath.SOURCE));
+        Library libs[]=LibraryManager.getDefault().getLibraries();
+        HashSet<URL> libSet=new HashSet<URL>();
+        for (Library lib : libs)
+        {
+            List<URL> url=lib.getContent("src");
+            libSet.addAll(url);
+        }
+        HashSet<URL> entrySet=new HashSet<URL>();
         for (Entry e: rtm2.entries())
         {
             Result res=null;
@@ -163,7 +176,21 @@ public class CDCProjectUtil {
             } catch(Exception ex) {}
             FileObject[] roots=res.getRoots();
             for ( FileObject r : roots)
-                srcRoots.add(ClassPath.getClassPath(r,ClassPath.SOURCE));
+            {
+                ClassPath path=ClassPath.getClassPath(r,ClassPath.SOURCE);
+                entrySet.clear();
+                for (ClassPath.Entry entry : path.entries())
+                {
+                    entrySet.add(entry.getURL());
+                }
+                entrySet.removeAll(libSet);
+                if (!srcRoots.contains(path) && entrySet.size()>0 )
+                {
+                    srcRoots.add(path);
+                    for (ClassPath.Entry entry : path.entries())
+                            srcRootsFO.add(entry.getRoot());
+                }
+            }
         }
         
         final ClassPath src = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(srcRoots.toArray(new ClassPath[srcRoots.size()]));                
@@ -203,7 +230,7 @@ public class CDCProjectUtil {
                     ss.add(SearchScope.DEPENDENCIES);
                     Collection<ElementHandle<TypeElement>> arr = new ArrayList<ElementHandle<TypeElement>>();
                     if (executionModes == null || (executionModes != null && executionModes.containsKey(CDCPlatform.PROP_EXEC_MAIN))){
-                        arr = SourceUtils.getMainClasses(new FileObject[] {root}); // NOI18N
+                        arr = SourceUtils.getMainClasses(srcRootsFO.toArray(new FileObject[srcRootsFO.size()])); // NOI18N
                     }
                     
                     Collection<ElementHandle<TypeElement>> exec=new ArrayList<ElementHandle<TypeElement>>();
