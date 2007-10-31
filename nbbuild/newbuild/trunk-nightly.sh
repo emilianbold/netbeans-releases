@@ -87,6 +87,9 @@ if [ ! -z $BUILD_ID ]; then
     cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}
     mv $DIST_SERVER2/latest $DIST_SERVER2/latest.old
     ln -s $DIST_SERVER2/${BUILD_ID} $DIST_SERVER2/latest
+    if [ $UPLOAD_ML == 0 ]; then
+        rm -r $DIST/ml
+    fi
 fi
 
 if [ -z $DIST_SERVER ]; then
