@@ -64,7 +64,7 @@ import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
@@ -413,7 +413,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         boolean noJsr109InWeb = wm != null && !jsr109Supported && !jsr109oldSupported;
         boolean jaxWsInWeb14 = wm != null && jaxWsInJ2ee14Supported;
         
-        if (!Util.isJavaEE5orHigher(project) && !noJsr109InWeb && !jaxWsInWeb14 && WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null) {
+        if (!Util.isJavaEE5orHigher(project) && !noJsr109InWeb && !jaxWsInWeb14 && WebServicesSupport.getWebServicesSupport(project.getProjectDirectory()) == null) {
             // check if jaxrpc plugin installed
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_NoJaxrpcPluginFound")); // NOI18N
             return false;

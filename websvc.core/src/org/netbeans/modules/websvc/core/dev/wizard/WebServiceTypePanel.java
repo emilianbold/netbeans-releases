@@ -60,7 +60,7 @@ import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -293,7 +293,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         }
         boolean noJsr109InWeb = wm != null && !jsr109Supported && !jsr109oldSupported;
         boolean jaxWsInWeb14 = wm != null && jaxWsInJ2ee14Supported;
-        if (!Util.isJavaEE5orHigher(project) && !noJsr109InWeb && !jaxWsInWeb14 && WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null) {
+        if (!Util.isJavaEE5orHigher(project) && !noJsr109InWeb && !jaxWsInWeb14 && WebServicesSupport.getWebServicesSupport(project.getProjectDirectory()) == null) {
             // check if jaxrpc plugin installed
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_NoJaxrpcPluginFound")); // NOI18N
             return false;

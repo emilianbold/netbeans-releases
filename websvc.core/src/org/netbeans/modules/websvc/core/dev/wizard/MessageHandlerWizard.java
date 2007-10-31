@@ -58,6 +58,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 
 public class MessageHandlerWizard implements WizardDescriptor.InstantiatingIterator {
     public int currentPanel = 0;
@@ -172,6 +173,11 @@ public class MessageHandlerWizard implements WizardDescriptor.InstantiatingItera
         public boolean isValid() {
             //TODO test for conditions in JSE
             
+            if(!Util.isJavaEE5orHigher(project) && WebServicesSupport.getWebServicesSupport(project.getProjectDirectory())==null) {
+                // check if jaxrpc plugin installed
+                wiz.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(MessageHandlerWizard.class, "ERR_NoJaxrpcPluginFoundHandler")); // NOI18N
+                return false;
+            }
             //if platform is Tomcat, source level must be jdk 1.5 and jaxws library must be in classpath
             ProjectInfo creator = new ProjectInfo(project);
             int projectType = creator.getProjectType();
