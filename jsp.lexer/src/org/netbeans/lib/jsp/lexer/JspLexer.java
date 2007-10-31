@@ -144,7 +144,7 @@ public class JspLexer implements Lexer<JspTokenId> {
     private static final int ISA_LT_PC_DASH      = 35; // after <%- ;not comment yet
     
     private static final int ISI_SCRIPTLET       = 36; // inside java scriptlet/declaration/expression
-    private static final int ISP_SCRIPTLET_PC   = 37; // just after % in scriptlet
+    private static final int ISP_SCRIPTLET_PC    = 37; // just after % in scriptlet
 
     //expression language
     
@@ -779,8 +779,13 @@ public class JspLexer implements Lexer<JspTokenId> {
                 case ISI_SCRIPTLET:
                     switch(actChar) {
                         case '%':
-                            lexerState = ISP_SCRIPTLET_PC;
-                            break;
+                            if (input.readLength() == 1) {
+                                lexerState = ISP_SCRIPTLET_PC;
+                                break;
+                            } else {
+                                input.backup(1);
+                                return scriptletToken(JspTokenId.SCRIPTLET, lexerStateJspScriptlet);
+                            }
                         case '<':
                             //may be end of scriptlet section in JSP document
                             CharSequence tagName = getPossibleTagName();

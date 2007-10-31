@@ -51,9 +51,6 @@ made subject to such option by the copyright holder.
     <fontcolor name="error" foreColor="black" bgColor="red" default="default">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor name="scriptlet-delimiter" foreColor="black" bgColor="fffdf2c4" default="default">
-        <font style="bold"/>
-    </fontcolor>
     <fontcolor name="symbol" foreColor="black" default="default">
         <font style="bold"/>
     </fontcolor>
@@ -66,7 +63,8 @@ made subject to such option by the copyright holder.
     <fontcolor name="jsp-whitespace" foreColor="black" default="default">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor name="scriptlet" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="scriptlet" bgColor="ffd0e8ca" default="default"/>
+    <fontcolor name="scriptlet-delimiter" bgColor="ffd0e8ca" default="default"/>
     <fontcolor name="expression-language" foreColor="black" bgColor="fffdf2c4" default="default">
         <font style="bold"/>
     </fontcolor>

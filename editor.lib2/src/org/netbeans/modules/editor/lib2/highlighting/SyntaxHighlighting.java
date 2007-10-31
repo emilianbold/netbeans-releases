@@ -235,11 +235,12 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         private static final int S_EMBEDDED_TAIL = 3;
         private static final int S_DONE = 4;
 
-        private long version;
-        private TokenHierarchy<? extends Document> scanner;
+        private final long version;
+        private final TokenHierarchy<? extends Document> scanner;
+        private final int startOffset;
+        private final int endOffset;
+        
         private List<TokenSequence<? extends TokenId>> sequences;
-        private int startOffset;
-        private int endOffset;
         private int state = -1;
         
         public HSImpl(long version, TokenHierarchy<? extends Document> scanner, int startOffset, int endOffset) {
@@ -416,13 +417,6 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             AttributeSet tokenAttribs = token2attribs.get(tokenId);
             if (tokenAttribs == null) {
                 tokenAttribs = findTokenAttribs(tokenId, mimePath, seq.languagePath().innerLanguage());
-
-                if (seqIdx > 0) {
-                    AttributeSet embeddingTokenAttribs = findAttribs(seqIdx - 1);
-                    tokenAttribs = AttributesUtilities.createComposite(
-                        tokenAttribs, embeddingTokenAttribs);
-                }
-                
                 token2attribs.put(tokenId, tokenAttribs);
             }
 

@@ -182,8 +182,13 @@ public final class RhtmlLexer implements Lexer<RhtmlTokenId> {
                 case ISI_COMMENT_SCRIPTLET:
                     switch(actChar) {
                         case '%':
-                            state = ISI_COMMENT_SCRIPTLET_PC;
-                            break;
+                            if (input.readLength() == 1) {
+                                state = ISI_COMMENT_SCRIPTLET_PC;
+                                break;
+                            } else {
+                                input.backup(1);
+                                return token(RhtmlTokenId.RUBYCOMMENT);
+                            }
                     }
                     break;
                     
@@ -191,8 +196,13 @@ public final class RhtmlLexer implements Lexer<RhtmlTokenId> {
                 case ISI_SCRIPTLET:
                     switch(actChar) {
                         case '%':
-                            state = ISI_SCRIPTLET_PC;
-                            break;
+                            if (input.readLength() == 1) {
+                                state = ISI_SCRIPTLET_PC;
+                                break;
+                            } else {
+                                input.backup(1);
+                                return token(RhtmlTokenId.RUBY);
+                            }
                     }
                     break;
                     
@@ -219,8 +229,13 @@ public final class RhtmlLexer implements Lexer<RhtmlTokenId> {
                 case ISI_EXPR_SCRIPTLET:
                     switch(actChar) {
                         case '%':
-                            state = ISI_EXPR_SCRIPTLET_PC;
-                            break;
+                            if (input.readLength() == 1) {
+                                state = ISI_EXPR_SCRIPTLET_PC;
+                                break;
+                            } else {
+                                input.backup(1);
+                                return token(RhtmlTokenId.RUBY);
+                            }
                     }
                     break;
                     
