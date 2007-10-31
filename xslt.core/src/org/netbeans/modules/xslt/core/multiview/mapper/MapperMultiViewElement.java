@@ -45,6 +45,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -57,13 +59,18 @@ import org.netbeans.modules.xslt.core.XSLTDataObject;
 import org.netbeans.modules.xslt.mapper.model.MapperContext;
 import org.openide.windows.TopComponent;
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
+import javax.swing.ActionMap;
 import javax.swing.JButton;
 
 import javax.swing.JComponent;
 import javax.swing.JSlider;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
@@ -77,6 +84,9 @@ import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.nodes.Node;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Mode;
@@ -96,9 +106,11 @@ public class MapperMultiViewElement extends TopComponent
     private transient MultiViewElementCallback myMultiViewObserver;
     private transient XsltMapper myMapperView;
 
+    private transient InstanceContent nodesHack;
     private XSLTDataObject myDataObject;
     private transient JComponent myToolBarPanel;
     private static Boolean groupVisible = null;
+    private PropertyChangeListener myActiveNodeChangeListener;
     
     // for deserialization
     private MapperMultiViewElement() {
@@ -113,6 +125,47 @@ public class MapperMultiViewElement extends TopComponent
         initializeLookup();
         initializeUI();
     }
+    
+    private void removeActiveNodeChangeListener() {
+        if (myActiveNodeChangeListener != null) {
+            removePropertyChangeListener(myActiveNodeChangeListener);
+        }
+        myActiveNodeChangeListener = null;
+    }
+    
+    private void initActiveNodeChangeListener() {
+        if (myActiveNodeChangeListener == null) {
+            myActiveNodeChangeListener = new PropertyChangeListener() {
+                /**
+                 * TODO: may not be needed at some point when parenting
+                 * MultiViewTopComponent delegates properly to its peer's
+                 * activatedNodes. see
+                 * http://www.netbeans.org/issues/show_bug.cgi?id=67257 note:
+                 * TopComponent.setActivatedNodes is final
+                 */
+
+                public void propertyChange(PropertyChangeEvent event) {
+                    // no constant in TopComponent...lame
+                    if (event.getPropertyName().equals("activatedNodes")) { // NOI18N
+
+                        TopComponent tc = TopComponent.getRegistry().getActivated();
+                        /* Ignore event coming from my TC */
+                        // if(DEBUG)
+                        // Debug.verboseWithin(this,"propertyChange",getDataObject());
+                        nodesHack.set(Collections.EMPTY_LIST, null);
+                        nodesHack.set(Arrays.asList(getActivatedNodes()), null);
+                    }
+                };
+            };
+        } else {
+            removePropertyChangeListener(myActiveNodeChangeListener);
+        }
+
+        addPropertyChangeListener(myActiveNodeChangeListener);
+
+        setActivatedNodes(new Node[0]);
+        setActivatedNodes(new Node[] {getDataObject().getNodeDelegate()});
+    }    
     
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
@@ -197,6 +250,7 @@ public class MapperMultiViewElement extends TopComponent
             myMapperView.setVisible(false);
         }
         updateXsltTcGroupVisibility(false);
+        removeActiveNodeChangeListener();
     }
     
     @Override
@@ -210,10 +264,65 @@ public class MapperMultiViewElement extends TopComponent
         if (myMapperView != null) {
             myMapperView.setVisible(true);
         }
+        
         addUndoManager();
         updateXsltTcGroupVisibility(true);
+        
+//        System.out.println("mapper component showing; action map in lookup: "+getLookup().lookup(ActionMap.class));
+//        associateLookup(Lookups.exclude(getLookup(), ActionMap.class));
+        
+        initActiveNodeChangeListener();
+        
+//        showActivatedNodeStatus();
+        
     }
 
+//    private void showActivatedNodeStatus() {
+//        if (myMultiViewObserver != null) {
+//            TopComponent thisTc = myMultiViewObserver.getTopComponent();
+//            if ( thisTc != null ) {
+//                Node[] tcActivatedNodes = thisTc.getActivatedNodes();
+//                System.out.println("design MVTC activated nodes: "+tcActivatedNodes);
+//                if (tcActivatedNodes != null) {
+//                    for (int i = 0; i < tcActivatedNodes.length; i++) {
+//                        Node node = tcActivatedNodes[i];
+//                        System.out.println(i+") design tc activated node: "+node+"; displayName: "+node.getDisplayName());
+//                    }
+//                } else {
+//                    System.out.println("tcActivatedNodes is null");
+//                }
+//                
+//                Node[] designMvActivatedNodes = getActivatedNodes();
+//                if (designMvActivatedNodes != null) {
+//                    for (int i = 0; i < designMvActivatedNodes.length; i++) {
+//                        Node node = designMvActivatedNodes[i];
+//                        System.out.println(i+") design mv activated node: "+node+"; displayName: "+node.getDisplayName());
+//                    }
+//                } else {
+//                    System.out.println("designMvActivatedNodes is null");
+//                }
+//                
+//            } else {
+//                System.out.println("this TC is null");
+//            }
+//        } else {
+//            System.out.println("myMultiViewObserver is null");
+//        }
+//        
+//////        TopComponent regTcActive = TopComponent.getRegistry().getActivated();
+//////        System.out.println("design tc : regTcActive: "+regTcActive);
+////        Node[] regNodes = TopComponent.getRegistry().getActivatedNodes();
+////        if (regNodes != null) {
+////            for (int i = 0; i < regNodes.length; i++) {
+////                Node node = regNodes[i];
+////                System.out.println(i+") design tc registry activated node: "+node+"; displayName: "+node.getDisplayName());
+////            }
+////        } else {
+////            System.out.println("regNodes is null");
+////        }
+//        
+//    }    
+//    
     public JComponent getToolbarRepresentation() {
         if ( myToolBarPanel == null ) {
             JToolBar toolbar = new JToolBar();
@@ -386,7 +495,7 @@ public class MapperMultiViewElement extends TopComponent
     
     private void initializeLookup() {
         associateLookup(createAssociateLookup());
-        setActivatedNodes(new Node[] {getDataObject().getNodeDelegate()});
+        initActiveNodeChangeListener();
     }
     
     private Lookup createAssociateLookup() {
@@ -397,18 +506,23 @@ public class MapperMultiViewElement extends TopComponent
 //            System.out.println("targetComponent "+mapperContext.getTargetType());
 //            System.out.println("xslModel "+mapperContext.getXSLModel());
         }
-        
+        ActionMap actionMap = getActionMap();
+        actionMap.put(DefaultEditorKit.copyAction, null);
+        actionMap.put(DefaultEditorKit.cutAction, null);
+        actionMap.put(DefaultEditorKit.pasteAction, SystemAction.get(MapperPasteAction.class));
         
         //
         // see http://www.netbeans.org/issues/show_bug.cgi?id=67257
         //
+        nodesHack = new InstanceContent();
         return new ProxyLookup(new Lookup[] {
             myDataObject.getLookup(), // this lookup contain objects that are used in OM clients
             Lookups.fixed(new Object[] {
                 // required to perform search on associated TCs with this dataobject
                 getDataObject().getLookup(),
-                
                 getDataObject().getNodeDelegate(),
+                actionMap,
+                new AbstractLookup(nodesHack),
                 XsltPaletteFactory.getPalette()})
         });
     }
