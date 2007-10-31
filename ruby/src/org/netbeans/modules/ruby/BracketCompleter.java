@@ -298,12 +298,24 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             boolean insertRBrace = insertRBraceResult[0];
             int indent = indentResult[0];
 
+            int afterLastNonWhite = Utilities.getRowLastNonWhite(doc, offset);
+
             // We've either encountered a further indented line, or a line that doesn't
             // look like the end we're after, so insert a matching end.
             StringBuilder sb = new StringBuilder();
-            sb.append("\n"); // XXX On Windows, do \r\n?
-            LexUtilities.indent(sb, indent);
-
+            if (offset > afterLastNonWhite) {
+                sb.append("\n"); // XXX On Windows, do \r\n?
+                LexUtilities.indent(sb, indent);
+            } else {
+                // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
+                // I should insert the end AFTER the text on the line
+                String restOfLine = doc.getText(offset, Utilities.getRowEnd(doc, afterLastNonWhite)-offset);
+                sb.append(restOfLine);
+                sb.append("\n");
+                LexUtilities.indent(sb, indent);
+                doc.remove(offset, restOfLine.length());
+            }
+            
             if (insertEnd) {
                 sb.append("end"); // NOI18N
             } else {
@@ -311,9 +323,11 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 sb.append("}"); // NOI18N
             }
 
-            int insertOffset = offset; // offset < length ? offset+1 : offset;
+            int insertOffset = offset;
             doc.insertString(insertOffset, sb.toString(), null);
             caret.setDot(insertOffset);
+            
+            return -1;
         }
 
         // Special case: since I do hash completion, if you try to type
