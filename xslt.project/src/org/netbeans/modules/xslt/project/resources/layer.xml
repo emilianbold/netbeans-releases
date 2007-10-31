@@ -60,14 +60,17 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
 
-        <folder name="SOA">
+        <folder name="SOA_XSLT">
+            <attr name="position" intvalue="100"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.project.resources.Bundle"/>
+
             <file name="xslt.service" url="empty_xslt_service.xsl">
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xslt.project.wizard.element.Iterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xslt/project/resources/xslt.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.project.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xslt/core/resources/xslt_file.gif"/>
-                <attr name="templateCategory" stringvalue="SOA"/>
+                <attr name="templateCategory" stringvalue="SOA_XSLT"/>
             </file>
             <file name="jbi_xslt.service" url="jbi_xslt_service.xsl">
                 <attr name="template" boolvalue="false"/>

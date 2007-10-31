@@ -531,13 +531,13 @@ public class XsltproProject implements Project, AntProjectListener {
         // List of primarily supported templates
         
         private static final String[] TYPES = new String[] {
-            "SOA",
+            "SOA_XSLT",
             "XML",                  // NOI18N
             "simple-files"          // NOI18N
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
-            "Templates/SOA/xslt.service",    // NOI18N
+            "Templates/SOA_XSLT/xslt.service",    // NOI18N
             "Templates/XML/XmlSchema.xsd",    // NOI18N
             "Templates/XML/WSDL.wsdl"    // NOI18N
         };
