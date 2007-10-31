@@ -77,10 +77,10 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
-import org.netbeans.modules.cnd.loaders.CppEditorSupport;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -236,15 +236,7 @@ public class CsmUtilities {
     //====================
 
     public static CsmFile getCsmFile(Node node, boolean waitParsing) {
-        EditorCookie ec = node.getCookie(EditorCookie.class);
-        if (ec instanceof CppEditorSupport) {
-            JEditorPane[] panes = getOpenedPanesInEQ(ec);
-            if (panes != null && panes.length>0) {
-                Document doc = panes[0].getDocument();
-                return getCsmFile(doc, waitParsing);
-            }
-        }
-        return null;
+        return getCsmFile(node.getLookup().lookup(DataObject.class), waitParsing);
     }
 
     public static JEditorPane[] getOpenedPanesInEQ(final EditorCookie ec) {
@@ -278,6 +270,10 @@ public class CsmUtilities {
             }
         }
         return null;
+    }
+    
+    public static CsmFile getCsmFile(JTextComponent comp, boolean waitParsing) {
+        return comp == null ? null : getCsmFile(comp.getDocument(), waitParsing);
     }
     
     public static CsmFile getCsmFile(Document bDoc, boolean waitParsing) {
