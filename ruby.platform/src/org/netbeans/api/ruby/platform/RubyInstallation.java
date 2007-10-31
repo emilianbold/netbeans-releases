@@ -719,6 +719,10 @@ public class RubyInstallation {
         if (exec == null) {
             exec = findOnPath(toFind);
         }
+        // try *.bat commands on Windows
+        if (exec == null && !toFind.endsWith(".bat") && Utilities.isWindows()) { // NOI18N
+            exec = findGemExecutable(toFind + ".bat"); // NOI18N
+        }
         return exec;
     }
     
