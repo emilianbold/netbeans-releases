@@ -38,25 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-/*
- *                 Sun Public License Notice
- *
- * The contents of this file are subject to the Sun Public License
- * Version 1.0 (the "License"). You may not use this file except in
- * compliance with the License. A copy of the License is available at
- * http://www.sun.com/
- *
- * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
- * Microsystems, Inc. All Rights Reserved.
- */
-
 package org.netbeans.modules.sql.project;
 
 import org.netbeans.modules.sql.project.spi.JbiArtifactProvider;
 import org.netbeans.modules.compapp.projects.base.ui.IcanproCustomizerProvider;
-//import org.netbeans.modules.sql.project.IcanproLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.netbeans.modules.compapp.projects.base.queries.IcanproProjectEncodingQueryImpl;
 import org.netbeans.modules.sql.project.SQLproConstants;
@@ -121,7 +106,7 @@ public final class SQLproProject implements Project, AntProjectListener {
     public static final String MODULE_INSTALL_NAME = "modules/org-netbeans-modules-sql-project.jar";
     public static final String MODULE_INSTALL_CBN = "org.netbeans.modules.sql.project";
     public static final String MODULE_INSTALL_DIR = "module.install.dir";
-	    private static final Logger LOG = Logger.getLogger(SQLproProject.class.getName());
+        private static final Logger LOG = Logger.getLogger(SQLproProject.class.getName());
 
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
@@ -202,7 +187,7 @@ public final class SQLproProject implements Project, AntProjectListener {
             fileBuilt,
             new RecommendedTemplatesImpl(),
             refHelper,
-			new IcanproProjectEncodingQueryImpl(evaluator()),
+            new IcanproProjectEncodingQueryImpl(evaluator()),
             sourcesHelper.createSources(),
             helper.createSharabilityQuery(evaluator(),
                 new String[] {"${"+IcanproProjectProperties.SOURCE_ROOT+"}"},
@@ -261,29 +246,29 @@ public final class SQLproProject implements Project, AntProjectListener {
         return helper;
     }
 
-	/** Store configured project name. */
-	public void setName(final String name) {
-		ProjectManager.mutex().writeAccess(new Mutex.Action() {
-			public Object run() {
-				Element data = helper.getPrimaryConfigurationData(true);
-				// XXX replace by XMLUtil when that has findElement, findText, etc.
-				NodeList nl = data.getElementsByTagNameNS(SQLproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
-				Element nameEl;
-				if (nl.getLength() == 1) {
-					nameEl = (Element) nl.item(0);
-					NodeList deadKids = nameEl.getChildNodes();
-					while (deadKids.getLength() > 0) {
-						nameEl.removeChild(deadKids.item(0));
-					}
-				} else {
-					nameEl = data.getOwnerDocument().createElementNS(SQLproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
-					data.insertBefore(nameEl, /* OK if null */data.getChildNodes().item(0));
-				}
-				nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
-				helper.putPrimaryConfigurationData(data, true);
-				return null;
-			}
-		});
+    /** Store configured project name. */
+    public void setName(final String name) {
+        ProjectManager.mutex().writeAccess(new Mutex.Action() {
+            public Object run() {
+                Element data = helper.getPrimaryConfigurationData(true);
+                // XXX replace by XMLUtil when that has findElement, findText, etc.
+                NodeList nl = data.getElementsByTagNameNS(SQLproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                Element nameEl;
+                if (nl.getLength() == 1) {
+                    nameEl = (Element) nl.item(0);
+                    NodeList deadKids = nameEl.getChildNodes();
+                    while (deadKids.getLength() > 0) {
+                        nameEl.removeChild(deadKids.item(0));
+                    }
+                } else {
+                    nameEl = data.getOwnerDocument().createElementNS(SQLproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                    data.insertBefore(nameEl, /* OK if null */data.getChildNodes().item(0));
+                }
+                nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
+                helper.putPrimaryConfigurationData(data, true);
+                return null;
+            }
+        });
     }
 
     // Private innerclasses ----------------------------------------------------
@@ -372,7 +357,7 @@ public final class SQLproProject implements Project, AntProjectListener {
                     }
 
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-					EditableProperties projectEP = helper.getProperties(
+                    EditableProperties projectEP = helper.getProperties(
                     AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     if (projectEP.getProperty(IcanproProjectProperties.SOURCE_ENCODING) == null) {
                         projectEP.setProperty(IcanproProjectProperties.SOURCE_ENCODING,
@@ -395,10 +380,10 @@ public final class SQLproProject implements Project, AntProjectListener {
             if (IcanproLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
                 BrokenReferencesSupport.showAlert();
             }
-			checkEncoding();
+            checkEncoding();
         }
 
-		private void checkEncoding() {
+        private void checkEncoding() {
             // TODO m
             // Should we show ErrorManager dialog to inform user in case wrong encoding parameter ?
             String prop = eval.getProperty(IcanproProjectProperties.SOURCE_ENCODING);
@@ -441,7 +426,7 @@ public final class SQLproProject implements Project, AntProjectListener {
                         helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX),
                         IcanproProjectProperties.SE_DEPLOYMENT_JAR,
                         helper.getStandardPropertyEvaluator(), "dist_se", "clean"), // NOI18N
-				helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR,
+                helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR,
                          IcanproProjectProperties.SE_DEPLOYMENT_JAR,
                          helper.getStandardPropertyEvaluator(), "dist_se", "clean") // NOI18N
             };
@@ -457,7 +442,7 @@ public final class SQLproProject implements Project, AntProjectListener {
         // List of primarily supported templates
 
         private static final String[] TYPES = new String[] {
-			"SOA",
+            "SOA_SQL",              // NOI18N
             "XML",                  // NOI18N
             "simple-files"          // NOI18N
         };

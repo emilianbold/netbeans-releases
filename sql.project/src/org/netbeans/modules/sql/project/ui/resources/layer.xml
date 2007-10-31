@@ -40,23 +40,9 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!--
-                Sun Public License Notice
-
-The contents of this file are subject to the Sun Public License
-Version 1.0 (the "License"). You may not use this file except in
-compliance with the License. A copy of the License is available at
-http://www.sun.com/
-
-The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
-Microsystems, Inc. All Rights Reserved.
--->
 <?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    
-    
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-sql">
@@ -121,11 +107,13 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     <folder name="Templates">
-        <folder name="SOA">
+        <folder name="SOA_SQL">
+            <attr name="position" intvalue="100"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.sql.project.ui.resources.Bundle"/>
             <file name="SQL.sql" url="SQLTemplate.sql">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.sql.project.ui.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="SOA"/>
+                <attr name="templateCategory" stringvalue="SOA_SQL"/>
             </file>
         </folder>
         <folder name="Project">
