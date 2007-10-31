@@ -127,8 +127,8 @@ public final class SourceRoots {
     }
     
     private void initializeRoots() {
-        synchronized (SourceRoots.this) {
-            if (sourceRootNames == null) {
+        synchronized (this) {
+            if (sourceRoots == null) {
                 if (FoldersListSettings.getDefault().getLogicalView()) {
                     initializeRootsLogical();
                 } else {
@@ -386,9 +386,9 @@ public final class SourceRoots {
             public String[] run() {
                 synchronized (SourceRoots.this) {
                     initializeRoots();
+                    assert sourceRootNames != null;
+                    return sourceRootNames.toArray(new String[sourceRootNames.size()]);
                 }
-                assert sourceRootNames != null;
-                return sourceRootNames.toArray (new String[sourceRootNames.size()]);
             }
         });
                 
@@ -403,9 +403,9 @@ public final class SourceRoots {
             public String[] run() {
                 synchronized (SourceRoots.this) {
                     initializeRoots();
+                    assert sourceRootProperties != null;
+                    return sourceRootProperties.toArray(new String[sourceRootProperties.size()]);
                 }
-                assert sourceRootProperties != null;
-                return sourceRootProperties.toArray (new String[sourceRootProperties.size()]);
             }
         });
     }
@@ -419,9 +419,9 @@ public final class SourceRoots {
                 public FileObject[] run () {
                     synchronized (SourceRoots.this) {
                         initializeRoots();
+                        assert sourceRoots != null;
+                        return sourceRoots.toArray(new FileObject[sourceRoots.size()]);
                     }
-                    assert sourceRoots != null;
-                    return sourceRoots.toArray(new FileObject[sourceRoots.size()]);
                 }
         });                
     }
@@ -435,9 +435,9 @@ public final class SourceRoots {
                 public FileObject[] run () {
                     synchronized (SourceRoots.this) {
                         initializeRoots();
+                        assert plainFiles != null;
+                        return plainFiles.toArray(new FileObject[plainFiles.size()]);
                     }
-                    assert plainFiles != null;
-                    return plainFiles.toArray(new FileObject[plainFiles.size()]);
                 }
         });                
     }
