@@ -242,6 +242,14 @@ public class BeansDesignProperty extends SourceDesignProperty {
                     String vbString = sourceValue.substring(index + lookFor.length() -2, lastIndex+1);
                     ValueBinding vb = FacesContext.getCurrentInstance().getApplication().createValueBinding(vbString);
                     value = vb.getValue(FacesContext.getCurrentInstance());
+                    if(value == null){
+                        //Workaround for #120251
+                        //It seems that the value will be null when the evaluation of an EL expression is 
+                        //trigerred by evaluation of another EL expression where-in the first part of the 
+                        //expression is same for both. It is strange that no exception is thrown in this 
+                        //scenario. Trying again work fine
+                        value = vb.getValue(FacesContext.getCurrentInstance());
+                    }
                     return value;
                 }
             }
