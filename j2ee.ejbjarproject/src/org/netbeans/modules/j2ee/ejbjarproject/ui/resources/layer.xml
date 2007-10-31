@@ -110,13 +110,10 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarCompositePanelProvider.createRun"/>
                     <attr name="position" intvalue="400"/>
                 </file>
-                <folder name="WebServiceCategory">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.Bundle"/>
+                <file name="WebServicesCategory.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarCompositePanelProvider.createWebServicesCategory"/>
                     <attr name="position" intvalue="500"/>
-                    <file name="Service.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarCompositePanelProvider.createWebServices"/>
-                    </file>
-                </folder>
+                </file>
             </folder>
 
             <folder name="Lookup"/>

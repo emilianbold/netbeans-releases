@@ -171,18 +171,10 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createRun"/>
                     <attr name="position" intvalue="500"/>
                 </file>
-                <folder name="WebServiceCategory">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.project.ui.customizer.Bundle"/>
+                <file name="WebServicesCategory.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createWebServicesCategory"/>
                     <attr name="position" intvalue="600"/>
-                    <file name="Service.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createWebServices"/>
-                        <attr name="position" intvalue="100"/>
-                    </file>
-                    <file name="Client.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createWebServiceClients"/>
-                        <attr name="position" intvalue="200"/>
-                    </file>
-                </folder>
+                </file>
             </folder>
 
             <folder name="Nodes">

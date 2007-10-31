@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProvider;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -67,6 +68,7 @@ public class EjbJarCompositePanelProvider implements ProjectCustomizer.Composite
     public static final String RUN = "Run";
     
     private static final String WEBSERVICES = "WebServices";
+    private static final String WEBSERVICESCATEGORY = "WebServicesCategory";
     
     private String name;
     
@@ -115,12 +117,14 @@ public class EjbJarCompositePanelProvider implements ProjectCustomizer.Composite
                     bundle.getString( "LBL_Config_Run" ), // NOI18N
                     null,
                     null );
-        } else if (WEBSERVICES.equals(name)) {
-            toReturn = ProjectCustomizer.Category.create(
-                    WEBSERVICES,
-                    bundle.getString( "LBL_Config_WebServices" ), // NOI18N
-                    null,
-                    null );
+        } else if (WEBSERVICESCATEGORY.equals(name) && showWebServicesCategory(
+                (EjbJarProjectProperties)context.lookup(EjbJarProjectProperties.class))) {
+            ProjectCustomizer.Category services = ProjectCustomizer.Category.create(WEBSERVICES,
+                    bundle.getString("LBL_Config_WebServices"), // NOI18N
+                    null);
+            toReturn = ProjectCustomizer.Category.create(WEBSERVICESCATEGORY,
+                    bundle.getString("LBL_Config_WebServiceCategory"), // NOI18N
+                    null, services);
         }
         
 //        assert toReturn != null : "No category for name:" + name;
@@ -188,8 +192,15 @@ public class EjbJarCompositePanelProvider implements ProjectCustomizer.Composite
         return new EjbJarCompositePanelProvider(RUN);
     }
 
-    public static EjbJarCompositePanelProvider createWebServices() {
-        return new EjbJarCompositePanelProvider(WEBSERVICES);
+    public static EjbJarCompositePanelProvider createWebServicesCategory() {
+        return new EjbJarCompositePanelProvider(WEBSERVICESCATEGORY);
     }
     
+    private static boolean showWebServicesCategory(EjbJarProjectProperties uiProperties) {
+        EjbJarProject project = (EjbJarProject) uiProperties.getProject();
+        if(EjbJarProjectProperties.J2EE_1_4.equals(project.getEjbModule().getJ2eePlatformVersion())) {
+            return WebServicesSupport.getWebServicesSupport(project.getProjectDirectory())!=null;
+        }
+        return false;
+    }
 }

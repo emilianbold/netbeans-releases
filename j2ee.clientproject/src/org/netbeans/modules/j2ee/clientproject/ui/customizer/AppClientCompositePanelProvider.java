@@ -68,7 +68,8 @@ public class AppClientCompositePanelProvider implements ProjectCustomizer.Compos
     public static final String RUN = "Run";
     
     private static final String WEBSERVICECLIENTS = "WebServiceClients";
-
+    private static final String WEBSERVICESCATEGORY = "WebServicesCategory";
+    
     private String name;
     
     /** Creates a new instance of AppClientCompositePanelProvider */
@@ -116,19 +117,22 @@ public class AppClientCompositePanelProvider implements ProjectCustomizer.Compos
                     bundle.getString( "LBL_Config_Run" ), // NOI18N
                     null,
                     (ProjectCustomizer.Category[]) null );
-        } else if (WEBSERVICECLIENTS.equals(name)) {
+        } else if (WEBSERVICESCATEGORY.equals(name)) {
             AppClientProject project = (AppClientProject) context.lookup(AppClientProject.class);
             List serviceClientsSettings = null;
             WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
             if (clientSupport != null) {
                 serviceClientsSettings = clientSupport.getServiceClients();
             }
-            if(serviceClientsSettings != null && serviceClientsSettings.size() > 0) {
-                toReturn = ProjectCustomizer.Category.create(
-                        WEBSERVICECLIENTS,
-                        bundle.getString( "LBL_Config_WebServiceClients" ), // NOI18N
-                        null,
-                        (ProjectCustomizer.Category[]) null );
+            if(AppClientProjectProperties.J2EE_1_4.equals(
+                    project.getCarModule().getJ2eePlatformVersion()) && 
+                    serviceClientsSettings != null && serviceClientsSettings.size() > 0) {
+                ProjectCustomizer.Category clients = ProjectCustomizer.Category.create(WEBSERVICECLIENTS,
+                        bundle.getString("LBL_Config_WebServiceClients"), // NOI18N
+                        null);
+                toReturn = ProjectCustomizer.Category.create(WEBSERVICESCATEGORY,
+                        bundle.getString("LBL_Config_WebServiceCategory"), // NOI18N
+                        null, clients);
             }
         }
         
@@ -193,8 +197,8 @@ public class AppClientCompositePanelProvider implements ProjectCustomizer.Compos
         return new AppClientCompositePanelProvider(RUN);
     }
 
-    public static AppClientCompositePanelProvider createWebServiceClients() {
-        return new AppClientCompositePanelProvider(WEBSERVICECLIENTS);
+    public static AppClientCompositePanelProvider createWebServicesCategory() {
+        return new AppClientCompositePanelProvider(WEBSERVICESCATEGORY);
     }
     
 }

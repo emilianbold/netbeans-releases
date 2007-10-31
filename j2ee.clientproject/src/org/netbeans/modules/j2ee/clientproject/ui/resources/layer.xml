@@ -112,13 +112,10 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientCompositePanelProvider.createRun"/>
                     <attr name="position" intvalue="400"/>
                 </file>
-                <folder name="WebServiceCategory">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.Bundle"/>
+                <file name="WebServicesCategory.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientCompositePanelProvider.createWebServicesCategory"/>
                     <attr name="position" intvalue="500"/>
-                    <file name="Client.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientCompositePanelProvider.createWebServiceClients"/>
-                    </file>
-                </folder>
+                </file>
             </folder>
 
             <folder name="Lookup"/>

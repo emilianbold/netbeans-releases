@@ -46,6 +46,7 @@ import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.web.project.ProjectWebModule;
+import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -68,6 +69,7 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
     private static final String JAVADOC = "Javadoc";
     public static final String RUN = "Run";
     
+    private static final String WEBSERVICESCATEGORY = "WebServicesCategory";
     private static final String WEBSERVICES = "WebServices";
     private static final String WEBSERVICECLIENTS = "WebServiceClients";
 
@@ -124,20 +126,17 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
                     bundle.getString( "LBL_Config_Run" ), // NOI18N
                     null,
                     null );
-        } else if (WEBSERVICES.equals(name) || WEBSERVICECLIENTS.equals(name)) {
-            if (WEBSERVICES.equals(name)) {
-                toReturn = ProjectCustomizer.Category.create(
-                        WEBSERVICES,
-                        bundle.getString( "LBL_Config_WebServices" ), // NOI18N
-                        null,
-                        null );
-            } else if (WEBSERVICECLIENTS.equals(name)) {
-                toReturn = ProjectCustomizer.Category.create(
-                        WEBSERVICECLIENTS,
-                        bundle.getString( "LBL_Config_WebServiceClients" ), // NOI18N
-                        null,
-                        null );
-            }
+        } else if (WEBSERVICESCATEGORY.equals(name) && showWebServicesCategory(
+                (WebProjectProperties)context.lookup(WebProjectProperties.class))) {
+            ProjectCustomizer.Category services = ProjectCustomizer.Category.create(WEBSERVICES,
+                    bundle.getString("LBL_Config_WebServices"), // NOI18N
+                    null);
+            ProjectCustomizer.Category clients = ProjectCustomizer.Category.create(WEBSERVICECLIENTS,
+                    bundle.getString("LBL_Config_WebServiceClients"), // NOI18N
+                    null);
+            toReturn = ProjectCustomizer.Category.create(WEBSERVICESCATEGORY,
+                    bundle.getString("LBL_Config_WebServiceCategory"), // NOI18N
+                    null, services, clients);
         }
         
 //        assert toReturn != null : "No category for name:" + name;
@@ -226,12 +225,17 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
         return new WebCompositePanelProvider(RUN);
     }
 
-    public static WebCompositePanelProvider createWebServices() {
-        return new WebCompositePanelProvider(WEBSERVICES);
+    public static WebCompositePanelProvider createWebServicesCategory() {
+        return new WebCompositePanelProvider(WEBSERVICESCATEGORY);
     }
     
-    public static WebCompositePanelProvider createWebServiceClients() {
-        return new WebCompositePanelProvider(WEBSERVICECLIENTS);
+    private static boolean showWebServicesCategory(WebProjectProperties uiProperties) {
+        WebProject project = uiProperties.getProject();
+        if(!project.isJavaEE5(project)) {
+            WebServicesSupport servicesSupport = WebServicesSupport.getWebServicesSupport(project.getProjectDirectory());
+            WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
+            return servicesSupport!=null || clientSupport!=null;
+        }
+        return false;
     }
-    
 }
