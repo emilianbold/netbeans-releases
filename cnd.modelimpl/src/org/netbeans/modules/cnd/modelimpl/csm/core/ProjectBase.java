@@ -1317,7 +1317,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private NamespaceImpl _getGlobalNamespace() {
         if (TraceFlags.USE_REPOSITORY) {
             NamespaceImpl ns = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(globalNamespaceUID);
-            assert ns != null;
+            assert ns != null : "Failed to get global namespace by key " + globalNamespaceUID;;
             return ns;
         } else {
             assert globalNamespaceOLD != null;
