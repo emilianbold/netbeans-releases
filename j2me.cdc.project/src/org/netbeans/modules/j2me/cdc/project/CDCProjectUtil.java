@@ -71,7 +71,6 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
 import org.netbeans.modules.j2me.cdc.platform.CDCDevice;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
-import org.netbeans.modules.java.source.classpath.GlobalSourcePath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -168,7 +167,7 @@ public class CDCProjectUtil {
         }
         
         final ClassPath src = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(srcRoots.toArray(new ClassPath[srcRoots.size()]));                
-        boolean b=GlobalSourcePath.getDefault().isLibrary(src) ;
+         
         final ClasspathInfo cpInfo = ClasspathInfo.create(boot, rtm, src);
         
         JavaSource js = JavaSource.create(cpInfo);
