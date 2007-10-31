@@ -144,7 +144,7 @@ public class BackgroundStyleEditor extends StyleEditor {
         if(backGroundColor != null){
             colorField.setColorString(backGroundColor);
         }else{
-            imageFileField.setText(CssRuleContent.NOT_SET);
+            colorField.setColorString(CssRuleContent.NOT_SET);
         }
         
         // Set the Bckground Image name to the GUI
