@@ -25,7 +25,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="addButton" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="spTab" alignment="1" pref="751" max="32767" attributes="0"/>
+                          <Component id="spTab" alignment="1" pref="785" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="1" pref="1" max="1" attributes="0"/>
                   </Group>
@@ -33,14 +33,14 @@
                       <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
                       <Component id="lCheckPeriod" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="cbCheckPeriod" pref="480" max="32767" attributes="0"/>
+                      <Component id="cbCheckPeriod" pref="506" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="58" max="-2" attributes="0"/>
                       <Component id="bProxy" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lGeneral" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jSeparatorAdvanced" pref="687" max="32767" attributes="0"/>
+                      <Component id="jSeparatorAdvanced" pref="711" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lConnection" min="-2" max="-2" attributes="0"/>
@@ -91,9 +91,6 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="lUpdateCenters">
       <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="spTab"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/autoupdate/ui/Bundle.properties" key="SettingsTab.lUpdateCenters.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>

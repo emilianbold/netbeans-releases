@@ -31,7 +31,6 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Insets;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -48,6 +47,7 @@ import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -95,6 +95,8 @@ public class DetailsPanel extends JTextPane  {
         });
         setEditable(false);
         setPreferredSize(new Dimension(300, 80));
+        getAccessibleContext ().setAccessibleName (
+                NbBundle.getMessage (DetailsPanel.class, "ACN_DetailsPanel")); // NOI18N
     }
 
     @Override
@@ -122,7 +124,7 @@ public class DetailsPanel extends JTextPane  {
         getScrollPane().setColumnHeaderView(value != null ? header : null);
         getScrollPane().setCorner(JScrollPane.UPPER_RIGHT_CORNER, value != null ? rightCornerHeader : null);
         if (value != null) {                            
-            title.setText("<html><h3>"+value+"</h3></html>");
+            title.setText("<html><h3>"+value+"</h3></html>"); // NOI18N
         }
     }
     public void setActionListener(Action action) {
@@ -130,6 +132,8 @@ public class DetailsPanel extends JTextPane  {
         button.setEnabled(action != null);
         if (action != null) {
             button.setAction(action);
+            button.getAccessibleContext ().setAccessibleDescription (
+                    NbBundle.getMessage (DetailsPanel.class, "ACN_DetailsPanel_Button", button.getName ())); // NOI18N
         }
     }
     
@@ -138,6 +142,8 @@ public class DetailsPanel extends JTextPane  {
         button2.setEnabled(action != null);
         if (action != null) {
             button2.setAction(action);
+            button2.getAccessibleContext ().setAccessibleDescription (
+                    NbBundle.getMessage (DetailsPanel.class, "ACN_DetailsPanel_Button", button2.getName ())); // NOI18N
         }
     }
     

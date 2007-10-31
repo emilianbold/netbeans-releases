@@ -202,7 +202,6 @@ public class SettingsTab extends javax.swing.JPanel {
         cbGlobalInstall = new javax.swing.JCheckBox();
         jSeparatorAdvanced = new javax.swing.JSeparator();
 
-        lUpdateCenters.setLabelFor(spTab);
         org.openide.awt.Mnemonics.setLocalizedText(lUpdateCenters, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lUpdateCenters.text")); // NOI18N
 
         spTab.setBorder(null);
@@ -250,23 +249,23 @@ public class SettingsTab extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(addButton)
-                            .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 751, Short.MAX_VALUE))
+                            .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 785, Short.MAX_VALUE))
                         .add(1, 1, 1))
                     .add(layout.createSequentialGroup()
                         .add(12, 12, 12)
                         .add(lCheckPeriod)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cbCheckPeriod, 0, 472, Short.MAX_VALUE)
+                        .add(cbCheckPeriod, 0, 506, Short.MAX_VALUE)
                         .add(58, 58, 58)
                         .add(bProxy))
                     .add(layout.createSequentialGroup()
                         .add(lGeneral)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparatorAdvanced, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 677, Short.MAX_VALUE))
+                        .add(jSeparatorAdvanced, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 711, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(lConnection)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparatorConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE))
+                        .add(jSeparatorConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 565, Short.MAX_VALUE))
                     .add(lUpdateCenters)
                     .add(cbGlobalInstall))
                 .addContainerGap())
@@ -569,6 +568,9 @@ private class Listener implements ListSelectionListener,  TableModelListener {
         public Table() {
             setShowGrid(false);
             setIntercellSpacing(new Dimension(0, 0));            
+            getAccessibleContext().setAccessibleName(NbBundle.getMessage(UnitTable.class, "ACN_UpdateCentersTable")); // NOI18N
+            getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(UnitTab.class, "ACD_UpdateCentersTable")); // NOI18N        
+            lUpdateCenters.setLabelFor(this);
         }
 
         @Override
