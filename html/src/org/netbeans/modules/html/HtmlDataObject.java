@@ -173,6 +173,8 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
                 int mark = (arr[0]&0xff)*0x100+(arr[1]&0xff);
                 if (mark == 0xfeff) {
                     encoding = "UTF-16"; // NOI18N
+                } else if(mark == 0xfffe) {
+                    encoding = "UTF-16LE";
                 }
             }
             String txt = new String(arr, 0, len, encoding != null ? encoding : DEFAULT_ENCODING).toUpperCase();
