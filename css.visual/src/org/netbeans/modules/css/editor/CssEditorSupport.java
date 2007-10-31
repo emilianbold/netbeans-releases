@@ -56,6 +56,7 @@ import java.io.IOException;
 import javax.swing.JEditorPane;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.css.model.CssRule;
 import org.netbeans.modules.css.model.CssRuleItem;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
@@ -72,6 +73,8 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.windows.CloneableOpenSupport;
 
 
@@ -95,6 +98,11 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
     private List<CssPreviewable.Listener> previewableListeners = new ArrayList<CssPreviewable.Listener>();
     
     private static final Logger LOGGER = Logger.getLogger(org.netbeans.modules.css.Utilities.VISUAL_EDITOR_LOGGER);
+
+    private static final int RULE_UPDATE_DELAY = 100; //ms
+    private final PaneAwareRunnable RULE_UPDATE = new PaneAwareRunnable();
+    private final Task RULE_UPDATE_TASK = RequestProcessor.getDefault().create(RULE_UPDATE);
+    
     
     private PropertyChangeListener CSS_STYLE_DATA_LISTENER = new PropertyChangeListener() {
         public void propertyChange(final PropertyChangeEvent evt) {
@@ -207,8 +215,10 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
     
     private CaretListener CARET_LISTENER = new CaretListener() {
         public void caretUpdate(CaretEvent ce) {
-            if(ce.getSource() instanceof JEditorPane){
-                updateSelectedRule(ce.getDot());
+            Object source = ce.getSource();
+            if(source instanceof JEditorPane){
+                RULE_UPDATE.setPane(((JEditorPane)source));
+                RULE_UPDATE_TASK.schedule(RULE_UPDATE_DELAY);
             }
         }
     };
@@ -437,6 +447,25 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
         public CloneableOpenSupport findCloneableOpenSupport() {
             return cssDataObject.getCookie(CssEditorSupport.class);
             
+        }
+    }
+    
+    private class PaneAwareRunnable implements Runnable {
+
+        private JEditorPane editor = null;
+
+        public void setPane(JEditorPane component) {
+            this.editor = component;
+        }
+
+        public void run() {
+            if (editor != null) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        updateSelectedRule(editor.getCaret().getDot());
+                    }
+                });
+            }
         }
     }
     
