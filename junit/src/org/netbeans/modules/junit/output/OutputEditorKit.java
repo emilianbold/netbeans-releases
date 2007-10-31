@@ -40,6 +40,7 @@
 package org.netbeans.modules.junit.output;
 
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.PlainView;
 import javax.swing.text.View;
@@ -65,6 +66,11 @@ final class OutputEditorKit extends DefaultEditorKit
         return (element instanceof OutputDocument.RootElement)
                ? new OutputView(element)
                : new PlainView(element);
+    }
+
+    @Override
+    public Document createDefaultDocument() {
+        return new OutputDocument();
     }
 
 }

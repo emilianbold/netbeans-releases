@@ -136,11 +136,12 @@ final class ResultPanelOutput extends JScrollPane
         textPane = new JEditorPane();
         textPane.setFont(new Font("monospaced", Font.PLAIN, getFont().getSize()));
         textPane.setEditorKit(new OutputEditorKit());
-        textPane.setDocument(doc = new OutputDocument());
         textPane.setEditable(false);
         textPane.getCaret().setVisible(true);
         textPane.getCaret().setBlinkRate(0);
         setViewportView(textPane);
+
+        doc = textPane.getDocument();
 
         AccessibleContext accessibleContext = textPane.getAccessibleContext();
         accessibleContext.setAccessibleName(
