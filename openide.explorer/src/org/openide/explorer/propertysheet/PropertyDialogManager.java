@@ -408,6 +408,12 @@ final class PropertyDialogManager implements VetoableChangeListener, ActionListe
      * Reverts to old values.
      */
     private void cancelValue() {
+        try {
+            editor.setValue(oldValue);
+        } catch( Exception e ) {
+            // Ignored, there can be number of exceptions
+            // when asking for old values...
+        }
         if (
             (!changed) || (component instanceof EnhancedCustomPropertyEditor) ||
                 ((env != null) && (!env.isChangeImmediate()))
