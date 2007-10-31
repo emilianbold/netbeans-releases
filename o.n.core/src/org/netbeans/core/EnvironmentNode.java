@@ -41,17 +41,20 @@
 
 package org.netbeans.core;
 
+import java.awt.datatransfer.Transferable;
 import org.netbeans.core.ui.LookupNode;
 import org.openide.actions.PropertiesAction;
 import org.openide.actions.ToolsAction;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.PasteType;
 
 /** This object represents environment settings in the Corona system.
 * This class is final only for performance purposes.
@@ -107,6 +110,11 @@ final class EnvironmentNode extends AbstractNode {
                             }
 
                             n = new PersistentLookupNode(name, folder);
+                            if( TYPE_ENVIRONMENT.equals(name) ) {
+                                //#118628 - don't allow drag and drop into empty
+                                //area of Services window
+                                n = new NoDragAndDropNode(n);
+                            }
                             types.put (name, n);
                         }
                         return n;
@@ -197,6 +205,17 @@ final class EnvironmentNode extends AbstractNode {
             }
             
             return find (f);
+        }
+    }
+
+    private static class NoDragAndDropNode extends FilterNode {
+        public NoDragAndDropNode( Node orig ) {
+            super( orig );
+        }
+
+        @Override
+        public PasteType getDropType(Transferable t, int action, int index) {
+            return null;
         }
     }
 }
