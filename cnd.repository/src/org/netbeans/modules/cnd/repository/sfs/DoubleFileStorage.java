@@ -90,7 +90,7 @@ public class DoubleFileStorage extends FileStorage {
         this(new File(StorageAllocator.getInstance().getUnitStorageName(unitName)));        
     }
     
-    protected DoubleFileStorage(final File basePath) throws IOException {
+    private DoubleFileStorage(final File basePath) throws IOException {
         this (basePath, false);
     }
     /**
@@ -99,7 +99,7 @@ public class DoubleFileStorage extends FileStorage {
      * @param basePath  A File representing path to the storage
      * @param createCleanExistent    A flag if the storage should be created, not opened
      */
-    protected DoubleFileStorage (final File basePath, boolean createCleanExistent) throws IOException {
+    private DoubleFileStorage (final File basePath, boolean createCleanExistent) throws IOException {
         this.basePath = basePath;
 
         cache_0_dataFile = new IndexedStorageFile(basePath, "cache-0", createCleanExistent); // NOI18N

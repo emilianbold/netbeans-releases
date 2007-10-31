@@ -130,7 +130,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
         assert stream != null;
         
         IntToStringCache filesCache = new IntToStringCache(stream);
-        if ((filesCache.getVersion() == version) && unitNamesCache.validateReqUnits(name)) {
+        if ((filesCache.getVersion() == version) && UnitsCache.validateReqUnits(name)) {
             unitNamesCache.insertUnitFileCache(name, filesCache);        
             return true;
         } else {
@@ -150,7 +150,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
     }    
     
     public static void closeUnit(String unitName, Set<String> requiredUnits) {
-        unitNamesCache.updateReqUnitInfo(unitName, requiredUnits);
+        UnitsCache.updateReqUnitInfo(unitName, requiredUnits);
         storeUnitIndex(unitName);
         unitNamesCache.removeFileNames(unitName);
     }    
@@ -162,7 +162,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
     
     public static void loadUnitIndex(final String unitName){
         // check if the index is already loaded
-        if (unitNamesCache.isUnitIndexLoaded(unitName))
+        if (UnitsCache.isUnitIndexLoaded(unitName))
             return;
         
         InputStream fis = null;
@@ -405,6 +405,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             return units;
         }
         
+	@Override
         public void write(DataOutput stream) throws IOException {
             assert cache != null;
             assert stream != null;
@@ -423,7 +424,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             }
         }
         
-        public  static boolean isUnitIndexLoaded(final String unitName) {
+        private static boolean isUnitIndexLoaded(final String unitName) {
             if (!unitNamesCache.cache.contains(unitName)) {
                 return false;
             }
@@ -488,6 +489,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
         /**
          * synchronization is controlled by calling getId() method
          */
+	@Override
         protected int makeId(String value) {
             int id = cache.indexOf(null);
             IntToStringCache fileCache = new IntToStringCache();
