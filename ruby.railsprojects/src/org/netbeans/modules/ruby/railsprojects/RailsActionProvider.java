@@ -424,6 +424,7 @@ public class RailsActionProvider implements ActionProvider {
                     fileLocator(fileLocator).
                     classPath(classPath).
                     addStandardRecognizers().
+                    appendJdkToPath(RubyInstallation.getInstance().isJRubySet()).
                     addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT),
                     project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)
                     ).

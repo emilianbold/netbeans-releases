@@ -406,6 +406,7 @@ public class RubyActionProvider implements ActionProvider {
                     fileLocator(fileLocator).
                     allowInput().
                     classPath(classPath).
+                    appendJdkToPath(RubyInstallation.getInstance().isJRubySet()).
                     addStandardRecognizers().
                     addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT),
                     project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
@@ -471,6 +472,7 @@ public class RubyActionProvider implements ActionProvider {
                     postBuild(finishedAction).
                     allowInput().
                     classPath(classPath).
+                    appendJdkToPath(RubyInstallation.getInstance().isJRubySet()).
                     fileLocator(new RubyFileLocator(context, project)).
                     addStandardRecognizers(),
                     project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
@@ -493,6 +495,7 @@ public class RubyActionProvider implements ActionProvider {
             new RubyExecution(new ExecutionDescriptor(displayName, pwd, RubyInstallation.getInstance().getRake()).
                     allowInput().
                     classPath(classPath).
+                    appendJdkToPath(RubyInstallation.getInstance().isJRubySet()).
                     fileLocator(new RubyFileLocator(context, project)).
                     addStandardRecognizers(),
                     project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
@@ -514,6 +517,7 @@ public class RubyActionProvider implements ActionProvider {
                     additionalArgs("clean"). // NOI18N
                     allowInput().
                     classPath(classPath).
+                    appendJdkToPath(RubyInstallation.getInstance().isJRubySet()).
                     fileLocator(new RubyFileLocator(context, project)).
                     addStandardRecognizers(),
                     project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)

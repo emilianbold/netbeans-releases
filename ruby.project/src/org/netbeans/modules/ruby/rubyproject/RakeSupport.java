@@ -230,6 +230,10 @@ public class RakeSupport {
         desc.fileLocator(fileLocator);
         desc.addStandardRecognizers();
 
+        if (RubyInstallation.getInstance().isJRubySet()) {
+            desc.appendJdkToPath(true);
+        }
+
         if (test) {
             desc.addOutputRecognizer(new TestNotifier(true, true));
         }
