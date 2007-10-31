@@ -460,22 +460,22 @@ public class GenerateCodePanel extends javax.swing.JPanel
 
     public boolean isBackupSources()
     {
-        return backupSourcesCheck.isSelected();
+        return backupSourcesCheck != null ? backupSourcesCheck.isSelected() : true;
     }
     
     public boolean isGenerateMarkers()
     {
-        return generateMarkersCheck.isSelected();
+        return generateMarkersCheck != null ? generateMarkersCheck.isSelected() : true;
     }
     
     public boolean isAddMarkers()
     {
-        return addMarkersCheck.isSelected();
+        return addMarkersCheck != null ? addMarkersCheck.isSelected() : false;
     }
     
     public boolean isShowDialog()
     {
-        return showDialogCheckBox.isSelected();
+        return showDialogCheckBox != null ? showDialogCheckBox.isSelected() : true;
     }
     
 
