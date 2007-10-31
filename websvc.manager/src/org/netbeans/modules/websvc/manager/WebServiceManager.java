@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.websvc.manager;
 
+import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.websvc.manager.api.*;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
@@ -57,6 +58,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.websvc.manager.codegen.Wsdl2Java;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
@@ -73,6 +75,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -178,33 +181,57 @@ public final class WebServiceManager {
     }
 
     public void refreshWebService(WebServiceData wsData) throws IOException {
-        removeWebService(wsData, false);
-        wsData.setURL(null);
-        wsData.setCompiled(false);
-        wsData.setCatalog(null);
-        wsData.setWsdlService(null);
-        wsData.setJaxRpcDescriptorPath(null);
-        wsData.setJaxRpcDescriptor(null);
-        wsData.setJaxWsDescriptor(null);
-        wsData.setJaxWsDescriptorPath(null);
-        
-        String wsdl = wsData.getOriginalWsdl();
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                final WebServiceData inputData = wsData;
+                final IOException[] exception = new IOException[1];
+                exception[0] = null;
+                
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        try {
+                            refreshWebService(inputData);
+                        }catch (IOException ex) {
+                            exception[0] = ex;
+                        }
+                    }
+                });
+                
+                if (exception[0] != null) throw exception[0];
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }else {
+            removeWebService(wsData, false);
+            wsData.setURL(null);
+            wsData.setCompiled(false);
+            wsData.setCatalog(null);
+            wsData.setWsdlService(null);
+            wsData.setJaxRpcDescriptorPath(null);
+            wsData.setJaxRpcDescriptor(null);
+            wsData.setJaxWsDescriptor(null);
+            wsData.setJaxWsDescriptorPath(null);
 
-        File localWsdlFile;
-        File catalogFile;
+            String wsdl = wsData.getOriginalWsdl();
 
-        localWsdlFile = copyWsdlResources(wsdl);
-        catalogFile = new File(WEBSVC_HOME, getCatalogForWsdl(wsdl));
-        wsData.setCatalog(catalogFile.getAbsolutePath());
+            File localWsdlFile;
+            File catalogFile;
 
-        URL wsdlUrl = localWsdlFile.toURI().toURL();
-        WsdlModelListenerImpl listener = new WsdlModelListenerImpl(localWsdlFile, wsData.getOriginalWsdl(), wsData.getPackageName(), wsData.getGroupId(), catalogFile);
-        //listener.refreshing = true;
-        listener.webServiceData = wsData;
-        WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlUrl);
-        wsdlModeler.setPackageName(wsData.getPackageName());
-        listener.setWsdlModeler(wsdlModeler);
-        wsdlModeler.generateWsdlModel(listener);
+            localWsdlFile = copyWsdlResources(wsdl);
+            catalogFile = new File(WEBSVC_HOME, getCatalogForWsdl(wsdl));
+            wsData.setCatalog(catalogFile.getAbsolutePath());
+
+            URL wsdlUrl = localWsdlFile.toURI().toURL();
+            WsdlModelListenerImpl listener = new WsdlModelListenerImpl(localWsdlFile, wsData.getOriginalWsdl(), wsData.getPackageName(), wsData.getGroupId(), catalogFile);
+            //listener.refreshing = true;
+            listener.webServiceData = wsData;
+            WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlUrl);
+            wsdlModeler.setPackageName(wsData.getPackageName());
+            listener.setWsdlModeler(wsdlModeler);
+            wsdlModeler.generateWsdlModel(listener);
+        }
     }
     
     public void resetWebService(WebServiceData wsData) {
