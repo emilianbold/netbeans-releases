@@ -112,7 +112,7 @@ public class SchemaElementUtil {
                     }
                 } else
                     fo = schemaFO;
-                if (fo != null) {
+                if (fo != null && fo.isValid()) {
                     try {
                         org.openide.loaders.DataObject dataObject = org.openide.loaders.DataObject.find(fo);
 
@@ -161,7 +161,7 @@ public class SchemaElementUtil {
                         }
                     }
                 } else
-                    Logger.getLogger("global").log(Level.INFO, 
+                    Logger.getLogger("global").log(Level.FINE, 
                             ResourceBundle.getBundle("org.netbeans.modules.dbschema.resources.Bundle").getString("SchemaNotFound")); //NOI18N
 
                 return se;
