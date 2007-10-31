@@ -68,6 +68,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -113,11 +114,17 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.LibrariesChooser;
  * @author Tomas Zezula
  */
 final class LibrariesNode extends AbstractNode {
+    
+    private static final String ICON_KEY_UIMANAGER = "Tree.closedIcon"; // NOI18N
+    private static final String OPENED_ICON_KEY_UIMANAGER = "Tree.openIcon"; // NOI18N
+    private static final String ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.icon"; // NOI18N
+    private static final String OPENED_ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.openedIcon"; // NOI18N
+
 
     private static final Image ICON_BADGE = Utilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/libraries-badge.png");    //NOI18N
     static final RequestProcessor rp = new RequestProcessor ();
-    private static Icon folderIconCache;
-    private static Icon openedFolderIconCache;
+    private static Image folderIconCache;
+    private static Image openedFolderIconCache;
 
     private final String displayName;
     private final Action[] librariesNodeActions;
@@ -188,23 +195,23 @@ final class LibrariesNode extends AbstractNode {
      * @param opened should the icon represent opened folder
      * @return the folder icon
      */
-    static synchronized Icon getFolderIcon (boolean opened) {
-        if (openedFolderIconCache == null) {
-            Node n = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
-            openedFolderIconCache = new ImageIcon(n.getOpenedIcon(BeanInfo.ICON_COLOR_16x16));
-            folderIconCache = new ImageIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
-        }
+    static synchronized Image getFolderIcon (boolean opened) {
         if (opened) {
+            if (openedFolderIconCache == null) {
+                openedFolderIconCache = getTreeFolderIcon(opened);
+            }
             return openedFolderIconCache;
         }
         else {
+            if (folderIconCache == null) {
+                folderIconCache = getTreeFolderIcon(opened);
+            }
             return folderIconCache;
-        }
+        }        
     }
     
-    private Image computeIcon( boolean opened, int type ) {        
-        Icon icon = getFolderIcon(opened);
-        Image image = ((ImageIcon)icon).getImage();
+    private Image computeIcon( boolean opened, int type ) {
+        Image image = getFolderIcon(opened);
         image = Utilities.mergeImages(image, ICON_BADGE, 7, 7 );
         return image;        
     }
@@ -455,8 +462,8 @@ final class LibrariesNode extends AbstractNode {
                     if (!sURL.endsWith("/")) {  //NOI18N
                         url = new URL (sURL+"/");   //NOI18N
                     }
-                    icon = getFolderIcon (false);
-                    openedIcon = getFolderIcon (true);
+                    icon = new ImageIcon (getFolderIcon (false));
+                    openedIcon = new ImageIcon (getFolderIcon (true));
                     displayName = file.getAbsolutePath();
                 }
                 rootsList.add (url);
@@ -646,6 +653,28 @@ final class LibrariesNode extends AbstractNode {
             }
         }
 
+    }
+    
+    /**
+     * Returns default folder icon as {@link java.awt.Image}. Never returns
+     * <code>null</code>.
+     *
+     * @param opened wheter closed or opened icon should be returned.
+     */
+    private static Image getTreeFolderIcon(boolean opened) {
+        Image base = null;
+        Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER); // #70263
+        if (baseIcon != null) {
+            base = Utilities.icon2Image(baseIcon);
+        } else {
+            base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263
+            if (base == null) { // fallback to our owns                
+                final Node n = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+                base = opened ? n.getOpenedIcon(BeanInfo.ICON_COLOR_16x16) : n.getIcon(BeanInfo.ICON_COLOR_16x16);                                 
+            }
+        }
+        assert base != null;
+        return base;
     }
 
     private static class AddFolderAction extends AbstractAction {

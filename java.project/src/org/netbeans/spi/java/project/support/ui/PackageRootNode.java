@@ -45,6 +45,7 @@ import java.awt.Image;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.beans.BeanInfo;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,6 +55,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.UIManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.ErrorManager;
@@ -98,6 +100,11 @@ import org.openidex.search.SearchInfoFactory;
 final class PackageRootNode extends AbstractNode implements Runnable, FileStatusListener {
 
     static Image PACKAGE_BADGE = Utilities.loadImage( "org/netbeans/spi/java/project/support/ui/packageBadge.gif" ); // NOI18N
+    
+    private static final String ICON_KEY_UIMANAGER = "Tree.closedIcon"; // NOI18N
+    private static final String OPENED_ICON_KEY_UIMANAGER = "Tree.openIcon"; // NOI18N
+    private static final String ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.icon"; // NOI18N
+    private static final String OPENED_ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.openedIcon"; // NOI18N
         
     private static Action actions[]; 
 
@@ -350,8 +357,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
         Icon icon = group.getIcon( opened );
         
         if ( icon == null ) {
-            image = opened ? getDataFolderNodeDelegate().getOpenedIcon( type ) : 
-                             getDataFolderNodeDelegate().getIcon( type );
+            image = getTreeFolderIcon(opened);
             image = Utilities.mergeImages( image, PACKAGE_BADGE, 7, 7 );
         }
         else {
@@ -359,6 +365,28 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
         }
         
         return image;        
+    }
+    
+        /**
+     * Returns default folder icon as {@link java.awt.Image}. Never returns
+     * <code>null</code>.
+     *
+     * @param opened wheter closed or opened icon should be returned.
+     */
+    private Image getTreeFolderIcon(boolean opened) {
+        Image base = null;
+        Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER); // #70263
+        if (baseIcon != null) {
+            base = Utilities.icon2Image(baseIcon);
+        } else {
+            base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263
+            if (base == null) { // fallback to our owns                
+                final Node n = getDataFolderNodeDelegate();
+                base = opened ? n.getOpenedIcon(BeanInfo.ICON_COLOR_16x16) : n.getIcon(BeanInfo.ICON_COLOR_16x16);                                 
+            }
+        }
+        assert base != null;
+        return base;
     }
     
     private static Lookup createLookup( SourceGroup group ) {
