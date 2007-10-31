@@ -42,18 +42,13 @@
 package org.netbeans.modules.uml.project.ui.nodes.actions;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import org.netbeans.modules.uml.common.Util;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
-import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
 import org.netbeans.modules.uml.project.UMLProjectModule;
-import org.netbeans.modules.uml.project.ui.nodes.UMLDiagramNode.DiagramCookie;
 import org.netbeans.modules.uml.ui.controls.newdialog.AddPackageVisualPanel1;
 import org.netbeans.modules.uml.ui.support.archivesupport.IProductArchiveDefinitions;
 import org.netbeans.modules.uml.ui.support.archivesupport.IProductArchiveElement;
@@ -90,10 +85,10 @@ public class CopyDiagramAction extends NodeAction
     public void performAction(Node[] nodes)
     {
         Node diagramNode = nodes[0];
-        ITreeDiagram cookie = (ITreeDiagram)diagramNode.getCookie(ITreeDiagram.class);
+        ITreeDiagram cookie = diagramNode.getCookie(ITreeDiagram.class);
         if ( cookie != null)
         {
-            
+
             IProxyDiagram diagram = cookie.getDiagram();
             original = diagram;
             
@@ -160,6 +155,11 @@ public class CopyDiagramAction extends NodeAction
     
     private void createDiagram(String type, INamespace nameSpace, String name)
     {
+        // 119568, save current working diagram before save as
+        if (original.getDiagram() != null)
+        {
+            original.getDiagram().save();
+        }
         String filename = getFullFileName(name, nameSpace);
         saveFiles(filename, name);
         
