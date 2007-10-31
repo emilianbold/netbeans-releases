@@ -760,6 +760,7 @@ public abstract class PositionEstimator {
         public String head() { return " " + precToken.fixedText() + " "; }
         public String sep()  { return ", "; }
         
+        @SuppressWarnings("empty-statement")
         public void initialize() {
             separatorList = new ArrayList<String>(oldL.size());
             boolean first = true;
@@ -1485,6 +1486,7 @@ public abstract class PositionEstimator {
     }
     ////////////////////////////////////////////////////////////////////////////
     // Utility methods
+    @SuppressWarnings("empty-statement")
     int moveBelowGuarded(int pos) {
         if (guards != null) {
             for (GuardedSection section : guards.getGuardedSections()) {
@@ -1522,6 +1524,7 @@ public abstract class PositionEstimator {
         return moveToDifferentThan(seq, dir, nonRelevant);
     }
     
+    @SuppressWarnings("empty-statement")
     private static JavaTokenId moveToDifferentThan(
         TokenSequence<JavaTokenId> seq,
         Direction dir,
@@ -1570,6 +1573,7 @@ public abstract class PositionEstimator {
         return base;
     }
     
+    @SuppressWarnings("empty-statement")
     private static int goAfterLastNewLine(final TokenSequence<JavaTokenId> seq) {
         int base = seq.offset();
         seq.movePrevious();
