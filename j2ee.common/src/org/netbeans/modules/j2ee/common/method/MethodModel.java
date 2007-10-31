@@ -149,6 +149,28 @@ public final class MethodModel {
             Parameters.javaIdentifier("name", name);
             return new MethodModel.Variable(type, name, finalModifier);
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Variable other = (Variable) obj;
+            if (this.type != other.type && (this.type == null || !this.type.equals(other.type))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 67 * hash + (this.type != null ? this.type.hashCode() : 0);
+            return hash;
+        }
         
         // <editor-fold defaultstate="collapsed" desc="Variable's getters">
 
@@ -247,6 +269,33 @@ public final class MethodModel {
     @Override
     public String toString() {
         return "MethodModel<" + modifiers + "," + returnType + "," + name + "," + parameters + "," + exceptions + ",{" + body + "}>";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final MethodModel other = (MethodModel) obj;
+        if (this.name != other.name && (this.name == null || !this.name.equals(other.name))) {
+            return false;
+        }
+        if (this.parameters != other.parameters && (this.parameters == null || !this.parameters.equals(other.parameters))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 13 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 13 * hash + (this.parameters != null ? this.parameters.hashCode() : 0);
+        return hash;
     }
     
 }
