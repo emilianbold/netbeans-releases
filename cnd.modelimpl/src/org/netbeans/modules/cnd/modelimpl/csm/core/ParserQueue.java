@@ -593,7 +593,10 @@ public final class ParserQueue {
     }
     
     private void removeProjectData(ProjectBase project) {
-        projectData.remove(project);
+        // must be in synchronized( lock ) block
+        synchronized (lock) {        
+            projectData.remove(project);
+        }
     }
 
     private boolean needEnqueue(FileImpl file) {
@@ -661,16 +664,6 @@ public final class ParserQueue {
                 prjWaitEmptyLock.notifyAll();
             }
         }
-    }
-    
-    private int size() {
-        int size = 0;
-        Iterator<ProjectData> it = projectData.values().iterator();
-        while (it.hasNext()) {
-            ProjectData pd = it.next();
-            size += pd.size();
-        }
-        return size;
     }
 
     /*package*/ void waitEmpty(ProjectBase project) {
