@@ -376,7 +376,7 @@ public class ReportTask extends Thread implements Cancellable
             return;
         
         IElement e = pItem.getData().getModelElement();
-        if (e.getOwningPackage() == null)
+        if (e.getOwningPackage() == null && !(e instanceof IProject))
         {
             if (!e.isClone())
             {
