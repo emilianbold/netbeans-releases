@@ -115,10 +115,6 @@ public class HTMLKit extends LanguagesEditorKit implements org.openide.util.Help
         return new HTMLKit();
     }
     
-    public String getContentType() {
-        return HTML_MIME_TYPE;
-    }
-    
     protected void initDocument(final BaseDocument doc) {
         TokenHierarchy hi = TokenHierarchy.get(doc);
         if(hi == null) {
