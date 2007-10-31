@@ -64,6 +64,7 @@ import javax.swing.text.html.HTMLDocument;
 
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 
 import org.openide.awt.HtmlBrowser;
@@ -112,7 +113,17 @@ public class DocumentationScrollPane extends JScrollPane {
         setPreferredSize(null); // Use the documentationPopupPreferredSize
         
         Color bgColor = CompletionSettings.INSTANCE.documentationBackgroundColor();
-
+        
+        // XXX Workaround. If the option is set to default use system settings.
+        // The bg color oprion should die.
+        if (ExtSettingsDefaults.defaultJavaDocBGColor.equals(bgColor)) {
+            bgColor = new JEditorPane().getBackground();
+            bgColor = new Color(
+                    Math.max(bgColor.getRed() - 8, 0 ), 
+                    Math.max(bgColor.getGreen() - 8, 0 ), 
+                    bgColor.getBlue());
+        }
+                
         // Add the completion doc view
         view = new HTMLDocView(bgColor);
         view.addHyperlinkListener(new HyperlinkAction());

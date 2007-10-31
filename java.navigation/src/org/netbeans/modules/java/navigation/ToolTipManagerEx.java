@@ -48,6 +48,7 @@ import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -733,7 +734,14 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
         public ToolTipEx() {
             super( new GridBagLayout() );
             setPreferredSize( getDefaultToolTipSize() );
-            Color background = getDefaultToolTipBackground();
+            // Color background = getDefaultToolTipBackground();
+            
+            Color background = new JEditorPane().getBackground();
+            background = new Color(
+                    Math.max(background.getRed() - 8, 0 ), 
+                    Math.max(background.getGreen() - 8, 0 ), 
+                    background.getBlue());
+            
             setBackground( background );
             content = new HTMLDocView( background );
             JScrollPane scroll = new JScrollPane( content );

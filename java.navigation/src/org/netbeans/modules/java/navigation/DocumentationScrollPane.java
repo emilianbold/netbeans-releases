@@ -364,11 +364,19 @@ public class DocumentationScrollPane extends JScrollPane {
         if( !(val instanceof Color) ) {
             val = ExtSettingsDefaults.defaultJavaDocBGColor;
         }
-        if( val instanceof Color ) {
-            return (Color)val;
-        } else {
-            return UIManager.getColor("Table.background"); //NOI18N
+        
+        Color bgColor = (Color)val;
+        // XXX Workaround. If the option is set to default use system settings.
+        // The bg color oprion should die.
+        if (ExtSettingsDefaults.defaultJavaDocBGColor.equals(val)) {
+            bgColor = new JEditorPane().getBackground();
+            bgColor = new Color(
+                    Math.max(bgColor.getRed() - 8, 0 ), 
+                    Math.max(bgColor.getGreen() - 8, 0 ), 
+                    bgColor.getBlue());
         }
+        
+        return bgColor;
     }
     
     private class BrowserButton extends JButton {
