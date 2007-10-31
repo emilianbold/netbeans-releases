@@ -99,6 +99,10 @@ public class SunJDBCDriverDeployer implements JDBCDriverDeployer {
         if(! this.sunDm.isLocal()){
             supported = false;
         }
+        DeploymentManagerProperties dmp = new DeploymentManagerProperties(this.dm);
+        if(! dmp.isDriverDeploymentEnabled()){
+            supported = false;
+        }
         return supported;
     }
 
