@@ -91,7 +91,6 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
-import org.netbeans.modules.websvc.core.dev.wizard.ProjectInfo;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModel;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModelFactory;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.GlobalBindings;

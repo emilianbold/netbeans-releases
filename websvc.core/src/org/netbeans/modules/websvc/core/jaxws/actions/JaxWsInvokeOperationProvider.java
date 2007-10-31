@@ -51,7 +51,7 @@ import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.websvc.core.InvokeOperationActionProvider;
 import org.netbeans.modules.websvc.core.InvokeOperationCookie;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
-import org.netbeans.modules.websvc.core.dev.wizard.ProjectInfo;
+import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
 

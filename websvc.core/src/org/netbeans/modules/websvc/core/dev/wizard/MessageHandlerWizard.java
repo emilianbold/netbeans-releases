@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.core.dev.wizard;
 
+import org.netbeans.modules.websvc.core.ProjectInfo;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.NoSuchElementException;

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.core.dev.wizard;
 
+import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;

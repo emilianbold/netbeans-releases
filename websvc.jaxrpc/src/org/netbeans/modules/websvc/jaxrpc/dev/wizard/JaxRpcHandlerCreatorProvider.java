@@ -49,7 +49,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.websvc.core.HandlerCreator;
 import org.netbeans.modules.websvc.core.HandlerCreatorProvider;
-import org.netbeans.modules.websvc.core.dev.wizard.ProjectInfo;
+import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 

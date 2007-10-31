@@ -45,7 +45,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.websvc.core.ServiceCreator;
 import org.netbeans.modules.websvc.core.ServiceCreatorProvider;
-import org.netbeans.modules.websvc.core.dev.wizard.ProjectInfo;
+import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.openide.WizardDescriptor;
 
 /**

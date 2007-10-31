@@ -40,6 +40,8 @@
  */
 
 package org.netbeans.modules.websvc.core.dev.wizard;
+
+import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.core.ServiceCreator;

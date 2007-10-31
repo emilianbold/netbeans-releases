@@ -65,9 +65,7 @@ import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.modules.websvc.core.ServiceCreator;
-import org.netbeans.modules.websvc.core.dev.wizard.NewWebServiceWizardIterator;
-import org.netbeans.modules.websvc.core.dev.wizard.ProjectInfo;
-import org.netbeans.modules.websvc.core.dev.wizard.WizardProperties;
+import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
@@ -90,6 +88,7 @@ import org.openide.util.RequestProcessor;
  * @author Ajit Bhate
  */
 public class JaxRpcServiceCreator implements ServiceCreator {
+    private static final String WSDL_FILE_PATH = "wsdlFilePath"; //NOI18N
     
     private Project project;
     private ProjectInfo projectInfo;
@@ -192,7 +191,7 @@ public class JaxRpcServiceCreator implements ServiceCreator {
         wsSupport.addServiceEntriesToDD(wsName, seiClassName, servantClassName);
         
         //Add webservice entry in webservices.xml
-        handle.progress(NbBundle.getMessage(NewWebServiceWizardIterator.class, "MSG_ADDING_DD_ENTRIES")); //NOI18N
+        handle.progress(NbBundle.getMessage(JaxRpcServiceCreator.class, "MSG_ADDING_DD_ENTRIES")); //NOI18N
         String portTypeName = null;
         generator.addWebServiceEntry(seiClassName, portTypeName, targetNS);
         
@@ -225,12 +224,12 @@ public class JaxRpcServiceCreator implements ServiceCreator {
             wsdlFolder = wsDDFolder.createFolder("wsdl"); //NOI18N
         }
         
-        handle.progress(NbBundle.getMessage(NewWebServiceWizardIterator.class, "MSG_PARSING_WSDL"), 30); //NOI18N
-        String wsdlFilePath = (String)wiz.getProperty(WizardProperties.WSDL_FILE_PATH);
+        handle.progress(NbBundle.getMessage(JaxRpcServiceCreator.class, "MSG_PARSING_WSDL"), 30); //NOI18N
+        String wsdlFilePath = (String)wiz.getProperty(WSDL_FILE_PATH);
         File normalizedWsdlFilePath = FileUtil.normalizeFile(new File(wsdlFilePath));
         final FileObject sourceWsdlFile = FileUtil.toFileObject(normalizedWsdlFilePath);
         if(sourceWsdlFile == null) {
-            String mes = NbBundle.getMessage(NewWebServiceWizardIterator.class, "MSG_CANNOT_GET_FILE_OBJECT", normalizedWsdlFilePath.getAbsolutePath()); //NOI18N
+            String mes = NbBundle.getMessage(JaxRpcServiceCreator.class, "MSG_CANNOT_GET_FILE_OBJECT", normalizedWsdlFilePath.getAbsolutePath()); //NOI18N
             throw new IOException(mes);
         }
         String changedWsName = null;
@@ -238,14 +237,14 @@ public class JaxRpcServiceCreator implements ServiceCreator {
             changedWsName = generator.parseWSDL(sourceWsdlFile.getInputStream());
         } catch (NoWSPortDefinedException exc) {
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "WSDL does not contain any defined ports"); //NOI18N
-            String mes = NbBundle.getMessage(NewWebServiceWizardIterator.class, "ERR_WsdlNoPortDefined"); // NOI18N
+            String mes = NbBundle.getMessage(JaxRpcServiceCreator.class, "ERR_WsdlNoPortDefined"); // NOI18N
             NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
             handle.finish();
             return;
         }
         if (changedWsName==null) changedWsName = wsName;
-        handle.progress(NbBundle.getMessage(NewWebServiceWizardIterator.class, "MSG_CREATING_NEW_WSDL"), 50); //NOI18N
+        handle.progress(NbBundle.getMessage(JaxRpcServiceCreator.class, "MSG_CREATING_NEW_WSDL"), 50); //NOI18N
         FileObject wsdlFO = generator.generateWSDL(WebServiceGenerator.WSDL_TEMPLATE, changedWsName, generator.getSoapBinding(),
                 generator.getPortTypeName(), wsdlFolder, sourceWsdlFile.getParent(), wsName, new StreamSource(sourceWsdlFile.getInputStream()));
         
@@ -255,12 +254,12 @@ public class JaxRpcServiceCreator implements ServiceCreator {
             targetNS = generator.getTargetNS();
             typeNS = generator.getDefaultTypeNS(wsName);     //Need to get from user
         } catch(java.net.URISyntaxException e) {
-            String mes = NbBundle.getMessage(NewWebServiceWizardIterator.class, "MSG_INVALID_URL_SYNTAX"); //NOI18N
+            String mes = NbBundle.getMessage(JaxRpcServiceCreator.class, "MSG_INVALID_URL_SYNTAX"); //NOI18N
             throw new Exception(mes);
         }
         
         //Create config file
-        handle.progress(NbBundle.getMessage(NewWebServiceWizardIterator.class, "MSG_CREATING_WSCOMPILE_ARTIFACTS"),60); //NOI18N
+        handle.progress(NbBundle.getMessage(JaxRpcServiceCreator.class, "MSG_CREATING_WSCOMPILE_ARTIFACTS"),60); //NOI18N
         String servantClassName = generator.getServantClassName();
         String seiClassName = generator.getSEIClassName();
         FileObject configFile = null;
@@ -272,18 +271,18 @@ public class JaxRpcServiceCreator implements ServiceCreator {
         wsSupport.addServiceImpl(wsName, configFile, true, generator.getWscompileFeatures());
         
         //run the wscompile ant target
-        handle.progress(NbBundle.getMessage(NewWebServiceWizardIterator.class, "MSG_RUNNING_WSCOMPILE_TARGET"),70); //NOI18N
+        handle.progress(NbBundle.getMessage(JaxRpcServiceCreator.class, "MSG_RUNNING_WSCOMPILE_TARGET"),70); //NOI18N
         String targetName = wsName + "_wscompile"; //NOI18N
         ExecutorTask task = ActionUtils.runTarget(findBuildXml(), new String[]{targetName}, null);
         task.waitFinished();
         if(task.result() != 0) {
-            String mes = NbBundle.getMessage(NewWebServiceWizardIterator.class, "MSG_WSCOMPILE_UNSUCCESSFUL"); //NOI18N
+            String mes = NbBundle.getMessage(JaxRpcServiceCreator.class, "MSG_WSCOMPILE_UNSUCCESSFUL"); //NOI18N
             wsSupport.removeProjectEntries(wsName);
             try {
                 deleteFile(configFile);
                 deleteFile(wsdlFO);
             } catch(IOException e) {
-                String message = NbBundle.getMessage(NewWebServiceWizardIterator.class, "MSG_UNABLE_DELETE_FILES"); //NOI18N
+                String message = NbBundle.getMessage(JaxRpcServiceCreator.class, "MSG_UNABLE_DELETE_FILES"); //NOI18N
                 NotifyDescriptor nd =
                         new NotifyDescriptor.Message(message,
                         NotifyDescriptor.ERROR_MESSAGE);
@@ -304,7 +303,7 @@ public class JaxRpcServiceCreator implements ServiceCreator {
         wsSupport.addServiceEntriesToDD(wsName, seiClassName, servantClassName);
         
         //Add webservice entry in webservices.xml
-        handle.progress(NbBundle.getMessage(NewWebServiceWizardIterator.class, "MSG_ADDING_DD_ENTRIES"),90); //NOI18N
+        handle.progress(NbBundle.getMessage(JaxRpcServiceCreator.class, "MSG_ADDING_DD_ENTRIES"),90); //NOI18N
         String portTypeName = null;
         
         portTypeName = generator.getPortTypeName();
@@ -347,9 +346,9 @@ public class JaxRpcServiceCreator implements ServiceCreator {
                 handle.progress(70);
                 // create new (annotated) method
                 StringBuffer buffer = new StringBuffer(NbBundle.getMessage(
-                        NewWebServiceWizardIterator.class, "MSG_WS_CLASS_COMMENT", wsName) + "\n"); //NOI18N
+                        JaxRpcServiceCreator.class, "MSG_WS_CLASS_COMMENT", wsName) + "\n"); //NOI18N
                 buffer.append(NbBundle.getMessage(
-                        NewWebServiceWizardIterator.class, "MSG_CREATED_COMMENT")
+                        JaxRpcServiceCreator.class, "MSG_CREATED_COMMENT")
                         + " " + DateFormat.getDateTimeInstance().format(new Date()) + "\n" ); //NOI18N
                 buffer.append("@author " + System.getProperty("user.name") ); //NOI18N
                 Comment comment = Comment.create(Style.JAVADOC, 0,0,0,buffer.toString());

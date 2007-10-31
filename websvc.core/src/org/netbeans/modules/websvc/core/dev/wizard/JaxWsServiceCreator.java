@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.core.dev.wizard;
 
+import org.netbeans.modules.websvc.core.ProjectInfo;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
