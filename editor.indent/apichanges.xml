@@ -107,16 +107,17 @@ is the proper place.
 
         <change id="repackaging.to.unofficial.packages">
             <summary>API/SPI repackaged to remove it from the official NetBeans API packages</summary>
-            <version major="1" minor="4"/>
+            <version major="1" minor="5"/>
             <date day="29" month="10" year="2007"/>
             <author login="vstejskal"/>
             <compatibility source="incompatible" binary="incompatible" deletion="yes" addition="yes" modification="no"/>
             <description>
                 <p>
                     The API/SPI classes were moved from the official <code>org.netbeans.api</code>
-                    and <code>org.netbeans.spi</code> packages and the major version of the
-                    module was set to <code>0</code> to indicate the <code>development</code>
-                    stability of the APIs.
+                    and <code>org.netbeans.spi</code> packages and the stability level
+                    of the API was set to <code>devel</code> to indicate that the module
+                    and its API is still under development. The major version of the
+                    module was set to <code>2</code> to mark the incompatible change.
                 </p>
                 <p>
                     There was not enough time in the Netbeans 6.0 release timeframe for us
