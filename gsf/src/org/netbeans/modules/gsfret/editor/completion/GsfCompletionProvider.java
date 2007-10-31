@@ -363,6 +363,10 @@ public class GsfCompletionProvider implements CompletionProvider {
 
         public void run(CompilationController controller)
             throws Exception {
+            if (controller.getDocument() == null) {
+                return;
+            }
+
             if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                 resolveCompletion(controller);
             } else if (queryType == TOOLTIP_QUERY_TYPE) {
