@@ -16,79 +16,83 @@
         
         <p><small><a href="#seealso">See Also</a></small></p>
         
-        <p>You can compare two file revisions side-by-side by performing a diff. 
-            The diff command allows you to compare two different revisions through
-            a graphical Diff Viewer.</p>
+        <p>The Diff command compares different revisions of a file and displays the
+            differences found graphically.</p>
             
         <h3>Comparing File Revisions Graphically</h3>
         
-        <p>The IDE's Diff Viewer enables you to compare different
-            versions of a file side by side using color coding to emphasize the
-            differences between the files being compared.</p>
+        <p>The IDE's graphical <a href="csh/svn_diff_viewer.html">Diff Viewer</a> 
+            enables you to compare different versions of a file side by side using color 
+            coding to emphasize the differences between the files being compared.</p>
             
-        <p>The Previous (<img src="images/diff-prev.png" alt="previous difference button">) 
-            and Next (<img src="images/diff-next.png" alt="next difference button">) 
-            difference buttons in the toolbar enable you to navigate among differences 
-            found in the file. You can also refresh the status and update files from 
-            within the Diff Viewer using the Refresh Diff (<img src="images/refresh.png"
-            alt="refresh diff button">) and Update (<img src="images/update.png" 
-            alt="update button">) buttons. When you are finished comparing the files, 
-            you can commit your changes using the Diff Viewer's Commit button
-            (<img src="images/commit.png" alt="commit button">).</p>
-         
-        <p>The Diff Viewer also enables you to select whether to view files containing 
-            changes from the local working copy, the repository, as well as both 
-            simultaneously. To change viewing criteria, click on the appropriate 
-            icon:</p>
+        <p>The previous (<img src="images/diff-prev.png" alt="last difference button">) 
+            and next (<img src="images/diff-next.png" alt="next difference button">) 
+            difference buttons in the toolbar enable you to navigate among the differences 
+            in the file. You can also refresh the status and update files from within
+            the Diff Viewer using the Refresh Diff (<img src="images/refresh.png"
+            alt="Last difference button">) and Update (<img src="images/update.png" 
+            alt="Last difference button">) buttons. When you are finished comparing 
+            the files, you can commit your changes using the Diff Viewer's Commit button
+            (<img src="images/commit.png" alt="Last difference button">).</p>
+
+        <h4>To generate a graphical diff comparing a repository revision to your working copy:</h4>
+
         <ul>
-            <li><img src="images/locally_mod.png">: local working copy</li>
-            <li><img src="images/remotely_mod.png">: repository</li>
-            <li><img src="images/both_mod.png">: both local and remote files</li>            
+            <li>Right-click a versioned file node in the Projects, Files, or 
+                <a href="csh/svn_versioning_window.html">Versioning</a>
+                window and choose Diff (or Subversion &gt; Diff). The IDE displays the 
+                results in the Diff Viewer in a new tab of the main window.</li>
         </ul>
-         
-        <h4>The Diff Viewer highlights differences between file versions using the following colors:</h4>
-        
-        <table border="1" cellpadding="5">
-            <tr>
-                <td align="right"><strong>Blue</strong> 
-                    ( <span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
-                <td>Indicates lines that have been changed since the earlier revision.</td>
-            </tr>
-            <tr>
-                <td align="right"><strong>Green</strong> 
-                    ( <span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
-                <td>Indicates lines that have been added since the earlier revision.</td>
-            </tr>
-            <tr>
-                <td align="right"><strong>Red</strong> 
-                    ( <span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
-                <td>Indicates lines that have been removed since the earlier revision.</td>                
-            </tr>
-        </table>
-        
-        <h4>To generate a graphical diff comparing a revision to your working copy:</h4>
-        
-        <ol>
-            <li>Select a versioned file (e.g. in the Projects, Files, or Favorites 
-                window).</li>
-            <li>Choose Subversion &gt; Diff from the right-click menu. The IDE displays 
-                the results in the Diff Viewer in a new tab of the main window.</li>
-        </ol>
         
         <ul class="note">
-            <li>You can also perform a diff on files in the 
-                <a href="csh/svn_versioning_window.html">Versioning</a> window. To 
-                do so, select a file and choose Diff from the right-click menu.</li>
+            <li>If you want to perform a diff on all files contained in a folder, select
+                a folder and choose Subversion &gt; Diff from the right-click menu. All 
+                files that contain differences between your local version and the
+                repository version will be listed in the upper pane of the Diff Viewer.
+                You can then view individual diffs on files by clicking a file from 
+                the list.</li>
         </ul>
- 
+        
+        <h4>To make changes to a file while comparing it in the Diff Viewer:</h4>
+        
+        <ul>
+            <li>Navigate through differences between the two versions using the previous
+                difference (<img src="images/diff-prev.png" alt="previous difference button">) 
+                and next difference (<img src="images/diff-next.png" alt="next difference button">) 
+                arrow icons.</li>
+            <li>Click any of the <a href="#icons">displayed icons</a> to perform immediate changes 
+                to your local copy.</li>
+        </ul>
+        
+        <ul class="note">
+            <li>Your local copy appears in the right pane of the Diff Viewer. You can also make 
+                changes to your local copy by typing directly into it in the Diff Viewer.</li>
+            <li>Any changes made in the Diff Viewer are automatically saved as they occur.</li>
+        </ul>
+        <a name="icons"></a>
+        <p>The following icons enable you to make changes directly within the Diff Viewer</p>
+        
+        <ul>
+            <li><img src="images/insert.png" alt="replace icon"> <strong>Replace</strong>. 
+                Inserts the highlighted text from the previous revision into the current 
+                revision</li>
+            <li><img src="images/arrow.png" alt="move all icon"> <strong>Move All</strong>. 
+                Reverts the file's current version to the state of the selected previous 
+                version.</li>
+            <li>&nbsp;<img src="images/remove.png" alt="remove icon"> <strong>Remove</strong>. 
+                Removes the highlighted text from the current version so that it mirrors the 
+                previous version.</li>
+        </ul>        
+        
 	<dl>
             <dt><a name="seealso">See Also</a></dt>
-            <dd><a href="svn_patch.html">Creating and Applying a Patch</a></dd>
-            <dd><a href="svn_mergeresolve.html">Resolving Merge Conflicts in Subversion</a></dd>            
             <dd><a href="svn_merge.html">Merging File Revisions</a></dd>
+            <dd><a href="svn_mergeresolve.html">Resolving Merge Conflicts</a></dd>
+            <dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/local-history/hist_browsing.html">Browsing Local File History</a></dd>
         </dl>
 
-        <hr> <small><a href="../credits.html">Legal Notices</a></small>
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
         <br><br><br>
     </body>
 </html>
