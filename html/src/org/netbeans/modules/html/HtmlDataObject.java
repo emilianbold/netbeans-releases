@@ -44,6 +44,7 @@ package org.netbeans.modules.html;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
@@ -177,8 +178,15 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
                     encoding = "UTF-16LE";
                 }
             }
-            String txt = new String(arr, 0, len, encoding != null ? encoding : DEFAULT_ENCODING).toUpperCase();
-            encoding = findEncoding(txt);
+            
+            //try to read the file using some encodings
+            String[] encodings = new String[]{encoding != null ? encoding : DEFAULT_ENCODING, "UTF-16LE", "UTF-16BE"};
+            int i = 0;
+            do {
+                encoding = findEncoding(makeString(arr, 0, len, encodings[i++]));
+            } while (encoding == null && i < encodings.length);
+            
+            
         } catch (IOException ex) {
             Logger.getLogger("global").log(Level.WARNING, null, ex);
         } finally {
@@ -194,6 +202,10 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
             encoding.trim();
         }
         return encoding;
+    }
+    
+    private String makeString(byte[] arr, int offset, int len, String encoding) throws UnsupportedEncodingException {
+        return new String(arr, 0, len, encoding).toUpperCase();
     }
     
     /** Tries to guess the mime type from given input stream. Tries to find
