@@ -225,8 +225,9 @@ public class IconEditor extends PropertyEditorSupport
         }
         if (prop != null)
             prop.setValue("canEditAsText", true); // NOI18N
-        if (currentPackage == null)
+        if (currentPackage == null && sourceFile != null) {
             setCurrentPackage(getDefaultResourcePackage());
+        }
     }
 
     // FormAwareEditor implementation
