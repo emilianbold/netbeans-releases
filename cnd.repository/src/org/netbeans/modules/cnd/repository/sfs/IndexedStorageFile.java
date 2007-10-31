@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.repository.sfs.statistics.RangeStatistics;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
-import org.netbeans.modules.cnd.repository.util.CorruptedIndexedFile;
 
 /**
  * Represents the data file with the indexed access

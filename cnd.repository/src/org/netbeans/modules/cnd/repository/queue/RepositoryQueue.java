@@ -44,8 +44,6 @@ package org.netbeans.modules.cnd.repository.queue;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map.Entry;
-import java.util.Set;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
@@ -57,20 +55,24 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
 public class RepositoryQueue extends KeyValueQueue<Key, Persistent> {
     
     /** Overrides parent to allow timing by flag */
+    @Override
     protected boolean needsTiming() {
         return Stats.queueTiming;
     }
     
     /** Overrides parent to allow timing by flag */
+    @Override
     protected boolean needsTrace() {
         return Stats.queueTrace;
     }
     
     /** Returns this queue name; used for tracing/debugging purposes */
+    @Override
     protected String getTraceName() {
         return "RepositoryQueue" + '@' + hashCode(); // NOI18N
     }
     
+    @Override
     protected void doReplaceAddLast(Key key, Persistent value, Entry existent) {
         super.doReplaceAddLast(key, value, existent);
         queue.remove(existent);

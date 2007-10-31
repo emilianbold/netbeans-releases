@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
-import org.netbeans.modules.cnd.repository.util.CorruptedIndexedFile;
 
 /**
  * Stores Persistent objects in two files;
