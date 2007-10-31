@@ -97,6 +97,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.netbeans.modules.websvc.core.WsWsdlCookie;
 import org.openide.ErrorManager;
 import org.openide.WizardValidationException;
@@ -1139,17 +1140,28 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
      */
     private boolean checkNonJsr109Valid(WizardDescriptor wizardDescriptor){
         Project project = Templates.getProject(wizardDescriptor);
-        boolean jsr109Supported = isJsr109Supported(project);
-        boolean jsr109oldSupported = isJsr109OldSupported(project);
-        boolean jwsdpSupported = isJwsdpSupported(project);
-        boolean jaxWsInJ2ee14Supported = isJaxWsInJ2ee14Supported(project);
-        if ( (!jsr109Supported && !jsr109oldSupported) || jaxWsInJ2ee14Supported ||
-                (!jsr109Supported && jsr109oldSupported && jwsdpSupported)) {
-            if (Util.isSourceLevel14orLower(project)) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage",
-                        NbBundle.getMessage(ClientInfo.class, "ERR_NeedProperSourceLevel")); // NOI18N
-                return false;
+        ProjectInfo pInfo = new ProjectInfo(project);
+        // javase client should be source level 1.4 or higher
+        // other types of projects should have source level 1.5 or higher
+        if(pInfo.getProjectType()!=ProjectInfo.JSE_PROJECT_TYPE) {
+            boolean jsr109Supported = isJsr109Supported(project);
+            boolean jsr109oldSupported = isJsr109OldSupported(project);
+            boolean jwsdpSupported = isJwsdpSupported(project);
+            boolean jaxWsInJ2ee14Supported = isJaxWsInJ2ee14Supported(project);
+            if ( (!jsr109Supported && !jsr109oldSupported) || jaxWsInJ2ee14Supported ||
+                    (!jsr109Supported && jsr109oldSupported && jwsdpSupported)) {
+                if (Util.isSourceLevel14orLower(project)) {
+                    wizardDescriptor.putProperty("WizardPanel_errorMessage",
+                            NbBundle.getMessage(ClientInfo.class, "ERR_NeedProperSourceLevel")); // NOI18N
+                    return false;
+                }
             }
+        } else {
+            String srcLevel = Util.getSourceLevel(project);
+            if (srcLevel != null) {
+                return Double.parseDouble(srcLevel)>=1.4;
+            }
+            return false;
         }
         return true;
     }
