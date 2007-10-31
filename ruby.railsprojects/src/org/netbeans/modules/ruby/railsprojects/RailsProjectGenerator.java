@@ -367,6 +367,13 @@ public class RailsProjectGenerator {
 
                     StringBuilder sb = new StringBuilder();
                     sb.append("# JRuby doesn't support socket:\n");
+                    boolean addLocalHost = text.indexOf("host:") == -1;
+                    if (addLocalHost) {
+                        for (int i = 0; i < indent; i++) {
+                            sb.append(" ");
+                        }
+                        sb.append("host: localhost\n");
+                    }
                     for (int i = 0; i < indent; i++) {
                         sb.append(" ");
                     }
