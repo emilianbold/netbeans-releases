@@ -155,8 +155,6 @@ public final class SourceRoots {
             plainFiles.add(readme);
         }
         
-        assert sourceRootNames == null;
-        assert sourceRootProperties == null;
         sourceRootNames = new ArrayList<String>(20);
         sourceRootProperties = new ArrayList<String>(20);
         // Note Keep list in sync with root properties list below
@@ -330,9 +328,7 @@ public final class SourceRoots {
 
         assert sourceRoots == null;
         List<FileObject> result = new ArrayList<FileObject>(20);
-        assert sourceRootNames == null;
         sourceRootNames = new ArrayList<String>(20);
-        assert sourceRootProperties == null;
         sourceRootProperties = new ArrayList<String>(20);
         plainFiles = new ArrayList<FileObject>(20);
 
