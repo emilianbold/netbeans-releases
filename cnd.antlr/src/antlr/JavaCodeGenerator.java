@@ -319,7 +319,7 @@ public class JavaCodeGenerator extends CodeGenerator {
             context.decreaseLAChecked();
         } else {
             genMatch(atom);
-            printCheck(context.breakLabel);
+            printCheck(context);
         }
         saveText = oldsaveText;
     }
@@ -350,7 +350,7 @@ public class JavaCodeGenerator extends CodeGenerator {
                     context.decreaseLAChecked();
                 } else {
                     println("matchRange(" + r.beginText + "," + r.endText + ");");
-                    printCheck(context.breakLabel);
+                    printCheck(context);
                 }
 	
 	        if (flag) {
@@ -979,7 +979,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	
 	        // Call the rule
 	        GenRuleInvocation(rr, context);
-                printCheck(context.breakLabel);
+                printCheck(context);
 	
 	        // if in lexer and ! on element or alt or rule, save buffer index to kill later
 	        if (grammar instanceof LexerGrammar && (!saveText || rr.getAutoGenType() == GrammarElement.AUTO_GEN_BANG)) {
@@ -1061,7 +1061,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
         // matching
         genMatch(atom);
-        printCheck(context.breakLabel);
+        printCheck(context);
 
         saveText = oldsaveText;
 
@@ -1092,7 +1092,7 @@ public class JavaCodeGenerator extends CodeGenerator {
             context.decreaseLAChecked();
         } else {
             println("matchRange(" + r.beginText + "," + r.endText + ");", r.getLine());
-            printCheck(context.breakLabel);
+            printCheck(context);
         }
         genErrorCatchForElement(r, context);
     }
@@ -1122,7 +1122,7 @@ public class JavaCodeGenerator extends CodeGenerator {
             context.decreaseLAChecked();
         } else {
             genMatch(atom);
-            printCheck(context.breakLabel);
+            printCheck(context);
         }
 
         genErrorCatchForElement(atom, context);
@@ -1133,18 +1133,18 @@ public class JavaCodeGenerator extends CodeGenerator {
         }
     }
     
-    public String getCheckString(String label) {
+    public String getCheckString(Context context) {
         String action = "";
-        if ((label == null) || (label.length() == 0)) {
-            action = "return;";
+        if ((context.breakLabel == null) || (context.breakLabel.length() == 0)) {
+            action = "return " + context.returnVar + ";";
         } else {
-            action = "break " + label + ";";
+            action = "break " + context.breakLabel + ";";
         }
         return "if (matchError) {" + action + "};";
     }
     
-    public void printCheck(String label) {
-        println(getCheckString(label));
+    public void printCheck(Context context) {
+        println(getCheckString(context));
     }
 
     public void gen(TreeElement t, Context context) {
@@ -1191,7 +1191,7 @@ public class JavaCodeGenerator extends CodeGenerator {
                         context.decreaseLAChecked();
                     } else {
                         genMatch(t.root);
-                        printCheck(context.breakLabel);
+                        printCheck(context);
                     }
 	        }
 	        // move to list of children
@@ -1372,7 +1372,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	                println("_saveIndex=text.length();");
 	            }
 	            println("matchNot(EOF_CHAR);");
-                    printCheck(context.breakLabel);
+                    printCheck(context);
 	            if (grammar instanceof LexerGrammar &&
 	                (!saveText || wc.getAutoGenType() == GrammarElement.AUTO_GEN_BANG)) {
 	                println("text.setLength(_saveIndex);"); // kill text atom put in buffer
@@ -1380,7 +1380,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	        }
 	        else {
 	            println("matchNot(" + getValueString(Token.EOF_TYPE) + ");");
-                    printCheck(context.breakLabel);
+                    printCheck(context);
 	        }
 	
 	        // tack on tree cursor motion if doing a tree walker
@@ -1877,7 +1877,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	
 	            // match the bitset for the alternative
 	            println("match(" + astArgs + getBitsetName(markBitsetForGen(p.fset)) + ");");
-                    printCheck(context.breakLabel);
+                    printCheck(context);
 	
 	            // tack on tree cursor motion if doing a tree walker
 	            if (grammar instanceof TreeWalkerGrammar) {
@@ -2865,6 +2865,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	        if (rblk.returnAction != null) {
 	            // Has specified return value
 	            _print(extractTypeOfAction(rblk.returnAction, rblk.getLine(), rblk.getColumn()) + " ");
+                    context.returnVar = extractIdOfAction(rblk.returnAction, rblk.getLine(), rblk.getColumn());
 	        }
 	        else {
 	            // No specified return value
@@ -3438,7 +3439,7 @@ public class JavaCodeGenerator extends CodeGenerator {
                 }
                 println("matchException = new SemanticException(\"" + escapedPred + "\");", line);
             }
-            println(getCheckString(context.breakLabel) + "}");
+            println(getCheckString(context) + "}");
         }
     }
 
@@ -4228,7 +4229,7 @@ public class JavaCodeGenerator extends CodeGenerator {
                 }
                 result += "matchException=" + throwNoViable.substring(6);
             }
-            result += getCheckString(context.breakLabel);
+            result += getCheckString(context);
             return result;
         }
     }

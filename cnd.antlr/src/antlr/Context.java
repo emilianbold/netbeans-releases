@@ -30,23 +30,25 @@ public class Context {
     
     public final String breakLabel;
     public final int guessing;
-    public int checkedLA;
+    public int checkedLA = 0;
+    public String returnVar = "";
     
     public static final Context EMPTY = new Context("", NO_GUESSING);
     
     /** Creates a new instance of Context */
     public Context(String breakLabel, int guessing) {
-        this(breakLabel, guessing, 0);
+        this(breakLabel, guessing, 0, "");
     }
     
-    public Context(String breakLabel, int guessing, int checkedLA) {
+    public Context(String breakLabel, int guessing, int checkedLA, String retVar) {
         this.breakLabel = breakLabel;
         this.guessing = guessing;
         this.checkedLA = checkedLA;
+        this.returnVar = retVar;
     }
     
     public Context(Context another) {
-        this(another.breakLabel, another.guessing, another.checkedLA);
+        this(another.breakLabel, another.guessing, another.checkedLA, another.returnVar);
     }
 
     public int getCheckedLA() {
