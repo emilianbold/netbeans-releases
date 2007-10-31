@@ -144,35 +144,38 @@ public class PortTypePanel extends javax.swing.JPanel {
     private void initGUI() {
         
         ModelSource modelSource = this.mModel.getModelSource();
-        FileObject wsdlFile = modelSource.getLookup().lookup(FileObject.class);
-        if(wsdlFile != null) {
-            String fileName = wsdlFile.getName();
-            String portTypePrefix = fileName + NbBundle.getMessage(PortTypePanel.class, "LBL_PortType_suffix");
-            String portTypeName = NameGenerator.getInstance().generateUniquePortTypeName(this.mModel, portTypePrefix);
-            this.portTypeConfigurationPanel1.setPortTypeName(portTypeName);
-
-            String operationName = fileName + NbBundle.getMessage(PortTypePanel.class, "LBL_Operation_suffix");
-            this.portTypeConfigurationPanel1.setOperationName(operationName);
-            
-            String[] messages = PropertyUtil.getAllMessages(this.mModel);
-            if(messages != null) {
-                for(int i = 0; i < messages.length; i++) {
-                 existingMessages.add(messages[i]);
-                }
+        String name = mModel.getDefinitions().getName();
+        if (name == null) {
+            FileObject wsdlFile = modelSource.getLookup().lookup(FileObject.class);
+            if(wsdlFile != null) {
+                name = wsdlFile.getName();
             }
-            
-            String inputMessageName = NameGenerator.getInstance().generateUniqueInputMessageName(operationName, mModel);
-            String outputMessageName = NameGenerator.getInstance().generateUniqueOutputMessageName(operationName, mModel);
-            //String faultMessageName = NameGenerator.getInstance().generateUniqueFaultMessageName(operationName, mModel);
-
-            MessageNameTextChangeListener messageListener = new MessageNameTextChangeListener();
-                    
-            this.portTypeConfigurationPanel1.setInputMessages(messages, inputMessageName, messageListener);
-            this.portTypeConfigurationPanel1.setOutputMessages(messages, outputMessageName, messageListener);
-            this.portTypeConfigurationPanel1.setFaultMessages(messages, null, messageListener);
-            
-            
         }
+        String portTypePrefix = name + NbBundle.getMessage(PortTypePanel.class, "LBL_PortType_suffix");
+        String portTypeName = NameGenerator.getInstance().generateUniquePortTypeName(this.mModel, portTypePrefix);
+        this.portTypeConfigurationPanel1.setPortTypeName(portTypeName);
+
+        String operationName = name + NbBundle.getMessage(PortTypePanel.class, "LBL_Operation_suffix");
+        this.portTypeConfigurationPanel1.setOperationName(operationName);
+
+        String[] messages = PropertyUtil.getAllMessages(this.mModel);
+        if(messages != null) {
+            for(int i = 0; i < messages.length; i++) {
+                existingMessages.add(messages[i]);
+            }
+        }
+
+        String inputMessageName = NameGenerator.getInstance().generateUniqueInputMessageName(operationName, mModel);
+        String outputMessageName = NameGenerator.getInstance().generateUniqueOutputMessageName(operationName, mModel);
+        //String faultMessageName = NameGenerator.getInstance().generateUniqueFaultMessageName(operationName, mModel);
+
+        MessageNameTextChangeListener messageListener = new MessageNameTextChangeListener();
+
+        this.portTypeConfigurationPanel1.setInputMessages(messages, inputMessageName, messageListener);
+        this.portTypeConfigurationPanel1.setOutputMessages(messages, outputMessageName, messageListener);
+        this.portTypeConfigurationPanel1.setFaultMessages(messages, null, messageListener);
+            
+            
         
                 
         PortTypeNameTextChangeListener portTypeListner  = new PortTypeNameTextChangeListener();
