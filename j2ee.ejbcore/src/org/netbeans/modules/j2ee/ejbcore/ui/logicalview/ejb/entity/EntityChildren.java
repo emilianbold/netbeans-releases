@@ -48,7 +48,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
@@ -75,14 +75,14 @@ public final class EntityChildren extends Children.Keys<EntityChildren.KEY> impl
     
     protected enum KEY { REMOTE, LOCAL, CMP_FIELDS }
 
-    private final JavaSource javaSource;
+    private final ClasspathInfo cpInfo;
     private final String ejbClass;
     private final EjbJar ejbModule;
     private final EntityMethodController controller;
     private final Entity model; // EJB 2.1
     
-    public EntityChildren(JavaSource javaSource, final String ejbClass, EjbJar ejbModule) throws IOException {
-        this.javaSource = javaSource;
+    public EntityChildren(ClasspathInfo cpInfo, final String ejbClass, EjbJar ejbModule) throws IOException {
+        this.cpInfo = cpInfo;
         this.ejbClass = ejbClass;
         this.ejbModule = ejbModule;;
         this.controller = new EntityMethodController(ejbClass, ejbModule.getMetadataModel());
@@ -144,14 +144,14 @@ public final class EntityChildren extends Children.Keys<EntityChildren.KEY> impl
      
     protected Node[] createNodes(KEY key) {
         if (key == KEY.LOCAL) {
-            Children children = new MethodChildren(javaSource, controller, model, controller.getLocalInterfaces(), true, ejbModule.getDeploymentDescriptor());
+            Children children = new MethodChildren(cpInfo, controller, model, controller.getLocalInterfaces(), true, ejbModule.getDeploymentDescriptor());
             MethodsNode n = new MethodsNode(ejbClass, ejbModule, children, true);
             n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/LocalMethodContainerIcon.gif");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_LocalMethods"));
             return new Node[] { n };
         }
         if (key == KEY.REMOTE) {
-            Children children = new MethodChildren(javaSource, controller, model, controller.getRemoteInterfaces(), false, ejbModule.getDeploymentDescriptor());
+            Children children = new MethodChildren(cpInfo, controller, model, controller.getRemoteInterfaces(), false, ejbModule.getDeploymentDescriptor());
             MethodsNode n = new MethodsNode(ejbClass, ejbModule, children, false);
             n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/RemoteMethodContainerIcon.gif");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_RemoteMethods"));

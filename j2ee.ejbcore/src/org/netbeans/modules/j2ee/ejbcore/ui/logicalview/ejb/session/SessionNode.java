@@ -58,7 +58,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
@@ -89,17 +88,16 @@ public final class SessionNode extends AbstractNode implements OpenCookie {
     private final EjbViewController ejbViewController;
     
     public static SessionNode create(final String ejbClass, EjbJar ejbModule, Project project) {
-        JavaSource javaSource = null;
+        ClasspathInfo cpInfo = null;
         FileObject[] javaSources = ejbModule.getJavaSources();
         if (javaSources.length > 0) {
-            ClasspathInfo cpInfo = ClasspathInfo.create(
+            cpInfo = ClasspathInfo.create(
                     ClassPath.getClassPath(javaSources[0], ClassPath.BOOT),
                     ClassPath.getClassPath(javaSources[0], ClassPath.COMPILE),
                     ClassPath.getClassPath(javaSources[0], ClassPath.SOURCE)
                     );
-            javaSource = JavaSource.create(cpInfo);
         }
-        assert javaSource != null;
+        assert cpInfo != null;
         String ejbName = null;
         try {
             ejbName = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
@@ -114,12 +112,12 @@ public final class SessionNode extends AbstractNode implements OpenCookie {
         if (ejbName == null) {
             return null;
         } else {
-            return new SessionNode(new InstanceContent(), javaSource, ejbClass, ejbName, ejbModule);
+            return new SessionNode(new InstanceContent(), cpInfo, ejbClass, ejbName, ejbModule);
         }
     }
     
-    private SessionNode(InstanceContent instanceContent, JavaSource javaSource, final String ejbClass, String ejbName, EjbJar ejbModule) {
-        super(new SessionChildren(javaSource, ejbClass, ejbModule), new AbstractLookup(instanceContent));
+    private SessionNode(InstanceContent instanceContent, ClasspathInfo cpInfo, final String ejbClass, String ejbName, EjbJar ejbModule) {
+        super(new SessionChildren(cpInfo, ejbClass, ejbModule), new AbstractLookup(instanceContent));
         setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/session/SessionNodeIcon.gif");
         
         setName(ejbName + "");

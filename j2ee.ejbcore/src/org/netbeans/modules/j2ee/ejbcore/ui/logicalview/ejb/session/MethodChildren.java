@@ -49,6 +49,7 @@ import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -74,8 +75,8 @@ public class MethodChildren extends ComponentMethodModel {
     private final SessionMethodController controller;
     private final boolean local;
     
-    public MethodChildren(JavaSource javaSource, SessionMethodController smc, Collection interfaces, boolean local) {
-        super(javaSource, smc.getBeanClass(), interfaces, local ? smc.getLocalHome() : smc.getHome());
+    public MethodChildren(ClasspathInfo cpInfo, SessionMethodController smc, Collection<String> interfaces, boolean local) {
+        super(cpInfo, smc.getBeanClass(), interfaces, local ? smc.getLocalHome() : smc.getHome());
         controller = smc;
         this.local = local;
         mvs = new SessionStrategy();

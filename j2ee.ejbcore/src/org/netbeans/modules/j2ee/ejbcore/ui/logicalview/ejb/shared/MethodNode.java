@@ -42,7 +42,6 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared;
 
 import java.awt.Image;
-import org.openide.nodes.Node;
 import javax.swing.Action;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.OpenCookie;
@@ -50,20 +49,15 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.Utilities;
 import java.util.Collection;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
@@ -75,30 +69,30 @@ import org.openide.util.lookup.InstanceContent;
 // TODO: RETOUCHE listening on sources
 public class MethodNode extends AbstractNode implements /*MDRChangeListener,*/ OpenCookie {
 
-    private final JavaSource javaSource;
+    private final ClasspathInfo cpInfo;
     private final String implBean;
     private final FileObject implBeanFO;
     private final MethodModel method;
     private final ComponentMethodViewStrategy cmvs;
     private final Collection interfaces;
     
-    public MethodNode(JavaSource javaSource, MethodModel method, String implBean, Collection interfaces, ComponentMethodViewStrategy cmvs) {
-        this(javaSource, method, implBean, interfaces, cmvs, new InstanceContent());
+    public MethodNode(ClasspathInfo cpInfo, MethodModel method, String implBean, Collection interfaces, ComponentMethodViewStrategy cmvs) {
+        this(cpInfo, method, implBean, interfaces, cmvs, new InstanceContent());
     }
     
-    private MethodNode(JavaSource javaSource, MethodModel method, String implBean, Collection interfaces, ComponentMethodViewStrategy cmvs, InstanceContent ic) {
+    private MethodNode(ClasspathInfo cpInfo, MethodModel method, String implBean, Collection interfaces, ComponentMethodViewStrategy cmvs, InstanceContent ic) {
         
         super(Children.LEAF, new AbstractLookup(ic));
         
         ic.add(this);
         ic.add(method);
 //        disableDelegation(FilterNode.DELEGATE_DESTROY);
-        this.javaSource = javaSource;
+        this.cpInfo = cpInfo;
         this.method = method;
         this.implBean = implBean;
         this.interfaces = interfaces;
         this.cmvs = cmvs;
-        this.implBeanFO = getFileObject(javaSource, implBean);
+        this.implBeanFO = getFileObject(cpInfo, implBean);
         
         // TODO: listeners - WeakListener was used here before change to JMI, how to use it now?
         // unregister in appropriate point or play with ActiveQueue (openide utilities)
@@ -122,6 +116,7 @@ public class MethodNode extends AbstractNode implements /*MDRChangeListener,*/ O
     public boolean canDestroy() {
         final boolean[] result = new boolean[] { false };
         try {
+            JavaSource javaSource = JavaSource.create(cpInfo);
             javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
@@ -176,6 +171,7 @@ public class MethodNode extends AbstractNode implements /*MDRChangeListener,*/ O
     private boolean isEntityBeanMethod() throws IOException {
         
         final boolean[] result = new boolean[] { false };
+            JavaSource javaSource = JavaSource.create(cpInfo);
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
@@ -209,9 +205,10 @@ public class MethodNode extends AbstractNode implements /*MDRChangeListener,*/ O
         return false;
     }
 
-    private static FileObject getFileObject(JavaSource javaSource, final String className) {
+    private static FileObject getFileObject(ClasspathInfo cpInfo, final String className) {
         final FileObject[] result = new FileObject[1];
         try {
+            JavaSource javaSource = JavaSource.create(cpInfo);
             javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);

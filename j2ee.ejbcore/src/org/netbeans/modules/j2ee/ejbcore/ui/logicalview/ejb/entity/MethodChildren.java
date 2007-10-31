@@ -49,6 +49,7 @@ import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -64,7 +65,6 @@ import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.ComponentMethodModel;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.ComponentMethodViewStrategy;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.IconVisitor;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -85,8 +85,8 @@ public class MethodChildren extends ComponentMethodModel {
     private final FileObject ddFile;
     private final Entity entity;
     
-    public MethodChildren(JavaSource javaSource, EntityMethodController smc, Entity model, Collection interfaces, boolean local, FileObject ddFile) {
-        super(javaSource, smc.getBeanClass(), interfaces, local ? smc.getLocalHome() : smc.getHome());
+    public MethodChildren(ClasspathInfo cpInfo, EntityMethodController smc, Entity model, Collection interfaces, boolean local, FileObject ddFile) {
+        super(cpInfo, smc.getBeanClass(), interfaces, local ? smc.getLocalHome() : smc.getHome());
         controller = smc;
         this.local = local;
         this.ddFile = ddFile;

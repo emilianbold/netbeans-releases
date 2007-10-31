@@ -58,6 +58,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
@@ -110,7 +112,7 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
 
     private void updateKeys() throws IOException {
         
-        List<Key> result = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, List<Key>>() {
+        Future<List<Key>> future = ejbModule.getMetadataModel().runReadActionWhenReady(new MetadataModelAction<EjbJarMetadata, List<Key>>() {
             public List<Key> run(EjbJarMetadata metadata) throws Exception {
                 EnterpriseBeans beans = metadata.getRoot().getEnterpriseBeans();
                 if (beans != null) {
@@ -145,8 +147,20 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
                 return Collections.<Key>emptyList();
             }
         });
+        final List<Key> result = new ArrayList<Key>();
+        try {
+            result.addAll(future.get());
+        } catch (InterruptedException ie) {
+            Exceptions.printStackTrace(ie);
+        } catch (ExecutionException ee) {
+            Exceptions.printStackTrace(ee);
+        }
         
-        setKeys(result);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                setKeys(result);
+            }
+        });
     }
 
     protected void removeNotify() {

@@ -44,6 +44,8 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared;
 import java.io.IOException;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.RootsEvent;
+import org.netbeans.api.java.source.TypesEvent;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import java.util.Collections;
@@ -56,7 +58,11 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClassIndexListener;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource;
@@ -65,25 +71,27 @@ import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.openide.util.Exceptions;
 
-// TODO: RETOUCHE listening on source
-public abstract class ComponentMethodModel extends Children.Keys<MethodModel> /*implements MDRChangeListener*/ {
+public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
     
-    private final JavaSource javaSource;
+    private final ClasspathInfo cpInfo;
     private final String homeInterface;
-    private Collection interfaces;
+    private Collection<String> interfaces;
     private String implBean;
+    private final ClassIndexListener classIndexListener;
     
-    public ComponentMethodModel(JavaSource javaSource, String implBean, Collection interfaces, String homeInterface) {
-        this.javaSource = javaSource;
+    public ComponentMethodModel(ClasspathInfo cpInfo, String implBean, Collection<String> interfaces, String homeInterface) {
+        this.cpInfo = cpInfo;
         this.homeInterface = homeInterface;
         this.implBean = implBean;
         this.interfaces = interfaces;
+        this.classIndexListener = new ClassIndexListenerImpl();
     }
     
     private void updateKeys() {
         final ComponentMethodViewStrategy viewStrategy = createViewStrategy();
         final List<MethodModel> keys = new ArrayList<MethodModel>();
         try {
+            JavaSource javaSource = JavaSource.create(cpInfo);
             javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(final CompilationController controller) throws IOException {
                     Elements elements = controller.getElements();
@@ -91,7 +99,7 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> /*
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     for (String className : getInterfaces()) {
                         TypeElement intf = elements.getTypeElement(className);
-                        
+
                         if (intf != null) {
                             // from home interface we want only direct methods
                             if (className.equals(homeInterface)) {
@@ -141,23 +149,36 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> /*
     }
     
     private void registerListeners() {
-//        Iterator iterator = interfaces.iterator();
-//        while(iterator.hasNext()){
-//            JavaClass intf = (JavaClass)iterator.next();
-//            if (intf != null) {
-//                ((MDRChangeSource) intf).addListener(this);  
-//            }
-//        }
+        try {
+            JavaSource javaSource = JavaSource.create(cpInfo);
+            javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+                public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    ClassIndex classIndex = controller.getClasspathInfo().getClassIndex();
+                    classIndex.addClassIndexListener(classIndexListener);
+                }
+            }, true);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
     }
     
     private void removeListeners() {
-//        if (interfaces == null)
-//            return;
-//        Iterator iterator = interfaces.iterator();
-//        while(iterator.hasNext()){
-//            JavaClass intf = (JavaClass)iterator.next();
-//            ((MDRChangeSource) intf).removeListener(this);  
-//        }
+        if (interfaces == null) {
+            return;
+        }
+        try {
+            JavaSource javaSource = JavaSource.create(cpInfo);
+            javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+                public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    ClassIndex classIndex = controller.getClasspathInfo().getClassIndex();
+                    classIndex.removeClassIndexListener(classIndexListener);
+                }
+            }, true);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
     }
     
     protected void removeNotify() {
@@ -182,24 +203,44 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> /*
        return null; 
     }
 
-//    public void change(MDRChangeEvent evt) {
-//        // TODO: how to make following old code working?
-////        if (ElementProperties.PROP_VALID.equals(evt.getPropertyName())) {
-////            Object value = evt.getNewValue();
-////            if ((value instanceof Boolean) && !((Boolean) value).booleanValue()) {
-////                removeListeners();
-////                interfaces = getInterfaces();
-////                registerListeners();
-////            }
-////        }
-//        updateKeys();
-//    }
-    
     public abstract ComponentMethodViewStrategy  createViewStrategy();
     
     protected Node[] createNodes(MethodModel key) {
         ComponentMethodViewStrategy cmvs = createViewStrategy();
-        return new Node[] { new MethodNode(javaSource, key, implBean, getInterfaces(), cmvs) };
+        return new Node[] { new MethodNode(cpInfo, key, implBean, getInterfaces(), cmvs) };
     }
 
+    private class ClassIndexListenerImpl implements ClassIndexListener {
+
+        public void typesAdded(TypesEvent event) {
+            handleTypes(event);
+        }
+
+        public void typesRemoved(TypesEvent event) {
+            handleTypes(event);
+        }
+
+        public void typesChanged(TypesEvent event) {
+            handleTypes(event);
+        }
+
+        public void rootsAdded(RootsEvent event) {
+            // ignore
+        }
+
+        public void rootsRemoved(RootsEvent event) {
+            // ignore
+        }
+
+        private void handleTypes(TypesEvent event) {
+            for (ElementHandle<TypeElement> elementHandle : event.getTypes()) {
+                if (interfaces.contains(elementHandle.getQualifiedName())) {
+                    updateKeys();
+                    return;
+                }
+            }
+        }
+        
+    }
+    
 }

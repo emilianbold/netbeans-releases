@@ -60,7 +60,6 @@ import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
@@ -70,7 +69,6 @@ import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbViewContro
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.DeleteEJBDialog;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GoToSourceActionGroup;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
@@ -93,28 +91,26 @@ public class EntityNode extends AbstractNode implements OpenCookie {
     private final EjbViewController controller;
     
     public static EntityNode create(String ejbClass, EjbJar ejbModule, Project project) {
-        // XXX what is the best parameter to send? classpath, javasource, ...?
-        JavaSource javaSource = null;
+        ClasspathInfo cpInfo = null;
         FileObject[] javaSources = ejbModule.getJavaSources();
         if (javaSources.length > 0) {
-            ClasspathInfo cpInfo = ClasspathInfo.create(
+            cpInfo = ClasspathInfo.create(
                     ClassPath.getClassPath(javaSources[0], ClassPath.BOOT),
                     ClassPath.getClassPath(javaSources[0], ClassPath.COMPILE),
                     ClassPath.getClassPath(javaSources[0], ClassPath.SOURCE)
                     );
-            javaSource = JavaSource.create(cpInfo);
         }
-        assert javaSource != null;
+        assert cpInfo != null;
         try {
-            return new EntityNode(new InstanceContent(), javaSource, ejbClass, ejbModule, project);
+            return new EntityNode(new InstanceContent(), cpInfo, ejbClass, ejbModule, project);
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
         return null;
     }
 
-    private EntityNode(InstanceContent content, JavaSource javaSource, final String ejbClass, EjbJar ejbModule, Project project) throws IOException {
-        super(new EntityChildren(javaSource, ejbClass, ejbModule), new AbstractLookup(content));
+    private EntityNode(InstanceContent content, ClasspathInfo cpInfo, final String ejbClass, EjbJar ejbModule, Project project) throws IOException {
+        super(new EntityChildren(cpInfo, ejbClass, ejbModule), new AbstractLookup(content));
         setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/entity/EntityNodeIcon.gif");
         String ejbName = null;
         try {
