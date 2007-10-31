@@ -140,6 +140,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
     /**
      * Map from classpath types to sets of classpaths we last registered to GlobalPathRegistry.
      */
+    //@GuardedBy(this)
     private Map<String,Set<ClassPath>> registeredClasspaths = null;
 
     public Classpaths(AntProjectHelper helper, PropertyEvaluator evaluator, AuxiliaryConfiguration aux) {
@@ -240,63 +241,71 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         });
     }
     
-    private synchronized void openedImpl() {
-        if (registeredClasspaths != null) {
-            return;
-        }
-        Map<String,Set<ClassPath>> _registeredClasspaths = new HashMap<String,Set<ClassPath>>();
-        for (String type : TYPES) {
-            _registeredClasspaths.put(type, new HashSet<ClassPath>());
-        }
-        Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
-        if (java == null) {
-            return;
-        }
-        for (Element compilationUnitEl : Util.findSubElements(java)) {
-            assert compilationUnitEl.getLocalName().equals("compilation-unit") : compilationUnitEl;
-            // For each compilation unit, find the package roots first.
-            List<FileObject> packageRoots = findPackageRoots(helper, evaluator, compilationUnitEl);
-            for (String type : TYPES) {
-                // Then for each type, collect the classpath (creating it as needed).
-                Map<FileObject,ClassPath> classpathsByType = classpaths.get(type);
-                if (classpathsByType == null) {
-                    classpathsByType = new WeakHashMap<FileObject,ClassPath>();
-                    classpaths.put(type, classpathsByType);
-                }
-                Set<ClassPath> registeredClasspathsOfType = _registeredClasspaths.get(type);
-                assert registeredClasspathsOfType != null;
-                // Check if there is already a ClassPath registered to one of these roots.
-                ClassPath cp = null;
-                for (FileObject root : packageRoots) {
-                    cp = classpathsByType.get(root);
-                    if (cp != null) {
-                        break;
-                    }
-                }
-                if (cp == null) {
-                    // Nope. Calculate and register it now.
-                    cp = getPath(compilationUnitEl, packageRoots, type);
-                    for (FileObject root : packageRoots) {
-                        classpathsByType.put(root, cp);
-                    }
-                }
-                assert cp != null;
-                registeredClasspathsOfType.add(cp);
+    private void openedImpl() {
+        //Threading: confinement within a local scope
+        Map<String,Set<ClassPath>> _registeredClasspaths;
+        synchronized (this) {
+            if (registeredClasspaths != null) {
+                //Threading: When already assigned the thread has to leave the method in
+                //the synchronized block to prevent a multiple registration of class paths.
+                return;
             }
-        }
-        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            err.log("classpaths for " + helper.getProjectDirectory() + ": " + classpaths);
-        }
-        // Don't do this before it is calculated, or a runtime error above might corrupt state:
-        this.registeredClasspaths = _registeredClasspaths;
-        // Register all of the classpaths we found.
-        GlobalPathRegistry gpr = GlobalPathRegistry.getDefault();
-        for (String type : TYPES) {
-            Set<ClassPath> registeredClasspathsOfType = registeredClasspaths.get(type);
-            gpr.register(type, registeredClasspathsOfType.toArray(new ClassPath[registeredClasspathsOfType.size()]));
-        }
+            _registeredClasspaths = new HashMap<String,Set<ClassPath>>();
+            for (String type : TYPES) {
+                _registeredClasspaths.put(type, new HashSet<ClassPath>());
+            }
+            Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+            if (java == null) {
+                return;
+            }
+            for (Element compilationUnitEl : Util.findSubElements(java)) {
+                assert compilationUnitEl.getLocalName().equals("compilation-unit") : compilationUnitEl;
+                // For each compilation unit, find the package roots first.
+                List<FileObject> packageRoots = findPackageRoots(helper, evaluator, compilationUnitEl);
+                for (String type : TYPES) {
+                    // Then for each type, collect the classpath (creating it as needed).
+                    Map<FileObject,ClassPath> classpathsByType = classpaths.get(type);
+                    if (classpathsByType == null) {
+                        classpathsByType = new WeakHashMap<FileObject,ClassPath>();
+                        classpaths.put(type, classpathsByType);
+                    }
+                    Set<ClassPath> registeredClasspathsOfType = _registeredClasspaths.get(type);
+                    assert registeredClasspathsOfType != null;
+                    // Check if there is already a ClassPath registered to one of these roots.
+                    ClassPath cp = null;
+                    for (FileObject root : packageRoots) {
+                        cp = classpathsByType.get(root);
+                        if (cp != null) {
+                            break;
+                        }
+                    }
+                    if (cp == null) {
+                        // Nope. Calculate and register it now.
+                        cp = getPath(compilationUnitEl, packageRoots, type);
+                        for (FileObject root : packageRoots) {
+                            classpathsByType.put(root, cp);
+                        }
+                    }
+                    assert cp != null;
+                    registeredClasspathsOfType.add(cp);
+                }
+            }
+            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                err.log("classpaths for " + helper.getProjectDirectory() + ": " + classpaths);
+            }
+            // Don't do this before it is calculated, or a runtime error above might corrupt state:
+            this.registeredClasspaths = _registeredClasspaths;
+        }   //End synchronized (this), POST: _registeredClasspaths != null        
+            assert _registeredClasspaths != null;
+            // Register all of the classpaths we found.
+            GlobalPathRegistry gpr = GlobalPathRegistry.getDefault();
+            for (String type : TYPES) {
+                Set<ClassPath> registeredClasspathsOfType = _registeredClasspaths.get(type);
+                gpr.register(type, registeredClasspathsOfType.toArray(new ClassPath[registeredClasspathsOfType.size()]));
+            }
     }
     
+    //XXX: Threading: calls non private code under lock
     private synchronized void registerNewClasspath(String type, ClassPath cp) {
         if (registeredClasspaths == null) {
             return;
@@ -309,6 +318,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
     /**
      * Called when project is closed.
      * Unregisters any previously registered classpaths.
+     * XXX: Threading: calls non private code under lock
      */
     public synchronized void closed() {
         if (registeredClasspaths == null) {
