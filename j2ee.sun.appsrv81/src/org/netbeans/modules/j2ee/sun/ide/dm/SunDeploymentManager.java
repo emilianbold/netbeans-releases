@@ -950,9 +950,13 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                 getHost(), getPort());
         if (ip!=null){ //Null is a possible returned value there...
             Object domainDir = ip.getProperty("LOCATION");
+            if (null != domainDir) {
+                isLocal = true;
+                isset = true;
+            }
             if ("".equals(domainDir)) {
                 isLocal = false;
-                isset = true;
+                isset = true;           // this may be redundant
             }
         }
         if (!isset) {

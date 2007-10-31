@@ -160,10 +160,15 @@ public class ManagerNode extends AbstractNode implements Node.Cookie{
         }
     }
     public SunDeploymentManagerInterface getDeploymentManager(){
-        sdm.refreshDeploymentManager();
-        return sdm;
+        return getDeploymentManager(true);
     }
    
+    public SunDeploymentManagerInterface getDeploymentManager(boolean needsRefresh){
+        if (needsRefresh) {
+            sdm.refreshDeploymentManager();
+        }
+        return sdm;
+    }
     public HelpCtx getHelpCtx() {
         return null; //new HelpCtx ("AS_RTT_AppServer");//NOI18N
     }

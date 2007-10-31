@@ -133,7 +133,7 @@ public class ViewLogAction extends CookieAction {
                 ManagerNode node = (ManagerNode)nodes[0].getLookup().lookup(ManagerNode.class);
                 
                 
-                SunDeploymentManagerInterface sdm = node.getDeploymentManager();
+                SunDeploymentManagerInterface sdm = node.getDeploymentManager(false);
                 return sdm.isLocal();
             } catch (Exception e){
                 //nothing to do, the NetBeasn node system is wierd sometimes...
