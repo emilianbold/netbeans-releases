@@ -5,6 +5,6 @@
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="html" default="default"/>
-    <fontcolor name="ruby" default="default"/>
+    <fontcolor name="ruby" bgColor="121E31"/>
     <fontcolor name="RUBYCOMMENT" default="comment"/>
 </fontscolors>

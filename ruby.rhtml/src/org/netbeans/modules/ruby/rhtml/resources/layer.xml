@@ -135,7 +135,7 @@
                     </folder>
                     <folder name="BlueTheme">
                         <folder name="Defaults">
-                            <file name="org-netbeans-modules-editor-rhtml-token-colorings.xml" url="BlueTheme-fontsColors.xml"/>
+                            <file name="coloring.xml" url="BlueTheme-fontsColors.xml"/>
                         </folder>
                     </folder>
                 </folder>

@@ -90,16 +90,16 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         this.document = document;
         
         // load the background color for the embedding token
-        String mimeType = (String) document.getProperty("mimeType"); //NOI18N
+        String mimeType = RhtmlTokenId.MIME_TYPE;
         FontColorSettings fcs = MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
         Color jsBC = null;
         if (fcs != null) {
             jsBC = getColoring(fcs, RhtmlTokenId.RUBY.primaryCategory());
         }
 
-        rubyBackground = AttributesUtilities.createImmutable(
-            StyleConstants.Background, jsBC == null ? DEFAULT_RUBY_SCRIPLET_BACKGROUND_COLOR : jsBC, 
-            ATTR_EXTENDS_EOL, Boolean.TRUE);
+      rubyBackground = AttributesUtilities.createImmutable(
+        StyleConstants.Background, jsBC == null ? DEFAULT_RUBY_SCRIPLET_BACKGROUND_COLOR : jsBC, 
+        ATTR_EXTENDS_EOL, Boolean.TRUE);
     }
 
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
