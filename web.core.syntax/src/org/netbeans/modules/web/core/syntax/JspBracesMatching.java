@@ -105,7 +105,6 @@ public class JspBracesMatching implements BracesMatcher, BracesMatcherFactory {
             }
         }
         throw new IllegalStateException("No text/x-jsp language found on the MatcherContext's search offset! This should never happen!");
-        //Vita's mobile: 739 771 463
     }
     
 }
