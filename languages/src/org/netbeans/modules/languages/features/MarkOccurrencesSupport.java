@@ -30,6 +30,7 @@ package org.netbeans.modules.languages.features;
 import java.awt.Color;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,7 @@ import org.netbeans.api.languages.Highlighting.Highlight;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManager.State;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.features.AnnotationManager.LanguagesAnnotation;
 import org.openide.util.RequestProcessor;
@@ -118,19 +120,24 @@ public class MarkOccurrencesSupport implements CaretListener {
                     annotations = new ArrayList<LanguagesAnnotation> ();
                     highlights = new ArrayList<Highlight> ();
                     Iterator<ASTItem> it = ussages.iterator ();
+                    HashSet<Integer> lines = new HashSet<Integer>();
                     while (it.hasNext ()) {
                         ASTItem i = it.next ();
                         highlights.add (highlighting.highlight (i.getOffset (), i.getEndOffset (), getHighlightAS ()));
-                        LanguagesAnnotation la = new LanguagesAnnotation (
-                            "Usage",
-                            "..."
-                        );
-                        doc.addAnnotation (
-                            doc.createPosition (i.getOffset ()),
-                            i.getLength (),
-                            la
-                        );
-                        annotations.add (la);
+                        int lineNumber = Utilities.getLineOffset(doc, i.getOffset());
+                        if (!lines.contains(lineNumber)) {
+                            LanguagesAnnotation la = new LanguagesAnnotation (
+                                "Usage",
+                                "..."
+                            );
+                            doc.addAnnotation (
+                                doc.createPosition (i.getOffset ()),
+                                i.getLength (),
+                                la
+                            );
+                            lines.add(lineNumber);
+                            annotations.add (la);
+                        }
                     }
                 } catch (BadLocationException ex) {
                     ex.printStackTrace ();
