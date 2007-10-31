@@ -91,7 +91,6 @@ public class Stats {
     public static final boolean traceDefragmentation = getBoolean("cnd.repository.trace.defragm", false); //NOI18N
 
     public static final boolean hardFickle = getBoolean("cnd.repository.hard.fickle", false); //NOI18N
-    public static final boolean doubleFileStorage = getBoolean("cnd.repository.double", true); //NOI18N
     public static final int defragmentationThreashold = getInteger("cnd.repository.defragm.threshold", 50); //NOI18N
             
     public final static String ENCODING = System.getProperty("file.encoding"); // NOI18N

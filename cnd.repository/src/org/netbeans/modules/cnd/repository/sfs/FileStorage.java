@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 public abstract class FileStorage extends AbstractDiskRepository {
     
     public static FileStorage create(String unitName) throws IOException {
-        return  Stats.doubleFileStorage ? new DoubleFileStorage(unitName) : new SingleFileStorage(unitName);
+        return  new DoubleFileStorage(unitName);
     }
     
     abstract public void dump(PrintStream ps) throws IOException;
