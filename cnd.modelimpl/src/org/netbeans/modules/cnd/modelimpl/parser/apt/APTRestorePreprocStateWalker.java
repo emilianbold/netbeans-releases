@@ -92,7 +92,7 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
                 if (inclPath.equals(stopDirective.getIncludedPath())) {
                     foundDirective = true;
                 } else {
-                    // we restored by incorrect include stack
+                    // we restored by incorrect include stack, see comment to this.visit()
                     APTHandlersSupport.invalidatePreprocHandler(getPreprocHandler());
                     super.stop();
                     return null;
@@ -142,5 +142,20 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
             }
         }
         return csmFile;
-    }    
+    }
+
+    @Override
+    public void visit() {
+        super.visit();
+        if (searchInterestedFile && !super.isStopped()) {
+            // For now we don't escalate changes to library headers which means 
+            // you can get get obsolete preprocessor state for library headers.
+            // In those cases library headers should be "presented" in their 
+            // natural state with preprocessor state got from project properties only
+            APTHandlersSupport.invalidatePreprocHandler(getPreprocHandler());
+            // See IZ119620, IZ120478
+        }
+    }
+    
+    
 }
