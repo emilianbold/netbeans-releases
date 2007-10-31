@@ -1191,7 +1191,7 @@ XHR.prototype = {
         try {
             xmlHttpReq.open(method, url, async);
         } catch( e ) {
-            ts.debug('connect(): Error: XMLHttpRequest.open failed for: '+strURL+' Error name: '+e.name+' Error message: '+e.message);
+            ts.debug('connect(): Error: XMLHttpRequest.open failed for: '+url+' Error name: '+e.name+' Error message: '+e.message);
             return null;
         }
         if (mimeType != null) {
@@ -1212,9 +1212,9 @@ XHR.prototype = {
 
     get : function(url, mime) {
         var xmlHttpReq = this.connect('GET', url, mime, 0, false);
-        xmlHttpReq.send(null);
         try {
-          if (this.isResponseReady(xmlHttpReq, '')) {
+            xmlHttpReq.send(null);
+            if (this.isResponseReady(xmlHttpReq, '')) {
               var rtext = xmlHttpReq.responseText;
               if(rtext == undefined || rtext == '' || rtext.indexOf('HTTP Status') != -1) {
                   var err = 'Get failed: Server returned --> Status: (' + status+')\n'+
@@ -1223,7 +1223,7 @@ XHR.prototype = {
                   return err;
               }
               return rtext;           
-           }
+            }
         } catch( e ) {
            ts.debug('get(): Caught Exception; name: [' + e.name + '] message: [' + e.message+']');
         }
@@ -1232,8 +1232,8 @@ XHR.prototype = {
 
     post : function(url, mime, content) {
         var xmlHttpReq = this.connect('POST', url, mime, content.length, false);
-        xmlHttpReq.send(content);
         try {
+            xmlHttpReq.send(content);
             if (this.isResponseReady(xmlHttpReq, content)) {
                 var status = xmlHttpReq.status;
                 if(status != 201) {
@@ -1251,9 +1251,9 @@ XHR.prototype = {
 
     put : function(url, mime, content) {
         var xmlHttpReq = this.connect('PUT', url, mime, content.length, false);
-        xmlHttpReq.send(content);
         try {
-          if (this.isResponseReady(xmlHttpReq, content)) {
+            xmlHttpReq.send(content);
+            if (this.isResponseReady(xmlHttpReq, content)) {
               var status = xmlHttpReq.status;
               if(status != 204) {
                   var err = 'Put failed: Server returned --> Status: (' + status+')\n'+
@@ -1261,7 +1261,7 @@ XHR.prototype = {
                   ts.debug('Failed XHR(PUT, '+url+'): '+err);
                   return err;
               }
-          }
+            }
         } catch( e ) {
           ts.debug('put(): Caught Exception; name: [' + e.name + '] message: [' + e.message+']');
         }
@@ -1270,9 +1270,9 @@ XHR.prototype = {
 
     delete_ : function(url) {
         var xmlHttpReq = this.connect('DELETE', url, 'application/xml', 0, false);
-        xmlHttpReq.send(null);
         try {
-          if (this.isResponseReady(xmlHttpReq, '')) {
+            xmlHttpReq.send(null);  
+            if (this.isResponseReady(xmlHttpReq, '')) {
               var status = xmlHttpReq.status;
               if(status != 204) {
                   var err = 'Delete failed: Server returned --> Status: (' + status+')\n'+
@@ -1280,7 +1280,7 @@ XHR.prototype = {
                   ts.debug('Failed XHR(DELETE, '+url+'): '+err);
                   return err;
               }
-          }
+            }
         } catch( e ) {
           ts.debug('delete(): Caught Exception; name: [' + e.name + '] message: [' + e.message+']');
         }
