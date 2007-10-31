@@ -44,11 +44,14 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 import javax.swing.text.PlainDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateHandler;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.IndentEngine;
 
 
@@ -89,9 +92,18 @@ public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandle
         try {
             w = new OutputStreamWriter(output.getOutputStream(), targetEnc);
             
-            IndentEngine format = IndentEngine.find(template.getMIMEType());
+            String mimeType = template.getMIMEType();
+            IndentEngine format = IndentEngine.find(mimeType);
             if (format != null) {
-                PlainDocument doc = new PlainDocument();
+                EditorKit kit = CloneableEditorSupport.getEditorKit(mimeType);
+                Document doc = null;
+                if (kit != null) {
+                    doc = kit.createDefaultDocument();
+                }
+                if (doc == null) {
+                    doc = new PlainDocument();
+                }
+                doc.putProperty("mimeType", mimeType);
                 doc.putProperty(PlainDocument.StreamDescriptionProperty, template);
                 w = format.createWriter(doc, 0, w);
             }

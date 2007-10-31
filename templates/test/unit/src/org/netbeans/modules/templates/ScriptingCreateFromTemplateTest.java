@@ -37,6 +37,9 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Collections;
 import java.util.Map;
+import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -48,6 +51,7 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 
 /**
  *
@@ -90,6 +94,29 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         Charset targetEnc = FileEncodingQuery.getEncoding(instFO);
         assertNotNull("Template encoding is null", targetEnc);
         assertEquals("Encoding in template doesn't match", targetEnc.name(), readFile(instFO));
+    }
+    
+    public void testCreateFromTemplateDocumentCreated() throws Exception {
+        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        FileObject fo = FileUtil.createData(root, "simpleObject.txt");
+        OutputStream os = fo.getOutputStream();
+        os.write("test".getBytes());
+        os.close();
+        fo.setAttribute ("template", Boolean.TRUE);
+        fo.setAttribute("javax.script.ScriptEngine", "freemarker");
+
+        MockServices.setServices(MockMimeLookup.class);
+        MockMimeLookup.setInstances(MimePath.parse("content/unknown"), new TestEditorKit());
+        
+        DataObject obj = DataObject.find(fo);
+        DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(root, "target"));
+        
+        assertFalse(TestEditorKit.createDefaultDocumentCalled);
+        DataObject inst = obj.createFromTemplate(folder, "test");
+        assertTrue(TestEditorKit.createDefaultDocumentCalled);
+        
+        String exp = "test";
+        assertEquals(exp, readFile(inst.getPrimaryFile()));
     }
     
     private static String readFile(FileObject fo) throws IOException {
@@ -143,6 +170,18 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         public String getName() {
             return getPrimaryFile().getNameExt();
         }
+    }
+    
+    private static final class TestEditorKit extends DefaultEditorKit {
+        
+        static boolean createDefaultDocumentCalled;
+
+        @Override
+        public Document createDefaultDocument() {
+            createDefaultDocumentCalled = true;
+            return super.createDefaultDocument();
+        }
+        
     }
 
 }

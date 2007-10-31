@@ -208,7 +208,7 @@ public final class TaskHandler {
             items = newItems;
         }
 
-        if (LOG.isLoggable(Level.FINE)) {
+        if (items != null && LOG.isLoggable(Level.FINE)) {
             LOG.fine("Collected items: "); //NOI18N
             for (MimeItem mi : items) {
                 LOG.fine("  Item: " + mi); //NOI18N

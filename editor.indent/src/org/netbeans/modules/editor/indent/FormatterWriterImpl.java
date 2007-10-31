@@ -93,26 +93,30 @@ public final class FormatterWriterImpl extends Writer {
 
     @Override
     public void close() throws IOException {
-        indentImpl.reformatLock();
         try {
-            Document doc = indentImpl.document();
-            String text = buffer.toString();
-            if (text.length() > 0 && offset <= doc.getLength()) {
-                try {
-                    doc.insertString(offset, text, null);
-                    Position startPos = doc.createPosition(offset);
-                    Position endPos = doc.createPosition(offset + text.length());
-                    indentImpl.reformat(startPos.getOffset(), endPos.getOffset());
-                    int len = endPos.getOffset() - startPos.getOffset();
-                    String reformattedText = doc.getText(startPos.getOffset(), len);
-                    doc.remove(startPos.getOffset(), len);
-                    writer.write(reformattedText);
-                } catch (BadLocationException e) {
-                    Exceptions.printStackTrace(e);
+            indentImpl.reformatLock();
+            try {
+                Document doc = indentImpl.document();
+                String text = buffer.toString();
+                if (text.length() > 0 && offset <= doc.getLength()) {
+                    try {
+                        doc.insertString(offset, text, null);
+                        Position startPos = doc.createPosition(offset);
+                        Position endPos = doc.createPosition(offset + text.length());
+                        indentImpl.reformat(startPos.getOffset(), endPos.getOffset());
+                        int len = endPos.getOffset() - startPos.getOffset();
+                        String reformattedText = doc.getText(startPos.getOffset(), len);
+                        doc.remove(startPos.getOffset(), len);
+                        writer.write(reformattedText);
+                    } catch (BadLocationException e) {
+                        Exceptions.printStackTrace(e);
+                    }
                 }
+            } finally {
+                indentImpl.reformatUnlock();
             }
         } finally {
-            indentImpl.reformatUnlock();
+            writer.close();
         }
     }
 
