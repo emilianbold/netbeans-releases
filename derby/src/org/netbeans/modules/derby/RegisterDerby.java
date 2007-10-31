@@ -135,7 +135,16 @@ public class RegisterDerby implements DatabaseRuntime {
      * Start the database server.
      */
     public void start(){
-        start(START_TIMEOUT); // wait for Derby to start
+        startAndWait();
+    }
+    
+    /**
+     * Starts the database server and waits for it to start.
+     *
+     * @return true if the server is started, false otherwise.
+     */
+    public boolean startAndWait() {
+        return start(START_TIMEOUT); // wait for Derby to start
     }
     
     /**
@@ -170,13 +179,13 @@ public class RegisterDerby implements DatabaseRuntime {
     /** Posts the creation of the new database to request processor.
      */
     void postCreateNewDatabase(final String databaseName, final String user, final String password) throws Exception {
-        // DerbyDatabases.createDatabase would start the database too, but
-        // doing it beforehand to avoid having two progress bars running
-        ensureStarted();
-        
         RequestProcessor.getDefault().post(new Runnable() {
             public void run () {
                 try {
+                    // DerbyDatabases.createDatabase would start the database too, but
+                    // doing it beforehand to avoid having two progress bars running
+                    startAndWait();
+                    
                     ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(
                         RegisterDerby.class, "MSG_CreatingDBProgressLabel", databaseName));
                     ph.start();
@@ -253,13 +262,20 @@ public class RegisterDerby implements DatabaseRuntime {
     
     /**
      * Start the database server, and wait some time (in milliseconds) to make sure the server is active.
+     *
+     * @param  waitTime the time to wait. If less than or equal to zero, do not
+     *         wait at all.
+     *
+     * @return true if the server is definitely started, false otherwise (the server is
+     *         not started or the status is unknown). If <code>waitTime</code> was
+     *         less than or equal to zero, then always false.
      */
-    private void start(int waitTime){
+    private boolean start(int waitTime){
         if (process!=null){// seems to be already running?
             stop();
         }
         if (!Util.checkInstallLocation()) {
-            return;
+            return false;
         }
         try {
             ExecSupport ee= new ExecSupport();
@@ -294,20 +310,22 @@ public class RegisterDerby implements DatabaseRuntime {
             ee.displayProcessOutputs(process,NbBundle.getMessage(StartAction.class, "LBL_outputtab"));
             if (waitTime > 0) {
                 // to make sure the server is up and running
-                waitStart(ee, waitTime);
+                return waitStart(ee, waitTime);
+            } else {
+                return false;
             }
-            
         } catch (Exception e) {
             Util.showInformation(e.getLocalizedMessage());
+            return false;
         }
     }
     
-    private void waitStart(ExecSupport execSupport, int waitTime) {
+    private boolean waitStart(ExecSupport execSupport, int waitTime) {
+        boolean started = false;
         String waitMessage = NbBundle.getMessage(RegisterDerby.class, "MSG_StartingDerby");
         ProgressHandle progress = ProgressHandleFactory.createHandle(waitMessage);
         progress.start();
         try {
-            boolean started = false;
             while (!started) {
                 started = execSupport.waitForMessage(waitTime * 1000);
                 if (!started) {
@@ -325,6 +343,7 @@ public class RegisterDerby implements DatabaseRuntime {
         } finally {
             progress.finish();
         }
+        return started;
     }
     
     /**
@@ -371,11 +390,28 @@ public class RegisterDerby implements DatabaseRuntime {
         }
     }
     
+    /**
+     * Starts the server if necessary, but does not wait until it is started.
+     */
     public void ensureStarted() {
         if (!isRunning() && canStart()) {
             startNoWait();
         }
     }
     
-    
+    /**
+     * Starts the server if necessary, and if the server was not started, waits
+     * for it to start.
+     *
+     * @return true if the server is started, false otherwise.
+     */
+    public boolean waitStarted() {
+        if (isRunning()) {
+            return true;
+        }
+        if (!canStart()) {
+            return false;
+        }
+        return startAndWait();
+    }
 }

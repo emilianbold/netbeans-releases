@@ -216,7 +216,9 @@ public final class DerbyDatabases {
         }
 
         ensureSystemHome();
-        RegisterDerby.getDefault().ensureStarted();
+        if (!RegisterDerby.getDefault().waitStarted()) {
+            throw new DatabaseException("The Derby server did not start"); // NOI18N
+        }
 
         Driver driver = loadDerbyNetDriver();
         Properties props = new Properties();
