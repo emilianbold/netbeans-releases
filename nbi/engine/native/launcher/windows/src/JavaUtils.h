@@ -70,6 +70,8 @@ void printJavaProperties(LauncherProperties * props, JavaProperties * javaProps)
 
 void freeJavaProperties(JavaProperties ** props);
 
+void installJVM(LauncherProperties * props, LauncherResource *jvm);
+
 JavaCompatible * newJavaCompatible();
 
 #ifdef	__cplusplus

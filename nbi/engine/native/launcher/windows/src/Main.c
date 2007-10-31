@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -16,13 +16,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -232,14 +232,21 @@ void initExitButton(LauncherProperties * props, HINSTANCE hInstance) {
 }
 
 void showErrorW(LauncherProperties * props, const char * error, const DWORD varArgsNumber, ...) {
+    
     WCHAR * errorTitle = NULL;
     WCHAR * errorMessage = NULL;
     DWORD  totalLength = 0;
     DWORD counter=0;
     WCHAR * result = NULL;
     va_list ap;
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "!!!!!ERROR!!!!", 1);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, error, 1);
     
     getI18nPropertyTitleDetail(props, error, & errorTitle, &errorMessage);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "!!!!!TITLE!!!!", 1);
+    writeMessageW(props, OUTPUT_LEVEL_DEBUG, 1, errorTitle, 1);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "!!!!!MESSAGE!!!!", 1);
+    writeMessageW(props, OUTPUT_LEVEL_DEBUG, 1, errorMessage, 1);
     totalLength=getLengthW(errorMessage);
     
     va_start(ap, varArgsNumber);
@@ -251,11 +258,15 @@ void showErrorW(LauncherProperties * props, const char * error, const DWORD varA
     va_end(ap);
     result = newpWCHAR(totalLength + 1);
     va_start(ap, varArgsNumber);
-    wvsprintfW(result, errorMessage, ap);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "adding message...", 1);
+    if(errorMessage!=NULL) {
+        wvsprintfW(result, errorMessage, ap);
+    }
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "...done", 1);
     va_end(ap);
     
     if(!isSilent(props)) {
-        HANDLE * events = (HANDLE *) LocalAlloc(LPTR,sizeof(HANDLE)*2);
+        HANDLE * events = (HANDLE *) LocalAlloc(LPTR, sizeof(HANDLE)*2);
         
         hide(props, hwndProgressTitle);
         hide(props, hwndPB);
@@ -328,8 +339,8 @@ BOOL InitApplication(LauncherProperties * props, HINSTANCE hInstance) {
         wndclass.cbClsExtra = 0;
         wndclass.cbWndExtra = 0;
         wndclass.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(100));
-        wndclass.hIconSm = (HICON)LoadImage(GetModuleHandle(NULL), 
-                MAKEINTRESOURCE(100), 
+        wndclass.hIconSm = (HICON)LoadImage(GetModuleHandle(NULL),
+                MAKEINTRESOURCE(100),
                 IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
         wndclass.hInstance = hInstance;
         wndclass.hCursor = LoadCursor( 0, IDC_ARROW );
@@ -441,7 +452,7 @@ void showLauncherWindows(LauncherProperties * props) {
     UpdateWindow(hwndMain);
 }
 
-void showMessageW(LauncherProperties * props, const WCHAR* message, const DWORD varArgsNumber, ...) {    
+void showMessageW(LauncherProperties * props, const WCHAR* message, const DWORD varArgsNumber, ...) {
     DWORD totalLength = getLengthW(message);
     va_list ap;
     DWORD counter=0;
@@ -468,14 +479,14 @@ void showMessageW(LauncherProperties * props, const WCHAR* message, const DWORD 
 }
 
 
-void showMessageA(LauncherProperties * props, const char* message, const DWORD varArgsNumber, ...) {    
+void showMessageA(LauncherProperties * props, const char* message, const DWORD varArgsNumber, ...) {
     DWORD totalLength = getLengthA(message);
     va_list ap;
     DWORD counter=0;
     char * result = NULL;
     
     writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "\n<ShowMessage>\n", 0);
-    va_start(ap, varArgsNumber);    
+    va_start(ap, varArgsNumber);
     while((counter++)<varArgsNumber) {
         char * arg = va_arg( ap, char * );
         totalLength+=getLengthA(arg);
@@ -537,7 +548,7 @@ void showMessageA(LauncherProperties * props, const char* message, const DWORD v
 
 
 DWORD WINAPI launcherThread(void * ptr) {
-    HANDLE * events = (HANDLE *) LocalAlloc(LPTR,sizeof(HANDLE)*2);
+    HANDLE * events = (HANDLE *) LocalAlloc(LPTR, sizeof(HANDLE)*2);
     DWORD result;
     events[0] = initializationSuccess;
     events[1] = initializationFailed;

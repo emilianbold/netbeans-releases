@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -16,13 +16,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -354,8 +354,15 @@ void findSuitableJava(LauncherProperties * props) {
         } else { // no user-specified java argument
             findSystemJava(props);
             if( props->java ==NULL) {
-                showErrorW(props, JVM_NOT_FOUND_PROP, 1, javaArg);
-                props->status = ERROR_JVM_NOT_FOUND;
+                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "... no java was found", 1);
+                if(props->status == ERROR_BUNDLED_JVM_EXTRACTION) {
+                    showErrorW(props, BUNDLED_JVM_EXTRACT_ERROR_PROP, 1, javaArg);
+                } else if(props->status == ERROR_BUNDLED_JVM_VERIFICATION) {
+                    showErrorW(props, BUNDLED_JVM_VERIFY_ERROR_PROP, 1, javaArg);
+                } else {
+                    showErrorW(props, JVM_NOT_FOUND_PROP, 1, javaArg);
+                    props->status = ERROR_JVM_NOT_FOUND;
+                }                
             }
         }
         
@@ -393,7 +400,7 @@ void resolveLauncherStringProperty(LauncherProperties * props, WCHAR ** result) 
                         wcscat(tmp, propValue);
                         wcsncat(tmp, propEnd + 1, getLengthW(propEnd + 1));
                         FREE(*result);
-                        *result = tmp;                        
+                        *result = tmp;
                     }
                     FREE(name);
                     FREE(propName);
@@ -455,7 +462,7 @@ void resolveString(LauncherProperties * props, WCHAR ** result) {
         writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, *result, 1);
         resolveLauncherProperties(props, result);
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... step 2 : ", 0);
-        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, *result, 1);        
+        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, *result, 1);
         resolveLauncherStringProperty(props, result);
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... step 3 : ", 0);
         writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, *result, 1);

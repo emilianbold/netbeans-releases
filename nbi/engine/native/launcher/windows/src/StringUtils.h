@@ -54,6 +54,8 @@ extern const char *  INTEGRITY_ERROR_PROP;
 extern const char *  OUTPUT_ERROR_PROP;          
 extern const char *  JAVA_PROCESS_ERROR_PROP;    
 extern const char *  EXTERNAL_RESOURE_LACK_PROP;    
+extern const char *  BUNDLED_JVM_EXTRACT_ERROR_PROP;    
+extern const char *  BUNDLED_JVM_VERIFY_ERROR_PROP;    
 extern const char *  ARG_OUTPUT_PROPERTY;        
 extern const char *  ARG_JAVA_PROP;              
 extern const char *  ARG_DEBUG_PROP;             

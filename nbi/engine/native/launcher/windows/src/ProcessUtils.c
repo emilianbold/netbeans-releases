@@ -208,7 +208,7 @@ void executeCommand(LauncherProperties * props, WCHAR * command, WCHAR * dir, DW
                 TerminateProcess(pi.hProcess, 0);
                 writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "... terminate process", 1);
                 //Terminating process...It worked too much without any stdout/stdin/stderr
-                props->status = ERROR_PROCESS_TIMEOUT;//terminated by timeout
+                props->status = ERROR_PROCESS_TIMEOUT;//terminated by timeout                
             }
         } else {
             //application finished its work... succesfully or not - it doesn`t matter            
@@ -218,7 +218,7 @@ void executeCommand(LauncherProperties * props, WCHAR * command, WCHAR * dir, DW
         CloseHandle(pi.hProcess);
     }  else {
         writeErrorA(props, OUTPUT_LEVEL_DEBUG, 1, "... can`t create process.", NULL, GetLastError());
-        props->status = ERROR_ON_EXECUTE_PROCESS;
+        props->status = ERROR_ON_EXECUTE_PROCESS;        
     }
     
     

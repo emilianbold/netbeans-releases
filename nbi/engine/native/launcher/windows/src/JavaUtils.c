@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -16,13 +16,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -45,9 +45,15 @@
 #include "Main.h"
 
 const DWORD JAVA_VERIFICATION_PROCESS_TIMEOUT = 10000; // 10sec
+const DWORD UNPACK200_EXTRACTION_TIMEOUT = 20000; //20 seconds on each file
 const DWORD JAVA_VERIFICATION_PROCESS_PRIORITY = NORMAL_PRIORITY_CLASS;
 const WCHAR * JAVA_EXE_SUFFIX = L"\\bin\\java.exe";
+const WCHAR * UNPACK200_EXE_SUFFIX = L"\\bin\\unpack200.exe";
 const WCHAR * JAVA_LIB_SUFFIX = L"\\lib";
+const WCHAR * PACK_GZ_SUFFIX  = L".pack.gz";
+const WCHAR * JAR_PACK_GZ_SUFFIX = L".jar.pack.gz";
+
+const DWORD JVM_EXTRACTION_TIMEOUT = 60000;  //60sec
 
 WCHAR * JAVA_REGISTRY_KEYS [] = {
     L"SOFTWARE\\JavaSoft\\Java Runtime Environment",
@@ -145,7 +151,7 @@ JavaVersion * getJavaVersionFromString(char * string, DWORD * result) {
                     char *p = string + 3;
                     long minor = c - '0';
                     *result = ERROR_OK;
-                    vers = (JavaVersion*) LocalAlloc(LPTR,sizeof(JavaVersion));
+                    vers = (JavaVersion*) LocalAlloc(LPTR, sizeof(JavaVersion));
                     vers->major  = major;
                     vers->minor  = minor;
                     vers->micro  = 0;
@@ -252,7 +258,7 @@ DWORD getJavaPropertiesFromOutput(LauncherProperties * props, char *str, JavaPro
         vers = getJavaVersionFromString(string, & result);
         if(javaProps != NULL) {
             writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... some java there", 1);
-            * javaProps = (JavaProperties *) LocalAlloc(LPTR,sizeof(JavaProperties));
+            * javaProps = (JavaProperties *) LocalAlloc(LPTR, sizeof(JavaProperties));
             (*javaProps)->version = vers;
             (*javaProps)->vendor   = javaVendor;
             (*javaProps)->osName   = osName;
@@ -344,7 +350,7 @@ char * getJavaVersionFormatted(const JavaProperties * javaProps) {
 
 
 JavaCompatible * newJavaCompatible() {
-    JavaCompatible * props = (JavaCompatible *) LocalAlloc(LPTR,sizeof(JavaCompatible));
+    JavaCompatible * props = (JavaCompatible *) LocalAlloc(LPTR, sizeof(JavaCompatible));
     props->minVersion = NULL;
     props->maxVersion = NULL;
     props->vendor = NULL;
@@ -504,15 +510,154 @@ void searchJavaFromEnvVariables(LauncherProperties * props) {
 }
 
 
+
+
+void unpackJars(LauncherProperties * props, WCHAR * jvmDir, WCHAR * startDir, WCHAR * unpack200exe) {
+    DWORD attrs;
+    DWORD dwError;
+    DWORD count = 0 ;
+    
+    if(!isOK(props)) return;
+    attrs = GetFileAttributesW(startDir);
+    if(attrs==INVALID_FILE_ATTRIBUTES) {
+        writeErrorA(props, OUTPUT_LEVEL_DEBUG, 1, "Error! Can`t get attributes of the file : ", startDir, GetLastError());
+        return;
+    }
+    if(attrs & FILE_ATTRIBUTE_DIRECTORY) { // is directory
+        WIN32_FIND_DATAW FindFileData;
+        HANDLE hFind = INVALID_HANDLE_VALUE;
+        
+        WCHAR * DirSpec = appendStringW(appendStringW(NULL, startDir), L"\\*" );
+        
+        // Find the first file in the directory.
+        hFind = FindFirstFileW(DirSpec, &FindFileData);
+        
+        if (hFind == INVALID_HANDLE_VALUE) {
+            writeErrorA(props, OUTPUT_LEVEL_DEBUG, 1, "Error! Can`t file with pattern ", DirSpec, GetLastError());
+        }
+        else {
+            // List all the other files in the directory.
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... listing directory ", 0);
+            writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, startDir, 1);
+            
+            while (FindNextFileW(hFind, &FindFileData) != 0 && isOK(props)) {
+                if(lstrcmpW(FindFileData.cFileName, L".")!=0 &&
+                        lstrcmpW(FindFileData.cFileName, L"..")!=0) {
+                    WCHAR * child = NULL;
+                    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... next item : ", 0);
+                    writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, FindFileData.cFileName, 1);
+                    child = appendStringW(appendStringW(appendStringW(NULL, startDir), FILE_SEP), FindFileData.cFileName);
+                    if(isDirectory(child)) {
+                        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... is directory ", 1);
+                        unpackJars(props, jvmDir, child, unpack200exe);
+                    } else  if(wcsstr(FindFileData.cFileName, JAR_PACK_GZ_SUFFIX)!=NULL) {
+                        WCHAR * jarName = appendStringW(appendStringW(
+                                appendStringW(NULL, startDir), FILE_SEP),
+                                appendStringNW(NULL, 0, FindFileData.cFileName,
+                                getLengthW(FindFileData.cFileName) - getLengthW(PACK_GZ_SUFFIX)));
+                        WCHAR * unpackCommand = NULL;
+                        
+                        
+                        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... it is a packed jar ", 1);
+                        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... jar name : ", 0);
+                        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, jarName, 1);
+                        
+                        
+                        appendCommandLineArgument(&unpackCommand, unpack200exe);
+                        appendCommandLineArgument(&unpackCommand, child);
+                        appendCommandLineArgument(&unpackCommand, jarName);
+                        
+                        executeCommand(props, unpackCommand, NULL, UNPACK200_EXTRACTION_TIMEOUT, props->stdoutHandle, props->stderrHandle, NORMAL_PRIORITY_CLASS);
+                        FREE(unpackCommand);
+                        if(!isOK(props)) {
+                            if(props->status==ERROR_PROCESS_TIMEOUT) {
+                                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "... could not unpack file : timeout", 1);
+                            } else {
+                                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "... an error occured unpacking the file", 1);
+                            }
+                            props->exitCode = props->status;
+                        }
+                        FREE(jarName);
+                    }
+                    FREE(child);
+                }
+            }
+            
+            dwError = GetLastError();
+            FindClose(hFind);
+            if (dwError != ERROR_NO_MORE_FILES) {
+                writeErrorA(props, OUTPUT_LEVEL_DEBUG, 1, "Error! Can`t find file with pattern : ", DirSpec, dwError);
+            }
+        }
+        FREE(DirSpec);
+    }
+    
+}
+void installJVM(LauncherProperties * props, LauncherResource *jvm) {    
+    WCHAR * command = NULL;
+    WCHAR * jvmDir = getParentDirectory(jvm->resolved);
+    
+    jvmDir = appendStringW(jvmDir, L"\\_jvm");
+    createDirectory(props, jvmDir);
+    if(!isOK(props)) {
+        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "... cannot create dir for JVM extraction :", 0);
+        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 1, jvmDir, 1);
+        FREE(jvmDir);
+        return;
+    }
+    
+    appendCommandLineArgument(&command, jvm->resolved);
+    appendCommandLineArgument(&command, L"-d");
+    appendCommandLineArgument(&command, jvmDir);
+    
+    executeCommand(props, command, jvmDir, JVM_EXTRACTION_TIMEOUT, props->stdoutHandle, props->stderrHandle, NORMAL_PRIORITY_CLASS);
+    FREE(command);
+    if(!isOK(props)) {
+        if(props->status==ERROR_PROCESS_TIMEOUT) {
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "... could not extract JVM : timeout", 1);
+        } else {
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "... an error occured during running JVM extraction file", 1);
+        }
+        props->exitCode = props->status;
+    } else {
+        WCHAR * unpack200exe = appendStringW(appendStringW(NULL, jvmDir), UNPACK200_EXE_SUFFIX);
+        if(fileExists(unpack200exe)) {
+            unpackJars(props, jvmDir, jvmDir, unpack200exe);
+        } else {
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "... no unpack200 command", 1);
+            props->status = ERROR_BUNDLED_JVM_EXTRACTION;
+        }
+        if(!isOK(props)) {
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "Could not unpack200 the JVM jars", 1);
+        }
+        FREE(unpack200exe);
+    }
+    FREE(jvm->resolved);
+    jvm->resolved = jvmDir;
+}
 void findSystemJava(LauncherProperties * props) {
     if ( props->jvms->size > 0 ) {
         DWORD i=0;
-        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Search jvm using some predefined locations", 1);        
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Search jvm using some predefined locations", 1);
         for(i=0;i<props->jvms->size && !isTerminated(props);i++) {
             resolvePath(props, props->jvms->items[i]);
-            trySetCompatibleJava(props->jvms->items[i]->resolved, props);
-            if(props->java!=NULL) {
-                break;
+            if(props->jvms->items[i]->type==0) { // bundled
+                installJVM(props, props->jvms->items[i]);
+                if(!isOK(props)) {
+                    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... error occured during JVM extraction", 1);
+                    props->status = ERROR_BUNDLED_JVM_EXTRACTION;
+                    return;
+                }
+            }
+            if(isTerminated(props)) return;
+            if(isOK(props)) {
+                trySetCompatibleJava(props->jvms->items[i]->resolved, props);
+                if(props->java!=NULL) {
+                    break;
+                } else if(props->jvms->items[i]->type==0) {
+                    props->status = ERROR_BUNDLED_JVM_VERIFICATION;
+                    return;
+                }
             }
         }
     }

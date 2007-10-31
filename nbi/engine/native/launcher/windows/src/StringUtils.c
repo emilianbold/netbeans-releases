@@ -54,7 +54,9 @@ const char * INTEGRITY_ERROR_PROP         = "nlw.integrity";
 const char * OUTPUT_ERROR_PROP            = "nlw.output.error";
 const char * JAVA_PROCESS_ERROR_PROP      = "nlw.java.process.error";
 const char * EXTERNAL_RESOURE_LACK_PROP   = "nlw.missing.external.resource";
-   
+const char * BUNDLED_JVM_EXTRACT_ERROR_PROP = "nlw.bundled.jvm.extract.error";
+const char * BUNDLED_JVM_VERIFY_ERROR_PROP  = "nlw.bundled.jvm.verify.error";
+
 const char * ARG_OUTPUT_PROPERTY          = "nlw.arg.output";
 const char * ARG_JAVA_PROP                = "nlw.arg.javahome";
 const char * ARG_DEBUG_PROP               = "nlw.arg.verbose";
@@ -189,7 +191,11 @@ WCHAR * getDefaultString(const char *name) {
         return L"NBI Launcher";
     } else if(lstrcmpA(name, EXTERNAL_RESOURE_LACK_PROP)==0) {
         return L"Can`t run launcher\nThe following file is missing : %s";
-    } 
+    } else if(lstrcmpA(name, BUNDLED_JVM_EXTRACT_ERROR_PROP)==0) {
+        return L"Can`t run prepare bundled JVM";
+    } else if(lstrcmpA(name, BUNDLED_JVM_VERIFY_ERROR_PROP)==0) {
+        return L"Can`t run verify bundled JVM";
+    }
     return NULL;   
 }
 
