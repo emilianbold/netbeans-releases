@@ -406,6 +406,13 @@ is divided into following sections:
                         </nbjpdareload>
                     </sequential>
                 </macrodef>
+                <macrodef>
+                    <xsl:attribute name="name">nbjpdaappreloaded</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
+                    <sequential>
+                        <nbjpdaappreloaded />
+                    </sequential>
+                </macrodef>
             </target>
             
             <target name="-init-debug-args">
@@ -930,6 +937,7 @@ is divided into following sections:
             
             <target name="run-deploy">
                 <xsl:attribute name="depends">init,-init-deploy,compile,library-inclusion-in-archive,dist,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy</xsl:attribute>
+                <nbjpdaappreloaded />
             </target>
             
             <target name="-run-deploy-nb" if="netbeans.home">

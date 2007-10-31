@@ -458,6 +458,13 @@ introduced by support for multiple source roots. -jglick
                         </nbjpdareload>
                     </sequential>
                 </macrodef>
+                <macrodef>
+                    <xsl:attribute name="name">nbjpdaappreloaded</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
+                    <sequential>
+                        <nbjpdaappreloaded />
+                    </sequential>
+                </macrodef>
             </target>
             
             <target name="-init-debug-args">
@@ -1213,6 +1220,7 @@ introduced by support for multiple source roots. -jglick
             
             <target name="run-deploy">
                 <xsl:attribute name="depends">init,compile,compile-jsps,-do-compile-single-jsp,-pre-dist,-do-tmp-dist-with-manifest,-do-tmp-dist-without-manifest,-pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,-post-run-deploy</xsl:attribute>
+                <nbjpdaappreloaded />
             </target>
             
             <target name="-run-deploy-nb" if="netbeans.home">
