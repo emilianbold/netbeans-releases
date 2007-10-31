@@ -325,6 +325,12 @@ public class BindingProperty extends PropertySupport.ReadWrite<MetaBinding> {
             return supportsDefaultValue;
         }
 
+        @Override
+        public void restoreDefaultValue() throws IllegalAccessException, InvocationTargetException {
+            super.restoreDefaultValue();
+            getCurrentEditor().setValue(getValue());
+        }
+
     }
     
 }
