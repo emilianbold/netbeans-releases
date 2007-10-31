@@ -60,6 +60,9 @@ import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.Node.IncludeDirective;
@@ -144,12 +147,14 @@ public class SimplifiedJSPServlet {
             processingSuccessful = false;
             return;
         }
-        
-        JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(doc, fobj, false, false);
-        
-        if (parseResult == null || !parseResult.isParsingSuccess()){
-            processingSuccessful = false;
-            return;
+         //Workaround of issue #120195 - Deadlock in jspparser while reformatting JSP
+        //Needs to be removed after properly fixing the issue
+        if (!DocumentUtilities.isWriteLocked(doc)) {
+            JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(doc, fobj, false, false);
+            if (parseResult == null || !parseResult.isParsingSuccess()) {
+                processingSuccessful = false;
+                return;
+            }
         }
         
         final StringBuilder buffScriplets = new StringBuilder();
@@ -216,10 +221,14 @@ public class SimplifiedJSPServlet {
     private void processIncludes()  {
         PageInfo pageInfo = getPageInfo();
         
-        if (pageInfo != null){
-            for (String preludePath : (List<String>)pageInfo.getIncludePrelude()){
-                processIncludedFile(preludePath);
-            }
+        if (pageInfo == null) {
+            //if we do not get pageinfo it is unlikely we will get something reasonable from 
+            //jspSyntax.getParseResult()...
+            return ;
+        }
+        
+        for (String preludePath : (List<String>)pageInfo.getIncludePrelude()){
+            processIncludedFile(preludePath);
         }
         
         Visitor visitor = new Visitor() {
@@ -316,9 +325,8 @@ public class SimplifiedJSPServlet {
     private String[] getImports() {
         PageInfo pi = getPageInfo();
         if (pi == null) {
-            //report error but do not break the entire CC
-            logger.log(Level.INFO, null, "PageInfo obtained from JspParserAPI.ParseResult is null");
-            return null;
+            //we need at least some basic imports
+            return new String[]{"javax.servlet.*", "javax.servlet.http.*", "javax.servlet.jsp.*"};
         }
         List<String> imports = pi.getImports();
         return imports.toArray(new String[imports.size()]);
@@ -340,11 +348,20 @@ public class SimplifiedJSPServlet {
     }
     
     private PageInfo getPageInfo() {
+        //Workaround of issue #120195 - Deadlock in jspparser while reformatting JSP
+        //Needs to be removed after properly fixing the issue
+        if(DocumentUtilities.isWriteLocked(doc)) {
+            return null;
+        }
+        
         JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(doc, fobj, true, false);
 
         if (parseResult != null) {
             return parseResult.getPageInfo();
         }
+
+        //report error but do not break the entire CC
+        logger.log(Level.INFO, null, "PageInfo obtained from JspParserAPI.ParseResult is null");
 
         return null;
     }
