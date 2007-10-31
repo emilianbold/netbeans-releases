@@ -349,6 +349,9 @@ public final class NavigatorController implements LookupListener, ActionListener
             }
             selPanel.panelDeactivated();
         }
+
+        // #67849: curNode's lookup cleanup, held through ClientsLookup delegates
+        clientsLookup.lookup(Node.class);
         
         if (areNewProviders) {
             NavigatorPanel newSel = providers.get(0);
@@ -476,22 +479,6 @@ public final class NavigatorController implements LookupListener, ActionListener
             return nodes.toArray(new Node[0]);
         }
     }
-    
-    /** Impl of Lookup.Provider to provide Lookup suitable for clients of
-     * Navigator API. Delegates to lookup of current node.
-     *
-     * Public only due to impl reasons, please treate as private.
-     */ 
-/*    public Lookup getLookup () {
-        // #63165: null check must be here, because curNode may be null sometimes, 
-        // and as this lookup is given to clients, this method can be called 
-        // anytime, so we can't avoid the situation where curNode is null
-        if (curNodes == null) {
-            return Lookup.EMPTY;
-        }
-        
-        return new ProxyLookup(curNodes.getLookup();
-    } */
     
     /** Retrieves and returns UndoRedo support from selected panel if panel 
      * offers UndoRedo (implements NavigatorPanelWithUndo).
@@ -660,7 +647,7 @@ public final class NavigatorController implements LookupListener, ActionListener
                     curNodesLookups[i] = it.next().getLookup();
                 }
             }
-            
+System.out.println("setting lookups, amount: " + curNodes.size());            
             setLookups(curNodesLookups);
         }
         
