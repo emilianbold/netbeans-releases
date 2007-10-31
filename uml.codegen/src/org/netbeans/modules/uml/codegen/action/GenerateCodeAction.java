@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.uml.codegen.action;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -75,6 +76,8 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -87,44 +90,6 @@ import org.openide.util.actions.CookieAction;
  */
 public class GenerateCodeAction extends CookieAction
 {
-    public enum CodeGenType 
-    {
-        Class, 
-        Interface, 
-        Enumeration, 
-        UseCase, 
-        Actor,
-        Component,
-        Datatype,
-        Invocation,
-        Lifeline,
-        Node,
-        SimpleState,
-        AbortedFinalState,
-        ActivityFinalNode,
-        ChoicePseudoState,
-        CombinedFragment,
-        Comment,
-        CompositeState,
-        DataStore,
-        Decision,
-        DeepHistoryState,
-        DeploymentSpecification,
-        DerivationClassifier,
-        EntryPointState,
-        FinalState,
-        FlowFinal,
-        InitialNode,
-        JunctionState,
-        Package,
-        ParameterUsage,
-        ShallowHistoryState,
-        Signal,
-        SubmachineState,
-        TemplateClass
-    };
-    
-    
     private final static int GC_NODE_PROJECT = 1;
     private final static int GC_NODE_NAMESPACES = 2;
     private final static int GC_NODE_CODEGENS = 4;
@@ -209,10 +174,31 @@ public class GenerateCodeAction extends CookieAction
         UMLProjectProperties prjProps = 
             retrieveUMLProject().getUMLProjectProperties();
         
+        String targetFolderName = prjProps.getCodeGenFolderLocation();
+        boolean hasTargetJavaPrj = true;
+        
+        if (targetFolderName == null || targetFolderName.length() == 0)
+        {
+            hasTargetJavaPrj = false;
+        }
+        
+        else
+        {
+            FileObject targetSrcFolderFO = 
+                FileUtil.toFileObject(new File(targetFolderName));
+
+            if (targetSrcFolderFO == null || !targetSrcFolderFO.isValid())
+            {
+                hasTargetJavaPrj = false;
+            }
+        }
+        
+//        if (!hasTargetJavaPrj)
+        
         boolean templatesEnabled = CodeGenUtil.areTemplatesEnabled(
             prjProps.getCodeGenTemplatesArray());
         
-        if (prjProps.isCodeGenShowDialog() || !templatesEnabled)
+        if (prjProps.isCodeGenShowDialog() || !hasTargetJavaPrj || !templatesEnabled)
         {
             // display gen code options dialog
             GenerateCodePanel gcPanel = new GenerateCodePanel(
@@ -223,44 +209,14 @@ public class GenerateCodeAction extends CookieAction
 
             gcPanel.requestFocus();
 
-            if (!displayDialogDescriptor(gcPanel, templatesEnabled))
+            if (!displayDialogDescriptor(
+                gcPanel, hasTargetJavaPrj, templatesEnabled))
+            {
                 return;
-
+            }
+            
             gcPanel.storeProjectProperties();
         }
-        
-        // if UML project is dirty, save it first
-//        if (parentProject.isDirty())
-//        {
-//            // Default to autosave the model from now on
-//            boolean prefVal = NbPreferences.forModule(DummyCorePreference.class)
-//                .getBoolean("UML_Prompt_to_Save_Project", true); // NOI18N
-//            
-//            if (prefVal)
-//            {
-//                Object result = SaveNotifier.getDefault().displayNotifier(
-//                    NbBundle.getMessage(GenerateCodeAction.class,
-//                        "MSG_DialogTitle_AuthorizeUMLProjectSave"), // NOI18N
-//                        "UML Model", // NOI18N
-//                    parentProject.getName());
-//
-//                if (result == NotifyDescriptor.CANCEL_OPTION || 
-//                    result == NotifyDescriptor.CLOSED_OPTION)
-//                {
-//                    // don't save project means abort code gen action
-//                    return;
-//                }
-//
-//                if (result == SaveNotifier.SAVE_ALWAYS_OPTION)
-//                {
-//                    NbPreferences.forModule(DummyCorePreference.class)
-//                        .putBoolean("UML_Prompt_to_Save_Project", false); // NOI18N
-//                }
-//            }
-//            
-//            // umlProject.saveProject();
-//            // parentProject.save(parentProject.getFileName(), true);
-//        }
         
         ETList<IElement> selElements = new ETArrayList<IElement>();
         
@@ -323,20 +279,13 @@ public class GenerateCodeAction extends CookieAction
         final boolean backupSources = prjProps.isCodeGenBackupSources();
     	final boolean generateMarkers = prjProps.isCodeGenUseMarkers();
         final boolean addMarkers = prjProps.isCodeGenAddMarkers();
+        final boolean showGCDialog = prjProps.isCodeGenShowDialog();
         
         GenerateCodeTask task = new GenerateCodeTask(
-            settings, selElements, parentProject.getName(), 
-            destFolderName, backupSources, generateMarkers, addMarkers);
+            settings, selElements, parentProject.getName(), destFolderName, 
+            backupSources, generateMarkers, addMarkers, showGCDialog);
         
         processor.post(task);
-
-        // even though the user is prompted to save dirty UML project before
-        // code gen, somehow, the UML project gets dirty again during Code Gen, 
-        // so we have to save it again
-//        if (parentProject.isDirty())
-//            parentProject.save(parentProject.getFileName(), true);
-
-        // createJavaProject(ProjectUtil.getOpenJavaProjects()[0]);
     }
 
     private final static String COLON_COLON = "::"; // NOI18N
@@ -364,7 +313,9 @@ public class GenerateCodeAction extends CookieAction
     }
     
     private boolean displayDialogDescriptor(
-        GenerateCodePanel gcPanel, boolean templatesEnabled)
+        GenerateCodePanel gcPanel, 
+        boolean hasTargetJavaPrj, 
+        boolean templatesEnabled)
     {
         JButton detailsButton = new JButton();
         detailsButton.setActionCommand("TEMPLATES"); // NOI18N
@@ -707,4 +658,41 @@ public class GenerateCodeAction extends CookieAction
         //Kris Richards - returning the default value.
         return "Unnamed" ; // NOI18N    
     }
+
+    public enum CodeGenType 
+    {
+        Class, 
+        Interface, 
+        Enumeration, 
+        UseCase, 
+        Actor,
+        Component,
+        Datatype,
+        Invocation,
+        Lifeline,
+        Node,
+        SimpleState,
+        AbortedFinalState,
+        ActivityFinalNode,
+        ChoicePseudoState,
+        CombinedFragment,
+        Comment,
+        CompositeState,
+        DataStore,
+        Decision,
+        DeepHistoryState,
+        DeploymentSpecification,
+        DerivationClassifier,
+        EntryPointState,
+        FinalState,
+        FlowFinal,
+        InitialNode,
+        JunctionState,
+        Package,
+        ParameterUsage,
+        ShallowHistoryState,
+        Signal,
+        SubmachineState,
+        TemplateClass
+    };
 }

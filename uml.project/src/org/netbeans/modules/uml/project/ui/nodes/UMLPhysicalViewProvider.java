@@ -55,14 +55,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
 import org.netbeans.modules.uml.project.UMLProject;
 import org.netbeans.modules.uml.project.UMLProjectHelper;
-import org.netbeans.modules.uml.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.uml.project.ui.customizer.UMLImportsUiSupport;
 import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
@@ -75,6 +76,7 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -93,6 +95,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
+
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
@@ -102,7 +105,10 @@ import org.netbeans.modules.uml.project.ui.nodes.actions.NewElementType;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewPackageType;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Mutex;
@@ -334,6 +340,7 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
             brokenLinksAction = new BrokenLinksAction();
         }
         
+        @Override
         public Image getIcon(int type)
         {
             Image original = super.getIcon(type);
@@ -343,6 +350,7 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
                     : original;
         }
         
+        @Override
         public Image getOpenedIcon(int type)
         {
             Image original = super.getOpenedIcon(type);
@@ -352,6 +360,7 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
                     : original;
         }
         
+        @Override
         public String getHtmlDisplayName()
         {
             String dispName = super.getDisplayName();
@@ -372,31 +381,37 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
                     : null;
         }
         
+        @Override
         public Action[] getActions(boolean context)
         {
             return getAdditionalActions();
         }
         
+        @Override
         public boolean canRename()
         {
             return false;
         }
         
+        @Override
         public boolean canCopy()
         {
             return false;
         }
         
+        @Override
         public boolean canCut()
         {
             return true;
         }
         
+        @Override
         public boolean canDestroy()
         {
             return true;
         }
         
+        @Override
         public void destroy() throws IOException
         {
             NotifyDescriptor descriptor=new NotifyDescriptor.Confirmation(
@@ -453,6 +468,7 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
             }
         }
         
+        @Override
         public Node.Cookie getCookie(Class type)
         {
             Node.Cookie cookie = super.getCookie(type);
@@ -513,6 +529,7 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
          *
          * @return An array of new type operations that are allowed.
          */
+        @Override
         public NewType[] getNewTypes()
         {
             return new NewType[]
@@ -556,13 +573,9 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
                     DataObject dobj = DataObject.find(fo);
                     FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
                     Lookup.Template query = new Lookup.Template(Object.class);
-                    Lookup lookup = actionRegistry.getLookup();
-                    Iterator it = lookup.lookup(query).allInstances().iterator();
-                    //                    if (it.hasNext())
-                    //                    {
-                    //                        actions.add(null);
-                    //                    }
-                    
+                    Lookup lkup = actionRegistry.getLookup();
+                    Iterator it = lkup.lookup(query).allInstances().iterator();
+
                     while (it.hasNext())
                     {
                         Object next = it.next();
@@ -581,20 +594,6 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
                 // data folder for exitinf fileobject expected
                 ErrorManager.getDefault().notify(ex);
             }
-            
-            // Condition for Generate Code Menu
-            //            actions.add(SystemAction.get(
-            //                org.netbeans.modules.uml.project.ui.nodes.actions
-            //                    .GenerateCodeAction.class));
-            //
-            //            GenerateCodeAction code = new GenerateCodeAction(mProject);
-            //            boolean status = code.isAssociatedWithImpl();
-            //
-            //            if (!status)
-            //            {
-            //                actions.add(code);
-            //                actions.add(null);
-            //            }
             
             addContextMenus(actions);
             actions.add(null);
@@ -664,6 +663,13 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
                 
                 mHelper.scanSourceGroups();
                 run();
+
+// TODO: conover - this is the place to add code to also fix the Gen Code path if necessary.
+//                EditableProperties edProps = mHelper.getAntProjectHelper()
+//                    .getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+//                
+//                String refJavaPrj = edProps.getProperty(
+//                    UMLProjectProperties.REFERENCED_JAVA_PROJECT) ;
             }
             
             public void propertyChange(PropertyChangeEvent evt)
@@ -717,6 +723,7 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
             mImportSupport = importSupport;
         }
         
+        @Override
         protected void addNotify()
         {
             super.addNotify();
@@ -724,6 +731,7 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
             setKeys( getKeys() );
         }
         
+        @Override
         protected void removeNotify()
         {
             setKeys(Collections.EMPTY_SET);
@@ -815,114 +823,7 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
     }
     
     
-    /** The special properties action
-     */
-    private static class PreselectPropertiesAction extends AbstractAction
-    {
-        private final Project project;
-        private final String nodeName;
-        private final String panelName;
-        
-        public PreselectPropertiesAction( Project project, String nodeName )
-        {
-            this(project, nodeName, null);
-        }
-        
-        public PreselectPropertiesAction( Project project, String nodeName, String panelName )
-        {
-            super( NbBundle.getMessage( UMLPhysicalViewProvider.class,
-                    "LBL_Properties_Action" ) ); // NOI18N
-            this.project = project;
-            this.nodeName = nodeName;
-            this.panelName = panelName;
-        }
-        
-        public void actionPerformed( ActionEvent e )
-        {
-            // J2SECustomizerProvider cp =
-            //    (J2SECustomizerProvider)project.getLookup()
-            //        .lookup( J2SECustomizerProvider.class );
-            
-            CustomizerProviderImpl cp =
-                    (CustomizerProviderImpl)project.getLookup()
-                    .lookup( CustomizerProviderImpl.class );
-            
-            if (cp != null)
-                cp.showCustomizer(nodeName, panelName);
-        }
-    }
-    
-    
-    
-    //    class GenerateCodeAction extends AbstractAction
-    //    {
-    //        private final UMLProject project;
-    //
-    //        /** Creates a new instance of GenerateCodeAction */
-    //        public GenerateCodeAction(UMLProject p)
-    //        {
-    //            super(NbBundle.getMessage(GenerateCodeAction.class,
-    //                "LBL_GenerateCodeAction")); //NOI18N
-    //
-    //            this.project = p;
-    //        }
-    //
-    //        public void actionPerformed(ActionEvent e)
-    //        {
-    //            if (!isAssociatedWithImpl())
-    //            {
-    //                // If the java project reference is already set, you can go
-    //                // ahead and invoke code generation / synchronization
-    //                CodeGeneratorAction codeGenerator = new CodeGeneratorAction();
-    //                codeGenerator.generateCode(project);
-    //            }
-    //
-    //            else
-    //            {    // If java project reference is not set bring up the project customizer.
-    //                // Debug.out.println("UMLPhysicalViewProvider():GenerateCodeAction(): Calling generate code after user customizes project");
-    //                CustomizerProviderImpl cp =
-    //                    (CustomizerProviderImpl)project.getLookup()
-    //                        .lookup( CustomizerProviderImpl.class );
-    //
-    //                // After properties are set generate code.
-    //                cp.setGenerateCode(true);
-    //                CommonProjectActions.customizeProjectAction().actionPerformed(e);
-    //            }
-    //        }
-    //
-    //        public boolean isAssociatedWithImpl()
-    //        {
-    //            String refJavaProject;
-    //
-    //            AntProjectHelper umlAntProjectHelper =
-    //                (AntProjectHelper)((UMLProjectHelper)
-    //                    project.getLookup().lookup(UMLProjectHelper.class))
-    //                        .getAntProjectHelper();
-    //
-    //            EditableProperties editableProperties =
-    //                umlAntProjectHelper.getProperties(
-    //                    AntProjectHelper.PROJECT_PROPERTIES_PATH);
-    //
-    //            refJavaProject = (String)editableProperties
-    //                .getProperty(UMLProjectProperties.REFERENCED_JAVA_PROJECT);
-    //
-    //            // You can also check the uml project type here to see whether it is Implementation, Analysis or Design.
-    //            // But however currently we support creating a new UML project of type Implementation which might not have
-    //            // any associated Java project until 'Generate code' is called initially.
-    //            // So here we are checking for the REFERENCED_JAVA_PROJECT field directly.
-    //            if (refJavaProject == null || refJavaProject.equals("")) // NOI18N
-    //                return true;
-    //
-    //            else
-    //                return false;
-    //        }
-    //
-    //        public boolean isEnabled()
-    //        {
-    //            return true;
-    //        }
-    //    }
-    
+
     /**
      * Retrieve the context actions added by other modules.
      *
@@ -930,10 +831,10 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
      */
     protected void addContextMenus(List actions)
     {
-        UMLElementNode node = new UMLElementNode();
+        UMLElementNode umlElNode = new UMLElementNode();
         
         Action[] nodeActions =
-                node.getActionsFromRegistry("Actions/UML/Search"); // NOI18N
+            umlElNode.getActionsFromRegistry("Actions/UML/Search"); // NOI18N
         
         for (Action curAction : nodeActions)
         {
@@ -944,23 +845,11 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
             else if (curAction.isEnabled())
                 actions.add(curAction);
         }
+        
         actions.add(null);
         
-        //        nodeActions =
-        //            node.getActionsFromRegistry("contextmenu/uml/sync"); // NOI18N
-        //
-        //        for (Action curAction : nodeActions)
-        //        {
-        //            if (curAction == null)
-        //                // Make Sure the Seperators are kept.
-        //                actions.add(null);
-        //
-        //            else if (curAction.isEnabled())
-        //                actions.add(curAction);
-        //        }
-        
         nodeActions =
-                node.getActionsFromRegistry("contextmenu/uml/generate"); // NOI18N
+            umlElNode.getActionsFromRegistry("contextmenu/uml/generate"); // NOI18N
         
         for (Action curAction : nodeActions)
         {

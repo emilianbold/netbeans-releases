@@ -66,6 +66,7 @@ public class GenerateCodeTask extends AbstractNBTask
     private boolean backup = true;
     private boolean generateMarkers = true;
     private boolean addMarkers = false;
+    private boolean showGCDialog = true;
     
     //Kris Richards - this is no longer an option. Set to default value.
     public final static String ATTR_PREFIX = "m"; // NOI18N
@@ -77,7 +78,8 @@ public class GenerateCodeTask extends AbstractNBTask
         String destFolderName,
         boolean backupFiles,
         boolean generateMarkers,
-        boolean addMarkers)
+        boolean addMarkers,
+        boolean showGCDialog)
     {
         super(settings);
         elements = selElements;
@@ -86,6 +88,7 @@ public class GenerateCodeTask extends AbstractNBTask
         backup = backupFiles;
         this.generateMarkers = generateMarkers;
         this.addMarkers = addMarkers;
+        this.showGCDialog = showGCDialog;
     }
     
     

@@ -50,8 +50,6 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 
 import org.netbeans.modules.uml.project.UMLProject;
 import org.netbeans.modules.uml.project.UMLProjectGenerator;
@@ -535,13 +533,12 @@ public class UMLProjectProperties
     
     public File getJavaSourceRootFolder()
     {
-        if (referencedJavaSourceRootsModel == null ||
-            referencedJavaSourceRootsModel.getSourceGroups().length == 0)
-        {
-            return null;
-        }
-        
-        return FileUtil.toFile(referencedJavaSourceRootsModel.
-            getSourceGroup(0).getRootFolder());
+        return 
+            (referencedJavaSourceRootsModel == null ||
+             referencedJavaSourceRootsModel.getSourceGroups().length == 0 ||
+             referencedJavaSourceRootsModel.getSourceGroup(0) == null)
+             ? null
+             : FileUtil.toFile(referencedJavaSourceRootsModel.
+                getSourceGroup(0).getRootFolder());
     }
 }

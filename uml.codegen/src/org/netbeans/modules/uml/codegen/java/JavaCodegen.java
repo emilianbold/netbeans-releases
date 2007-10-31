@@ -95,6 +95,9 @@ public class JavaCodegen implements ICodeGenerator
         boolean genMarkers = Boolean.valueOf(
             props.getProperty("generateMarkers", "true")).booleanValue(); // NOI18N
 
+        boolean showGCDialog = Boolean.valueOf(
+            props.getProperty("showGCDialog", "true")).booleanValue(); // NOI18N
+
         int errorsCount = 0;
         int total = elements.size();
 
@@ -109,6 +112,9 @@ public class JavaCodegen implements ICodeGenerator
 
         task.log(task.SUMMARY, LOG_INDENT +
             getBundleMessage("MSG_GenerateMarkers") + " - " + genMarkers); // NOI18N
+
+        task.log(task.SUMMARY, LOG_INDENT +
+            getBundleMessage("MSG_ShowGCDialog") + " - " + showGCDialog); // NOI18N
 
         task.log(task.SUMMARY, ""); // NOI18N
 
