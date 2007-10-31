@@ -14,5 +14,5 @@ public interface TestFacadeLocal {
 
     Test find(Object id);
 
-    List findAll();
+    List<Test> findAll();
 }

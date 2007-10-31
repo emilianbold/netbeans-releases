@@ -26,7 +26,7 @@ public class TestFacade implements TestFacadeLocal, TestFacadeRemote {
         return em.find(Test.class, id);
     }
 
-    public List findAll() {
+    public List<Test> findAll() {
         return em.createQuery("select object(o) from Test as o").getResultList();
     }
 }

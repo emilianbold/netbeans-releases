@@ -14,5 +14,5 @@ public interface TestFacadeRemote {
 
     Test find(Object id);
 
-    List findAll();
+    List<Test> findAll();
 }
