@@ -243,9 +243,15 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         List<String> names = new ArrayList<String> ();
         if (plugins != null && ! plugins.isEmpty ()) {
             for (UpdateElement el : plugins) {
-                names.add ("<b>"  + el.getDisplayName () + "</b> " // NOI18N
-                        + NbBundle.getMessage (OperationDescriptionStep.class, "OperationDescriptionStep_PluginVersionFormat",
-                        el.getSpecificationVersion ()) + "<br>"); // NOI18N
+                String updatename;
+                updatename = "<b>"  + el.getDisplayName () + "</b> " // NOI18N
+                        + NbBundle.getMessage (OperationDescriptionStep.class, "OperationDescriptionStep_PluginVersionFormat",  // NOI18N
+                        el.getSpecificationVersion ()) + "<br>"; // NOI18N
+                String notification = el.getNotification ();
+                if (notification != null && notification.length () > 0) {
+                    updatename += "<font color=\"red\">" + notification + "</font><br><br>";  // NOI18N
+                }
+                names.add (updatename);
             }
             Collections.sort (names);
             for (String name : names) {

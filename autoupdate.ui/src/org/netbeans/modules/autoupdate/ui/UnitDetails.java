@@ -109,9 +109,17 @@ public class UnitDetails extends DetailsPanel{
                 if (u.getHomepage() != null && u.getHomepage().length() > 0) {
                     text += "<b>" + getBundle ("UnitDetails_Plugin_Homepage") + "</b><a href=\"" + u.getHomepage() + "\">" + u.annotate(u.getHomepage()) + "</a><br>"; // NOI18N
                 }
+                                
+                if (u.getNotification() != null && u.getNotification().length () > 0) {
+                    text += "<br><h4>" + getBundle ("UnitDetails_Plugin_Notification") + "</h4>"; // NOI18N
+                    text += "<font color=\"red\">"; // NOI18N
+                    text += u.annotate(u.getNotification ());
+                    text += "</font><br>";  // NOI18N
+                }
+                
                 if (u.getDescription() != null && u.getDescription().length () > 0) {
                     text += "<br><h4>" + getBundle ("UnitDetails_Plugin_Description") + "</h4>"; // NOI18N
-                    text += (u.getDescription() == null ? "" : u.annotate(u.getDescription ()));
+                    text += u.annotate(u.getDescription ());
                 }
             } catch (CharConversionException e) {
                 err.log (Level.INFO, null, e);

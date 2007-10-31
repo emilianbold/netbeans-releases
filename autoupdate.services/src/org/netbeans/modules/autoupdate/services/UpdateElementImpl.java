@@ -86,6 +86,8 @@ public abstract class UpdateElementImpl extends Object {
     
     public abstract String getDescription ();
     
+    public abstract String getNotification();
+    
     public abstract String getAuthor ();
     
     public abstract String getHomepage ();

@@ -119,6 +119,10 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         return description;
     }
     
+    public String getNotification() {
+        return null;
+    }
+    
     public String getAuthor () {
         String res = "";
         Set<String> authors = new HashSet<String> ();

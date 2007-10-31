@@ -198,6 +198,10 @@ public abstract class Unit {
         return getRelevantElement ().getDescription ();
     }
     
+    public String getNotification () {
+        return getRelevantElement ().getNotification ();
+    }
+    
     public String getAuthor () {
         return getRelevantElement ().getAuthor ();
     }

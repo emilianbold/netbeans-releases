@@ -116,12 +116,15 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
     public String getDescription () {
         if (description == null) {
             description = (String) moduleInfo.getLocalizedAttribute ("OpenIDE-Module-Long-Description");
-            String notification = item.getModuleNotification ();
-            if (notification != null && notification.length () > 0) {
-                description = NbBundle.getMessage (ModuleUpdateElementImpl.class, "ModuleUpdateElementImpl_ModuleNotification", description, notification.trim ());
-            }
         }
         return description;
+    }
+    
+    public String getNotification() {
+        String notification = item.getModuleNotification ();
+        if (notification != null)
+            notification = notification.trim();
+        return notification;
     }
     
     public String getAuthor () {

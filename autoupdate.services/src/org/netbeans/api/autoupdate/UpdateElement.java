@@ -110,6 +110,14 @@ public final class UpdateElement {
         return impl.getDescription ();
     }
     
+    /** Returns the special notification text of update.
+     * 
+     * @return notification text or null
+     */
+    public String getNotification () {
+        return impl.getNotification();
+    }
+    
     /** Returns name of <code>UpdateProvider</code>
      * 
      * @return name of UpdateProvider

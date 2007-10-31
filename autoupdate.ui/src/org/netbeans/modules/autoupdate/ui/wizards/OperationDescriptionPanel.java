@@ -41,7 +41,11 @@
 
 package org.netbeans.modules.autoupdate.ui.wizards;
 
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkEvent.EventType;
+import javax.swing.event.HyperlinkListener;
 import org.jdesktop.layout.GroupLayout;
+import org.netbeans.modules.autoupdate.ui.Utilities;
 
 /**
  *
@@ -75,6 +79,15 @@ public class OperationDescriptionPanel extends javax.swing.JPanel {
         tpPrimaryPlugins.setContentType ("text/html"); // NOI18N
         tpPrimaryPlugins.setEditable(false);
         tpPrimaryPlugins.setOpaque (false);
+        tpPrimaryPlugins.addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent hlevt) {
+                if (EventType.ACTIVATED == hlevt.getEventType()) {
+                    assert hlevt.getURL() != null;
+                    Utilities.showURL(hlevt.getURL());
+                }
+            }
+        });
+
 
         tpDependingTitle.setContentType ("text/html"); // NOI18N
         tpDependingTitle.setEditable(false);
