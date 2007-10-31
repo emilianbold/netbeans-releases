@@ -1343,7 +1343,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
                     switch (type.getKind()) {
                         case TYPEVAR:
-                            type = ((TypeVariable)type).getUpperBound();
+                            while(type != null && type.getKind() == TypeKind.TYPEVAR)
+                                type = ((TypeVariable)type).getUpperBound();
                             if (type == null)
                                 return;
                             type = controller.getTypes().capture(type);
