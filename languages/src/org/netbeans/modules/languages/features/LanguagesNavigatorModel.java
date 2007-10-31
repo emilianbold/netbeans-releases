@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.languages.features;
 
+import java.util.LinkedList;
 import javax.swing.event.TreeModelListener;
 import javax.swing.text.StyledDocument;
 import javax.swing.tree.TreeModel;
@@ -167,17 +168,24 @@ class LanguagesNavigatorModel implements TreeModel {
         } catch (ParseException ex) {
             astNode = ex.getASTNode ();
         }
-        if (astNode == null)
+        if (astNode == null) {
             root = new NavigatorNode ("", "", null, true);
-        else {
+            fire ();
+        } else {
             List<ASTItem> path = new ArrayList<ASTItem> ();
             path.add (astNode);
-            ASTNavigatorNode newASTNode = new ASTNavigatorNode (document, astNode, path, "Root", "", null, false);
-            newASTNode.getNodes (this);
-            if (parserManager.getState () == State.PARSING) return;
-            root = newASTNode;
+            if (root instanceof ASTNavigatorNode && ((ASTNavigatorNode)root).document == document) {
+                if (parserManager.getState () == State.PARSING) return;
+                ASTNavigatorNode newASTNode = new ASTNavigatorNode (document, astNode, path, "Root", "", null, false);
+                ((ASTNavigatorNode)root).refreshNode(this, newASTNode.getNodes(this), new LinkedList<ASTNavigatorNode>());
+            } else {
+                ASTNavigatorNode newASTNode = new ASTNavigatorNode (document, astNode, path, "Root", "", null, false);
+                newASTNode.getNodes (this);
+                if (parserManager.getState () == State.PARSING) return;
+                root = newASTNode;
+                fire();
+            }
         }
-        fire ();
     }
     
     private void fire () {
@@ -188,6 +196,26 @@ class LanguagesNavigatorModel implements TreeModel {
             listeners [i].treeStructureChanged (e);
     }
 
+    private void fireRemove(ASTNavigatorNode node, int[] indices, ASTNavigatorNode[] children,
+            LinkedList<ASTNavigatorNode> nodePath) {
+        TreeModelListener[] listeners = listenerList.getListeners (TreeModelListener.class);
+        if (listeners.length == 0) return;
+        TreePath path = new TreePath(nodePath.toArray());
+        TreeModelEvent e = new TreeModelEvent (this, path, indices, children);
+        for (int i = 0; i < listeners.length; i++)
+            listeners [i].treeNodesRemoved (e);
+    }
+    
+    private void fireInsert(ASTNavigatorNode node, int[] indices, ASTNavigatorNode[] children,
+            LinkedList<ASTNavigatorNode> nodePath) {
+        TreeModelListener[] listeners = listenerList.getListeners (TreeModelListener.class);
+        if (listeners.length == 0) return;
+        TreePath path = new TreePath(nodePath.toArray());
+        TreeModelEvent e = new TreeModelEvent (this, path, indices, children);
+        for (int i = 0; i < listeners.length; i++)
+            listeners [i].treeNodesInserted (e);
+    }
+    
     private boolean cancel () {
         return parserManager.getState () == State.PARSING;
     }
@@ -271,6 +299,25 @@ class LanguagesNavigatorModel implements TreeModel {
         List<ASTNavigatorNode> getNodes (LanguagesNavigatorModel model) {
             return Collections.<ASTNavigatorNode>emptyList ();
         }
+
+        boolean compareNodes(NavigatorNode nodeA, NavigatorNode nodeB) {
+            if (nodeA.displayName == null) {
+                if (nodeB.displayName != null) {
+                    return false;
+                } // if
+            } else if (!nodeA.displayName.equals(nodeB.displayName)) {
+                return false;
+            }
+            if (nodeA.icon == null) {
+                if (nodeB.icon != null) {
+                    return false;
+                } // if
+            } else if (!nodeA.icon.equals(nodeB.icon)) {
+                return false;
+            }
+            return nodeA.isLeaf == nodeB.isLeaf;
+        }
+
     }
     
     static class ASTNavigatorNode extends NavigatorNode {
@@ -331,6 +378,83 @@ class LanguagesNavigatorModel implements TreeModel {
             return nodes;
         }
 
+        private void refreshNode(LanguagesNavigatorModel model, List<ASTNavigatorNode> newChildren,
+                LinkedList<ASTNavigatorNode> nodePath) {
+            if (nodes == null) {
+                return;
+            }
+            nodePath.add(this);
+            List<ASTNavigatorNode> newNodes = new ArrayList<ASTNavigatorNode>(newChildren.size());
+            
+            Language language = (Language) item.getLanguage ();
+            if (language != null) {
+                Feature properties = language.getFeature ("PROPERTIES");
+                if (properties != null &&
+                    properties.getBoolean ("navigator-sort", false)
+                ) {
+                    if (navigatorComparator == null)
+                        navigatorComparator = new NavigatorComparator ();
+                    Collections.<ASTNavigatorNode>sort (newNodes, navigatorComparator);
+                }
+            }
+            
+            int index = 0;
+            int lastIndex = 0;
+            int insertPos = 0;
+            List<Integer> removed = new ArrayList<Integer>();
+            List<Integer> inserted = new ArrayList<Integer>();
+            for (ASTNavigatorNode node : newChildren) {
+                ASTNavigatorNode found = null;
+                for (int x = index; x < nodes.size(); x++) {
+                    if (compareNodes(node, nodes.get(x))) {
+                        found = nodes.get(x);
+                        index = x + 1;
+                        break;
+                    }
+                }
+                if (found != null) {
+                    newNodes.add(found);
+                    for (int x = lastIndex; x < index - 1; x++) {
+                        removed.add(x);
+                    }
+                    lastIndex = index;
+                    found.refreshNode(model, node.getNodes(model), nodePath);
+                } else {
+                    newNodes.add(node);
+                    inserted.add(insertPos);
+                }
+                insertPos++;
+            } // for
+            for (int x = index; x < nodes.size(); x++) {
+                removed.add(x);
+            }
+            
+            int[] removedIndices = new int[removed.size()];
+            ASTNavigatorNode[] removedNodes = new ASTNavigatorNode[removed.size()];
+            for (int x = 0; x < removedIndices.length; x++) {
+                removedIndices[x] = removed.get(x);
+                removedNodes[x] = nodes.get(removedIndices[x]);
+            }
+            
+            int[] insertedIndices = new int[inserted.size()];
+            ASTNavigatorNode[] insertedNodes = new ASTNavigatorNode[inserted.size()];
+            for (int x = 0; x < insertedIndices.length; x++) {
+                insertedIndices[x] = inserted.get(x);
+                insertedNodes[x] = newChildren.get(insertedIndices[x]);
+            }
+            
+            nodes = newNodes;
+            
+            if (removedIndices.length > 0) {
+                model.fireRemove(this, removedIndices, removedNodes, nodePath);
+            }
+            if (insertedIndices.length > 0) {
+                model.fireInsert(this, insertedIndices, insertedNodes, nodePath);
+            }
+            
+            nodePath.removeLast();
+        }
+        
         private void getNavigatorNodes (
             ASTItem                     item, 
             List<ASTItem>               path, 
