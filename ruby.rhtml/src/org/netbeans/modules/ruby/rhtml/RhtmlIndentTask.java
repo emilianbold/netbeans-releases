@@ -61,21 +61,24 @@ public class RhtmlIndentTask implements IndentTask {
     }
 
     public static void reindent(BaseDocument doc, int start, int end) throws BadLocationException {
-//        doc.putProperty(HTMLLexerFormatter.HTML_FORMATTER_ACTS_ON_TOP_LEVEL, Boolean.TRUE);
+        //doc.putProperty(HTMLLexerFormatter.HTML_FORMATTER_ACTS_ON_TOP_LEVEL, Boolean.TRUE);
         doc.putProperty("HTML_FORMATTER_ACTS_ON_TOP_LEVEL", Boolean.TRUE);
-        int offset = Utilities.getRowStart(doc, end);
-        org.netbeans.editor.Formatter editorFormatter = doc.getFormatter();
-        while (offset >= start) {
-            editorFormatter.changeRowIndent(doc, offset, 0);
-
-            if (offset > 0) {
-                // XXX >= ? What about empty first line?
-                offset--;
-                offset = Utilities.getRowStart(doc, offset);
-            } else {
-                break;
-            }
-        }
+        
+        // It appears that I no longer need to do this; leaving around a little while longer
+        // while the dust settles...
+        //        int offset = Utilities.getRowStart(doc, end);
+        //        org.netbeans.editor.Formatter editorFormatter = doc.getFormatter();
+        //        while (offset >= start) {
+        //            editorFormatter.changeRowIndent(doc, offset, 0);
+        //
+        //            if (offset > 0) {
+        //                // XXX >= ? What about empty first line?
+        //                offset--;
+        //                offset = Utilities.getRowStart(doc, offset);
+        //            } else {
+        //                break;
+        //            }
+        //        }
     }
 
     public ExtraLock indentLock() {
