@@ -463,33 +463,35 @@ public final class SceneManager {
             m_screenMgr.repaint();
         }
     }
-    
+
     public void setSelection(String id, boolean isDelayed) {
         if ( isDelayed) {
             m_selectedId = id;
         } else {
             SVGObject [] oldSelection = getSelected();
             
+            SelectAction action = m_selectActionFactory.getActiveAction();
+            if (action != null) {
+                action.actionCompleted();
+            }
+
             if ( id != null) {
                 SVGObject selectedObj = m_perseusController.getObjectById(id);
 
                 if (selectedObj != null) {
-                    SelectAction action = m_selectActionFactory.getActiveAction();
-                    if (action != null) {
-                        action.actionCompleted();
-                    }
-
                     synchronized( m_activeActions) {
                         m_activeActions.push( m_selectActionFactory.startAction(selectedObj));
                     }
                     ActionMouseCursor cursor = m_selectActionFactory.getMouseCursor(null, false);
                     m_screenMgr.setCursor(cursor != null ? cursor.getCursor() : null);
+                } else {
+                    // TODO Revisit: Hack! Do not send the notification about selection change
+                    // if the selected object if not SVGLocatableElement, to allow
+                    // SVG tree traversal in the navigator. Correct way is to allow
+                    // selection of other SVG elements as well.
+                    return;
                 }
-            } else {
-                SelectAction action = m_selectActionFactory.getActiveAction();
-                if ( action != null) {
-                    action.actionCompleted();
-                }
+                
             }
             //TODO implement better selection change handling
             SVGObject [] newSelection = getSelected();

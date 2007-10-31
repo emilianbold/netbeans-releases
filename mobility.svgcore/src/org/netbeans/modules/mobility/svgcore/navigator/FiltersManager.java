@@ -46,6 +46,7 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -64,7 +65,8 @@ import javax.swing.event.ChangeEvent;
  *
  * @author Dafe Simomek
  */
-public final class FiltersManager {
+public final class FiltersManager implements Serializable {
+    private static final long  serialVersionUID = 123471457562776148L;
     
     private FiltersComponent comp;
     

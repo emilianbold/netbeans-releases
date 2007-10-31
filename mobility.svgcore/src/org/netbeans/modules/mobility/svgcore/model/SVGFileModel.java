@@ -1291,84 +1291,17 @@ public final class SVGFileModel {
         return sb.toString();
     }
 
-/*
-    wrapper.attachSVGObject( new SVGObject(m_sceneMgr, wrapper));
-    transferChildren(wrapper, (SVG)sibling);
-    fileModel.appendElement(wrapper.getText(false), insertedText);
-    DocumentElement svgElem       = getSVGRoot(modelToInsert);
-    int childElemNum;
-    if (svgElem != null &&
-    (childElemNum=svgElem.getElementCount()) > 0) {
-    int startOff = svgElem.getElement(0).getStartOffset();
-    int endOff   = svgElem.getElement(childElemNum - 1).getEndOffset();
-    String insertedText = modelToInsert.getDocument().getText(startOff, endOff - startOff + 1);
-    }
-    SVGFileModel fileModel = m_sceneMgr.getDataObject().getModel();
-    if (svgElem != null && ) {
-    Set<String> oldIds = new HashSet<String>();
-    collectIDs(m_svgDoc, oldIds);
-    Set<String> newIds = new HashSet<String>();
-    collectIDs( svgElem, newIds);
-    Set<String> conflicts = new HashSet<String>();
-    for (String id  : newIds) {
-    if (oldIds.contains(id)) {
-    conflicts.add(id);
-    }
-    }
-    BaseDocument doc  = (BaseDocument) docModel.getDocument();
-    if ( !conflicts.isEmpty()) {
-    for (String id : conflicts) {
-    String newID = fileModel.createUniqueId(id, false);
-    for (String pattern : REPLACE_PATTERNS) {
-    String oldStr = MessageFormat.format(pattern, id);
-    String newStr = MessageFormat.format(pattern, newID);
-    replaceAllOccurences(doc, oldStr, newStr);
-    }
-    }
-    }
-    String text = doc.getText(0, doc.getLength());
-    java.io.StringBufferInputStream strIn = new java.io.StringBufferInputStream(text);
-    try {
-    ModelBuilder.loadDocument(strIn, m_svgDoc,
-    SVGComposerPrototypeFactory.getPrototypes(m_svgDoc));
-    } finally {
-    strIn.close();
-    }
-    SVG svgRoot = (SVG)getSVGRootElement();
-    System.out.println("Before children transfer");
-    printTree(m_svgDoc, 0);
-    ModelNode sibling = svgRoot;
-    while( (sibling=sibling.getNextSiblingNode()) != null) {
-    if (sibling instanceof SVG &&
-    sibling.getFirstChildNode() != null) {
-    PatchedGroup wrapper = (PatchedGroup) m_svgDoc.createElementNS(SVGConstants.SVG_NAMESPACE_URI,
-    SVGConstants.SVG_G_TAG);
-    ((SVG)svgRoot).appendChild(wrapper);
-    //wrapper.setPath( new int[] { 0, getChildrenCount(svgRoot)});
-    wrapper.setId( fileModel.createUniqueId(file.getName(), true));
-    wrapper.attachSVGObject( new SVGObject(m_sceneMgr, wrapper));
-    transferChildren(wrapper, (SVG)sibling);
-    fileModel.appendElement(wrapper.getText(false), insertedText);
-    break;
-    }
-    }
-    System.out.println("After children transfer");
-    printTree(m_svgDoc, 0);
-    }
-    }
-     */
-    public static class ChangeDescriptor implements Comparable {
-
-        private final int m_startOffset;
-        private final int m_length;
-        private final String m_newValue;
+    public static final class ChangeDescriptor implements Comparable {
+        private final int             m_startOffset;
+        private final int             m_length;
+        private final String          m_newValue;
         private final DocumentElement m_elem;
 
         public ChangeDescriptor(int startOffset, int length, String newValue, DocumentElement elem) {
             m_startOffset = startOffset;
-            m_length = length;
-            m_newValue = newValue;
-            m_elem = elem;
+            m_length      = length;
+            m_newValue    = newValue;
+            m_elem        = elem;
         }
 
         public ChangeDescriptor(int startOffset, int length, String newValue) {
@@ -1382,6 +1315,10 @@ public final class SVGFileModel {
         public int compareTo(Object o) {
             return ((ChangeDescriptor) o).m_startOffset - m_startOffset;
         }
+        
+        public boolean equals(Object o) {
+            return ((ChangeDescriptor) o).m_startOffset == m_startOffset;
+        }
     }
 
     private static boolean isElementIdChar(char c, boolean isTrailing) {
@@ -1389,7 +1326,7 @@ public final class SVGFileModel {
     }
 
     private static int indexOf(CharSequence chars, String str, int from, int to) {
-        assert to <= chars.length() : "Index out of bounds: " + to + " > " + chars.length();
+        assert to <= chars.length() : "Index out of bounds: " + to + " > " + chars.length(); //NOI18N
         int index = from;
         int strLen = str.length();
         if (strLen > 0) {

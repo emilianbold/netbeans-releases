@@ -285,16 +285,7 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
                     }
                 }
             });
-            
-            tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "open"); // NOI18N
-            tree.getActionMap().put("open", new AbstractAction() { // NOI18N
-                public void actionPerformed(ActionEvent e) {
-                    TreePath selPath = selectionModel.getLeadSelectionPath();
-                    SVGNavigatorNode tna = (SVGNavigatorNode)selPath.getLastPathComponent();
-                    //openAndFocusElement(tna, false);
-                }
-            });
-            
+                        
             JScrollPane treeView = new JScrollPane(tree);
             treeView.setBorder(BorderFactory.createEmptyBorder());
             treeView.setViewportBorder(BorderFactory.createEmptyBorder());
@@ -370,7 +361,7 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
             KeyStroke toggleKey = KeyStroke.getKeyStroke(KeyEvent.VK_T,
                     Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
             String keyText = org.openide.util.Utilities.keyToString(toggleKey);
-            filtersPanel.setToolTipText(NbBundle.getMessage(SVGNavigatorContent.class, "TIP_TapPanel", keyText));
+            filtersPanel.setToolTipText(NbBundle.getMessage(SVGNavigatorContent.class, "TIP_TapPanel", keyText)); //NOI18N
             
             //create FiltersManager
             filters = createFilters();
