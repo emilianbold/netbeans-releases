@@ -370,12 +370,20 @@ public class ReportTask extends Thread implements Cancellable
     
     
     public void createFileForElement(ITreeItem pItem)
-    {
-        // skip the element that has already been processed
-        if (elementFileMap.get(pItem.getData().getModelElement().getXMIID())!=null)
+    { 
+        if (pItem.getData() == null || pItem.getData().getModelElement() == null)
+        {
+            Logger.getLogger(ReportTask.class.getName()).log(Level.WARNING,
+                                NbBundle.getMessage(ReportTask.class, 
+                                "MSG_InvalidItem", pItem.getPathAsString(), 
+                                pItem.getName()));
             return;
+        }
         
         IElement e = pItem.getData().getModelElement();
+        // skip the element that has already been processed
+        if (elementFileMap.get(e.getXMIID())!=null)
+            return;
         if (e.getOwningPackage() == null && !(e instanceof IProject))
         {
             if (!e.isClone())
@@ -387,25 +395,24 @@ public class ReportTask extends Thread implements Cancellable
             return;
         }
         
-        ElementDataObject dataObject = DataObjectFactory.getDataObject(pItem.getData().getModelElement());
+        ElementDataObject dataObject = DataObjectFactory.getDataObject(e);
         if (dataObject==null)
             return;
         
         String dir = getDirectoryPath(pItem);
-        String fileName = convertID(pItem.getData().getModelElement().getXMIID()) + HTML_EXT;
+        String fileName = convertID(e.getXMIID()) + HTML_EXT;
         String file = dir + File.separator + fileName;
         
         if (dataObject.toReport(new File(file)))
         {
-            elementFileMap.put(pItem.getData().getModelElement().getXMIID(),
-                    getLinkTo(pItem.getData().getModelElement()));
+            elementFileMap.put(e.getXMIID(),
+                    getLinkTo(e));
         }
         else
         {
             success = false;
-            IElement element = pItem.getData().getModelElement();
             log(NbBundle.getMessage(ReportTask.class, "Log_error_creating_file",
-                    element.getElementType(), element.toString()));
+                    e.getElementType(), e.toString()));
         }
     }
     
