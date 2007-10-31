@@ -87,3 +87,7 @@ nbbuild/external/apitest-*.jar
 
 # Developed under CDDL inside nb.org (later snapshot moved to dev.java.net):
 apisupport/samples/PaintApp-suite/ColorChooser/release/modules/ext/ColorChooser.jar
+
+# Build by NetBeans team
+ruby/platform/release/*.zip
+ 
