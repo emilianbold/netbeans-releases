@@ -390,7 +390,7 @@ public class KeymapModel {
         }
     }
 
-    // HAKeymap OptionsCK - loads all actions. othervise during second open of Options
+    // HACK - loads all actions. otherwise during second open of Options
     // Dialog (after cancel) map of sharedActions is not initialized.
     private void initActions() {
         Iterator it = getActionCategories().iterator();
