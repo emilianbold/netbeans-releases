@@ -1327,8 +1327,8 @@ public class PropertySheet extends JPanel {
 
         /** Receives property change events directed to the NodeListener */
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            String nm = evt.getPropertyName();
+        public void propertyChange(final PropertyChangeEvent evt) {
+            final String nm = evt.getPropertyName();
 
             if (Node.PROP_PROPERTY_SETS.equals(nm)) {
                 final Node n = (Node) evt.getSource();
@@ -1346,14 +1346,25 @@ public class PropertySheet extends JPanel {
                     Node.PROP_LEAF.equals(nm)
             ) {
                 return;
-            } else if (
-                isDescriptionVisible() &&
-                    (Node.PROP_DISPLAY_NAME.equals(nm) || Node.PROP_SHORT_DESCRIPTION.equals(nm))
-            ) {
-                //XXX SHOULD NOT BE FIRED TO NODELISTENERS
-                Node n = (Node) evt.getSource();
-                String description = (String) n.getValue("nodeDescription"); //NOI18N
-                psheet.setDescription(n.getDisplayName(), (description == null) ? n.getShortDescription() : description);
+            } else {
+                Runnable runnable = new Runnable() {
+                    public void run() {
+                        //the following must run in EDT to avoid deadlocks, see #91371
+                        if (isDescriptionVisible() &&
+                            (Node.PROP_DISPLAY_NAME.equals(nm) || Node.PROP_SHORT_DESCRIPTION.equals(nm))) {
+                            
+                            //XXX SHOULD NOT BE FIRED TO NODELISTENERS
+                            Node n = (Node) evt.getSource();
+                            String description = (String) n.getValue("nodeDescription"); //NOI18N
+                            psheet.setDescription(n.getDisplayName(), (description == null) ? n.getShortDescription() : description);
+                        }
+                    }
+                };
+                if( SwingUtilities.isEventDispatchThread() ) {
+                    runnable.run();
+                } else {
+                    SwingUtilities.invokeLater(runnable);
+                }
             }
              /*else {
               if (evt.getPropertyName() == null) {
