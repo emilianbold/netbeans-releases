@@ -42,7 +42,12 @@ package org.netbeans.modules.junit.output;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.Toolkit;
+import java.util.Collections;
+import java.util.Map;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
@@ -55,6 +60,7 @@ import org.netbeans.modules.junit.output.OutputDocument.DocElement;
 /**
  * 
  * @author  Marian Petras
+ * @author  Tim Boudreau
  */
 final class OutputView extends PlainView {
 
@@ -64,8 +70,14 @@ final class OutputView extends PlainView {
     private int selStart, selEnd;
     private static Color selectedErr;
     private static Color unselectedErr;
+    private static Map hintsMap = null;
 
     private Color selectedFg, unselectedFg;
+
+    /* set antialiasing hints when it's requested */
+    private static final boolean antialias
+            = Boolean.getBoolean("swing.aatext")                        //NOI18N
+              || "Aqua".equals(UIManager.getLookAndFeel().getID());     //NOI18N
 
     static {
         selectedErr = UIManager.getColor("nb.output.err.foreground.selected");  //NOI18N
@@ -78,6 +90,23 @@ final class OutputView extends PlainView {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    static final Map getHints() {
+        if (hintsMap == null) {
+            //Thanks to Phil Race for making this possible
+            hintsMap = (Map) Toolkit.getDefaultToolkit().getDesktopProperty(
+                                         "awt.font.desktophints");      //NOI18N
+            if (hintsMap == null) {
+                hintsMap = antialias
+                           ? Collections.singletonMap(
+                                    RenderingHints.KEY_TEXT_ANTIALIASING,
+                                    RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
+                           : Collections.emptyMap();
+            }
+        }
+        return hintsMap;
+    }
+
     OutputView(Element element) {
         super(element);
         rootElement = (OutputDocument.RootElement) element;
@@ -85,6 +114,8 @@ final class OutputView extends PlainView {
 
     @Override
     public void paint(Graphics g, Shape a) {
+        ((Graphics2D) g).addRenderingHints(getHints());
+
 	final JTextComponent textComp = (JTextComponent) getContainer();
         selStart = textComp.getSelectionStart();
         selEnd = textComp.getSelectionEnd();
