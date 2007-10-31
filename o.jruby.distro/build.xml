@@ -30,7 +30,11 @@
         <echo>Build JRuby binary distribution from source</echo>
         <delete dir="${unpatched_source}"/>
         <mkdir dir="${unpatched_source}"/>
-        <unzip dest="${unpatched_source}" src="../jruby/external/jruby-src.zip"/>
+        <unzip dest="${unpatched_source}">
+			<fileset dir="../jruby/external/">
+				<include name="jruby-src*.zip"/>
+			</fileset>
+		</unzip>
         <!-- Patch build.xml to modify gem behavior: install locally -->
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" overwrite="true">
             <fileset dir="unpatched_files" />

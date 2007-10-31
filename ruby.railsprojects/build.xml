@@ -10,7 +10,7 @@
         <mkdir dir="${cluster}"/>
         <copy todir="${cluster}">
             <fileset dir="external">
-                <include name="goldspike.zip"/>
+                <include name="goldspike-1.3.zip"/>
             </fileset>
         </copy>
     </target>

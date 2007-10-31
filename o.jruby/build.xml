@@ -15,8 +15,11 @@
         <delete dir="${patched_source}"/>
         <mkdir dir="${patched_source}"/>
         -->
-        <unzip dest="${patched_source}" src="external/jruby-src.zip"/>
-
+        <unzip dest="${patched_source}">
+			<fileset dir="external/">
+				<include name="jruby-src*.zip"/>
+			</fileset>
+	</unzip>
         <!-- I don't need the bsf stuff -->
         <delete dir="${src.dir}/org/jruby/javasupport/bsf"/>
 
