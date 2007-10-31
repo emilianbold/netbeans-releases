@@ -1093,9 +1093,7 @@ final class ModuleList {
         LOG.fine("Flushing initial module list...");
         // Find all modules for which we have status already. Treat
         // them as possibly changed, and attach listeners.
-        Iterator it = mgr.getModules().iterator();
-        while (it.hasNext()) {
-            Module m = (Module)it.next();
+        for (Module m : mgr.getModules()) {
             DiskStatus status = statuses.get(m.getCodeNameBase());
             if (status != null) {
                 moduleChanged(m, status);
@@ -1416,9 +1414,8 @@ final class ModuleList {
          * refresh) manipulating one of these XML files. See #15573.
          */
         private boolean isOurs(FileEvent ev) {
-            Iterator it = myAtomicActions.iterator();
-            while (it.hasNext()) {
-                if (ev.firedFrom((FileSystem.AtomicAction)it.next())) {
+            for (FileSystem.AtomicAction action : myAtomicActions) {
+                if (ev.firedFrom(action)) {
                     return true;
                 }
             }
@@ -1502,9 +1499,7 @@ final class ModuleList {
         private Map<String,Map<String,Object>> prepareDirtyProps(Map<String,FileObject> xmlfiles) throws IOException {
             LOG.fine("ModuleList: prepareDirtyProps");
             Map<String,Map<String,Object>> dirtyprops = new HashMap<String,Map<String,Object>>(100);
-            Iterator<Map.Entry<String,FileObject>> it = xmlfiles.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<String,FileObject> entry = it.next();
+            for (Map.Entry<String,FileObject> entry : xmlfiles.entrySet()) {
                 String cnb = entry.getKey();
                 DiskStatus status = statuses.get(cnb);
                 if (status == null || status.dirty) {
@@ -1530,9 +1525,7 @@ final class ModuleList {
         }
         private void stepCheckReloadable(Map<String,Map<String,Object>> dirtyprops) {
             LOG.fine("ModuleList: stepCheckReloadable");
-            Iterator<Map.Entry<String,Map<String,Object>>> it = dirtyprops.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<String,Map<String,Object>> entry = it.next();
+            for (Map.Entry<String,Map<String,Object>> entry : dirtyprops.entrySet()) {
                 String cnb = entry.getKey();
                 DiskStatus status = statuses.get(cnb);
                 if (status != null) {
@@ -1549,9 +1542,7 @@ final class ModuleList {
         }
         private void stepCreate(Map<String,FileObject> xmlfiles, Map<String,Map<String,Object>> dirtyprops) throws IOException {
             LOG.fine("ModuleList: stepCreate");
-            Iterator<Map.Entry<String,FileObject>> it = xmlfiles.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<String,FileObject> entry = it.next();
+            for (Map.Entry<String,FileObject> entry : xmlfiles.entrySet()) {
                 String cnb = entry.getKey();
                 if (! statuses.containsKey(cnb)) {
                     FileObject xmlfile = entry.getValue();
@@ -1594,9 +1585,7 @@ final class ModuleList {
         private void stepEnable(Map<String,Map<String,Object>> dirtyprops) throws IOException {
             LOG.fine("ModuleList: stepEnable");
             Set<Module> toenable = new HashSet<Module>();
-            Iterator<Map.Entry<String,Map<String,Object>>> it = dirtyprops.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<String,Map<String,Object>> entry = it.next();
+            for (Map.Entry<String,Map<String,Object>> entry : dirtyprops.entrySet()) {
                 String cnb = entry.getKey();
                 Map<String, Object> props = entry.getValue();
                 if (props.get("enabled") != null && ((Boolean)props.get("enabled")).booleanValue()) { // NOI18N
@@ -1678,14 +1667,12 @@ final class ModuleList {
                 }
             }
         }
-        private void stepCheckMisc(Map/*<String,Map<String,Object>>*/ dirtyprops) {
+        private void stepCheckMisc(Map<String,Map<String,Object>> dirtyprops) {
             LOG.fine("ModuleList: stepCheckMisc");
             String[] toCheck = {"jar", "autoload", "eager", "release", "specversion"}; // NOI18N
-            Iterator it = dirtyprops.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry)it.next();
-                String cnb = (String)entry.getKey();
-                Map props = (Map)entry.getValue();
+            for (Map.Entry<String,Map<String,Object>> entry : dirtyprops.entrySet()) {
+                String cnb = entry.getKey();
+                Map<String,Object> props = entry.getValue();
                 DiskStatus status = statuses.get(cnb);
                 Map diskProps = status.diskProps;
                 for (int i = 0; i < toCheck.length; i++) {
@@ -1714,9 +1701,7 @@ final class ModuleList {
         }
         private void stepMarkClean() {
             LOG.fine("ModuleList: stepMarkClean");
-            Iterator it = statuses.values().iterator();
-            while (it.hasNext()) {
-                DiskStatus status = (DiskStatus)it.next();
+            for (DiskStatus status : statuses.values()) {
                 status.dirty = false;
             }
         }
