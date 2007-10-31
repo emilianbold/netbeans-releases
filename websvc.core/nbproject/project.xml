@@ -454,10 +454,11 @@ made subject to such option by the copyright holder.
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.identity.profile.ui</friend>
+                <friend>org.netbeans.modules.mobility.end2end</friend>
                 <friend>org.netbeans.modules.websvc.customization</friend>
                 <friend>org.netbeans.modules.websvc.design</friend>
                 <friend>org.netbeans.modules.websvc.editor.hints</friend>
-                <friend>org.netbeans.modules.identity.profile.ui</friend>
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <friend>org.netbeans.modules.websvc.manager</friend>
                 <friend>org.netbeans.modules.websvc.rest</friend>
