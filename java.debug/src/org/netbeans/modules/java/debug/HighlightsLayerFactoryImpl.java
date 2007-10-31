@@ -30,6 +30,7 @@ package org.netbeans.modules.java.debug;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.ZOrder;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -37,10 +38,41 @@ import org.netbeans.spi.editor.highlighting.ZOrder;
  */
 public class HighlightsLayerFactoryImpl implements HighlightsLayerFactory {
 
+    private static final boolean DEBUG_MODE = Boolean.getBoolean("org.netbeans.modules.java.debug.enable");
+    
     public HighlightsLayer[] createLayers(Context context) {
+        if (!DEBUG_MODE) {
+            return new HighlightsLayer[0];
+        }
+        
         return new HighlightsLayer[] {
             HighlightsLayer.create(HighlightsLayerFactoryImpl.class.getName(), ZOrder.DEFAULT_RACK, true, TreeNavigatorProviderImpl.getBag(context.getDocument()))
         };
     }
 
+    public static Object createNavigatorPanel(FileObject f) {
+        if (!DEBUG_MODE) {
+            return new Object(); //fake answer
+        }
+        
+        return createImpl(f);
+    }
+    
+    private static Object createImpl(FileObject f) {
+        if ("org-netbeans-modules-java-debug-TreeNavigatorProviderImpl".equals(f.getName())) {
+            return new TreeNavigatorProviderImpl();
+        }
+        
+        if ("org-netbeans-modules-java-debug-ElementNavigatorProviderImpl".equals(f.getName())) {
+            return new ElementNavigatorProviderImpl();
+        }
+        
+        if ("org-netbeans-modules-java-debug-ErrorNavigatorProviderImpl".equals(f.getName())) {
+            return new ErrorNavigatorProviderImpl();
+        }
+        
+        //unknown:
+        return new Object();
+    }
+    
 }
