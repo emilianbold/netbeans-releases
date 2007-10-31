@@ -454,7 +454,8 @@ made subject to such option by the copyright holder.
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.identity.profile.ui</friend>
+                <friend>org.netbeans.modules.bpel.editors</friend>
+                <friend>org.netbeans.modules.identity.profile.ui</friend>        
                 <friend>org.netbeans.modules.mobility.end2end</friend>
                 <friend>org.netbeans.modules.websvc.customization</friend>
                 <friend>org.netbeans.modules.websvc.design</friend>
