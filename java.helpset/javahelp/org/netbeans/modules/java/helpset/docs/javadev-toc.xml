@@ -175,6 +175,7 @@
       <tocitem text="About Beans Binding" target="gui.bind.about"/>
       <tocitem text="Working With Beans Binding" target="gui.bind.working"/>
       <tocitem text="Working With Desktop Database Applications" target="gui.bind.db.working"/>
+      <tocitem text="Binding Two Bean Properties" target="gui.bind.data"/>
       <tocitem text="Binding Data to a Swing Component" target="gui.bind.data"/>
       <tocitem text="Special Binding Properties " target="gui.bind.synthetic"/>  
       <tocitem text="Converting Values Between Source and Target Properties" target="gui.bind.converters"/>  

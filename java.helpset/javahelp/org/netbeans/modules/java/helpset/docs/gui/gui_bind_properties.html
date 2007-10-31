@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright (c) 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <title>Binding Two Bean Properties</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Binding Data to a Swing Component</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>Once you have created a new Java form and added components to the form, 
+            you can generate code to bind properties of components to keep 
+            the values of those properties synchronized.</p>
+        <p>Before binding component properties, you need to have done the following:</p> 
+        <ul>
+        <li><a href="gui_addcomponent.html">Added components</a> to a form in the GUI Builder.</li>
+<li>Determined which component will be the source of the binding and which will 
+be the target. 
+<p>The binding source is where a value for the property first originates. 
+When binding in the GUI Editor, you initiate a binding on the target and then 
+you declare the source in the Bind dialog box.</p></li>        
+        </ul>
+
+<ul class="note">
+<li>Bindings can be two-way (read/write), so that changes in the target 
+are automatically reflected in the source. However, the direction of the 
+initial binding is always from the source to the target. You can set 
+the update behavior of bindings on the Advanced tab of the Bind dialog box.</li>    
+</ul>
+
+        <p><b>To bind two properties:</b></p>
+        <ol>
+            <li>In the GUI Builder, right-click the component that will be the target 
+            of the binding, select Bind &gt;, and choose the property that you want to 
+        bind from the Bind submenu.</li>
+            <li>From the Binding Source combo box, select the component that contains 
+                the property to which you want to bind.</li>
+            <li>From the Binding Expression combo box, select the property to which 
+            you want to bind.</li>
+            <li>Optionally, select the <a href="csh/gui_bind_advanced_dialog.html">Advanced tab</a>
+            to further configure the binding. For example, 
+                you can change the update strategy, specify a validator or converter, and specify behavior 
+        if the binding source is null or unreadable.</li>
+        <li>Click OK.</li>
+        </ol>      
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="gui_bind_data.html">Binding Data to a Swing Component</a></dd>       
+            <dd><a href="gui_addcomponent.html">Adding a Component to a Form</a></dd>
+            <dd><a href="gui_editcomponentprops.html">Editing Component Properties</a></dd>
+            <dd><a href="gui_designing.html">Designing Java GUIs with the GUI Builder</a></dd>
+            <dd><a href="gui_addingtopalette.html">Adding a Bean to the Palette Window</a></dd>
+        </dl>
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

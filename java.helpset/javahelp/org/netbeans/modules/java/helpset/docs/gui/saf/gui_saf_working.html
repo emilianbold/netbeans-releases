@@ -19,7 +19,7 @@
             
             <tr valign="top"> 
                 <td align="center"><img src="../../images/circle1.gif" alt="Number One"><br>
-                    <b>Create a Swing Application Framework project</b>
+                    <b>Create a Java Desktop Application project</b>
                 <p></td>
                 <td> 
                     <ol>
@@ -49,10 +49,10 @@
                         including custom beans for which you will create bindings.</li>
                         <li>Create actions for buttons and menu items. Right-click  
                             a component, choose Set Action, and then choose Create New Action. 
-                    <p>The Set Action dialog box also enables you to set keyboard shortcuts, 
-                display text, tooltip text, and so on.</li>
-                <li>In the Source Editor, code the generated skeleton action.</li>
-
+                            <p>The Set Action dialog box also enables you to set keyboard shortcuts, 
+                        display text, tooltip text, and so on.</li>
+                        <li>In the Source Editor, code the generated skeleton action.</li>
+                        
                     </ol>
                 </td>
             </tr>
@@ -65,23 +65,30 @@
             </tr>
             <tr valign="top"> 
                 <td align="center"> <img src="../../images/circle3.gif" alt="Number Three"><br>
-                    <b>Code application behavior</b>
+                    <b>Generate and code actions</b>
                 <p></td>
                 <td> 
                     <ol>
-                        <li>Write application logic, including methods to handle 
-                        user actions such as menu selection and button clicking.</li>
-                        <li>Assign UI components to action handling methods by 
-                        right-clicking the UI component and choosing Set Action.
-                    <p>The Set Action dialog box also enables you to set keyboard shortcuts, 
-                display text, and tooltip text.</li>
-                <!--TODO add note on advanced props-->
-                        
+                        <li>Generate skeleton action methods for UI components by  
+                            right-clicking the component and choosing Set Action to 
+                        open the<a href="gui_saf_action_csh.html">Set Action dialog box</a>.</li>
+                            <li>In the Action drop-down list, select Create New Action.</li>
+                            <li>Fill in details for the action, including method name, 
+                            name, tool tip text, and accelerator. Optionally, 
+                        you can also make the action run as a background task and 
+                    do other advanced configuration.</li>
+                    <li>Click OK to close the dialog box.</li>
+                        <li>In the Source Editor, type code for the actions.</li>
+               
                     </ol>
                     
                 </td>
             </tr>
-            
+            <tr> 
+                <td colspan="2"> 
+                    <hr align="center" width="80%">
+                </td>
+            </tr>
             <tr valign="top"> 
                 <td align="center"> <img src="../../images/circle4.gif" alt="Number Four"><br>
                     <b>Edit application properties</b>
@@ -89,7 +96,7 @@
                 <td> 
                     <ol>
                         <li>Right-click the project's node and choose Properties.</li>
-                        <li>Click the Application node to edit common properties, such 
+                        <li>Click the Application node to edit properties, such 
                         as the name that appears in the application's title bar.</li>
                         <li>Click the Desktop App node to edit further properties, such 
                         as Application ID and Look and Feel</li>
@@ -103,6 +110,9 @@
         
         <dl>
             <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="gui_saf_about.html">About the Swing Application Framework</a></dd>                       
+            <dd><a href="gui_saf_actions.html">About Actions in the Swing Application Framework</a></dd>                       
+            <dd><a href="gui_saf_resources.html">About Resources in the Swing Application Framework</a></dd>           
             <dd><a href="../gui_about.html">About Java GUIs</a></dd>
             <dd><a href="../gui_quickref.html">GUI Builder Tasks: Quick Reference</a></dd>
             <dd><a href="../gui_designing.html">Designing Java GUIs with the GUI Builder</a></dd>
