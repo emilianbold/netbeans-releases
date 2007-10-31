@@ -54,6 +54,7 @@ import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.RemovalMode;
+import org.netbeans.installer.utils.helper.Text;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardAction;
 import org.netbeans.installer.wizard.components.WizardComponent;
@@ -270,6 +271,12 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
     public RemovalMode getRemovalMode() {
         return RemovalMode.LIST;
     }
+
+    @Override
+    public Text getLicense() {
+        return null;
+    }
+
     protected void checkNetbeansRunning() {
         List<Dependency> dependencies =
                 getProduct().getDependencyByUid(BASE_IDE_UID);

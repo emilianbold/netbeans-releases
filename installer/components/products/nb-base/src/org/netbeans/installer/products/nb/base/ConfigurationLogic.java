@@ -54,6 +54,7 @@ import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.Status;
+import org.netbeans.installer.utils.helper.Text;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.shortcut.FileShortcut;
 import org.netbeans.installer.utils.system.shortcut.LocationType;
@@ -440,7 +441,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             return ICON_UNIX;
         }
     }
-    
+
+    @Override
+    public Text getLicense() {
+        return null;
+    }    
     // private //////////////////////////////////////////////////////////////////////
     private Shortcut getDesktopShortcut(final File directory) {
         return getShortcut(
