@@ -27,7 +27,7 @@
 	<mapID target="org.netbeans.modules.ruby.rubyproject.ui.wizards.PanelSourceFolders" url="newrubyappwsourcewiz-srcfiles.html"/>
 	<mapID target="nbruby_ruby_quickref_toclink" url="ruby_quickref.html#toclink"/>
 	<mapID target="org.netbeans.modules.ruby.railsprojects.ui.RailsLogicalViewProvider$RailsLogicalViewRootNode" url="rubyprojectnode.html"/>
-	<mapID target="org.netbeans.modules.ruby.railsprojects.ui.customizer.CustomizerRun  " url="railsprojprops-railsoptions.html"/>
+	<mapID target="org.netbeans.modules.ruby.railsprojects.ui.customizer.CustomizerRun" url="railsprojprops-railsoptions.html"/>
 	<mapID target="org.netbeans.modules.ruby.javaint.CustomizerLibraries" url="rubyprojprops-javaoptions.html"/>
 	<mapID target="org.netbeans.modules.ruby.rubyproject.ui.customizer.CustomizerRun" url="rubyprojprops-runoptions.html"/>
 	<mapID target="org.netbeans.modules.ruby.rubyproject.ui.customizer.CustomizerSources" url="rubyprojprops-sourcesoptions.html"/>

@@ -13,7 +13,7 @@
 <p> <small><a href="#seealso">See Also</a></small> 
 
 
-<p>Use this properties dialog box to set Run options for  a Ruby project. You open the dialog box by right-clicking the main project node in the Properties window, choosing Properties, and then clicking the Run node in the Project Properties dialog box.
+<p>Use this  dialog box to set Run options for  a Ruby project. You open the dialog box by right-clicking the main project node for a Ruby project in the Projects window, choosing Properties, and then clicking the Run node in the Project Properties dialog box.
   <!--
 <ul class="note">
   <li>When you click OK, an Installation dialog box opens and shows you the progress of your download. In addition, you might be prompted by the plugin's download program to specify some information for the plugin, so keep an eye on the Installation dialog while the download is happening.</li>
@@ -21,12 +21,12 @@
 -->
 <p>You can set the following options:
 <ul>
-  <li><b>Configuration.</b> Specifies the configuration files for the project.</li>
-  <li><b>Main Script.</b> Sets the main script for your project, which defaults to main.rb. </li>
+  <li><b>Configuration.</b> Specifies a name for the set of options you specify in this dialog box. If you want to use different configurations of settings with the project, such as  different main scripts and arguments, you can give a configuration a name and use the drop-down list to quickly change configurations. </li>
+  <li><b>Main Script.</b> Sets the main script for your project, which defaults to <code>main.rb</code>. </li>
 
-  <li><b>Arguments</b>. Passes custom flags to Ruby when run from the IDE.</li>
-  <li><b>Working Directory.</b> Sets the directory where your Ruby files will be stored. </li>
-  <li><b>Ruby Options.</b> Specifies command-line switches to be used with Ruby. For example:<br>
+  <li><b>Arguments</b>. Passes arguments to the main script of your application. The IDE fills an <code>ARGV</code> array with the arguments you specify. </li>
+  <li><b>Working Directory.</b> Sets the  directory where your application is run. </li>
+  <li><b>Ruby Options.</b> Specifies command-line switches for the Ruby interpreter. For example:<br>
     <b><code>-c</code> - </b>check syntax only<br>
     <b>-<code>C</code></b><code><b>directory</b></code> - cd to directory, before executing your script<br>
     <b><code>-l</code> - </b>enable line ending processing<br>
