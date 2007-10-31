@@ -1898,7 +1898,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         private Collection<File> updateFile (final URL file, final URL root) throws IOException {
             Set<File> result = new LinkedHashSet<File>();
             final FileObject fo = URLMapper.findFileObject(file);
-            if (fo == null) {
+            final FileObject rootFo = URLMapper.findFileObject(root);
+            if (fo == null || rootFo == null) {
                 return result;
             }
             
@@ -1909,7 +1910,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     uqImpl.setDirty(null);
                     final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(fo);
                     ClasspathInfo cpInfo = ClasspathInfoAccessor.INSTANCE.create (fo, filter, true, false);
-                    final File rootFile = FileUtil.normalizeFile(new File (URI.create(root.toExternalForm())));
+                    final File rootFile = FileUtil.toFile(rootFo);
                     final File fileFile = FileUtil.toFile(fo);
                     final File classCache = Index.getClassFolder (rootFile);
                     final Map <String,List<File>> resources = getAllClassFiles (classCache, FileObjects.getRelativePath(rootFile, fileFile.getParentFile()),false);
@@ -1953,7 +1954,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         String sourceLevel = SourceLevelQuery.getSourceLevel(fo);
                         final CompilerListener listener = new CompilerListener ();
                         final JavaFileManager fm = ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo);                
-                        JavaFileObject active = FileObjects.fileFileObject(fileFile, rootFile, filter, FileEncodingQuery.getEncoding(fo));
+                        JavaFileObject active = FileObjects.nbFileObject(fo, rootFo, filter, false);
                         JavacTaskImpl jt = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, listener, sourceLevel);
                         jt.setTaskListener(listener);
                         Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
