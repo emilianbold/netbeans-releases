@@ -75,6 +75,7 @@ class IndexedStorageFile extends FileStorage {
     // used to accumulate the total currently used chunk suze;
     // is necessary for tracking fragmentation
     private long usedSize;
+    private Object writeLock = new Object();
     
     public IndexedStorageFile(final File basePath, final String name, final boolean create ) throws IOException {
         dataFile =  new File(basePath, name + "-data"); // NOI18N
@@ -125,15 +126,18 @@ class IndexedStorageFile extends FileStorage {
     }
     
     public void write(final Key key, final Persistent object) throws IOException {
+	
         final long offset;
         final int size;
         final int oldSize;
-                
-        offset = fileRWAccess.size();
-        size = fileRWAccess.write(key.getPersistentFactory(), object, offset);
-        oldSize = index.put(key, offset, size);
-        usedSize += (size - oldSize);
-        fileStatistics.incrementWriteCount(key, oldSize, size);
+        
+	synchronized( writeLock ) {
+	    offset = fileRWAccess.size();
+	    size = fileRWAccess.write(key.getPersistentFactory(), object, offset);
+	    oldSize = index.put(key, offset, size);
+	    usedSize += (size - oldSize);
+	    fileStatistics.incrementWriteCount(key, oldSize, size);
+	}
     }
     
     public void remove(final Key key) throws IOException {
