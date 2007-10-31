@@ -669,11 +669,18 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 	    if( disposing ) {
 		return;
 	    }
-
-	    if( isRestored ) {
-		ProgressSupport.instance().fireProjectLoaded(ProjectBase.this);
-	    }
-
+	    Notificator.instance().flush();
+	}
+	finally {
+	    disposeLock.readLock().unlock();
+	}
+    
+	if( isRestored ) {
+	    ProgressSupport.instance().fireProjectLoaded(ProjectBase.this);
+	}
+    
+	try {
+	    disposeLock.readLock().lock();
 	    if( isRestored && ! disposing ) {
 		// FIXUP for #109105 fix the reason instead!
 		try {
@@ -685,6 +692,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 		} catch( Exception e ) {
 		    e.printStackTrace(System.err);
 		}
+	    }
+	    if( disposing ) {
+		return;
 	    }
 	    Notificator.instance().flush();
 	}
