@@ -84,6 +84,12 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
         a.findIn = ProjectTab.ID_LOGICAL;
         return a;
     }
+    /** for test */
+    static Action inProjects(Lookup lookup) {
+        SelectNodeAction a = new SelectNodeAction(SELECT_IN_PROJECTS_ICON, SELECT_IN_PROJECTS_NAME, lookup);
+        a.findIn = ProjectTab.ID_LOGICAL;
+        return a;
+    }
     
     public static Action inFiles() {
         SelectNodeAction a = new SelectNodeAction( SELECT_IN_FILES_ICON, SELECT_IN_FILES_NAME );
@@ -97,7 +103,10 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
      *
      */
     public SelectNodeAction( Icon icon, String name ) {
-        super( icon, null, new Class[] { DataObject.class, FileObject.class } );
+        this(icon, name, null);
+    }
+    private SelectNodeAction(Icon icon, String name, Lookup lookup) {
+        super( icon, lookup, new Class[] { DataObject.class, FileObject.class } );
         this.setDisplayName( name );
     }
     
@@ -156,12 +165,12 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
     
     private FileObject getFileFromLookup( Lookup context ) {
    
-        FileObject fo = (FileObject) context.lookup(FileObject.class);     
+        FileObject fo = context.lookup(FileObject.class);     
         if (fo != null) {
             return fo;
         }
 
-        DataObject dobj = (DataObject)context.lookup( DataObject.class );
+        DataObject dobj = context.lookup(DataObject.class);
         
         return dobj == null ? null : dobj.getPrimaryFile();
     }

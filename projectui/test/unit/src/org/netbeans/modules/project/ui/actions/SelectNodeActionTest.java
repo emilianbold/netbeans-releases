@@ -47,11 +47,8 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ui.actions.TestSupport.ChangeableLookup;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.ContextGlobalProvider;
-import org.openide.util.Lookup;
 
 /**
- *
  * @author Jan Lahoda
  */
 public class SelectNodeActionTest extends NbTestCase {
@@ -60,24 +57,22 @@ public class SelectNodeActionTest extends NbTestCase {
     private FileObject scratch;
     private FileObject test;
     private DataObject testDO;
-    
+
     public SelectNodeActionTest(String testName) {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         contextLookup = new ChangeableLookup();
         scratch = TestUtil.makeScratchDir(this);
         test =  scratch.createData("test", "txt");
         testDO = DataObject.find(test);
-        TestUtil.setLookup(new Object[] {
-            new ContextGlobalProviderImpl(),
-        });
     }
 
     public void testEnabledUpdated() throws Exception {
-        Action a = SelectNodeAction.inProjects();
-        
+        Action a = SelectNodeAction.inProjects(contextLookup);
+
         assertFalse(a.isEnabled());
         contextLookup.change(testDO);
         assertTrue(a.isEnabled());
@@ -94,16 +89,10 @@ public class SelectNodeActionTest extends NbTestCase {
         contextLookup.change();
         assertFalse(a.isEnabled());
     }
-    
+
+    @Override
     public boolean runInEQ() {
         return true;
     }
-    
-    private final class ContextGlobalProviderImpl implements ContextGlobalProvider {
-        
-        public Lookup createGlobalContext() {
-            return contextLookup;
-        }
-        
-    }
+
 }
