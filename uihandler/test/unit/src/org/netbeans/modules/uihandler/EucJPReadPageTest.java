@@ -111,9 +111,15 @@ public class EucJPReadPageTest extends NbTestCase {
     }
     
     public void testKFranksFile() throws Exception {
+        doKFranksFile("index_ja.html");
+    }
+    public void testKFranksErrorFile() throws Exception {
+        doKFranksFile("error_ja.html");
+    }
+    private void doKFranksFile(String f) throws Exception {
         String jaText = "\u30b3\u30de\u30f3\u30c9";
         
-        InputStream is = getClass().getResourceAsStream("index_ja.html");
+        InputStream is = getClass().getResourceAsStream(f);
         assertNotNull("index_ja found", is);
         
         MemoryURL.registerURL("memory://kun.html", is);

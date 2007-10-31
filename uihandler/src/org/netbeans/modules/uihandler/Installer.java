@@ -146,7 +146,10 @@ public class Installer extends ModuleInstall implements Runnable {
     private static int logsSize;
     private static URL hintURL;
 
-    private static Pattern ENCODING = Pattern.compile("<meta.*http-equiv=['\"]Content-Type['\"].*content=.*charset=([A-Za-z0-9\\-]+)['\"]>"); // NOI18N
+    private static Pattern ENCODING = Pattern.compile(
+        "<meta.*http-equiv=['\"]Content-Type['\"]" +
+        ".*content=.*charset=([A-Za-z0-9\\-]+)['\"]>", Pattern.CASE_INSENSITIVE
+    ); // NOI18N
     
     @Override
     public void restored() {
