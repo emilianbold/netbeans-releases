@@ -213,7 +213,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private boolean compileWithDepsToBeScheduled;
     private int compileScheduled;
     
-    private boolean lockRU;
+    private int lockRU;
     
     /** Creates a new instance of RepositoryUpdater */
     private RepositoryUpdater() {        
@@ -706,7 +706,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         storedFiles.addAll(files);
         
         if (!recompileScheduled) {
-            if (lockRU) {
+            if (lockRU > 0) {
                 recompileToBeScheduled = true;
             } else {
                 submit(Work.recompile());
@@ -719,7 +719,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         recompileFilesWithErrors.add(root);
         
         if (!recompileFilesWithErrorsScheduled) {
-            if (lockRU) {
+            if (lockRU > 0) {
                 recompileFilesWithErrorsToBeScheduled = true;
             } else {
                 submit(Work.recompileFilesWithErrors());
@@ -755,19 +755,58 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         storedFiles.add(file);
         
-        if (lockRU) {
+        if (lockRU > 0) {
             compileWithDepsToBeScheduled = true;
         } else {
             t.schedule(DELAY);
         }
     }
     
-    public synchronized void lockRU() {
-        lockRU = true;
+    private void findDependencies(final URL rootURL, final Stack<URL> cycleDetector, final Map<URL, List<URL>> depGraph) {
+        if (depGraph.containsKey(rootURL)) {
+            return;
+        }
+        final FileObject rootFo = URLMapper.findFileObject(rootURL);
+        if (rootFo == null) {
+            return;
+        }
+        cycleDetector.push(rootURL);
+        final ClassPath bootPath = ClassPath.getClassPath(rootFo, ClassPath.BOOT);
+        final ClassPath compilePath = ClassPath.getClassPath(rootFo, ClassPath.COMPILE);
+        final ClassPath[] pathsToResolve = new ClassPath[]{bootPath, compilePath};
+        final List<URL> deps = new LinkedList<URL>();
+        for (int i = 0; i < pathsToResolve.length; i++) {
+            final ClassPath pathToResolve = pathsToResolve[i];
+            if (pathToResolve != null) {
+                for (ClassPath.Entry entry : pathToResolve.entries()) {
+                    final URL url = entry.getURL();
+                    final URL[] sourceRoots = cpImpl.getSourceRootForBinaryRoot(url, pathToResolve, false);
+                    if (sourceRoots != null) {
+                        for (URL sourceRoot : sourceRoots) {
+                            if (!sourceRoot.equals(rootURL) && !cycleDetector.contains(sourceRoot)) {
+                                deps.add(sourceRoot);
+                                findDependencies(sourceRoot, cycleDetector, depGraph);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        depGraph.put(rootURL, deps);
+        cycleDetector.pop();
     }
     
-    public synchronized void unlockRU() {
-        lockRU = false;
+    public synchronized void lockRU() {
+        lockRU++;
+    }
+    
+    public void unlockRU() {
+        unlockRU(null);
+    }
+    
+    public synchronized void unlockRU(final Runnable notifyFinished) {
+        if (--lockRU > 0)
+            return ;
         
         if (recompileToBeScheduled) {
             submit(Work.recompile());
@@ -782,7 +821,27 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         
         if (compileWithDepsToBeScheduled) {
-            for (final URL root : url2CompileWithDeps.keySet()) {
+            final Map<URL, List<URL>> depGraph = new HashMap<URL, List<URL>>();
+            for (URL rootURL : url2CompileWithDeps.keySet()) {
+                findDependencies(rootURL, new Stack<URL>(), depGraph);
+            }
+            List<URL> rootsToCompile;
+
+            try {
+                rootsToCompile = Utilities.topologicalSort(depGraph.keySet(), depGraph);
+                Collections.reverse(rootsToCompile);
+            } catch (TopologicalSortException ex) {
+                Exceptions.printStackTrace(ex);
+                rootsToCompile = new ArrayList<URL>(url2CompileWithDeps.keySet());
+            }
+            
+            int index = 0;
+
+            for (final URL root : rootsToCompile) {
+                if (!url2CompileWithDeps.containsKey(root)) {
+                    continue;
+                }
+
                 Reference<Task> taskRef = url2CompileWithDepsTask.get(root);
                 Task t = taskRef != null ? taskRef.get() : null;
 
@@ -797,9 +856,17 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     url2CompileWithDepsTask.put(root, new WeakReference<Task>(t));
                 }
 
-                t.schedule(DELAY);
+                t.schedule(DELAY + index++);
             }
             compileWithDepsToBeScheduled = false;
+            
+            if (notifyFinished != null) {
+                WORKER.create(new Runnable() {
+                    public void run() {
+                        submit(Work.notifyFinished(notifyFinished));
+                    }
+                }).schedule(DELAY + index++);
+            }
         }
     }
     
@@ -926,7 +993,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
     
     private static enum WorkType {
-        COMPILE_BATCH, COMPILE_CONT, COMPILE, DELETE, UPDATE_BINARY, FILTER_CHANGED, COMPILE_WITH_DEPENDENCIES, RECOMPILE, RECOMPILE_FILES_WITH_ERRORS
+        COMPILE_BATCH, COMPILE_CONT, COMPILE, DELETE, UPDATE_BINARY, FILTER_CHANGED, COMPILE_WITH_DEPENDENCIES, RECOMPILE, RECOMPILE_FILES_WITH_ERRORS, NOTIFY_FINISHED
     };
     
     
@@ -1015,6 +1082,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             return new CompileWithDepsWork(root, filesToCompile, null);
         }
         
+        public static Work notifyFinished(Runnable r) {
+            return new NotifyFinishedWork(r);
+        }
+        
     }
         
     private static class SingleRootWork extends Work {
@@ -1098,6 +1169,17 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         public Collection<File> getFilesToCompile() {
             return filesToCompile;
         }
+    }
+    
+    private static class NotifyFinishedWork extends Work {
+        
+        private Runnable r;
+
+        public NotifyFinishedWork(Runnable r) {
+            super(WorkType.NOTIFY_FINISHED, null);
+            this.r = r;
+        }
+        
     }
     
     private final class CompileWorker implements CancellableTask<CompilationInfo> {
@@ -1411,6 +1493,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 //Ignore abort
                             }
                             break;
+                        }
+                        case NOTIFY_FINISHED:
+                        {
+                            WORKER.post(new Runnable() {
+                                public void run() {
+                                    ((NotifyFinishedWork) work).r.run();
+                                }
+                            });
                         }
                     }                                                
                     return null;                    
@@ -2199,7 +2289,13 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 
                 thisFiles.removeAll(storedFiles);
 
-                assureRecompiled(root, thisFiles);
+                if (!thisFiles.isEmpty()) {
+                    assureRecompiled(root, thisFiles);
+                } else {
+                    setAttribute(root, DIRTY_ROOT, null); //NOI18N
+                }
+            } else {
+                setAttribute(root, DIRTY_ROOT, null); //NOI18N
             }
         }
         
@@ -2442,16 +2538,16 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             synchronized (this) {
                 sleep = compileScheduled > 0 || !url2Recompile.isEmpty() || !recompileFilesWithErrors.isEmpty();
             }
-            
+                
             if (sleep) {
                 Thread.sleep(100);
                 waited = true;
             } else {
                 break;
-            }
-        }
+                    }
+                }
         return waited;
-    }
+            }
             
     private static class CompilerListener implements DiagnosticListener<JavaFileObject>, LowMemoryListener, TaskListener {
                                
