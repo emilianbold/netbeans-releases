@@ -92,6 +92,17 @@ public interface SourceTable extends SQLDBTable, Cloneable, Comparable, SQLVisit
      * @return extraction type
      */
     public String getExtractionType();
+    
+    public String getStrExtractionStmtType();
+    
+    public int getExtractionStmtType();
+    
+      /**
+     * set string representation of extraction type
+     * 
+     * @param stType extraction type
+     */
+    public void setStrExtractionStmtType(String stType);
 
     /**
      * get temporary table name

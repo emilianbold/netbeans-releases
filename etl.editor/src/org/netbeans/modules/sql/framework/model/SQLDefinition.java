@@ -59,7 +59,19 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
     /** Attribute name: displayName */
     public static final String ATTR_DISPLAYNAME = "displayName";
     public static final String ATTR_EXECUTION_STRATEGY_CODE = "executionStrategyCode";
+    public static final String ATTR_EXTRACTION_TYPE_CODE = "extractionTypeCode";
     public static final String ATTR_VERSION = "version";
+
+    //Extraction Type codes
+    public static final int EXTRACTION_TYPE_CONDITIONAL = 0;
+
+    public static final int EXTRACTION_TYPE_DEFAULT = EXTRACTION_TYPE_CONDITIONAL;
+
+    public static final int EXTRACTION_TYPE_FULL = 1;
+    
+    public static final String STR_EXTRACTION_TYPE_CONDITIONAL = "ConditionalExtraction";
+
+    public static final String STR_EXTRACTION_TYPE_FULL = "FullExtraction";
 
     // Execution Strategy codes
     public static final int EXECUTION_STRATEGY_BEST_FIT = 0;
@@ -106,6 +118,12 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
 
     public Object getAttributeValue(String attrName);
 
+       /**
+     * Gets extraction type code set.
+     * 
+     * @return
+     */
+    public Integer getExtractionTypeCode();
     /**
      * Gets display name.
      * 
@@ -283,6 +301,12 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
      * @param code
      */
     public void setExecutionStrategyCode(Integer code);
+      /**
+     * Sets the extraction type.
+     * 
+     * @param code
+     */
+    public void setExtractionTypeCode(Integer code);
 
     public void setSQLFrameworkParentObject(SQLFrameworkParentObject newParent);
 

@@ -436,6 +436,10 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     public Integer getExecutionStrategyCode() {
         return (Integer) this.getAttributeValue(ATTR_EXECUTION_STRATEGY_CODE);
     }
+    
+    public Integer getExtractionTypeCode() {
+        return (Integer)this.getAttributeValue(ATTR_EXTRACTION_TYPE_CODE);
+    }
 
     public String getExecutionStrategyStr() {
         int code = getExecutionStrategyCode().intValue();
@@ -1085,6 +1089,10 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
 
     public void setExecutionStrategyCode(Integer code) {
         this.setAttribute(ATTR_EXECUTION_STRATEGY_CODE, code);
+    }
+    
+    public void setExtractionTypeCode(Integer code) {
+       this.setAttribute(ATTR_EXTRACTION_TYPE_CODE, code);
     }
 
     /**
@@ -1954,4 +1962,5 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
 
     public void setExecutionStrategyStr(String text) {
     }
+
 }
