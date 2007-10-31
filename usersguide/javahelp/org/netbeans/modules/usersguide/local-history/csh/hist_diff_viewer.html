@@ -39,23 +39,19 @@
                 column and type in a label directly.</li>
         </ul>
         
-        <p>To view differences between two file versions.</p>
-        
-        <ul>
-            <li>Select a version from the table in the upper pane of the Diff Viewer. When 
-                you select a version, the table row becomes highlighted in dark gray, and 
-                the selected version displays on the left side in the Diff Viewer below. The 
-                right side of the Diff Viewer displays the current file version.</li>
-        </ul>
+        <p>You can view differences between two file versions by selecting a version from 
+            the table in the upper pane of the Diff Viewer. When you select a version, the 
+            table row becomes highlighted in dark gray, and the selected version displays 
+            on the left side in the Diff Viewer below. The right side of the Diff Viewer 
+            displays the current file version.</p>
         
         <ul class="note">
             <li>You can call commands directly on versions listed in the Diff Viewer's upper pane:
                 <ul>
-                    <li><strong>To revert your current file to a selected version:</strong> 
-                        <br>From the table, right-click the version you want to revert changes 
-                        to and choose Revert from History.</li>
-                    <li><strong>To delete a version from the Local History repository:</strong>
-                        <br>Right-click the version in the table and choose Delete from History.</li>
+                    <li>To revert your current file to a selected version, right-click the version 
+                        you want to revert changes to and choose Revert from History.</li>
+                    <li>To delete a version from the Local History repository, right-click the 
+                        version and choose Delete from History.</li>
                 </ul>
             </li>
         </ul>
@@ -64,43 +60,43 @@
             differences between file versions.</p>        
         
         <ul>
-            <li>The Previous (<img src="../images/diff-prev.png" alt="previous difference button">) 
-                and Next (<img src="../images/diff-next.png" alt="next difference button">) 
-                Difference buttons in the toolbar allow you to navigate among individual differences 
-                found between versions in the file.</li>
-            <li>The Diff Viewer highlights changes in the files using the following colors:
+            <li>You can navigate among individual differences between file versions using the 
+                following buttons in the toolbar:
+                
+                <ul>
+                    <li><img src="../images/diff-prev.png" alt="previous difference button"> (Previous): Highlights the previous difference found between versions</li>
+                    <li><img src="../images/diff-next.png" alt="next difference button"> (Next): Hightlights the next difference found between versions</li>
+                </ul></li>
+            <li>Differences in files are highlighted using the following colors:
         
                 <ul>
-                    <li><strong>Blue</strong> 
-                        ( <span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> ).
+                    <li><span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> (Blue):
                         Indicates lines that have been changed since the earlier revision</li>
-                    <li><strong>Green</strong> 
-                        ( <span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> ).
+                    <li><span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> (Green):
                         Indicates lines that have been added since the earlier revision</li>
-                    <li><strong>Red</strong> 
-                        ( <span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> ).
+                    <li><span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> (Red):
                         Indicates lines that have been removed since the earlier revision</li>
+                </ul></li>
+            <li>The following icons enable you to make changes directly within the Diff Viewer:
+        
+                <ul>
+                    <li><img src="../images/insert.png" alt="replace icon"> (Replace): Inserts the
+                        highlighted text from the previous revision into the current revision</li>
+                    <li><img src="../images/arrow.png" alt="move all icon"> (Move All): Reverts the
+                        file's current version to the state of the selected previous version.</li>
+                    <li>&nbsp;<img src="../images/remove.png" alt="remove icon"> (Remove): Removes the 
+                        highlighted text from the current version so that it mirrors the previous 
+                        version.</li>
                 </ul></li>
         </ul>
         
         <ul class="note">
-            <li>The above color settings are set by default within the IDE. You can modify 
-                these settings by choosing Tools &gt; Options from the main menu, then clicking
-                Advanced Options. Expand IDE Configuration &gt; Server and External Tool Settings
-                &gt; Diff and Merge Types &gt; Diff Visualizers &gt; Graphical Diff Viewer.
-                From the right panel, you can select the colors of your choice.</li>
-        </ul>
-        
-        <p>The following icons enable you to make changes directly within the Diff Viewer:</p>
-        
-        <ul>
-            <li><strong>Replace</strong> (<img src="../images/insert.png" alt="replace icon">).
-                Inserts the highlighted text from the previous revision into the current revision</li>
-            <li><strong>Move All</strong> (<img src="../images/arrow.png" alt="move all icon">).
-                Reverts the file's current version to the state of the selected previous version.
-            <li><strong>Remove</strong> (<img src="../images/remove.png" alt="remove icon">).
-                Removes the highlighted text from the current version so that it mirrors the 
-                previous version.
+            <li>The above color settings used to denote version differences are set by default 
+                within the IDE. You can modify these settings by choosing Tools &gt; Options from 
+                the main menu, then clicking Advanced Options. Expand IDE Configuration &gt; 
+                Server and External Tool Settings &gt; Diff and Merge Types &gt; Diff Visualizers 
+                &gt; Graphical Diff Viewer. From the right panel, you can select the colors of 
+                your choice.</li>
         </ul>
 
 	<dl>
@@ -109,7 +105,6 @@
             <dd><a href="../hist_quickref.html">Local History Tasks: Quick Reference</a></dd>
             <dd><a href="nbdocs://org.netbeans.modules.versioning.system.cvss/org/netbeans/modules/versioning/system/cvss/docs/cvsmodule/cvs-lite_about.html">About the IDE's CVS Support</a></dd>            
             <dd><a href="nbdocs://org.netbeans.modules.subversion/org/netbeans/modules/subversion/docs/svnmodule/svn_about.html">About the IDE's Subversion Support</a></dd>
-
         </dl>
 
         <hr>
