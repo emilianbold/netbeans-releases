@@ -58,6 +58,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.View;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.EditorUI;
@@ -124,6 +125,7 @@ public class JspEditorWarmUpTask implements Runnable{
     private static final int STATUS_SWITCH_DOCUMENTS = 3;
     private static final int STATUS_TRAVERSE_VIEWS = 4;
     private static final int STATUS_RENDER_FRAME = 5;
+    private static final int STATUS_PREINIT_SCHLIEMAN = 6;
     
     private int status = STATUS_INIT;
 
@@ -143,6 +145,15 @@ public class JspEditorWarmUpTask implements Runnable{
     public void run() {
         switch (status) {
             case STATUS_INIT:
+                //preinit Schlieman languages - fix of issue #120442 - 20 sec delay when samples jsps are edited
+                //the jsp warmuptask is run just if the ide is run and a web project is opened - so not run after 
+                //ide start with new userdir.
+                //Typically the user opens the ide for the first time, then opens or creates a web 
+                //project and edits some files.
+                 Language.find("text/x-css");
+                 Language.find("text/x-css-inlined");
+                 Language.find("text/javascript");
+                
                 //test whether a WebProject is opened
                 if(!isWebProjectOpened()) return ;
         
