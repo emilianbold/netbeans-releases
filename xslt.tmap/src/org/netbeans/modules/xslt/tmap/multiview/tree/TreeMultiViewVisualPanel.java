@@ -38,73 +38,45 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.xslt.tmap.multiview.tree;
 
-package org.netbeans.modules.xslt.tmap.nodes;
-
-import java.awt.Image;
-import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
+import org.netbeans.modules.xslt.tmap.navigator.TMapLogicalPanel;
+import org.netbeans.modules.xslt.tmap.nodes.LogicalTreeHandler;
+import org.openide.explorer.view.BeanTreeView;
 
 /**
  *
  * @author Vitaly Bychkov
  * @version 1.0
+ * 
  */
-public abstract class DecoratedTMapComponentAbstract<T extends TMapComponent> 
-        implements DecoratedTMapComponent<T> 
-{
+public class TreeMultiViewVisualPanel extends TMapLogicalPanel {
 
-    private T myOrig;
+    public TreeMultiViewVisualPanel() {
+        super();
+    }
     
-    public DecoratedTMapComponentAbstract(T orig) {
-        myOrig = orig;
-    }
-
-    public String getName() {
-        NodeType type = NodeType.getNodeType(myOrig);
-        return type != null ? type.getDisplayName(): "";
-    }
-
-    public String getDisplayName() {
-        return getName();
-    }
-
-    public String getHtmlDisplayName() {
-        return getName();
-    }
-
-    public String getTooltip() {
-        return "";
-    }
-
-    public Image getIcon() {
-        NodeType type = NodeType.getNodeType(myOrig);
-        return type != null ? type.getImage(): NodeType.UNKNOWN_TYPE.getImage();
-    }
-
-    public T getOriginal() {
-        return myOrig;
-    }
-
     @Override
-    public boolean equals(Object obj) {
-        if (super.equals(obj)) {
-            return true;
+    protected BeanTreeView getBeanTreeView() {
+        boolean isInited = initNavTree();
+        if (!isInited) {
+            return null;
         }
         
-        if (obj instanceof DecoratedTMapComponent) {
-            TMapComponent objComponent = ((DecoratedTMapComponent)obj).getOriginal();
-            TMapComponent origComponent = getOriginal();
-            if (origComponent != null ) {
-                return origComponent.equals(objComponent);
-            }
+        BeanTreeView beanTree = null;
+        if (myTreeHandler != null) {
+            myTreeHandler.removeListeners();
+            myTreeHandler = null;
         }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        TMapComponent origComponent = getOriginal();
-        return origComponent == null ? origComponent.hashCode() : super.hashCode();
+        
+        myTreeHandler = new MultiviewTreeHandler(
+                getExplorerManager(),
+                getModel(),
+                getContextLookup());
+                
+        beanTree = myTreeHandler.getBeanTreeView();
+        return beanTree;
     }
     
+    private LogicalTreeHandler myTreeHandler;
 }

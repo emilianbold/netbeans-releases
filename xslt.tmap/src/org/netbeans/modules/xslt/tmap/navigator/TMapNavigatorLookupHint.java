@@ -38,73 +38,29 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.xslt.tmap.navigator;
 
-package org.netbeans.modules.xslt.tmap.nodes;
-
-import java.awt.Image;
-import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
+import org.netbeans.spi.navigator.NavigatorLookupHint;
 
 /**
  *
  * @author Vitaly Bychkov
  * @version 1.0
+ * 
  */
-public abstract class DecoratedTMapComponentAbstract<T extends TMapComponent> 
-        implements DecoratedTMapComponent<T> 
-{
-
-    private T myOrig;
+public class TMapNavigatorLookupHint implements NavigatorLookupHint {
+    private static final TMapNavigatorLookupHint INSTANCE 
+            = new TMapNavigatorLookupHint();
     
-    public DecoratedTMapComponentAbstract(T orig) {
-        myOrig = orig;
+    private TMapNavigatorLookupHint() {
     }
-
-    public String getName() {
-        NodeType type = NodeType.getNodeType(myOrig);
-        return type != null ? type.getDisplayName(): "";
+    
+    public static TMapNavigatorLookupHint getInstance() {
+        return INSTANCE;
     }
-
-    public String getDisplayName() {
-        return getName();
-    }
-
-    public String getHtmlDisplayName() {
-        return getName();
-    }
-
-    public String getTooltip() {
-        return "";
-    }
-
-    public Image getIcon() {
-        NodeType type = NodeType.getNodeType(myOrig);
-        return type != null ? type.getImage(): NodeType.UNKNOWN_TYPE.getImage();
-    }
-
-    public T getOriginal() {
-        return myOrig;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (super.equals(obj)) {
-            return true;
-        }
-        
-        if (obj instanceof DecoratedTMapComponent) {
-            TMapComponent objComponent = ((DecoratedTMapComponent)obj).getOriginal();
-            TMapComponent origComponent = getOriginal();
-            if (origComponent != null ) {
-                return origComponent.equals(objComponent);
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        TMapComponent origComponent = getOriginal();
-        return origComponent == null ? origComponent.hashCode() : super.hashCode();
+    
+    public String getContentType() {
+        return "text/x-tmap+xml";
     }
     
 }

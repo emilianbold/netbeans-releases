@@ -116,12 +116,26 @@ public class TMapSourceMultiViewElement extends CloneableEditor
     }
     
     private void initialize() {
-      associateLookup(new ProxyLookup(new Lookup[] { // # 67257
-        Lookups.fixed(new Object[] {
-          getActionMap(), // # 85512
-          getDataObject(),
-          getDataObject().getNodeDelegate() }),
-          getDataObject().getLookup() })); // # 117029
+        Node delegate = myDataObject.getNodeDelegate();
+        SourceCookieProxyLookup lookup = new SourceCookieProxyLookup(new Lookup[] {
+            Lookups.fixed(new Object[] {
+                // Need ActionMap in lookup so editor actions work.
+                getActionMap(),
+                // Need the data object registered in the lookup so that the
+                // projectui code will close our open editor windows when the
+                // project is closed.
+                myDataObject
+            }),
+        },delegate);
+        associateLookup(lookup);
+        addPropertyChangeListener("activatedNodes", lookup);
+
+//      associateLookup(new ProxyLookup(new Lookup[] { // # 67257
+//        Lookups.fixed(new Object[] {
+//          getActionMap(), // # 85512
+//          getDataObject(),
+//          getDataObject().getNodeDelegate() }),
+//          getDataObject().getLookup() })); // # 117029
     }
     
     public void writeExternal(ObjectOutput out) throws IOException {
@@ -266,9 +280,11 @@ public class TMapSourceMultiViewElement extends CloneableEditor
         // multiview element that has the same activated nodes, in which
         // case no events are fired and so the UndoAction does not
         // register for changes with our undo manager.
-        setActivatedNodes(new Node[0]);
-        setActivatedNodes(new Node[] { getDataObject().getNodeDelegate() });
-        addUndoManager();
+//        setActivatedNodes(new Node[0]);
+//        setActivatedNodes(new Node[] { getDataObject().getNodeDelegate() });
+//        addUndoManager();
+        TMapDataEditorSupport editor = getDataObject().getEditorSupport();
+        editor.addUndoManagerToDocument();
     }
     
     public void componentClosed() {
@@ -306,15 +322,24 @@ public class TMapSourceMultiViewElement extends CloneableEditor
     
     public void componentDeactivated() {
         super.componentDeactivated();
-        removeUndoManager();
-        getDataObject().getEditorSupport().syncModel();
+//        removeUndoManager();
+        TMapDataEditorSupport editor = getDataObject().getEditorSupport();
+        // Sync model before having undo manager listen to the model,
+        // lest we get redundant undoable edits added to the queue.
+        editor.syncModel();
+        editor.removeUndoManagerFromDocument();
     }
     
     
     public void componentHidden() {
         super.componentHidden();
-        removeUndoManager();
-        getDataObject().getEditorSupport().syncModel();
+//        removeUndoManager();
+//        getDataObject().getEditorSupport().syncModel();
+        TMapDataEditorSupport editor = getDataObject().getEditorSupport();
+        // Sync model before having undo manager listen to the model,
+        // lest we get redundant undoable edits added to the queue.
+        editor.syncModel();
+        editor.removeUndoManagerFromDocument();
     }
     
     public void componentOpened() {
@@ -323,7 +348,9 @@ public class TMapSourceMultiViewElement extends CloneableEditor
     
     public void componentShowing() {
         super.componentShowing();
-        addUndoManager();
+//        addUndoManager();
+        TMapDataEditorSupport editor = getDataObject().getEditorSupport();
+        editor.addUndoManagerToDocument();
     }
     
     public void setMultiViewCallback( final MultiViewElementCallback callback) {

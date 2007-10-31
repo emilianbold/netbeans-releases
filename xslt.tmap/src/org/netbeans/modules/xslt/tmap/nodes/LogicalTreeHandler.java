@@ -47,6 +47,7 @@ import java.beans.PropertyVetoException;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
+import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.navigator.TMapNavigatorController;
 import org.openide.ErrorManager;
@@ -101,13 +102,13 @@ public class LogicalTreeHandler implements PropertyChangeListener, ComponentList
     }
     
     public void removeListeners() {
-//        if (myExplorerManager != null) {
-//            myExplorerManager.removePropertyChangeListener(this);
-//        }
-//        TopComponent.getRegistry().removePropertyChangeListener(this);
-//        if (myModel != null) {
-//            myModel.removeEntityChangeListener((ChangeEventListener)this);
-//        }
+        if (myExplorerManager != null) {
+            myExplorerManager.removePropertyChangeListener(this);
+        }
+        TopComponent.getRegistry().removePropertyChangeListener(this);
+        if (myModel != null) {
+            myModel.removeComponentListener(this);
+        }
         myModel = null;
         myExplorerManager = null;
         
@@ -171,7 +172,7 @@ public class LogicalTreeHandler implements PropertyChangeListener, ComponentList
 //        System.out.println("childrenDeleted: "+evt);
     }
     
-    private void doTreeNodeSelectionByActiveNode() {
+    protected void doTreeNodeSelectionByActiveNode() {
         Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
         if (nodes == null || nodes.length == 0) {
             return;
@@ -217,7 +218,7 @@ public class LogicalTreeHandler implements PropertyChangeListener, ComponentList
         try {
 //         myBeanTreeView.expandAll();
             Node node2sel = findTMapNode(myExplorerManager.getRootContext()
-            ,tMapNode.getReference());
+            ,tMapNode.getComponentRef());
             if (node2sel == null) {
                 return;
             }
@@ -228,14 +229,14 @@ public class LogicalTreeHandler implements PropertyChangeListener, ComponentList
         }
     }
 
-    private Node findTMapNode(Node parentNode, DecoratedTMapComponent reference) {
+    private Node findTMapNode(Node parentNode, TMapComponent reference) {
         if (parentNode == null || reference == null 
                 || !(parentNode instanceof TMapComponentNode)) 
         {
             return null;
         }
         
-        if (reference.equals(((TMapComponentNode)parentNode).getReference())) {
+        if (reference.equals(((TMapComponentNode)parentNode).getComponentRef())) {
             return (TMapComponentNode)parentNode;
         }
         
@@ -258,7 +259,4 @@ public class LogicalTreeHandler implements PropertyChangeListener, ComponentList
 
         return null;
     }
-    
-    
-    
 }

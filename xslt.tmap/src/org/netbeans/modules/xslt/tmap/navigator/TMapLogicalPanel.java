@@ -101,16 +101,26 @@ public class TMapLogicalPanel extends JPanel
         myModel = model;
         myContextLookup = contextLookup;
         showWaitMsg();
-        showNavTree();
-        // switch navigator to the appropriate view
+        Thread treeThread = new Thread(new Runnable() {
+            public void run() {
+                showNavTree();
+            }
+        });
+        treeThread.start();
+        
+// switch navigator to the appropriate view
 //        BpelNavigatorController.switchNavigatorPanel();
+    }
+    
+    protected TMapModel getModel() {
+        return myModel;
     }
 
     public ExplorerManager getExplorerManager() {
         return myExplorerManager;
     }
 
-    private Lookup getContextLookup() {
+    protected Lookup getContextLookup() {
         return myContextLookup;
     }
 
@@ -165,7 +175,7 @@ public class TMapLogicalPanel extends JPanel
         });
     }
 
-    private boolean initNavTree() {
+    protected boolean initNavTree() {
         myExplorerManager = new ExplorerManager();
         if (!Model.State.VALID.equals(myModel.getState())) {
             return false;
@@ -181,7 +191,7 @@ public class TMapLogicalPanel extends JPanel
         return true;
     }
     
-    private BeanTreeView getBeanTreeView() {
+    protected BeanTreeView getBeanTreeView() {
         boolean isInited = initNavTree();
         if (!isInited) {
             return null;
@@ -202,7 +212,7 @@ public class TMapLogicalPanel extends JPanel
         return beanTree;
     }
     
-    private void initActionMap() {
+    protected void initActionMap() {
         ActionMap actionMap = getActionMap();
         
         
