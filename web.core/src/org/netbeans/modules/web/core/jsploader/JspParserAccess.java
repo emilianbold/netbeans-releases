@@ -152,6 +152,10 @@ public class JspParserAccess {
             pcs.firePropertyChange(propertyName, null, null);
         }
         
+        @Override
+        public FileObject getWebInf() {
+            return webModule.getWebInf();
+        }
 /*        public FileObject[] getPackageRoots() {
             FileObject[] roots = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.EXECUTE).getRoots();
             ArrayList folders = new ArrayList();

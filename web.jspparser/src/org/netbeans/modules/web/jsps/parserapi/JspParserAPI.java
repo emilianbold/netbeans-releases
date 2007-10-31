@@ -96,6 +96,15 @@ public interface JspParserAPI {
         public abstract void addPropertyChangeListener(PropertyChangeListener l);
         
         public abstract void removePropertyChangeListener(PropertyChangeListener l);
+        
+        public FileObject getWebInf() {
+            FileObject webInfFO = null;
+            FileObject documentBase = getDocumentBase();
+            if (documentBase != null) {
+                webInfFO = documentBase.getFileObject("WEB-INF");
+            }
+            return webInfFO;
+        };
     }
     
     /** Mode in which some errors (such as error parsing a tag library) are ignored. */

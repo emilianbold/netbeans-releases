@@ -454,14 +454,19 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         // Obtain all tld files under WEB-INF folder
         FileObject webInf = org.netbeans.modules.web.api.webmodule.WebModule.getWebModule(wmRoot).getWebInf();
         FileObject fo;
-        File file;
         if (webInf != null && webInf.isFolder()){
             Enumeration en = webInf.getChildren(true);
             while (en.hasMoreElements()){
                 fo = (FileObject)en.nextElement();
                 if (fo.getExt().equals("tld")){
-                    file = FileUtil.toFile(fo);
-                    String path = "/" + ContextUtil.findRelativePath(wmRoot, fo);
+                    String path;
+                    if (ContextUtil.isInSubTree(wmRoot, fo)) {
+                        path = "/" + ContextUtil.findRelativePath(wmRoot, fo);
+                    }
+                    else {
+                        // the web-inf folder is mapped somewhere else
+                        path = "/WEB-INF/" + ContextUtil.findRelativePath(webInf, fo); //NOI18N
+                    }
                     returnMap.put(path, new String[] { path, null });
                 }
             }

@@ -234,7 +234,18 @@ public class ParserServletContext implements ServletContext {
      */
     protected FileObject getResourceAsObject(String path) {
         LOGGER.log(Level.FINE,  "getResourceAsObject({0})", path);
-        return ContextUtil.findRelativeFileObject(wmRoot, path);
+        FileObject fileObject = ContextUtil.findRelativeFileObject(wmRoot, path);
+        if (fileObject == null && path != null) {
+            int index = path.toLowerCase().indexOf("web-inf");
+            if (index > -1) {
+                String newPath = path.substring(index + 7);
+                fileObject = ContextUtil.findRelativeFileObject(myWm.getWebInf(), newPath);
+            }
+            else {
+                fileObject = ContextUtil.findRelativeFileObject(myWm.getWebInf(), path);
+            }
+        }
+        return fileObject;
     }
     
     
