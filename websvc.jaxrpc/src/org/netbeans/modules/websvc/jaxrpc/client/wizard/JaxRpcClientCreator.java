@@ -68,10 +68,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.core.ClientCreator;
 import org.netbeans.modules.websvc.core.ClientWizardProperties;
-import org.netbeans.modules.websvc.core.webservices.ui.panels.WebProxySetter;
 import org.netbeans.modules.websvc.core.WsdlRetriever;
 import org.netbeans.modules.websvc.core.WsdlRetriever;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
@@ -86,7 +84,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.netbeans.modules.j2ee.common.Util;
 import org.openide.util.Task;
 
 /**
@@ -309,7 +306,7 @@ public class JaxRpcClientCreator implements ClientCreator {
         }
         
         // sets JVM Proxy Options
-        clientSupport.setProxyJVMOptions(WebProxySetter.getInstance().getProxyHost(),WebProxySetter.getInstance().getProxyPort());
+        clientSupport.setProxyJVMOptions(System.getProperty("http.proxyHost"), System.getProperty("http.proxyPort"));
         
         // 3. add the service client to the project.
         // Use Progress API to display generator messages.        

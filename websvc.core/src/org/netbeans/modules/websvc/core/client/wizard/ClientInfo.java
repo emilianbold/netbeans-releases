@@ -42,7 +42,6 @@
 package org.netbeans.modules.websvc.core.client.wizard;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -62,16 +61,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.text.JTextComponent;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.ClientWizardProperties;
-import org.netbeans.modules.websvc.core.webservices.ui.panels.ProxySettingsDlg;
-import org.netbeans.modules.websvc.core.webservices.ui.panels.WebProxySetter;
 import org.netbeans.modules.websvc.core.WsdlRetriever;
 import org.netbeans.modules.websvc.core.WsdlRetriever;
 import org.netbeans.modules.websvc.core.jaxws.JaxWsExplorerPanel;
@@ -79,14 +73,13 @@ import org.netbeans.modules.websvc.core.JaxWsUtils;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -94,6 +87,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -107,10 +101,6 @@ import org.netbeans.modules.websvc.core.WsWsdlCookie;
 import org.openide.ErrorManager;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 
 /**
@@ -140,7 +130,6 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
     private String downloadMsg;
     
     private boolean retrieverFailed = false;
-    private boolean isWaitingForScan = false;
     
     private Project project;
     private int projectType;
@@ -450,7 +439,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
     }//GEN-LAST:event_jRbnUrlActionPerformed
     
     private void jBtnProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnProxyActionPerformed
-        ProxySettingsDlg.showDialog();
+        OptionsDisplayer.getDefault().open("General");//NOI18N
         wsdlUrlChanged();
     }//GEN-LAST:event_jBtnProxyActionPerformed
     
@@ -461,24 +450,11 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             chooser.setAcceptAllFileFilterUsed(true);
             chooser.addChoosableFileFilter(WSDL_FILE_FILTER);
             chooser.setFileFilter(WSDL_FILE_FILTER);
-            
             if(chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 File wsdlFile = chooser.getSelectedFile();
                 jTxtLocalFilename.setText(wsdlFile.getAbsolutePath());
                 previousDirectory = wsdlFile.getPath();
-                int result = resolveImports(wsdlFile);
-                if ((result & 0x02) == 0x02) {
-                    String proxyHost = WebProxySetter.getInstance().getProxyHost();
-                    if (proxyHost==null || proxyHost.length()==0)
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                NbBundle.getMessage(ClientInfo.class,"MSG_SetUpProxyForImports"),NotifyDescriptor.WARNING_MESSAGE)); //NOI18N
-                }
-                if ((result & 0x01) == 0x01) {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                            NbBundle.getMessage(ClientInfo.class,"MSG_IdeGeneratedStaticStubOnly"),NotifyDescriptor.WARNING_MESSAGE)); //NOI18N
-                }
-                
-            }
+            } 
 	}//GEN-LAST:event_jBtnBrowseActionPerformed
         
     private void jRbnFilesystemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRbnFilesystemActionPerformed
@@ -1101,21 +1077,6 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, ""); //NOI18N
         }
         
-        // Retouche
-        //        if (JavaMetamodel.getManager().isScanInProgress()) {
-        //            if (!isWaitingForScan) {
-        //                isWaitingForScan = true;
-        //                RequestProcessor.getDefault().post(new Runnable() {
-        //                    public void run() {
-        //                        JavaMetamodel.getManager().waitScanFinished();
-        //                        isWaitingForScan = false;
-        //                        descriptorPanel.fireChangeEvent();
-        //                    }
-        //                });
-        //            }
-        //            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ClientInfo.class, "MSG_ScanningInProgress")); //NOI18N
-        //            return false;
-        //        } else
         wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
         
         return true;
@@ -1192,25 +1153,6 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         }
         return true;
     }
-    private boolean isWsCompileSupported(Project p) {
-        // Determine if wscompile is supported by the current target server of
-        // this project.  Default to true so that the user can still continue, if on
-        // their own, in case we have difficulty getting the correct answer.
-        boolean result = true;
-        
-        J2eeModuleProvider provider = (J2eeModuleProvider) p.getLookup().lookup(J2eeModuleProvider.class);
-        if(provider != null) {
-            String serverInstanceID = provider.getServerInstanceID();
-            if(serverInstanceID != null && serverInstanceID.length() > 0) {
-                J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
-                if(!j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
-                    result = false;
-                }
-            }
-        }
-        
-        return result;
-    }
     
     private void wsdlUrlChanged() {
         // Throw away any existing retriever.  New URL means user has to download it again.
@@ -1223,19 +1165,6 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         if(!settingFields) {
             descriptorPanel.fireChangeEvent(); // Notify that the panel changed
         }
-    }
-    
-    private boolean isValidUrl(String urlText) {
-        if(urlText == null || urlText.length() == 0) {
-            return false;
-        }
-        
-        // !PW Be very careful adding conditions to this method (such as seeing if
-        // conversion of url text to URL would throw a MalformedURLException and
-        // reporting it to the user early.)  It is a non-trivial change that would
-        // require significant synchronization with code in the retriever object.
-        // as well as the valid() method of this object.  See IZ 52685.
-        return true;
     }
     
     public void setWsdlDownloadMessage(String m) {
@@ -1260,81 +1189,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             return NbBundle.getMessage(ClientInfo.class, "LBL_WsdlFilterDescription"); // NOI18N
         }
     }
-    
-    
-    /** Private method to identify wsdl imports and/or the http wsdl/schema imports
-     */
-    private int resolveImports(File file) {
-        try {
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            SAXParser saxParser = factory.newSAXParser();
-            ImportsHandler handler= new ImportsHandler();
-            saxParser.parse(new InputSource(new FileInputStream(file)), handler);
-            int httpImport = (handler.isHttpImport()?1:0);
-            int wsdlImport = (handler.isImportingWsdl()?1:0);
-            return httpImport*2+wsdlImport;
-        } catch(ParserConfigurationException ex) {
-            // Bogus WSDL, return null.
-        } catch(SAXException ex) {
-            // Bogus WSDL, return null.
-        } catch(IOException ex) {
-            // Bogus WSDL, return null.
-        }
-        return 0;
-    }
-    
-    /** this is the handler for local wsdl file scanning for imported wsdl/schema files
-     */
-    private static class ImportsHandler extends DefaultHandler {
-        
-        private static final String W3C_WSDL_SCHEMA = "http://schemas.xmlsoap.org/wsdl"; // NOI18N
-        private static final String W3C_WSDL_SCHEMA_SLASH = "http://schemas.xmlsoap.org/wsdl/"; // NOI18N
-        
-        private boolean insideSchema;
-        private boolean httpImport;
-        private boolean importingWsdl;
-        
-        public void startElement(String uri, String localname, String qname, Attributes attributes) throws SAXException {
-            if(W3C_WSDL_SCHEMA.equals(uri) || W3C_WSDL_SCHEMA_SLASH.equals(uri)) {
-                if("types".equals(localname)) { // NOI18N
-                    insideSchema=true;
-                }
-                if("import".equals(localname)) { // NOI18N
-                    String wsdlLocation = attributes.getValue("location"); //NOI18N
-                    // test if wsdl is imported using http
-                    if (wsdlLocation!=null && wsdlLocation.startsWith("http://")) { //NOI18N
-                        httpImport=true;
-                        importingWsdl=true;
-                    }
-                }
-            }
-            
-            if(insideSchema && "import".equals(localname)) { // NOI18N
-                String schemaLocation = attributes.getValue("schemaLocation"); //NOI18N
-                // test if schema is imported using http
-                if (schemaLocation!=null && schemaLocation.startsWith("http://")) //NOI18N
-                    httpImport=true;
-            }
-        }
-        
-        public void endElement(String uri, String localname, String qname) throws SAXException {
-            if(W3C_WSDL_SCHEMA.equals(uri) || W3C_WSDL_SCHEMA_SLASH.equals(uri)) {
-                if("types".equals(localname)) { // NOI18N
-                    insideSchema=false;
-                }
-            }
-        }
-        
-        boolean isHttpImport() {
-            return httpImport;
-        }
-        
-        boolean isImportingWsdl() {
-            return importingWsdl;
-        }
-    }
-    
+
     private String browseProjectServices() {
         JaxWsExplorerPanel explorerPanel = new JaxWsExplorerPanel();
         DialogDescriptor descriptor = new DialogDescriptor(explorerPanel,
