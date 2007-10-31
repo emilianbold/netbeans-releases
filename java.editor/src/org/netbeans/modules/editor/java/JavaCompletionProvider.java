@@ -2673,80 +2673,88 @@ public class JavaCompletionProvider implements CompletionProvider {
             Types types = controller.getTypes();
             Trees trees = controller.getTrees();
             Scope scope = env.getScope();
-            HashSet<TypeElement> elems = new HashSet<TypeElement>();
-            LinkedList<DeclaredType> bases = new LinkedList<DeclaredType>();
-            bases.add(baseType);
-            ClassIndex index = controller.getJavaSource().getClasspathInfo().getClassIndex();
-            while(!bases.isEmpty()) {
-                DeclaredType head = bases.remove();
-                TypeElement elem = (TypeElement)head.asElement();
-                if (!elems.add(elem))
-                    continue;
-                if (env.isCamelCasePrefix() ? Utilities.startsWithCamelCase(elem.getSimpleName().toString(), prefix) : Utilities.startsWith(elem.getSimpleName().toString(), prefix) && trees.isAccessible(scope, elem))
-                    subtypes.add(head);
-                List<? extends TypeMirror> tas = head.getTypeArguments();
-                boolean isRaw = !tas.iterator().hasNext();
-                subtypes:
-                for (ElementHandle<TypeElement> eh : index.getElements(ElementHandle.create(elem), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.allOf(ClassIndex.SearchScope.class))) {
-                    TypeElement e = eh.resolve(controller);
-                    if (e != null) {
-                        if (trees.isAccessible(scope, e)) {
-                            if (isRaw) {
-                                DeclaredType dt = types.getDeclaredType(e);
-                                bases.add(dt);
-                            } else {
-                                HashMap<Element, TypeMirror> map = new HashMap<Element, TypeMirror>();
-                                TypeMirror sup = e.getSuperclass();
-                                if (sup.getKind() == TypeKind.DECLARED && ((DeclaredType)sup).asElement() == elem) {
-                                    DeclaredType dt = (DeclaredType)sup;
-                                    Iterator<? extends TypeMirror> ittas = tas.iterator();
-                                    Iterator<? extends TypeMirror> it = dt.getTypeArguments().iterator();
-                                    while(it.hasNext() && ittas.hasNext()) {
-                                        TypeMirror basetm = ittas.next();
-                                        TypeMirror stm = it.next();
-                                        if (basetm != stm) {
-                                            if (stm.getKind() == TypeKind.TYPEVAR) {
-                                                map.put(((TypeVariable)stm).asElement(), basetm);
-                                            } else {
-                                                continue subtypes;
-                                            }
-                                        }
-                                    }
-                                    if (it.hasNext() != ittas.hasNext()) {
-                                        continue subtypes;
-                                    }
+            if (prefix != null && prefix.length() > 2 && baseType.getTypeArguments().isEmpty()) {
+                for(ElementHandle<TypeElement> handle : controller.getJavaSource().getClasspathInfo().getClassIndex().getDeclaredTypes(prefix, env.isCamelCasePrefix() ? ClassIndex.NameKind.CAMEL_CASE : Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(ClassIndex.SearchScope.class))) {
+                    TypeElement te = handle.resolve(controller);
+                    if (te != null && trees.isAccessible(scope, te) && types.isSubtype(types.getDeclaredType(te), baseType))
+                        subtypes.add(types.getDeclaredType(te));
+                }
+            } else {
+                HashSet<TypeElement> elems = new HashSet<TypeElement>();
+                LinkedList<DeclaredType> bases = new LinkedList<DeclaredType>();
+                bases.add(baseType);
+                ClassIndex index = controller.getJavaSource().getClasspathInfo().getClassIndex();
+                while(!bases.isEmpty()) {
+                    DeclaredType head = bases.remove();
+                    TypeElement elem = (TypeElement)head.asElement();
+                    if (!elems.add(elem))
+                        continue;
+                    if (env.isCamelCasePrefix() ? Utilities.startsWithCamelCase(elem.getSimpleName().toString(), prefix) : Utilities.startsWith(elem.getSimpleName().toString(), prefix) && trees.isAccessible(scope, elem))
+                        subtypes.add(head);
+                    List<? extends TypeMirror> tas = head.getTypeArguments();
+                    boolean isRaw = !tas.iterator().hasNext();
+                    subtypes:
+                    for (ElementHandle<TypeElement> eh : index.getElements(ElementHandle.create(elem), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.allOf(ClassIndex.SearchScope.class))) {
+                        TypeElement e = eh.resolve(controller);
+                        if (e != null) {
+                            if (trees.isAccessible(scope, e)) {
+                                if (isRaw) {
+                                    DeclaredType dt = types.getDeclaredType(e);
+                                    bases.add(dt);
                                 } else {
-                                    for (TypeMirror tm : e.getInterfaces()) {
-                                        if (((DeclaredType)tm).asElement() == elem) {
-                                            DeclaredType dt = (DeclaredType)tm;
-                                            Iterator<? extends TypeMirror> ittas = tas.iterator();
-                                            Iterator<? extends TypeMirror> it = dt.getTypeArguments().iterator();
-                                            while(it.hasNext() && ittas.hasNext()) {
-                                                TypeMirror basetm = ittas.next();
-                                                TypeMirror stm = it.next();
-                                                if (basetm != stm) {
-                                                    if (stm.getKind() == TypeKind.TYPEVAR) {
-                                                        map.put(((TypeVariable)stm).asElement(), basetm);
-                                                    } else {
-                                                        continue subtypes;
-                                                    }
+                                    HashMap<Element, TypeMirror> map = new HashMap<Element, TypeMirror>();
+                                    TypeMirror sup = e.getSuperclass();
+                                    if (sup.getKind() == TypeKind.DECLARED && ((DeclaredType)sup).asElement() == elem) {
+                                        DeclaredType dt = (DeclaredType)sup;
+                                        Iterator<? extends TypeMirror> ittas = tas.iterator();
+                                        Iterator<? extends TypeMirror> it = dt.getTypeArguments().iterator();
+                                        while(it.hasNext() && ittas.hasNext()) {
+                                            TypeMirror basetm = ittas.next();
+                                            TypeMirror stm = it.next();
+                                            if (basetm != stm) {
+                                                if (stm.getKind() == TypeKind.TYPEVAR) {
+                                                    map.put(((TypeVariable)stm).asElement(), basetm);
+                                                } else {
+                                                    continue subtypes;
                                                 }
                                             }
-                                            if (it.hasNext() != ittas.hasNext()) {
-                                                continue subtypes;
+                                        }
+                                        if (it.hasNext() != ittas.hasNext()) {
+                                            continue subtypes;
+                                        }
+                                    } else {
+                                        for (TypeMirror tm : e.getInterfaces()) {
+                                            if (((DeclaredType)tm).asElement() == elem) {
+                                                DeclaredType dt = (DeclaredType)tm;
+                                                Iterator<? extends TypeMirror> ittas = tas.iterator();
+                                                Iterator<? extends TypeMirror> it = dt.getTypeArguments().iterator();
+                                                while(it.hasNext() && ittas.hasNext()) {
+                                                    TypeMirror basetm = ittas.next();
+                                                    TypeMirror stm = it.next();
+                                                    if (basetm != stm) {
+                                                        if (stm.getKind() == TypeKind.TYPEVAR) {
+                                                            map.put(((TypeVariable)stm).asElement(), basetm);
+                                                        } else {
+                                                            continue subtypes;
+                                                        }
+                                                    }
+                                                }
+                                                if (it.hasNext() != ittas.hasNext()) {
+                                                    continue subtypes;
+                                                }
+                                                break;
                                             }
-                                            break;
                                         }
                                     }
+                                    bases.add(getDeclaredType(e, map, types));
                                 }
-                                bases.add(getDeclaredType(e, map, types));
                             }
+                        } else {
+                            Logger.getLogger("global").log(Level.FINE, String.format("Cannot resolve: %s on bootpath: %s classpath: %s sourcepath: %s\n", eh.toString(),
+                                    controller.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT),
+                                    controller.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE),
+                                    controller.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE)));
                         }
-                    } else {
-                        Logger.getLogger("global").log(Level.FINE, String.format("Cannot resolve: %s on bootpath: %s classpath: %s sourcepath: %s\n", eh.toString(),
-                                controller.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT),
-                                controller.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE),
-                                controller.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE)));
                     }
                 }
             }
