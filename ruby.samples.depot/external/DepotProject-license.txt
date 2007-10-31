@@ -1,6 +1,12 @@
 Name: Debug Sample Application
 Description: Sample Ruby application
 Files: DepotProject.zip
+Version: DepotProject
+License: MIT
+OSR: 6875
+Origin: The Pragmatic Programmers, LLC.
+
+The MIT License
 
 Copyright (c) 2006 The Pragmatic Programmers, LLC.
 Reproduced from the book "Agile Web Development with Rails, 2nd Ed.",
