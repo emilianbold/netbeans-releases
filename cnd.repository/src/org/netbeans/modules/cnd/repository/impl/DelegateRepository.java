@@ -84,7 +84,13 @@ public final class DelegateRepository implements Repository {
     }
 
     public Persistent get(Key key) {
-        return delegate.get(key);
+        Persistent result = delegate.get(key);
+	if( result == null && Stats.useNullWorkaround ) {
+	    System.err.printf("NULL returned for key %s on attempt 1\n", key);
+	    result = delegate.get(key);
+	    System.err.printf("%s value returned for key %s on attempt 2\n", (result == null) ? "NULL" : "NON-NULL", key);
+	}
+	return result;
     }
     
     public Persistent tryGet(Key key) {
