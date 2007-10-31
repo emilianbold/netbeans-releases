@@ -144,7 +144,7 @@ function detect_platform() {
         document.getElementById("platform_select").selectedIndex = 4;
     }
     if (agent.indexOf("PPC Mac OS") != -1) {
-        document.getElementById("platform_select").selectedIndex = 5;
+        document.getElementById("platform_select").selectedIndex = 4;
     }
 }
 
