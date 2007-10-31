@@ -240,7 +240,7 @@ public final class ParserQueue {
         }
     }
     
-    private static class ProjectData {
+    private static final class ProjectData {
         
         public Set/*<FileImpl>*/ filesInQueue = new HashSet/*<FileImpl>*/();
         
@@ -580,13 +580,16 @@ public final class ParserQueue {
     }
     
     private ProjectData getProjectData(ProjectBase project, boolean create) {
-        ProjectBase key = project;
-        ProjectData data = projectData.get(key);
-        if( data == null && create) {
-            data = new ProjectData(false);
-            projectData.put(key, data);
+        // must be in synchronized( lock ) block
+        synchronized (lock) {
+            ProjectBase key = project;
+            ProjectData data = projectData.get(key);
+            if( data == null && create) {
+                data = new ProjectData(false);
+                projectData.put(key, data);
+            }
+            return data;
         }
-        return data;
     }
     
     private void removeProjectData(ProjectBase project) {
@@ -605,8 +608,7 @@ public final class ParserQueue {
     }
 
     public void onEndAddingProjectFiles(ProjectBase project) {
-        ProjectData data = getProjectData(project, true);
-        int cnt = data.filesInQueue.size();
+        int cnt = getProjectFiles(project).size();
         ProgressSupport.instance().fireProjectFilesCounted(project, cnt);
         if( cnt == 0 ) {
             ProgressSupport.instance().fireProjectParsingFinished(project);
