@@ -246,6 +246,7 @@ public class ColorsManager {
         Language l, 
         ResourceBundle bundle
     ) {
+        if (l.getParser () == null) return;
         Map<String,AttributeSet> defaultsMap = getDefaultColors();
         List<Feature> list = l.getFeatures (COLOR);
         Iterator<Feature> it = list.iterator();
