@@ -351,6 +351,12 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     int tokenIndex, int relexOffset, Object relexState) {
         CharSequence tokenText = embeddingContainer.token().text();
         int tokenStartOffset = embeddingContainer.tokenStartOffset();
+        if (tokenText == null) { // Should not normally happen - debug the state
+            throw new IllegalStateException("Text of parent token is null. tokenStartOffset=" + tokenStartOffset +
+                    ", tokenIndex=" + tokenIndex + ", relexOffset=" + relexOffset + ", relexState=" + relexState +
+                    ", languagePath=" + languagePath() + ", inited=" + isInited()
+            );
+        }
         int endOffset = tokenStartOffset + tokenText.length()
             - embedding.endSkipLength();
         return new TextLexerInputOperation<T>(this, tokenIndex, relexState, tokenText,
@@ -431,6 +437,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         this.embeddingContainer = embeddingContainer;
     }
     
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(256);
         sb.append("EmbeddedTokenList: startOffset=").append(startOffset());
