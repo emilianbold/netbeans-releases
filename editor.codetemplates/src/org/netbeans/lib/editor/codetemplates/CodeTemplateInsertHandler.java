@@ -472,7 +472,7 @@ implements DocumentListener, KeyListener {
             parameterText = doc.getText(offset, positionRegion.getEndOffset() - offset);
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
-            parameterText = null;
+            parameterText = ""; //NOI18N
         }
         return parameterText;
     }
