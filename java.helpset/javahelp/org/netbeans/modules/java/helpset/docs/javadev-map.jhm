@@ -130,6 +130,7 @@
 <mapID target="gui.saf.about" url="gui/saf/gui_saf_about.html" />
 <mapID target="gui.saf.working" url="gui/saf/gui_saf_working.html" />
 <mapID target="gui.saf.resources" url="gui/saf/gui_saf_resources.html" />
+<mapID target="gui.saf.actions" url="gui/saf/gui_saf_actions.html" />
 
 <mapID target="gui.layouts.about" url="gui/layout_managers/gui_layoutmanagers.html" />
 <mapID target="gui.layouts.setting" url="gui/layout_managers/gui_settinglayout.html" />
@@ -284,7 +285,7 @@
 <mapID target="org.netbeans.modules.java.j2seproject.wsclient.CustomizerWSClientHostDisabled" url="project/csh/proj_j2sestand_props_wsclient_disabled.html" />
 <mapID target="org.netbeans.modules.javawebstart.ui.customizer.JWSCustomizerPanel" url="project/csh/proj_j2sestand_props_webstart.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerApplication" url="project/csh/proj_j2sestand_props_common-app.html" />
-<mapID target="org.netbeans.modules.swingapp.ProjectCustomizerPanel" url="pending.html"/>
+<mapID target="org.netbeans.modules.swingapp.ProjectCustomizerPanel" url="project/csh/proj_j2sestand_props_desktop-app.html"/>
 
 <!-- Freeform J2SE and Web Project Properties dialog:-->
 <mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersPanel" url="project/csh/proj_j2sefree_props_sources.html" />

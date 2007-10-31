@@ -161,6 +161,7 @@
         <tocitem text="About" target="gui.saf.about" />
         <tocitem text="Working With the Swing Application Framework" target="gui.saf.working" />
         <tocitem text="About Resources" target="gui.saf.resources" />
+        <tocitem text="About Actions" target="gui.saf.actions" />
     </tocitem>    
     <tocitem text="Working with Layout Managers">    
     <tocitem text="About Layout Managers" target="gui.layouts.about" />

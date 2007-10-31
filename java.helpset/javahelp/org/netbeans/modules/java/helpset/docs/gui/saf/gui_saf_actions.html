@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright (c) 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>About Actions in the Swing Application Framework</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>About Actions in the Swing Application Framework</h2>
+        <p><small><a href="#seealso">See Also</a></small>
+            
+            <p>The Swing Application Framework provides support to help you 
+            define and manage actions.</p> You define actions with the <tt>&Action</tt> 
+            annotation and the framework encapsulates all such defined actions with 
+        its <tt>ActionMap</tt> class. In addition, you can configure actions to 
+    run asynchronously.</p>
+        <p>In the IDE, you can use  
+            <a href="gui_saf_action_csh.html">Set Action dialog box</a> to 
+            generate code for actions. In 
+        the Set Action dialog box, you can do the following:</p>
+        <ul>
+            <li>Set a component to use an action.</li>     
+            <li>Create skeleton actions.</li>
+            <li>Configure user interface properties for the action, such 
+                the name to appear on the visual component, tool tip text, 
+            and keyboard shortcuts.</li>
+            <li>Create a Boolean property to determine whether the 
+            action is enabled.</li>
+            <li>Create a Boolean property to determine whether the 
+                action is selected. (This only applies to non-menu components 
+                that have a <tt>selected</tt> property, such as radio buttons.)            
+            </li>    
+<li>Set an action to run as a background task.</li>   
+<li>Configure an action to block other actions until it completes.</li>
+        </ul>
+        
+        <p>To open the Set Action dialog box, do one of the following things:</p>
+        <ul>
+            <li>Right-click a component and choose Set Action.</li>
+            <li>Select a component and click the ellipsis (...) button next to 
+            its <tt>action</tt> property in the Properties window.</li>
+        </ul>
+        
+        <ul class="note">
+<li>When you assign an action to a component, that component's display name, 
+tool tip, and accelerator are taken from what you enter in the Set Action dialog 
+box. If you have previously set these properties for the component, they 
+will be overridden by what is specified in the Set Action dialog box.</li>
+        </ul>
+        <!--TODO fill in-->
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="gui_saf_about.html">About the Swing Application Framework</a></dd>
+            <dd><a href="../gui_about.html">About Java GUIs</a></dd>
+            <dd><a href="../gui_quickref.html">GUI Builder Tasks: Quick Reference</a></dd>
+            <dd><a href="../gui_designing.html">Designing Java GUIs with the GUI Builder</a></dd>
+        </dl>
+        
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>
