@@ -1683,6 +1683,9 @@ final class Central implements ControllerHandler {
                 // #82385: do repeat activation if focus is in another window
                 KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
                 if (kfm.getActiveWindow() == SwingUtilities.getWindowAncestor(tc)) {
+                    //#70173 - activation request came probably from a sliding 
+                    //window in 'hover' mode, so let's hide it
+                    slideOutSlidingWindows( mode );
                     return;
                 }
             }
@@ -1704,6 +1707,21 @@ final class Central implements ControllerHandler {
         }
     }
     // Compound ones<<
+    
+    
+    /**
+     * Make sure no sliding window is slided-in.
+     */
+    protected void slideOutSlidingWindows( ModeImpl newActiveMode ) {
+        for( ModeImpl mode : getModes() ) {
+            if( !newActiveMode.equals(mode)
+                && mode.getKind() == Constants.MODE_KIND_SLIDING
+                && null != mode.getSelectedTopComponent() ) {
+                
+                setModeSelectedTopComponent( mode, null );
+            }
+        }
+    }
     
 
     // Other >>
