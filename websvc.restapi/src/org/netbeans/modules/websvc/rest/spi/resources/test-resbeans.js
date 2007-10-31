@@ -295,8 +295,13 @@ TestSupport.prototype = {
                             var defaultVal = '';
                             if(params[j].attributes.getNamedItem('default') != null)
                                 defaultVal = params[j].attributes.getNamedItem('default').nodeValue;
-                            var num = j+1;
-                            str += "<span class=bld>"+pname+":</span>"+"<input id='params' name='"+pname+"' type='text' value='"+defaultVal+"'>"+"<br><br>";
+                            var type = 'query';
+                            if(params[j].attributes.getNamedItem('style') != null)
+                                type = params[j].attributes.getNamedItem('style').nodeValue;
+                            var paramsId = 'qparams';
+                            if(type == 'template')
+                                paramsId = 'tparams';
+                            str += "<span class=bld>"+pname+":</span>"+"<input id='"+paramsId+"' name='"+pname+"' type='text' value='"+defaultVal+"'>"+"<br><br>";
                         }
                     }
                 }
@@ -321,35 +326,49 @@ TestSupport.prototype = {
         var p = '';
         var path = document.forms[0].path.value;
         var found = path.indexOf( "{" );
+        var qparams = document.forms[0].qparams;
         if (found != -1){
-            if(document.forms[0].params != null) {
-                var len = document.forms[0].params.length;
-                for(var j=0;j<len;j++) {
-                    var param = document.forms[0].params[j]
-                    path = path.replace("{"+param.name+"}", param.value);
+            if(qparams != null) {
+                if(qparams.length == undefined) {
+                    path = path.replace("{"+qparams.name+"}", qparams.value);
+                } else {
+                    var len = qparams.length;
+                    for(var j=0;j<len;j++) {
+                        var param = qparams[j]
+                        path = path.replace("{"+param.name+"}", param.value);
+                    }
                 }
             }
         } else {
-            if(document.forms[0].params != null) {
-                var len = document.forms[0].params.length;
-                for(var j=0;j<len;j++) {
-                    var param = document.forms[0].params[j]
-                    if(len == 1 || len-j == 1)
-                        p += param.name+"="+param.value;
-                    else
-                        p += param.name+"="+param.value+"&";
+            if(qparams != null) {
+                if(qparams.length == undefined) {
+                    p += qparams.name+"="+qparams.value;
+                } else {
+                    var len = qparams.length;
+                    for(var j=0;j<len;j++) {
+                        var param = qparams[j]
+                        if(len == 1 || len-j == 1)
+                            p += param.name+"="+param.value;
+                        else
+                            p += param.name+"="+param.value+"&";
+                    }
                 }
             }
         }
-        if(document.forms[0].newParamNames != null) {
-            var len = document.forms[0].newParamNames.length;
-            for(var j=0;j<len;j++) {
-                var paramName = document.forms[0].newParamNames[j].value;
-                var paramValue = document.forms[0].newParamValues[j].value;
-                if(len == 1 || len-j == 1)
-                    p += paramName+"="+paramValue;
-                else
-                    p += paramName+"="+paramValue+"&";
+        var newParamNames = document.forms[0].newParamNames;
+        if(newParamNames != null) {
+            if(newParamNames.length == undefined) {
+                p += newParamNames.value+"="+newParamValues.value;
+            } else {
+                var len = newParamNames.length;
+                for(var j=0;j<len;j++) {
+                    var paramName = newParamNames[j].value;
+                    var paramValue = newParamValues[j].value;
+                    if(len == 1 || len-j == 1)
+                        p += paramName+"="+paramValue;
+                    else
+                        p += paramName+"="+paramValue+"&";
+                }
             }
         }
         var params = null;
@@ -370,6 +389,20 @@ TestSupport.prototype = {
             req = path;
         else
             req = baseURL+path
+        
+        //change url if there are template params
+        var tparams = document.forms[0].tparams;
+        if(tparams != null) {
+            if(tparams.length == undefined) {
+                req += "/" + tparams.value;
+            } else {
+                var len = tparams.length;
+                for(var j=0;j<len;j++) {
+                    req += "/" + tparams[j].value;
+                }
+            }
+        }
+
         if(method == 'GET' && p.length > 0)
             req+= "?"+p;
         var disp = this.getDisplayUri(req);
@@ -387,9 +420,6 @@ TestSupport.prototype = {
             c = this.xhr.delete_(req);
         }
         ts.updateContent(c);
-        //var xmlHttpReq4 = this.xhr.connect(method, req, mimetype, paramLength, true);
-        //xmlHttpReq4.onreadystatechange = function() { ts.updateContent(xmlHttpReq4); };
-        //xmlHttpReq4.send(params);
     },
     
     createIFrame : function (url) {
