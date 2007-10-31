@@ -35,7 +35,6 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.io.File;
@@ -107,9 +106,9 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
 //        suite.addTestSuite(GuardedBlockTest.class);
-//        suite.addTest(new GuardedBlockTest("testAddMethodAfterVariables"));
-//        suite.addTest(new GuardedBlockTest("test119048"));
-        suite.addTest(new GuardedBlockTest("test119345"));
+        suite.addTest(new GuardedBlockTest("testAddMethodAfterVariables"));
+        suite.addTest(new GuardedBlockTest("test119048"));
+//        suite.addTest(new GuardedBlockTest("test119345"));
         return suite;
     }
     
@@ -262,12 +261,12 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
                 ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
                 MethodTree method = (MethodTree) clazz.getMembers().get(1);
                 VariableTree var = make.Variable(
-                        make.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC)),
+                        make.Modifiers(Collections.<Modifier>emptySet()),
                         "a",
                         make.PrimitiveType(TypeKind.INT),
                         null
                     );
-                BlockTree copy = make.addBlockStatement(method.getBody(), var);
+                BlockTree copy = make.insertBlockStatement(method.getBody(), 0, var);
                 workingCopy.rewrite(method.getBody(), copy);
             }
         };
@@ -614,7 +613,7 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
         private final String JAVA_EXTENSION = "java";
 
         public GuardedDataLoader() {
-            super("org.netbeans.api.java.source.gen.GuardedDataObject"); // NOI18N
+            super("org.netbeans.api.java.source.gen.GuardedBlockTest$GuardedDataObject"); // NOI18N
         }
 
         @Override
