@@ -105,10 +105,13 @@ public class CodeCustomizer implements CustomCodeView.Listener {
 
     private void setupComponentNames() {
         Collection<RADComponent> allComps = formModel.getAllComponents();
-        String[] compNames = new String[allComps.size()];
+        RADComponent rootComp = formModel.getTopRADComponent();
+        String[] compNames = new String[rootComp != null ? allComps.size()-1 : allComps.size()];
         int i = 0;
         for (RADComponent metacomp : allComps) {
-            compNames[i++] = metacomp.getName();
+            if (metacomp != rootComp) { // don't add root comp until it is supported (#87492)
+                compNames[i++] = metacomp.getName();
+            }
         }
         Arrays.sort(compNames, 0, compNames.length-1);
         codeView.setComponentNames(compNames);
