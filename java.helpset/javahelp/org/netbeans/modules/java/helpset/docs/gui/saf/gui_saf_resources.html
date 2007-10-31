@@ -5,20 +5,24 @@
 -->
 <html>
     <head>
-        <title>About Actions in the Swing Application Framework</title>
+        <title>About Resources in the Swing Application Framework</title>
         <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
-        <h2>About Actions in the Swing Application Framework</h2>
+        <h2>About Resources in the Swing Application Framework</h2>
         <p><small><a href="#seealso">See Also</a></small>
         
 <p>The Swing Application Framework simplifies the handling of resources in 
     applications and makes it possible for more things to stored in resource bundles. 
 </p>
 <p>A typical Swing Application Framework application has resource bundles 
-at the class and application level. The resource bundles have the same names as their 
-corresponding <tt>.java</tt> class except that they contain the <tt>.properties</tt> 
+at both the application level and the class level. The class-level resource bundles have the same names as their 
+corresponding <tt>.java</tt> classes except that they contain the <tt>.properties</tt> 
 extension. All of these bundles are encapsulated by a <tt>ResourceMap</tt> object.</p>
+<p>You can edit application level resources in the Project Properties dialog box. 
+Open the Project Properties dialog box by right-clicking the project's node and 
+choosing Properties. The application properties appear in the Application panel 
+and the Desktop Application panel.</p>
 <p>When you start an application from the Java Desktop Application project template, 
 by default your code is generated with the Swing Application Framework's conventions for 
 managing resources, such as UI text. The values of component properties that you 

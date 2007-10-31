@@ -21,42 +21,53 @@
     <p>The Swing Application Framework is a light framework that simplifies the 
         creation and maintaining of small- to medium-sized Java desktop 
         applications. The framework consists of a Java class library that 
-        supports constructs for things such as managing resources, maintaining 
-    session state, and creating actions.</p> 
+    supports constructs for things such as the following:</p>
+    <ul>
+        <li>Remembering state between sessions.</li>
+        <li>Easier managing of actions, including running as background tasks and specifying 
+        blocking behavior.</li>
+        <li>Enhanced resource management, including resource injection for 
+        bean properties.</li>
+    </ul>
     
     <p>The IDE supports the development of applications based on the 
     Swing Application Framework in the following ways:</p>
     <ul>
         <li>Providing the Java Desktop Application project template, which 
             contains skeleton implementation of the 
-        main framework features. This template enables you to choose from 
-    the follow two shells:
-<ul>
-<li><b>Basic Application</b>. Provides a basic frame, some sample menu items, status bar, 
-    and mechanisms for managing actions and resources.</li>
-<li><b>Database Application</b>. Provides all of the features in the Basic Application shell 
-plus all of the features necessary for a simple database application with create, read, 
-update, and delete features.</li></ul></li>    
+            main framework features. This template enables you to choose from 
+            the follow two shells:
+            <ul>
+                <li><b>Basic Application</b>. Provides a basic frame, some sample menu items, status bar, 
+                and mechanisms for managing actions and resources.</li>
+                <li><b>Database Application</b>. Provides all of the features in the Basic Application shell 
+                    plus all of the features necessary for a simple database application with create, read, 
+        update, and delete features.</li></ul></li>    
         <li>Integration of framework features in the IDE's GUI Builder. Swing 
             Application Framework applications can be designed in the IDE like any 
         other Swing application.</li>
         <li>Generating your application's UI text and other resources in <tt>.properties</tt> 
         files.</li>
         <li>Providing a special property editor for actions in which you can associate 
-        an action with keyboard accelerators, text, and a tooltip. In addition, you 
-     can specify other attributes for the 
- action, such as properties for when it is selected or enabled and whether the 
-action runs in the background.<!--TODO more stuff about blocking, etc.--></li> 
+            an action with keyboard accelerators, text, and a tooltip. In addition, you 
+            can configure properties for when it is selected or enabled and you can set 
+        the action to run asynchronously.</li> 
     </ul>
     <p>You can read more about the Swing Application Framework at 
-    <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://ant.apache.org/">
-    <param name="text" value="<html><u>https://appframework.dev.java.net/intro/index.html</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-  </object>.</p>
-
-     
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="http://ant.apache.org/">
+            <param name="text" value="<html><u>https://appframework.dev.java.net/intro/index.html</u></html>">
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue">
+        </object> and 
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="http://ant.apache.org/">
+            <param name="text" value="<html><u>http://java.sun.com/developer/technicalArticles/javase/swingappfr/</u></html>">
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue">
+    </object></p>
+    
+    
     <ul class="note">
         <li>The NetBeans Platform itself can also be used as an application framework. 
             The main difference between the Swing Application Framework and the NetBeans Platform 
@@ -66,18 +77,18 @@ action runs in the background.<!--TODO more stuff about blocking, etc.--></li>
             developing applications based on the NetBeans Platform, see 
         <a href="nbdocs://org.netbeans.modules.apisupport.project/org/netbeans/modules/apisupport/project/docs/about/about-netbeans-platform.html">About the NetBeans Platform</a>.</li>
     </ul>
-
+    
     
     <dl>
         <dt>
             <a name="seealso">See Also</a>
         </dt>
-            <dd><a href="gui_saf_working.html">Working With the Swing Application Framework</a></dd>
-            <dd><a href="gui_saf_actions.html">About Actions in the Swing Application Framework</a></dd>                       
-            <dd><a href="gui_saf_resources.html">About Resources in the Swing Application Framework</a></dd>           
-            <dd><a href="../gui_about.html">About Java GUIs</a></dd>
-            <dd><a href="../gui_bind_db_working.html">Working With Desktop Database Applications</a></dd>
-           
+        <dd><a href="gui_saf_working.html">Working With the Swing Application Framework</a></dd>
+        <dd><a href="gui_saf_actions.html">About Actions in the Swing Application Framework</a></dd>                       
+        <dd><a href="gui_saf_resources.html">About Resources in the Swing Application Framework</a></dd>           
+        <dd><a href="../gui_about.html">About Java GUIs</a></dd>
+        <dd><a href="../gui_bind_db_working.html">Working With Desktop Database Applications</a></dd>
+        
     </dl>
     <hr>
     <p>

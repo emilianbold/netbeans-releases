@@ -160,6 +160,7 @@
     <tocitem text="Swing Application Framework">    
         <tocitem text="About" target="gui.saf.about" />
         <tocitem text="Working With the Swing Application Framework" target="gui.saf.working" />
+        <tocitem text="Creating an Application" target="gui.saf.creating" />
         <tocitem text="About Resources" target="gui.saf.resources" />
         <tocitem text="About Actions" target="gui.saf.actions" />
     </tocitem>    

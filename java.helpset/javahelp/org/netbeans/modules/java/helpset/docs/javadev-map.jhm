@@ -129,6 +129,7 @@
 
 <mapID target="gui.saf.about" url="gui/saf/gui_saf_about.html" />
 <mapID target="gui.saf.working" url="gui/saf/gui_saf_working.html" />
+<mapID target="gui.saf.creating" url="gui/saf/gui_saf_creating.html" />
 <mapID target="gui.saf.resources" url="gui/saf/gui_saf_resources.html" />
 <mapID target="gui.saf.actions" url="gui/saf/gui_saf_actions.html" />
 
