@@ -102,7 +102,7 @@ public class SimplifiedJSPServlet {
             + "\t\tServletConfig config,\n"
             + "\t\tJspContext jspContext,\n" 
             + "\t\tObject page,\n" 
-            + "\t\tPageContext pageContext\n"
+            + "\t\tPageContext pageContext,\n"
             + "\t\tThrowable exception\n"
             + "\t) throws Throwable {\n"; //NOI18N
     private static final String CLASS_FOOTER = "\n\t}\n}"; //NOI18N
