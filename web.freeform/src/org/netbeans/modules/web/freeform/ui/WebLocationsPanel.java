@@ -114,7 +114,7 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             jTextFieldWebInf.setText(webInf);
             
             jTextFieldContextPath.setText(wm.contextPath);
-            if (wm.j2eeSpecLevel.equals(J2EE_SPEC_5))
+            if (wm.j2eeSpecLevel == null || wm.j2eeSpecLevel.equals(J2EE_SPEC_5))
                 jComboBoxJ2eeLevel.setSelectedItem(NbBundle.getMessage(WebLocationsPanel.class, "TXT_J2EESpecLevel_5"));
             else if (wm.j2eeSpecLevel.equals(J2EE_SPEC_1_4))
                 jComboBoxJ2eeLevel.setSelectedItem(NbBundle.getMessage(WebLocationsPanel.class, "TXT_J2EESpecLevel_0"));
