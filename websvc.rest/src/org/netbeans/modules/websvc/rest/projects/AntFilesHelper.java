@@ -110,7 +110,9 @@ public class AntFilesHelper {
         }
 
         // check for cleanup of last version
-        changed = cleanupLastExtensionVersions();
+        if (cleanupLastExtensionVersions()) {
+            changed = true;
+        }
         if (changed) {
             ProjectManager.getDefault().saveProject(project);
         }
