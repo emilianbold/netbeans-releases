@@ -827,6 +827,9 @@ public class Installer extends ModuleInstall implements Runnable {
                     if (m.find()) {
                         enc = m.group(1);
                         text = new String(arr, 0, len, enc);
+                        LOG.fine("Downloaded with encoding '" + enc + "':\n" + msg);
+                    } else {
+                        LOG.log(Level.FINE, "Downloaded with utf-8:\n{0}", text);
                     }
                 }
                 os.write(text.getBytes("UTF-8"));
