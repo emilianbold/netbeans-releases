@@ -1303,7 +1303,15 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
         List<T> elements = new ArrayList<T>(handles.size());
         for (ElementHandle<T> handle : handles) {
-            elements.add(handle.resolve(compInfo));
+            T element = handle.resolve(compInfo);
+            if (element != null) {
+                elements.add(element);
+            } else {
+                ErrorManager.getDefault().log(
+                        ErrorManager.WARNING,
+                        "JUnit: Could not resolve element handle "      //NOI18N
+                                + handle.getBinaryName());
+            }
         }
         return elements;
     }
