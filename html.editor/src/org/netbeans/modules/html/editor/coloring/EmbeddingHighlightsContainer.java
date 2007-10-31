@@ -49,9 +49,9 @@ import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
@@ -61,7 +61,6 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
@@ -74,22 +73,50 @@ import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
  */
 public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer {
 
-    private static final Color DEFAULT_CSS_BACKGROUND_COLOR = Color.decode("#D0E8CA");
-    private static final Color DEFAULT_JAVASCRIPT_BACKGROUND_COLOR = Color.decode("#D0E8CA");
+    private static final Logger LOG = Logger.getLogger(EmbeddingHighlightsContainer.class.getName());
+    
+    private static final Color DEFAULT_CSS_BACKGROUND_COLOR = Color.decode("#D0E8CA"); //NOI18N
+    private static final Color DEFAULT_JAVASCRIPT_BACKGROUND_COLOR = Color.decode("#D0E8CA"); //NOI18N
     private static final String CSS_BACKGROUND_TOKEN_NAME = "css-embedded"; //NOI18N
     private static final String JAVASCRIPT_BACKGROUND_TOKEN_NAME = "javascript-embedded"; //NOI18N
     private static final String HTML_MIME_TYPE = "text/html"; //NOI18N
     private static final String CSS_MIME_TYPE = "text/x-css"; //NOI18N
     private static final String CSS_INLINED_MIME_TYPE = "text/x-css-inlined"; //NOI18N
     private static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; //NOI18N
-    private Color cssBackgroundColor;
-    private Color javascriptBackgroundColor;
-    private Document document;
+
+    private final AttributeSet cssBackground;
+    private final AttributeSet javascriptBackground;
+    private final Document document;
 
     EmbeddingHighlightsContainer(Document document) {
         this.document = document;
+        
+        //try load the background from html settings
+        FontColorSettings fcs = MimeLookup.getLookup(HTML_MIME_TYPE).lookup(FontColorSettings.class);
+        Color cssBC = null;
+        Color jsBC = null;
+        if (fcs != null) {
+            cssBC = getColoring(fcs, CSS_BACKGROUND_TOKEN_NAME);
+            jsBC = getColoring(fcs, JAVASCRIPT_BACKGROUND_TOKEN_NAME);
     }
 
+        cssBackground = AttributesUtilities.createImmutable(
+            StyleConstants.Background, cssBC == null ? DEFAULT_CSS_BACKGROUND_COLOR : cssBC, 
+            ATTR_EXTENDS_EOL, Boolean.TRUE);
+
+        javascriptBackground = AttributesUtilities.createImmutable(
+            StyleConstants.Background, jsBC == null ? DEFAULT_JAVASCRIPT_BACKGROUND_COLOR : jsBC, 
+            ATTR_EXTENDS_EOL, Boolean.TRUE);
+    }
+
+    private static Color getColoring(FontColorSettings fcs, String tokenName) {
+        AttributeSet as = fcs.getTokenFontColors(tokenName);
+        if (as != null) {
+            return (Color) as.getAttribute(StyleConstants.Background); //NOI18N
+        }
+        return null;
+    }
+    
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
         return new Highlights(document, startOffset, endOffset);
     }
@@ -102,13 +129,13 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer {
         private int startOffset;
         private int endOffset;
         private int realEndOffset;
-        private SimpleAttributeSet attributeSet;
+        private AttributeSet attributeSet;
         private List<TokenSequence<? extends TokenId>> tokenSequenceList;
         private String mimeType;
 
         private Highlights(Document document, int startOffset, int endOffset) {
             this.document = document;
-            this.mimeType = (String) document.getProperty ("mimeType");
+            this.mimeType = (String) document.getProperty ("mimeType"); //NOI18N
 
             this.startOffsetBoundary = startOffset;
             this.endOffsetBoundary = endOffset;
@@ -120,7 +147,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer {
             TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get(document);
             Language<? extends TokenId> language = Language.find(mimeType);
             if (language == null) {
-                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Language " + mimeType + " obtained from the document mimeType property cannot be found!");
+                LOG.log(Level.WARNING, "Language " + mimeType + " obtained from the document mimeType property cannot be found!"); //NOI18N
                 return;
             }
 
@@ -134,23 +161,6 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer {
                 LanguagePath htmlPath = LanguagePath.get(topLevelLanguagePath, HTMLTokenId.language());
                 tokenSequenceList = tokenHierarchy.tokenSequenceList(htmlPath, startOffset, endOffset);
             }
-
-            //try load the background from html settings
-            FontColorSettings fcs = MimeLookup.getLookup(HTML_MIME_TYPE).lookup(FontColorSettings.class);
-            if (fcs != null) {
-                Color cssBC = getColoring(fcs, CSS_BACKGROUND_TOKEN_NAME);
-                cssBackgroundColor = cssBC == null ? DEFAULT_CSS_BACKGROUND_COLOR : cssBC;
-                Color jsBC = getColoring(fcs, JAVASCRIPT_BACKGROUND_TOKEN_NAME);
-                javascriptBackgroundColor = jsBC == null ? DEFAULT_JAVASCRIPT_BACKGROUND_COLOR : jsBC;
-            }
-        }
-
-        private Color getColoring(FontColorSettings fcs, String tokenName) {
-            AttributeSet as = fcs.getTokenFontColors(tokenName);
-            if (as != null) {
-                return (Color) as.getAttribute(StyleConstants.Background); //NOI18N
-            }
-            return null;
         }
 
         public boolean moveNext() {
@@ -167,7 +177,6 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer {
                     if (CSS_MIME_TYPE.equals(embeddedMimeType) || (CSS_INLINED_MIME_TYPE).equals(embeddedMimeType) || (JAVASCRIPT_MIME_TYPE).equals(embeddedMimeType)) {
                         //NOI18N
                         try {
-                            attributeSet = new SimpleAttributeSet();
                             startOffset = eTokenSequence.offset();
                             endOffset = startOffset;
                             while (eTokenSequence.moveNext()) {
@@ -189,15 +198,11 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer {
                                 }
                             }
 
-                            Color color = embeddedMimeType.equals(JAVASCRIPT_MIME_TYPE) ? javascriptBackgroundColor : cssBackgroundColor;
-
-                            attributeSet.addAttribute(StyleConstants.Background, color);
-                            attributeSet.addAttribute(HighlightsContainer.ATTR_EXTENDS_EOL, Boolean.TRUE);
-                            attributeSet.addAttribute(HighlightsContainer.ATTR_EXTENDS_EMPTY_LINE, Boolean.FALSE);
+                            attributeSet = embeddedMimeType.equals(JAVASCRIPT_MIME_TYPE) ? javascriptBackground : cssBackground;
 
                             return true;
                         } catch (BadLocationException ex) {
-                            Logger.getLogger("global").log(Level.INFO, "An error occured when creating coloured background for CSS and JavaScript.", ex);
+                            LOG.log(Level.INFO, "An error occured when creating coloured background for CSS and JavaScript.", ex); //NOI18N
                         }
                     }
                 }
