@@ -79,6 +79,7 @@ public class VersionsCache {
             try {
                 File tempFile = File.createTempFile(base.getName(), null);
                 File repository = Mercurial.getInstance().getTopmostManagedParent(base);
+                tempFile.deleteOnExit();
                 HgCommand.doCat(repository, base, tempFile);
                 if (tempFile.length() == 0) return null;
                 return tempFile;
@@ -93,6 +94,7 @@ public class VersionsCache {
             try {
                 File tempFile = File.createTempFile(base.getName(), null);
                 File repository = Mercurial.getInstance().getTopmostManagedParent(base);
+                tempFile.deleteOnExit();
                 HgCommand.doCat(repository, base, tempFile, revision);
                 if (tempFile.length() == 0) return null;
                 return tempFile;
