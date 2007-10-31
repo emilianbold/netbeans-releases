@@ -95,6 +95,7 @@ made subject to such option by the copyright holder.
             <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Enum.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
             <attr name="templateCategory" stringvalue="java-classes"/>
             <attr name="javac.source" stringvalue="1.5"/>
         </file>
@@ -105,6 +106,7 @@ made subject to such option by the copyright holder.
             <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/AnnotationType.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
             <attr name="templateCategory" stringvalue="java-classes"/>
             <attr name="javac.source" stringvalue="1.5"/>
         </file>
@@ -125,6 +127,7 @@ made subject to such option by the copyright holder.
             <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.project.NewJavaFileWizardIterator.packageInfoWizard"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/package-info.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
             <attr name="templateCategory" stringvalue="java-classes"/>
             <attr name="javac.source" stringvalue="1.5"/>
         </file>
