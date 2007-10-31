@@ -451,7 +451,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             try {
                 return createTopComponentPersistentID(tc, preferredID);
             } catch (IOException exc) {
-                LOG.log(Level.WARNING, "[PersistenceManager.getGlobalTopComponentID]: Cannot create TC ID", exc); //NOI18N
+                LOG.log(Level.INFO, "[PersistenceManager.getGlobalTopComponentID]: Cannot create TC ID", exc); //NOI18N
                 return createTopComponentNonPersistentID(tc, preferredID);
             }
         } else {
@@ -702,7 +702,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         try {
             compsFolder = DataFolder.findFolder(getComponentsLocalFolder());            
         } catch (IOException exc) {
-            LOG.log(Level.WARNING,
+            LOG.log(Level.INFO,
                 "[PersistenceManager.saveTopComponents]" // NOI18N
                 + " Cannot get components folder", exc); // NOI18N
             return;
@@ -809,7 +809,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             escape.setAccessible(true);
             return (String) escape.invoke(null, name);
         } catch (Exception ex) {
-            LOG.log(Level.WARNING,
+            LOG.log(Level.INFO,
                 "Escape support failed", ex); // NOI18N
             return name;
         }
@@ -828,7 +828,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             unescape.setAccessible(true);
             return (String) unescape.invoke(null, name);
         } catch (Exception ex) {
-            LOG.log(Level.WARNING,
+            LOG.log(Level.INFO,
             "Escape support failed", ex); // NOI18N
             return name;
         }
@@ -907,7 +907,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         try {
             compsFO = getComponentsLocalFolder();
         } catch (IOException exc) {
-            LOG.log(Level.WARNING,
+            LOG.log(Level.INFO,
                 "[PersistenceManager.restorePair]" // NOI18N
                 + " Cannot get components folder", exc); // NOI18N
             return null;
@@ -953,7 +953,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     }
     
     /** Checks for some persistence errors and notifies the user if some
-     * persistence errors occured. Shouild be called after serialization
+     * persistence errors occured. Should be called after serialization
      * and deserialization of window manager.
      */
     public void checkPersistenceErrors(boolean reading) {
@@ -968,7 +968,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                     (reading ? "FMT_TCReadError" : "FMT_TCWriteError"),
                     name);
             Exceptions.attachLocalizedMessage(e, message);
-            LOG.log(Level.WARNING, null, e);
+            LOG.log(Level.INFO, null, e);
         }
         
         // clear for futher use
@@ -1130,7 +1130,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             //diff = end - start;
             //System.out.println("Saving of window system takes " + diff + " ms");
         } catch (IOException exc) {
-            LOG.log(Level.WARNING, null, exc);
+            LOG.log(Level.INFO, null, exc);
         }
     }
     
@@ -1238,7 +1238,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             String annotation = NbBundle.getMessage(PersistenceManager.class,
                 "EXC_CopyFails", destFolder);
             Exceptions.attachLocalizedMessage(exc, annotation);
-            LOG.log(Level.WARNING, null, exc);
+            LOG.log(Level.INFO, null, exc);
         }
     }
 
@@ -1290,7 +1290,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             try {
                 release = Integer.parseInt(strRelease);
             } catch(NumberFormatException nfe) {
-                LOG.log(Level.WARNING, null, nfe);
+                LOG.log(Level.INFO, null, nfe);
             }
         }
         if(strSpec != null) {

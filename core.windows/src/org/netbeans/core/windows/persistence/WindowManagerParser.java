@@ -152,7 +152,7 @@ public class WindowManagerParser {
             try {
                 modesModuleFolder = pm.getModesModuleFolder();
             } catch (IOException exc) {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.addMode]" // NOI18N
                     + " Cannot get modes folder", exc); // NOI18N
                 return null;
@@ -163,7 +163,7 @@ public class WindowManagerParser {
             try {
                 modeConfig = modeParser.load();
             } catch (IOException exc) {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.addMode]" // NOI18N
                 + " Warning: Cannot load mode " + modeName, exc); // NOI18N
             }
@@ -192,7 +192,7 @@ public class WindowManagerParser {
             if (DEBUG) Debug.log(WindowManagerParser.class, "WMParser.addGroup ENTER" + " group:" + groupName);
             GroupParser groupParser = (GroupParser) groupParserMap.get(groupName);
             if (groupParser != null) {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.addGroup]" // NOI18N
                 + " Warning: GroupParser " + groupName // NOI18N
                 + " exists but it should not."); // NOI18N
@@ -203,7 +203,7 @@ public class WindowManagerParser {
             try {
                 groupsModuleFolder = pm.getGroupsModuleFolder();
             } catch (IOException exc) {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.addGroup]" // NOI18N
                     + " Cannot get groups folder", exc); // NOI18N
                 return null;
@@ -217,7 +217,7 @@ public class WindowManagerParser {
             try {
                 groupConfig = groupParser.load();
             } catch (IOException exc) {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.addGroup]" // NOI18N
                 + " Warning: Cannot load group " + groupName, exc); // NOI18N
             }
@@ -259,7 +259,7 @@ public class WindowManagerParser {
             if (modeParser == null) {
                 if (DEBUG) Debug.log(WindowManagerParser.class, "WMParser.addTCRef LEAVE 1" + " mo:" + modeName
                 + " tcRef:" + tcRefName);
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.addTCRef]" // NOI18N
                 + " Warning: Cannot add tcRef " + tcRefName + ". ModeParser " + modeName + " not found."); // NOI18N
                 return null;
@@ -305,7 +305,7 @@ public class WindowManagerParser {
             if (groupParser == null) {
                 if (DEBUG) Debug.log(WindowManagerParser.class, "WMParser.addTCGroup LEAVE 1" + " group:" + groupName
                 + " tcGroup:" + tcGroupName);  // NOI18N
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.addTCGroup]" // NOI18N
                 + " Warning: Cannot add tcGroup " + tcGroupName + ". GroupParser " + groupName + " not found."); // NOI18N
                 return null;
@@ -328,7 +328,7 @@ public class WindowManagerParser {
         if (modeParser == null) {
             if (DEBUG) Debug.log(WindowManagerParser.class, "addTCRefImport LEAVE 1" + " mo:" + modeName
             + " tcRef:" + tcRefName);  // NOI18N
-            PersistenceManager.LOG.log(Level.WARNING,
+            PersistenceManager.LOG.log(Level.INFO,
             "[WinSys.WindowManagerParser.addTCRef]" // NOI18N
             + " Warning: Cannot add tcRef " + tcRefName // NOI18N
             + ". ModeParser " + modeName + " not found."); // NOI18N
@@ -442,7 +442,7 @@ public class WindowManagerParser {
             } catch (IOException exc) {
                 //If reading of one Mode fails we want to log message
                 //and continue.
-                Logger.getLogger(WindowManagerParser.class.getName()).log(Level.WARNING, null, exc);
+                Logger.getLogger(WindowManagerParser.class.getName()).log(Level.INFO, null, exc);
                 continue;
             }
             boolean modeAccepted = acceptMode(modeParser, modeCfg);
@@ -564,7 +564,7 @@ public class WindowManagerParser {
             } catch (IOException exc) {
                 //If reading of one group fails we want to log message
                 //and continue.
-                Logger.getLogger(WindowManagerParser.class.getName()).log(Level.WARNING, null, exc);
+                Logger.getLogger(WindowManagerParser.class.getName()).log(Level.INFO, null, exc);
                 continue;
             }
             boolean groupAccepted = acceptGroup(groupParser, groupCfg);
@@ -719,7 +719,7 @@ public class WindowManagerParser {
         try {
             rootFO = pm.getRootLocalFolder();
         } catch (IOException exc) {
-            PersistenceManager.LOG.log(Level.WARNING,
+            PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.deleteLocalMode]" // NOI18N
                 + " Cannot get root local folder", exc); // NOI18N
             return;
@@ -745,7 +745,7 @@ public class WindowManagerParser {
         try {
             rootFO = pm.getRootLocalFolder();
         } catch (IOException exc) {
-            PersistenceManager.LOG.log(Level.WARNING,
+            PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.deleteLocalGroup]" // NOI18N
                 + " Cannot get root local folder", exc); // NOI18N
             return;
@@ -891,7 +891,7 @@ public class WindowManagerParser {
                         is.close();
                     }
                 } catch (IOException exc) {
-                    Logger.getLogger(WindowManagerParser.class.getName()).log(Level.WARNING, null, exc);
+                    Logger.getLogger(WindowManagerParser.class.getName()).log(Level.INFO, null, exc);
                 }
             }
             
@@ -957,7 +957,7 @@ public class WindowManagerParser {
             if (version != null) {
                 internalConfig.specVersion = new SpecificationVersion(version);
             } else {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleWindowManager]" // NOI18N
                 + " Missing attribute \"version\" of element \"windowmanager\"."); // NOI18N
                 internalConfig.specVersion = new SpecificationVersion("2.0"); // NOI18N
@@ -980,7 +980,7 @@ public class WindowManagerParser {
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleJoinedProperties]" // NOI18N
                 + " Warning: Cannot read attribute \"x\"" // NOI18N
                 + " of element \"joined-properties\".", exc); // NOI18N
@@ -996,7 +996,7 @@ public class WindowManagerParser {
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleJoinedProperties]" // NOI18N
                 + " Warning: Cannot read attribute \"y\"" // NOI18N
                 + " of element \"joined-properties\".", exc); // NOI18N
@@ -1012,7 +1012,7 @@ public class WindowManagerParser {
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleJoinedProperties]" // NOI18N
                 + " Warning: Cannot read attribute \"width\"" // NOI18N
                 + " of element \"joined-properties\".", exc); // NOI18N
@@ -1028,7 +1028,7 @@ public class WindowManagerParser {
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleJoinedProperties]" // NOI18N
                 + " Warning: Cannot read attribute \"height\"" // NOI18N
                 + " of element \"joined-properties\".", exc); // NOI18N
@@ -1044,7 +1044,7 @@ public class WindowManagerParser {
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleJoinedProperties]" // NOI18N
                 + " Warning: Cannot read attribute \"relative-x\"" // NOI18N
                 + " of element \"joined-properties\".", exc); // NOI18N
@@ -1061,7 +1061,7 @@ public class WindowManagerParser {
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleJoinedProperties]" // NOI18N
                 + " Warning: Cannot read attribute \"relative-y\"" // NOI18N
                 + " of element \"joined-properties\".", exc); // NOI18N
@@ -1077,7 +1077,7 @@ public class WindowManagerParser {
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleJoinedProperties]" // NOI18N
                 + " Warning: Cannot read attribute \"relative-width\"" // NOI18N
                 + " of element \"joined-properties\".", exc); // NOI18N
@@ -1093,7 +1093,7 @@ public class WindowManagerParser {
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleJoinedProperties]" // NOI18N
                 + " Warning: Cannot read attribute \"relative-height\"" // NOI18N
                 + " of element \"joined-properties\".",exc); // NOI18N
@@ -1107,7 +1107,7 @@ public class WindowManagerParser {
                 } else if ("false".equals(s)) { // NOI18N
                     winMgrConfig.centeredHorizontallyJoined = false;
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleJoinedProperties]" // NOI18N
                     + " Warning: Invalid value of attribute \"centered-horizontally\"" // NOI18N
                     + " of element \"joined-properties\"."); // NOI18N
@@ -1124,7 +1124,7 @@ public class WindowManagerParser {
                 } else if ("false".equals(s)) { // NOI18N
                     winMgrConfig.centeredVerticallyJoined = false;
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleJoinedProperties]" // NOI18N
                     + " Warning: Invalid value of attribute \"centered-vertically\"" // NOI18N
                     + " of element \"joined-properties\"."); // NOI18N
@@ -1143,7 +1143,7 @@ public class WindowManagerParser {
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleJoinedProperties]" // NOI18N
                 + " Warning: Cannot read attribute \"maximize-if-width-below\"" // NOI18N
                 + " of element \"joined-properties\".", exc); // NOI18N
@@ -1159,7 +1159,7 @@ public class WindowManagerParser {
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleJoinedProperties]" // NOI18N
                 + " Warning: Cannot read attribute \"maximize-if-height-below\"" // NOI18N
                 + " of element \"joined-properties\".", exc);
@@ -1172,7 +1172,7 @@ public class WindowManagerParser {
                     winMgrConfig.mainWindowFrameStateJoined = Integer.parseInt(frameState);
                 } catch (NumberFormatException exc) {
                     
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleJoinedProperties]" // NOI18N
                     + " Warning: Cannot read attribute \"frame-state\"" // NOI18N
                     + " of element \"joined-properties\".", exc); // NOI18N
@@ -1195,7 +1195,7 @@ public class WindowManagerParser {
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleSeparatedProperties]" // NOI18N
                 + " Warning: Cannot read attribute \"x\"" // NOI18N
                 + " of element \"separated-properties\".", exc); // NOI18N
@@ -1211,7 +1211,7 @@ public class WindowManagerParser {
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleSeparatedProperties]" // NOI18N
                 + " Warning: Cannot read attribute \"y\"" // NOI18N
                 + " of element \"separated-properties\".", exc); // NOI18N
@@ -1227,7 +1227,7 @@ public class WindowManagerParser {
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleSeparatedProperties]" // NOI18N
                 + " Warning: Cannot read attribute \"width\"" // NOI18N
                 + " of element \"separated-properties\".", exc); // NOI18N
@@ -1243,7 +1243,7 @@ public class WindowManagerParser {
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleSeparatedProperties]" // NOI18N
                 + " Warning: Cannot read attribute \"height\"" // NOI18N
                 + " of element \"separated-properties\".", exc); // NOI18N
@@ -1259,7 +1259,7 @@ public class WindowManagerParser {
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleSeparatedProperties]" // NOI18N
                 + " Warning: Cannot read attribute \"relative-x\"" // NOI18N
                 + " of element \"separated-properties\".", exc); // NOI18N
@@ -1275,7 +1275,7 @@ public class WindowManagerParser {
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleSeparatedProperties]" // NOI18N
                 + " Warning: Cannot read attribute \"relative-y\"" // NOI18N
                 + " of element \"separated-properties\".", exc); // NOI18N
@@ -1291,7 +1291,7 @@ public class WindowManagerParser {
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleSeparatedProperties]" // NOI18N
                 + " Warning: Cannot read attribute \"relative-width\"" // NOI18N
                 + " of element \"separated-properties\".", exc); // NOI18N
@@ -1307,7 +1307,7 @@ public class WindowManagerParser {
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleSeparatedProperties]" // NOI18N
                 + " Warning: Cannot read attribute \"relative-height\"" // NOI18N
                 + " of element \"separated-properties\".", exc); // NOI18N
@@ -1321,7 +1321,7 @@ public class WindowManagerParser {
                 } else if ("false".equals(s)) { // NOI18N
                     winMgrConfig.centeredHorizontallySeparated = false;
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleSeparatedProperties]" // NOI18N
                     + " Warning: Invalid value of attribute \"centered-horizontally\"" // NOI18N
                     + " of element \"separated-properties\"."); // NOI18N
@@ -1338,7 +1338,7 @@ public class WindowManagerParser {
                 } else if ("false".equals(s)) { // NOI18N
                     winMgrConfig.centeredVerticallySeparated = false;
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleSeparatedProperties]" // NOI18N
                     + " Warning: Invalid value of attribute \"centered-vertically\"" // NOI18N
                     + " of element \"separated-properties\"."); // NOI18N
@@ -1354,7 +1354,7 @@ public class WindowManagerParser {
                     winMgrConfig.mainWindowFrameStateSeparated = Integer.parseInt(frameState);
                 } catch (NumberFormatException exc) {
                     
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleSeparatedProperties]" // NOI18N
                     + " Warning: Cannot read attribute \"frame-state\"" // NOI18N
                     + " of element \"separated-properties\".", exc); // NOI18N
@@ -1374,14 +1374,14 @@ public class WindowManagerParser {
                 } else if ("separated".equals(state)) {
                     winMgrConfig.editorAreaState = Constants.EDITOR_AREA_SEPARATED;
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleEditorArea]" // NOI18N
                     + " Warning: Invalid value of attribute \"state\"" // NOI18N
                     + " of element \"editor-area\"."); // NOI18N
                     winMgrConfig.editorAreaState = Constants.EDITOR_AREA_JOINED;
                 }
             } else {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleEditorArea]" // NOI18N
                 + " Warning: Missing value of attribute \"state\"" // NOI18N
                 + " of element \"editor-area\"."); // NOI18N
@@ -1393,7 +1393,7 @@ public class WindowManagerParser {
                     winMgrConfig.editorAreaFrameState = Integer.parseInt(frameState);
                 } catch (NumberFormatException exc) {
                     
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleEditorArea]" // NOI18N
                     + " Warning: Cannot read attribute \"frame-state\"" // NOI18N
                     + " of element \"editor-area\".", exc); // NOI18N
@@ -1417,7 +1417,7 @@ public class WindowManagerParser {
             } else if ("vertical".equals(s)) { // NOI18N
                 orientation = Constants.VERTICAL;
             } else {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handlePath]" // NOI18N
                 + " Invalid or missing value of attribute \"orientation\"."); // NOI18N
                 orientation = Constants.VERTICAL;
@@ -1429,14 +1429,14 @@ public class WindowManagerParser {
                 if (s != null) {
                     number = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handlePath]" // NOI18N
                     + " Missing value of attribute \"number\"."); // NOI18N
                     number = 0;
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handlePath]" // NOI18N
                 + " Cannot read element \"path\", attribute \"number\"", exc); // NOI18N
                 number = 0;
@@ -1453,7 +1453,7 @@ public class WindowManagerParser {
                 }
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handlePath]" // NOI18N
                 + " Warning: Cannot read element \"path\", attribute \"weight\".", exc); // NOI18N
                 weight = 0.5;
@@ -1472,7 +1472,7 @@ public class WindowManagerParser {
                 if (s != null) {
                     width = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleScreen]" // NOI18N
                     + " Warning: Missing attribute \"width\" of element \"screen\"."); // NOI18N
                     return;
@@ -1481,7 +1481,7 @@ public class WindowManagerParser {
                 if (s != null) {
                     height = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                         "[WinSys.WindowManagerParser.handleScreen]" // NOI18N
                     + " Warning: Missing attribute \"height\" of element \"screen\"."); // NOI18N
                     return;
@@ -1489,7 +1489,7 @@ public class WindowManagerParser {
                 winMgrConfig.screenSize = new Dimension(width, height);
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleScreen]" // NOI18N
                 + " Warning: Cannot read element \"screen\".", exc); // NOI18N
             }
@@ -1506,7 +1506,7 @@ public class WindowManagerParser {
                 if (s != null) {
                     x = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleEditorAreaBounds]" // NOI18N
                     + " Warning: Missing attribute \"x\" of element \"bounds\"."); // NOI18N
                     return;
@@ -1515,7 +1515,7 @@ public class WindowManagerParser {
                 if (s != null) {
                     y = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleEditorAreaBounds]" // NOI18N
                     + " Warning: Missing attribute \"y\" of element \"bounds\"."); // NOI18N
                     return;
@@ -1524,7 +1524,7 @@ public class WindowManagerParser {
                 if (s != null) {
                     width = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleEditorAreaBounds]" // NOI18N
                     + " Warning: Missing attribute \"width\" of element \"bounds\"."); // NOI18N
                     return;
@@ -1533,14 +1533,14 @@ public class WindowManagerParser {
                 if (s != null) {
                     height = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleEditorAreaBounds]" // NOI18N
                     + " Warning: Missing attribute \"height\" of element \"bounds\"."); // NOI18N
                     return;
                 }
                 winMgrConfig.editorAreaBounds = new Rectangle(x, y, width, height);
             } catch (NumberFormatException exc) {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleEditorAreaBounds]" // NOI18N
                 + " Warning: Cannot read element \"bounds\".", exc); // NOI18N
             }
@@ -1557,7 +1557,7 @@ public class WindowManagerParser {
                 if (s != null) {
                     x = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleEditorAreaRelativeBounds]" // NOI18N
                     + " Warning: Missing attribute \"x\" of element \"relative-bounds\"."); // NOI18N
                     return;
@@ -1566,7 +1566,7 @@ public class WindowManagerParser {
                 if (s != null) {
                     y = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleEditorAreaRelativeBounds]" // NOI18N
                     + " Warning: Missing attribute \"y\" of element \"relative-bounds\"."); // NOI18N
                     return;
@@ -1575,7 +1575,7 @@ public class WindowManagerParser {
                 if (s != null) {
                     width = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleEditorAreaRelativeBounds]" // NOI18N
                     + " Warning: Missing attribute \"width\" of element \"relative-bounds\"."); // NOI18N
                     return;
@@ -1584,7 +1584,7 @@ public class WindowManagerParser {
                 if (s != null) {
                     height = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleEditorAreaRelativeBounds]" // NOI18N
                     + " Warning: Missing attribute \"height\" of element \"relative-bounds\"."); // NOI18N
                     return;
@@ -1592,7 +1592,7 @@ public class WindowManagerParser {
                 winMgrConfig.editorAreaRelativeBounds = new Rectangle(x, y, width, height);
             } catch (NumberFormatException exc) {
                 
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleEditorAreaRelativeBounds]" // NOI18N
                 + " Warning: Cannot read element \"relative-bounds\".", exc); // NOI18N
             }
@@ -1640,7 +1640,7 @@ public class WindowManagerParser {
                     if ((winMgrConfig.preferredToolbarIconSize != 16) &&
                         (winMgrConfig.preferredToolbarIconSize != 24)) {
                         
-                        PersistenceManager.LOG.log(Level.WARNING,
+                        PersistenceManager.LOG.log(Level.INFO,
                         "[WinSys.WindowManagerParser.handleToolbar]" // NOI18N
                         + " Warning: Invalid value of attribute \"preferred-icon-size\"" //NOI18N
                         + " of element \"toolbar\": " + winMgrConfig.preferredToolbarIconSize  //NOI18N
@@ -1649,7 +1649,7 @@ public class WindowManagerParser {
                     }
                 } catch (NumberFormatException exc) {
                     
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleToolbar]" // NOI18N
                     + " Warning: Cannot read attribute \"preferred-icon-size\"" //NOI18N
                     + " of element \"toolbar\"." // NOI18N
@@ -1668,12 +1668,12 @@ public class WindowManagerParser {
                 if (!"".equals(id)) {
                     tcIdList.add(id);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleTcId]" // NOI18N
                     + " Warning: Empty required attribute \"id\" of element \"tc-id\"."); // NOI18N
                 }
             } else {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleTcId]" // NOI18N
                 + " Warning: Missing required attribute \"id\" of element \"tc-id\"."); // NOI18N
             }
@@ -1687,39 +1687,39 @@ public class WindowManagerParser {
             
             if (workspaceName != null) {
                 if ("".equals(workspaceName)) {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleTCRefItem]" // NOI18N
                     + " Warning: Empty required attribute \"workspace\" of element \"tcref-item\"."); // NOI18N
                     return;
                 }
             } else {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleTCRefItem]" // NOI18N
                 + " Warning: Missing required attribute \"workspace\" of element \"tcref-item\"."); // NOI18N
                 return;
             }
             if (modeName != null) {
                 if ("".equals(modeName)) {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleTCRefItem]" // NOI18N
                     + " Warning: Empty required attribute \"mode\" of element \"tcref-item\"."); // NOI18N
                     return;
                 }
             } else {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleTCRefItem]" // NOI18N
                 + " Warning: Missing required attribute \"mode\" of element \"tcref-item\"."); // NOI18N
                 return;
             }
             if (tc_id != null) {
                 if ("".equals(tc_id)) {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.WindowManagerParser.handleTCRefItem]" // NOI18N
                     + " Warning: Empty required attribute \"id\" of element \"tcref-item\"."); // NOI18N
                     return;
                 }
             } else {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.WindowManagerParser.handleTCRefItem]" // NOI18N
                 + " Warning: Missing required attribute \"id\" of element \"tcref-item\"."); // NOI18N
                 return;
@@ -1747,7 +1747,7 @@ public class WindowManagerParser {
                             osw.close();
                         }
                     } catch (IOException exc) {
-                        Logger.getLogger(WindowManagerParser.class.getName()).log(Level.WARNING, null, exc);
+                        Logger.getLogger(WindowManagerParser.class.getName()).log(Level.INFO, null, exc);
                     }
                     if (lock != null) {
                         lock.releaseLock();

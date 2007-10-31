@@ -315,7 +315,7 @@ class ModeParser {
             } catch (IOException exc) {
                 //If reading of one tcRef fails we want to log message
                 //and continue.
-                Logger.getLogger(ModeParser.class.getName()).log(Level.WARNING, null, exc);
+                Logger.getLogger(ModeParser.class.getName()).log(Level.INFO, null, exc);
                 continue;
             }
             boolean tcRefAccepted = acceptTCRef(tcRefParser, tcRefCfg);
@@ -485,7 +485,7 @@ class ModeParser {
             }
             catch (IOException ex) {
                 Logger.getLogger(ModeParser.class.getName()).log(
-                        Level.WARNING, "Cannot get access to lcoal modes folder", ex); // NOI18N
+                        Level.INFO, "Cannot get access to lcoal modes folder", ex); // NOI18N
                 return;
             }
         }
@@ -642,7 +642,7 @@ class ModeParser {
         try {
             writeOrder();
         } catch (IOException exc) {
-            PersistenceManager.LOG.log(Level.WARNING,
+            PersistenceManager.LOG.log(Level.INFO,
             "[WinSys.ModeParser.removeTCRef]" // NOI18N
             + " Warning: Cannot write order of mode: " + getName(), exc); // NOI18N
         }
@@ -660,7 +660,7 @@ class ModeParser {
         //Check consistency. TCRefParser instance should not exist.
         TCRefParser tcRefParser = tcRefParserMap.get(tcRefName);
         if (tcRefParser != null) {
-            PersistenceManager.LOG.log(Level.WARNING,
+            PersistenceManager.LOG.log(Level.INFO,
             "[WinSys.ModeParser.addTCRef]" // NOI18N
             + " Warning: ModeParser " + getName() + ". TCRefParser " // NOI18N
             + tcRefName + " exists but it should not."); // NOI18N
@@ -675,7 +675,7 @@ class ModeParser {
         try {
             tcRefConfig = tcRefParser.load();
         } catch (IOException exc) {
-            PersistenceManager.LOG.log(Level.WARNING,
+            PersistenceManager.LOG.log(Level.INFO,
             "[WinSys.ModeParser.addTCRef]" // NOI18N
             + " Warning: ModeParser " + getName() + ". Cannot load tcRef " +  tcRefName, exc); // NOI18N
         }
@@ -727,7 +727,7 @@ class ModeParser {
         try {
             writeOrder();
         } catch (IOException exc) {
-            PersistenceManager.LOG.log(Level.WARNING,
+            PersistenceManager.LOG.log(Level.INFO,
             "[WinSys.ModeParser.addTCRef]" // NOI18N
             + " Warning: Cannot write order of mode: " + getName(), exc); // NOI18N
         }
@@ -755,7 +755,7 @@ class ModeParser {
         //Check consistency. TCRefParser instance should not exist.
         TCRefParser tcRefParser = tcRefParserMap.get(tcRefName);
         if (tcRefParser != null) {
-            PersistenceManager.LOG.log(Level.WARNING,
+            PersistenceManager.LOG.log(Level.INFO,
             "[WinSys.ModeParser.addTCRef]" // NOI18N
             + " Warning: ModeParser " + getName() + ". TCRefParser " // NOI18N
             + tcRefName + " exists but it should not."); // NOI18N
@@ -924,7 +924,7 @@ class ModeParser {
                         is.close();
                     }
                 } catch (IOException exc) {
-                    Logger.getLogger(ModeParser.class.getName()).log(Level.WARNING, null, exc);
+                    Logger.getLogger(ModeParser.class.getName()).log(Level.INFO, null, exc);
                 }
             }
             
@@ -989,7 +989,7 @@ class ModeParser {
             if (version != null) {
                 internalConfig.specVersion = new SpecificationVersion(version);
             } else {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.ModeParser.handleMode]" // NOI18N
                 + " Warning: Missing attribute \"version\" of element \"mode\"."); // NOI18N
                 internalConfig.specVersion = new SpecificationVersion("2.0"); // NOI18N
@@ -1022,7 +1022,7 @@ class ModeParser {
             // #24844. Repair the wrongly saved "null" string
             // as release number.
             if("null".equals(internalConfig.moduleCodeNameRelease)) { // NOI18N
-                Logger.getLogger(ModeParser.class.getName()).log(Level.WARNING, null,
+                Logger.getLogger(ModeParser.class.getName()).log(Level.INFO, null,
                                   new IllegalStateException("Module release code was saved as null string" +
                                                             " for module " +
                                                             internalConfig.moduleCodeNameBase +
@@ -1037,14 +1037,14 @@ class ModeParser {
             if (name != null) {
                 modeConfig.name = name;
                 if (!name.equals(ModeParser.this.getName())) {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.ModeParser.handleName]" // NOI18N
                     + " Error: Value of attribute \"unique\" of element \"name\"" // NOI18N
                     + " and configuration file name must be the same."); // NOI18N
                     throw new SAXException("Invalid attribute value"); // NOI18N
                 }
             } else {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.ModeParser.handleName]" // NOI18N
                 + " Error: Missing required attribute \"unique\" of element \"name\"."); // NOI18N
                 throw new SAXException("Missing required attribute"); // NOI18N
@@ -1062,13 +1062,13 @@ class ModeParser {
                 } else if ("sliding".equals(type)) {
                     modeConfig.kind = Constants.MODE_KIND_SLIDING;
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.ModeParser.handleKind]" // NOI18N
                     + " Warning: Invalid value of attribute \"type\"."); // NOI18N
                     modeConfig.kind = Constants.MODE_KIND_VIEW;
                 }
             } else {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.ModeParser.handleKind]" // NOI18N
                 + " Error: Missing required attribute \"type\" of element \"kind\"."); // NOI18N
                 modeConfig.kind = Constants.MODE_KIND_VIEW;
@@ -1085,13 +1085,13 @@ class ModeParser {
                 {
                     modeConfig.side = side;
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.ModeParser.handleSlidingSide]" // NOI18N
                     + " Warning: Wrong value \"" + side + "\" of attribute \"side\" for sliding mode"); // NOI18N
                     modeConfig.side = Constants.LEFT;
                 }
             } else {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.ModeParser.handleSlidingSide]" // NOI18N
                 + " Warning: Missing value of attribute \"side\" for sliding mode."); // NOI18N
                 modeConfig.side = Constants.LEFT;
@@ -1113,7 +1113,7 @@ class ModeParser {
                     //fall through
                 }
             } 
-            PersistenceManager.LOG.log(Level.WARNING,
+            PersistenceManager.LOG.log(Level.INFO,
             "[WinSys.ModeParser.handleSlideInSize]" // NOI18N
             + " Warning: Invalid attributes for preferred slide-in size."); // NOI18N
         }      
@@ -1126,14 +1126,14 @@ class ModeParser {
                 } else if ("separated".equals(type)) {
                     modeConfig.state = Constants.MODE_STATE_SEPARATED;
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.ModeParser.handleState]" // NOI18N
                     + " Warning: Invalid value of attribute \"type\"" // NOI18N
                     + " of element \"state\"."); // NOI18N
                     modeConfig.state = Constants.MODE_STATE_JOINED;
                 }
             } else {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.ModeParser.handleState]" // NOI18N
                 + " Error: Missing required attribute \"type\""
                 + " of element \"state\"."); // NOI18N
@@ -1154,7 +1154,7 @@ class ModeParser {
             } else if ("vertical".equals(s)) { // NOI18N
                 orientation = Constants.VERTICAL;
             } else {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.ModeParser.handlePath]" // NOI18N
                 + " Warning: Invalid or missing value of attribute \"orientation\"."); // NOI18N
                 orientation = Constants.VERTICAL;
@@ -1166,13 +1166,13 @@ class ModeParser {
                 if (s != null) {
                     number = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.ModeParser.handlePath]" // NOI18N
                     + " Warning: Missing value of attribute \"number\"."); // NOI18N
                     number = 0;
                 }
             } catch (NumberFormatException exc) {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.ModeParser.handlePath]" // NOI18N
                 + " Warning: Cannot read element \"path\", attribute \"number\"", exc); // NOI18N
                 number = 0;
@@ -1188,7 +1188,7 @@ class ModeParser {
                     weight = 0.5;
                 }
             } catch (NumberFormatException exc) {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.ModeParser.handlePath]" // NOI18N
                 + " Warning: Cannot read element \"path\", attribute \"weight\".", exc); // NOI18N
                 weight = 0.5;
@@ -1208,7 +1208,7 @@ class ModeParser {
                 if (s != null) {
                     x = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                         "[WinSys.ModeParser.handleBounds]" // NOI18N
                         + " Warning: Missing attribute \"x\" of element \"bounds\"."); // NOI18N
                     return;
@@ -1217,7 +1217,7 @@ class ModeParser {
                 if (s != null) {
                     y = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.ModeParser.handleBounds]" // NOI18N
                     + " Warning: Missing attribute \"y\" of element \"bounds\"."); // NOI18N
                     return;
@@ -1226,7 +1226,7 @@ class ModeParser {
                 if (s != null) {
                     width = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.ModeParser.handleBounds]" // NOI18N
                     + " Warning: Missing attribute \"width\" of element \"bounds\"."); // NOI18N
                     return;
@@ -1235,14 +1235,14 @@ class ModeParser {
                 if (s != null) {
                     height = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.ModeParser.handleBounds]" // NOI18N
                     + " Warning: Missing attribute \"height\" of element \"bounds\"."); // NOI18N
                     return;
                 }
                 modeConfig.bounds = new Rectangle(x, y, width, height);
             } catch (NumberFormatException exc) {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.ModeParser.handleBounds]" // NOI18N
                 + " Warning: Cannot read element \"bounds\".", exc); // NOI18N
             }
@@ -1259,7 +1259,7 @@ class ModeParser {
                 if (s != null) {
                     x = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.ModeParser.handleRelativeBounds]" // NOI18N
                     + " Warning: Missing attribute \"x\" of element \"relative-bounds\"."); // NOI18N
                     return;
@@ -1268,7 +1268,7 @@ class ModeParser {
                 if (s != null) {
                     y = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.ModeParser.handleRelativeBounds]" // NOI18N
                     + " Warning: Missing attribute \"y\" of element \"relative-bounds\"."); // NOI18N
                     return;
@@ -1277,7 +1277,7 @@ class ModeParser {
                 if (s != null) {
                     width = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.ModeParser.handleRelativeBounds]" // NOI18N
                     + " Warning: Missing attribute \"width\" of element \"relative-bounds\"."); // NOI18N
                     return;
@@ -1286,14 +1286,14 @@ class ModeParser {
                 if (s != null) {
                     height = Integer.parseInt(s);
                 } else {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.ModeParser.handleRelativeBounds]" // NOI18N
                     + " Warning: Missing attribute \"height\" of element \"relative-bounds\"."); // NOI18N
                     return;
                 }
                 modeConfig.relativeBounds = new Rectangle(x, y, width, height);
             } catch (NumberFormatException exc) {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.ModeParser.handleRelativeBounds]" // NOI18N
                 + " Warning: Cannot read element \"relative-bounds\".", exc); // NOI18N
             }
@@ -1306,14 +1306,14 @@ class ModeParser {
                 try {
                     modeConfig.frameState = Integer.parseInt(frameState);
                 } catch (NumberFormatException exc) {
-                    PersistenceManager.LOG.log(Level.WARNING,
+                    PersistenceManager.LOG.log(Level.INFO,
                     "[WinSys.ModeParser.handleFrame]" // NOI18N
                     + " Warning: Cannot read attribute \"state\"" // NOI18N
                     + " of element \"frame\".", exc); // NOI18N
                     modeConfig.frameState = Frame.NORMAL;
                 }
             } else {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.ModeParser.handleFrame]" // NOI18N
                 + " Warning: Missing value of attribute \"state\"" // NOI18N
                 + " of element \"frame\"."); // NOI18N
@@ -1345,7 +1345,7 @@ class ModeParser {
             } else if ("false".equals(value)) { // NOI18N
                 modeConfig.permanent = false;
             } else {
-                PersistenceManager.LOG.log(Level.WARNING,
+                PersistenceManager.LOG.log(Level.INFO,
                 "[WinSys.ModeParser.handleEmptyBehavior]" // NOI18N
                 + " Warning: Invalid value of attribute \"permanent\"."); // NOI18N
                 modeConfig.permanent = false;
@@ -1373,7 +1373,7 @@ class ModeParser {
                             osw.close();
                         }
                     } catch (IOException exc) {
-                        Logger.getLogger(ModeParser.class.getName()).log(Level.WARNING, null, exc);
+                        Logger.getLogger(ModeParser.class.getName()).log(Level.INFO, null, exc);
                     }
                     if (lock != null) {
                         lock.releaseLock();
