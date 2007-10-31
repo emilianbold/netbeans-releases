@@ -70,59 +70,98 @@ public class BadgeProvider {
         return myInstance;
     }
     
-    public void addInvalidFile(CsmFile file){
+    public void invalidateProject(CsmProject project){
+        boolean badgeStateChanged = false;
         synchronized (listLock){
+            ProjectFiles: for( CsmFile file : project.getAllFiles() ) {
+                for (CsmInclude incl : file.getIncludes()) {
+                    if (incl.getIncludeFile() == null) {
+                        if (!storage.contains(file)) {
+                            storage.add(file);
+                            badgeStateChanged = true;
+                        }
+                        continue ProjectFiles;
+                    }
+                }
+                if (storage.contains(file)) {
+                    storage.remove(file);
+                    badgeStateChanged = true;
+                }
+            }
+        }
+        if (badgeStateChanged) {
+            fireBadgeChanged(project);
+        }
+    }
+
+    public void invalidateFile(CsmFile file){
+        boolean badgeStateChanged = false;
+        synchronized (listLock){
+            boolean badFile = false;
             for (CsmInclude incl : file.getIncludes()){
                 if (incl.getIncludeFile() == null) {
                     if (!storage.contains(file)){
                         storage.add(file);
-                        setProjectbadge(file);
+                        badgeStateChanged = true;
                     }
-                    return;
+                    badFile = true;
+                    break;
                 }
             }
-            if (storage.contains(file)){
+            if (!badFile && storage.contains(file)){
                 storage.remove(file);
-                setProjectbadge(file);
+                badgeStateChanged = true;
             }
+        }
+        if (badgeStateChanged) {
+            fireBadgeChanged(file);
         }
     }
     
-    private void setProjectbadge(CsmFile file){
+    private void fireBadgeChanged(CsmFile file){
         (new BrokenProjectService()).stateChanged(null);
     }
     
-    private void setProjectbadge(CsmProject csmProject){
+    private void fireBadgeChanged(CsmProject csmProject){
         (new BrokenProjectService()).stateChanged(null);
     }
     
-    private void setProjectbadge(){
+    private void fireBadgeChanged(){
         (new BrokenProjectService()).stateChanged(null);
     }
     
-    public void removeInvalidFile(CsmFile file) {
+    public void onFileRemoved(CsmFile file) {
+        boolean badgeStateChanged = false;
         synchronized (listLock){
             if (storage.contains(file)){
                 storage.remove(file);
-                setProjectbadge(file);
+                badgeStateChanged = true;
             }
+        }
+        if (badgeStateChanged) {
+            fireBadgeChanged(file);
         }
     }
     
     public void removeAllProjects(){
+        boolean badgeStateChanged = false;
         synchronized (listLock){
+            badgeStateChanged = !storage.isEmpty();
             storage.clear();
-            setProjectbadge();
+        }
+        if (badgeStateChanged) {
+            fireBadgeChanged();
         }
     }
     
     public void removeProject(CsmProject project){
+        boolean badgeStateChanged = false;
         synchronized (listLock){
-            boolean stateChanged = storage.contains(project);
+            badgeStateChanged = storage.contains(project);
             storage.remove(project);
-            if (stateChanged) {
-                setProjectbadge(project);
-            }
+        }
+        if (badgeStateChanged) {
+            fireBadgeChanged(project);
         }
     }
     
@@ -164,6 +203,10 @@ public class BadgeProvider {
                 }
             }
             return Collections.<CsmUID<CsmFile>>emptySet();
+        }
+        
+        public boolean isEmpty(){
+            return nativeProjects.size() == 0;
         }
         
         public void clear(){

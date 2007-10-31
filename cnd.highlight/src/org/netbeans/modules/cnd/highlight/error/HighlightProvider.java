@@ -139,7 +139,7 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
             CsmFile file = (CsmFile)it.next();
             if (TRACE_ANNOTATIONS)  System.out.println("Removed file: "+file.getName()); // NOI18N
             removeAnnotations(null, file);
-            BadgeProvider.getInstance().removeInvalidFile(file);
+            BadgeProvider.getInstance().onFileRemoved(file);
         }
     }
 
@@ -163,7 +163,7 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
 
     public void fileParsingFinished(CsmFile file) {
         checkFile(file);
-        BadgeProvider.getInstance().addInvalidFile(file);
+        BadgeProvider.getInstance().invalidateFile(file);
     }
 
     public void projectLoaded(CsmProject project) {
@@ -173,9 +173,7 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
 	    System.err.printf("HighlightProvider.projectLoaded - start checking files for %s\n", project.getName()); //NOI18N
 	    time = System.currentTimeMillis();
 	}
-	for( CsmFile file : project.getAllFiles() ) {
-	    BadgeProvider.getInstance().addInvalidFile(file);
-	}
+        BadgeProvider.getInstance().invalidateProject(project);
 	if( TRACE_ANNOTATIONS ) {
 	    time = System.currentTimeMillis() - time;
 	    System.err.printf("HighlightProvider checking files for %s took %d ms\n", project.getName(), time); //NOI18N
