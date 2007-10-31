@@ -55,7 +55,7 @@ import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRefHandler;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.core.webservices.action.ConfigureHandlerCookie;
+import org.netbeans.modules.websvc.core.ConfigureHandlerCookie;
 import org.netbeans.modules.websvc.core.webservices.ui.panels.MessageHandlerPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
