@@ -15,7 +15,7 @@
         <p>The Web Start page enables you to configure your application so that 
         the application can be deployed using Java Web Start. Java Web Start 
         enables users of your application to download and launch the application 
-        by clicking a link in a web browser.
+        by clicking a link in a web browser. 
         <p>You open the Standard Java SE Project Properties dialog box by right-clicking 
         any <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
             <param name="content" value="glossary_standard.html">
@@ -34,21 +34,30 @@
         <ul>
             <li><b>Enable Web Start</b>. If selected, the IDE creates 
                 the necessary artifacts to make the application deployable 
-            with Java Web Start.</li> 
+                with Java Web Start when you build the application. These 
+            artifacts can be found in the application's <tt>dist</tt> folder.</li> 
             <li><b>Icon</b>. The icon to be used to represent the application on the 
             user's system, such as on the desktop. </li>
-            <li><b>Codebase</b>. The top-level URL from which to search for the 
-                application's resources. This field is a represented by a combo box, which 
+            <li><b>Codebase</b>. A URL representing the location of the application. 
+                This field is a represented by a combo box, which 
                 from which you can select Local Execution, Web Deployment, or 
                 User Defined. For Local Execution and Web Deployment, the URL is 
-            determined automatically for you.</li>
+                determined automatically for you.
+                <p>If you select Web Deployment, <tt>$$codebase</tt> is shown as the 
+                    URL. When you run the application, the application is served by special 
+                    servlet in which <tt>$$codebase</tt> is replaced with the real location of the 
+            application. </p></li>
             <li><b>Allow Offline</b>. If selected, the user does not need a network 
             connection to run the application.</li>
-            <li><b>Self-signed</b>. If selected, the application is signed 
-            when you build the project.</li>
+            <li><b>Self-signed</b>. If selected, the application is signed using 
+                a certificate that is generated when the project is built. This 
+                certificate is not certified by any Certification Authority. 
+                Self-signing an application enables the application to do things such as 
+            write files to disk and access the network.</li>
             
         </ul>
-        
+        <p>All of these properties are used in the creation of the JNLP file, 
+        which is file used to launch the application.</p>
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="../../project/proj_stand_about.html">About Standard Projects</a></dd>
@@ -58,10 +67,10 @@
             <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_libraries.html">Libraries</a></dd>
             <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_compiling.html">Compiling</a></dd>
             <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_packaging.html">Packaging</a> </dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_run.html">Run</a></dd></dl>
+            <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_run.html">Run</a></dd>
             <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_common-app.html">Application</a></dd>        
-    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_desktop-app.html">Desktop App</a></dd>    
-
+            <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="proj_j2sestand_props_desktop-app.html">Desktop App</a></dd>    
+        </dl>
         
         <hr><small><a href="../../credits.html">Legal Notices</a></small>
         
