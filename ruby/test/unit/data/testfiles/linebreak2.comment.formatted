@@ -6,6 +6,5 @@
     #   <tt>1</tt> => (Or any integer).  Use these if you want to specify a
     #   particular key.<br />
     #   <tt>1..4</tt> => a range of values<br />
-    #
 
 

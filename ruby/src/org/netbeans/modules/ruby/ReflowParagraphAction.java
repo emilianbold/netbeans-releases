@@ -406,7 +406,13 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
                         } else {
                             int split = oldCaretPosition - textBegin;
                             if (split < line.length()) {
-                                line = line.substring(0, split) + CARET_MARKER + line.substring(split);
+                                final String firstPart = line.substring(0, split);
+                                final String lastPart = line.substring(split);
+                                if (lastPart.startsWith("#") && firstPart.trim().length() == 0) {
+                                    line = firstPart + lastPart.charAt(0) + CARET_MARKER + lastPart.substring(1);
+                                } else {
+                                    line = firstPart + CARET_MARKER + lastPart;
+                                }
                             } else {
                                 line = line + CARET_MARKER;
                             }
@@ -612,10 +618,19 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
                 if (brIndex != -1) {
                     // Need to split the text up via linebreaks
                     int brEnd = text.indexOf('>', brIndex)+1;
-                    buffer.append(text.substring(0, brEnd));
-                    flush();
+                    String lineBegin = text.substring(0, brEnd);
+                    String lineEnd = null;
                     if (brEnd < text.length()) {
-                        appendFlowed(text.substring(brEnd));
+                        lineEnd = text.substring(brEnd).trim();
+                        if (lineEnd.length() == 1 && lineEnd.charAt(0) == CARET_MARKER) {
+                            lineBegin = lineBegin + CARET_MARKER;
+                            lineEnd = null;
+                        }
+                    }
+                    buffer.append(lineBegin);
+                    flush();
+                    if (lineEnd != null) {
+                        appendFlowed(lineEnd);
                     }
 
                     return;
@@ -637,6 +652,8 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
 
         private void flush() {
             if (buffer.length() == 0) {
+                return;
+            } else if (buffer.length() == 1 && buffer.charAt(0) == ' ') {
                 return;
             }
 

@@ -122,6 +122,10 @@ public class ReflowParagraphActionTest extends RubyTestBase {
         formatParagraph("testfiles/http.comment", "#^ Example #4: More generic GET+prin");
     }
 
+    public void testHttpFormatting3() throws Exception {
+        formatParagraphFile("testfiles/http2.comment", " ^# This library provides your program functions");
+    }
+    
     public void testParagraph() throws Exception {
         formatParagraphFile("testfiles/paragraph.comment", " ^  # foo");
     }
@@ -135,6 +139,10 @@ public class ReflowParagraphActionTest extends RubyTestBase {
     }
 
     public void testLineBreak2() throws Exception {
+        formatParagraphFile("testfiles/linebreak2.comment", "next available num^ber");
+    }
+
+    public void testLineBreak3() throws Exception {
         formatParagraphFile("testfiles/linebreak2.comment", "next available num^ber");
     }
 
