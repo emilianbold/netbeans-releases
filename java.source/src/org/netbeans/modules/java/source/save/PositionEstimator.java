@@ -1490,6 +1490,9 @@ public abstract class PositionEstimator {
     int moveBelowGuarded(int pos) {
         if (guards != null) {
             for (GuardedSection section : guards.getGuardedSections()) {
+                if (pos == section.getStartPosition().getOffset()) {
+                    return pos-1;
+                }
                 if (pos > section.getStartPosition().getOffset() && 
                     pos <= section.getEndPosition().getOffset()) 
                 {
