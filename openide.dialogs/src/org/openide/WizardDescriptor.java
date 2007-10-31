@@ -439,6 +439,9 @@ public class WizardDescriptor extends DialogDescriptor {
                         }
                         public void windowClosing (WindowEvent e) {
                             if (!changeStateInProgress) {
+                                if (WizardDescriptor.this.getValue () == null) {
+                                    WizardDescriptor.this.setValueWithoutPCH (NotifyDescriptor.CLOSED_OPTION);
+                                }
                                 w.setVisible (false);
                                 w.dispose ();
                             }
