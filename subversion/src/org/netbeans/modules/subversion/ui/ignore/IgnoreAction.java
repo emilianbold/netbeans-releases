@@ -224,16 +224,15 @@ public class IgnoreAction extends ContextAction {
     }
 
     public static void ignore(File file) throws SVNClientException {
+        File parent = file.getParentFile();
+        ensureVersioned(parent);
         // technically, this block need not be synchronized but we want to have svn:ignore property set correctly at all times
-        synchronized(IgnoreAction.class) {
-            File parent = file.getParentFile();
-            ensureVersioned(parent);
+        synchronized(IgnoreAction.class) {                        
             List<String> patterns = Subversion.getInstance().getClient(true).getIgnoredPatterns(parent);
             if (patterns.contains(file.getName()) == false) {
                 patterns.add(file.getName());
                 Subversion.getInstance().getClient(true).setIgnoredPatterns(parent, patterns);
-            }
-            Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+            }            
         }
     }
 }
