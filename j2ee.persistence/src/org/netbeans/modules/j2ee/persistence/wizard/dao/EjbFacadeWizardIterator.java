@@ -287,7 +287,7 @@ import org.openide.util.NbBundle;
         GenerationOptions findAllOptions = new GenerationOptions();
         findAllOptions.setMethodName("findAll");//NO18N
         findAllOptions.setOperation(GenerationOptions.Operation.FIND_ALL);
-        findAllOptions.setReturnType("java.util.List");//NO18N
+        findAllOptions.setReturnType("java.util.List<" + entityFQN + ">");//NO18N
         findAllOptions.setQueryAttribute(getEntityName(entityFQN));
         
         return Arrays.<GenerationOptions>asList(createOptions, editOptions, destroyOptions, findOptions, findAllOptions);
