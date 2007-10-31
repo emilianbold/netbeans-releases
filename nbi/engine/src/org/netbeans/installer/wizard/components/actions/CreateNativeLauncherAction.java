@@ -70,7 +70,8 @@ public class CreateNativeLauncherAction extends WizardAction {
             "CNLA.error.failed.create.launcher");//NOI18N
     public static final String ERROR_FAILED_CREATE_LAUNCHER_PROPERTY =
             "error.failed.create.launcher";//NOI18N
-    
+    public static final String BUNDLED_JVM_FILE_PROPERTY = 
+            "nbi.bundled.jvm.file";
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public CreateNativeLauncherAction() {
@@ -102,7 +103,10 @@ public class CreateNativeLauncherAction extends WizardAction {
                 "-Xmx256m",
                 "-Xms64m"
             });
-            
+            if(System.getProperty(BUNDLED_JVM_FILE_PROPERTY)!=null) {
+                properties.addJVM(new LauncherResource(
+                        new File(System.getProperty(BUNDLED_JVM_FILE_PROPERTY))));
+            }
             File file = SystemUtils.createLauncher(
                     properties, platform, progress).getOutputFile();
             
