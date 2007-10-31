@@ -167,6 +167,13 @@ public class RubyInstallationTest extends NbTestCase {
     }
     
     private RubyInstallation setUpRubyWithGems(final boolean rubygemsRepo, final String suffix) throws Exception {
+        // Ensure that $GEM_HOME isn't picked up
+        // I can't do this:
+        //  System.getenv().remove("GEM_HOME");
+        // because the environment variable map is unmodifiable. So instead
+        // side effect to ensure that the GEM_HOME check isn't run
+        RubyInstallation.TEST_GEM_HOME = ""; // non null but also invalid dir, will bypass $GEM_HOME lookup
+        
         File home = getWorkDir();
 
         // Build a fake ruby structure

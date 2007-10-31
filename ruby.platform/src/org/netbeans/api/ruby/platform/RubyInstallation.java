@@ -442,6 +442,22 @@ public class RubyInstallation {
      */
     public String getRubyLibGemDir(boolean canonical) {
         String gemdir = null;
+        
+        String gemHome = TEST_GEM_HOME; // test hook
+        if (gemHome == null) {
+            gemHome = System.getenv().get("GEM_HOME"); // NOI18N
+        }
+        if (gemHome != null) {
+            File lib = new File(gemHome); // NOI18N
+            if (!lib.isDirectory()) {
+                LOGGER.finest("Cannot find Gems repository. \"" + lib + "\" does not exist or is not a directory."); // NOI18N
+                // Fall through and try the Ruby interpreter's area
+            } else {
+                gemHomeFo = FileUtil.toFileObject(lib);
+                return lib.getAbsolutePath();
+            }
+        }
+        
         File rubyHome = getRubyHome(canonical);
 
         if (rubyHome == null) {
@@ -461,33 +477,18 @@ public class RubyInstallation {
         File lib = new File(rubyHome, "lib" + File.separator + "ruby" + File.separator + "gems"); // NOI18N
 
         if (!lib.isDirectory()) {
-            String gemHome = TEST_GEM_HOME; // test hook
-            if (gemHome == null) {
-                gemHome = System.getenv().get("GEM_HOME"); // NOI18N
+            // Special case for Debian: /usr/share/doc/rubygems/README.Debian documents
+            // a special location for gems
+            if ("/usr".equals(rubyHome.getPath())) { // NOI18N
+                File varGem = new File("/var/lib/gems/1.8"); // NOI18N
+                if (varGem.exists()) {
+                    gemHomeFo = FileUtil.toFileObject(varGem);
+                    return varGem.getPath();
+                }
             }
-            if (gemHome != null) {
-                lib = new File(gemHome); // NOI18N
-                if (!lib.isDirectory()) {
-                    LOGGER.finest("Cannot find Gems repository. \"" + lib + "\" does not exist or is not a directory."); // NOI18N
-                    return null;
-                } else {
-                    gemHomeFo = FileUtil.toFileObject(lib);
-                    return lib.getAbsolutePath();
-                }
-            } else {
-                // Special case for Debian: /usr/share/doc/rubygems/README.Debian documents
-                // a special location for gems
-                if ("/usr".equals(rubyHome.getPath())) { // NOI18N
-                    File varGem = new File("/var/lib/gems/1.8"); // NOI18N
-                    if (varGem.exists()) {
-                        gemHomeFo = FileUtil.toFileObject(varGem);
-                        return varGem.getPath();
-                    }
-                }
 
-                LOGGER.finest("Cannot find Gems repository. No GEM_HOME set."); // NOI18N
-                return null;
-            }
+            LOGGER.finest("Cannot find Gems repository. No GEM_HOME set."); // NOI18N
+            return null;
         }
         
         File f = new File(lib, DEFAULT_RUBY_RELEASE); // NOI18N
