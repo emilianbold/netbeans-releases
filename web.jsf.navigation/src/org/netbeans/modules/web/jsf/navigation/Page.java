@@ -243,7 +243,7 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         if (isDataNode()) {
             return original;
         } else {
-            return new NonDataNode(this, original.getName());
+            return new NonDataNode(original.getName());
         }
     }
 
@@ -380,10 +380,12 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
     //        return new NonDataNode(this);
     //    }
 
+    
+    
     public final class NonDataNode extends AbstractNode {
 
 
-        public NonDataNode(Page page, String pageName) {
+        public NonDataNode( String pageName) {
             super(Children.LEAF);
             super.setName(pageName);
         }
