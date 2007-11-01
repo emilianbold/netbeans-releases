@@ -173,6 +173,10 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         super.performTest("file.cc", 5, 1, "#inc");
     } 
     
+    public void testErrorCompletion9() throws Exception {
+        super.performTest("file.cc", 5, 1, "#");
+    } 
+    
     public void testErrorCompletionInFun1() throws Exception {
         super.performTest("file.cc", 7, 1, "->");
     }    
