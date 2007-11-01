@@ -400,8 +400,7 @@ final class OutputDocument implements Document {
     public String getText(int offset, int length) throws BadLocationException {
         checkLocation(offset);
         if (length < 0) {
-            throw new IllegalArgumentException("negative length ("      //NOI18N
-                                               + length + ')');
+            throw new BadLocationException("negative length", offset);  //NOI18N
         }
         if (offset + length > getLength()) {
             throw new BadLocationException(
@@ -449,8 +448,7 @@ final class OutputDocument implements Document {
     public void getText(int offset, int length, Segment txt) throws BadLocationException {
         checkLocation(offset);
         if (length < 0) {
-            throw new IllegalArgumentException("negative length ("      //NOI18N
-                                               + length + ')');
+            throw new BadLocationException("negative length", offset);  //NOI18N
         }
         if (length == 0) {
             txt.array = new char[0];
