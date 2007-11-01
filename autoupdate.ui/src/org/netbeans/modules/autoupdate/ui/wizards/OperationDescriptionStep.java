@@ -201,9 +201,11 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         String s = new String ();
         for (String plugin : model.getBrokenDependencies ().keySet ()) {
             s += "<h3>" + NbBundle.getMessage (OperationDescriptionStep.class, "OperationDescriptionStep_PluginHasBrokenDependencies", plugin) + "</h3>";
-            SortedSet<String> sset = new TreeSet<String> (model.getBrokenDependencies ().get (plugin));
-            for (String dep : sset) {
-                s += "      " + tryTakeDisplayName (dep) + "<br>"; // NOI18N
+            if (model.getBrokenDependencies ().get (plugin) != null) {
+                SortedSet<String> sset = new TreeSet<String> (model.getBrokenDependencies ().get (plugin));
+                for (String dep : sset) {
+                    s += "      " + tryTakeDisplayName (dep) + "<br>"; // NOI18N
+                }
             }
         }
         return s.trim ();

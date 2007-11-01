@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -173,7 +174,7 @@ public class AutoupdateCheckScheduler {
             err.log (Level.FINE, "findUpdateElements(" + type + ") doesn't find any elements.");
             return null;
         }
-        OperationContainer oc = handleUpdates ?
+        OperationContainer<InstallSupport> oc = handleUpdates ?
             OperationContainer.createForUpdate () :
             OperationContainer.createForInstall ();
         Collection<UpdateElement> updates = new HashSet<UpdateElement> ();
@@ -184,12 +185,23 @@ public class AutoupdateCheckScheduler {
                     ((Unit.Available) u).getRelevantElement ();
                 UpdateUnit unit = element.getUpdateUnit ();
                 if (oc.canBeAdded (unit, element)) {
-                    OperationInfo operationInfo = oc.add (element);
-                    if (operationInfo.getBrokenDependencies ().isEmpty ()) {
+                    OperationInfo<InstallSupport> operationInfo = oc.add (element);
+                    oc.add (operationInfo.getRequiredElements ());
+                    Collection<String> brokenDeps = new HashSet<String> ();
+                    for (OperationInfo<InstallSupport> info : oc.listAll ()) {
+                        brokenDeps.addAll (info.getBrokenDependencies ());
+                    }
+                    if (brokenDeps.isEmpty () && oc.listInvalid ().isEmpty ()) {
                         updates.add (element);
                     } else {
-                        err.log (Level.WARNING, "Plugin " + element + // NOI18N
-                                " cannot be installed, some dependencies can be satisfied: " + operationInfo.getBrokenDependencies()); // NOI18N
+                        oc.removeAll ();
+                        if (! brokenDeps.isEmpty ()) {
+                            err.log (Level.WARNING, "Plugin " + element + // NOI18N
+                                    " cannot be installed, some dependencies can be satisfied: " + brokenDeps); // NOI18N
+                        } else {
+                            err.log (Level.WARNING, "Plugin " + element + // NOI18N
+                                    " cannot be installed, Install Container contains invalid elements " + oc.listInvalid ()); // NOI18N
+                        }
                     }
                 }
             }

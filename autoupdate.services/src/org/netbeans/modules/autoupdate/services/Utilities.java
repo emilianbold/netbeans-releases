@@ -59,6 +59,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -493,6 +494,68 @@ public class Utilities {
         return null;
     }
     
+    private static Set<UpdateElement> findAffectedModules (Set<UpdateElement> modulesForInstall) {
+        Collection<Module> updatedModules = new HashSet<Module> ();
+        for (UpdateElement el : modulesForInstall) {
+            UpdateElement installed = el.getUpdateUnit ().getInstalled ();
+            if (installed != null) {
+                UpdateElementImpl impl = Trampoline.API.impl (installed);
+                if (impl instanceof ModuleUpdateElementImpl) {
+                    ModuleInfo info = ((ModuleUpdateElementImpl) impl).getModuleInfo ();
+                    Module m = Utilities.toModule (info);
+                    if (m != null) {
+                        updatedModules.add (m);
+                    }
+                }
+            }
+        }
+        Collection<ModuleInfo> newModules = new HashSet<ModuleInfo> ();
+        for (UpdateElement el : modulesForInstall) {
+            UpdateElementImpl impl = Trampoline.API.impl (el);
+            if (impl instanceof ModuleUpdateElementImpl) {
+                newModules.add (((ModuleUpdateElementImpl) impl).getModuleInfo ());
+            }
+        }
+        if (updatedModules.isEmpty ()) {
+            return modulesForInstall;
+        }
+        Collection<UpdateElement> causedModules = new HashSet<UpdateElement> ();
+        
+        Collection<ModuleInfo> limitedModules = getInstalledModules (newModules);
+        Collection<ModuleInfo> extendedModules = new HashSet<ModuleInfo> (limitedModules);
+        extendedModules.addAll (newModules);
+        for (Module updatedModule : updatedModules) {
+            for (Module affectedModule : Utilities.findDependingModules (updatedModule, updatedModule.getManager ())) {
+                Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (affectedModule.getDependencies (), limitedModules);
+                if (! brokenDeps.isEmpty ()) {
+                    getLogger ().log (Level.FINEST, "Module " + affectedModule + " has broken dependecies " + brokenDeps);
+                    UpdateUnit affectedUnit = UpdateManagerImpl.getInstance ().getUpdateUnit (affectedModule.getCodeNameBase ());
+                    List<UpdateElement> available = affectedUnit.getAvailableUpdates ();
+                    if (available != null && ! available.isEmpty ()) {
+                        UpdateElement el = available.get (0);
+                        getLogger ().log (Level.FINEST, "Try to resolve by newone module " + el);
+                        UpdateElementImpl impl = Trampoline.API.impl (el);
+                        if (impl instanceof ModuleUpdateElementImpl) {
+                            ModuleInfo tryModule = ((ModuleUpdateElementImpl) impl).getModuleInfo ();
+                            brokenDeps = DependencyChecker.findBrokenDependencies (tryModule.getDependencies (), extendedModules);
+                            if (brokenDeps.isEmpty ()) {
+                                getLogger ().log (Level.FINEST, "Newone module " + el + " passed all dependencies!");
+                                causedModules.add (el);
+                            } else {
+                                getLogger ().log (Level.FINE, "Newone module " + el + " still don't match all dependencies " + brokenDeps);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (! causedModules.isEmpty ()) {
+            getLogger ().log (Level.FINE, "Added affected modules " + causedModules);
+            modulesForInstall.addAll (causedModules);
+        }
+        return modulesForInstall;
+    }
+    
     static Set<UpdateElement> findRequiredModules(Set<Dependency> deps, Collection<ModuleInfo> installedModules) {
         Set<UpdateElement> requiredElements = new HashSet<UpdateElement> ();
         for (Dependency dep : deps) {
@@ -519,6 +582,14 @@ public class Utilities {
         return new ArrayList<ModuleInfo> (InstalledModuleProvider.getInstalledModules().values());
     }
     
+    private static Collection<ModuleInfo> getInstalledModules (Collection<? extends ModuleInfo> excludedModules) {
+        Map<String, ModuleInfo> tmp = new HashMap<String, ModuleInfo> (InstalledModuleProvider.getInstalledModules ());
+        for (ModuleInfo m : excludedModules) {
+            tmp.remove (m.getCodeNameBase ());
+        }
+        return new ArrayList<ModuleInfo> (tmp.values());
+    }
+    
     public static Set<UpdateElement> findRequiredUpdateElements (UpdateElement element, List<ModuleInfo> infos) {
         UpdateElementImpl el = Trampoline.API.impl(element);
         Set<UpdateElement> retval = new HashSet<UpdateElement> ();
@@ -526,10 +597,12 @@ public class Utilities {
         case KIT_MODULE :
         case MODULE :
             final Set<Dependency> deps = ((ModuleUpdateElementImpl) el).getModuleInfo ().getDependencies ();
-            final List<ModuleInfo> extendedModules = getInstalledModules ();
+            final Collection<ModuleInfo> extendedModules = getInstalledModules ();
             extendedModules.addAll (infos);
             final Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (deps, extendedModules);
             retval = findRequiredModules (brokenDeps, extendedModules);
+            // go up and find affected modules
+            retval = findAffectedModules (retval);
             break;
         case STANDALONE_MODULE :
         case FEATURE :
@@ -544,15 +617,50 @@ public class Utilities {
         return retval;
     }
     
-    public static Set<Dependency> findBrokenDependencies(UpdateElement element, List<ModuleInfo> infos) {
-        List<ModuleInfo> extendedModules = getInstalledModules();
-        extendedModules.addAll(infos);
+    private static Collection<Module> getAffectedModules (UpdateElement element, Collection<String> tooAffected) {
+        Collection<Module> res = new HashSet<Module> ();
+        UpdateElement installed = element.getUpdateUnit ().getInstalled ();
+        if (installed != null) {
+            UpdateElementImpl impl = Trampoline.API.impl (installed);
+            if (impl instanceof ModuleUpdateElementImpl) {
+                ModuleInfo info = ((ModuleUpdateElementImpl) impl).getModuleInfo ();
+                Module m = Utilities.toModule (info);
+                if (m != null) {
+                    for (Module req : Utilities.findDependingModules (m, m.getManager ())) {
+                        if (! tooAffected.contains (req.getCodeNameBase ())) {
+                            res.add (req);
+                        }
+                    }
+                }
+            }
+        }
+        return res;
+    }
+    
+    private static Collection<String> getCodeNames (Collection<ModuleInfo> infos) {
+        Collection<String> names = new HashSet<String> ();
+        for (ModuleInfo i : infos) {
+            names.add (i.getCodeNameBase ());
+        }
+        return names;
+    }
+    
+    private static Set<Dependency> findBrokenDependencies(UpdateElement element, List<ModuleInfo> infos) {
+        Set<Dependency> retval = new HashSet<Dependency> ();
+        Collection<ModuleInfo> limitedModules = getInstalledModules (infos);
+        Collection<ModuleInfo> extendedModules = new HashSet<ModuleInfo> (limitedModules);
+        extendedModules.addAll (infos);
+        for (Module affectedModule : getAffectedModules (element, getCodeNames (infos))) {
+            Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (affectedModule.getDependencies (), extendedModules);
+            if (! brokenDeps.isEmpty ()) {
+                getLogger ().log (Level.FINEST, "Module " + affectedModule + " has broken dependecies " + brokenDeps);
+                retval.addAll (brokenDeps);
+            }
+        }
         Set<Dependency> deps = collectAllDependencies (element);
-        Set<Dependency> retval = Collections.emptySet ();
-        final Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies(deps, extendedModules);
-        Set<UpdateElement> reqs = findRequiredModules(brokenDeps, extendedModules);
+        Set<UpdateElement> reqs = findRequiredUpdateElements (element, infos);
         extendedModules.addAll (getModuleInfos (reqs));
-        retval = DependencyChecker.findBrokenDependencies(deps, extendedModules);
+        retval.addAll (DependencyChecker.findBrokenDependencies(deps, extendedModules));
         return retval;
     }
     

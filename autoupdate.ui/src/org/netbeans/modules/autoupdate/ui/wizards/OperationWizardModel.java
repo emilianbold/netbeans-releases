@@ -125,6 +125,9 @@ public abstract class OperationWizardModel {
             // add requiredElements to container
             addRequiredElements (requiredElements);
             
+            // remove primary elements
+            requiredElements.removeAll (getPrimaryUpdateElements ());
+            
         }
         return requiredElements;
     }

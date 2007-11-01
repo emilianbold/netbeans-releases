@@ -255,6 +255,13 @@ class DependencyChecker extends Object {
                         }
                     }
                 }
+            } else if (dep.getName ().indexOf ('/') != -1) { // NOI18N
+                // MAJOR RELEASE
+                String cnb = dep.getName ().substring (0, dep.getName ().indexOf ('/')); // NOI18N
+                if (cnb.equals (module.getCodeNameBase ())) {
+                    err.log (Level.FINE, "Unmatched major versions. Dependency " + dep + " doesn't match with module " + module);
+                    ok = false;
+                }
             }
         }
 
