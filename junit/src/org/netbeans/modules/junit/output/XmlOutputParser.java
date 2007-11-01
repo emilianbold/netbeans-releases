@@ -136,6 +136,7 @@ final class XmlOutputParser extends DefaultHandler {
     
     /**
      */
+    @Override
     public void startElement(String uri,
                              String localName,
                              String qName,
@@ -212,6 +213,7 @@ final class XmlOutputParser extends DefaultHandler {
     
     /**
      */
+    @Override
     public void endElement(String uri,
                            String localName,
                            String qName) throws SAXException {
@@ -357,6 +359,7 @@ final class XmlOutputParser extends DefaultHandler {
     
     /**
      */
+    @Override
     public void characters(char[] ch,
                            int start,
                            int length) throws SAXException {
