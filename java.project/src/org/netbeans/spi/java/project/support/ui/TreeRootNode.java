@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.Icon;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
@@ -80,6 +81,12 @@ import org.openide.util.lookup.ProxyLookup;
  */
 final class TreeRootNode extends FilterNode implements PropertyChangeListener {
     
+    //XXX: The same constants are in PackageRootNode (same package) - create package private class with constants?
+    private static final String ICON_KEY_UIMANAGER = "Tree.closedIcon"; // NOI18N
+    private static final String OPENED_ICON_KEY_UIMANAGER = "Tree.openIcon"; // NOI18N
+    private static final String ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.icon"; // NOI18N
+    private static final String OPENED_ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.openedIcon"; // NOI18N
+    
     private final SourceGroup g;
     
     public TreeRootNode(SourceGroup g) {
@@ -105,11 +112,32 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
     private Image computeIcon(boolean opened, int type) {
         Icon icon = g.getIcon(opened);
         if (icon == null) {
-            Image image = opened ? super.getOpenedIcon(type) : super.getIcon(type);
+            Image image = getTreeFolderIcon(opened, type);
             return Utilities.mergeImages(image, PackageRootNode.PACKAGE_BADGE, 7, 7);
         } else {
             return Utilities.icon2Image(icon);
         }
+    }
+    
+    /**
+     * Returns default folder icon as {@link java.awt.Image}. Never returns
+     * <code>null</code>.
+     *
+     * @param opened wheter closed or opened icon should be returned.
+     */
+    private Image getTreeFolderIcon(boolean opened, int type) {
+        Image base = null;
+        Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER); // #70263
+        if (baseIcon != null) {
+            base = Utilities.icon2Image(baseIcon);
+        } else {
+            base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263
+            if (base == null) { // fallback to our owns                
+                base = opened ? super.getOpenedIcon(type) : super.getIcon(type);                
+            }
+        }
+        assert base != null;
+        return base;
     }
     
     public Image getIcon(int type) {
