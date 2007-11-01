@@ -72,12 +72,14 @@ public class JPDAAppReloaded extends Task {
         DebuggerEngine debuggerEngine = DebuggerManager.getDebuggerManager ().
             getCurrentEngine ();
         if (debuggerEngine == null) {
-            throw new BuildException ("No debugging sessions was found.");
+            logger.fine("No debugging sessions was found.");
+            return ;
         }
         JPDADebugger debugger = (JPDADebugger) debuggerEngine.lookupFirst 
             (null, JPDADebugger.class);
         if (debugger == null) {
-            throw new BuildException("Current debugger is not JPDA one.");
+            logger.fine("Current debugger is not JPDA one.");
+            return ;
         }
         try {
             Method fixBreakpointsMethod = debugger.getClass().getMethod("fixBreakpoints", new Class[] {});
