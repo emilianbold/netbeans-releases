@@ -100,6 +100,9 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
      */
     public static final String CONNECTIONS_PATH = "Databases/Connections"; // NOI18N
     
+    public static final Logger LOGGER = 
+            Logger.getLogger(DatabaseConnectionConvertor.class.getName());
+    
     /**
      * The delay by which the write of the changes is postponed.
      */
@@ -390,9 +393,17 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                 pw.println("  <user value='" + XMLUtil.toAttributeValue(instance.getUser()) + "'/>"); //NOI18N
             }
             if (instance.rememberPassword() ) {
+                String password = instance.getPassword();
+                
+                LOGGER.log(Level.INFO, "Password is null, saving it as an empty string");
+                
+                if ( password == null ) {
+                    password = "";
+                }
+                
                 pw.println("  <password value='" + 
                         Base64.byteArrayToBase64(
-                        instance.getPassword().getBytes("UTF-8")) + "'/>"); // NO18N
+                        password.getBytes("UTF-8")) + "'/>"); // NO18N
             }
             pw.println("</connection>"); //NOI18N
         }        
