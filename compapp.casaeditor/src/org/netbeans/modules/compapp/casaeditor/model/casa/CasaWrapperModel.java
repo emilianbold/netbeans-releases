@@ -931,6 +931,8 @@ public class CasaWrapperModel extends CasaModelImpl {
                         "MSG_CANNOT_CONNECT_TWO_EXTERNAL_ENDPOINTS"); // NOI18N
         }
         
+        // The following two checks are for unavailable backing WSDL.
+        // For example, a EJB module whose WSDL has not been added into CASA.
         boolean endpoint1Defined = isEndpointDefined(endpointRef1);        
         if (endpoint1Defined && !isEndpointPortTypeAvailable(endpointRef1)) {
             return NbBundle.getMessage(this.getClass(),
@@ -943,6 +945,26 @@ public class CasaWrapperModel extends CasaModelImpl {
             return NbBundle.getMessage(this.getClass(),
                         "MSG_PORTTYPE_NOT_AVAILABLE", // NOI18N
                         endpointRef2.getFullyQualifiedEndpointName());
+        }
+        
+        // The following two checks are for corrupted model (CASA model and
+        // WSDL model are out of sync.)
+        if (casaPort1 != null) {
+            Port port1 = getLinkedWSDLPort(casaPort1);
+            if (port1 == null) {
+                return NbBundle.getMessage(this.getClass(),
+                    "MSG_CORRUPTED_MODEL_WITH_MISSING_SRC_WSDL_PORT", // NOI18N 
+                    casaPort1.getLink().getHref());      
+            }
+        }
+        
+        if (casaPort2 != null) {
+            Port port2 = getLinkedWSDLPort(casaPort2);
+            if (port2 == null) {
+                return NbBundle.getMessage(this.getClass(),
+                    "MSG_CORRUPTED_MODEL_WITH_MISSING_DEST_WSDL_PORT", // NOI18N 
+                    casaPort2.getLink().getHref());
+            }
         }
         
         if (endpoint1Defined && endpoint2Defined) {
@@ -968,7 +990,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             return NbBundle.getMessage(this.getClass(),
                         "MSG_CANNOT_CONNECT_TWO_UNDEFINED_ENDPOINTS"); // NOI18N
         }
-        
+                
         return null;
     }
     
@@ -1613,50 +1635,56 @@ public class CasaWrapperModel extends CasaModelImpl {
             // 3. Delete dangling endpoint
             removeDanglingEndpoint(endpoint);
             
-            // 4. Clean up casa wsdl
-            // Added invokeLater to fix a IllegalStateException from WSDL UI
-            // temporarily.
-            // To reproduce the problem:
-            // (1) Use SynchSample
-            // (2) Open CASA editor
-            // (3) Open casa wsdl (this is the key step)
-            // (4) Drop a WSDL port into CASA
-            // (5) Make a connection from the WSDL port to BPEL SU's endpoint
-            // (6) Delete the dropped WSDL port
-            //     => IllegalStateException: Referencing component not part of model
-            //
-            // If we delete the new connection first then delete the WSDL port,
-            // then everything is OK.
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    Binding binding = port.getBinding().get();
-                    Service service = (Service) port.getParent();
-                    Definitions definitions = (Definitions) service.getParent();                                     
-                    
-                    WSDLModel compAppWSDLModel = port.getModel();
-                    compAppWSDLModel.startTransaction();
-                    try {
-                        // Added null-checking to avoid exception when dealing
-                        // with corrupted WSDL model (for example, a port w/o
-                        // binding).
-                        if (service != null) {
-                            if (port != null ) {
-                                service.removePort(port);
+            // The port should not be null under normal circumstance. 
+            // Just in case the CASA model and WSDL model are out of sync
+            // (#120268), the user should be able to delete the CASA port 
+            // without seeing any more exception.
+            if (port != null) { 
+                // 4. Clean up casa wsdl
+                // Added invokeLater to fix a IllegalStateException from WSDL UI
+                // temporarily.
+                // To reproduce the problem:
+                // (1) Use SynchSample
+                // (2) Open CASA editor
+                // (3) Open casa wsdl (this is the key step)
+                // (4) Drop a WSDL port into CASA
+                // (5) Make a connection from the WSDL port to BPEL SU's endpoint
+                // (6) Delete the dropped WSDL port
+                //     => IllegalStateException: Referencing component not part of model
+                //
+                // If we delete the new connection first then delete the WSDL port,
+                // then everything is OK.
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        Binding binding = port.getBinding().get();
+                        Service service = (Service) port.getParent();
+                        Definitions definitions = (Definitions) service.getParent();                                     
+
+                        WSDLModel compAppWSDLModel = port.getModel();
+                        compAppWSDLModel.startTransaction();
+                        try {
+                            // Added null-checking to avoid exception when dealing
+                            // with corrupted WSDL model (for example, a port w/o
+                            // binding).
+                            if (service != null) {
+                                if (port != null ) {
+                                    service.removePort(port);
+                                }
+                                definitions.removeService(service);
                             }
-                            definitions.removeService(service);
+                            if (binding != null) {
+                                definitions.removeBinding(binding);
+                            }
+                        } finally {
+                            if (compAppWSDLModel.isIntransaction()) {
+                                compAppWSDLModel.endTransaction();
+                            }
                         }
-                        if (binding != null) {
-                            definitions.removeBinding(binding);
-                        }
-                    } finally {
-                        if (compAppWSDLModel.isIntransaction()) {
-                            compAppWSDLModel.endTransaction();
-                        }
+
+    //                    checkAndCleanUpDummyPortType(compAppWSDLModel);
                     }
-                    
-//                    checkAndCleanUpDummyPortType(compAppWSDLModel);
-                }
-            });
+                });
+            }
             
             // 5. Clear the cached WSDL component reference.
             cachedWSDLComponents.remove(linkHref);
@@ -2779,6 +2807,16 @@ public class CasaWrapperModel extends CasaModelImpl {
             return;
         }     
         Port port = getLinkedWSDLPort(casaPort);
+        
+        if (port == null) {
+            String msg = NbBundle.getMessage(this.getClass(),
+                    "MSG_CORRUPTED_MODEL_WITH_MISSING_WSDL_PORT", // NOI18N 
+                    casaPort.getLink().getHref());  
+            NotifyDescriptor d =
+                new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+            return;
+        }
         
         if (isDefinedInCompAppWSDL(casaPort)) {
             WSDLModel compAppWSDLModel = port.getModel();
