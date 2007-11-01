@@ -63,13 +63,22 @@ made subject to such option by the copyright holder.
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
+	<mkdir dir="build/external/modules/ext/"/>
+        <jar jarfile="build/external/modules/ext/${code.name.base.dashes}.jar" compress="false">
+            <fileset dir="build/libclasses">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </jar>
         <mkdir dir="${cluster}/modules/ext"/>
+	<copy todir="${cluster}/modules/ext/" file="build/external/modules/ext/${code.name.base.dashes}.jar"/>
+
+<!--
         <jar jarfile="${cluster}/modules/ext/${code.name.base.dashes}.jar" compress="false">
             <fileset dir="build/libclasses">
                 <exclude name="**/*.java"/>
             </fileset>
         </jar>
-
+-->
         <mkdir dir="build/antclasses"/>
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" target="1.5" debug="true" deprecation="true">
             <classpath>
