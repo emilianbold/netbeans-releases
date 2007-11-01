@@ -410,7 +410,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
         }
     }
 
-    private void generateDelegateMethods (FileObject targetFo, final EjbReference ref) throws IOException {
+    private void generateDelegateMethods (final FileObject targetFo, final EjbReference ref) throws IOException {
         final boolean[] onClassPath = new boolean[1];
         final String[] interfaceClass = new String[1];
 
@@ -455,7 +455,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsServiceCreator.class,"MSG_EJB_NOT_ON_CLASSPATH",interfaceClass[0]),
+                            new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsServiceCreator.class,"MSG_EJB_NOT_ON_CLASSPATH",interfaceClass[0], targetFo.getName()),
                             NotifyDescriptor.WARNING_MESSAGE));
                 }
             });
