@@ -42,13 +42,17 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 import java.io.IOException;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.openide.nodes.Node;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -108,32 +112,44 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
         // return new HelpCtx(PromoteBusinessMethodAction.class);
     }
     
-    protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
+    protected boolean enable(final org.openide.nodes.Node[] activatedNodes) {
         if (activatedNodes.length != 1) {
             return false;
         }
-        FileObject fileObject = activatedNodes[0].getLookup().lookup(FileObject.class);
+        final FileObject fileObject = activatedNodes[0].getLookup().lookup(FileObject.class);
         if (fileObject == null) {
             return false;
         }
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        String className = null;
+        if (javaSource == null) {
+            return false;
+        }
+        // The following code atomically checks that the scan is not running and posts a JavaSource task 
+        // which is expected to run synchronously. If the task does not run synchronously,
+        // then we cancel it and return false from this method.
+        final AtomicBoolean enabled = new AtomicBoolean(false);
         try {
-            if (javaSource == null) {
-                return false;
-            }
-            ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(activatedNodes[0]);
-            if (elementHandle != null) {
-                className = elementHandle.getQualifiedName();
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            Future<Void> future = javaSource.runWhenScanFinished(new Task<CompilationController>() {
+                public void run(CompilationController controller) throws Exception {
+                    String className = null;
+                    ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(activatedNodes[0]);
+                    if (elementHandle != null) {
+                        className = elementHandle.getQualifiedName();
+                    }
+                    EjbMethodController ejbMethodController = null;
+                    if (className != null) {
+                         ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
+                    }
+                    enabled.set(ejbMethodController != null);
+                }
+            }, true);
+            // Cancel the task if it has not run yet (it will run asynchronously at a later point in time
+            // which is too late for us -- we need the result now). If it has already run, the cancel() call is a no-op.
+            future.cancel(true);
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
         }
-        EjbMethodController ejbMethodController = null;
-        if (className != null) {
-             ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
-        }
-        return ejbMethodController != null;
+        return enabled.get();
     }
     
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
