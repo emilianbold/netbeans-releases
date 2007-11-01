@@ -141,6 +141,15 @@ final class ResultPanelOutput extends JScrollPane
         textPane.getCaret().setBlinkRate(0);
         setViewportView(textPane);
 
+        /*
+         * On GTK L&F, background of the text pane is gray, even though it is
+         * white on a JTextArea. The following is a hack to fix it:
+         */
+        Color background = UIManager.getColor("TextPane.background");   //NOI18N
+        if (background != null) {
+            textPane.setBackground(background);
+        }
+
         doc = textPane.getDocument();
 
         AccessibleContext accessibleContext = textPane.getAccessibleContext();
