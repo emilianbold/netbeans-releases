@@ -124,6 +124,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         platformButton.setVisible(false);
         platformCombo.setVisible(false);
         platformLabel.setVisible(false);
+        jCheckBoxBuildSubprojects.setVisible(false);
     }
     
     // Implementation of HelpCtx.Provider --------------------------------------
