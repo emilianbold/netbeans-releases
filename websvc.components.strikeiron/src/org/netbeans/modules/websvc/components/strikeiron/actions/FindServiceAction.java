@@ -41,15 +41,19 @@
 
 package org.netbeans.modules.websvc.components.strikeiron.actions;
 
+import java.awt.Dialog;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
 import org.netbeans.modules.websvc.components.ServiceData;
 import org.netbeans.modules.websvc.components.strikeiron.StrikeIronWebServiceManager;
-import org.netbeans.modules.websvc.components.strikeiron.ui.FindServicelDialog;
+import org.netbeans.modules.websvc.components.strikeiron.ui.FindServiceUI;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import org.netbeans.modules.websvc.manager.model.WebServiceGroup;
 import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -75,15 +79,29 @@ public class FindServiceAction extends NodeAction {
     }
 
     protected void performAction(Node[] activatedNodes) {
-        FindServicelDialog dialog = new FindServicelDialog();
+        JButton addButton = new JButton();
+        JButton closeButton = new JButton();
+        FindServiceUI panel = new FindServiceUI(addButton, closeButton);
+        closeButton.setDefaultCapable(false);
+        DialogDescriptor desc = new DialogDescriptor(
+                                    panel,
+                                    NbBundle.getMessage (FindServiceUI.class, "LBL_FindStrikeIronServices"),
+                                    true, 
+                                    new JButton[]{ panel.getAddButton(), panel.getCancelButton() },
+                                    null,
+                                    DialogDescriptor.DEFAULT_ALIGN,
+                                    null,
+                                    null /*final ActionListener bl*/);
+        desc.setOptions(new Object[0]);
+        Dialog dialog = DialogDisplayer.getDefault ().createDialog (desc);
         dialog.setVisible(true);
-        if (dialog.getReturnStatus() == FindServicelDialog.RET_OK) {
+        if (desc.getValue() == panel.getAddButton()) {
             WebServiceGroup group = WebServiceListModel.getInstance().getWebServiceGroup(StrikeIronWebServiceManager.getGroupId());
             if (group == null) {
-                Logger.global.log(Level.INFO, "Could not find 'Strike Iron Services' group"); //NOI18N
+                Logger.global.log(Level.INFO, "Could not find 'StrikeIron Services' group"); //NOI18N
                 return;
             }
-            Set<? extends ServiceData> services = dialog.getSelectedServices();
+            Set<? extends ServiceData> services = panel.getSelectedServices();
             for (ServiceData service : services) {
                 String url = service.getWsdlURL();
                 String name = service.getServiceName();

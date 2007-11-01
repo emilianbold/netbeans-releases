@@ -87,8 +87,8 @@ public class ServiceTableModel extends DefaultTableModel {
     private static final String DEFAULT_PASSWORD = "SearchSun.01";
     private static final String DEFAULT_URL = "http://ws.strikeiron.com/Searchsunsi01.StrikeIron/MarketplaceSearch?WSDL";
     
-    static final int COLUMN_WS_NAME = 0;
-    static final int COLUMN_SELECT = 1;
+    static final int COLUMN_WS_NAME = 1;
+    static final int COLUMN_SELECT = 0;
     
     private String wsdlLocation;
     private String userId = "Sun_Search@strikeiron.com";

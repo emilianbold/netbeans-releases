@@ -41,18 +41,22 @@
 
 package org.netbeans.modules.websvc.components.strikeiron.ui;
 
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JViewport;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
@@ -73,9 +77,13 @@ public class ServiceDetailPanel extends JTextPane {
     private ServiceData currentData;
 
     public ServiceDetailPanel() {
-        initHtmlKit();
         header = new HeaderPanel();
         title = header.getTitle();
+        Border outsideBorder = BorderFactory.createMatteBorder(0, 0, 1, 0, Color.gray);        
+        Border insideBorder = BorderFactory.createEmptyBorder(3, 3, 3, 3);
+        CompoundBorder compoundBorder = BorderFactory.createCompoundBorder(outsideBorder, insideBorder);
+        header.setBorder(compoundBorder);
+        initHtmlKit();
         tfPackageName = header.getPackageNameTF();
         tfPackageName.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -169,7 +177,7 @@ public class ServiceDetailPanel extends JTextPane {
     
     public void setTitle(String value) {
         if (value != null) {                            
-            title.setText("<html><h3>"+value+"</h3></html>");
+            title.setText("<html><h3>"+value+"</h3></html>");//NOI18N
         }
     }
 
