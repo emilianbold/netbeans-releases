@@ -239,15 +239,43 @@ public class PanelProjectLocationVisual extends SettingsPanel
     }//GEN-LAST:event_browseLocationAction
     
     
+    @Override
     public void addNotify() {
         super.addNotify();
         //same problem as in 31086, initial focus on Cancel button
         projectNameTextField.requestFocus();
     }
     
+    private boolean isValidProjectName(String text) {
+        // unix allows a lot of strange names, but let's prohibit this for project
+        // using symbols invalid on Windows
+        if (text.length() == 0 || text.startsWith(" ") ||
+                text.contains("\\") ||
+                text.contains("/") || 
+                text.contains(":") ||
+                text.contains("*") ||
+                text.contains("?") ||
+                text.contains("\"") ||
+                text.contains("<") ||
+                text.contains(">") ||
+                text.contains("|")) {
+            return false;
+        }
+        // check ability to create file with specified name on target OS
+        boolean ok = false;
+        try {
+            File file = File.createTempFile(text+"dummy", "");// NOI18N
+            ok = true;
+            file.delete();
+        } catch (Exception ex) {
+            // failed to create
+        }
+        return ok;
+    }
+    
     boolean valid( WizardDescriptor wizardDescriptor ) {
         
-        if ( projectNameTextField.getText().length() == 0 ) {
+        if ( !isValidProjectName(projectNameTextField.getText()) ) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
                     NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_IllegalProjectName")); // NOI18N
             return false; // Display name not specified
@@ -315,12 +343,12 @@ public class PanelProjectLocationVisual extends SettingsPanel
     
     void store( WizardDescriptor d ) {
         
-        String name = projectNameTextField.getText().trim();
+        String projectName = projectNameTextField.getText().trim();
         String location = projectLocationTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
         
         d.putProperty( /*XXX Define somewhere */ "projdir", new File(folder)); // NOI18N
-        d.putProperty( /*XXX Define somewhere */ "name", name); // NOI18N
+        d.putProperty( /*XXX Define somewhere */ "name", projectName); // NOI18N
         d.putProperty( /*XXX Define somewhere */ "makefilename", makefileTextField.getText()); // NOI18N
         File projectsDir = new File(this.projectLocationTextField.getText());
         if (projectsDir.isDirectory()) {
@@ -378,9 +406,9 @@ public class PanelProjectLocationVisual extends SettingsPanel
     }
     
     private String validFreeProjectName(final File parentFolder, final String formater, final int index) {
-        String name = MessageFormat.format(formater, new Object[]{new Integer(index)});
-        File file = new File(parentFolder, name);
-        return file.exists() ? null : name;
+        String projectName = MessageFormat.format(formater, new Object[]{new Integer(index)});
+        File file = new File(parentFolder, projectName);
+        return file.exists() ? null : projectName;
     }
     
     // Implementation of DocumentListener --------------------------------------
@@ -437,8 +465,8 @@ public class PanelProjectLocationVisual extends SettingsPanel
         Document doc = e.getDocument();
         
         if ( doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument() ) {
-            String projectName = projectNameTextField.getText();
-            String projectFolder = projectLocationTextField.getText();
+            String projectName = projectNameTextField.getText().trim();
+            String projectFolder = projectLocationTextField.getText().trim();
             createdFolderTextField.setText( projectFolder + File.separatorChar + projectName );
             
             if (!makefileNameChanged) {
