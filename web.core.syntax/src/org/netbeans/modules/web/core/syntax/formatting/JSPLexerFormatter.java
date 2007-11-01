@@ -57,12 +57,9 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.editor.ext.java.JavaFormatter;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter;
-import org.netbeans.modules.web.core.syntax.formatting.JspJavaFormatter;
 import org.netbeans.modules.editor.indent.spi.Context;
 import static org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter.JoinedTokenSequence;
 
