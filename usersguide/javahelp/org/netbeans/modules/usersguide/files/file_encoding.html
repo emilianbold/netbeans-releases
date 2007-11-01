@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>About File Encodings</title>
+	<link href="../ide.css" rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+        <h2>About File Encodings</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+
+
+jsp, html and xml files and charset/encoding values  and how these interact with project encoding 
+
+What is the file object feq ?
+
+    * This is different for different file objects. Basically, there are some files, where the encoding is a part of the file, then the encoding should be obtained from the file through file object feq. If such encoding doesn't exist (in the file) the project encoding is used.
+    * The FEQ is layer model which seems like this (priority is from top to down)
+
+          o file feq
+
+          o project feq (the value of the current global project encoding in a session)
+
+          o fallback feq - the encoding of the locale the user who is running netbeans is in
+
+    * When clients asks the FEQ for encoding of some file it goes from top to the bottom and asks the individual feq implementations.
+          o First it asks the file feq, when the file is XML, HTML, JSP it looks inside the file and returns a content of encoding attribute if available otherwise it returns null.
+
+When the file feq returned not null the FEQ returns the value to client otherwise it goes to the second step.
+
+          o The second step it asks project feq implementation, when the file is inside some project which provides feq implementation the encoding of the project is returned to the client.
+
+          o Finally if neither file feq nor project feq don't know anything about the file the fallback feq which returns the OS file encoding is used.
+
+newly created jsp/html/ most xml files:
+
+    * will have the encoding and/or meta  charset tag be that of the global project encoding, or if there is no global project encoding set (in the case of a project that does not implement feq) - the encoding of the locale user is in will be used.
+
+    *   (if no project has been created yet, the global project encoding starts off as utf-8)
+
+ **** Does this mean that global project encoding does not exist in projects that don't implement feq?
+
+    *    if user changes project encoding, the next newly created jsp/html/xml  file will  use that encoding as value of its charset or encoding tags.
+
+    *    but in this case, the charset/encoding tag of an already created  jsp/html/xml files in that project will still be used
+
+              (unless and until user would actually change the file encoding/charset > tags in a given file.)
+
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../proj_stand_about.html">About Standard Projects</a></dd>
+            <dd><a href="../proj_free_about.html">About Free-Form Projects</a></dd>
+        </dl>
+        
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+        
+        <table border="0" cellpadding="50"><tr><td>&nbsp;</td></tr></table>
+        
+    </body>
+</html>
+

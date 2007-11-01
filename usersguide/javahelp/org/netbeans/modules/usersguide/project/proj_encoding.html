@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>About Project Encodings</title>
+	<link href="../ide.css" rel="stylesheet" type="text/css">
+    </head>
+    
+    <body>
+        <h2>About Project Encodings</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>By default, projects in the IDE are created using UTF-8 encoding. If you
+            want to change encoding properties, the IDE provides you with the ability 
+            to do so manually.</p>
+            
+        <p>If you want to change the encoding for a project, see: 
+            <a href="../files/encoding.html">Setting Character Encoding</a></p>
+            
+        <h3>Opening Older Projects</h3>
+        
+        <p>If you open a project created in a previous version of the IDE</p>
+
+        <h4>Notes:</h4>
+        
+        <ul class="note">
+            <li>When you change the encoding for a project, the following occurs:
+            
+                <ul>
+                    <li>All new files are created using the new project encoding.</li>
+                    <li>All subsequent projects are created using the new encoding.</li>
+                </ul></li>
+            <li>The project encoding property value persists beyond the project that
+                it applies to. This means that if you change the encoding for a 
+                project, the new encoding value will become the default value for
+                future created projects.</li>
+            <li>If you change the project encoding property on a project that already 
+                contains files that were created using a specific character encoding, 
+                there is a risk that compiling and running the project may not succeed. 
+                This is due to the fact that the programming compiler needs to be 
+                passed an encoding value, and there can only be one such value.  
+                Neither the IDE nor the programming language performs automatic encoding 
+                detection of files.</li>
+        </ul>    
+        
+        
+
+
+  
+        
+        
+when new project supporting the FEQ is created. The fall back encoding is an encoding 
+used by the IDE when no one provides encoding for the file (project doesn't implement 
+the FEQ), the fall back encoding is Charset.defaultCharset() which is the system encoding. 
+The project which don't implement FEQ will work in the same way as in the NB 5.x.
+
+New for NetBeans 6 is a project encoding property and a global project encoding 
+value that is used for newly created projects.
+
+This could apply to projects whose encoding property is not changed, but if files like 
+jsp, xml and html files encoding tags are changed, since besides the encoding value 
+used for runtime, the encoding tag affects how file is viewed internally during designtime, 
+like in editor, debugger, etc.
+
+A new project uses the ide's current view of what the project encoding should be  for 
+setting the value of this new project's  project encoding property, which is the encoding 
+used for reading and writing and creating all files and data in that project.
+
+This ide view of the project encoding value, which is what is used for new projects that 
+will be created during this session comes from the encoding of the last project created 
+before this new one, or from the new encoding of an existing project where the user changed 
+its project encoding - whichever of these actions were more recent (before a new project 
+was created).
+
+When one changes project encoding, all subsequently created new projects that have 
+implemented feq use that changed encoding; projects that have not implemented it, or 
+projects from previous nb in which there was not concept of feq, will use the encoding 
+of the locale in which user was in when started n
+
+the ide does not know how to do automatic encoding detection; for files like jsp/html/xml 
+that have encoding or charset values, it uses those values as the file encoding but does 
+not autodetect actual file encoding
+
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../proj_stand_about.html">About Standard Projects</a></dd>
+            <dd><a href="../proj_free_about.html">About Free-Form Projects</a></dd>
+        </dl>
+        
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+        
+        <table border="0" cellpadding="50"><tr><td>&nbsp;</td></tr></table>
+        
+    </body>
+</html>
