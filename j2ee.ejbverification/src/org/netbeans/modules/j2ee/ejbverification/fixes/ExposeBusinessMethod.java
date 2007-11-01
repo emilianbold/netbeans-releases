@@ -103,7 +103,7 @@ public class ExposeBusinessMethod implements Fix {
         ClasspathInfo cpInfo = ClasspathInfo.create(fileObject);
         FileObject targetFileObject = SourceUtils.getFile(targetClassHandle, cpInfo);
 
-        JavaSource javaSource = JavaSource.forFileObject(targetFileObject);
+        JavaSource javaSource = JavaSource.create(cpInfo, fileObject, targetFileObject);
 
         try {
             javaSource.runModificationTask(task).commit();
