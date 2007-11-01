@@ -62,6 +62,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupListener;
 
@@ -81,7 +82,8 @@ public class PaletteKit implements Runnable, LookupListener {
     private DataFolder rootFolder;
     private FileSystem fs;
     private final Object validationSynch = new Object();
-    Result<PaletteProvider> lookupResult;
+    private Result<PaletteProvider> lookupResult;
+    private final AtomicBoolean requiresPaletteInit = new AtomicBoolean(false);
 
     public PaletteKit(final String projectType) {
         this.fs = Repository.getDefault().getDefaultFileSystem();
@@ -188,6 +190,10 @@ public class PaletteKit implements Runnable, LookupListener {
             return;
         }
 
+        if (requiresPaletteInit.getAndSet(true)) {
+            return;
+        }
+
         final String projectID = activeDocument.get().getDocumentInterface().getProjectID();
         final String projectType = activeDocument.get().getDocumentInterface().getProjectType();
 
@@ -195,13 +201,15 @@ public class PaletteKit implements Runnable, LookupListener {
         registry.readAccess(new Runnable() {
 
             public void run() {
-                Collection<? extends PaletteProvider> providers = lookupResult.allInstances();
-                for (PaletteProvider provider : providers) {
-                    if (provider != null) {
-                        provider.initPaletteCategories(projectType);
+                while (requiresPaletteInit.getAndSet(false)) {
+                    Collection<? extends PaletteProvider> providers = lookupResult.allInstances();
+                    for (PaletteProvider provider : providers) {
+                        if (provider != null) {
+                            provider.initPaletteCategories(projectType);
+                        }
                     }
+                    initCore(registry.getComponentProducers());
                 }
-                initCore(registry.getComponentProducers());
             }
         });
     }

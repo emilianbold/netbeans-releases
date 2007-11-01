@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.palette;
 
 import org.netbeans.api.java.classpath.ClassPath;
@@ -70,18 +69,15 @@ import org.openide.util.RequestProcessor;
 public final class PaletteMap implements ActiveDocumentSupport.Listener, DescriptorRegistryListener, PropertyChangeListener {
 
     private static final PaletteMap instance = new PaletteMap();
-
     private final WeakHashMap<String, WeakReference<PaletteKit>> kitMap = new WeakHashMap<String, WeakReference<PaletteKit>>();
     private String activeProjectID;
-
     private DescriptorRegistry registeredRegistry;
     private final AtomicBoolean requiresPaletteUpdate = new AtomicBoolean(false);
-
     private final Set<String> registeredProjects = new HashSet<String>();
+    private static RequestProcessor updateRP = new RequestProcessor("Update paletteKit"); // NOI18N
 
     private PaletteMap() {
         ActiveDocumentSupport.getDefault().addActiveDocumentListener(this);
-        //activeDocumentChanged(null, ActiveDocumentSupport.getDefault().getActiveDocument());
     }
 
     public static PaletteMap getInstance() {
@@ -178,15 +174,7 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, Descrip
         }
     }
 
-    private void checkNeedUpdate(final FileEvent fe) {
-        final FileObject root = getOwningRoot(fe.getFile());
-        if (root != null) {
-            schedulePaletteUpdate();
-        }
-    }
-
     private void checkNeedUpdate(final PropertyChangeEvent evt) {
-        // TODO add conditions for checking CP
         schedulePaletteUpdate();
     }
 
@@ -201,19 +189,21 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, Descrip
             return;
         }
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        class UpdateTask implements Runnable, Task<CompilationController> {
+
             public void run() {
                 try {
-                    JavaSource.create(info).runWhenScanFinished(new Task<CompilationController>() {
-                        public void run(CompilationController controller) throws Exception {
-                            kit.init();
-                        }
-                    }, true);
+                    JavaSource.create(info).runWhenScanFinished(this, true);
                 } catch (IOException ex) {
                     Debug.warning(ex);
                 }
             }
-        });
+
+            public void run(CompilationController controller) throws Exception {
+                kit.init();
+            }
+        }
+        updateRP.post(new UpdateTask());
     }
 
     private void registerClassPathListener(DesignDocument document) {
@@ -255,28 +245,6 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, Descrip
         return sourceGroups[0];
     }
 
-    /**
-     * Inspired by RepositoryUpdater.getOwningRoot
-     */
-    private FileObject getOwningRoot(final FileObject fo) {
-        if (fo == null || activeProjectID == null) {
-            return null;
-        }
-        List<SourceGroup> sourceGroups = ProjectUtils.getSourceGroups(activeProjectID);
-        if (sourceGroups == null) {
-            return null;
-        }
-
-        FileObject rootFolder;
-        for (SourceGroup sg : sourceGroups) {
-            rootFolder = sg.getRootFolder();
-            if (rootFolder != null && FileUtil.isParentOf(rootFolder, fo)) {
-                return rootFolder;
-            }
-        }
-        return null;
-    }
-
     private void schedulePaletteUpdate() {
         if (requiresPaletteUpdate.getAndSet(true)) {
             return;
@@ -284,20 +252,20 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, Descrip
 
         SwingUtilities.invokeLater(new Runnable() {
 
-            public void run() {
-                while (requiresPaletteUpdate.getAndSet(false)) {
-                    for (WeakReference<PaletteKit> kitReference : kitMap.values()) {
-                        PaletteKit kit = kitReference.get();
-                        if (kit == null) {
-                            continue;
+                    public void run() {
+                        while (requiresPaletteUpdate.getAndSet(false)) {
+                            for (WeakReference<PaletteKit> kitReference : kitMap.values()) {
+                                PaletteKit kit = kitReference.get();
+                                if (kit == null) {
+                                    continue;
+                                }
+                                kit.clearNodesStateCache();
+                                // HINT refresh only visible palette
+                                kit.refreshPaletteController();
+                            }
                         }
-                        kit.clearNodesStateCache();
-                        // HINT refresh only visible palette
-                        kit.refreshPaletteController();
                     }
-                }
-            }
-        });
+                });
     }
 
     private final class ListenerCancellableTask implements Task<CompilationController> {
