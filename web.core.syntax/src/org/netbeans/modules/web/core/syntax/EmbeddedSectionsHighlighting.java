@@ -223,10 +223,11 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
                                     {
                                         sectionEnd = lastLineEndOffset;
                                     }
-                                    attributeSet = javascripletBackground;
-                                    
-                                    return true;
                                 }
+                                
+                                attributeSet = javascripletBackground;
+                                return true;
+                                
                             } catch (BadLocationException ble) {
                                 LOG.log(Level.WARNING, null, ble);
                             }
