@@ -131,7 +131,7 @@ public class PlatformCatalogAutoInstaller implements Runnable, FileChangeListene
             success = ExecutionEngine.getDefault().execute(inst.getName(), new Runnable() {
                 public void run() {
                     try {
-                        final Process p = Runtime.getRuntime().exec(inst.getAbsolutePath());
+                        final Process p = Runtime.getRuntime().exec(new String[] {inst.getAbsolutePath()});
                         RequestProcessor.getDefault().post(new StreamPumper(io.getIn(), new OutputStreamWriter(p.getOutputStream())));
                         RequestProcessor.getDefault().post(new StreamPumper(new InputStreamReader(p.getInputStream()), io.getOut()));
                         RequestProcessor.getDefault().post(new StreamPumper(new InputStreamReader(p.getErrorStream()), io.getErr()));
