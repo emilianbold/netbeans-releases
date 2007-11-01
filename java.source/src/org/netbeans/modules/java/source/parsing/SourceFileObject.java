@@ -105,7 +105,7 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
         this.filter = filter;
         String ext = this.file.getExt();        
         this.kind = FileObjects.getKind(ext);        
-        if (renderNow && this.kind == Kind.SOURCE) {
+        if (renderNow && this.kind != Kind.CLASS) {
             getCharContentImpl(true);
         }
     }
