@@ -73,7 +73,9 @@ public class GenericTypeSerializer implements JavonSerializer {
         if( type.getKind() == TypeKind.DECLARED ) {
             TypeElement clazz = (TypeElement)((DeclaredType) type).asElement();
             String classFQN = clazz.getQualifiedName().toString();
-            if( "java.util.List".equals( classFQN ) || "java.util.Vector".equals( classFQN )) {
+            if( "java.util.List".equals( classFQN ) || "java.util.Vector".equals( classFQN ) || 
+                    "java.util.Stack".equals( classFQN )) 
+            {
                 List<? extends TypeMirror> typeParams = ((DeclaredType) type).getTypeArguments();
                 if( typeParams.size() == 0 ) return false; // Only parametrized lists are supported
                 if( typeParams.size() != 1 ) return false; // Only one parameter is supported
@@ -140,6 +142,20 @@ public class GenericTypeSerializer implements JavonSerializer {
                     traversable.registerType( ccd );
                 }
                 return cd;
+            } else if( "java.util.Stack".equals( classFQN )) {
+                ClassData cd = new ClassData( "java.util", "Stack", false, false, this );
+                List<? extends TypeMirror> typeParams = ((DeclaredType) type).getTypeArguments();                
+                List<ClassData> typeParameters = new ArrayList<ClassData>();
+                for( TypeMirror typeParam : typeParams ) {
+                    ClassData cdp = traversable.traverseType( typeParam, typeCache );
+                    if( cdp == null ) return null;
+                    typeParameters.add( cdp );
+                }
+                cd.setParameterTypes( typeParameters );                
+                for( ClassData ccd : typeParameters ) {
+                    traversable.registerType( ccd );
+                }
+                return cd;
             } else if( "java.util.Hashtable".equals( classFQN )) {
                 ClassData cd = new ClassData( "java.util", "Hashtable", false, false, this );
                 List<? extends TypeMirror> typeParams = ((DeclaredType) type).getTypeArguments();                
@@ -171,6 +187,12 @@ public class GenericTypeSerializer implements JavonSerializer {
                 return type.getName() + "<" + parameterType.getSerializer().instanceOf( mapping, parameterType ) + ">";
             }
         } else if( "java.util.Vector".equals( typeFQN )) {
+            if( JavonMapping.CLIENT.equals( mapping.getProperty( JavonMapping.TARGET ))) {
+                return type.getName();
+            } else {
+                return type.getName() + "<" + parameterType.getSerializer().instanceOf( mapping, parameterType ) + ">";
+            }
+        } else if( "java.util.Stack".equals( typeFQN )) {
             if( JavonMapping.CLIENT.equals( mapping.getProperty( JavonMapping.TARGET ))) {
                 return type.getName();
             } else {
@@ -225,6 +247,27 @@ public class GenericTypeSerializer implements JavonSerializer {
             if( JavonMapping.CLIENT.equals( mapping.getProperty( JavonMapping.TARGET ))) {
                 String serializationCode = "";
                 serializationCode += "java.util.Vector g_" + id + " = (java.util.Vector) o;\n";
+                serializationCode += "out.writeInt( g_" + id + ".size());\n";
+                serializationCode += "for( int i = 0; i < g_" + id + ".size(); i++ ) {\n";
+                serializationCode += "writeObject( out, g_" + id + ".elementAt( i ), " + 
+                        mapping.getRegistry().getRegisteredTypeId( parameterType ) + " );\n";
+                serializationCode += "}";
+                return serializationCode;
+            } else {                
+                String serializationCode = "";
+                serializationCode += "@SuppressWarnings( \"unchecked\" )\n";
+                serializationCode +=  genericsType + " g_" + id + " = (" + genericsType + ") o;\n";
+                serializationCode += "output.writeInt( g_" + id + ".size());\n";
+                serializationCode += "for( " + parameterType.getSerializer().instanceOf( mapping, parameterType ) + 
+                        " g : g_" + id + " ) {\n";
+                serializationCode += "writeObject( output, g, " + mapping.getRegistry().getRegisteredTypeId( parameterType ) + " );\n";
+                serializationCode += "}";
+                return serializationCode;
+            }
+        } else if( "java.util.Stack".equals( classFQN )) {
+            if( JavonMapping.CLIENT.equals( mapping.getProperty( JavonMapping.TARGET ))) {
+                String serializationCode = "";
+                serializationCode += "java.util.Stack g_" + id + " = (java.util.Stack) o;\n";
                 serializationCode += "out.writeInt( g_" + id + ".size());\n";
                 serializationCode += "for( int i = 0; i < g_" + id + ".size(); i++ ) {\n";
                 serializationCode += "writeObject( out, g_" + id + ".elementAt( i ), " + 
@@ -301,6 +344,27 @@ public class GenericTypeSerializer implements JavonSerializer {
                 return serializationCode;
             }
         } else if( "java.util.Vector".equals( classFQN )) {
+            if( JavonMapping.CLIENT.equals( mapping.getProperty( JavonMapping.TARGET ))) {
+                String serializationCode = "";
+                serializationCode += "int g_" + id + "_length = in.readInt();\n";
+                serializationCode += genericsType + " g_" + id + "_result = new " + genericsType + "();\n";
+                serializationCode += "for( int i = 0; i < g_" + id + "_length; i++ ) {\n";
+                serializationCode += "g_" + id + "_result.addElement((" +
+                        parameterType.getSerializer().instanceOf( mapping, parameterType ) + ") readObject( in ));\n";
+                serializationCode += "}\n";
+                serializationCode += "result = g_" + id + "_result;";
+                return serializationCode;
+            } else {
+                String serializationCode = "";
+                serializationCode += "int g_" + id + "_length = in.readInt();\n";
+                serializationCode += genericsType + " g_" + id + "_result = new " + genericsType + "();\n";
+                serializationCode += "for( int i = 0; i < g_" + id + "_length; i++ ) {\n";
+                serializationCode += "g_" + id + "_result.addElement((" + parameterType.getSerializer().instanceOf( mapping, parameterType ) + ") readObject( in ));\n";
+                serializationCode += "}\n";
+                serializationCode += "result = g_" + id + "_result;";
+                return serializationCode;
+            }
+        } else if( "java.util.Stack".equals( classFQN )) {
             if( JavonMapping.CLIENT.equals( mapping.getProperty( JavonMapping.TARGET ))) {
                 String serializationCode = "";
                 serializationCode += "int g_" + id + "_length = in.readInt();\n";
