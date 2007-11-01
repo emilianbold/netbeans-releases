@@ -659,7 +659,10 @@ public final class UIUtil {
         if (baseIcon != null) {
             base = Utilities.icon2Image(baseIcon);
         } else {
-            base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263
+            Icon icon = (Icon) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263
+            if (icon != null) {
+                base = Utilities.icon2Image(icon);
+            }
             if (base == null) { // fallback to our owns
                 base = Utilities.loadImage(opened ? OPENED_ICON_PATH : ICON_PATH, true);
             }
