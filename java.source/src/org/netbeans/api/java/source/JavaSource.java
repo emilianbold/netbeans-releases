@@ -761,6 +761,9 @@ public final class JavaSource {
                                     sync.taskFinished();
                                 }
                             }
+                            else {
+                                return sync;
+                            }
                         } finally {
                             javacLock.unlock();
                         }
