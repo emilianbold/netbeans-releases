@@ -70,9 +70,6 @@
 
     <folder name="Keymaps">
         <folder name="NetBeans">
-            <file name="D-P.shadow"> <!-- Ctrl+P -->
-                <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PrintAction.instance"/>
-            </file>
             <file name="DOS-P.shadow"> <!-- Ctrl+Alt+Shift+P -->
                 <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PrintAction.instance"/>
             </file>
@@ -80,7 +77,7 @@
     </folder>
 
     <folder name="Shortcuts">
-        <file name="D-P.shadow"> <!-- Ctrl+P -->
+        <file name="DOS-P.shadow"> <!-- Ctrl+Alt+Shift+P -->
             <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PrintAction.instance"/>
         </file>
     </folder>
