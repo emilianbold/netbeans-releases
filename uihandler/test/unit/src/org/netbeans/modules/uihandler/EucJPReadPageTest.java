@@ -48,6 +48,7 @@ import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
@@ -152,6 +153,27 @@ public class EucJPReadPageTest extends NbTestCase {
             }
         }
         fail(sb.toString());
+    }
+    
+    public void testNoEucFile() throws Exception {
+        doNoEucInTheFile("index_ja.html");
+    }
+    public void testNoEucErrorFile() throws Exception {
+        doNoEucInTheFile("error_ja.html");
+    }
+    private void doNoEucInTheFile(String f) throws Exception {
+        String jaText = "\u30b3\u30de\u30f3\u30c9";
+        
+        InputStream is = getClass().getResourceAsStream(f);
+        assertNotNull("index_ja found", is);
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        Installer.copyWithEncoding(is, os);
+        
+        assertEquals("No euc:\n" + os, -1, os.toString().toLowerCase().indexOf("euc-jp"));
+        if (os.toString().indexOf("UTF-8") == -1) {
+            fail("utf-8 should be there:\n" + os);
+        }
     }
     
     public static final class DD extends DialogDisplayer {

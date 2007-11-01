@@ -64,7 +64,6 @@ import java.net.NoRouteToHostException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
-import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -131,6 +130,8 @@ import org.xml.sax.SAXException;
  * Registers and unregisters loggers.
  */
 public class Installer extends ModuleInstall implements Runnable {
+    static final long serialVersionUID = 1L;
+    
     /**
      *
      */
@@ -415,7 +416,9 @@ public class Installer extends ModuleInstall implements Runnable {
                 t = previous.getThrown();// ignore info messages
             }
             // find first exception from end
-            if (t != null) return t;
+            if (t != null) {
+                return t;
+            }
         }
         return null;// no throwable found
     }
@@ -681,6 +684,41 @@ public class Installer extends ModuleInstall implements Runnable {
             url = u;
         }
     }
+
+    static void copyWithEncoding(InputStream inputStream, OutputStream os) throws IOException {
+        byte[] arr = new byte[4096];
+
+        String text = null;
+        String enc = "utf-8";
+        for (;;) {
+            int len = inputStream.read(arr);
+            if (len == -1) {
+                break;
+            }
+            boolean first = text == null;
+            text = new String(arr, 0, len, enc);
+            if (first) {
+                Matcher m = ENCODING.matcher(text);
+                if (m.find()) {
+                    enc = m.group(1);
+                    text = new String(arr, 0, len, enc);
+                    OUTER: for (;;) {
+                        Matcher replace = ENCODING.matcher(text);
+                        do {
+                            if (!replace.find()) {
+                                break OUTER;
+                            }
+                        } while ("UTF-8".equals(replace.group(1)));
+                        text = text.substring(0, replace.start(1)) + "UTF-8" + text.substring(replace.end(1));
+                    }
+                    LOG.fine("Downloaded with encoding '" + enc + "':\n" + text);
+                } else {
+                    LOG.log(Level.FINE, "Downloaded with utf-8:\n{0}", text);
+                }
+            }
+            os.write(text.getBytes("UTF-8"));
+        }
+    }
     
     private static abstract class Submit implements ActionListener, Runnable {
         private AtomicBoolean isSubmiting;// #114505 , report is sent two times
@@ -698,8 +736,11 @@ public class Installer extends ModuleInstall implements Runnable {
         public Submit(String msg) {
             this.msg = msg;
             isSubmiting = new AtomicBoolean(false);
-            if ("ERROR_URL".equals(msg)) report = true; // NOI18N
-            else report = false;
+            if ("ERROR_URL".equals(msg)) { // NOI18N
+                report = true; 
+            } else {
+                report = false;
+            }
         }
         
         protected abstract void createDialog();
@@ -811,32 +852,6 @@ public class Installer extends ModuleInstall implements Runnable {
                 break;
             }
             LOG.log(Level.FINE, "doShow, dialogCreated, exiting");
-        }
-
-        private void copyWithEncoding(InputStream inputStream, FileOutputStream os) throws IOException {
-            byte[] arr = new byte[4096];
-            
-            String text = null;
-            String enc = "utf-8";
-            for (;;) {
-                int len = inputStream.read(arr);
-                if (len == -1) {
-                    break;
-                }
-                boolean first = text == null;
-                text = new String(arr, 0, len, enc);
-                if (first) {
-                    Matcher m = ENCODING.matcher(text);
-                    if (m.find()) {
-                        enc = m.group(1);
-                        text = new String(arr, 0, len, enc);
-                        LOG.fine("Downloaded with encoding '" + enc + "':\n" + msg);
-                    } else {
-                        LOG.log(Level.FINE, "Downloaded with utf-8:\n{0}", text);
-                    }
-                }
-                os.write(text.getBytes("UTF-8"));
-            }
         }
         
         private synchronized final void doCloseDialog() {
@@ -1271,7 +1286,9 @@ public class Installer extends ModuleInstall implements Runnable {
                 Object obj = dd.getOptions()[0];
                 AbstractButton abut = null;
                 String rptr = null;
-                if (obj instanceof AbstractButton ) abut = (AbstractButton)obj;
+                if (obj instanceof AbstractButton ) {
+                    abut = (AbstractButton) obj;
+                }
                 if (abut != null) {
                     rptr = (String) abut.getClientProperty("alt");
                 }
