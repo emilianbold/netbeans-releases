@@ -55,6 +55,7 @@ import java.beans.PropertyChangeListener;
 
 import java.io.File;
 import java.util.*;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
@@ -80,6 +81,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -151,7 +153,23 @@ public class ModelSupport implements PropertyChangeListener {
         } else {
             if (TRACE_STARTUP) System.out.println("Model support: Postpone open projects"); // NOI18N
             postponeParse = true;
-            TopComponent.getRegistry().addPropertyChangeListener(this);
+            WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+                public void run() {
+                    if (TRACE_STARTUP) System.out.println("Model support: invoked after ready UI"); // NOI18N
+                    postponeParse = false;
+                    Runnable task = new Runnable() {
+                        public void run() {
+                            OpenProjects.getDefault().addPropertyChangeListener(ModelSupport.this);
+                            openProjects();
+                        }
+                    };
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        RequestProcessor.getDefault().post(task);
+                    } else {
+                        task.run();
+                    }
+                }
+            });
         }
     }
     
@@ -161,17 +179,8 @@ public class ModelSupport implements PropertyChangeListener {
             if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
                 if(!postponeParse) {
                     if (TRACE_STARTUP) System.out.println("Model support: Open projects on OpenProjects.PROPERTY_OPEN_PROJECTS"); // NOI18N
-                    openProjects();
-                }
-            } else if (evt.getPropertyName().equals(TopComponent.Registry.PROP_ACTIVATED)){
-                if (postponeParse){
-                    if (TRACE_STARTUP) System.out.println("Model support: Open projects on TopComponent.Registry.PROP_ACTIVATED"); // NOI18N
-                    postponeParse = false;
-                    TopComponent.getRegistry().removePropertyChangeListener(this);
-		    // TODO: use enqueueModelTask instead
                     RequestProcessor.getDefault().post(new Runnable(){
                         public void run() {
-                            OpenProjects.getDefault().addPropertyChangeListener(ModelSupport.this);
                             openProjects();
                         }
                     });
