@@ -202,6 +202,9 @@ class TabsComponent extends JPanel {
         if (b != null) {
            button.setBorder(b);
         }
+        if( "Windows".equals( UIManager.getLookAndFeel().getID() ) && !isXPTheme() ) { //NOI18N
+            button.setBorderPainted(false);
+        }
           
         if (buttonMouseListener == null) {
             buttonMouseListener = new ButtonMouseListener();
