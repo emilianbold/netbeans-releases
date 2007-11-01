@@ -270,7 +270,7 @@ public final class LibraryManager {
         return (LibProjectImpl)entry.getLibrary().getObject();
     }
     
-    private LibraryEntry getOrCreateLibrary(ModelImpl model, String includeFolder) {
+    private LibraryEntry getOrCreateLibrary(final ModelImpl model, final String includeFolder) {
         assert TraceFlags.USE_REPOSITORY;
         LibraryEntry entry = librariesEntries.get(includeFolder);
         if (entry == null) {
@@ -284,7 +284,12 @@ public final class LibraryManager {
                 }
             }
             if (needFire){
-                model.fireProjectOpened((ProjectBase)entry.getLibrary().getObject());
+                final LibraryEntry passEntry = entry;
+                CsmModelAccessor.getModel().enqueue(new Runnable() {
+                    public void run() {
+                        model.fireProjectOpened((ProjectBase)passEntry.getLibrary().getObject());
+                    }
+                }, "postponed library opened " + includeFolder); // NOI18N
             }
         }
         return entry;
