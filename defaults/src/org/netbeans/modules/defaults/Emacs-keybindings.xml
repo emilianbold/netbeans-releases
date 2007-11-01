@@ -79,7 +79,8 @@ made subject to such option by the copyright holder.
     <bind actionName="completion-show" key="C-SPACE"/>
     <bind actionName="completion-show" key="C-BACK_SLASH"/>
     <bind actionName="copy-to-clipboard" key="COPY"/>
-    <bind actionName="copy-to-clipboard" key="O-W"/>    
+    <bind actionName="copy-to-clipboard" key="O-W"/>
+    <bind actionName="copy-to-clipboard" key="C-INSERT"/>
     <bind actionName="cut-to-clipboard" key="CUT"/>
     <bind actionName="cut-to-clipboard" key="C-W"/>    
     <bind actionName="cut-to-line-begin" key="O-0$C-K"/>
@@ -117,7 +118,8 @@ made subject to such option by the copyright holder.
     <bind actionName="page-up" key="O-V"/>
     <bind actionName="page-up" key="PAGE_UP"/>
     <bind actionName="paste-from-clipboard" key="PASTE"/>
-    <bind actionName="paste-from-clipboard" key="C-Y"/>    
+    <bind actionName="paste-from-clipboard" key="C-Y"/>
+    <bind actionName="paste-from-clipboard" key="S-INSERT"/>
     <bind actionName="remove-tab" key="S-TAB"/>
     <bind actionName="remove-word-next" key="O-D"/>
     <bind actionName="remove-word-previous" key="O-BACK_SPACE"/>
