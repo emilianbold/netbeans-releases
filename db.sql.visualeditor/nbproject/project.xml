@@ -18,7 +18,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>0</release-version>
+                        <release-version>1</release-version>
                         <implementation-version/>
                     </run-dependency>
                 </dependency>
