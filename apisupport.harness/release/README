@@ -134,7 +134,7 @@ netbeans.dest.dir and harness.dir in terms of the suite directory, e.g.:
     netbeans.dest.dir=${suite.dir}/../nb_sources/nbbuild/netbeans
     harness.dir=${netbeans.dest.dir}/harness
 
-The platform.properties should *not* define 'nbplatform.active' in this case.
+platform.properties need not define 'nbplatform.active' in this case.
 
 Relative-path source and Javadoc associations for the platform is not yet
 supported in this scenario (#70876). Each developer with a checkout of the suite
@@ -178,6 +178,11 @@ build.xml, which will create a platform in dist/${app.name}.
 
 3. Now configure S2 to use P2 as its platform. If an absolute path, you can use
 the Platform Manager, else for relative paths see the preceding section.
+
+(Setting harness.dir to ${netbeans.dest.dir}/harness will only work if P2
+includes a harness/ subdirectory, for example if S1 was configured to include
+the harness cluster. Otherwise, try ${netbeans.home}/../harness, or any location
+you prefer to keep a standard copy of the harness in.)
 
 4. To associate sources with binaries for P2, you will need to use the Platform
 Manager. You can select multiple source associations. In this case, use a
