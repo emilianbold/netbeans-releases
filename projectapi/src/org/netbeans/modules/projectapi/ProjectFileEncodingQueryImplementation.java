@@ -38,37 +38,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.projectapi;
 
 import java.nio.charset.Charset;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 
 /**
- *
  * @author Tomas Zezula
  */
 public class ProjectFileEncodingQueryImplementation extends FileEncodingQueryImplementation {
-    
-    
-    public ProjectFileEncodingQueryImplementation() {
-    }
-    
+
+    private static final Logger LOG = Logger.getLogger(ProjectFileEncodingQueryImplementation.class.getName());
+
+    public ProjectFileEncodingQueryImplementation() {}
+
     public Charset getEncoding(FileObject file) {
         Project p = FileOwnerQuery.getOwner(file);
         if (p == null) {
+            LOG.log(Level.FINER, "{0}: no owner", file);
             return null;
         }
         FileEncodingQueryImplementation delegate = p.getLookup().lookup(FileEncodingQueryImplementation.class);
         if (delegate == null) {
+            LOG.log(Level.FINE, "{0}: no FEQI in {1}", new Object[] {file, p});
             return null;
         }
-        return delegate.getEncoding(file);
+        Charset encoding = delegate.getEncoding(file);
+        LOG.log(Level.FINE, "{0}: got {1} from {2}", new Object[] {file, encoding, delegate});
+        return encoding;
     }
 
-    
-    
-    
 }

@@ -68,35 +68,36 @@ import org.openide.util.NbPreferences;
  * @author Tomas Zezula
  */
 public class FileEncodingQuery {
-    
+
     private static final int BUFSIZ = 4*1024;
     private static final String DEFAULT_ENCODING = "default-encoding";    //NOI18N
-    private static final String UTF_8 = "UTF-8";                          //NOI18N    
+    private static final String UTF_8 = "UTF-8";                          //NOI18N
     private static final Logger LOG = Logger.getLogger(FileEncodingQuery.class.getName());
-    
-    
-    private FileEncodingQuery() {
-    }
-    
-    
+
+    private FileEncodingQuery() {}
+
     /**
      * Returns encoding of given file.
+     * A folder also may be passed to this method in an attempt to get the encoding
+     * for all files in, for example, a Java source root.
      * @param file to find an encoding for
      * @return encoding which should be used for given file, never returns null.
      * @throws IllegalArgumentException if file parameter is null.
      */
     public static Charset getEncoding (FileObject file) {
         if (file == null) throw new IllegalArgumentException();
-        Charset encoding;
         List<Charset> delegates = new ArrayList<Charset>();
         for (FileEncodingQueryImplementation impl : Lookup.getDefault().lookupAll(FileEncodingQueryImplementation.class)) {
-            encoding = impl.getEncoding(file);
+            Charset encoding = impl.getEncoding(file);
             if (encoding != null) {
+                LOG.log(Level.FINE, "{0}: received encoding {1} from {2}", new Object[] {file, encoding, impl});
                 delegates.add(encoding);
+            } else {
+                LOG.log(Level.FINER, "{0}: received no encoding from {1}", new Object[] {file, impl});
             }
         }
         try {
-            if (file.getFileSystem().isDefault()) {            
+            if (file.getFileSystem().isDefault()) {
                 delegates.add(Charset.forName(UTF_8));
             } else {
                 delegates.add(Charset.defaultCharset());
@@ -104,22 +105,23 @@ public class FileEncodingQuery {
         } catch (FileStateInvalidException ex) {
             delegates.add(Charset.defaultCharset());
         }
+        LOG.log(Level.FINE, "{0}: using encodings {1}", new Object[] {file, delegates});
         return new ProxyCharset (delegates);
-    }   
-    
+    }
+
     /**
      * Returns the encoding which should be used for newly created projects.
      * The typical user of this method is a code generating new projects.
      * The returned value is a last used encoding set for project.
-     * @return the default encoding 
-     * 
+     * @return the default encoding
+     *
      */
     public static Charset getDefaultEncoding () {
         Preferences prefs = NbPreferences.forModule(FileEncodingQuery.class);
         String defaultEncoding = prefs.get (DEFAULT_ENCODING,UTF_8);
         return Charset.forName(defaultEncoding);
     }
-    
+
     /**
      * Sets the encoding which should be used for newly created projects.
      * The typical user of this method is a project customizer, when the
@@ -127,26 +129,26 @@ public class FileEncodingQuery {
      * encoding by this method.
      * @param encoding the new default encoding
      * @throws IllegalArgumentException if encoding parameter is null.
-     * 
+     *
      */
     public static void setDefaultEncoding (final Charset encoding) {
         if (encoding == null) throw new IllegalArgumentException();
         Preferences prefs = NbPreferences.forModule(FileEncodingQuery.class);
         prefs.put(DEFAULT_ENCODING, encoding.name());
     }
-    
+
     private static class ProxyCharset extends Charset {
-        
+
         private static final ByteBuffer EMPTY_BYTE_BUFFER = ByteBuffer.allocate(0);
         private static final CharBuffer EMPTY_CHAR_BUFFER = CharBuffer.allocate(0);
-        
-        private final List<? extends Charset> delegates;        
-        
+
+        private final List<? extends Charset> delegates;
+
         private ProxyCharset (final List<? extends Charset> delegates) {
             super (delegates.get(0).name(), delegates.get(0).aliases().toArray(new String[delegates.get(0).aliases().size()]));
             this.delegates = delegates;
         }
-    
+
         public boolean contains(Charset charset) {
             return this.delegates.get(0).contains(charset);
         }
@@ -158,9 +160,9 @@ public class FileEncodingQuery {
         public CharsetEncoder newEncoder() {
             return new ProxyEncoder (delegates.get(0).newEncoder());
         }
-        
+
         private class ProxyDecoder extends CharsetDecoder {
-            
+
             private CharsetDecoder currentDecoder;
             private ByteBuffer buffer = ByteBuffer.allocate(BUFSIZ);
             private ByteBuffer remainder;
@@ -169,13 +171,13 @@ public class FileEncodingQuery {
             private String replace;
             private boolean initialized;
             private CharBuffer lastCharBuffer;
-            
+
             private ProxyDecoder (final CharsetDecoder defaultDecoder) {
                 super (ProxyCharset.this, defaultDecoder.averageCharsPerByte(), defaultDecoder.maxCharsPerByte());
                 this.currentDecoder = defaultDecoder;
                 initialized = true;
             }
-                    
+
             protected CoderResult decodeLoop(ByteBuffer in, CharBuffer out) {
                 lastCharBuffer = out;
                 if (buffer == null) {
@@ -210,8 +212,8 @@ public class FileEncodingQuery {
                     return CoderResult.UNDERFLOW;
                 }
             }
-            
-            private CoderResult decodeHead (final ByteBuffer in, final CharBuffer out, final boolean flush) {                
+
+            private CoderResult decodeHead (final ByteBuffer in, final CharBuffer out, final boolean flush) {
                 buffer.flip();
                 CoderResult result = null;
                 for (int i=0; i<delegates.size(); i++) {
@@ -228,7 +230,7 @@ public class FileEncodingQuery {
                     int outPos = out.position();
                     try {
                         ByteBuffer view = buffer.asReadOnlyBuffer();
-                        result = currentDecoder.decode(view, out, in==null);                                                
+                        result = currentDecoder.decode(view, out, in==null);
                         if (view.hasRemaining()) {
                             //Should never happen for files stored by NB, but may be some
                             //broken file ending with a non complete mbyte char.
@@ -236,7 +238,7 @@ public class FileEncodingQuery {
                                 currentDecoder.flush(out);
                             }
                             LOG.log (Level.FINEST,DECODER_SELECTED,currentDecoder);
-                            remainder = view;                            
+                            remainder = view;
                             buffer = null;
                             return result;
                         }
@@ -263,7 +265,7 @@ public class FileEncodingQuery {
                 assert result != null;
                 return result;
             }
-            
+
             @Override
             protected CoderResult implFlush(CharBuffer out) {
                 lastCharBuffer = null;
@@ -273,9 +275,9 @@ public class FileEncodingQuery {
                 else {
                     currentDecoder.decode(EMPTY_BYTE_BUFFER, out, true);
                     return currentDecoder.flush(out);
-                }                
+                }
             }
-            
+
             @Override
             protected void implReset() {
                 if (lastCharBuffer!=null) {
@@ -284,7 +286,7 @@ public class FileEncodingQuery {
                 //Do rather flush, the sun.nio.cs.StreamDecoder doesn't do it
                 currentDecoder.reset();
             }
-            
+
             @Override
             protected void implOnMalformedInput(CodingErrorAction action) {
                 if (buffer != null || !initialized) {
@@ -314,11 +316,11 @@ public class FileEncodingQuery {
                     currentDecoder.replaceWith(replace);
                 }
             }
-            
+
         }
-        
+
         private class ProxyEncoder extends CharsetEncoder {
-            
+
             private CharsetEncoder currentEncoder;
             private CharBuffer buffer = CharBuffer.allocate(BUFSIZ);
             private CharBuffer remainder;
@@ -327,13 +329,13 @@ public class FileEncodingQuery {
             private byte[] replace;
             private boolean initialized;
             private ByteBuffer lastByteBuffer;
-            
+
             private ProxyEncoder (final CharsetEncoder defaultEncoder) {
                 super (ProxyCharset.this, defaultEncoder.averageBytesPerChar(), defaultEncoder.maxBytesPerChar(), defaultEncoder.replacement());
                 this.currentEncoder = defaultEncoder;
                 this.initialized = true;
             }
-                    
+
             protected CoderResult encodeLoop(CharBuffer in, ByteBuffer out) {
                 lastByteBuffer = out;
                 if (buffer == null) {
@@ -361,7 +363,7 @@ public class FileEncodingQuery {
                     return CoderResult.UNDERFLOW;
                 }
             }
-            
+
             private CoderResult encodeHead (CharBuffer in, ByteBuffer out, boolean flush) {
                 buffer.flip();
                 CoderResult result = null;
@@ -386,7 +388,7 @@ public class FileEncodingQuery {
                                 currentEncoder.flush(out);
                             }
                             LOG.log(Level.FINEST, ENCODER_SELECTED, currentEncoder);
-                            remainder = view;                            
+                            remainder = view;
                             buffer = null;
                             return result;
                         }
@@ -397,7 +399,7 @@ public class FileEncodingQuery {
                             if (flush) {
                                 result = currentEncoder.flush(out);
                             }
-                            LOG.log(Level.FINEST, ENCODER_SELECTED, currentEncoder);                           
+                            LOG.log(Level.FINEST, ENCODER_SELECTED, currentEncoder);
                             buffer = null;
                             return result;
                         }
@@ -413,7 +415,7 @@ public class FileEncodingQuery {
                 assert result != null;
                 return result;
             }
-            
+
             @Override
             protected CoderResult implFlush(ByteBuffer out) {
                 lastByteBuffer = null;
@@ -421,7 +423,7 @@ public class FileEncodingQuery {
                     return encodeHead(null, out, true);
                 }
                 else {
-                    currentEncoder.encode(EMPTY_CHAR_BUFFER, out, true);                    
+                    currentEncoder.encode(EMPTY_CHAR_BUFFER, out, true);
                     return currentEncoder.flush(out);
                 }
             }
@@ -463,11 +465,11 @@ public class FileEncodingQuery {
                 else {
                     currentEncoder.replaceWith(replace);
                 }
-            }            
+            }
         }
     }
-    
+
     //Unit tests support
     static final String ENCODER_SELECTED = "encoder-selected";  //NOI18N
-    static final String DECODER_SELECTED = "decoder-selected";  //NOI18N    
+    static final String DECODER_SELECTED = "decoder-selected";  //NOI18N
 }
