@@ -606,7 +606,7 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
-            
+                        
             // Make it easier to run headless builds on the same machine at least.
             ProjectManager.mutex().writeAccess(
                     new Mutex.Action() {
@@ -686,8 +686,11 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
                     // 6. Update ASI.xml
                     getProjectProperties().saveAssemblyInfo();
                     
+                    // 7. Clean up locks.
+                    CasaHelper.cleanupLocks(JbiProject.this);
+                   
                     return null;
-                }
+                }   
             }
             );
             

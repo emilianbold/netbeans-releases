@@ -44,9 +44,9 @@ package org.netbeans.modules.compapp.projects.jbi;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.api.project.Project;
@@ -54,13 +54,15 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.XmlUtil;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.VisualClassPathItem;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -75,7 +77,12 @@ import static org.netbeans.modules.compapp.projects.jbi.CasaConstants.*;
 public class CasaHelper {
     public static String CASA_DIR_NAME = "/src/conf/";  // NOI18N 
     public static String CASA_EXT = ".casa";  // NOI18N 
-        
+    private static String WSDL_EXT = ".wsdl";  // NOI18N 
+    private static String LOCK_FILE_PREFIX = ".LCK";  // NOI18N 
+    private static String LOCK_FILE_SUFFIX = "~";  // NOI18N 
+            
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.compapp.projects.jbi.CasaHelper");
+    
     /**
      * Gets the name of the CASA file in the given project.
      * 
@@ -123,7 +130,7 @@ public class CasaHelper {
         
         return casaFO;
     }    
-    
+        
     /**
      * Creates the default CASA file object in the JBI project.
      * 
@@ -157,9 +164,9 @@ public class CasaHelper {
                 project.getLookup().lookup(ProjectInformation.class);
         String projName = projInfo.getName();
         FileObject srcDirFO = ((JbiProject)project).getSourceDirectory();
-        return srcDirFO == null ? null : srcDirFO.getFileObject(projName + ".wsdl"); // NOI18N
+        return srcDirFO == null ? null : srcDirFO.getFileObject(projName + WSDL_EXT); // NOI18N
     }
-    
+        
     /**
      * Checks whether the CASA file contains any non-deleted defined WSDL Port.
      */
@@ -358,4 +365,80 @@ public class CasaHelper {
             e.printStackTrace();
         }
     }
+    
+    /**
+     * Deletes any left-over lock file on CASA and CompApp.wsdl.
+     */
+    public static void cleanupLocks(Project p) {
+        File casaLockFile = getCasaLockFile(p);
+
+        if (casaLockFile != null && casaLockFile.exists()) {
+            String msg = NbBundle.getMessage(CasaHelper.class,
+                    "CASA_LOCK_EXISTS"); // NOI18N                    
+            NotifyDescriptor d =
+                    new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+
+            if (!casaLockFile.delete()) {
+                msg = NbBundle.getMessage(CasaHelper.class,
+                        "FAIL_TO_DELETE_FILE", casaLockFile); // NOI18N
+                d = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
+            }
+        }
+
+        File compappWSDLLockFile = getCompAppWSDLLockFile(p);
+
+        if (compappWSDLLockFile != null && compappWSDLLockFile.exists()) {
+            String msg = NbBundle.getMessage(CasaHelper.class,
+                    "COMPAPP_WSDL_LOCK_EXISTS"); // NOI18N       
+            NotifyDescriptor d =
+                    new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+
+            if (!casaLockFile.delete()) {
+                msg = NbBundle.getMessage(CasaHelper.class,
+                        "FAIL_TO_DELETE_FILE", compappWSDLLockFile); // NOI18N
+                d = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
+            }
+        }
+    }
+        
+    private static File getCasaLockFile(Project project) {
+        ProjectInformation projInfo = 
+                project.getLookup().lookup(ProjectInformation.class);
+        assert projInfo != null;
+        
+        String projName = projInfo.getName();
+        
+        FileObject confFO = project.getProjectDirectory().getFileObject(CASA_DIR_NAME);
+        if (confFO != null) {
+            // FileObject doesn't work:
+            // confFO.getFileObject(
+            //        LOCK_FILE_PREFIX + projName + CASA_EXT + LOCK_FILE_SUFFIX);
+            File lockFile = new File(FileUtil.toFile(confFO), 
+                    LOCK_FILE_PREFIX + projName + CASA_EXT + LOCK_FILE_SUFFIX);
+            return lockFile;
+        }
+        
+        return null;
+    }   
+    
+    private static File getCompAppWSDLLockFile(Project project) {
+        ProjectInformation projInfo = 
+                project.getLookup().lookup(ProjectInformation.class);
+        String projName = projInfo.getName();
+        FileObject srcDirFO = ((JbiProject)project).getSourceDirectory();
+        if (srcDirFO != null) {
+            // FileObject doesn't work:
+            // srcDirFO.getFileObject(
+            //     LOCK_FILE_PREFIX + projName + WSDL_EXT + LOCK_FILE_SUFFIX); 
+            File lockFile = new File(FileUtil.toFile(srcDirFO), 
+                    LOCK_FILE_PREFIX + projName + WSDL_EXT + LOCK_FILE_SUFFIX);
+            return lockFile;
+        }
+        
+        return null;
+    }    
 }
