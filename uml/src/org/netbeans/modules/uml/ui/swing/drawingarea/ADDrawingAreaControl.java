@@ -1360,7 +1360,6 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
     {
         try
         {
-            IElementLocator locator = new ElementLocator();
             ETGraph graph = (ETGraph) getGraph();
 
 
@@ -2392,6 +2391,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
     /**
      * Get the name of this drawing.
      */
+    @Override
     public String getName()
     {
         return m_Name;
@@ -2400,6 +2400,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
     /**
      * Set the name of this drawing.
      */
+    @Override
     public void setName(String newVal)
     {
         //		this.setGraphFileName(newVal);
@@ -2715,7 +2716,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
         // now, when the canvas receives the focus, transfer it to the root pane.
         focusAdapter = new FocusAdapter()
         {
-
+            @Override
             public void focusGained(FocusEvent event)
             {
                 requestFocus();
@@ -8983,12 +8984,14 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
         }
 
         // provide custom image encoder to write image files #82394
+        @Override
         public TSEGraphImageEncoder newGraphImageEncoder(TSEGraphWindow window)
         {
             return new ETEGraphImageEncoder(window);
         }
 
         // override TSESaveAsImageDialog.onOK to workaround #82394
+        @Override
         public boolean onOK()
         {
             if (!"jpg".equals(type))
@@ -9107,20 +9110,29 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
             initWidth = nodePres.getWidth();
         }
 
-        ResizeElementsPanel resizePanel = new ResizeElementsPanel(Math.round(initHeight),
-                Math.round(initWidth), savedAnchorPoint, presElements);
+        ResizeElementsPanel resizePanel = new ResizeElementsPanel(
+            Math.round(initHeight), Math.round(initWidth), 
+            savedAnchorPoint, presElements);
 
-        ResizeElementsDescriptor resizeDesc = new ResizeElementsDescriptor(resizePanel,
+        ResizeElementsDescriptor resizeDesc = 
+            new ResizeElementsDescriptor(resizePanel,
                 NbBundle.getMessage(ADDrawingAreaControl.class,
-                "LBL_ResizeElementsDialog_Title"), true,
+                "LBL_ResizeElementsDialog_Title"), // NOI18N
+                true,
                 DialogDescriptor.OK_CANCEL_OPTION,
                 DialogDescriptor.OK_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN,
-                new HelpCtx("uml_resize_elements_dialog_box"), resizePanel); // button action listener
-        resizePanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ADDrawingAreaControl.class,
-                "ACSN_ResizeElementsDialog")); // NOI18N
-        resizePanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ADDrawingAreaControl.class,
-                "ACSD_ResizeElementsDialog")); // NOI18N
+                new HelpCtx("uml_basics_diag_elements_kbshortcuts"), // NOI18N
+                resizePanel); // button action listener
+        
+        resizePanel.getAccessibleContext().setAccessibleName(
+            NbBundle.getMessage(ADDrawingAreaControl.class,
+            "ACSN_ResizeElementsDialog")); // NOI18N
+        
+        resizePanel.getAccessibleContext().setAccessibleDescription(
+            NbBundle.getMessage(ADDrawingAreaControl.class,
+            "ACSD_ResizeElementsDialog")); // NOI18N
+        
         resizePanel.requestFocus();
 
         Object result = DialogDisplayer.getDefault().notify(resizeDesc);
@@ -9161,8 +9173,6 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
                     left = initWidth / 2D * -1D;
                     right = initWidth / 2D;
             }
-
-            TSTransform transform = getGraphWindow().getTransform();
 
             for (IPresentationElement presElem : presElements)
             {
@@ -9205,18 +9215,19 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
                     // TS always tells the node it was resized interactively
                     // when we do it programmatically we don't want that
                     if (nodePres.getDrawEngine() != null)
-                    {
                         nodePres.getDrawEngine().onResized();
-                    }
+                    
                     // Update the orginal size.
                     tsNode.setOriginalSize(tsNode.getWidth(), tsNode.getHeight());
                     nodePres.invalidate();
                 } // if instanceof INodePresentation
             } // for
+            
             // need to call refresh here because the drawing are does not refresh
             // properly when the newly sized node is smaller than the original size
             refresh(true);
         } // if "OK" response from Resize dialog
+        
         requestFocus();
         return true;
     }
@@ -9890,6 +9901,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
             m_View = view;
         }
 
+        @Override
         public void mousePressed(MouseEvent event)
         {
             //if I was editing something on drawing area, need to commit that
@@ -9899,6 +9911,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
             showPopupMenu(event);
         }
 
+        @Override
         public void mouseReleased(MouseEvent event)
         {
             // Some Operating Systems will show the popupmenu on the mouse
@@ -9972,6 +9985,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
 //      }
     }
 
+    @Override
     public void registerContextMenu(String id, boolean clearBeforeShow)
     {
         m_ContextMenuManager = new TestBedMenuManager();
@@ -9986,6 +10000,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
         parent.setLayout(new BorderLayout());
     }
 
+    @Override
     public void menuAboutToShow(IMenuManager manager)
     {
 
@@ -12227,8 +12242,8 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
         }
         protected SecondaryWindowVisibility visibilityData = null;
     }
-    {
-    }
+    
+
 
     /*
      * Registers for ComponentListener events.
