@@ -108,7 +108,8 @@ public class SQLEngineFileGenerator {
             sb.append("dbURL=\"" + dbConn.getDatabaseURL() + "\"" + "\t");
             sb.append("databaseName=\"" + dbConn.getSchema() + "\"" + "\t");
             sb.append("user=\"" + dbConn.getUser() + "\"" + "\t");
-            sb.append("password=\"" + org.netbeans.modules.sql.project.security.Base64Impl.getInstance().encode(dbConn.getPassword()) + "\"" + "\t");
+//            sb.append("password=\"" + org.netbeans.modules.sql.project.security.Base64Impl.getInstance().encode(dbConn.getPassword()) + "\"" + "\t");
+            sb.append("password=\"" + dbConn.getPassword() + "\"" + "\t");
 			sb.append("jndi_name=\"" + jndi_name + "\"" + "\t");
 			sb.append("transactionRequired=\"" + transactionRequired + "\"" + "\t");
             sb.append(">\n</connectiondef>");
