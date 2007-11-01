@@ -517,7 +517,7 @@ public class LLSyntaxAnalyser {
         List<ASTItem> token1Children = token1.getChildren ();
         List<ASTItem> token2Children = token2.getChildren ();
         List<ASTItem> joinedChildren = new ArrayList<ASTItem> ();
-        if (token1Children.size () > 1) {
+        if (token1Children.size () > 1 && token2Children.size () > 0) {
             ASTToken t1 = (ASTToken) token1Children.get (token1Children.size () - 2);
             ASTToken t2 = (ASTToken) token2Children.get (0);
             if (
