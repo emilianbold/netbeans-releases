@@ -79,6 +79,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
         super(PropertyEditorManager.findEditor(Font.class));
     }
 
+    @Override
     public PropertyEditor getDelegatedPropertyEditor() {
         // hack for saving: this is not only a wrapper of FontEditor for
         // absolute fonts, but also a complete property editor for relative
@@ -109,6 +110,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
         }
     }
 
+    @Override
     public Object getUnwrappedValue() {
         // NbFont can't be stored in the delegate FontEditor, so we can't use
         // delegateEditor.getValue() to get the unwrapped value
@@ -117,6 +119,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
             ((ResourceValue)value).getDesignValue() : value;
     }
 
+    @Override
     protected void setValueToDelegate(Object value) {
         if (value instanceof ResourceValue)
             value = ((ResourceValue)value).getValue();
@@ -125,6 +128,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
         delegateEditor.setValue(value);
     }
 
+    @Override
     public String getJavaInitializationString() {
         String exp;
         Object value = getValue();
@@ -206,17 +210,20 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
         return exp;
     }
 
+    @Override
     public String getAsText() {
         Object value = getValue();
         return value instanceof NbFont ? ((NbFont)value).getDescription() : super.getAsText();
     }
 
+    @Override
     protected Component createCustomEditorGUI(final Component resourcePanelGUI) {
         Object value = getUnwrappedValue();
         boolean absolute = !(value instanceof NbFont);
 
         final Component absoluteComp = absolute ? createAbsolutePanel(resourcePanelGUI) : null;
         final JCheckBox switchBox = new JCheckBox();
+        switchBox.setVisible(this.property instanceof RADProperty);
         Mnemonics.setLocalizedText(switchBox, NbBundle.getMessage(FontEditor.class, "CTL_DeriveFont")); // NOI18N
         switchBox.setSelected(!absolute);
         final RelativeFontPanel relativeComp = new RelativeFontPanel();
@@ -483,6 +490,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
             return (Font)property.getDefaultValue();
         }
 
+        @Override
         public String getDescription() {
             ResourceBundle bundle = NbBundle.getBundle(FontEditor.class);
             String description;
@@ -500,6 +508,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
             return description;
         }
 
+        @Override
         public FormDesignValue copy(FormProperty targetFormProperty) {
             NbFont copy = copy();
             copy.property = targetFormProperty;
