@@ -72,7 +72,13 @@ class Samples extends JPanel implements Constants {
     
     protected void addLink( JPanel panel, String category, String title ) {
         SampleProjectLink link = new SampleProjectLink( category, null, title );
-        panel.add( link );
+        JPanel inner = new JPanel( new GridBagLayout() );
+        inner.setOpaque(false);
+        inner.add( link, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+            GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0 ) );
+        inner.add( new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
+            GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0 ) );
+        panel.add( inner );
     }
 
     protected void createLinks() {

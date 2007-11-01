@@ -102,7 +102,13 @@ class LearnMore extends JPanel implements Constants {
             lb.getAccessibleContext().setAccessibleName( lb.getText() );
             lb.getAccessibleContext().setAccessibleDescription( 
                     BundleSupport.getAccessibilityDescription( "LearnMore", lb.getText() ) ); //NOI18N
-            panel.add( lb );
+            JPanel inner = new JPanel( new GridBagLayout() );
+            inner.setOpaque(false);
+            inner.add( lb, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0 ) );
+            inner.add( new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
+                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0 ) );
+            panel.add( inner );
         }
     }
 

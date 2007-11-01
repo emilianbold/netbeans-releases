@@ -102,6 +102,8 @@ abstract class AbstractTab extends JPanel implements Scrollable, Constants {
     
     protected abstract Point getMiddleStripOrigin();
     
+    protected abstract Point getBottomStripOrigin();
+    
     @Override
     public Dimension getPreferredSize() {
         Dimension d = super.getPreferredSize();
@@ -144,7 +146,6 @@ abstract class AbstractTab extends JPanel implements Scrollable, Constants {
     @Override
     protected void paintComponent(Graphics g) {
         int width = getWidth();
-        int height = getHeight();
         
         //top strip
         Point origin = getTopStripOrigin();
@@ -161,16 +162,17 @@ abstract class AbstractTab extends JPanel implements Scrollable, Constants {
         }
         
         //bottom strip
+        origin = getBottomStripOrigin();
         int eastWidth = imgBottomStripEast.getWidth( null );
         int eastHeight = imgBottomStripEast.getHeight( null );
         int westWidth = imgBottomStripWest.getWidth( null );
         int westHeight = imgBottomStripWest.getHeight( null );
-        g.drawImage( imgBottomStripEast, width-eastWidth-1, height-eastHeight-1, null    );
+        g.drawImage( imgBottomStripEast, width-eastWidth-1, origin.y-eastHeight-1, null    );
         int centerWidth = Math.max( 100, width-eastWidth-westWidth-150 );
         
-        g.drawImage( imgBottomStripWest, width-eastWidth-1-centerWidth-westWidth, height-westHeight-1, null );
+        g.drawImage( imgBottomStripWest, width-eastWidth-1-centerWidth-westWidth, origin.y-westHeight-1, null );
         for( int i=0; i<centerWidth; i++ ) {
-            g.drawImage( imgBottomStripCenter, width-eastWidth-centerWidth-1+i, height-westHeight-1, null );
+            g.drawImage( imgBottomStripCenter, width-eastWidth-centerWidth-1+i, origin.y-westHeight-1, null );
         }
         
     }

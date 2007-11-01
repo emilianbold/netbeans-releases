@@ -48,7 +48,6 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -64,6 +63,7 @@ class MyNetBeansTab extends AbstractTab {
     
     private ContentSection recentProjectsSection;
     private ContentSection blogsSection;
+    private JComponent bottomBar;
 
     protected void buildContent() {
         JPanel main = new JPanel( new GridBagLayout() );
@@ -100,7 +100,8 @@ class MyNetBeansTab extends AbstractTab {
                 new GridBagConstraints(1,2,1,1,1.0,0.0,GridBagConstraints.NORTHWEST,
                 GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
         
-        main.add( new BottomBar(),
+        bottomBar = new BottomBar();
+        main.add( bottomBar,
                 new GridBagConstraints(0,3,2,1,1.0,0.0,GridBagConstraints.CENTER,
                 GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
         
@@ -134,6 +135,19 @@ class MyNetBeansTab extends AbstractTab {
             p.y += r.getHeight();
             p.x += r.getWidth();
             p = SwingUtilities.convertPoint( blogsSection, p, this );
+        }
+        return p;
+    }
+
+    protected Point getBottomStripOrigin() {
+        Point p;
+        if( null == bottomBar ) {
+            p = new Point(0,0);
+        } else {
+            Rectangle r = bottomBar.getBounds();
+            p = r.getLocation();
+            p.y += r.getHeight();
+            p.x += r.getWidth();
         }
         return p;
     }

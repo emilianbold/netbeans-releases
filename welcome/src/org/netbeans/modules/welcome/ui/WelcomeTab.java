@@ -64,6 +64,7 @@ class WelcomeTab extends AbstractTab {
     
     private ContentSection getStartedSection;
     private ContentSection learnMoreSection;
+    private JComponent bottomBar;
 
     protected void buildContent() {
         JPanel main = new JPanel( new GridBagLayout() );
@@ -102,7 +103,8 @@ class WelcomeTab extends AbstractTab {
                 new GridBagConstraints(1,2,1,1,1.0,0.0,GridBagConstraints.NORTHWEST,
                 GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
         
-        main.add( new BottomBar(),
+        bottomBar = new BottomBar();
+        main.add( bottomBar,
                 new GridBagConstraints(0,3,2,1,1.0,0.0,GridBagConstraints.CENTER,
                 GridBagConstraints.HORIZONTAL,new Insets(0,0,2,0),0,0) );
         
@@ -138,4 +140,17 @@ class WelcomeTab extends AbstractTab {
         }
         return p;
     }    
+
+    protected Point getBottomStripOrigin() {
+        Point p;
+        if( null == bottomBar ) {
+            p = new Point(0,0);
+        } else {
+            Rectangle r = bottomBar.getBounds();
+            p = r.getLocation();
+            p.y += r.getHeight();
+            p.x += r.getWidth();
+        }
+        return p;
+    }
 }
