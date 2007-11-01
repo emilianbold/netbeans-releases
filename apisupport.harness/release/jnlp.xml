@@ -303,7 +303,7 @@ made subject to such option by the copyright holder.
         </pathconvert>
         
         <echo file="${jnlp.master.dir}/resources.xml"><![CDATA[
-    <j2se version="1.4+"/>
+    <j2se version="1.5+"/>
     <jar href="startup.jar"/>
     <property name="netbeans.user" value="$${user.home}/.nbapp-${app.name}"/>
 ]]></echo>
