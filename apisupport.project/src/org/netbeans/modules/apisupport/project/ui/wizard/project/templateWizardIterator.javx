@@ -25,7 +25,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -165,7 +164,8 @@ public class ${TEMPLATENAME}WizardIterator implements WizardDescriptor./*Progres
                 } else {
                     FileObject fo = FileUtil.createData(projectRoot, entry.getName());
                     if ("nbproject/project.xml".equals(entry.getName())) {
-                        filterprojectXml(fo, str, projectRoot.getName());
+                        // Special handling for setting name of Ant-based projects; customize as needed:
+                        filterProjectXML(fo, str, projectRoot.getName());
                     } else {
                         writeFile(str, fo);
                     }
@@ -175,31 +175,25 @@ public class ${TEMPLATENAME}WizardIterator implements WizardDescriptor./*Progres
             source.close();
         }
     }
-    
+
     private static void writeFile(ZipInputStream str, FileObject fo) throws IOException {
-        FileLock lock = fo.lock();
+        OutputStream out = fo.getOutputStream();
         try {
-            OutputStream out = fo.getOutputStream(lock);
-            try {
-                FileUtil.copy(str, out);
-            } finally {
-                out.close();
-            }
+            FileUtil.copy(str, out);
         } finally {
-            lock.releaseLock();
+            out.close();
         }
     }
-    
-    
-    private static void filterprojectXml(FileObject fo, ZipInputStream str, String name) throws IOException {
+
+    private static void filterProjectXML(FileObject fo, ZipInputStream str, String name) throws IOException {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             FileUtil.copy(str, baos);
             Document doc = XMLUtil.parse(new InputSource(new ByteArrayInputStream(baos.toByteArray())), false, false, null, null);
             NodeList nl = doc.getDocumentElement().getElementsByTagName("name");
             if (nl != null) {
-                for (int i = 0; i < nl.getLength();i++) {
-                    Element el = (Element)nl.item(i);
+                for (int i = 0; i < nl.getLength(); i++) {
+                    Element el = (Element) nl.item(i);
                     if (el.getParentNode() != null && "data".equals(el.getParentNode().getNodeName())) {
                         NodeList nl2 = el.getChildNodes();
                         if (nl2.getLength() > 0) {
@@ -209,24 +203,17 @@ public class ${TEMPLATENAME}WizardIterator implements WizardDescriptor./*Progres
                     }
                 }
             }
-            FileLock lock = fo.lock();
+            OutputStream out = fo.getOutputStream();
             try {
-                OutputStream out = fo.getOutputStream(lock);
-                try {
-                    XMLUtil.write(doc, out, "UTF-8");
-                } finally {
-                    out.close();
-                }
+                XMLUtil.write(doc, out, "UTF-8");
             } finally {
-                lock.releaseLock();
+                out.close();
             }
-            
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
             writeFile(str, fo);
         }
-        
+
     }
-    
 
 }
