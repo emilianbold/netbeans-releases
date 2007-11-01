@@ -59,6 +59,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -106,6 +108,9 @@ public final class CreateElement implements ErrorRule<Void> {
             return analyze(info, offset);
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
+            return null;
+        } catch (ClassCastException e) {
+            Logger.getLogger(CreateElement.class.getName()).log(Level.FINE, null, e);
             return null;
         }
     }
