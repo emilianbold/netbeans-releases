@@ -22,6 +22,11 @@ TOKEN:css_comment:( "/*" - "*/" )
 TOKEN:css_comment:( "<!--" | "-->" )
 TOKEN:css_whitespace: ([" " "\t" "\n" "\r"]+)
 
+#119397 hack - <![CDATA[ in <style> tag breaks lexing and parsing
+TOKEN:css_html_cdata_hack:("<![CDATA[")
+TOKEN:css_html_cdata_hack2:("]]>")
+#end of hack
+
 TOKEN:css_operator:( ["*" "#" "." "," ":" "-" "+" ">" "(" ")" "{" "}" ";" "[" "]" "!" "/" "\\"] )
 TOKEN:css_operator2: ( "~=" | "|=" | "=" )
 TOKEN:css_identifier: (
@@ -95,6 +100,8 @@ TOKEN:css_string: (
 
 SKIP:css_comment
 SKIP:css_whitespace
+SKIP:css_html_cdata_hack
+SKIP:css_html_cdata_hack2
 
 S = [charset] (import)* (ruleset | media | page)*;
 charset = "@charset"  <css_string> ";";
