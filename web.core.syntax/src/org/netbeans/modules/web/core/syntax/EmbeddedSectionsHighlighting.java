@@ -224,12 +224,14 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
                                         sectionEnd = lastLineEndOffset;
                                     }
                                     attributeSet = javascripletBackground;
+                                    
+                                    return true;
                                 }
                             } catch (BadLocationException ble) {
                                 LOG.log(Level.WARNING, null, ble);
                             }
                             
-                            return true;
+                            
                         } else if (sequence.token().id() == JspTokenId.EL) {
                             sectionStart = sequence.offset();
                             sectionEnd = sequence.offset() + sequence.token().length();
