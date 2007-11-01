@@ -50,6 +50,7 @@ public class PrimitiveInstanceInformation extends InstanceInformation
 {
     public PrimitiveInstanceInformation()
     {
+        int dummy = 0;
     }
 
     public PrimitiveInstanceInformation(String name, String type)
@@ -112,26 +113,47 @@ public class PrimitiveInstanceInformation extends InstanceInformation
     public boolean isDerivedFrom(String desiredType, IREClassLoader pLoader)
     {
         String primitiveType = getPrimitiveType();
-        return ("Integer Constant".equals(primitiveType) &&
+        
+        boolean result =
+                (("Integer Constant".equals(primitiveType) || "int".equals(primitiveType)) &&
                         ("short".equals(desiredType) ||
                          "char".equals(desiredType) ||
                          "int".equals(desiredType) ||
                          "long".equals(desiredType) ||
                          "float".equals(desiredType) ||
                          "double".equals(desiredType)))
-            || ("Character Constant".equals(primitiveType) &&
+                         
+            || (("Character Constant".equals(primitiveType) || "char".equals(primitiveType)) &&
                         ("int".equals(desiredType) ||
+                         "char".equals(desiredType) ||
                          "long".equals(desiredType) ||
                          "float".equals(desiredType)  ||
                          "double".equals(desiredType)))
-            || ("Long Constant".equals(primitiveType) &&
+                         
+            || (("Long Constant".equals(primitiveType) || "long".equals(primitiveType)) &&
                         ("float".equals(desiredType) ||
+                         "long".equals(desiredType) ||
                          "double".equals(desiredType)))
-            || ("Float Constant".equals(primitiveType) &&
+                         
+            || (("Float Constant".equals(primitiveType) || "float".equals(primitiveType)) &&
+                        "double".equals(desiredType) ||
+                         "float".equals(desiredType))
+                        
+            || (("Double Constant".equals(primitiveType) || "double".equals(primitiveType)) &&
                         "double".equals(desiredType))
-            || ("Double Constant".equals(primitiveType) &&
-                        "double".equals(desiredType))
-            || "String Constant".equals(primitiveType);
+                        
+            || (("Boolean Constant".equals(primitiveType) || "boolean".equals(primitiveType)) &&
+                        "boolean".equals(desiredType))
+                        
+            || (("String Constant".equals(primitiveType) 
+            || "String".equals(primitiveType) 
+            || "java.lang.String".equals(primitiveType)) 
+            &&
+               ("java::lang::Object".equals(desiredType) 
+               || desiredType.endsWith("::Object")) );
+        
+        return result ;
+        
     }
 
     public boolean isPrimitive()

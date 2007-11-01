@@ -173,7 +173,7 @@ public class TokenExpressionProxy implements IExpressionProxy
       		}
       		else if("String Constant".equals(type))
       		{
-         		pInfo.setPrimitiveType("java.lang.String");
+         		pInfo.setPrimitiveType("String");
          		retVal = pInfo;
       		}
       		else if("Float Constant".equals(type))
