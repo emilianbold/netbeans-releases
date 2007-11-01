@@ -124,7 +124,6 @@ public final class ReverseEngineerAction extends AbstractAction
     
     private boolean enable(Lookup context)
     {
-        
         projectSelected = false;
         sourceProject = null;
         
@@ -154,7 +153,7 @@ public final class ReverseEngineerAction extends AbstractAction
             if (sourceProject != FileOwnerQuery.getOwner(dobj.getPrimaryFile()))
                 return false;
             
-            if (projectSelected)
+            if (projectSelected && sourceProject != null)
                 return true;
             
             Sources sources = (Sources)sourceProject
@@ -184,6 +183,10 @@ public final class ReverseEngineerAction extends AbstractAction
                 return false;
             
         }
+        
+        if (sourceProject == null)
+            return false;
+        
         return true;
     }
     
@@ -198,8 +201,8 @@ public final class ReverseEngineerAction extends AbstractAction
         if (projectSelected)
         {
             rePanel = new ReverseEngineerPanel(
-                    sourceProject,
-                    UMLJavaAssociationUtil.getAssociatedUMLProject(sourceProject));
+                sourceProject,
+                UMLJavaAssociationUtil.getAssociatedUMLProject(sourceProject));
         }
         
         // Java packages and/or classes selected
@@ -210,11 +213,11 @@ public final class ReverseEngineerAction extends AbstractAction
             {
                 selected.add(obj.getPrimaryFile().getName());
             }
+
             rePanel = new ReverseEngineerPanel(
-                    sourceProject,
-                    selected,
-                    UMLJavaAssociationUtil.getAssociatedUMLProject(
-                    sourceProject));
+                sourceProject,
+                selected,
+                UMLJavaAssociationUtil.getAssociatedUMLProject(sourceProject));
         }
         
         doRE = displayDialogDescriptor(rePanel);
@@ -255,12 +258,12 @@ public final class ReverseEngineerAction extends AbstractAction
     private final class ContextAction extends AbstractAction implements Presenter.Popup
     {
         private Lookup context;
-        private boolean enabled = false;
+        private boolean isEnabled = false;
         
         public ContextAction(Lookup context)
         {
             this.context = context;
-            enabled = enable(context);
+            isEnabled = enable(context);
         }
         
         
@@ -281,7 +284,7 @@ public final class ReverseEngineerAction extends AbstractAction
                 
                 public JComponent[] getMenuPresenters()
                 {
-                    if (enabled)
+                    if (isEnabled)
                     {
                         Mnemonics.setLocalizedText(this, ReverseEngineerAction.this.getName());
                         return new JComponent[] {this};
@@ -495,6 +498,7 @@ public final class ReverseEngineerAction extends AbstractAction
     {
         Thread runner = new Thread()
         {
+            @Override
             public void run()
             {
                 File prjDir = createNewUMLProject(rePanel);
@@ -509,6 +513,7 @@ public final class ReverseEngineerAction extends AbstractAction
     {
         Thread runner = new Thread()
         {
+            @Override
             public void run()
             {
                 useExistingUMLProject((UMLProject)rePanel.getUMLProject());
