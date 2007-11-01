@@ -53,6 +53,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -66,7 +67,9 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.CompilationController;
@@ -75,6 +78,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -95,6 +99,7 @@ import org.openide.filesystems.FileObject;
  * @author Milan Kuchtiak
  */
 public class AddWsOperationHelper {
+    private static final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);
     
     private final String name;
     private final boolean createAnnotations;
@@ -129,6 +134,10 @@ public class AddWsOperationHelper {
         return MethodCustomizerFactory.operationMethod(
                 getTitle(),
                 methodModel,
+                ClasspathInfo.create(
+                    EMPTY_PATH, // boot classpath
+                    ClassPath.getClassPath(fileObject, ClassPath.COMPILE), // classpath from dependent projects and libraries
+                    ClassPath.getClassPath(fileObject, ClassPath.SOURCE)), // source classpath
                 getExistingMethods(fileObject));
     }
     

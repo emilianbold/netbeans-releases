@@ -129,11 +129,11 @@ public final class MethodCustomizerFactory {
                 );
     }
     
-    public static MethodCustomizer operationMethod(String title, MethodModel method, Collection<MethodModel> existingMethods) {
+    public static MethodCustomizer operationMethod(String title, MethodModel method, ClasspathInfo cpInfo, Collection<MethodModel> existingMethods) {
         return new MethodCustomizer(
                 title,
                 method,
-                null, // TODO pass ClasspathInfo here
+                cpInfo,
                 true, // doesn't matter? interfaces selections is disabled
                 true, // doesn't matter? interfaces selections is disabled
                 true, // doesn't matter? interfaces selections is disabled
