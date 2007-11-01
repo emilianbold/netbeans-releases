@@ -448,7 +448,7 @@ public final class SQLproProject implements Project, AntProjectListener {
         };
 
         private static final String[] PRIVILEGED_NAMES = new String[] {
-            "Templates/SOA/SQLTemplate.sql",
+            "Templates/SOA_SQL/SQLTemplate.sql",
             "Templates/XML/stylesheet.xsl",
             "Templates/CAPS/schema.xsd",
             "Templates/CAPS/untitled.wsdl"
