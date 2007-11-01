@@ -44,14 +44,20 @@ package org.netbeans.modules.j2ee.ejbverification.fixes;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Position;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -60,6 +66,10 @@ import org.netbeans.modules.j2ee.ejbverification.JavaUtils;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.text.NbDocument;
+import org.openide.text.PositionRef;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -106,12 +116,66 @@ public class ExposeBusinessMethod implements Fix {
         JavaSource javaSource = JavaSource.create(cpInfo, fileObject, targetFileObject);
 
         try {
-            javaSource.runModificationTask(task).commit();
+            return commitAndComputeChangeInfo(targetFileObject, javaSource.runModificationTask(task));
         } catch (IOException e) {
             EJBProblemFinder.LOG.log(Level.SEVERE, e.getMessage(), e);
         }
         
         return null;
+    }
+
+    // adapted from org.netbeans.modules.java.hints.errors.Utilities
+    private ChangeInfo commitAndComputeChangeInfo(FileObject target, ModificationResult diff) throws IOException {
+        List<? extends Difference> differences = diff.getDifferences(target);
+        ChangeInfo result = null;
+        
+        // need to save the modified doc so that changes are recognized, see #112888
+        CloneableEditorSupport docToSave = null;
+        
+        try {
+            if (differences != null) {
+                for (Difference d : differences) {
+                    if (d.getNewText() != null) { //to filter out possible removes
+                        final PositionRef start = d.getStartPosition();
+                        Document doc = start.getCloneableEditorSupport().getDocument();
+
+                        if (doc == null) {
+                            doc = start.getCloneableEditorSupport().openDocument();
+                        }
+
+                        docToSave = start.getCloneableEditorSupport();
+                        final Position[] pos = new Position[1];
+                        final Document fdoc = doc;
+                        
+                        doc.render(new Runnable() {
+
+                            public void run() {
+                                try {
+                                    pos[0] = NbDocument.createPosition(fdoc, start.getOffset(), Position.Bias.Backward);
+                                } catch (BadLocationException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        });
+                        
+                        if (pos[0] != null) {
+                            result = new ChangeInfo(target, pos[0], pos[0]);
+                        }
+                        break;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+        }
+        
+        diff.commit();
+        
+        if (docToSave != null){
+            docToSave.saveDocument();
+        }
+        
+        return result;
     }
 
     public int hashCode() {
