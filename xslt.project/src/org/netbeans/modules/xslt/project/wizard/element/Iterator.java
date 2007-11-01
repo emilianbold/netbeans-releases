@@ -78,6 +78,7 @@ import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.netbeans.modules.xslt.tmap.model.impl.VariableReferenceImpl;
 import org.openide.cookies.SaveCookie;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.openide.loaders.DataFolder;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
@@ -99,6 +100,7 @@ public final class Iterator implements TemplateWizard.Iterator {
   /**{@inheritDoc}*/
   public void initialize(TemplateWizard wizard) {
     myPanel = new PanelStartup<WizardDescriptor>(Templates.getProject(wizard), null);
+    myWizard = wizard;
   }
 
   /**{@inheritDoc}*/
@@ -217,18 +219,18 @@ public final class Iterator implements TemplateWizard.Iterator {
         FileObject file = null;
         if (file1 != null) {
             file = createXslFile(
-                    project, file1, createdFos);
+                    project, file1, createdFos, wizard);
         }
 
         if (file2 != null) {
-          file = createXslFile(project, file2, createdFos);
+          file = createXslFile(project, file2, createdFos, wizard);
         }
         return file;
     }
 
     private FileObject createXslFile(
         Project project,
-        String file, List<FileObject> createdFos) throws IOException
+        String file, List<FileObject> createdFos, TemplateWizard wizard) throws IOException
     {
         if (file == null || "".equals(file)) {
             return null;
@@ -828,10 +830,11 @@ public final class Iterator implements TemplateWizard.Iterator {
               TransformationUseCase.FILTER_REQUEST_REPLY);
   }
   
-  private static String TEMPLATES_PATH = "Templates/SOA/"; // NOI18N
+  private static String TEMPLATES_PATH = "Templates/SOA_XSLT/"; // NOI18N
   private static String XSLT_SERVICE = "xslt.service"; // NOI18N
   private static String XSL = "xsl"; // NOI18N
   private Panel<WizardDescriptor> myPanel;
+  private TemplateWizard myWizard;
   
   private static final String DEFAULT_VARIABLE_PREFIX = "var"; // NOI18N
   private static final String INPUT_OPERATION_VARIABLE_PREFIX = "inOpVar"; // NOI18N
