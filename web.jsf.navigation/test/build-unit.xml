@@ -42,21 +42,6 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="org.netbeans.modules.web.jsf.navigation/test-unit" basedir="." default="all">
-	<import file="../../../../nbbuild/templates/xtest-unit.xml"/>
-    <!-- ========= -->
-    <!-- Compilers -->
-    <!-- ========= -->
-    
-    <target name="default-compiler">
-        <!-- Build application before tests -->
-        <ant dir=".." target="jar"/>
-        <buildTests srcdir="unit/src" compileExcludes="**/data/**">
-            <classpath>
-                <!-- Add classpath elements needed to compile tests -->
-                <path refid="test.unit.compile.cp"/>
-            </classpath>
-        </buildTests>
-    </target>
-    
+	<import file="../../../../nbbuild/templates/xtest-unit.xml"/>    
 </project>
 
