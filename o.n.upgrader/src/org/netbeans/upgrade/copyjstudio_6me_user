@@ -79,7 +79,6 @@ include Editors/AnnotationTypes/org-netbeans-modules-java-.*\.xml
 include Services/org-netbeans-modules-beans-beans\.settings
 include Templates/Beans/.*
 
-include Services/JavadocSearchType/.*
 include Services/org-netbeans-modules-javadoc-settings-DocumentationSettings\.settings
 
 include Services/formsettings\.settings

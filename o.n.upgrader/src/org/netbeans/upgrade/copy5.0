@@ -88,7 +88,6 @@ include Editors/.*
 include Services/IndentEngine/.*
 
 
-include Services/JavadocSearchType/.*
 include Services/org-netbeans-modules-javadoc-settings-DocumentationSettings\.settings
 
 include Services/formsettings\.settings
