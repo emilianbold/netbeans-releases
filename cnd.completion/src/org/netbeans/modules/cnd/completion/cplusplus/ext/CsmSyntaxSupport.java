@@ -224,7 +224,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         //AFAIK this is currently needed only for JSP code completion
         TokenItem item = getTokenChain(pos - 1, pos);
         //go back throught the token chain and try to find last C++ token
-        do {
+        while (item != null) {
             int tokenOffset = item.getOffset();
             if(lastPos != -1 && tokenOffset < lastPos) break; //stop backtracking if we met the lastPos
             //test token type
@@ -233,7 +233,8 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                 lastPos = item.getNext() != null ? item.getNext().getOffset() : item.getOffset() + item.getImage().length();
                 break;
             }
-        } while( (item = item.getPrevious()) != null);
+            item = item.getPrevious();
+        }
         
         return lastPos;
     }
