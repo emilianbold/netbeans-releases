@@ -63,7 +63,7 @@ public class AntFilesHelper {
     /**
      * IMPORTANT: bump up version when you change the dependencies list
      */
-    public static final int CURRENT_DEPENDECIES_VERSION = 0;
+    public static final int CURRENT_DEPENDECIES_VERSION = 1;
     // dependency(from, to)
     public static Map<String,String> dependencies = new HashMap<String,String>();
     static {

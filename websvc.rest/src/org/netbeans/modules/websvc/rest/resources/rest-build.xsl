@@ -32,17 +32,29 @@
                         <isfalse value="${{restlib.ignore.platform}}"/>
                     </and>
                 </condition>
-                <condition property="rest.apt.redirect" else="false">
-                    <istrue value="${{restapt.redirect}}"/>
+                <condition property="restapt.redirect" value="false" else="true">
+                    <and>
+                        <isset property="rest.apt.redirect"/>
+                        <isfalse value="${{rest.apt.redirect}}"/>
+                    </and>
                 </condition>
-                <condition property="rest.apt.normalizeURI" else="false">
-                    <istrue value="${{restapt.normalizeURI}}"/>
+                <condition property="restapt.normalizeURI" value="false" else="true">
+                    <and>
+                        <isset property="rest.apt.normalizeURI"/>
+                        <isfalse value="${{rest.apt.normalizeURI}}"/>
+                    </and>
                 </condition>
-                <condition property="rest.apt.canonicalizeURIPath" else="false">
-                    <istrue value="${{restapt.canonicalizeURIPath}}"/>
+                <condition property="restapt.canonicalizeURIPath" value="false" else="true">
+                    <and>
+                        <isset property="rest.apt.canonicalizeURIPath"/>
+                        <isfalse value="${{rest.apt.canonicalizeURIPath}}"/>
+                    </and>
                 </condition>
-                <condition property="rest.apt.ignoreMatrixParams" else="false">
-                    <istrue value="${{restapt.ignoreMatrixParams}}"/>
+                <condition property="restapt.ignoreMatrixParams" value="false" else="true">
+                    <and>
+                        <isset property="rest.apt.ignoreMatrixParams"/>
+                        <isfalse value="${{rest.apt.ignoreMatrixParams}}"/>
+                    </and>
                 </condition>
                 <taskdef name="restapt" classname="com.sun.ws.rest.tools.ant.WebResourcesProcessorTask">
                     <classpath>
