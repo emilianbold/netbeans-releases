@@ -41,53 +41,14 @@
 
 package org.netbeans.modules.websvc.design.view.actions;
 
-import java.awt.Dialog;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-import org.netbeans.modules.websvc.core.AddWsOperationHelper;
-import org.netbeans.modules.websvc.core._RetoucheUtil;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.netbeans.modules.websvc.design.multiview.MultiViewSupport;
-import org.netbeans.modules.websvc.design.schema2java.OperationGeneratorHelper;
-import org.netbeans.modules.websvc.design.util.WSDLUtils;
-import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-import org.netbeans.modules.xml.schema.model.Import;
-import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
-import org.netbeans.modules.xml.schema.model.Schema;
-import org.netbeans.modules.xml.wsdl.model.Definitions;
-import org.netbeans.modules.xml.wsdl.model.Operation;
-import org.netbeans.modules.xml.wsdl.model.Types;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
-import org.openide.util.Utilities;
 
 /**
  *
