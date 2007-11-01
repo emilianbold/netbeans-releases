@@ -158,6 +158,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                 HgProgressSupport support = new HgProgressSupport() {
                     public void perform() {
                         try {
+                            file.delete();
                             HgCommand.doRemove(root, file);
                             cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                         } catch (HgException ex) {
