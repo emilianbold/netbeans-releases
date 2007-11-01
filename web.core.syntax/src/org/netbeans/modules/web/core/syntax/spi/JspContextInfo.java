@@ -75,8 +75,6 @@ import org.openide.util.NbBundle;
  */
 public abstract class JspContextInfo {
     
-    private static final Logger LOGGER = Logger.getLogger(JspContextInfo.class.getName());
-    
     /** Name of the settings context where an instance of this class should be registered */
     public static final String CONTEXT_NAME = "/J2EE/JSPSyntaxColoring/"; //NOI18N
     
@@ -105,20 +103,16 @@ public abstract class JspContextInfo {
                         }
                     }
                 } catch (DataObjectNotFoundException ex) {
-                    LOGGER.log(Level.WARNING, null, ex);
+                    Logger.getLogger("global").log(Level.WARNING, null, ex);
                 } catch (java.io.IOException ex) {
-                    LOGGER.log(Level.WARNING, null, ex);
+                    Logger.getLogger("global").log(Level.WARNING, null, ex);
                 } catch (java.lang.ClassNotFoundException ex){
-                    LOGGER.log(Level.WARNING, null, ex);
+                    Logger.getLogger("global").log(Level.WARNING, null, ex);
                 }
             }
             if (instance == null) {
-                // Workaround for [Issue 120445] Do not pass non-JSP fileobjects into JspUtils.getCachedParseResult()
-                //remove after proper fix
-//                Logger.getLogger("global").log(Level.WARNING, null,
-//                                               new Exception(NbBundle.getBundle(JspContextInfo.class).getString("EXC_JspContextInfoNotInstalled")));
-                LOGGER.log(Level.INFO, NbBundle.getBundle(JspContextInfo.class).getString("EXC_JspContextInfoNotInstalled"));
-                //EOF workaround
+                Logger.getLogger("global").log(Level.WARNING, null,
+                                               new Exception(NbBundle.getBundle(JspContextInfo.class).getString("EXC_JspContextInfoNotInstalled")));
             }
         }
         return instance;

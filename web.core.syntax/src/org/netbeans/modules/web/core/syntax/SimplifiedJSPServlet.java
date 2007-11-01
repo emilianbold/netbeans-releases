@@ -260,15 +260,18 @@ public class SimplifiedJSPServlet {
 
             try {
                 DataObject includedFileDO = DataObject.find(includedFile);
-                EditorCookie editor = includedFileDO.getCookie(EditorCookie.class);
+                String mimeType = includedFile.getMIMEType();
                 
-                if (editor != null) {
-                    SimplifiedJSPServlet simplifiedServlet = new SimplifiedJSPServlet(editor.openDocument());
+                if ("text/x-jsp".equals(mimeType) || "text/x-tag".equals(mimeType)) { //NOI18N
+                    EditorCookie editor = includedFileDO.getCookie(EditorCookie.class);
 
-                    simplifiedServlet.process();
+                    if (editor != null) {
+                        SimplifiedJSPServlet simplifiedServlet = new SimplifiedJSPServlet(editor.openDocument());
+                        simplifiedServlet.process();
 
-                    importedDeclarations.append(simplifiedServlet.mergedDeclarations);
-                    importedScriptlets.append(simplifiedServlet.mergedScriptlets);
+                        importedDeclarations.append(simplifiedServlet.mergedDeclarations);
+                        importedScriptlets.append(simplifiedServlet.mergedScriptlets);
+                    }
                 }
             } catch (Exception e) {
                 logger.log(Level.WARNING, e.getMessage(), e);
