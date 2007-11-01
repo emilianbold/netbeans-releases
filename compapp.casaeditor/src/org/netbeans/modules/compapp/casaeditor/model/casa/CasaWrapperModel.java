@@ -2739,7 +2739,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         } finally {
             if (isIntransaction()) {
                 fireChangeEvent(component, PROPERTY_ENDPOINT_NAME_CHANGED);
-                if (casaPort != null) {
+                if (casaPort != null && casaPort != component) {
                     fireChangeEvent(casaPort, PROPERTY_ENDPOINT_NAME_CHANGED);
                 }
                 endTransaction();
