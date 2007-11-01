@@ -53,7 +53,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.spi.KeymapManager;
 import org.openide.util.Lookup;
@@ -379,23 +378,10 @@ public class KeymapModel {
     }
     
     {
-        if (SwingUtilities.isEventDispatchThread()) {
-            initActions();
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    initActions();
-                }
-            });
-        }
-    }
-
-    // HACK - loads all actions. otherwise during second open of Options
-    // Dialog (after cancel) map of sharedActions is not initialized.
-    private void initActions() {
-        Iterator it = getActionCategories().iterator();
-        while (it.hasNext()) {
-            getActions((String) it.next ());
-        }
+        // HACK - loads all actions. othervise during second open of Options
+        // Dialog (after cancel) map of sharedActions is not initialized.
+        Iterator it = getActionCategories ().iterator ();
+        while (it.hasNext ())
+            getActions ((String) it.next ());
     }
 }
