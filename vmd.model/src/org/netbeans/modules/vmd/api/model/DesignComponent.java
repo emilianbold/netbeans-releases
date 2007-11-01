@@ -274,9 +274,11 @@ public final class DesignComponent {
     }
     
     /**
-     * Resolves whether a specified property has a default value as current value.
+     * Resolves whether a specified property has a default value as current value. 
+     * Check is done on the PropertyValue object level. This method returns true only when DesignComponent
+     * default PropertyValue == current PropertyValue for given propertyName. 
      * @param propertyName the property name
-     * @return true if a current value is a default value
+     * @return true if a current PropertyValue is the same PropertyValue object which has been created on the creation of the DesignComponent
      */
     public boolean isDefaultValue(String propertyName) {
         assert document.getTransactionManager().isAccess();
@@ -285,6 +287,7 @@ public final class DesignComponent {
         PropertyValue currentValue = properties.get(propertyName);
         assert defaultValue != null;
         assert currentValue != null;
+        //This has to be changed in previous version, it should be resolved on the "equals" method level.
         return defaultValue == currentValue;
     }
     
