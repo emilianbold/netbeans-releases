@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.classview;
 
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.classview.resources.I18n;
 import java.awt.*;
@@ -53,6 +54,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
+import org.netbeans.modules.cnd.api.model.CsmModelStateListener;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.classview.actions.ShowHideClassViewAction;
 import org.openide.ErrorManager;
@@ -67,7 +69,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Vladimir Kvashin
  */
-public class ClassViewTopComponent extends TopComponent implements CsmModelListener {
+public class ClassViewTopComponent extends TopComponent implements CsmModelListener, CsmModelStateListener {
 
     static final long serialVersionUID = 420172427347975689L;
 
@@ -76,6 +78,8 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
     public static transient ClassViewTopComponent DEFAULT;
 
     private transient ClassView view;
+
+    private transient boolean modelOn = true;
     
     public ClassViewTopComponent() {
         //if( Diagnostic.DEBUG ) Diagnostic.traceStack("ClassViewTopComponent .ctor #" + (++cnt));
@@ -202,12 +206,29 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
     private void addRemoveModelListeners(boolean add) {
         if (add) {
             CsmModelAccessor.getModel().addModelListener(this);
+            CsmModelAccessor.getModel().addModelStateListener(this);
         } else {
             CsmModelAccessor.getModel().removeModelListener(this);
+            CsmModelAccessor.getModel().removeModelStateListener(this);
+        }
+    }
+
+    public void modelStateChanged(CsmModelState newState, CsmModelState oldState) {
+        switch(newState) {
+            case ON:
+                modelOn = true;
+                break;
+            case CLOSING:
+                modelOn = false;
+                if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesTC: model switched ff"); // NOI18N
+                break;
         }
     }
 
     public void projectOpened(CsmProject project) {
+        if (!modelOn){
+            return;
+        }
         if (view != null) {
             view.projectOpened(project);
             SwingUtilities.invokeLater(new Runnable() {
@@ -221,6 +242,9 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
     }
 
     public void projectClosed(CsmProject project) {
+        if (!modelOn){
+            return;
+        }
         if (view != null) {
             view.projectClosed(project);
         }
@@ -244,6 +268,9 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
     }
 
     public void modelChanged(CsmChangeEvent e) {
+        if (!modelOn){
+            return;
+        }
         if (view != null) {
             view.modelChanged(e);
         }
