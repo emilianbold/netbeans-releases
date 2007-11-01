@@ -59,6 +59,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -290,6 +291,10 @@ public final class Actions extends Object {
                 }
                 FileObject fo = dataObject.getPrimaryFile();
                 if (fo != null) {
+                    //#63459: Do not enable action on internal object/URL.
+                    if (URLMapper.findURL(fo, URLMapper.EXTERNAL) == null) {
+                        return false;
+                    }
                     //Allow to link only once
                     if (isInFavorites(fo)) {
                         return false;
