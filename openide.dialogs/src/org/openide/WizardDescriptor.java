@@ -320,11 +320,11 @@ public class WizardDescriptor extends DialogDescriptor {
     {
         // button init
         ResourceBundle b = NbBundle.getBundle("org.openide.Bundle"); // NOI18N
-        nextButton.setText(b.getString("CTL_NEXT"));
+        Mnemonics.setLocalizedText(nextButton, b.getString("CTL_NEXT"));
         Mnemonics.setLocalizedText(previousButton, b.getString("CTL_PREVIOUS"));
         Mnemonics.setLocalizedText(finishButton, b.getString("CTL_FINISH"));
         finishButton.getAccessibleContext().setAccessibleDescription(b.getString("ACSD_FINISH"));
-        cancelButton.setText(b.getString("CTL_CANCEL"));
+        Mnemonics.setLocalizedText(cancelButton, b.getString("CTL_CANCEL"));
         cancelButton.getAccessibleContext().setAccessibleDescription(b.getString("ACSD_CANCEL"));
 
         finishButton.setDefaultCapable(true);
