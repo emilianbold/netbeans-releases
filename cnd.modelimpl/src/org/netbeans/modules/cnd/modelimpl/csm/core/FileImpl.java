@@ -601,7 +601,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             // init guard info
             initGuardIfNeeded(preprocHandler, aptFull);
             // make real parse
-            APTParseFileWalker walker = new APTParseFileWalker(ProjectBase.getStartProject(preprocHandler.getState()), aptFull, this, preprocHandler);
+            ProjectBase startProject = ProjectBase.getStartProject(preprocHandler.getState());
+            assert startProject != null : " null project for " + APTHandlersSupport.extractStartEntry(preprocHandler.getState()) + // NOI18N
+                    " while parsing file " + getAbsolutePath() + " of project " + getProject(); // NOI18N
+            APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler);
             walker.addMacroAndIncludes(true);
             if (TraceFlags.DEBUG) {
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(oldState));
