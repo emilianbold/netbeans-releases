@@ -158,8 +158,7 @@
 	<mapID target="me.run_runheadlessapps" url="running/run_runheadlessapps.html"/>
 	<mapID target="me.deploy_se" url="deploy/deploy_se.html"/>
 	<mapID target="me.deploy_nokia" url="deploy/deploy_nokia.html"/>
-	<mapID target="me.deploy_winmobile" url="deploy/deploy_winmobile.html"/>        
-        <mapID target="me.emulator_se_remote" url="emulator/emulator_se_remote.html"/>
+	<mapID target="me.deploy_winmobile" url="deploy/deploy_winmobile.html"/>
 	<mapID target="me.wcb_clientinformation" url="ui/wizard_wcb_clientinformation.html"/>
 	<mapID target="me.wcb_webappselection" url="ui/wizard_wcb_webappselection.html"/>
 	<mapID target="me.wcb_serviceselection" url="ui/wizard_wcb_serviceselection.html"/>
