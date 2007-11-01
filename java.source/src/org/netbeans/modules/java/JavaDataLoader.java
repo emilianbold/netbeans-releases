@@ -53,11 +53,14 @@ import org.netbeans.api.java.loaders.JavaDataSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.CreateFromTemplateAttributesProvider;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -83,6 +86,7 @@ public final class JavaDataLoader extends MultiFileLoader {
         super("org.netbeans.modules.java.JavaDataObject"); // NOI18N
     }
 
+    @Override
     protected String actionsContext () {
         return "Loaders/text/x-java/Actions/"; // NOI18N
     }
@@ -168,12 +172,12 @@ public final class JavaDataLoader extends MultiFileLoader {
     * @return the map of string which are replaced during instantiation
     *        from template
     */
-    static Map createStringsMap() {
-//XXX: Fix when there will be JavaSettings:        Map map = JavaSettings.getDefault().getReplaceableStringsProps();
-        Map map = new HashMap ();
+    static Map<String, String> createStringsMap() {
+        Map<String, String> map = new HashMap<String, String>();
         map.put("USER", System.getProperty("user.name"));
-        map.put("DATE", DateFormat.getDateInstance(DateFormat.LONG).format(new Date())); // NOI18N
-        map.put("TIME", DateFormat.getTimeInstance(DateFormat.SHORT).format(new Date())); // NOI18N
+        Date d = new Date();
+        map.put("DATE", DateFormat.getDateInstance(DateFormat.LONG).format(d)); // NOI18N
+        map.put("TIME", DateFormat.getTimeInstance(DateFormat.SHORT).format(d)); // NOI18N
         return map;
     }
     
@@ -198,7 +202,7 @@ public final class JavaDataLoader extends MultiFileLoader {
         * @return format to use for formating lines
         */
         protected java.text.Format createFormat (FileObject target, String n, String e) {
-            Map map = createStringsMap();
+            Map<String, String> map = createStringsMap();
 
             modifyMap(map, target, n, e);
 
@@ -218,7 +222,7 @@ public final class JavaDataLoader extends MultiFileLoader {
         * @param n the new file name
         * @param e the new file extension
         */
-        protected void modifyMap(Map map, FileObject target, String n, String e) {
+        protected void modifyMap(Map<String, String> map, FileObject target, String n, String e) {
             ClassPath cp = ClassPath.getClassPath(target, ClassPath.SOURCE);
             String resourcePath = "";
             if (cp != null) {
@@ -242,6 +246,19 @@ public final class JavaDataLoader extends MultiFileLoader {
             // prevent things from being escaped.) But leave the token here for
             // compatibility with old templates. --jglick 26/08/00
             map.put("QUOTES","\""); // NOI18N
+            
+            for (CreateFromTemplateAttributesProvider provider
+                    : Lookup.getDefault().lookupAll(CreateFromTemplateAttributesProvider.class)) {
+                Map<String, ?> attrs = provider.attributesFor(
+                        getDataObject(),
+                        DataFolder.findFolder(target),
+                        n);
+                Object aName = attrs.get("user"); // NOI18N
+                if (aName instanceof String) {
+                    map.put("USER", (String) aName); // NOI18N
+                    break;
+                }
+            }
         }
 
 
