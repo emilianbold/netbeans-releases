@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.web.jsf.navigation.graph;
 
+import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.layout.FreePlaceNodesLayouter;
 
 /**
@@ -49,6 +50,10 @@ public class PageFlowSceneAccessor {
 
     public static FreePlaceNodesLayouter getFreePlaceNodesLayouter(PageFlowScene scene) {
         return PageFlowScene.SceneTestAccessor.getFreePlaceNodesLayouter(scene);
+    }
+    
+    public static PopupMenuProvider getPopupMenuProvider (PageFlowScene scene ){
+        return PageFlowScene.SceneTestAccessor.getPopupProvider(scene);
     }
     
     

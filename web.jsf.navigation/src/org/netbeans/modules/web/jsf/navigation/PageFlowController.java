@@ -993,21 +993,19 @@ public class PageFlowController {
     }
     
     static class TestAccessor {
-        final PageFlowController controller;
-        TestAccessor(PageFlowController controller) {
-                this.controller = controller;
-        }
-        Collection<String> getPagesInFacesConfig() {
-            return controller.getFacesConfigPageNames(this.getAllNavigationRules());
+
+        static Collection<String> getPagesInFacesConfig(final PageFlowController controller) {
+            Set<NavigationRule> rules = TestAccessor.getAllNavigationRules(controller);
+            return controller.getFacesConfigPageNames(rules);
         }
          
-        Collection<FileObject> getAllRelevantFiles(){
+        static Collection<FileObject> getAllRelevantFiles(PageFlowController controller){
             return controller.getAllProjectRelevantFilesObjects();
         }
-        Set<NavigationRule> getAllNavigationRules() {
+        static Set<NavigationRule> getAllNavigationRules(PageFlowController controller) {
             return controller.navRule2String.keySet();
         }
-        Set<NavigationCase> getAllNavigationCases() {
+        static Set<NavigationCase> getAllNavigationCases(PageFlowController controller) {
             return controller.navCase2NavCaseEdge.keySet();
         }
     }

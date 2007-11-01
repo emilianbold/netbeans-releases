@@ -719,7 +719,11 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     
     static class SceneTestAccessor {
         static FreePlaceNodesLayouter getFreePlaceNodesLayouter(PageFlowScene scene) {
-            return scene.fpnl;
+                return scene.fpnl;
+        }
+        
+        static PopupMenuProvider getPopupProvider (PageFlowScene scene){
+            return scene.popupProvider;
         }
     }
 }
