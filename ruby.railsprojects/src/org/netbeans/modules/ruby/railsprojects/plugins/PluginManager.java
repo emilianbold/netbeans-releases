@@ -63,6 +63,7 @@ import javax.swing.JComponent;
 
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.Util;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
@@ -78,7 +79,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-
 
 /**
  * Class which handles plugin interactions - executing plugin, installing, uninstalling, etc.
@@ -381,7 +381,7 @@ public class PluginManager {
         new RubyExecution(new ExecutionDescriptor("plugin", pb.directory()).cmd(cmd)).setupProcessEnvironment(env); // NOI18N
         
         // Proxy
-        String proxy = getNetbeansHttpProxy();
+        String proxy = Util.getNetbeansHttpProxy();
         
         if (proxy != null) {
             // This unfortunately does not work -- plugins blows up. Looks like
@@ -705,36 +705,6 @@ public class PluginManager {
             boolean ok = pluginRunner(pluginCmd, null, null, null, args);
             return ok;
         }
-    }
-    
-    
-    /**
-     * Reads property detected by native launcher (core/launcher).
-     * Implemented for Windows and GNOME.
-     * This was copied from "detectNetbeansHttpProxy in subversion/** /ProxyDescriptor.java.
-     */
-    private static String getNetbeansHttpProxy() {
-        String host = System.getProperty("http.proxyHost"); // NOI18N
-        
-        if (host == null) {
-            return null;
-        }
-        
-        String portHttp = System.getProperty("http.proxyPort"); // NOI18N
-        int port;
-        
-        try {
-            port = Integer.parseInt(portHttp);
-        } catch (NumberFormatException e) {
-            port = 8080;
-        }
-        
-        // Plugin requires "http://" in front of the port name if it's not already there
-        if (host.indexOf(':') == -1) {
-            host = "http://" + host; // NOI18N
-        }
-        
-        return host + ":" + port; // NOI18N
     }
     
     public List<String> getRepositories(boolean local) {
