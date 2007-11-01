@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="argument" foreColor="ff007c00" default="identifier"/>
     <fontcolor name="block-comment" foreColor="gray" default="comment"/>
     <fontcolor name="character" foreColor="ffb20000" default="char"/>
-    <fontcolor name="error" foreColor="white" bgColor="red" default="error"/>
+    <fontcolor name="error" default="error"/>
     <fontcolor name="operator" foreColor="ff007c00" default="operator"/>
     <fontcolor name="sgml-comment" foreColor="gray" default="comment"/>
     <fontcolor name="sgml-declaration" foreColor="ffbf9221" default="default"/>
@@ -54,6 +54,6 @@ made subject to such option by the copyright holder.
     <fontcolor name="text" default="default"/>
     <fontcolor name="value" foreColor="ff99006b" default="default"/>
     <fontcolor name="ws" default="whitespace"/>
-    <fontcolor name="css-embedded" bgColor="121E31" default="default"/>
-    <fontcolor name="javascript-embedded" bgColor="121E31" default="default"/>
+    <fontcolor name="css-embedded" default="default"/>
+    <fontcolor name="javascript-embedded" default="default"/>
 </fontscolors>

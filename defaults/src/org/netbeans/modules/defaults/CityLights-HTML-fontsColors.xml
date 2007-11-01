@@ -54,6 +54,6 @@ made subject to such option by the copyright holder.
     <fontcolor name="text" default="default"/>
     <fontcolor name="value" default="markup-attribute-value"/>
     <fontcolor name="ws" default="whitespace"/>
-    <fontcolor name="css-embedded" bgColor="ff151515" default="default"/>
-    <fontcolor name="javascript-embedded" bgColor="ff151515" default="default"/>
+    <fontcolor name="css-embedded" default="default"/>
+    <fontcolor name="javascript-embedded" default="default"/>
 </fontscolors>

@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="comment" foreColor="gray" default="default">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor name="error" foreColor="black" bgColor="red" default="default">
+    <fontcolor name="error" default="error">
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="scriptlet-delimiter" foreColor="gray" default="default">
@@ -67,7 +67,5 @@ made subject to such option by the copyright holder.
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="scriptlet" default="default"/>
-    <fontcolor name="expression-language" foreColor="yellow" default="default">
-        <font style="bold"/>
-    </fontcolor>
+    <fontcolor name="expression-language" foreColor="yellow" default="default"/>
 </fontscolors>

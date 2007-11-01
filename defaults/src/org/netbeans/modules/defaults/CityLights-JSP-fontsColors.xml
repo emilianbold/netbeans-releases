@@ -43,13 +43,13 @@ made subject to such option by the copyright holder.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="attribute-name" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="attribute-value" foreColor="green" bgColor="black" default="default"/>
+    <fontcolor name="attribute-name" foreColor="green" default="default"/>
+    <fontcolor name="attribute-value" foreColor="green" default="default"/>
     <fontcolor name="comment" default="comment"/>
-    <fontcolor name="error" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="scriptlet-delimiter" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="symbol" foreColor="green" bgColor="black" default="default"/>
-    <fontcolor name="tag-directive" foreColor="green" bgColor="black" default="default"/>
+    <fontcolor name="error" default="error"/>
+    <fontcolor name="scriptlet-delimiter" foreColor="green" default="default"/>
+    <fontcolor name="symbol" foreColor="green" default="default"/>
+    <fontcolor name="tag-directive" foreColor="green" default="default"/>
     <fontcolor name="jsp-whitespace" default="whitespace"/>
     <fontcolor name="scriptlet" default="default"/>
     <fontcolor name="expression-language" default="whitespace"/>
