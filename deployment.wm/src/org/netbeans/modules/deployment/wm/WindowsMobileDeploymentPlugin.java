@@ -76,13 +76,13 @@ public class WindowsMobileDeploymentPlugin implements DeploymentPlugin {
 
 
     public Map<String, Object> getProjectPropertyDefaultValues() {
-        return Collections.emptyMap();
-    }
-
-    public Map<String, Object> getGlobalPropertyDefaultValues() {
         HashMap<String, Object> map = new HashMap<String, Object>(5);
         map.put(PROP_APP_LOCATION, DEFAULT_APP_LOCATION);
         return Collections.unmodifiableMap(map);
+    }
+
+    public Map<String, Object> getGlobalPropertyDefaultValues() {
+        return Collections.emptyMap();
     }
 
     public Component createProjectCustomizerPanel() {
@@ -90,8 +90,7 @@ public class WindowsMobileDeploymentPlugin implements DeploymentPlugin {
     }
 
     public Component createGlobalCustomizerPanel() {
-        return new WindowsMobileCustomizerPanel();
-
+        return null;
     }
     
 }
