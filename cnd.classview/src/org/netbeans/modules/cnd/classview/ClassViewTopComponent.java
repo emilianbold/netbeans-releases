@@ -220,7 +220,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
                 break;
             case CLOSING:
                 modelOn = false;
-                if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesTC: model switched ff"); // NOI18N
+                if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesTC: model switched off"); // NOI18N
                 break;
         }
     }
