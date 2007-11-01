@@ -133,7 +133,9 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
             String tagName = gui.getTagName();
             if (tldFo==null) {
                 mes = NbBundle.getMessage(TargetChooserPanel.class,"MSG_noTldSelectedForTagFile");
-            } else if (!gui.isValidTagName(tagName)) {
+            } else if (TargetChooserPanelGUI.isTagNameEmpty(tagName)) {
+                mes = NbBundle.getMessage(TargetChooserPanel.class,"TXT_missingTagName");
+            } else if (!TargetChooserPanelGUI.isValidTagName(tagName)) {
                 mes = NbBundle.getMessage(TargetChooserPanel.class,"TXT_wrongTagName",tagName);
             } else if (gui.tagNameExists(tagName)) {
                 mes = NbBundle.getMessage(TargetChooserPanel.class,"TXT_tagNameExists",tagName);

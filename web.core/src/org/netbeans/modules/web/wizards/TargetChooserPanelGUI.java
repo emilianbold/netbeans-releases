@@ -1083,7 +1083,14 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
         return tldFo;
     }
     
-    boolean isValidTagName(String name) {
+    static boolean isTagNameEmpty(String name) {
+        if (name == null) {
+            return true;
+        }
+        return "".equals(name); // NOI18N
+    }
+
+    static boolean isValidTagName(String name) {
         if (name==null) return false;
         return org.apache.xerces.util.XMLChar.isValidNCName(name);
     }
