@@ -395,6 +395,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.i18n.form</friend>
                 <friend>org.netbeans.modules.swingapp</friend>
                 <friend>org.netbeans.modules.form.j2ee</friend>
+                <friend>org.netbeans.modules.java.examples</friend>
                 <package>org.netbeans.modules.form</package>
             </friend-packages>
             <class-path-extension>
