@@ -3580,6 +3580,13 @@ public class CodeCompleter implements Completable {
                 assert delimiters.length == 2;
                 startDelimiter = delimiters[0];
                 endDelimiter = delimiters[1];
+                
+                // When there are no args, don't use parentheses - and no spaces
+                // Don't add two blank spaces for the case where there are no args
+                if (printArgs == 0 /*&& startDelimiter.length() > 0 && startDelimiter.charAt(0) == ' '*/) {
+                    startDelimiter = "";
+                    endDelimiter = "";
+                }
             }
 
             StringBuilder sb = new StringBuilder();
