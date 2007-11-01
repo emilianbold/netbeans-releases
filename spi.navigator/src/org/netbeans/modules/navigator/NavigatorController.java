@@ -647,7 +647,7 @@ public final class NavigatorController implements LookupListener, ActionListener
                     curNodesLookups[i] = it.next().getLookup();
                 }
             }
-System.out.println("setting lookups, amount: " + curNodes.size());            
+            
             setLookups(curNodesLookups);
         }
         
