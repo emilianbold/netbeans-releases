@@ -42,11 +42,8 @@
 package org.netbeans.modules.websvc.design.view.widget;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
@@ -57,45 +54,8 @@ import org.netbeans.api.visual.widget.Scene;
  */
 public class CheckBoxWidget extends ButtonWidget {
     
-    /** The expand button image. */
-    private static final Image IMAGE_CHECKBOX = new BufferedImage(8, 8,
-            BufferedImage.TYPE_INT_ARGB);
-    /** The collapse button image. */
-    private static final Image IMAGE_CHECKBOX_SELECTED = new BufferedImage(8, 8,
-            BufferedImage.TYPE_INT_ARGB);
-    private boolean isSelected;
-
     public static final String ACTION_COMMAND_SELECTED = "toggle-button-selected";
     public static final String ACTION_COMMAND_DESELECTED = "toggle-button-deselected";
-
-    static {
-
-        // Create the checkbox image.
-        Graphics2D g2 = ((BufferedImage) IMAGE_CHECKBOX).createGraphics();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-        float w = IMAGE_CHECKBOX.getWidth(null);
-        float h = IMAGE_CHECKBOX.getHeight(null);
-        Rectangle2D gp = new Rectangle2D.Double(0,0,w,h);
-        g2.setPaint(Color.WHITE);
-        g2.fill(gp);
-        g2.setPaint(Color.GRAY);
-        g2.draw(gp);
-
-        // Create the checkbox selected image.
-        g2 = ((BufferedImage) IMAGE_CHECKBOX_SELECTED).createGraphics();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-        w = IMAGE_CHECKBOX_SELECTED.getWidth(null);
-        h = IMAGE_CHECKBOX_SELECTED.getHeight(null);
-        gp = new Rectangle2D.Double(0,0,w,h);
-        g2.setPaint(Color.WHITE);
-        g2.fill(gp);
-        g2.setPaint(Color.GRAY);
-        g2.draw(gp);
-        gp = new Rectangle2D.Double(1.5,1.5,w-3,h-3);
-        g2.fill(gp);
-    }
 
     /**
      *
@@ -103,16 +63,19 @@ public class CheckBoxWidget extends ButtonWidget {
      * @param text
      */
     public CheckBoxWidget(Scene scene, String text) {
-        super(scene, IMAGE_CHECKBOX, text);
-        setSelectedImage(IMAGE_CHECKBOX_SELECTED);
+        super(scene, null, text);
+        setImage(new UncheckedImageWidget(scene, 8));
+        setSelectedImage(new CheckedImageWidget(scene, 8));
         setBorder(BorderFactory.createEmptyBorder(1));
     }
 
+    @Override
     public void performAction() {
         setSelected(!isSelected());
         super.performAction();
     }
     
+    @Override
     public String getActionCommand() {
         return isSelected()?ACTION_COMMAND_SELECTED:ACTION_COMMAND_DESELECTED;
     }
@@ -126,4 +89,31 @@ public class CheckBoxWidget extends ButtonWidget {
         super.notifyStateChanged(previousState,state);
     }
     
+    private static class CheckedImageWidget extends ImageLabelWidget.PaintableImageWidget {
+
+        public CheckedImageWidget(Scene scene, int size) {
+            super(scene, Color.LIGHT_GRAY, size, size);
+            setBackground(Color.GRAY);
+            setBorder(BorderFactory.createLineBorder(1, Color.GRAY));
+            setOpaque(true);
+        }
+
+        protected Shape createImage(int width, int height) {
+            return new Rectangle2D.Double(0,0,width-2,height-2);
+        }
+    }
+
+    private static class UncheckedImageWidget extends ImageLabelWidget.PaintableImageWidget {
+
+        public UncheckedImageWidget(Scene scene, int size) {
+            super(scene, Color.LIGHT_GRAY, size, size);
+            setBackground(Color.WHITE);
+            setBorder(BorderFactory.createLineBorder(1, Color.GRAY));
+            setOpaque(true);
+        }
+
+        protected Shape createImage(int width, int height) {
+            return new Rectangle2D.Double(0,0,width-2,height-2);
+        }
+    }
 }
