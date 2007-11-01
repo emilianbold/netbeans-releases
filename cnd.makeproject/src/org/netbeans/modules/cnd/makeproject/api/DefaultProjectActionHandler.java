@@ -368,11 +368,12 @@ public class DefaultProjectActionHandler implements ActionListener {
                             pdp.getConfigurationDescriptor().setModified();
                         // Set executable in pae
                         if (pae.getID() == ProjectActionEvent.RUN) {
-                            CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+                            // Next block is commented out due to IZ120794
+                            /*CompilerSet compilerSet = CompilerSetManager.getDefault().getCompilerSet(makeConfiguration.getCompilerSet().getValue());
                             if (compilerSet != null && compilerSet.getCompilerFlavor() != CompilerFlavor.MinGW) {
                                 // IZ 120352
-                            executable = FilePathAdaptor.naturalize(executable);
-                            }
+                                executable = FilePathAdaptor.naturalize(executable);
+                            }*/
                             pae.setExecutable(executable);
                         }
                         else {
