@@ -79,14 +79,21 @@ public class JSPLexerFormatter extends TagBasedLexerFormatter {
             tokenSequence.move(position);
             tokenSequence.moveNext();
             Token token = tokenSequence.token();
+            String tokenBody = token.text().toString();
 
-            if (token.id() == JspTokenId.TAG && !token.text().toString().endsWith("/>")) {
-                //NOI18N
-
-                int r = tokenSequence.offset();
-                tokenSequence.move(originalOffset);
-                tokenSequence.moveNext();
-                return r;
+            if (token.id() == JspTokenId.SYMBOL && !(tokenBody.endsWith("/>") || tokenBody.endsWith("%>"))) { //NOI18N
+                
+                boolean moveSuccessful;
+                do {
+                    moveSuccessful = tokenSequence.movePrevious();
+                } while (moveSuccessful && tokenSequence.token().id() != JspTokenId.TAG);
+                
+                if (moveSuccessful) {
+                    int r = tokenSequence.offset();
+                    tokenSequence.move(originalOffset);
+                    tokenSequence.moveNext();
+                    return r;
+                }
             }
             
             tokenSequence.move(originalOffset);

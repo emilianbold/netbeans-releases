@@ -671,8 +671,9 @@ public abstract class TagBasedLexerFormatter {
 
             Integer dotPos = (Integer) doc.getProperty(ORG_CARET_OFFSET_DOCPROPERTY);
             assert dotPos != null;
+            int origDotPos = dotPos.intValue() - 1; // dotPos - "\n".length()
             
-            if (indexWithinCurrentLanguage(doc, dotPos - 1)) {
+            if (indexWithinCurrentLanguage(doc, origDotPos - 1)) {
                 if (isSmartEnter(doc, dotPos)) {
                     handleSmartEnter(context);
                 } else {
@@ -680,7 +681,7 @@ public abstract class TagBasedLexerFormatter {
                     int lineNumber = Utilities.getLineOffset(doc, dotPos);
                     boolean firstRow = false;
                     
-                    if (Utilities.getRowStart(doc, dotPos - 1) == dotPos - 1){
+                    if (Utilities.getRowStart(doc, origDotPos) == origDotPos){
                         newIndent = getExistingIndent(doc, lineNumber);
                         firstRow = true;
                     } else if (lineNumber > 0){
@@ -698,7 +699,7 @@ public abstract class TagBasedLexerFormatter {
                     JoinedTokenSequence tokenSequence = new JoinedTokenSequence(tokenSequences, tokenSequenceBounds);
                     tokenSequence.moveStart(); tokenSequence.moveNext();
 
-                    int openingTagOffset = getTagEndingAtPosition(tokenSequence, dotPos - 2);
+                    int openingTagOffset = getTagEndingAtPosition(tokenSequence, origDotPos - 1);
                     
                     if (isOpeningTag(tokenSequence, openingTagOffset)){
                         newIndent += doc.getShiftWidth();
