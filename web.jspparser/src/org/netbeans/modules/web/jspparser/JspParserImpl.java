@@ -88,7 +88,7 @@ public class JspParserImpl implements JspParserAPI {
         if (webAppParserImplConstructor == null) {
             File files[] = new File[5];
             files[0] = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false);
-            files[1] = InstalledFileLocator.getDefault().locate("modules/ext/glassfish-jspparser.jar", null, false);
+            files[1] = InstalledFileLocator.getDefault().locate("modules/ext/glassfish-jspparser-2.0.jar", null, false);
             //files[2] = InstalledFileLocator.getDefault().locate("modules/ext/glassfish-logging.jar", null, false);
             files[2] = InstalledFileLocator.getDefault().locate("modules/ext/jsp-parser-ext.jar", null, false);
             files[3] = InstalledFileLocator.getDefault().locate("modules/ext/servlet2.5-jsp2.1-api.jar", null, false);
