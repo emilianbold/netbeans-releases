@@ -122,7 +122,7 @@ public class J2SESampleProjectGenerator {
                             } finally {
                                 in.close ();
                             }
-                            props.put(SOURCE_ENCODING, FileEncodingQuery.getDefaultEncoding().name());
+                            props.put(SOURCE_ENCODING, "UTF-8");                                            //NOI18N
                             out = projectProps.getOutputStream(lock);
                             try {
                                 props.store(out);
