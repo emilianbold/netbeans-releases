@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.BadLocationException;
@@ -870,7 +872,7 @@ public class XDMModel {
 	    d.addUndoableEditListener(uel);
             Utils.replaceDocument(d, newXMLText);
         } catch (BadLocationException ble) {
-            assert false;
+            throw new IllegalStateException("It is possible that model source file is locked", ble);
         } finally {
 	    if (uel != null) {
 		d.removeUndoableEditListener(uel);
