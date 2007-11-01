@@ -161,7 +161,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
                 //            PaletteController paletteController = getPaletteController();
                 //            if (paletteController == null) {
                 lookup = new ProxyLookup(new Lookup[]{superLookup, Lookups.fixed(new Object[]{scene})});
-                //            } else {
+            //            } else {
                 //                lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.fixed(new Object[] { paletteController})});
                 //            }
             }
@@ -306,12 +306,12 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         //Workaround: Temporarily Wrapping Collection because of  http://www.netbeans.org/issues/show_bug.cgi?id=97496
         Collection<Page> nodes = new HashSet<Page>(scene.getNodes());
         for (Page node : nodes) {
-            scene.removeNodeWithEdges(node);  
+            scene.removeNodeWithEdges(node);
             node.destroy2();
         }
         scene.validate();
     }
-    
+
     
 
     /**
@@ -343,7 +343,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         sceneData.savePageWithNewName(oldDisplayName, newDisplayName);
     }
 
-//    private static final String ACN_PAGE = NbBundle.getMessage(PageFlowView.class, "ACN_Page");
+    //    private static final String ACN_PAGE = NbBundle.getMessage(PageFlowView.class, "ACN_Page");
 //    private static final String ACDS_PAGE = NbBundle.getMessage(PageFlowView.class, "ACDS_Page");
 //    private static final String ACN_PIN = NbBundle.getMessage(PageFlowView.class, "ACN_Pin");
 //    private static final String ACDS_PIN = NbBundle.getMessage(PageFlowView.class, "ACDS_Pin");
@@ -370,7 +370,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
             widget.setMinimized(data.isMinimized());
         }
 
-//        widget.getAccessibleContext().setAccessibleDescription(ACDS_PAGE);
+        //        widget.getAccessibleContext().setAccessibleDescription(ACDS_PAGE);
 //        widget.getAccessibleContext().setAccessibleDescription(ACN_PAGE);
         scene.addPin(pageNode, new Pin(pageNode));
         runPinSetup(pageNode, widget);
@@ -398,71 +398,73 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         widget.addChild(loadingWidget);
         runnables.add(new Runnable() {
 
-            public void run() {
-                /* This is called in redrawPins and edges setupPinsInNode(pageNode);*/
-                /* Need to do updateNodeWidgetActions after setupPinInNode because this is when the model is set. */
-                LOG.finest("    PFE: Inside Thread: " + java.util.Calendar.getInstance().getTime());
-                if (!pageNode.isDataNode()) {
-                    EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        /* This is called in redrawPins and edges setupPinsInNode(pageNode);*/
+                        /* Need to do updateNodeWidgetActions after setupPinInNode because this is when the model is set. */
+                        LOG.finest("    PFE: Inside Thread: " + java.util.Calendar.getInstance().getTime());
+                        if (!pageNode.isDataNode()) {
+                            EventQueue.invokeLater(new Runnable() {
 
-                        public void run() {
-                            widget.removeChild(loadingWidget);
-                            scene.validate();
+                                        public void run() {
+                                            if (scene != null) {
+                                                widget.removeChild(loadingWidget);
+                                                scene.validate();
+                                            }
+                                        }
+                                    });
+                            return;
                         }
-                    });
-                    return;
-                }
-                final java.util.Collection<org.netbeans.modules.web.jsf.navigation.Pin> newPinNodes = pageNode.getPinNodes();
+                        final java.util.Collection<org.netbeans.modules.web.jsf.navigation.Pin> newPinNodes = pageNode.getPinNodes();
 
-                LOG.finest("    PFE: Completed Nodes Setup: " + java.util.Calendar.getInstance().getTime());
+                        LOG.finest("    PFE: Completed Nodes Setup: " + java.util.Calendar.getInstance().getTime());
 
-                try {
-                    EventQueue.invokeAndWait(new java.lang.Runnable() {
+                        try {
+                            EventQueue.invokeAndWait(new java.lang.Runnable() {
 
-                        public void run() {
-                            
-                            LOG.finest("    PFE: Starting Redraw: " + java.util.Calendar.getInstance().getTime());
-                            Collection<NavigationCaseEdge> redrawCaseNodes = new ArrayList<NavigationCaseEdge>();
-                            Collection<Pin> pinNodes = new ArrayList<Pin>(scene.getPins());
+                                        public void run() {
 
-                            widget.removeChild(loadingWidget);
-                            for (Pin pin : pinNodes) {
-                                if (pin.getPage() == pageNode) {
-                                    assert pin.getPage().getDisplayName().equals(pageNode.getDisplayName());
-                                    java.util.Collection<NavigationCaseEdge> caseNodes = scene.findPinEdges(pin, true, false);
-                                    redrawCaseNodes.addAll(caseNodes);
-                                    if (!pin.isDefault()) {
-                                        scene.removePin(pin);
-                                    }
-                                }
-                            }
-                            if (newPinNodes.size() > 0) {
-                                for (org.netbeans.modules.web.jsf.navigation.Pin pinNode : newPinNodes) {
-                                    createPin(pageNode, pinNode);
-                                }
-                            }
-                            for (org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge caseNode : redrawCaseNodes) {
-                                setEdgeSourcePin(caseNode, pageNode);
-                            }
-                            scene.updateNodeWidgetActions(pageNode);
-                            scene.validate();
-                            LOG.finest("    PFE: Ending Redraw: " + java.util.Calendar.getInstance().getTime());
-                        }
-                    });
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (InvocationTargetException ex) {
+                                            LOG.finest("    PFE: Starting Redraw: " + java.util.Calendar.getInstance().getTime());
+                                            Collection<NavigationCaseEdge> redrawCaseNodes = new ArrayList<NavigationCaseEdge>();
+                                            Collection<Pin> pinNodes = new ArrayList<Pin>(scene.getPins());
+
+                                            widget.removeChild(loadingWidget);
+                                            for (Pin pin : pinNodes) {
+                                                if (pin.getPage() == pageNode) {
+                                                    assert pin.getPage().getDisplayName().equals(pageNode.getDisplayName());
+                                                    java.util.Collection<NavigationCaseEdge> caseNodes = scene.findPinEdges(pin, true, false);
+                                                    redrawCaseNodes.addAll(caseNodes);
+                                                    if (!pin.isDefault()) {
+                                                        scene.removePin(pin);
+                                                    }
+                                                }
+                                            }
+                                            if (newPinNodes.size() > 0) {
+                                                for (org.netbeans.modules.web.jsf.navigation.Pin pinNode : newPinNodes) {
+                                                    createPin(pageNode, pinNode);
+                                                }
+                                            }
+                                            for (org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge caseNode : redrawCaseNodes) {
+                                                setEdgeSourcePin(caseNode, pageNode);
+                                            }
+                                            scene.updateNodeWidgetActions(pageNode);
+                                            scene.validate();
+                                            LOG.finest("    PFE: Ending Redraw: " + java.util.Calendar.getInstance().getTime());
+                                        }
+                                    });
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (InvocationTargetException ex) {
                     if (scene == null )  {
-                        /* It is okay suppress this exception because it is expected if the scene is deleted (closed)
+                                /* It is okay suppress this exception because it is expected if the scene is deleted (closed)
                          * before the page has finished loading. 
                          */
-                        LOG.finer("Scene is has been closed before page has finished loading.:" + ex);
-                    } else {
-                        Exceptions.printStackTrace(ex);
+                                LOG.finer("Scene is has been closed before page has finished loading.:" + ex);
+                            } else {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
                     }
-                }
-            }
-        });
+                });
         LOG.exiting(PageFlowView.class.getName(), "runPinSetup");
     }
 
@@ -509,7 +511,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         setEdgeTargePin(navCaseEdge, toPageNode);
 
         selectPageFlowSceneElement(navCaseEdge);
-        //connectionWidget.getAccessibleContext().setAccessibleName(ACN_EDGE);
+    //connectionWidget.getAccessibleContext().setAccessibleName(ACN_EDGE);
         //connectionWidget.getAccessibleContext().setAccessibleDescription(ACDS_PAGE);
     }
 
@@ -591,26 +593,26 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         try {
             return PaletteFactory.createPalette(PATH_PALETTE_FOLDER, new PaletteActions() {
 
-                public Action[] getCustomCategoryActions(Lookup lookup) {
-                    return new Action[0];
-                }
+                        public Action[] getCustomCategoryActions(Lookup lookup) {
+                            return new Action[0];
+                        }
 
-                public Action[] getCustomItemActions(Lookup lookup) {
-                    return new Action[0];
-                }
+                        public Action[] getCustomItemActions(Lookup lookup) {
+                            return new Action[0];
+                        }
 
-                public Action[] getCustomPaletteActions() {
-                    return new Action[0];
-                }
+                        public Action[] getCustomPaletteActions() {
+                            return new Action[0];
+                        }
 
-                public Action[] getImportActions() {
-                    return new Action[0];
-                }
+                        public Action[] getImportActions() {
+                            return new Action[0];
+                        }
 
-                public Action getPreferredAction(Lookup lookup) {
-                    return null; //TODO
-                }
-            });
+                        public Action getPreferredAction(Lookup lookup) {
+                            return null; //TODO
+                        }
+                    });
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -698,7 +700,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
             System.err.println("PageNode: " + pageNode);
             //            System.err.println("Node Widget is null in scene for: " + pageNode.getDisplayName());
             System.err.println("Here are the scene nodes: " + scene.getNodes());
-            //            Thread.dumpStack();
+        //            Thread.dumpStack();
         }
     }
 
@@ -846,7 +848,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
                 useLayout = LayoutUtility.LayoutType.FREE_PLACES_NODES;
                 break;
             case FREE_PLACES_NODES:
-//                useLayout = LayoutUtility.LayoutType.TREE_GRAPH;
+                //                useLayout = LayoutUtility.LayoutType.TREE_GRAPH;
 //                break;
 //            case TREE_GRAPH:
                 useLayout = LayoutUtility.LayoutType.GRID_GRAPH;
@@ -886,7 +888,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     public void setMultiview(PageFlowElement multiview) {
         this.multiviewRef = new WeakReference<PageFlowElement>(multiview);
     }
-    
+
     /* To be used for unit test purposes only. */
     static class PFVTestAccessor {
         static PageFlowScene getPageFlowScene(PageFlowView view) {
