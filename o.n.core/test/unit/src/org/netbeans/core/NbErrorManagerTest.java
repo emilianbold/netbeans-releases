@@ -373,6 +373,17 @@ public final class NbErrorManagerTest extends NbTestCase {
         assertNotNull("Mock descriptor called", MockDD.lastDescriptor);
         assertEquals("Info msg", NotifyDescriptor.INFORMATION_MESSAGE, MockDD.lastDescriptor.getMessageType());
     }
+    public void testUIExceptionsTriggersNoDialogIssue118408() throws Exception {
+        MockDD.lastDescriptor = null;
+
+        Exception iex = new IllegalStateException();
+        String msg = "Thread '";
+        ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(iex, msg));
+
+        waitEQ();
+        assertNotNull("Mock descriptor called", MockDD.lastDescriptor);
+        assertEquals("Warning msg as the exception has been localized", NotifyDescriptor.WARNING_MESSAGE, MockDD.lastDescriptor.getMessageType());
+    }
     public void testUIExceptionsTriggersTheDialogWithWarningPlus1() throws Exception {
         MockDD.lastDescriptor = null;
 
