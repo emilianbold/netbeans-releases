@@ -108,6 +108,7 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
 //        suite.addTestSuite(GuardedBlockTest.class);
         suite.addTest(new GuardedBlockTest("testAddMethodAfterVariables"));
         suite.addTest(new GuardedBlockTest("test119048"));
+        suite.addTest(new GuardedBlockTest("test119962"));
 //        suite.addTest(new GuardedBlockTest("test119345"));
         return suite;
     }
@@ -268,6 +269,107 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
                     );
                 BlockTree copy = make.insertBlockStatement(method.getBody(), 0, var);
                 workingCopy.rewrite(method.getBody(), copy);
+            }
+        };
+        src.runModificationTask(task).commit();
+        editorCookie.saveDocument();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #119962: Guarded Exception
+     */
+    public void test119962() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package test;\n" +
+            "\n" +
+            "public class NewJFrame extends javax.swing.JFrame {\n" +
+            "    private String str;\n" +
+            "    \n" +
+            "    // <editor-fold defaultstate=\"collapsed\" desc=\"Generated Code\">//GEN-BEGIN:initComponents\n" +
+            "    private void initComponents() {\n" +
+            "\n" +
+            "        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);\n" +
+            "\n" +
+            "        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());\n" +
+            "        getContentPane().setLayout(layout);\n" +
+            "        layout.setHorizontalGroup(\n" +
+            "            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)\n" +
+            "            .addGap(0, 400, Short.MAX_VALUE)\n" +
+            "        );\n" +
+            "        layout.setVerticalGroup(\n" +
+            "            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)\n" +
+            "            .addGap(0, 300, Short.MAX_VALUE)\n" +
+            "        );\n" +
+            "\n" +
+            "        pack();\n" +
+            "    }// </editor-fold>//GEN-END:initComponents\n" +
+            "    // Variables declaration - do not modify//GEN-BEGIN:variables\n" +
+            "    // End of variables declaration//GEN-END:variables\n" +
+            "}"
+        );
+        DataObject dataObject = DataObject.find(FileUtil.toFileObject(testFile));
+        EditorCookie editorCookie = ((GuardedDataObject) dataObject).getCookie(EditorCookie.class);
+        Document doc = editorCookie.openDocument();
+        String golden = 
+            "package test;\n" +
+            "\n" +
+            "public class NewJFrame extends javax.swing.JFrame {\n" +
+            "    private String str;\n" +
+            "    \n" +
+            "    // <editor-fold defaultstate=\"collapsed\" desc=\"Generated Code\">//GEN-BEGIN:initComponents\n" +
+            "    private void initComponents() {\n" +
+            "\n" +
+            "        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);\n" +
+            "\n" +
+            "        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());\n" +
+            "        getContentPane().setLayout(layout);\n" +
+            "        layout.setHorizontalGroup(\n" +
+            "            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)\n" +
+            "            .addGap(0, 400, Short.MAX_VALUE)\n" +
+            "        );\n" +
+            "        layout.setVerticalGroup(\n" +
+            "            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)\n" +
+            "            .addGap(0, 300, Short.MAX_VALUE)\n" +
+            "        );\n" +
+            "\n" +
+            "        pack();\n" +
+            "    }// </editor-fold>//GEN-END:initComponents\n" +
+            "\n" +
+            "    public void actionPerformed(ActionEvent e) {\n" +
+            "    }\n" +
+            "    // Variables declaration - do not modify//GEN-BEGIN:variables\n" +
+            "    // End of variables declaration//GEN-END:variables\n" +
+            "}";
+        
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree newMethod = make.Method(
+                        make.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC)),
+                        "actionPerformed",
+                        make.PrimitiveType(TypeKind.VOID),
+                        Collections.<TypeParameterTree>emptyList(),
+                        Collections.<VariableTree>singletonList(
+                            make.Variable(
+                                make.Modifiers(Collections.<Modifier>emptySet()),
+                                "e", 
+                                make.Identifier("ActionEvent"), 
+                            null)
+                        ),
+                        Collections.<ExpressionTree>emptyList(),
+                        make.Block(Collections.<StatementTree>emptyList(), false),
+                        null // default value - not applicable
+                ); 
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, newMethod));
             }
         };
         src.runModificationTask(task).commit();
