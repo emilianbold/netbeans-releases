@@ -104,7 +104,7 @@ public class InstallerInitTest extends NbTestCase {
     @Override
     protected void tearDown() throws Exception {
         assertNotNull(installer);
-        installer.close();
+        installer.doClose();
     }
 
     /* XXX: implement by beta1
@@ -159,7 +159,7 @@ public class InstallerInitTest extends NbTestCase {
         
         assertNull("No dialogs so far", DD.d);
         
-        installer.close();
+        installer.doClose();
         waitForGestures();
         
         assertNull("No dialogs at close", DD.d);
@@ -194,7 +194,7 @@ public class InstallerInitTest extends NbTestCase {
         
         assertNull("No dialogs so far", DD.d);
         
-        installer.close();
+        installer.doClose();
         waitForGestures();
         
         assertNull("No dialogs at close", DD.d);

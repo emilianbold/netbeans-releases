@@ -105,7 +105,7 @@ public class InstallerReadPageTest extends NbTestCase {
     protected void tearDown() throws Exception {
         Installer installer = Installer.findObject(Installer.class, true);
         assertNotNull(installer);
-        installer.close();
+        installer.doClose();
     }
 
     public void testURLInCzechEncoding() throws Exception {

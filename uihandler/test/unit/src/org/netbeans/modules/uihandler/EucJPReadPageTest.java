@@ -108,7 +108,7 @@ public class EucJPReadPageTest extends NbTestCase {
     protected void tearDown() throws Exception {
         Installer installer = Installer.findObject(Installer.class, true);
         assertNotNull(installer);
-        installer.close();
+        installer.doClose();
     }
     
     public void testKFranksFile() throws Exception {

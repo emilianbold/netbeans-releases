@@ -84,7 +84,7 @@ public class ShutdownFromAWTTest extends NbTestCase {
         assertTrue("In EQ", EventQueue.isDispatchThread());
     
         assertTrue("Ok to close", inst.closing());
-        inst.close();
+        inst.doClose();
     }
     public static final class DD extends DialogDisplayer implements Mutex.Action<Integer> {
         private int cnt;

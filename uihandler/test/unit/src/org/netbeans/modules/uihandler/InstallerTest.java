@@ -85,7 +85,7 @@ public class InstallerTest extends NbTestCase {
     protected void tearDown() throws Exception {
         Installer installer = Installer.findObject(Installer.class, true);
         assertNotNull(installer);
-        installer.close();
+        installer.doClose();
     }
     
     public void testEmptyLog() throws Exception {
@@ -101,7 +101,7 @@ public class InstallerTest extends NbTestCase {
         
         Installer installer = Installer.findObject(Installer.class, true);
         assertNotNull(installer);
-        installer.close();
+        installer.doClose();
         
         installer.restored();
         UIHandler.waitFlushed();

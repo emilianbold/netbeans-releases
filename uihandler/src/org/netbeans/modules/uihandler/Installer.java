@@ -182,11 +182,15 @@ public class Installer extends ModuleInstall implements Runnable {
     
     @Override
     public void uninstalled() {
-        close();
+        doClose();
     }
     
     @Override
-    public void close() {
+    public final void close() {
+        UIHandler.flushImmediatelly();
+    }
+    
+    public final void doClose() {
         Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
         log.removeHandler(ui);
         Logger all = Logger.getLogger(""); // NOI18N

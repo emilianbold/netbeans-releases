@@ -69,6 +69,7 @@ implements ActionListener, Runnable, Callable<JButton> {
     static final int MAX_LOGS = 1000;
     private static Task lastRecord = Task.EMPTY;
     private static RequestProcessor FLUSH = new RequestProcessor("Flush UI Logs"); // NOI18N
+    private static boolean flushOnRecord;
     
     private static boolean exceptionHandler;
     public static void registerExceptionHandler(boolean enable) {
@@ -102,10 +103,18 @@ implements ActionListener, Runnable, Callable<JButton> {
         WriteOut wo = new WriteOut();
         wo.r = record;
         lastRecord = FLUSH.post(wo);
+        
+        if (flushOnRecord) {
+            waitFlushed();
+        }
     }
 
     public void flush() {
         waitFlushed();
+    }
+    
+    static final void flushImmediatelly() {
+        flushOnRecord = true;
     }
     
     static final void waitFlushed() {
