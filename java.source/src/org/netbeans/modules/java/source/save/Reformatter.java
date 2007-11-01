@@ -131,7 +131,9 @@ public class Reformatter implements ReformatTask {
         PositionConverter converter = controller.getPositionConverter();
         if (converter != null) {
             startOffset = converter.getJavaSourcePosition(startOffset);
+            assert startOffset >= 0 : "Converted startOffset is wrong: " + startOffset;
             endOffset = converter.getJavaSourcePosition(endOffset);
+            assert endOffset >= 0 : "Converted endOffset is wrong: " + endOffset;
         }
         if (!"text/x-java".equals(context.mimePath())) { //NOI18N
             TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
