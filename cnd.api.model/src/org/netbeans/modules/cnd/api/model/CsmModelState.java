@@ -50,6 +50,9 @@ public enum CsmModelState {
     /** Code model is up and running */
     ON,
     
+    /** Code model is swithing off */
+    CLOSING,
+    
     /** Code model is switched off */
     OFF,
     
