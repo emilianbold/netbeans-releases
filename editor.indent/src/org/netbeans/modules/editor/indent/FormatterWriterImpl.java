@@ -98,11 +98,16 @@ public final class FormatterWriterImpl extends Writer {
             try {
                 Document doc = indentImpl.document();
                 String text = buffer.toString();
-                if (text.length() > 0 && offset <= doc.getLength()) {
+                int docLen = doc.getLength();
+                if (text.length() > 0 && offset <= docLen) {
                     try {
+                        // Text can have various line separators so the text.length()
+                        // might not correspond to the number of characters really present
+                        // in the document after the insertion.
                         doc.insertString(offset, text, null);
+                        int insertedLen = doc.getLength() - docLen;
                         Position startPos = doc.createPosition(offset);
-                        Position endPos = doc.createPosition(offset + text.length());
+                        Position endPos = doc.createPosition(offset + insertedLen);
                         indentImpl.reformat(startPos.getOffset(), endPos.getOffset());
                         int len = endPos.getOffset() - startPos.getOffset();
                         String reformattedText = doc.getText(startPos.getOffset(), len);
