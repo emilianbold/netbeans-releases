@@ -7,7 +7,7 @@
     <target name="javadoc" depends="preprocess">
         <fail unless="dist.javadoc.dir">Must set dist.javadoc.dir</fail>
         <mkdir dir="${{dist.javadoc.dir}}"/>
-        <javadoc source="${{javac.source}}" destdir="${{dist.javadoc.dir}}" bootclasspath="${{platform.bootclasspath}}" notree="${{javadoc.notree}}" use="${{javadoc.use}}" nonavbar="${{javadoc.nonavbar}}" noindex="${{javadoc.noindex}}" splitindex="${{javadoc.splitindex}}" author="${{javadoc.author}}" version="${{javadoc.version}}" windowtitle="${{javadoc.windowtitle}}" private="${{javadoc.private}}" encoding="${{javac.encoding}}">
+        <javadoc source="${{javac.source}}" destdir="${{dist.javadoc.dir}}" bootclasspath="${{platform.bootclasspath}}" notree="${{javadoc.notree}}" use="${{javadoc.use}}" nonavbar="${{javadoc.nonavbar}}" noindex="${{javadoc.noindex}}" splitindex="${{javadoc.splitindex}}" author="${{javadoc.author}}" version="${{javadoc.version}}" windowtitle="${{javadoc.windowtitle}}" private="${{javadoc.private}}" encoding="${{javac.encoding}}" docencoding="${{javac.encoding}}" charset="${{javac.encoding}}">
             <classpath>
                 <path path="${{libs.classpath}}"/>
             </classpath>
