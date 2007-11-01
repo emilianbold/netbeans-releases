@@ -42,6 +42,7 @@
 package org.netbeans.modules.subversion.ui.browser;
 
 import java.awt.Component;
+import java.awt.Image;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.openide.nodes.AbstractNode;
@@ -65,6 +66,7 @@ import org.netbeans.modules.subversion.ui.search.SvnSearch;
 import org.openide.ErrorManager;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -77,6 +79,11 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  */
 public class RepositoryPathNode extends AbstractNode {
+
+    private static final String ICON_KEY_UIMANAGER = "Tree.closedIcon";                         // NOI18N
+    private static final String OPENED_ICON_KEY_UIMANAGER = "Tree.openIcon";                    // NOI18N
+    private static final String ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.icon";              // NOI18N
+    private static final String OPENED_ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.openedIcon"; // NOI18N
     
     private RepositoryPathEntry entry;
     private final BrowserClient client;    
@@ -109,16 +116,50 @@ public class RepositoryPathNode extends AbstractNode {
         super(entry.getSvnNodeKind() == SVNNodeKind.DIR ? new RepositoryPathChildren(client) : Children.LEAF);
         this.entry = entry;
         this.client = client;
-        this.repositoryFolder = repositoryFolder;        
-        
-        if(entry.getSvnNodeKind() == SVNNodeKind.DIR) {
-            setIconBaseWithExtension("org/openide/loaders/defaultFolder.gif");       // NOI18N
-        } else {
-            setIconBaseWithExtension("org/openide/loaders/defaultFile.gif");         // NOI18N    
-        }
+        this.repositoryFolder = repositoryFolder;                
         initProperties();
     }
 
+    @Override
+    public Image getIcon(int type) {
+        if (entry.getSvnNodeKind() == SVNNodeKind.DIR) {
+            return getTreeFolderIcon(false);
+        } else {
+            return super.getIcon(type);   
+        }             
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        if (entry.getSvnNodeKind() == SVNNodeKind.DIR) {
+            return getTreeFolderIcon(true);
+        } else {
+            return super.getOpenedIcon(type);    
+        }
+    }
+        
+    /**
+     * Returns default folder icon as {@link java.awt.Image}. Never returns
+     * <code>null</code>.
+     * Inspired by org.netbeans.modules.apisupport.project.ui.UIUtil.getTreeFolderIcon()
+     * 
+     * @param opened wheter closed or opened icon should be returned.
+     */
+    private Image getTreeFolderIcon(boolean opened) {
+        Image base = null;
+        Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER); 
+        if (baseIcon != null) {
+           base = Utilities.icon2Image(baseIcon);
+        } else {
+            base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); 
+            if (base == null) { // fallback to our owns                
+                base = Utilities.loadImage("org/openide/loaders/defaultFolder.gif");        //NOI18N
+            }
+        }
+        assert base != null;
+        return base;
+    }
+    
     private void initProperties() {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = Sheet.createPropertiesSet();
@@ -169,7 +210,7 @@ public class RepositoryPathNode extends AbstractNode {
             }            
         }
     }
-
+    
     public Action[] getActions(boolean context) {
         return client.getActions();
     }
