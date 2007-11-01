@@ -46,6 +46,16 @@
                       <attr name="position" intvalue="400"/>
                       <attr name="defaultFileToOpen" stringvalue="src/marsroverviewer/MarsRoverViewerView.java"/>
                     </file>
+                    <file name="ClientEditor.zip" url="ClientEditor.zip">
+                      <attr name="template" boolvalue="true"/>
+                      <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/examples/resources/descriptions/ClientEditor.html"/>
+                      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.examples.Bundle"/>
+                      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/examples/resources/j2seProject.gif"/>
+                      <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.examples.J2SESampleProjectIterator"/>
+                      <attr name="prjType" stringvalue="j2se"/>
+                      <attr name="position" intvalue="500"/>
+                      <attr name="defaultFileToOpen" stringvalue="src/clienteditor/ClientEditor.java"/>
+                    </file>
                 </folder>
             </folder>
         </folder>

@@ -44,9 +44,32 @@ made subject to such option by the copyright holder.
 
     <import file="../../nbbuild/templates/projectized.xml"/>
 
+    <target name="clean" depends="client-editor-clean,projectized-common.clean"/>
+
+    <target name="client-editor-compile">
+        <path id="swing-layout-classpath">
+            <fileset dir="../../libs/swing-layout/external">
+                <include name="**/*.jar"/>
+            </fileset>
+        </path>
+        <path id="beans-binding-classpath">
+            <fileset dir="../../form/external">
+                <include name="**/beansbinding*.jar"/>
+            </fileset>
+        </path>
+        <ant dir="ClientEditor" target="compile" inheritAll="false" >
+            <property name="libs.swing-layout.classpath" refid="swing-layout-classpath"/>
+            <property name="libs.beans-binding.classpath" refid="beans-binding-classpath"/>
+        </ant>
+    </target>
+
+    <target name="client-editor-clean">
+        <ant dir="ClientEditor" target="clean" inheritAll="false"/>
+    </target>
+
     <target name="jar" depends="zip-examples,projectized-common.jar"/>
 
-    <target name="zip-examples" depends="init">
+    <target name="zip-examples" depends="init,client-editor-compile">
         <property name="examples" location="${build.classes.dir}/org/netbeans/modules/java/examples/resources"/>
         <mkdir dir="${examples}"/>
         <zip basedir="anagrams" destfile="${examples}/anagrams.zip">
@@ -66,6 +89,10 @@ made subject to such option by the copyright holder.
         </zip>
         <zip basedir="MarsRoverViewer" destfile="${examples}/MarsRoverViewer.zip">
             <exclude name="build/"/>
+            <exclude name="dist/"/>
+            <exclude name="nbproject/private/"/>
+        </zip>
+        <zip basedir="ClientEditor" destfile="${examples}/ClientEditor.zip">
             <exclude name="dist/"/>
             <exclude name="nbproject/private/"/>
         </zip>
