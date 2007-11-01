@@ -111,13 +111,17 @@ public final class LibraryManager {
         return res;
     }
 
-    private void trace(String where, FileImpl curFile, ResolvedPath resolvedPath, ProjectBase res){
+    private void trace(String where, FileImpl curFile, ResolvedPath resolvedPath, ProjectBase res, ProjectBase start){
         System.out.println("Resolved Path "+resolvedPath.getPath()); //NOI18N
-        System.out.println("    belogs to project "+res); //NOI18N
+        System.out.println("    start project "+start); //NOI18N
+        System.out.println("    found in "+where+" "+res); //NOI18N
         System.out.println("    included from "+curFile); //NOI18N
-        System.out.println("    found in "+where); //NOI18N
+        System.out.println("    file from project "+curFile.getProject()); //NOI18N
+        for(CsmProject prj : start.getLibraries()){
+            System.out.println("    search lib "+prj); //NOI18N
+        }
     }
-    
+
     /**
      * Find project for resolved file.
      * Search for project in proroject, dependancies, artificial libraries.
@@ -128,34 +132,34 @@ public final class LibraryManager {
         File searchFor = new File(absPath);
         ProjectBase res = searchInProjectFiles(baseProject, searchFor);
         if (res != null) {
-            //if (TraceFlags.TRACE_RESOLVED_LIBRARY) trace("Projects", curFile, resolvedPath, res); //NOI18N
+            //if (TraceFlags.TRACE_RESOLVED_LIBRARY) trace("Projects", curFile, resolvedPath, res, baseProject); //NOI18N
             return res;
         }
         String folder = FileUtil.normalizeFile(new File(resolvedPath.getFolder())).getAbsolutePath();
         res = searchInProjectRoots(baseProject, getPathToFolder(folder, resolvedPath.getPath()));
         if (res != null) {
-            //if (TraceFlags.TRACE_RESOLVED_LIBRARY) trace("Projects roots", curFile, resolvedPath, res); //NOI18N
+            //if (TraceFlags.TRACE_RESOLVED_LIBRARY) trace("Projects roots", curFile, resolvedPath, res, baseProject); //NOI18N
             return res;
         }
         res = searchInProjectFilesArtificial(baseProject, searchFor);
         if (res != null) {
-            //if (TraceFlags.TRACE_RESOLVED_LIBRARY) trace("Libraries", curFile, resolvedPath, res);
+            //if (TraceFlags.TRACE_RESOLVED_LIBRARY) trace("Libraries", curFile, resolvedPath, res, baseProject);
             return res;
         }
         res = searchInProjectRootsArtificial(baseProject, getPathToFolder(folder, resolvedPath.getPath()));
         if (res == null) {
             if (resolvedPath.isDefaultSearchPath()) {
                 res = baseProject;
-                //if (TraceFlags.TRACE_RESOLVED_LIBRARY) trace("Base Project as Default Search Path", curFile, resolvedPath, res); //NOI18N
+                //if (TraceFlags.TRACE_RESOLVED_LIBRARY) trace("Base Project as Default Search Path", curFile, resolvedPath, res, baseProject); //NOI18N
             } else if (!baseProject.isArtificial()) {
                 res = getLibrary((ProjectImpl)baseProject, folder);
-                if (TraceFlags.TRACE_RESOLVED_LIBRARY) trace("Library for folder "+folder, curFile, resolvedPath, res); //NOI18N
+                if (TraceFlags.TRACE_RESOLVED_LIBRARY) trace("Library for folder "+folder, curFile, resolvedPath, res, baseProject); //NOI18N
             } else {
                 res = baseProject;
-                //if (TraceFlags.TRACE_RESOLVED_LIBRARY) trace("Base Project", curFile, resolvedPath, res); //NOI18N
+                //if (TraceFlags.TRACE_RESOLVED_LIBRARY) trace("Base Project", curFile, resolvedPath, res, baseProject); //NOI18N
             }
         } else {
-            //if (TraceFlags.TRACE_RESOLVED_LIBRARY) trace("Libraries roots", curFile, resolvedPath, res); //NOI18N
+            //if (TraceFlags.TRACE_RESOLVED_LIBRARY) trace("Libraries roots", curFile, resolvedPath, res, baseProject); //NOI18N
         }
         return res;
     }
