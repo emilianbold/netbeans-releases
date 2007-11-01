@@ -115,7 +115,10 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
             }
             input.read ();
             if (!input.eof ()) state = -1;
-            return createToken (language.getTokenID ("js_string"), index);
+            if ("text/javascript".equals (language.getMimeType ()))
+                return createToken (language.getTokenID ("js_string"), index);
+            else
+                return createToken (language.getTokenID ("css_string"), index);
         }
         // END HACK...
         
@@ -131,11 +134,17 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         if (token == null) {
             
             // HACK...
-            if ("text/javascript".equals (language.getMimeType ()) && input.eof ()) {
+            if (input.eof () && (
+                    "text/javascript".equals (language.getMimeType ()) ||
+                    "text/x-css".equals (language.getMimeType ())
+            )) {
                 char ch = input.getString (index, index + 1).charAt (0);
                 if (ch == '\"' || ch == '\'') {
                     state = "Fukala";
-                    return createToken (language.getTokenID ("js_string"), index);
+                    if ("text/javascript".equals (language.getMimeType ()))
+                        return createToken (language.getTokenID ("js_string"), index);
+                    else
+                        return createToken (language.getTokenID ("css_string"), index);
                 }
             }
             // END HACK...
