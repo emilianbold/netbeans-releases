@@ -2431,8 +2431,12 @@ public class CasualDiff {
                 ((binaries.contains(oldT.getKind()) && binaries.contains(newT.getKind())) == false) &&
                 ((unaries.contains(oldT.getKind()) && unaries.contains(newT.getKind())) == false)) {
                 // different kind of trees found, print the whole new one.
+                int[] oldBounds = getBounds(oldT);
+                if (oldBounds[0] > elementBounds[0]) {
+                    copyTo(elementBounds[0], oldBounds[0]);
+                }
                     printer.print(newT);
-                return endPos(oldT);
+                return oldBounds[1];
             }
         }
 
