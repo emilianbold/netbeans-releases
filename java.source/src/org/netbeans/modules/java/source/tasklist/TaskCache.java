@@ -198,7 +198,7 @@ public class TaskCache {
         
         File currentFile = fileFile.getParentFile();
         
-        toRefresh.add(currentFile.toURL());
+        toRefresh.add(currentFile.toURI().toURL());
 
         if (modified) {
             File current = output[1].getParentFile();
@@ -206,7 +206,7 @@ public class TaskCache {
             while (!output[0].equals(current)) {
                 current = current.getParentFile();
                 currentFile = currentFile.getParentFile();
-                toRefresh.add(currentFile.toURL());
+                toRefresh.add(currentFile.toURI().toURL());
             }
 
             FileObject rootFO = URLMapper.findFileObject(root);
