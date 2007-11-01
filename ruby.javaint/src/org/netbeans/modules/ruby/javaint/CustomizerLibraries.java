@@ -53,11 +53,6 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-/** 
- * Customizer for general project attributes.
- *
- * @author  phrebejk
- */
 public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, ListDataListener {
     
     public static final String COMPILE = "COMPILE";  //NOI18N
@@ -192,7 +187,6 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         jButtonRemoveC = new javax.swing.JButton();
         jButtonMoveUpC = new javax.swing.JButton();
         jButtonMoveDownC = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
         jCheckBoxBuildSubprojects = new javax.swing.JCheckBox();
         jLabelErrorMessage = new javax.swing.JLabel();
 
@@ -330,18 +324,6 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         jPanelCompile.add(jButtonMoveDownC, gridBagConstraints);
         jButtonMoveDownC.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustomizerLibraries_jButtonMoveDown")); // NOI18N
 
-        jLabel1.setLabelFor(jListCpC);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/ruby/javaint/Bundle"); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("MSG_CustomizerLibraries_CompileCpMessage")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        jPanelCompile.add(jLabel1, gridBagConstraints);
-
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_LibrariesTab"), jPanelCompile); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -392,7 +374,6 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     private javax.swing.JButton jButtonMoveUpC;
     private javax.swing.JButton jButtonRemoveC;
     private javax.swing.JCheckBox jCheckBoxBuildSubprojects;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabelErrorMessage;
     private javax.swing.JList jListCpC;
     private javax.swing.JPanel jPanelCompile;
