@@ -39,6 +39,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import javax.swing.Action;
 import javax.swing.JMenu;
@@ -64,7 +65,7 @@ final class InspectorUI extends TopComponent implements ExplorerManager.Provider
     private transient ExplorerManager explorerManager;
     private volatile transient boolean lockSelectionSetting;
     private transient BeanTreeView inspectorBeanTreeView;
-    private transient DesignDocument document;
+    private transient WeakReference<DesignDocument> document;
 
     InspectorUI(DesignDocument document) {
         lockSelectionSetting = false;
@@ -73,7 +74,7 @@ final class InspectorUI extends TopComponent implements ExplorerManager.Provider
         initComponents();
         lockSelectionSetting = false;
         associateLookup(ExplorerUtils.createLookup(explorerManager, getActionMap()));
-        this.document = document;
+        this.document = new WeakReference<DesignDocument>(document);
     }
 
     private void initComponents() {
@@ -95,10 +96,13 @@ final class InspectorUI extends TopComponent implements ExplorerManager.Provider
         if (explorerManager.getSelectedNodes().length < 1) {
             return;
         }
-        if (document == null || document.getTransactionManager().isAccess()) {
+        if (document == null || document.get() == null) {
             return;
         }
-        document.getTransactionManager().writeAccess(new Runnable() {
+        final DesignDocument d = document.get();
+        if (d.getTransactionManager().isAccess())
+            return;
+        d.getTransactionManager().writeAccess(new Runnable() {
 
             public void run() {
                 if (lockSelectionSetting) {
@@ -111,13 +115,13 @@ final class InspectorUI extends TopComponent implements ExplorerManager.Provider
                     for (Node node : selectedNodes) {
                         if (node instanceof InspectorFolderNode) {
                             Long componentID = ((InspectorFolderNode) node).getComponentID();
-                            DesignComponent component = componentID == null ? null : document.getComponentByUID(componentID);
+                            DesignComponent component = componentID == null ? null : d.getComponentByUID(componentID);
                             if (component != null) {
                                 selectedComponents.add(component);
                             }
                         }
                     }
-                    document.setSelectedComponents(InspectorUI.INSPECTOR_UI_ID, selectedComponents);
+                    d.setSelectedComponents(InspectorUI.INSPECTOR_UI_ID, selectedComponents);
                 } finally {
                     lockSelectionSetting = false;
                 }
@@ -146,6 +150,7 @@ final class InspectorUI extends TopComponent implements ExplorerManager.Provider
     public void activeComponentsChanged(Collection<DesignComponent> activeComponents) {
     }
 
+    @Override
     public Action[] getActions() {
         return new Action[0];
     }
@@ -154,15 +159,18 @@ final class InspectorUI extends TopComponent implements ExplorerManager.Provider
         return new JMenu("menu"); //NOI18N
     }
 
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
     }
 
+    @Override
     protected void componentActivated() {
         super.componentActivated();
         ExplorerUtils.activateActions(explorerManager, true);
     }
 
+    @Override
     protected void componentDeactivated() {
         super.componentDeactivated();
         ExplorerUtils.activateActions(explorerManager, false);
