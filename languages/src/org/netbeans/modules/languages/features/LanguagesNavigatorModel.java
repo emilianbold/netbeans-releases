@@ -174,10 +174,12 @@ class LanguagesNavigatorModel implements TreeModel {
         } else {
             List<ASTItem> path = new ArrayList<ASTItem> ();
             path.add (astNode);
-            if (root instanceof ASTNavigatorNode && ((ASTNavigatorNode)root).document == document) {
+            List rootNodes = root.getNodes(this);
+            if (root instanceof ASTNavigatorNode && ((ASTNavigatorNode)root).document == document &&
+                    rootNodes != null && rootNodes.size() > 0) {
                 if (parserManager.getState () == State.PARSING) return;
                 ASTNavigatorNode newASTNode = new ASTNavigatorNode (document, astNode, path, "Root", "", null, false);
-                ((ASTNavigatorNode)root).refreshNode(this, newASTNode.getNodes(this), new LinkedList<ASTNavigatorNode>());
+                ((ASTNavigatorNode)root).refreshNode(this, newASTNode, new LinkedList<ASTNavigatorNode>());
             } else {
                 ASTNavigatorNode newASTNode = new ASTNavigatorNode (document, astNode, path, "Root", "", null, false);
                 newASTNode.getNodes (this);
@@ -378,25 +380,17 @@ class LanguagesNavigatorModel implements TreeModel {
             return nodes;
         }
 
-        private void refreshNode(LanguagesNavigatorModel model, List<ASTNavigatorNode> newChildren,
+        private void refreshNode(LanguagesNavigatorModel model, ASTNavigatorNode newNode,
                 LinkedList<ASTNavigatorNode> nodePath) {
+            item = newNode.item;
+            path = newNode.path;
             if (nodes == null) {
                 return;
             }
-            nodePath.add(this);
-            List<ASTNavigatorNode> newNodes = new ArrayList<ASTNavigatorNode>(newChildren.size());
             
-            Language language = (Language) item.getLanguage ();
-            if (language != null) {
-                Feature properties = language.getFeature ("PROPERTIES");
-                if (properties != null &&
-                    properties.getBoolean ("navigator-sort", false)
-                ) {
-                    if (navigatorComparator == null)
-                        navigatorComparator = new NavigatorComparator ();
-                    Collections.<ASTNavigatorNode>sort (newNodes, navigatorComparator);
-                }
-            }
+            nodePath.add(this);
+            List<ASTNavigatorNode> newChildren = newNode.getNodes(model);
+            List<ASTNavigatorNode> newNodes = new ArrayList<ASTNavigatorNode>(newChildren.size());
             
             int index = 0;
             int lastIndex = 0;
@@ -418,7 +412,7 @@ class LanguagesNavigatorModel implements TreeModel {
                         removed.add(x);
                     }
                     lastIndex = index;
-                    found.refreshNode(model, node.getNodes(model), nodePath);
+                    found.refreshNode(model, node, nodePath);
                 } else {
                     newNodes.add(node);
                     inserted.add(insertPos);
