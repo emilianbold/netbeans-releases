@@ -516,21 +516,26 @@ public class LLSyntaxAnalyser {
     private static ASTToken join (ASTToken token1, ASTToken token2) {
         List<ASTItem> token1Children = token1.getChildren ();
         List<ASTItem> token2Children = token2.getChildren ();
-        ASTToken t1 = (ASTToken) token1Children.get (token1Children.size () - 2);
-        ASTToken t2 = (ASTToken) token2Children.get (0);
         List<ASTItem> joinedChildren = new ArrayList<ASTItem> ();
-        if (
-                ("js_string".equals (t1.getTypeName ()) && "js_string".equals (t2.getTypeName ())) ||
-                ("css_string".equals (t1.getTypeName ()) && "css_string".equals (t2.getTypeName ()))
-        ) {
-            joinedChildren.addAll (token1Children.subList (0, token1Children.size () - 2));
-            joinedChildren.add (ASTToken.create (
-                    t1.getLanguage (),
-                    t1.getTypeID (),
-                    t1.getIdentifier () + t2.getIdentifier (),
-                    t1.getOffset ()
-            ));
-            joinedChildren.addAll (token2Children.subList (1, token2Children.size ()));
+        if (token1Children.size () > 1) {
+            ASTToken t1 = (ASTToken) token1Children.get (token1Children.size () - 2);
+            ASTToken t2 = (ASTToken) token2Children.get (0);
+            if (
+                    ("js_string".equals (t1.getTypeName ()) && "js_string".equals (t2.getTypeName ())) ||
+                    ("css_string".equals (t1.getTypeName ()) && "css_string".equals (t2.getTypeName ()))
+            ) {
+                joinedChildren.addAll (token1Children.subList (0, token1Children.size () - 2));
+                joinedChildren.add (ASTToken.create (
+                        t1.getLanguage (),
+                        t1.getTypeID (),
+                        t1.getIdentifier () + t2.getIdentifier (),
+                        t1.getOffset ()
+                ));
+                joinedChildren.addAll (token2Children.subList (1, token2Children.size ()));
+            } else {
+                joinedChildren.addAll (token1Children);
+                joinedChildren.addAll (token2Children);
+            }
         } else {
             joinedChildren.addAll (token1Children);
             joinedChildren.addAll (token2Children);
