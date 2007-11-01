@@ -94,6 +94,9 @@ public class MemoryURL extends URLStreamHandler {
         return out.params.get(param.toLowerCase());
     }
 
+    static void initialize() {
+    }
+
     protected URLConnection openConnection(URL u) throws IOException {
         return new MC(u);
     }

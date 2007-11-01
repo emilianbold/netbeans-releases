@@ -66,6 +66,10 @@ import org.openide.NotifyDescriptor;
 public class InstallerInitTest extends NbTestCase {
     private Installer installer;
     
+    static {
+        MemoryURL.initialize();
+    }
+    
     public InstallerInitTest(String testName) {
         super(testName);
     }
