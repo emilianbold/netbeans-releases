@@ -108,7 +108,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     PageFlowView(PageFlowElement multiview, JSFConfigEditorContext context) {
         setMultiview(multiview);
         this.context = context;
-        scene = initializeScene();
+        initializeScene(); /* setScene is called inside this method */
         pfc = new PageFlowController(context, this);
         sceneData = new PageFlowSceneData(PageFlowToolbarUtilities.getInstance(this));
 
@@ -155,12 +155,12 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
             }
 
             if (jsfConfigDataObject != null) {
-                lookup = new ProxyLookup(new Lookup[]{superLookup, jsfConfigDataObject.getNodeDelegate().getLookup(), Lookups.fixed(new Object[]{scene})});
+                lookup = new ProxyLookup(new Lookup[]{superLookup, jsfConfigDataObject.getNodeDelegate().getLookup(), Lookups.fixed(new Object[]{getScene()})});
             } else {
                 /* Temporarily Removing Palette */
                 //            PaletteController paletteController = getPaletteController();
                 //            if (paletteController == null) {
-                lookup = new ProxyLookup(new Lookup[]{superLookup, Lookups.fixed(new Object[]{scene})});
+                lookup = new ProxyLookup(new Lookup[]{superLookup, Lookups.fixed(new Object[]{getScene()})});
             //            } else {
                 //                lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.fixed(new Object[] { paletteController})});
                 //            }
@@ -195,24 +195,24 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     private PageFlowScene initializeScene() {
         setLayout(new BorderLayout());
 
-        scene = new PageFlowScene(this);
+        setScene(new PageFlowScene(this));
 
-        scene.setAccessibleContext(this.getAccessibleContext());
+        getScene().setAccessibleContext(this.getAccessibleContext());
 
-        JScrollPane pane = new JScrollPane(scene.createView());
+        JScrollPane pane = new JScrollPane(getScene().createView());
         pane.setVisible(true);
 
         add(pane, BorderLayout.CENTER);
 
         setDefaultActivatedNode();
 
-        return scene;
+        return getScene();
     }
 
     public void destroyScene() {
         clearGraph();
-        scene.destoryPageFlowScene();
-        scene = null;
+        getScene().destoryPageFlowScene();
+        setScene(null);
         sceneData = null;
         runnables.clear();
         context = null;
@@ -234,6 +234,18 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
             LOG.fine("WARNING: Unable to find the following DataObject: " + context.getFacesConfigFile());
             setActivatedNodes(new Node[]{});
         }
+    }
+
+    
+    public int sceneAssgn = 0;
+    public PageFlowScene getScene() {
+        return scene;
+    }
+    
+
+    public void setScene(PageFlowScene scene) {
+        sceneAssgn++;
+        this.scene = scene;
     }
 
 /* In order to prevent modifications of tab names when a page was selected, I needed to
@@ -286,7 +298,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
      */
     public void warnUserMalFormedFacesConfig() {
         //        clearGraph();
-        scene.createMalFormedWidget();
+        getScene().createMalFormedWidget();
     }
 
     /*
@@ -294,7 +306,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
      * See "warnUserMalFormedFacesConfig()
      **/
     public void removeUserMalFormedFacesConfig() {
-        scene.removeMalFormedWidget();
+        getScene().removeMalFormedWidget();
     }
 
     //    private static final Image IMAGE_LIST = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/list_32.png"); // NOI18N
@@ -304,12 +316,12 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
      **/
     public void clearGraph() {
         //Workaround: Temporarily Wrapping Collection because of  http://www.netbeans.org/issues/show_bug.cgi?id=97496
-        Collection<Page> nodes = new HashSet<Page>(scene.getNodes());
+        Collection<Page> nodes = new HashSet<Page>(getScene().getNodes());
         for (Page node : nodes) {
-            scene.removeNodeWithEdges(node);
+            getScene().removeNodeWithEdges(node);
             node.destroy2();
         }
-        scene.validate();
+        getScene().validate();
     }
 
     
@@ -324,14 +336,14 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         //        System.out.println("Nodes: " + scene.getNodes());
         //        System.out.println("Edges: "+ scene.getEdges());
         //        System.out.println("Pins: " + scene.getPins());
-        scene.validate();
+        getScene().validate();
     }
 
     /*
      * Save the locations for all the pages currently in the scene.
      */
     public void saveLocations() {
-        sceneData.saveCurrentSceneData(scene);
+        sceneData.saveCurrentSceneData(getScene());
     }
 
     /*
@@ -361,7 +373,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         String pageName = pageNode.getDisplayName();
 
 
-        final VMDNodeWidget widget = (VMDNodeWidget) scene.addNode(pageNode);
+        final VMDNodeWidget widget = (VMDNodeWidget) getScene().addNode(pageNode);
         //        widget.setNodeProperties(null /*IMAGE_LIST*/, pageName, type, glyphs);
         widget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageName, type, glyphs);
         PageFlowSceneData.PageData data = sceneData.getPageData(pageName);
@@ -372,7 +384,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
 
         //        widget.getAccessibleContext().setAccessibleDescription(ACDS_PAGE);
 //        widget.getAccessibleContext().setAccessibleDescription(ACN_PAGE);
-        scene.addPin(pageNode, new Pin(pageNode));
+        getScene().addPin(pageNode, new Pin(pageNode));
         runPinSetup(pageNode, widget);
         selectPageFlowSceneElement(pageNode);
         return widget;
@@ -381,7 +393,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     private void selectPageFlowSceneElement(PageFlowSceneElement element) {
         Set<PageFlowSceneElement> selectedSet = new HashSet<PageFlowSceneElement>(1);
         selectedSet.add(element);
-        scene.setSelectedObjects(selectedSet);
+        getScene().setSelectedObjects(selectedSet);
     }
 
     /* This method was put into place to gather all the pin data for a given page.
@@ -394,7 +406,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
      **/
     private void runPinSetup(final Page pageNode, final VMDNodeWidget widget) {
         LOG.entering(PageFlowView.class.getName(), "runPinSetup");
-        final LabelWidget loadingWidget = new LabelWidget(scene, "Loading...");
+        final LabelWidget loadingWidget = new LabelWidget(getScene(), "Loading...");
         widget.addChild(loadingWidget);
         runnables.add(new Runnable() {
 
@@ -406,9 +418,9 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
                             EventQueue.invokeLater(new Runnable() {
 
                                         public void run() {
-                                            if (scene != null) {
+                                            if (getScene() != null) {
                                                 widget.removeChild(loadingWidget);
-                                                scene.validate();
+                                                getScene().validate();
                                             }
                                         }
                                     });
@@ -425,16 +437,16 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
 
                                             LOG.finest("    PFE: Starting Redraw: " + java.util.Calendar.getInstance().getTime());
                                             Collection<NavigationCaseEdge> redrawCaseNodes = new ArrayList<NavigationCaseEdge>();
-                                            Collection<Pin> pinNodes = new ArrayList<Pin>(scene.getPins());
+                                            Collection<Pin> pinNodes = new ArrayList<Pin>(getScene().getPins());
 
                                             widget.removeChild(loadingWidget);
                                             for (Pin pin : pinNodes) {
                                                 if (pin.getPage() == pageNode) {
                                                     assert pin.getPage().getDisplayName().equals(pageNode.getDisplayName());
-                                                    java.util.Collection<NavigationCaseEdge> caseNodes = scene.findPinEdges(pin, true, false);
+                                                    java.util.Collection<NavigationCaseEdge> caseNodes = getScene().findPinEdges(pin, true, false);
                                                     redrawCaseNodes.addAll(caseNodes);
                                                     if (!pin.isDefault()) {
-                                                        scene.removePin(pin);
+                                                        getScene().removePin(pin);
                                                     }
                                                 }
                                             }
@@ -446,15 +458,15 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
                                             for (org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge caseNode : redrawCaseNodes) {
                                                 setEdgeSourcePin(caseNode, pageNode);
                                             }
-                                            scene.updateNodeWidgetActions(pageNode);
-                                            scene.validate();
+                                            getScene().updateNodeWidgetActions(pageNode);
+                                            getScene().validate();
                                             LOG.finest("    PFE: Ending Redraw: " + java.util.Calendar.getInstance().getTime());
                                         }
                                     });
                         } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
                         } catch (InvocationTargetException ex) {
-                    if (scene == null )  {
+                    if (getScene() == null )  {
                                 /* It is okay suppress this exception because it is expected if the scene is deleted (closed)
                          * before the page has finished loading. 
                          */
@@ -486,8 +498,8 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         VMDPinWidget widget = null;
 
         /* Make sure scene still has this page. */
-        if (pageNode != null && scene.isNode(pageNode)) {
-            widget = (VMDPinWidget) scene.addPin(pageNode, pinNode);
+        if (pageNode != null && getScene().isNode(pageNode)) {
+            widget = (VMDPinWidget) getScene().addPin(pageNode, pinNode);
         }
         //        VMDPinWidget widget = (VMDPinWidget) graphScene.addPin(page, pin);
         //        if( navComp != null ){
@@ -506,7 +518,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         assert fromPageNode.getDisplayName() != null;
         assert toPageNode.getDisplayName() != null;
 
-        VMDConnectionWidget connectionWidget = (VMDConnectionWidget) scene.addEdge(navCaseEdge);
+        VMDConnectionWidget connectionWidget = (VMDConnectionWidget) getScene().addEdge(navCaseEdge);
         setEdgeSourcePin(navCaseEdge, fromPageNode);
         setEdgeTargePin(navCaseEdge, toPageNode);
 
@@ -516,7 +528,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     }
 
     public void renameEdgeWidget(NavigationCaseEdge edge, String newName, String oldName) {
-        scene.renameEdgeWidget(edge, newName, oldName);
+        getScene().renameEdgeWidget(edge, newName, oldName);
     }
 
     /*
@@ -525,7 +537,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
      * @return source pin
      */
     public Pin getEdgeSourcePin(NavigationCaseEdge navCase) {
-        return scene.getEdgeSource(navCase);
+        return getScene().getEdgeSource(navCase);
     }
 
     /*
@@ -533,29 +545,29 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
      * it is simply navigable from that page) or from another pin (ie button).
      */
     private void setEdgeSourcePin(NavigationCaseEdge navCaseNode, Page fromPageNode) {
-        Pin sourcePin = scene.getDefaultPin(fromPageNode);
-        Collection<Pin> pinNodes = scene.getPins();
+        Pin sourcePin = getScene().getDefaultPin(fromPageNode);
+        Collection<Pin> pinNodes = getScene().getPins();
         for (Pin pin : pinNodes) {
             if (pin.getFromOutcome() != null && fromPageNode == pin.getPage() && pin.getFromOutcome().equals(navCaseNode.getFromOuctome())) {
                 sourcePin = pin;
                 /* Remove any old navigation case nodes coming from this source */
-                Collection<NavigationCaseEdge> oldNavCaseNodes = scene.findPinEdges(sourcePin, true, false);
+                Collection<NavigationCaseEdge> oldNavCaseNodes = getScene().findPinEdges(sourcePin, true, false);
                 for (NavigationCaseEdge oldNavCaseNode : oldNavCaseNodes) {
-                    scene.setEdgeSource(oldNavCaseNode, scene.getDefaultPin(fromPageNode));
+                    getScene().setEdgeSource(oldNavCaseNode, getScene().getDefaultPin(fromPageNode));
                 }
             }
         }
 
-        scene.setEdgeSource(navCaseNode, sourcePin);
+        getScene().setEdgeSource(navCaseNode, sourcePin);
     }
 
     /*
      * Set the target or the "to page" for a given pin
      **/
     private void setEdgeTargePin(NavigationCaseEdge navCaseNode, Page toPageNode) {
-        Pin targetPin = scene.getDefaultPin(toPageNode);
+        Pin targetPin = getScene().getDefaultPin(toPageNode);
         //I need to remove extension so it matches the DataNode's pins.
-        scene.setEdgeTarget(navCaseNode, targetPin);
+        getScene().setEdgeTarget(navCaseNode, targetPin);
     }
     private static final String PATH_TOOLBAR_FOLDER = "PageFlowEditor/Toolbars"; // NOI18N
 
@@ -634,14 +646,14 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     @Override
     public void requestFocus() {
         super.requestFocus();
-        scene.getView().requestFocus();
+        getScene().getView().requestFocus();
     }
 
     @SuppressWarnings(value = "deprecation")
     @Override
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
-        return scene.getView().requestFocusInWindow();
+        return getScene().getView().requestFocusInWindow();
     }
 
     /**
@@ -649,8 +661,8 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
      * @param node
      */
     public void removeEdge(NavigationCaseEdge node) {
-        if (scene.getEdges().contains(node)) {
-            scene.removeEdge(node);
+        if (getScene().getEdges().contains(node)) {
+            getScene().removeEdge(node);
         }
     }
 
@@ -660,11 +672,11 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
      */
     public void removeNodeWithEdges(Page node) {
         //        scene.removeNode(node);
-        if (scene.getNodes().contains(node)) {
+        if (getScene().getNodes().contains(node)) {
             /* In some cases the node will already be deleted by a side effect of deleting another node.
              * This is primarily in the FacesConfig view or an abstract Node in the project view.
              */
-            scene.removeNodeWithEdges(node);
+            getScene().removeNodeWithEdges(node);
         }
     }
 
@@ -681,7 +693,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         }
 
         //Reset the Node Name
-        VMDNodeWidget nodeWidget = (VMDNodeWidget) scene.findWidget(pageNode);
+        VMDNodeWidget nodeWidget = (VMDNodeWidget) getScene().findWidget(pageNode);
 
         //Do this because sometimes the node display name is the object display name.
         pageNode.updateNode_HACK();
@@ -699,7 +711,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
             pfc.PageFlowDestroyStack.clear();
             System.err.println("PageNode: " + pageNode);
             //            System.err.println("Node Widget is null in scene for: " + pageNode.getDisplayName());
-            System.err.println("Here are the scene nodes: " + scene.getNodes());
+            System.err.println("Here are the scene nodes: " + getScene().getNodes());
         //            Thread.dumpStack();
         }
     }
@@ -715,15 +727,15 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     private final void redrawPinsAndEdges(Page pageNode) {
         /* Gather the Edges */
         Collection<NavigationCaseEdge> redrawCaseNodes = new ArrayList<NavigationCaseEdge>();
-        Collection<Pin> pinNodes = new ArrayList<Pin>(scene.getPins());
+        Collection<Pin> pinNodes = new ArrayList<Pin>(getScene().getPins());
         for (Pin pin : pinNodes) {
             if (pin.getPage() == pageNode) {
                 assert pin.getPage().getDisplayName().equals(pageNode.getDisplayName());
 
-                Collection<NavigationCaseEdge> caseNodes = scene.findPinEdges(pin, true, false);
+                Collection<NavigationCaseEdge> caseNodes = getScene().findPinEdges(pin, true, false);
                 redrawCaseNodes.addAll(caseNodes);
                 if (!pin.isDefault()) {
-                    scene.removePin(pin);
+                    getScene().removePin(pin);
                 }
             }
         }
@@ -744,7 +756,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
      * @returns the collection of edge objects.
      **/
     public Collection<NavigationCaseEdge> getNodeEdges(Page node) {
-        Collection<NavigationCaseEdge> navCases = scene.getEdges();
+        Collection<NavigationCaseEdge> navCases = getScene().getEdges();
         Collection<NavigationCaseEdge> myNavCases = new HashSet<NavigationCaseEdge>();
 
         String fromViewId = node.getDisplayName();
@@ -855,7 +867,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
                 break;
         }
 
-        LayoutUtility.performLayout(scene, useLayout);
+        LayoutUtility.performLayout(getScene(),useLayout);
         lastUsedLayout = useLayout;
     }
 
@@ -891,8 +903,11 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
 
     /* To be used for unit test purposes only. */
     static class PFVTestAccessor {
-        static PageFlowScene getPageFlowScene(PageFlowView view) {
-            return view.scene;
+        static PageFlowScene getPageFlowScene(PageFlowView view) throws InterruptedException {
+            if ( view.getScene() == null ){
+                Thread.sleep(3000);
+            }
+            return view.getScene();
         }
         
        

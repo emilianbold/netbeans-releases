@@ -38,7 +38,9 @@
  */
 package org.netbeans.modules.web.jsf.navigation;
 
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Rectangle;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -48,6 +50,7 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.JEditorPane;
+import javax.swing.plaf.DimensionUIResource;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -60,6 +63,7 @@ import org.netbeans.modules.web.jsf.JSFConfigLoader;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
+import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.openide.filesystems.FileLock;
@@ -72,6 +76,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -83,6 +88,8 @@ public class PageFlowTestUtility {
     private JSFConfigDataObject jsfDO;
     private FacesConfig facesConfig;
     private PageFlowView pageFlowView;
+    private PageFlowScene scene;
+    private PageFlowController controller;
     NbTestCase nbTestCase;
 
     public PageFlowTestUtility(NbTestCase nbTestCase) {
@@ -96,6 +103,8 @@ public class PageFlowTestUtility {
         setJsfDO(initDOFacesConfig());
         setFacesConfig(initFacesConfig());
         setPageFlowView(initPageFlowView());
+        setScene(getPageFlowView().getScene());
+        setController(getPageFlowView().getPageFlowController());
     }
 
     public void tearDown() throws Exception {
@@ -189,7 +198,7 @@ public class PageFlowTestUtility {
         return getJsfDO();
     }
 
-    private FacesConfig initFacesConfig() throws IOException {
+    private FacesConfig initFacesConfig() throws IOException, InterruptedException {
         assertNotNull(getJsfDO());
         editorSupport = (JSFConfigEditorSupport) getJsfDO().createCookie(JSFConfigEditorSupport.class);
         assertNotNull(editorSupport);
@@ -200,6 +209,7 @@ public class PageFlowTestUtility {
         assert (kit instanceof XMLKit);
         editorSupport.edit();
 
+        Thread.sleep(5000);
         JEditorPane[] panes = editorSupport.getOpenedPanes();
         JSFConfigModel model = ConfigurationUtils.getConfigModel(getJsfDO().getPrimaryFile(), true);
         assertNotNull(model);
@@ -286,5 +296,21 @@ public class PageFlowTestUtility {
 
     public void assertTrue(boolean b) {
         NbTestCase.assertTrue(b);
+    }
+
+    public PageFlowScene getScene() {
+        return scene;
+    }
+
+    public void setScene(PageFlowScene scene) {
+        this.scene = scene;
+    }
+
+    public PageFlowController getController() {
+        return controller;
+    }
+
+    public void setController(PageFlowController controller) {
+        this.controller = controller;
     }
 }

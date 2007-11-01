@@ -203,13 +203,15 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     /* Used to destroy everything in the scene. */
     public void destoryPageFlowScene() {
         removeObjectSceneListener(pfObjectSceneListener, ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
-
+        pfObjectSceneListener = null;
+        
+        popupProvider = null;
+        
         fpnl.unregisterListeners(this);
         fpnl = null;
         router = null;
+        
         Chain chainActions = getActions();
-        popupProvider = null;
-        pfObjectSceneListener = null;
         for( WidgetAction action : new ArrayList<WidgetAction>(chainActions.getActions()) ){
             chainActions.removeAction(action);
         }
