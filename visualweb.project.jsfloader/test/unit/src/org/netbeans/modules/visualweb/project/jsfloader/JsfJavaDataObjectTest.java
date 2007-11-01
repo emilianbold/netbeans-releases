@@ -83,6 +83,28 @@ public class JsfJavaDataObjectTest extends NbTestCase {
         MockLookup.setInstances();
     }
 
+    public void testFindPrimaryFile() throws Exception {
+        System.out.println("JsfJavaDataLoader.findPrimaryFile");
+        
+        FileObject srcFolder = projectRoot.getFileObject("src/java/vwjavaee5");
+        FileObject pageJava = projectRoot.getFileObject("src/java/vwjavaee5/Page1.java");
+        FileObject normalJava = projectRoot.getFileObject("src/java/vwjavaee5/RequestBean1.java");
+        
+        assertNotNull("srcFolder FileObject should not be null", srcFolder);
+        assertNotNull("pageJava FileObject should not be null", pageJava);
+        assertNotNull("normalJava FileObject should not be null", normalJava);
+        
+        JsfJavaDataLoader loader = SetupUtils.getJavaLoader();
+        
+        FileObject result1 = loader.findPrimaryFile(pageJava);
+        FileObject result2 = loader.findPrimaryFile(srcFolder);
+        FileObject result3 = loader.findPrimaryFile(normalJava);
+        
+        assertEquals("findPrimaryFile did not recognize Page1.java", result1, pageJava);
+        assertNull("findPrimaryFile should not recognize folders", result2);
+        assertNull("findPrimaryFile should not recognize plain java files", result3);
+    }
+    
     /**
      * Test of getLookup method, of class JsfJspDataObject.
      */

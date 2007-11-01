@@ -69,8 +69,8 @@ import org.openide.util.test.MockLookup;
  * @author quynguyen
  */
 public class SetupUtils {
-    private static DataLoader jspLoader = null;
-    private static DataLoader javaLoader = null;
+    private static JsfJspDataLoader jspLoader = null;
+    private static JsfJavaDataLoader javaLoader = null;
     
     public static Project setup(File workDir) throws IOException {
         File userDir = new File(workDir, "userdir");
@@ -119,6 +119,14 @@ public class SetupUtils {
         return project;
     }
 
+    public static JsfJavaDataLoader getJavaLoader() {
+        return javaLoader;
+    }
+
+    public static JsfJspDataLoader getJspLoader() {
+        return jspLoader;
+    }
+    
     private static void unZipFile(File archiveFile, FileObject destDir) throws IOException {
         FileInputStream fis = new FileInputStream(archiveFile);
         try {

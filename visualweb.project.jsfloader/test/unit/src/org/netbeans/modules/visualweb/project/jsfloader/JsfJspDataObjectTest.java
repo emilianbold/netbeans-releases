@@ -84,6 +84,28 @@ public class JsfJspDataObjectTest extends NbTestCase {
         MockLookup.setInstances();
     }
 
+    public void testFindPrimaryFile() throws Exception {
+        System.out.println("JsfJspDataLoader.findPrimaryFile");
+        FileObject webFolder = projectRoot.getFileObject("web");
+        FileObject pageBean = projectRoot.getFileObject("web/Page1.jsp");
+        FileObject plainJsp = projectRoot.getFileObject("web/index.jsp");
+        
+        assertNotNull("webFolder FileObject should not be null", webFolder);
+        assertNotNull("pageBean FileObject should not be null", pageBean);
+        assertNotNull("plainJsp FileObject should not be null", plainJsp);
+        
+        JsfJspDataLoader loader = SetupUtils.getJspLoader();
+        
+        FileObject result1 = loader.findPrimaryFile(pageBean);
+        assertEquals("findPrimaryFile() on web/Page1.jsp did not work", result1, pageBean);
+        
+        FileObject result2 = loader.findPrimaryFile(webFolder);
+        assertNull("findPrimaryFile() should not accept folder objects", result2);
+        
+        FileObject result3 = loader.findPrimaryFile(plainJsp);
+        assertNull("FindPrimaryFile() should not accept non-visual web JSP files", result3);
+    }
+    
     /**
      * Test of getLookup method, of class JsfJspDataObject.
      */
