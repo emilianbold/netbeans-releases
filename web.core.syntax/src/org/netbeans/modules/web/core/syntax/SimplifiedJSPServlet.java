@@ -112,10 +112,8 @@ public class SimplifiedJSPServlet {
     private final ArrayList<CodeBlockData> codeBlocks = new ArrayList<CodeBlockData>();
 
     private String header = null;
-    private StringBuilder importedScriptlets = new StringBuilder();
-    private StringBuilder importedDeclarations = new StringBuilder();
-    private String mergedScriptlets = null;
-    private String mergedDeclarations = null;
+    private StringBuilder scriptlets = new StringBuilder();
+    private StringBuilder declarations = new StringBuilder();
     private boolean processCalled = false;
     private String importStatements = null;
     private int expressionIndex = 1;
@@ -171,8 +169,6 @@ public class SimplifiedJSPServlet {
             }
         }
         
-        final StringBuilder buffScriplets = new StringBuilder();
-        final StringBuilder buffDeclarations = new StringBuilder();
         final BadLocationException[] ex = new BadLocationException[1];
         
         processIncludes();
@@ -197,7 +193,7 @@ public class SimplifiedJSPServlet {
                 JavaCodeType blockType = (JavaCodeType) token.getProperty(JspTokenId.SCRIPTLET_TOKEN_TYPE_PROPERTY);
 
                 String blockBody = charSequence.subSequence(blockStart, blockEnd).toString(); //doc.getText(blockStart, blockEnd - blockStart);
-                StringBuilder buff = blockType == JavaCodeType.DECLARATION ? buffDeclarations : buffScriplets;
+                StringBuilder buff = blockType == JavaCodeType.DECLARATION ? declarations : scriptlets;
                 int newBlockStart = buff.length();
 
                 if (blockType == JavaCodeType.EXPRESSION) {
@@ -220,8 +216,7 @@ public class SimplifiedJSPServlet {
 
         header = getClassHeader();
         importStatements = createImportStatements();
-        mergedDeclarations = importedDeclarations.toString() + buffDeclarations + "\n" + createBeanVarDeclarations();
-        mergedScriptlets = importedScriptlets + buffScriplets.toString();
+        declarations.append("\n" + createBeanVarDeclarations());
     }
     
     private void processIncludes()  {
@@ -269,8 +264,8 @@ public class SimplifiedJSPServlet {
                         SimplifiedJSPServlet simplifiedServlet = new SimplifiedJSPServlet(editor.openDocument());
                         simplifiedServlet.process();
 
-                        importedDeclarations.append(simplifiedServlet.mergedDeclarations);
-                        importedScriptlets.append(simplifiedServlet.mergedScriptlets);
+                        declarations.append(simplifiedServlet.declarations);
+                        scriptlets.append(simplifiedServlet.scriptlets);
                     }
                 }
             } catch (Exception e) {
@@ -453,7 +448,7 @@ public class SimplifiedJSPServlet {
             return ""; //NOI18N
         }
         
-        return importStatements + header + mergedDeclarations + METHOD_HEADER + mergedScriptlets + CLASS_FOOTER;
+        return importStatements + header + declarations + METHOD_HEADER + scriptlets + CLASS_FOOTER;
     }
 
     private CodeBlockData getCodeBlockAtOffset(int offset) {
@@ -522,7 +517,7 @@ public class SimplifiedJSPServlet {
             int newBlockStart = newRelativeBlockStart + header.length() + importStatements.length();
 
             if (getType() != JavaCodeType.DECLARATION) {
-                newBlockStart += mergedDeclarations.length() + METHOD_HEADER.length();
+                newBlockStart += declarations.length() + METHOD_HEADER.length();
             }
 
             return newBlockStart;
