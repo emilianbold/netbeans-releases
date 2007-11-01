@@ -156,11 +156,7 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
             Exceptions.printStackTrace(ee);
         }
         
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                setKeys(result);
-            }
-        });
+        setKeys(result);
     }
 
     protected void removeNotify() {
