@@ -105,7 +105,7 @@ import org.netbeans.modules.soa.ui.UndoRedoManagerProvider;
  * @author ads
  */
 public class BPELDataEditorSupport extends DataEditorSupport implements
-        OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie, ValidateXMLCookie
+        OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie, ValidateXMLCookie, UndoRedoManagerProvider
 {
     public BPELDataEditorSupport( BPELDataObject obj ) {
         super(obj, new BPELEnv(obj));
