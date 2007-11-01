@@ -178,10 +178,14 @@ public class PageFlowSceneData {
         Collection<Page> pages = scene.getNodes();
         for (Page page : pages) {
             VMDNodeWidget pageWidget = (VMDNodeWidget) scene.findWidget(page);
+            Point p;
             if (scene.isValidated()) {
-                sceneInfo.put(page.getDisplayName(), createPageData(pageWidget.getLocation(), pageWidget.isMinimized()));
+                p = pageWidget.getLocation();
             } else {
-                sceneInfo.put(page.getDisplayName(), createPageData(pageWidget.getPreferredLocation(), pageWidget.isMinimized()));
+                p = pageWidget.getPreferredLocation();
+            }
+            if ( p != null ) {
+                sceneInfo.put(page.getDisplayName(), createPageData(p, pageWidget.isMinimized()));
             }
         }
         return sceneInfo;
@@ -287,7 +291,7 @@ public class PageFlowSceneData {
 
         public PageData(Point point) {
             if (point == null) {
-                throw new IllegalArgumentException("Page Data does not exception null points");
+                throw new IllegalArgumentException("Page Data does not accept null points");
             }
             this.point = point;
         }
