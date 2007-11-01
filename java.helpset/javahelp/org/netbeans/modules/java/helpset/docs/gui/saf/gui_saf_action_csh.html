@@ -13,7 +13,12 @@
         <p><small><a href="#seealso">See Also</a></small>
         
         <p>You use the Set Action dialog box to assign actions to visual 
-        components and set resources for those actions.</p>
+            components, such as menu items and buttons. In the dialog box, you also
+            set resources for those actions, such as the text that appears on 
+            the component, tool tip text, and any icons that you want to associate with 
+            the action. Such resources are saved in a <tt>.properties</tt> file that is named 
+        after the class that contains the action.</p>
+        
         <p>You open the Set Action dialog box in one of the following two ways:</p>
         <ul>
             <li>Right-clicking a component in a Java Desktop Application project and 
@@ -32,20 +37,28 @@
                     taking generating code that is based on Swing Application framework features. </li>
                     <li><b>Value From Existing Component</b>. Enables you to specify 
                     a component from which to derive the property's value. </li>
-                    <li><b>Custom Code</b>. Provides a text area for you to write 
+                    <li><b>Custom Code</b>. Provides a text area for you to  
                     manually write the code for setting the property. </li>
                 </ul>
                 <p>This help topic only covers the options in the default editor.</p>
             </li>
             <li><b>Action</b>. Select an action from combo box to assign to the 
                 component. 
-                <p>Only actions that have the <tt>@Action</tt> annotation 
+                <p>Only methods that have the <tt>@Action</tt> annotation 
                     are listed in the combo box. If you have a method that you want 
                     to use that does not have this annotation, exit the dialog box and add that 
                 annotation to the method.</p>
                 <p>If you have not yet written a method for the action, select Create New Action. 
-                    This enables you to enter a method name in the Action's Method field. When you 
-            click OK to exit the dialog box, a skeleton action is created for you.</p></li>
+                    This enables you to enter a method name in the Action's Method field. 
+                    Also be sure to fill in the Text field with the text that you want 
+                    to appear on the component. When you 
+                click OK to exit the dialog box, a skeleton action is created for you.</p>
+                
+                <p><b>Note:</b> When you assign an action to a component, the action uses the attributes given 
+                    in the Basic tab of the Attributes section of the dialog box. If you have previously 
+                    assigned any of these attributes to the component in the component's property sheet, 
+            those values will be replaced by the values provided in the dialog box.</p>  </li>  
+            
             <li><b>Action's Class</b>. If you are creating a new action, use this 
             combo box to select the class in which to place the action.</li>
             <li><b>Action's Method</b>. If you are creating a new action, use this 
@@ -101,6 +114,7 @@
         
         <dl>
             <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="gui_saf_actions.html">About Actions in the Swing Application Framework</a></dd>            
             <dd><a href="../gui_about.html">About Java GUIs</a></dd>
             <dd><a href="../gui_quickref.html">GUI Builder Tasks: Quick Reference</a></dd>
             <dd><a href="../gui_designing.html">Designing Java GUIs with the GUI Builder</a></dd>

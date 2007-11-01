@@ -45,12 +45,15 @@
         </ul>
         
         <ul class="note">
-<li>When you assign an action to a component, that component's display name, 
-tool tip, and accelerator are taken from what you enter in the Set Action dialog 
-box. If you have previously set these properties for the component, they 
+<li>When you assign an action to a component, that component derives some of its 
+<tt>text</tt> and <tt>toolTipText</tt> properties from what you specify in the 
+Set Action dialog box. If you have previously set these properties for the component, they 
 will be overridden by what is specified in the Set Action dialog box.</li>
+<li>Some attributes of the action are stored as resources in the <tt>.properties</tt> 
+file that has the same name as the action's <tt>.java</tt> file. The property keys 
+are derived from the action name. </li>
         </ul>
-        <!--TODO fill in-->
+
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="gui_saf_about.html">About the Swing Application Framework</a></dd>
