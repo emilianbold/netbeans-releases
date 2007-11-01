@@ -51,6 +51,7 @@
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -135,7 +136,7 @@ public class OperationSceneLayer extends Widget {
         leftHitPointOperationWidget.addChild(new Widget(getScene()), 1);
         
         dummyEndWidget = new Widget(getScene());
-        dummyEndWidget.setPreferredBounds(new Rectangle(0, OPERATION_GAP));
+        dummyEndWidget.setMinimumSize(new Dimension(0, OPERATION_GAP));
         refreshOperations();
         
 

@@ -46,7 +46,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
-import java.util.EnumSet;
 
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.InplaceEditorProvider;
@@ -76,15 +75,21 @@ public abstract class OperationWidget<T extends Operation>
     private T mOperationConstruct;
     private LabelWidget mOperationNameLabelWidget;
     private Widget nameHolderWidget;
+    
+    private Widget operationHolderWidget;
     protected RectangleWidget mOperationRectangleWidget;
     private WidgetAction editorAction;
     protected Widget endFillerWidget;
     
     public OperationWidget(Scene scene, T operation, Lookup lookup) {
         super(scene, operation, lookup);
-        
+        setLayout(LayoutFactory.createVerticalFlowLayout());
         nameHolderWidget = new Widget(scene);
         nameHolderWidget.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.CENTER, 0));
+        addChild(nameHolderWidget);
+        operationHolderWidget = new Widget(scene);
+        operationHolderWidget.setLayout(LayoutFactory.createHorizontalFlowLayout());
+        addChild(operationHolderWidget);
         
         mOperationConstruct = operation;
         mOperationNameLabelWidget = new LabelWidget(getScene());
@@ -129,16 +134,20 @@ public abstract class OperationWidget<T extends Operation>
             }
 
         });
-        mOperationRectangleWidget = new RectangleWidget(getScene(), 10, 67);
+        mOperationRectangleWidget = new RectangleWidget(getScene());
         
         if (isImported()) mOperationRectangleWidget.setColor(Color.GRAY);
         
         nameHolderWidget.addChild(mOperationNameLabelWidget);
         
-        setBorder(BorderFactory.createEmptyBorder(3));
+        setBorder(BorderFactory.createEmptyBorder(WidgetConstants.OPERATION_WIDGET_BORDER_THICKNESS));
         endFillerWidget = new Widget(scene);
+        endFillerWidget.setMinimumSize(new Dimension(5, 0));
         endFillerWidget.setMaximumSize(new Dimension(5, 0));
+        endFillerWidget.setBorder(BorderFactory.createEmptyBorder(0, WidgetConstants.RECTANGLE_WIDGET_THICKNESS, 0, 0));
+        
     }
+    
     
     /**
      * Indicates if this is a right-sided operation.
@@ -157,15 +166,34 @@ public abstract class OperationWidget<T extends Operation>
      * @param  rightSided  true for right-sided, false for left-sided.
      */
     public void setRightSided(boolean rightSided) {
+        boolean isSameSided = false;
         Lookup lookup = getLookup();
         DirectionCookie dc = lookup.lookup(DirectionCookie.class);
         if (dc == null) {
             dc = new DirectionCookie(rightSided);
             getLookupContent().add(dc);
         } else {
+            if (!(dc.isRightSided() ^ rightSided)) isSameSided = true;
             dc.setRightSided(rightSided);
         }
+        if (isSameSided) return;
+        Widget verticalWidget = getVerticalWidget();
+        endFillerWidget.removeFromParent();
+        verticalWidget.removeFromParent();
+        mOperationRectangleWidget.removeFromParent();
+        if (isRightSided()) {
+            operationHolderWidget.addChild(endFillerWidget);
+            operationHolderWidget.addChild(verticalWidget, 1);
+            operationHolderWidget.addChild(mOperationRectangleWidget);
+        } else {
+            operationHolderWidget.addChild(mOperationRectangleWidget);
+            operationHolderWidget.addChild(verticalWidget, 1);
+            operationHolderWidget.addChild(endFillerWidget);
+        }
+
     }
+    
+    protected abstract Widget getVerticalWidget();
     
     /**
      * Returns the WSDL operation this widget represents.
@@ -176,8 +204,8 @@ public abstract class OperationWidget<T extends Operation>
         return mOperationConstruct;
     }
     
-    protected Widget getLabelHolder() {
-        return nameHolderWidget;
+    public Widget getOperationHolderWidget() {
+        return operationHolderWidget;
     }
     
     @Override

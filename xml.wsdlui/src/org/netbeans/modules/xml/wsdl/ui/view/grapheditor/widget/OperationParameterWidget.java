@@ -230,12 +230,13 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
         },  EnumSet.<InplaceEditorProvider.ExpansionDirection>of (InplaceEditorProvider.ExpansionDirection.RIGHT))));
         
         if (parameter instanceof Fault) {
+            Widget holderWidget = new Widget(scene);
+            holderWidget.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.CENTER, 0));
+            addChild(holderWidget);
+            
             Widget widget = new Widget(scene);
             widget.setLayout(LayoutFactory.createHorizontalFlowLayout(SerialAlignment.JUSTIFY, 2));
-            Widget w = new Widget(scene);
-            w.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.CENTER, 0));
-            w.addChild(widget);
-            addChild(w);
+            holderWidget.addChild(widget);
             mParameter = parameter;
             mNameLabel = new LabelWidget (scene);
             mNameLabel.setBorder(WidgetConstants.EMPTY_2PX_BORDER);
@@ -247,8 +248,8 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
             Font font = scene.getDefaultFont ().deriveFont (Font.BOLD);
             mNameLabel.setFont (font);
             mNameLabel.setAlignment(Alignment.CENTER);
-            widget.addChild (mNameLabel, 1);
-            widget.addChild(mParameterMessage, 1);
+            widget.addChild (mNameLabel);
+            widget.addChild(mParameterMessage);
         } else {
             addChild(mParameterMessage);
         }
@@ -343,9 +344,11 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
     	if (evt.getPropertyName().equals(OperationParameter.MESSAGE_PROPERTY)) {
     		setText(getMessageName());
     		ActionHelper.selectNode(getWSDLComponent());
+            getScene().revalidate();
     	} else if (evt.getPropertyName().equals(OperationParameter.NAME_PROPERTY)) {
             if (mNameLabel != null && mParameter.getName() != null) {
                 mNameLabel.setLabel(mParameter.getName());
+                getScene().revalidate();
             }
     	}
     	getScene().validate();

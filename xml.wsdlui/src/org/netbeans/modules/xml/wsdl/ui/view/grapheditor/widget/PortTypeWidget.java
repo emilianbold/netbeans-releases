@@ -113,6 +113,8 @@ import org.netbeans.modules.xml.wsdl.ui.wsdl.util.DisplayObject;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -154,6 +156,12 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
                 if (text == null || text.trim().length() == 0) return;
                 if (getWSDLComponent() == null) {
                     WSDLModel model = getModel();
+                    PortType pt = model.findComponentByName(text, PortType.class);
+                    if (pt != null) {
+                        NotifyDescriptor desc = new NotifyDescriptor.Message(NbBundle.getMessage(PortTypeWidget.class, "ERR_PORTTYPE_NAME_EXISTS", text), NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(desc);
+                        return;
+                    }
                     if (model.startTransaction()) {
                         PortType portType = null;
                         try {
@@ -228,7 +236,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         
         nameHolderWidget = new Widget(getScene());
         nameHolderWidget.setLayout(new PortTypeLayout());
-        nameHolderWidget.setMinimumSize(new Dimension(190, 25));
+        nameHolderWidget.setMinimumSize(new Dimension(WidgetConstants.PORTTYPE_MINIMUM_WIDTH, WidgetConstants.TEXT_LABEL_HEIGHT));
         
         State state = State.ENABLED;
         if (mRole == null || getWSDLComponent() == null) {
@@ -395,7 +403,6 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         nameHolderWidget.addChild(showComboBoxBtnWidget);
         
         addChild(nameHolderWidget);
-        //setMinimumSize(new Dimension(0, 250));
         if (getWSDLComponent() != null) {
             getActions().addAction(((PartnerScene) getScene()).getDnDAction());
         }

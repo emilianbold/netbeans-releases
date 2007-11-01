@@ -65,54 +65,34 @@ import org.openide.util.Lookup;
 public class SolicitResponseOperationWidget
         extends OperationWithFaultWidget<SolicitResponseOperation> {
 
-    private final Widget verticalWidget;
+    Widget verticalWidget;
     
     /** Creates a new instance of PortTypeColumnWidget */
     public SolicitResponseOperationWidget(Scene scene, SolicitResponseOperation operation,
             Lookup lookup) {
         super(scene, operation, lookup);
-        verticalWidget = new Widget(scene);
-        verticalWidget.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.JUSTIFY, 3));
-        
-        //setBorder(BorderFactory.createLineBorder(1, Color.RED));
+
     }
 
-    protected void init() {
-        //already initialized?
-        if (getChildren().size() > 0) return;
-        
-        Scene scene = getScene();
-        WidgetFactory factory = WidgetFactory.getInstance();
-        Lookup lookup = getLookup();
-        Widget inputWidget = factory.getOrCreateWidget(scene,
-                getWSDLComponent().getInput(), lookup, verticalWidget);
-        
-        Widget outputWidget = factory.getOrCreateWidget(scene,
-                getWSDLComponent().getOutput(), lookup, verticalWidget);
-        
-
-        verticalWidget.addChild(outputWidget);
-        verticalWidget.addChild(inputWidget);
-
-        Widget horizontalWidget = new Widget(getScene());
-        horizontalWidget.setLayout(LayoutFactory.createHorizontalFlowLayout());
-        if (isRightSided()) {
-            horizontalWidget.addChild(endFillerWidget);
-            horizontalWidget.addChild(verticalWidget, 1);
-            horizontalWidget.addChild(mOperationRectangleWidget);
-        } else {
-            horizontalWidget.addChild(mOperationRectangleWidget);
-            horizontalWidget.addChild(verticalWidget, 1);
-            horizontalWidget.addChild(endFillerWidget);
-        }
-        
-        setLayout(LayoutFactory.createVerticalFlowLayout());
-        addChild(getLabelHolder());
-        addChild(horizontalWidget);
-    }
 
     @Override
     protected Widget getVerticalWidget() {
+        if (verticalWidget == null) {
+            verticalWidget = new Widget(getScene());
+            verticalWidget.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.JUSTIFY, 3));
+            Scene scene = getScene();
+            WidgetFactory factory = WidgetFactory.getInstance();
+            Lookup lookup = getLookup();
+            Widget inputWidget = factory.getOrCreateWidget(scene,
+                    getWSDLComponent().getInput(), lookup, verticalWidget);
+
+            Widget outputWidget = factory.getOrCreateWidget(scene,
+                    getWSDLComponent().getOutput(), lookup, verticalWidget);
+
+
+            verticalWidget.addChild(outputWidget);
+            verticalWidget.addChild(inputWidget);
+        }
         return verticalWidget;
     }
     

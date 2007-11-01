@@ -51,6 +51,7 @@
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
 import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.NotificationOperation;
@@ -61,43 +62,26 @@ import org.openide.util.Lookup;
  * @author radval
  */
 public class NotificationOperationWidget
-        extends OperationWidget<NotificationOperation> {
-    
-    private final Widget horizontalWidget;
-    
-    /** Creates a new instance of PortTypeColumnWidget */
+extends OperationWidget<NotificationOperation> {
+    Widget verticalWidget;
+
     public NotificationOperationWidget(Scene scene, NotificationOperation operation,
             Lookup lookup) {
         super(scene, operation, lookup);
-        horizontalWidget = new Widget(getScene());
     }
-    
+
+
     @Override
-    public void setRightSided(boolean rightSided) {
-        super.setRightSided(rightSided);
-        init();
-    }
-    
-    private void init() {
-        //already initialized?
-        if (getChildren().size() > 0) return;
-        
-        Scene scene = getScene();
-        Widget outputWidget = WidgetFactory.getInstance().getOrCreateWidget(
-                scene, getWSDLComponent().getOutput(), getLookup(), horizontalWidget);
-        horizontalWidget.setLayout(LayoutFactory.createHorizontalFlowLayout());
-        if (isRightSided()) {
-            horizontalWidget.addChild(endFillerWidget);
-            horizontalWidget.addChild(outputWidget, 1);
-            horizontalWidget.addChild(mOperationRectangleWidget);
-        } else {
-            horizontalWidget.addChild(mOperationRectangleWidget);
-            horizontalWidget.addChild(outputWidget, 1);
-            horizontalWidget.addChild(endFillerWidget);
+    protected Widget getVerticalWidget() {
+        if (verticalWidget == null) {
+            Scene scene = getScene();
+            verticalWidget = new Widget(scene);
+            verticalWidget.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.JUSTIFY, 3));
+            Widget outputWidget = WidgetFactory.getInstance().getOrCreateWidget(
+                    scene, getWSDLComponent().getOutput(), getLookup(), verticalWidget);
+            verticalWidget.addChild(outputWidget);
         }
-        
-        setLayout(LayoutFactory.createVerticalFlowLayout());
-        addChild(getLabelHolder());
-        addChild(horizontalWidget);
+        return verticalWidget;
     }
+
 }

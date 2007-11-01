@@ -99,7 +99,7 @@ public class ArrowWidget extends Widget {
     @Override
     protected void paintWidget() {
         Graphics2D gr = getGraphics();
-        drawArrow(gr, _x, _y, getBounds().width, _height, _color, _stroke);
+        drawArrow(gr, _x, _y, getClientArea().width, _height, _color, _stroke);
     }
     
     private void drawArrow(Graphics2D g, int x, int y , int width, int height, Color color, Stroke stroke) {

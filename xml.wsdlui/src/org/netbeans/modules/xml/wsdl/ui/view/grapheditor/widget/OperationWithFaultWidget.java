@@ -66,12 +66,9 @@ public abstract class OperationWithFaultWidget<T extends Operation> extends Oper
     @Override
     public void setRightSided(boolean rightSided) {
         super.setRightSided(rightSided);
-        init();
         refreshFaults(getVerticalWidget());
     }
 
-    protected abstract Widget getVerticalWidget();
-    protected abstract void init();
     
     private void refreshFaults(Widget verticalWidget) {
         dummyWidget.removeFromParent();

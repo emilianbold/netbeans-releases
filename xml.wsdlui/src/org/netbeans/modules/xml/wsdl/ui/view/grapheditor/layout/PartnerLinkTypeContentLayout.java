@@ -51,13 +51,18 @@ public class PartnerLinkTypeContentLayout implements Layout {
 
     private int mGap = 40;
     
+    
+    //Half Width of Rectangle Widget + RectangleWidget thickness + Border thickness 
+    //5                              +   2                       +         3
+    private int mHorizontalSpacing = 10;
+    
     public PartnerLinkTypeContentLayout(int gap) {
         mGap = gap;
     }
     
     public void justify(Widget widget) {
         Rectangle parentBounds = widget.getClientArea();
-        int width = parentBounds.width;
+        int totalWidth = parentBounds.width;
         
         List<Widget> children = widget.getChildren();
         if (children.size() < 3) return;
@@ -70,10 +75,11 @@ public class PartnerLinkTypeContentLayout implements Layout {
         Rectangle bounds2 = secondRole.getBounds();
         Rectangle bounds3 = operationLayer.getBounds();
         
-        bounds3.width = width - bounds1.width + 10;
-        Point point = secondRole.getLocation();
-        point.x = width - 5 - bounds2.width;
+        int width = Math.max(bounds1.width, bounds2.width);
         
+        bounds3.width = totalWidth - width + 2 * mHorizontalSpacing;
+        Point point = secondRole.getLocation();
+        point.x = totalWidth - bounds2.width;
         operationLayer.resolveBounds(operationLayer.getLocation(), bounds3);
         secondRole.resolveBounds(point, bounds2);
         
@@ -98,16 +104,18 @@ public class PartnerLinkTypeContentLayout implements Layout {
         int width = Math.max(bounds1.width, bounds2.width);
         int height = Math.max(bounds1.height, bounds2.height);
         
+        int totalWidth = Math.max(2 * width + 50, bounds3.width + width - 2 * mHorizontalSpacing); //atleast 50 gap between two roles
+        
+        bounds3.width = Math.max(totalWidth - width + 2 * mHorizontalSpacing, bounds3.width);  
+        
         int realHeight = bounds3.height + mGap;
         
         height = Math.max(height, realHeight);
         
-        int totalWidth = width + bounds3.width  - 10;
-
         Rectangle roleBounds = new Rectangle(width, realHeight);
         firstRole.resolveBounds(new Point(), roleBounds);
         secondRole.resolveBounds(new Point(totalWidth - width, 0), roleBounds);
-        operationLayer.resolveBounds(new Point(width / 2 - 5, mGap), bounds3);
+        operationLayer.resolveBounds(new Point(width / 2 - mHorizontalSpacing, mGap), bounds3);
     }
 
     public boolean requiresJustification(Widget widget) {

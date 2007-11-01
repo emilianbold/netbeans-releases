@@ -55,20 +55,20 @@ import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
  */
 public class RectangleWidget extends Widget {
 
-    private int _width = 10;
-    private int _height = 67;
+    private int _width;
+    private int _height;
     private int _x = 0;
     private int _y = 0;
     private int _thickness = 2;
     private Color _color = new Color(0x3244A0);
     
     public RectangleWidget(Scene scene) {
-        super(scene);
-        setOpaque(false);
+        this(scene, 11, 67);
     }
     
     public RectangleWidget(Scene scene, int width, int height) {
-        this(scene);
+        super(scene);
+        setOpaque(false);
         _width = width;
         _height = height;
         refreshBorder();

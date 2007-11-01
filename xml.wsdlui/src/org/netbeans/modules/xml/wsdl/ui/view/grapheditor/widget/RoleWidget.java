@@ -98,7 +98,6 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
     private LabelWidget mLabelWidget;
     private boolean leftSided;
     private int GAP = 25;
-    private int MINIMUM_WIDTH = 225;
     private WidgetAction editorAction;
 
     /**
@@ -115,7 +114,7 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
     }
 
     private void init() {
-        setMinimumSize(new Dimension(MINIMUM_WIDTH, 0));
+        setMinimumSize(new Dimension(WidgetConstants.ROLE_WIDGET_MINIMUM_WIDTH, 0));
         setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.CENTER, GAP));
         setOpaque(true);
         mLabelWidget = new LabelWidget(getScene(), getName());
@@ -189,7 +188,7 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
 
         }, null);
         
-        mLabelWidget.setMinimumSize(new Dimension(MINIMUM_WIDTH, WidgetConstants.TEXT_LABEL_HEIGHT));
+        mLabelWidget.setMinimumSize(new Dimension(WidgetConstants.ROLE_WIDGET_MINIMUM_WIDTH, WidgetConstants.TEXT_LABEL_HEIGHT));
         addChild(mLabelWidget);
         mLabelWidget.getActions().addAction(editorAction);
         

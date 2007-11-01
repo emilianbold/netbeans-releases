@@ -64,55 +64,31 @@ import org.openide.util.Lookup;
  */
 public class RequestReplyOperationWidget
         extends OperationWithFaultWidget<RequestResponseOperation> {
-    
-    private final Widget verticalWidget;
-    
+    Widget verticalWidget;
     /** Creates a new instance of PortTypeColumnWidget */
     public RequestReplyOperationWidget(Scene scene, RequestResponseOperation operation,
             Lookup lookup) {
         super(scene, operation, lookup);
-        verticalWidget = new Widget(scene);
-        verticalWidget.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.JUSTIFY, 3));
-    }
-    
-    @Override
-    protected void init() {
-        setLayout(LayoutFactory.createVerticalFlowLayout());
-        
-        //already initialized?
-        if (getChildren().size() > 0) return;
-        
-        Scene scene = getScene();
-        Lookup lookup = getLookup();
-        WidgetFactory factory = WidgetFactory.getInstance();
-        Widget inputWidget = factory.getOrCreateWidget(scene,
-                getWSDLComponent().getInput(), lookup, verticalWidget);
-        
-        Widget outputWidget = factory.getOrCreateWidget(scene,
-                getWSDLComponent().getOutput(), lookup, verticalWidget);
-        
-        verticalWidget.addChild(inputWidget);
-        verticalWidget.addChild(outputWidget);
-        
-        Widget horizontalWidget = new Widget(scene);
-        horizontalWidget.setLayout(LayoutFactory.createHorizontalFlowLayout());
-        if (isRightSided()) {
-            horizontalWidget.addChild(endFillerWidget);
-            horizontalWidget.addChild(verticalWidget, 1);
-            horizontalWidget.addChild(mOperationRectangleWidget);
-        } else {
-            horizontalWidget.addChild(mOperationRectangleWidget);
-            horizontalWidget.addChild(verticalWidget, 1);
-            horizontalWidget.addChild(endFillerWidget);
-        }
-        
-        addChild(getLabelHolder());
-        addChild(horizontalWidget);
-        
+
     }
     
     @Override
     protected Widget getVerticalWidget() {
+        if (verticalWidget == null) {
+            verticalWidget = new Widget(getScene());
+            verticalWidget.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.JUSTIFY, 3));
+            Scene scene = getScene();
+            Lookup lookup = getLookup();
+
+            WidgetFactory factory = WidgetFactory.getInstance();
+            Widget inputWidget = factory.getOrCreateWidget(scene,
+                    getWSDLComponent().getInput(), lookup, verticalWidget);
+
+            Widget outputWidget = factory.getOrCreateWidget(scene,
+                    getWSDLComponent().getOutput(), lookup, verticalWidget);
+            verticalWidget.addChild(inputWidget);
+            verticalWidget.addChild(outputWidget);
+        }
         return verticalWidget;
     }
     
