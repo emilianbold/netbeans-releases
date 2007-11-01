@@ -12805,6 +12805,8 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
         refresh(true);
         return addedNodes;
     }
+    
+    
     public static final int ALIGN_LEFT = 0;
     public static final int ALIGN_HCENTER = 1;
     public static final int ALIGN_RIGHT = 2;
@@ -12846,24 +12848,17 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
     {
         ETList<IETGraphObject> selGraphNodes = 
             GetHelper.getSelectedNodes((ETGraph)getGraph());
-        
-        ETList<IPresentationElement> presElems = 
-            new ETArrayList<IPresentationElement>(selGraphNodes.size());
 
         Set<IPresentationElement> containedElems = 
             new HashSet<IPresentationElement>();
 
-        Set<IETGraphObject> alignNodes = new HashSet<IETGraphObject>();
-
+        List<IETGraphObject> alignNodes = new ArrayList<IETGraphObject>();
         Iterator<IETGraphObject> iter = selGraphNodes.iterator();
         
         // find all contained nodes of the selected nodes
         while (iter.hasNext())
         {
             IETGraphObject etGraphObj = iter.next();
-            IPresentationElement presElem = etGraphObj != null 
-                ? etGraphObj.getPresentationElement() : null;
-            
             IDrawEngine drawEng = etGraphObj.getEngine();
             
             if (drawEng instanceof ETContainerDrawEngine)
@@ -12882,17 +12877,14 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
             IETGraphObject tsObj = iter.next();
             IPresentationElement presElem = tsObj != null 
                 ? tsObj.getPresentationElement() : null;
-            
+
             if (!containedElems.contains(presElem))
                 alignNodes.add(tsObj);
         }
         
         if (alignNodes == null || alignNodes.size() < 2)
-        {
             return false;
-        }
-        
-        
+
         TSConstRect anchor = null;
 
         // loop through selected elements and align them
@@ -12908,7 +12900,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
 
             TSConstPoint newCenter = 
                 calculateNewCenter(anchor, bounds, alignHow);
-            
+
             moveNode(
                 graphObj, 
                 (int)newCenter.getX() - (int)bounds.getCenterX(), 
