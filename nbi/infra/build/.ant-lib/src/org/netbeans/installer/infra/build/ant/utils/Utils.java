@@ -36,7 +36,6 @@
 
 package org.netbeans.installer.infra.build.ant.utils;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,7 +44,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
@@ -58,6 +56,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.jar.JarFile;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Pack200;
+import java.util.jar.Pack200.Packer;
+import java.util.jar.Pack200.Unpacker;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -72,6 +74,8 @@ import org.apache.tools.ant.Project;
 public final class Utils {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
+    private final static Packer packer = Pack200.newPacker();
+    private final static Unpacker unpacker = Pack200.newUnpacker();
     /**
      * The current ant project. Some of its methods will get called in process of
      * the executions of some of the utility procedures. Thus the ant tasks using the
@@ -182,14 +186,15 @@ public final class Utils {
     public static boolean pack(
             final File source,
             final File target) throws IOException {
+        return ("true".equals(project.getProperty("use.internal.packer"))) ?
+            packInternally(source,target) :
+            packExternally(source,target);        
+    }
+    
+    private static boolean packExternally(
+            final File source,
+            final File target) throws IOException {
         boolean result = false;
-        
-        final String packer;
-        if (System.getProperty("os.name").contains("Windows")) {
-            packer = System.getProperty("java.home") + "\\bin\\pack200.exe";
-        } else {
-            packer = System.getProperty("java.home") + "/bin/pack200";
-        }
         
         final String xmx = ARG_PREFIX + XMX_ARG +
                 project.getProperty("pack200.xmx");
@@ -199,7 +204,7 @@ public final class Utils {
                 project.getProperty("pack200.max.perm.size");
         
         Results results = run(
-                packer,
+                PACKER_EXECUTABLE,
                 xmx,
                 permSize,
                 maxPermSize,
@@ -221,7 +226,23 @@ public final class Utils {
         
         return result;
     }
-    
+    public static boolean packInternally(final File source,
+            final File target) throws IOException {
+        try {
+            JarFile jarFile = new JarFile(source);
+            FileOutputStream outputStream = new FileOutputStream(target);
+
+            packer.pack(jarFile, outputStream);
+
+            jarFile.close();
+            outputStream.close();
+            target.setLastModified(source.lastModified());
+        } catch (IOException exc) {
+            exc.printStackTrace();
+            return false;
+        }
+        return true;
+    }
     /**
      * Unpacks the given packed jar archive using the unpack200 utility.
      *
@@ -230,20 +251,23 @@ public final class Utils {
      * @return The target file, i.e. the unpacked jar archive.
      * @throws java.io.IOException if an I/O errors occurs.
      */
-    public static boolean unpack(
+    
+     public static boolean unpack(
+            final File source,
+            final File target) throws IOException {
+        return ("true".equals(project.getProperty("use.internal.unpacker"))) ?
+            unpackInternally(source,target) :
+            unpackExternally(source,target);        
+    }
+     
+    private static boolean unpackExternally(
             final File source,
             final File target) throws IOException {
         boolean result = false;
         
-        String unpacker = null;
-        if (System.getProperty("os.name").contains("Windows")) {
-            unpacker = System.getProperty("java.home") + "\\bin\\unpack200.exe";
-        } else {
-            unpacker = System.getProperty("java.home") + "/bin/unpack200";
-        }
         
         Results results = run(
-                unpacker,
+                UNPACKER_EXECUTABLE,
                 ARG_PREFIX + XMX_ARG + project.getProperty("pack200.xmx"),
                 ARG_PREFIX + PERM_SIZE_ARG + project.getProperty("pack200.perm.size"),
                 ARG_PREFIX + MAX_PERM_SIZE_ARG + project.getProperty("pack200.max.perm.size"),
@@ -265,7 +289,19 @@ public final class Utils {
         
         return result;
     }
-    
+    public static boolean unpackInternally(final File source,
+            final File target) throws IOException {
+        try {
+            JarOutputStream os = new JarOutputStream(new FileOutputStream(target));
+            unpacker.unpack(source, os);
+            os.close();
+            target.setLastModified(source.lastModified());
+        } catch (IOException exc) {
+            exc.printStackTrace();
+            return false;
+        }
+        return true;
+    }
     /**
      * Verifies that the jar archive is correct. This method tries to access all
      * jar archive entries and to load all the classes.
@@ -335,14 +371,13 @@ public final class Utils {
      */
     public static CharSequence read(final InputStream in) throws IOException {
         StringBuilder builder = new StringBuilder();
-        final String sep = System.getProperty("line.separator");
         byte[] buffer = new byte[1024];
         while (in.available() > 0) {
             int read = in.read(buffer);
             
             String readString = new String(buffer, 0, read);
             for(String string : readString.split(NEWLINE_REGEXP)) {
-                builder.append(string).append(sep);
+                builder.append(string).append(LINE_SEPARATOR);
             }
         }
         
@@ -414,20 +449,11 @@ public final class Utils {
     public static void nativeUnzip(
             final File file,
             final File directory) throws IOException {
-        final String[] command;
-        if (System.getProperty(OS_NAME).contains(WINDOWS)) {
-            command = new String[] {
-                "unzip.exe",
+        final String[] command = new String[] {
+                NATIVE_UNZIP_EXECUTABLE,
                 file.getAbsolutePath(),
                 "-d",
                 directory.getAbsolutePath()};
-        } else {
-            command = new String[] {
-                "unzip",
-                file.getAbsolutePath(),
-                "-d",
-                directory.getAbsolutePath()};
-        }
         
         if (project != null) {
             project.log("            running command: " + Arrays.asList(command));
@@ -643,20 +669,13 @@ public final class Utils {
             final String keystore,
             final String alias,
             final String password) throws IOException {
-        String executable = System.getProperty(JAVA_HOME);
-        if (System.getProperty(OS_NAME).contains(WINDOWS)) {
-            executable += "\\..\\bin\\jarsigner.exe";
-        } else {
-            executable += "/../bin/jarsigner";
-        }
-        
         StringBuilder stdout = new StringBuilder();
         StringBuilder stderr = new StringBuilder();
         int exitcode = 0;
         
         List<String> command = new ArrayList<String>();
         
-        command.add(executable);
+        command.add(JARSIGNER_EXECUTABLE);
         command.add("-keystore");
         command.add(keystore);
         command.add(file.getAbsolutePath());
@@ -701,12 +720,7 @@ public final class Utils {
     
     public static int getPermissions(final File file) {
         try {
-            final Results results;
-            if (System.getProperty(OS_NAME).contains(WINDOWS)) {
-                results = run("ls.exe", "-ld", file.getAbsolutePath());
-            } else {
-                results = run("ls", "-ld", file.getAbsolutePath());
-            }
+            final Results results = run(LS_EXECUTABLE, "-ld", file.getAbsolutePath());
             
             final String output = results.getStdout().toString().trim();
             
@@ -811,16 +825,9 @@ public final class Utils {
             final String... args) throws IOException {
         final String classPath = project.getProperty(CLASSPATH_VALUE_PROPERTY);
         
-        final String java;
-        if (System.getProperty(OS_NAME).contains(WINDOWS)) {
-            java = System.getProperty(JAVA_HOME) + File.separator + JAVA_EXE;
-        } else {
-            java = System.getProperty(JAVA_HOME) + File.separator + JAVA;
-        }
-        
         final List<String> command = new ArrayList<String>();
         
-        command.add(java);
+        command.add(JAVA_EXECUTABLE);
         command.add(CLASSPATH_ARG);
         command.add(classPath);
         command.add(clazz);
@@ -968,7 +975,7 @@ public final class Utils {
      * Deplay (in milliseconds) which to wait between cheking the process state.
      */
     public static final int DELAY =
-            50; // NOMAGI
+            10; // NOMAGI
     
     /**
      * Prefix for JVM command-line arguments.
@@ -1082,10 +1089,20 @@ public final class Utils {
             "Windows"; // NOI18N
     
     /**
+     * Name of the windows operationg system.
+     */
+    public static final boolean IS_WINDOWS =
+            System.getProperty(OS_NAME).contains(WINDOWS); // NOI18N
+    /**
      * Name of the system property which contains the current java home.
      */
     public static final String JAVA_HOME =
             "java.home"; // NOI18N
+    /**
+     * Value of the system property which contains the current java home.
+     */
+    public static final String JAVA_HOME_VALUE =
+            System.getProperty(JAVA_HOME); // NOI18N
     
     /**
      * Path to the java executable on non-windows platforms. Relative to the java
@@ -1100,4 +1117,19 @@ public final class Utils {
      */
     public static final String JAVA_EXE =
             "bin\\java.exe"; // NOI18N
+    
+    public static final String JAVA_EXECUTABLE = 
+            JAVA_HOME_VALUE + File.separator + ((IS_WINDOWS) ? JAVA_EXE : JAVA);
+    
+    public static final String PACKER_EXECUTABLE = JAVA_HOME_VALUE + 
+            ((IS_WINDOWS) ? "\\bin\\pack200.exe" : "/bin/pack200");//NOI18N
+    public static final String UNPACKER_EXECUTABLE = JAVA_HOME_VALUE + 
+            ((IS_WINDOWS) ? "\\bin\\unpack200.exe" : "/bin/unpack200");//NOI18N
+    public static final String NATIVE_UNZIP_EXECUTABLE =
+            (IS_WINDOWS) ? "unzip.exe" : "unzip"; //NOI18N
+    public static final String JARSIGNER_EXECUTABLE = JAVA_HOME_VALUE +
+        ((IS_WINDOWS) ? "\\..\\bin\\jarsigner.exe" : "/../bin/jarsigner");//NOI18N
+    public static final String LS_EXECUTABLE = 
+        (IS_WINDOWS) ? "ls.exe" : "ls";//NOI18N
+    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 }
