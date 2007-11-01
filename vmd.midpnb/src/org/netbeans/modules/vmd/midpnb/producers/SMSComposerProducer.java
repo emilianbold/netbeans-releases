@@ -83,6 +83,6 @@ public class SMSComposerProducer extends MidpComponentProducer {
     
     @Override
     public boolean checkValidity(DesignDocument document) {
-        return MidpJavaSupport.checkValidity(document, "javax.wireless.messaging.TextMessage "); // NOI18N
+        return MidpJavaSupport.checkValidity(document, "javax.wireless.messaging.TextMessage"); // NOI18N
     }
 }
