@@ -306,14 +306,20 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
      */
     public void run() throws IOException {
         // Read settings from the dialog.
-        StringTokenizer tok = new StringTokenizer((String) targetComboBox.getSelectedItem(), " ,"); // NOI18N
-        List/*<String>*/ targetsL = Collections.list(tok);
         String[] targets;
-        if (targetsL.isEmpty()) {
+        String selected = (String) targetComboBox.getSelectedItem();
+        if (selected == null) {
             // Run default target.
             targets = null;
         } else {
-            targets = (String[]) targetsL.toArray(new String[targetsL.size()]);
+            StringTokenizer tok = new StringTokenizer(selected, " ,"); // NOI18N
+            List/*<String>*/ targetsL = Collections.list(tok);
+            if (targetsL.isEmpty()) {
+                // Run default target.
+                targets = null;
+            } else {
+                targets = (String[]) targetsL.toArray(new String[targetsL.size()]);
+            }
         }
         Properties props = new Properties();
         ByteArrayInputStream bais = new ByteArrayInputStream(propertiesPane.getText().getBytes("ISO-8859-1"));
@@ -330,7 +336,7 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
         // Wherever the values used match the default, remove the attribute.
         FileObject script = project.getFileObject();
         assert script != null;
-        if ((targets.length == 1 && targets[0].equals(defaultTarget)) || targets.length == 0) {
+        if (targets == null || (targets.length == 1 && targets[0].equals(defaultTarget)) || targets.length == 0) {
             script.setAttribute(ATTR_TARGETS, null);
         } else {
             StringBuffer targetsSpaceSep = new StringBuffer();
