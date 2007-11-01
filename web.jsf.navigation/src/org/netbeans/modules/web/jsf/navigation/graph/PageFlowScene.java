@@ -196,13 +196,16 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         //ActionMap actionMap = MapActionUtility.initActionMap();
         //actions.addAction(ActionFactory.createActionMapAction(inputMap, actionMap));
         //MyActionMapAction action = new MyActionMapAction(null, null);
-        FreePlaceNodesLayouter fpnl = new FreePlaceNodesLayouter(this, tc.getVisibleRect());
+        fpnl = new FreePlaceNodesLayouter(this, tc.getVisibleRect());
         
     }
-    
+    private FreePlaceNodesLayouter fpnl;
     /* Used to destroy everything in the scene. */
     public void destoryPageFlowScene() {
         removeObjectSceneListener(pfObjectSceneListener);
+
+        fpnl.unregisterListeners();
+        fpnl = null;
         tc = null;
         router = null;
         Chain chainActions = getActions();
@@ -712,5 +715,11 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
 
     public PopupMenuProvider getPopupMenuProvider() {
         return popupProvider;
+    }
+    
+    static class SceneTestAccessor {
+        static FreePlaceNodesLayouter getFreePlaceNodesLayouter(PageFlowScene scene) {
+            return scene.fpnl;
+        }
     }
 }

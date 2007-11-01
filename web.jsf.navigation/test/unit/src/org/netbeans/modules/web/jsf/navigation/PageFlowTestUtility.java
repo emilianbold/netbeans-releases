@@ -149,7 +149,7 @@ public class PageFlowTestUtility {
     }
     JSFConfigEditorSupport editorSupport;
 
-    private void closeFacesModel() {
+    protected void closeFacesModel() {
         if (editorSupport != null) {
             editorSupport.close();
         }

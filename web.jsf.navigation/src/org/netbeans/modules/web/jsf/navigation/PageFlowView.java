@@ -886,4 +886,13 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     public void setMultiview(PageFlowElement multiview) {
         this.multiviewRef = new WeakReference<PageFlowElement>(multiview);
     }
+    
+    /* To be used for unit test purposes only. */
+    static class PFVTestAccessor {
+        static PageFlowScene getPageFlowScene(PageFlowView view) {
+            return view.scene;
+        }
+        
+       
+    }
 }
