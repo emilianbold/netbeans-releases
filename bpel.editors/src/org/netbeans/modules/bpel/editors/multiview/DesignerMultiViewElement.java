@@ -534,9 +534,9 @@ public class DesignerMultiViewElement extends TopComponent
         ActionMap designViewMap = myDesignView.getActionMap();
         map.setParent(designViewMap);
         
-        designViewMap.put(DefaultEditorKit.copyAction, designViewMap.get("copy-pattern"));
-        designViewMap.put(DefaultEditorKit.cutAction, designViewMap.get("cut-pattern"));
-        designViewMap.put(DefaultEditorKit.pasteAction, designViewMap.get("paste-pattern"));
+//        designViewMap.put(DefaultEditorKit.copyAction, designViewMap.get("copy-pattern"));
+//        designViewMap.put(DefaultEditorKit.cutAction, designViewMap.get("cut-pattern"));
+//        designViewMap.put(DefaultEditorKit.pasteAction, designViewMap.get("paste-pattern"));
         map.put("delete", designViewMap.get("delete-something"));
         
         ThumbScrollPane scroll = new ThumbScrollPane(myDesignView.getView());

@@ -45,6 +45,8 @@ package org.netbeans.modules.bpel.design.selection;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Action;
+import javax.swing.JPopupMenu;
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.geometry.FPoint;
 
@@ -57,6 +59,8 @@ import org.netbeans.modules.bpel.design.model.patterns.CompositePattern;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
 import org.netbeans.modules.bpel.model.api.Else;
 import org.openide.ErrorManager;
+import org.openide.awt.Actions;
+import org.openide.util.NbBundle;
 
 public class PlaceHolderManager implements DnDTool {
     
@@ -100,7 +104,7 @@ public class PlaceHolderManager implements DnDTool {
     
     
     
-    private PlaceHolder findPlaceholder(float px, float py) {
+    public PlaceHolder findPlaceholder(float px, float py) {
         for (int i = placeHolders.size() - 1; i >= 0; i--) {
             PlaceHolder p = placeHolders.get(i);
             if (p.contains(px, py)) { return p; }
@@ -116,6 +120,29 @@ public class PlaceHolderManager implements DnDTool {
         //getDesignView().getButtonsManager().clear();
     }
     
+    
+    /**
+     * Function builds the popup menu to show on diagram element.
+     * Menu actions are taken from Node wrapping the underlying BpelOM element.
+     * Derived classes should override this method to add extra menu items.
+     * @returns menu to show.
+     **/
+    public JPopupMenu createPopupMenu() {
+        if (getDesignView().isDesignMode()) {
+            return null;
+        }
+        
+        JPopupMenu menu = new JPopupMenu(NbBundle.
+                getMessage(DesignView.class, "LBL_PLACEHOLDER"));
+
+        //populate a list of actions
+        Action paste = getDesignView().getCopyPasteHandler().getPasteAction();
+        
+        if (paste != null ){
+            menu.add(new Actions.MenuItem(paste, false));
+        }
+        return menu;
+    }
     
     private void createPlaceHolders(Pattern pattern) {
         

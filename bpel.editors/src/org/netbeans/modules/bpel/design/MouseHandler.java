@@ -47,6 +47,7 @@ import javax.swing.JPopupMenu;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
 
 import org.netbeans.modules.bpel.design.selection.EntitySelectionModel;
+import org.netbeans.modules.bpel.design.selection.PlaceHolder;
 import org.netbeans.modules.bpel.design.selection.PlaceHolderManager;
 
 
@@ -72,9 +73,19 @@ public class MouseHandler extends MouseAdapter {
     
     public void mousePressed(MouseEvent e) {
         getDesignView().requestFocus();
-        Pattern p = getDesignView().findPattern(e.getPoint());
+        
+        if (getDesignView().isDesignMode()) {
+            Pattern p = getDesignView().findPattern(e.getPoint());
 
-        getSelectionModel().setSelectedPattern(p);
+            getSelectionModel().setSelectedPattern(p);
+        } else {
+            PlaceHolder ph = getDesignView().findPlaceholder(e.getPoint());
+            
+            if (ph != null) {
+                getDesignView().getPhSelectionModel().setSelectedPlaceHolder(ph);
+                getDesignView().repaint();
+            }
+        }
 
         maybeShowPopup(e);
     }
@@ -111,12 +122,20 @@ public class MouseHandler extends MouseAdapter {
     
     public boolean maybeShowPopup(MouseEvent e) {
         if (!e.isPopupTrigger()) return false;
-        
-        Pattern pattern = getSelectionModel().getSelectedPattern();
-        
-        if (pattern == null) return false;
-        
-        JPopupMenu popup = pattern.createPopupMenu();
+
+        JPopupMenu popup = null;
+        if (getDesignView().isDesignMode()) {
+            Pattern pattern = getSelectionModel().getSelectedPattern();
+
+            if (pattern == null) return false;
+
+            popup = pattern.createPopupMenu();
+        } else {
+            PlaceHolder ph = getDesignView().findPlaceholder(e.getPoint());
+            if (ph == null)  return false;
+            
+            popup = getPlaceHolderManager().createPopupMenu();
+        }
         
         if (popup == null) return false;
         

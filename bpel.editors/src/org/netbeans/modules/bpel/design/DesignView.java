@@ -78,6 +78,7 @@ import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.text.DefaultEditorKit;
 import org.netbeans.modules.bpel.design.decoration.DecorationManager;
 import org.netbeans.modules.bpel.design.decoration.components.DiagramButton;
 import org.netbeans.modules.bpel.design.decoration.providers.CollapseExpandDecorationProvider;
@@ -591,9 +592,9 @@ public class DesignView extends JPanel implements
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "expand-current-pattern"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.ALT_DOWN_MASK), "expand-all-patterns"); // NOI18N
 
-        im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK), "copy-pattern"); // NOI18N
-        im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK), "paste-pattern"); // NOI18N
-        im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK), "cut-pattern"); // NOI18N
+        im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK), DefaultEditorKit.copyAction); // NOI18N
+        im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK), DefaultEditorKit.pasteAction); // NOI18N
+        im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK), DefaultEditorKit.cutAction); // NOI18N
         
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "rename-something"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete-something"); // NOI18N
@@ -622,9 +623,9 @@ public class DesignView extends JPanel implements
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "expand-current-pattern"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.ALT_DOWN_MASK), "expand-all-patterns"); // NOI18N
 
-        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK), "copy-pattern"); // NOI18N
-        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK), "paste-pattern"); // NOI18N
-        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK), "cut-pattern"); // NOI18N
+        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK), DefaultEditorKit.copyAction); // NOI18N
+        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK), DefaultEditorKit.pasteAction); // NOI18N
+        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK), DefaultEditorKit.cutAction); // NOI18N
 
         am.put("rename-something", new RenameAction()); // NOI18N
         am.put("delete-something", new DeleteAction()); // NOI18N
@@ -645,9 +646,9 @@ public class DesignView extends JPanel implements
         am.put("collapse-current-pattern", new CollapseCurrentPatternAction()); // NOI18N
         am.put("expand-all-patterns", new ExpandAllPatternsAction());
         
-        am.put("copy-pattern", new CopyAction()); // NOI18N
-        am.put("cut-pattern", new CutAction()); // NOI18N
-        am.put("paste-pattern", new PasteAction()); // NOI18N
+        am.put(DefaultEditorKit.copyAction, new CopyAction()); // NOI18N
+        am.put(DefaultEditorKit.cutAction, new CutAction()); // NOI18N
+        am.put(DefaultEditorKit.pasteAction, new PasteAction()); // NOI18N
 
 /**
          im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK), "copy-pattern"); // NOI18N
@@ -824,7 +825,15 @@ public class DesignView extends JPanel implements
         return convertDiagramToScreen(point, getCorrectedZoom());
     }
     
+    public PlaceHolder findPlaceholder(Point point) {
+        FPoint fPoint = convertScreenToDiagram(point);
+        return findPlaceholder(fPoint.x, fPoint.y);
+    }
     
+    public PlaceHolder findPlaceholder(float x, float y) {
+        return getPlaceHolderManager().findPlaceholder(x, y);
+    }
+
     public Pattern findPattern(Point point) {
         FPoint fPoint = convertScreenToDiagram(point);
         return findPattern(fPoint.x, fPoint.y);
@@ -1419,6 +1428,16 @@ public class DesignView extends JPanel implements
     class CopyAction extends DesignModeAction {
         private static final long serialVersionUID = 1L;
 
+        public CopyAction() {
+            super();
+            
+            putValue(NAME, NbBundle.getMessage(DesignView.class, 
+                    "LBL_COPY_ACTION"));
+            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(
+                    DesignView.class, 
+                    "TTT_COPY_ACTION"));
+        }
+
         @Override
         public boolean isEnabled() {
             if (!super.isEnabled()) {
@@ -1463,6 +1482,16 @@ public class DesignView extends JPanel implements
     class CutAction extends DesignModeAction {
         private static final long serialVersionUID = 1L;
 
+        public CutAction() {
+            super();
+            
+            putValue(NAME, NbBundle.getMessage(DesignView.class, 
+                    "LBL_CUT_ACTION"));
+            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(
+                    DesignView.class, 
+                    "TTT_CUT_ACTION"));
+        }
+
         @Override
         public boolean isEnabled() {
             if (!super.isEnabled()) {
@@ -1506,6 +1535,16 @@ public class DesignView extends JPanel implements
     class PasteAction extends PhModeAction {
         private static final long serialVersionUID = 1L;
 
+        public PasteAction() {
+            super();
+            
+            putValue(NAME, NbBundle.getMessage(DesignView.class, 
+                    "LBL_PASTE_ACTION"));
+            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(
+                    DesignView.class, 
+                    "TTT_PASTE_ACTION"));
+        }
+        
         @Override
         public boolean isEnabled() {
             return super.isEnabled() 
@@ -1932,21 +1971,38 @@ public class DesignView extends JPanel implements
         private static final long serialVersionUID = 1L;
         
         public void actionPerformed(ActionEvent e) {
-            Pattern p = getSelectionModel().getSelectedPattern();
+            JPopupMenu menu = null;
+            FBounds r = null;
             
-            if (p == null) {
+            if (isDesignMode()) {
+                Pattern p = getSelectionModel().getSelectedPattern();
+
+                if (p == null) {
+                    return;
+                }
+
+                menu = p.createPopupMenu();
+
+                if (p instanceof ProcessPattern) {
+                    r = ((ProcessPattern) p).getBorder().getBounds();
+                } else {
+                    r = p.getBounds();
+                }
+            } else {
+                
+                PlaceHolder ph = getPhSelectionModel().getSelectedPlaceHolder();
+                if (ph == null) {
+                    return;
+                }
+                menu = getPlaceHolderManager().createPopupMenu();
+                
+                r = ph.getShape();
+            }
+            
+            if (menu == null || r == null) {
                 return;
             }
             
-            JPopupMenu menu = p.createPopupMenu();
-            
-            FBounds r;
-            
-            if (p instanceof ProcessPattern) {
-                r = ((ProcessPattern) p).getBorder().getBounds();
-            } else {
-                r = p.getBounds();
-            }
             
             Point topLeft = convertDiagramToScreen(r.getTopLeft());
             Point bottomRight = convertDiagramToScreen(r.getBottomRight());

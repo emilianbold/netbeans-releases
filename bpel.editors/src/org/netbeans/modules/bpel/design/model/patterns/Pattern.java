@@ -302,6 +302,19 @@ public abstract class Pattern {
                 menu.add(scrollToPartnerLink);
             }
             
+            Action copyAction = getModel().getView()
+                    .getCopyPasteHandler().getCopyAction(this);
+            if (copyAction != null) {
+                JMenuItem item = menu.add(copyAction);
+                item.setIcon(null);
+            }
+            Action cutAction = getModel().getView()
+                    .getCopyPasteHandler().getCutAction(this);
+            if (cutAction != null) {
+                JMenuItem item = menu.add(cutAction);
+                item.setIcon(null);
+            }
+            
             //populate a list of actions
             Action actions[] = node.getActions(true);
             if (actions != null ){

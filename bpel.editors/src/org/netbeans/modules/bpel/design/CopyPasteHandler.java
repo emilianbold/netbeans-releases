@@ -40,7 +40,11 @@
  */
 package org.netbeans.modules.bpel.design;
 
+import javax.swing.Action;
+import javax.swing.text.DefaultEditorKit;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
+import org.netbeans.modules.bpel.design.model.patterns.ProcessPattern;
+import org.netbeans.modules.bpel.design.selection.PlaceHolder;
 import org.netbeans.modules.bpel.design.selection.PlaceHolderManager;
 
 /**
@@ -63,6 +67,34 @@ public class CopyPasteHandler {
     
     public void exitPlaceHolderMode() {
         designView.getPlaceHolderManager().clear();
+    }
+    
+    public DesignView getDesignView() {
+        return designView;
+    }
+    
+    public Action getCopyAction(Pattern pattern) {
+        if (!getDesignView().isDesignMode() || pattern instanceof ProcessPattern) {
+            return null;
+        }
+        
+        return getDesignView().getActionMap().get(DefaultEditorKit.copyAction); 
+    }
+    
+    public Action getCutAction(Pattern pattern) {
+        if (!getDesignView().isDesignMode() || pattern instanceof ProcessPattern) {
+            return null;
+        }
+        
+        return getDesignView().getActionMap().get(DefaultEditorKit.cutAction); 
+    }
+    
+    public Action getPasteAction() {
+        if (getDesignView().isDesignMode()) {
+            return null;
+        }
+        
+        return getDesignView().getActionMap().get(DefaultEditorKit.pasteAction); 
     }
     
 }
