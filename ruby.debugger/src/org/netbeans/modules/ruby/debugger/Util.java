@@ -47,7 +47,6 @@ import javax.swing.JButton;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.modules.ruby.rubyproject.gems.Gem;
 import org.netbeans.modules.ruby.rubyproject.gems.GemManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -179,17 +178,7 @@ public final class Util {
     }
     
     static void installRubyDebugGem() {
-        final Gem[] gems = new Gem[] {
-            new Gem(Util.RUBY_DEBUG_IDE_NAME, null, null)
-        };
-        // TODO is this really needed to force "Gem files reload"? If so should
-        // not be it done automatically in install() and similar methods?
-        Runnable installationComplete = new Runnable() {
-            public void run() {
-                RubyInstallation.getInstance().recomputeRoots();
-            }
-        };
-        new GemManager().install(gems, null, null, false, false, null, true, true, installationComplete);
+        new GemManager().installGem(Util.RUBY_DEBUG_IDE_NAME, false, false);
         if (!Util.isValidRDebugIDEGemInstalled()) {
             Util.showWarning(getMessage("Util.fast.debugger.install.failed"));
         }
