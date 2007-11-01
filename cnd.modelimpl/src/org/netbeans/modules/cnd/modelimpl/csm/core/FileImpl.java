@@ -536,7 +536,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (apt == null) {
             return null;
         }
-        APTParseFileWalker walker = new APTParseFileWalker(ProjectBase.getStartProject(preprocHandler.getState()), apt, this, preprocHandler);
+        ProjectBase startProject = ProjectBase.getStartProject(preprocHandler.getState());
+        if (startProject == null) {
+            System.err.println(" null project for " + APTHandlersSupport.extractStartEntry(preprocHandler.getState()) + // NOI18N
+                "\n while getting TS of file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
+            return null;
+        }        
+        APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler);
         return walker.getFilteredTokenStream(getLanguageFilter());
     }
     
@@ -602,8 +608,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             initGuardIfNeeded(preprocHandler, aptFull);
             // make real parse
             ProjectBase startProject = ProjectBase.getStartProject(preprocHandler.getState());
-            assert startProject != null : " null project for " + APTHandlersSupport.extractStartEntry(preprocHandler.getState()) + // NOI18N
-                    " while parsing file " + getAbsolutePath() + " of project " + getProject(); // NOI18N
+            if (startProject == null) {
+                System.err.println(" null project for " + APTHandlersSupport.extractStartEntry(preprocHandler.getState()) + // NOI18N
+                    "\n while parsing file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
+                return null;
+            }
             APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler);
             walker.addMacroAndIncludes(true);
             if (TraceFlags.DEBUG) {
