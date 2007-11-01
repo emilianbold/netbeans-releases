@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.web.jsf.navigation;
 
 import java.awt.Cursor;
@@ -99,9 +98,10 @@ public class PageFlowController {
     private final Map<NavigationRule, String> navRule2String = new WeakHashMap<NavigationRule, String>();
     private final HashMap<String, WeakReference<Page>> pageName2Page = new HashMap<String, WeakReference<Page>>(); //Should this be synchronized.
     //    public static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18NF
+
     private static final String NO_WEB_FOLDER_WARNING = NbBundle.getMessage(PageFlowController.class, "MSG_NoWebFolder");
     private static final String NO_WEB_FOLDER_TITLE = NbBundle.getMessage(PageFlowController.class, "TLE_NoWebFolder");
-    private  FileObject webFolder;
+    private FileObject webFolder;
 
     /** Creates a new instance of PageFlowController
      * @param context
@@ -151,7 +151,7 @@ public class PageFlowController {
             webFiles = getAllProjectRelevantFilesObjects();
         }
     }
-    
+
     public void destroy() {
         webFolder = null;
         configModel = null;
@@ -160,11 +160,10 @@ public class PageFlowController {
         navCase2NavCaseEdge.clear();
         navRule2String.clear();
         pageName2Page.clear();
-                
+
     }
-    
-    
     private static final String PROP_SHOW_NO_WEB_FOLDER = "showNoWebFolder"; // NOI18N
+
 
     public final void setShowNoWebFolderDialog(boolean show) {
         getPreferences().putBoolean(PROP_SHOW_NO_WEB_FOLDER, show);
@@ -179,7 +178,7 @@ public class PageFlowController {
     }
     private PropertyChangeListener pcl;
     private FileChangeListener fcl;
-//    private ComponentListener cl;
+    //    private ComponentListener cl;
 
     public void registerListeners() {
         if (pcl == null) {
@@ -188,7 +187,7 @@ public class PageFlowController {
                 configModel.addPropertyChangeListener(pcl);
             }
         }
-//        if (cl == null) {
+        //        if (cl == null) {
 //            cl = new FacesModelComponentEventListener(this);
 //            if (configModel != null) {
 //                configModel.addComponentListener(cl);
@@ -211,11 +210,13 @@ public class PageFlowController {
      * Unregister any listeners.
      */
     public void unregisterListeners() {
-        if (pcl != null && configModel != null) {
-            configModel.removePropertyChangeListener(pcl);
+        if (pcl != null) {
+            if (configModel != null) {
+                configModel.removePropertyChangeListener(pcl);
+            }
             pcl = null;
         }
-//        if (cl != null && configModel != null) {
+        //        if (cl != null && configModel != null) {
 //            configModel.removeComponentListener(cl);
 //            cl = null;
 //        }
@@ -234,7 +235,7 @@ public class PageFlowController {
     }
 
     /**
-     * Set From outcome by default.
+     * Creates a Link in the FacesConfiguration 
      * @param source
      * @param target
      * @param pinNode if null then it was not conntect to a pin.
@@ -289,7 +290,7 @@ public class PageFlowController {
         List<NavigationCase> navCases = navRule.getNavigationCases();
         for (NavigationCase navCase : navCases) {
             caseOutcomes.add(navCase.getFromOutcome());
-            //            caseOutcomes.add(navCase.getFromAction());
+        //            caseOutcomes.add(navCase.getFromAction());
         }
 
         int caseNum = 1;
@@ -481,11 +482,11 @@ public class PageFlowController {
 
             EventQueue.invokeLater(new Runnable() {
 
-                public void run() {
+                        public void run() {
 
-                    setupGraph();
-                }
-            });
+                            setupGraph();
+                        }
+                    });
         }
     }
 
@@ -565,11 +566,11 @@ public class PageFlowController {
 
     public void destroyPageFlowNode(Page pageNode) {
 	if( pageNode != null ) {	
-           pageNode.destroy2();
-           Calendar rightNow = Calendar.getInstance();
-           PageFlowDestroyStack.push("\n" + PageFlowDestroyCount + ". " + rightNow.get(Calendar.MINUTE) + ":" + rightNow.get(Calendar.SECOND) + " -  " + pageNode);
-           PageFlowDestroyCount++;
-	} 
+            pageNode.destroy2();
+            Calendar rightNow = Calendar.getInstance();
+            PageFlowDestroyStack.push("\n" + PageFlowDestroyCount + ". " + rightNow.get(Calendar.MINUTE) + ":" + rightNow.get(Calendar.SECOND) + " -  " + pageNode);
+            PageFlowDestroyCount++;
+        }
     }
 
     private void createAllProjectPages(Collection<String> pagesInConfig) {
@@ -695,7 +696,7 @@ public class PageFlowController {
         for (String key : keys) {
             Page node = removePageName2Page(key, true);
         }
-        //            pageName2Node.clear();
+    //            pageName2Node.clear();
         //        }
     }
 
@@ -757,7 +758,7 @@ public class PageFlowController {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            //            view.removeEdge(navCaseNode);
+        //            view.removeEdge(navCaseNode);
         }
     }
 
@@ -943,30 +944,30 @@ public class PageFlowController {
                     StatusDisplayer.getDefault().setStatusText("otvirani"); // NOI18N
                     EventQueue.invokeLater(new Runnable() {
 
-                        public void run() {
+                                public void run() {
 
-                            ec2.edit();
-                            JEditorPane[] panes = ec.getOpenedPanes();
-                            if (panes != null && panes.length > 0) {
-                                openPane(panes[0], navCase);
-                                //ec.open();
-                            } else {
-                                ec.addPropertyChangeListener(new PropertyChangeListener() {
+                                    ec2.edit();
+                                    JEditorPane[] panes = ec.getOpenedPanes();
+                                    if (panes != null && panes.length > 0) {
+                                        openPane(panes[0], navCase);
+                                    //ec.open();
+                                    } else {
+                                        ec.addPropertyChangeListener(new PropertyChangeListener() {
 
-                                    public void propertyChange(PropertyChangeEvent evt) {
-                                        if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
-                                            final JEditorPane[] panes = ec.getOpenedPanes();
-                                            if (panes != null && panes.length > 0) {
-                                                openPane(panes[0], navCase);
-                                            }
-                                            ec.removePropertyChangeListener(this);
-                                        }
+                                                    public void propertyChange(PropertyChangeEvent evt) {
+                                                        if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
+                                                            final JEditorPane[] panes = ec.getOpenedPanes();
+                                                            if (panes != null && panes.length > 0) {
+                                                                openPane(panes[0], navCase);
+                                                            }
+                                                            ec.removePropertyChangeListener(this);
+                                                        }
+                                                    }
+                                                });
+                                        ec.open();
                                     }
-                                });
-                                ec.open();
-                            }
-                        }
-                    });
+                                }
+                            });
                 }
             }
         }
@@ -991,15 +992,15 @@ public class PageFlowController {
         Collection<? extends PageContentModelProvider> impls = result.allInstances();
         return impls;
     }
-    
+
     static class TestAccessor {
 
         static Collection<String> getPagesInFacesConfig(final PageFlowController controller) {
             Set<NavigationRule> rules = TestAccessor.getAllNavigationRules(controller);
             return controller.getFacesConfigPageNames(rules);
         }
-         
-        static Collection<FileObject> getAllRelevantFiles(PageFlowController controller){
+
+        static Collection<FileObject> getAllRelevantFiles(PageFlowController controller) {
             return controller.getAllProjectRelevantFilesObjects();
         }
         static Set<NavigationRule> getAllNavigationRules(PageFlowController controller) {

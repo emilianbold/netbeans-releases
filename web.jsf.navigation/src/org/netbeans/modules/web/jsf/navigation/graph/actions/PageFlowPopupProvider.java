@@ -82,10 +82,6 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
         initialize();
     }
     
-    public void destroy() {
-        setTc(null);
-        setGraphScene(null);
-    }
     // <actions from layers>
     private static final String PATH_PAGEFLOW_NODE_ACTIONS = "PageFlowEditor/PopupActions/PageFlowSceneElement"; // NOI18N
     private static final String PATH_PAGEFLOW_SCENE_ACTIONS = "PageFlowEditor/PopupActions/Scene"; // NOI18N

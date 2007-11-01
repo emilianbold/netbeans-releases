@@ -184,7 +184,9 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
     /* Joelle: Temporarily I need not use destroy for the other purpose.  I plan to fix after stabilization */
     public void destroy2() {
         destroyListeners();
-        original = null;
+        if ( original instanceof NonDataNode) { 
+            original = null;
+        }
         pccl = null;
         pageContentModel = null;
     }

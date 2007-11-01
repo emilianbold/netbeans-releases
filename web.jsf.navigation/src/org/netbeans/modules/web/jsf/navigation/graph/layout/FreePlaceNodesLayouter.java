@@ -61,8 +61,7 @@ import org.netbeans.modules.web.jsf.navigation.Page;
  */
 // TODO - perfomance - scalability problem
 public final class FreePlaceNodesLayouter {
-    private WeakReference<PageFlowScene> sceneRef;
-    public FreePlaceNodesLayouter(PageFlowScene scene ) {
+    public FreePlaceNodesLayouter(PageFlowScene scene) {
         this(scene, false);
     }
     
@@ -81,22 +80,23 @@ public final class FreePlaceNodesLayouter {
     
     PageFlowSceneListener pfsl = new PageFlowSceneListener();
     PageFlowObjectSceneListener pfosl = new PageFlowObjectSceneListener();
-    public void registerListeners() {
-         sceneRef.get().addSceneListener(pfsl);
-         sceneRef.get().addObjectSceneListener(pfosl, ObjectSceneEventType.OBJECT_ADDED);
+    
+    public void registerListeners(PageFlowScene scene) {
+         scene.addSceneListener(pfsl);
+         scene.addObjectSceneListener(pfosl, ObjectSceneEventType.OBJECT_ADDED);
     }
     
-    public void unregisterListeners() {
-        sceneRef.get().removeSceneListener(pfsl);
-        sceneRef.get().removeObjectSceneListener(pfosl, ObjectSceneEventType.OBJECT_ADDED);
+    public void unregisterListeners(PageFlowScene scene ) {
+        scene.removeSceneListener(pfsl);
+        scene.removeObjectSceneListener(pfosl, ObjectSceneEventType.OBJECT_ADDED);
     }
 
     
-    
+    final PageFlowScene scene;
     private FreePlaceNodesLayouter(PageFlowScene scene, boolean isOneTimeUse){
-        this.sceneRef = new WeakReference<PageFlowScene>(scene);
+        this.scene = scene;
         if( !isOneTimeUse){   
-            registerListeners();
+            registerListeners(scene);
         }
     }
     
@@ -176,8 +176,8 @@ public final class FreePlaceNodesLayouter {
     private final Collection<Page> nodesAdded = new HashSet<Page>();
     private class PageFlowObjectSceneListener implements ObjectSceneListener{
         
-        public void objectAdded(ObjectSceneEvent event, Object addedObject) {
-            if( sceneRef.get().isNode(addedObject) ) {
+        public void objectAdded(ObjectSceneEvent event, Object addedObject) { 
+            if( ((PageFlowScene)event.getObjectScene()).isNode(addedObject) ) {
                 nodesAdded.add((Page)addedObject);
             }
         }
@@ -231,7 +231,7 @@ public final class FreePlaceNodesLayouter {
         
         public void sceneValidated() {
             if( !nodesAdded.isEmpty() ) {
-                layoutNodesLocations(sceneRef.get(), nodesAdded);
+                layoutNodesLocations(scene, nodesAdded);
                 nodesAdded.clear();
             }
             

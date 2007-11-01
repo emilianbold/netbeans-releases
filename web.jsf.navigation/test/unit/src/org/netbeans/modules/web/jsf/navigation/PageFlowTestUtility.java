@@ -85,14 +85,6 @@ public class PageFlowTestUtility {
     private PageFlowView pageFlowView;
     NbTestCase nbTestCase;
 
-    public void destroy() {
-        project = null;
-        jsfDO = null;
-        facesConfig = null;
-        pageFlowView = null;
-        nbTestCase = null;
-    }
-
     public PageFlowTestUtility(NbTestCase nbTestCase) {
         this.nbTestCase = nbTestCase;
     }

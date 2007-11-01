@@ -204,12 +204,10 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     public void destoryPageFlowScene() {
         removeObjectSceneListener(pfObjectSceneListener, ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
 
-        fpnl.unregisterListeners();
+        fpnl.unregisterListeners(this);
         fpnl = null;
-        pageFlowView = null;
         router = null;
         Chain chainActions = getActions();
-        ((PageFlowPopupProvider)popupProvider).destroy();
         popupProvider = null;
         pfObjectSceneListener = null;
         for( WidgetAction action : new ArrayList<WidgetAction>(chainActions.getActions()) ){
