@@ -35,7 +35,6 @@ import org.netbeans.api.visual.model.ObjectSceneListener;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge;
 import org.netbeans.modules.web.jsf.navigation.Page;
-import org.netbeans.modules.web.jsf.navigation.PageFlowView;
 import org.netbeans.modules.web.jsf.navigation.Pin;
 import org.openide.nodes.Node;
 
@@ -47,10 +46,9 @@ import org.openide.nodes.Node;
 public class PFObjectSceneListener implements ObjectSceneListener {
 
     private static final UnsupportedOperationException uoe = new UnsupportedOperationException("Not supported yet.");
-    PageFlowView tc;
 
-    public PFObjectSceneListener(PageFlowView tc) {
-        this.tc = tc;
+
+    public PFObjectSceneListener() {
     }
 
     public void objectAdded(ObjectSceneEvent event, Object addedObject) {
@@ -78,9 +76,9 @@ public class PFObjectSceneListener implements ObjectSceneListener {
         }
         scene.setHighlightedObjects(releventEdges);
         if (selected.isEmpty()) {
-            tc.setDefaultActivatedNode();
+            scene.getPageFlowView().setDefaultActivatedNode();
         } else {
-            tc.setActivatedNodes(selected.toArray(new Node[selected.size()]));
+            scene.getPageFlowView().setActivatedNodes(selected.toArray(new Node[selected.size()]));
         }
     }
 

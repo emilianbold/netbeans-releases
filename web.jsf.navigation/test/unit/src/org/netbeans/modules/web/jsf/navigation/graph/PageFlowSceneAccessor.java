@@ -55,7 +55,9 @@ public class PageFlowSceneAccessor {
     public static PopupMenuProvider getPopupMenuProvider (PageFlowScene scene ){
         return PageFlowScene.SceneTestAccessor.getPopupProvider(scene);
     }
-    
+    public static PFObjectSceneListener getPfObjectSceneListener(PageFlowScene scene){
+            return PageFlowScene.SceneTestAccessor.getPfObjectSceneListener(scene);
+    }
     
 
 }

@@ -139,7 +139,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     private final WidgetAction selectAction = ActionFactory.createSelectAction(new PageFlowSelectProvider());
     private final WidgetAction doubleClickAction = ActionFactory.createEditAction(new PageNodeEditAction());
 
-    private PageFlowView tc;
+    private PageFlowView pageFlowView;
     private PopupMenuProvider popupProvider; //Please see POPUP_HACK below.
     private PFObjectSceneListener pfObjectSceneListener;
     private static Paint PAINT_BACKGROUND;
@@ -158,11 +158,11 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
 
     /**
      * Creates a VMD graph scene.
-     * @param tc or TopComponent/container.
+     * @param pageFlowView or TopComponent/container.
      */
-    public PageFlowScene(PageFlowView tc) {
+    public PageFlowScene(PageFlowView view) {
         super();
-        this.tc = tc;
+        this.pageFlowView = view;
 
         setOpaque(true);
         setBackground(PAINT_BACKGROUND);
@@ -184,10 +184,10 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
          * In order to added accessibility to popup I need access to this provider unless an API is created
          * to figure this out another means.
          **/
-        popupProvider = new PageFlowPopupProvider(this, tc);
+        popupProvider = new PageFlowPopupProvider(this, view);
         actions.addAction(ActionFactory.createPopupMenuAction(popupProvider));
         actions.addAction(createActionMap());
-        pfObjectSceneListener = new PFObjectSceneListener(tc);
+        pfObjectSceneListener = new PFObjectSceneListener();
         addObjectSceneListener(pfObjectSceneListener, ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
 
 
@@ -196,17 +196,17 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         //ActionMap actionMap = MapActionUtility.initActionMap();
         //actions.addAction(ActionFactory.createActionMapAction(inputMap, actionMap));
         //MyActionMapAction action = new MyActionMapAction(null, null);
-        fpnl = new FreePlaceNodesLayouter(this, tc.getVisibleRect());
+        fpnl = new FreePlaceNodesLayouter(this, view.getVisibleRect());
         
     }
     private FreePlaceNodesLayouter fpnl;
     /* Used to destroy everything in the scene. */
     public void destoryPageFlowScene() {
-        removeObjectSceneListener(pfObjectSceneListener);
+        removeObjectSceneListener(pfObjectSceneListener, ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
 
         fpnl.unregisterListeners();
         fpnl = null;
-        tc = null;
+        pageFlowView = null;
         router = null;
         Chain chainActions = getActions();
         ((PageFlowPopupProvider)popupProvider).destroy();
@@ -220,7 +220,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
 
     private WidgetAction createActionMap() {
 
-        ActionMap actionMap = tc.getActionMap();
+        ActionMap actionMap = pageFlowView.getActionMap();
         CallbackSystemAction a = (CallbackSystemAction) SystemAction.get(DeleteAction.class);
         actionMap.put(a.getActionMapKey(), new PageFlowDeleteAction(this));
 
@@ -234,7 +234,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
      * @return PageFlowView
      */
     public PageFlowView getPageFlowView() {
-        return tc;
+        return pageFlowView;
     }
 
 
@@ -344,7 +344,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
 
     /* This is needed by PageFlowLayoutUtilities*/
     public Rectangle getVisibleRect() {
-        return tc.getVisibleRect();
+        return pageFlowView.getVisibleRect();
     }
 
 
@@ -724,6 +724,10 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         
         static PopupMenuProvider getPopupProvider (PageFlowScene scene){
             return scene.popupProvider;
+        }
+        
+        static PFObjectSceneListener getPfObjectSceneListener(PageFlowScene scene){
+            return scene.pfObjectSceneListener;
         }
     }
 }
