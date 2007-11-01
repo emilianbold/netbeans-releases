@@ -75,6 +75,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -196,7 +197,12 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                         modeler.generateWsdlModel(new WsdlModelListener() {
                             public void modelCreated(WsdlModel model) {
                                 if (model==null) {
-                                    DialogDisplayer.getDefault().notify(new WsImportFailedMessage(modeler.getCreationException()));
+                                    RequestProcessor.getDefault().post(new Runnable() {
+                                       public void run() {
+                                           DialogDisplayer.getDefault().notify(new WsImportFailedMessage(modeler.getCreationException()));
+                                       }
+                                    });
+                                    
                                 }else{
                                     String packName = packageName;
                                     if(packName == null){
@@ -283,7 +289,7 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
     }
     
     public List getServiceClients() {
-        List jaxWsClients = new ArrayList();
+        List<Client> jaxWsClients = new ArrayList<Client>();
         JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
         if (jaxWsModel!=null) {
             Client[] clients = jaxWsModel.getClients();

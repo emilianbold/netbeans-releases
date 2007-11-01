@@ -183,11 +183,15 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                             if (serviceName!=null && portName!=null) {
                                 jTextFieldPort.setText(serviceName + "#" + portName);
                             } else {
-                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                        NbBundle.getMessage(WebServiceFromWSDLPanel.class,"TXT_CannotGenerateService",
-                                        wsdlModeler.getCreationException().getLocalizedMessage()),
-                                        NotifyDescriptor.WARNING_MESSAGE)
-                                        );
+                                RequestProcessor.getDefault().post(new Runnable() {
+                                   public void run() {
+                                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                                NbBundle.getMessage(WebServiceFromWSDLPanel.class,"TXT_CannotGenerateService",
+                                                wsdlModeler.getCreationException().getLocalizedMessage()),
+                                                NotifyDescriptor.WARNING_MESSAGE)
+                                                );
+                                   }
+                                });
                             }
                         } else {
                             jButtonBrowsePort.setEnabled(true);
