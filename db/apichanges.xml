@@ -107,6 +107,18 @@ is the proper place.
     <changes>
         <change>
             <api name="database_explorer_api"/>
+            <summary>Made Database Explorer API stable</summary>
+            <version major="1" minor="24"/>
+            <date day="1" month="11" year="2007"/>
+            <author login="abadea"/>
+            <compatibility modification="yes"/>
+            <description>
+                The stability level of the Database Explorer API is changed to stable.
+            </description>
+            <issue number="120097"/>
+        </change>
+        <change>
+            <api name="database_explorer_api"/>
             <summary>Allow user to save password</summary>
             <version major="1" minor="23"/>
             <date day="5" month="10" year="2007"/>
