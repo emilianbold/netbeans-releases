@@ -135,7 +135,7 @@ public final class PositionConverter {
             return new Reader() {
                 
                 private int next = 0;
-                private String text = component.getText();
+                private String text = convert(component.getText());
 
                 public int read(char[] cbuf, int off, int len) throws IOException {
                     synchronized (lock) {
@@ -171,7 +171,7 @@ public final class PositionConverter {
 
         public CharSequence filterCharSequence(CharSequence charSequence) {
             return charSequence.subSequence(0, offset) + 
-                    component.getText() + 
+                    convert(component.getText()) + 
                     charSequence.subSequence(offset + length, charSequence.length());
         }
 
@@ -191,7 +191,7 @@ public final class PositionConverter {
             if (javaSourcePosition < offset)
                 return -1;
             int diff = javaSourcePosition - offset;
-            return diff <= component.getText().length() ? diff : -1;
+            return diff <= convert(component.getText()).length() ? diff : -1;
         }
 
         public int getJavaSourcePosition(int originalPosition) {
@@ -209,6 +209,21 @@ public final class PositionConverter {
         public void changedUpdate(DocumentEvent event) {
             for (ChangeListener changeListener : listeners)
                 changeListener.stateChanged(null);
+        }
+        
+        private String convert(String string) {
+            StringBuilder sb = new StringBuilder(string.length());
+            for (int i = 0; i < string.length(); i++) {
+                char c = string.charAt(i);
+                if (c == '\r') { //NOI18N
+                    if (i + 1 >= string.length() || string.charAt(i + 1) != '\n') { //NOI18N
+                        sb.append('\n'); //NOI18N
+                    }
+                } else {
+                    sb.append(c);
+                }
+            }
+            return sb.toString();
         }
     }
 }
