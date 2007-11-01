@@ -102,7 +102,7 @@ public class TokenList {
                             return ;
                     }
                 } else {
-                    OUTER: while (true) {
+                    while (true) {
                         if (ts == null) {
                             List<? extends TokenSequence> seqs = new ArrayList<TokenSequence>(TokenHierarchy.get(doc).embeddedTokenSequences(offset, false));
 
@@ -122,7 +122,7 @@ public class TokenList {
                         while (ts.offset() < offset) {
                             if (!ts.moveNext()) {
                                 ts = null;
-                                continue OUTER;
+                                return;
                             }
                         }
                         
