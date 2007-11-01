@@ -145,7 +145,7 @@ class TreeViewCellEditor extends DefaultTreeCellEditor implements CellEditorList
                         Exceptions.attachLocalizedMessage(exc, msg);
                     }
 
-                    DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(exc));
+                    Exceptions.printStackTrace(exc);
                 }
             }
         }
