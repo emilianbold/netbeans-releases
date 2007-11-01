@@ -67,7 +67,7 @@ public class UtilsTest extends TestCase {
 
     public void testReplaceDocument() throws Exception {
         Document doc1 = Util.getResourceAsDocument("visitor/old.xml");
-        Document doc2 = Util.getResourceAsDocument("visitor/old.xml");
+        Document doc2 = Util.getResourceAsDocument("visitor/new.xml");
         String newString = doc2.getText(0, doc2.getLength());
         Utils.replaceDocument(doc1, newString);
         assertEquals(doc1.getText(0, doc1.getLength()), newString);
