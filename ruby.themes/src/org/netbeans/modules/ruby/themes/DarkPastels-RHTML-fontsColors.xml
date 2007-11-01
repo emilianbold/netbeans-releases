@@ -47,6 +47,6 @@ made subject to such option by the copyright holder.
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="html" default="default"/>
-    <fontcolor name="ruby" bgColor="ff0d1622"/>
+    <fontcolor name="ruby" default="default"/>
     <fontcolor name="RUBYCOMMENT" default="comment"/>
 </fontscolors>

@@ -79,8 +79,6 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
 
     private static final Logger LOG = Logger.getLogger(EmbeddedSectionsHighlighting.class.getName());
     
-    private static final Color DEFAULT_RUBY_SCRIPLET_BACKGROUND_COLOR = Color.decode("#D8EED2"); //NOI18N
-
     private final Document document;
     private final AttributeSet rubyBackground;
     private TokenHierarchy<? extends Document> hierarchy = null;
@@ -90,32 +88,35 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         this.document = document;
         
         // load the background color for the embedding token
-        String mimeType = RhtmlTokenId.MIME_TYPE;
+        AttributeSet attribs = null;
+        String mimeType = (String) document.getProperty("mimeType"); //NOI18N
         FontColorSettings fcs = MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
-        Color jsBC = null;
         if (fcs != null) {
-            jsBC = getColoring(fcs, RhtmlTokenId.RUBY.primaryCategory());
+            Color jsBC = getColoring(fcs, RhtmlTokenId.RUBY.primaryCategory());
+            if (jsBC != null) {
+                 attribs = AttributesUtilities.createImmutable(
+                    StyleConstants.Background, jsBC, 
+                    ATTR_EXTENDS_EOL, Boolean.TRUE);
+            }
         }
-
-      rubyBackground = AttributesUtilities.createImmutable(
-        StyleConstants.Background, jsBC == null ? DEFAULT_RUBY_SCRIPLET_BACKGROUND_COLOR : jsBC, 
-        ATTR_EXTENDS_EOL, Boolean.TRUE);
+        rubyBackground = attribs;
     }
 
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
         synchronized (this) {
-            if (hierarchy == null) {
-                hierarchy = TokenHierarchy.get(document);
+            if (rubyBackground != null) {
+                if (hierarchy == null) {
+                    hierarchy = TokenHierarchy.get(document);
+                    if (hierarchy != null) {
+                        hierarchy.addTokenHierarchyListener(WeakListeners.create(TokenHierarchyListener.class, this, hierarchy));
+                    }
+                }
+
                 if (hierarchy != null) {
-                    hierarchy.addTokenHierarchyListener(WeakListeners.create(TokenHierarchyListener.class, this, hierarchy));
+                    return new Highlights(version, hierarchy, startOffset, endOffset);
                 }
             }
-
-            if (hierarchy != null) {
-                return new Highlights(version, hierarchy, startOffset, endOffset);
-            } else {
-                return HighlightsSequence.EMPTY;
-            }
+            return HighlightsSequence.EMPTY;
         }
     }
 

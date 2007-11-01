@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.AttributesUtilities;
@@ -75,8 +76,6 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer {
 
     private static final Logger LOG = Logger.getLogger(EmbeddingHighlightsContainer.class.getName());
     
-    private static final Color DEFAULT_CSS_BACKGROUND_COLOR = Color.decode("#D0E8CA"); //NOI18N
-    private static final Color DEFAULT_JAVASCRIPT_BACKGROUND_COLOR = Color.decode("#D0E8CA"); //NOI18N
     private static final String CSS_BACKGROUND_TOKEN_NAME = "css-embedded"; //NOI18N
     private static final String JAVASCRIPT_BACKGROUND_TOKEN_NAME = "javascript-embedded"; //NOI18N
     private static final String HTML_MIME_TYPE = "text/html"; //NOI18N
@@ -98,14 +97,14 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer {
         if (fcs != null) {
             cssBC = getColoring(fcs, CSS_BACKGROUND_TOKEN_NAME);
             jsBC = getColoring(fcs, JAVASCRIPT_BACKGROUND_TOKEN_NAME);
-    }
+        }
 
-        cssBackground = AttributesUtilities.createImmutable(
-            StyleConstants.Background, cssBC == null ? DEFAULT_CSS_BACKGROUND_COLOR : cssBC, 
+        cssBackground = cssBC == null ? SimpleAttributeSet.EMPTY : AttributesUtilities.createImmutable(
+            StyleConstants.Background, cssBC, 
             ATTR_EXTENDS_EOL, Boolean.TRUE);
 
-        javascriptBackground = AttributesUtilities.createImmutable(
-            StyleConstants.Background, jsBC == null ? DEFAULT_JAVASCRIPT_BACKGROUND_COLOR : jsBC, 
+        javascriptBackground = jsBC == null ? SimpleAttributeSet.EMPTY : AttributesUtilities.createImmutable(
+            StyleConstants.Background, jsBC, 
             ATTR_EXTENDS_EOL, Boolean.TRUE);
     }
 
