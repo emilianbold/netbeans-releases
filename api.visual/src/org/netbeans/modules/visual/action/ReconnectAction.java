@@ -79,6 +79,8 @@ public final class ReconnectAction extends WidgetAction.LockedAdapter {
     }
 
     public State mousePressed (Widget widget, WidgetMouseEvent event) {
+        if (isLocked ())
+            return State.createLocked (widget, this);
         if (event.getButton () == MouseEvent.BUTTON1  &&  event.getClickCount () == 1) {
             if (widget instanceof ConnectionWidget) {
                 ConnectionWidget conn = (ConnectionWidget) widget;

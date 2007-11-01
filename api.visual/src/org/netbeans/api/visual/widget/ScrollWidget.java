@@ -514,6 +514,8 @@ public class ScrollWidget extends Widget {
         }
 
         public State mousePressed (Widget widget, WidgetMouseEvent event) {
+            if (isLocked ())
+                return State.createLocked (widget, this);
             if (event.getButton () == MouseEvent.BUTTON1 && event.getClickCount () == 1) {
                 Widget view = getView ();
                 if (view != null  &&  slider.getPartHitAt (event.getPoint ()) == SliderWidget.Part.SLIDER) {

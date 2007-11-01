@@ -82,6 +82,8 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
     }
 
     public WidgetAction.State mousePressed (Widget widget, WidgetAction.WidgetMouseEvent event) {
+        if (isLocked ())
+            return WidgetAction.State.createLocked (widget, this);
         if (event.getButton () == MouseEvent.BUTTON1 && event.getClickCount () == 1) {
             if (provider.isSourceWidget (widget)) {
                 sourceWidget = widget;

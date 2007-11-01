@@ -67,6 +67,8 @@ public final class SelectAction extends WidgetAction.LockedAdapter {
     }
 
     public State mousePressed (Widget widget, WidgetMouseEvent event) {
+        if (isLocked ())
+            return State.createLocked (widget, this);
         if (event.getButton ()  ==  MouseEvent.BUTTON1  ||  event.getButton () == MouseEvent.BUTTON2) {
             invertSelection = (event.getModifiersEx () & MouseEvent.CTRL_DOWN_MASK) != 0;
             Point localLocation = event.getPoint ();

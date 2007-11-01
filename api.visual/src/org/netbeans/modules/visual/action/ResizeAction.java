@@ -77,6 +77,8 @@ public final class ResizeAction extends WidgetAction.LockedAdapter {
     }
 
     public State mousePressed (Widget widget, WidgetMouseEvent event) {
+        if (isLocked ())
+            return State.createLocked (widget, this);
         if (event.getButton () == MouseEvent.BUTTON1  &&  event.getClickCount () == 1) {
             insets = widget.getBorder ().getInsets ();
             controlPoint = resolver.resolveControlPoint (widget, event.getPoint ());
