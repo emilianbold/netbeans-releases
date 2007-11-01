@@ -301,6 +301,8 @@ TestSupport.prototype = {
                             var paramsId = 'qparams';
                             if(type == 'template')
                                 paramsId = 'tparams';
+                            else if(type == 'matrix')
+                                paramsId = 'mparams';
                             str += "<span class=bld>"+pname+":</span>"+"<input id='"+paramsId+"' name='"+pname+"' type='text' value='"+defaultVal+"'>"+"<br><br>";
                         }
                     }
@@ -322,9 +324,10 @@ TestSupport.prototype = {
         this.updatepage('result', 'Loading...');
         var mimetype = this.getFormMimeType();
         var method = this.getFormMethod();
-        //ts.debug('method: '+method+'mimetype: '+mimetype);
         var p = '';
         var path = document.forms[0].path.value;
+        
+        //process query parameters
         var found = path.indexOf( "{" );
         var qparams = document.forms[0].qparams;
         if (found != -1){
@@ -355,6 +358,8 @@ TestSupport.prototype = {
                 }
             }
         }
+        
+        //process user added parameters
         var newParamNames = document.forms[0].newParamNames;
         if(newParamNames != null) {
             if(newParamNames.length == undefined) {
@@ -371,6 +376,7 @@ TestSupport.prototype = {
                 }
             }
         }
+        
         var params = null;
         var paramLength = 0;
         if(method == 'POST' || method == 'PUT'){
@@ -405,6 +411,21 @@ TestSupport.prototype = {
 
         if(method == 'GET' && p.length > 0)
             req+= "?"+p;
+        
+        //process matrix parameters
+        var mparams = document.forms[0].mparams;
+        if(mparams != null) {
+            if(mparams.length == undefined) {
+                req += ";"+mparams.name+"="+mparams.value;
+            } else {
+                var len = mparams.length;
+                for(var j=0;j<len;j++) {
+                    var param = mparams[j]
+                    req += ";"+param.name+"="+param.value;
+                }
+            }
+        }
+        
         var disp = this.getDisplayUri(req);
         this.currentMethod = method;
         this.currentMimeType = mimetype;
