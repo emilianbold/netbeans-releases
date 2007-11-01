@@ -138,6 +138,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     private final WidgetAction connectAction = ActionFactory.createConnectAction(connectionLayer, new LinkCreateProvider(this));
     private final WidgetAction selectAction = ActionFactory.createSelectAction(new PageFlowSelectProvider());
     private final WidgetAction doubleClickAction = ActionFactory.createEditAction(new PageNodeEditAction());
+    private final WidgetAction pagePopupAction = ActionFactory.createPopupMenuAction(new PageFlowPopupProvider());
 
     private PageFlowView pageFlowView;
     private PopupMenuProvider popupProvider; //Please see POPUP_HACK below.
@@ -184,8 +185,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
          * In order to added accessibility to popup I need access to this provider unless an API is created
          * to figure this out another means.
          **/
-        popupProvider = new PageFlowPopupProvider(this, view);
-        actions.addAction(ActionFactory.createPopupMenuAction(popupProvider));
+        actions.addAction(pagePopupAction);
         actions.addAction(createActionMap());
         pfObjectSceneListener = new PFObjectSceneListener();
         addObjectSceneListener(pfObjectSceneListener, ObjectSceneEventType.OBJECT_SELECTION_CHANGED);

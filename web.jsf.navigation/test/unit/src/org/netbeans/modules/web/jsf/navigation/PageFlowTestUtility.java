@@ -133,7 +133,7 @@ public class PageFlowTestUtility {
         FileObject testApp = destFileObj.getFileObject(projectName);
 
         assertNotNull(testApp);
-        System.out.println("Children of " + projectName + ":" + Arrays.toString(testApp.getChildren()));
+        //System.out.println("Children of " + projectName + ":" + Arrays.toString(testApp.getChildren()));
         //        assertTrue( ProjectManager.getDefault().isProject(testApp));
         Project myProject = ProjectManager.getDefault().findProject(testApp);
         assertNotNull(myProject);

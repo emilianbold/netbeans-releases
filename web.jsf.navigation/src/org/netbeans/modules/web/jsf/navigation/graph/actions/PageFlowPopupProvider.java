@@ -63,6 +63,7 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
 import javax.swing.Action;
+import org.netbeans.modules.web.jsf.navigation.PageFlowView;
 import org.netbeans.modules.web.jsf.navigation.Pin;
 
 /**
@@ -76,34 +77,35 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
      * @param graphScene The related PageFlow Scene.
      * @param tc
      */
-    public PageFlowPopupProvider(PageFlowScene graphScene, TopComponent tc) {
-        setTc(tc);
-        setGraphScene( graphScene );
-        initialize();
-    }
+//    public PageFlowPopupProvider(PageFlowScene scene) {
+//        setGraphScene( scene);
+//        initialize();
+//    }
     
     // <actions from layers>
     private static final String PATH_PAGEFLOW_NODE_ACTIONS = "PageFlowEditor/PopupActions/PageFlowSceneElement"; // NOI18N
     private static final String PATH_PAGEFLOW_SCENE_ACTIONS = "PageFlowEditor/PopupActions/Scene"; // NOI18N
 
-    private void initialize() {
-        InstanceContent ic = new InstanceContent();
-        ic.add(getGraphScene());
-    }
+//    private void initialize() {
+//        InstanceContent ic = new InstanceContent();
+//        ic.add(getGraphScene());
+//    }
 
     /* Point and widget are actually not needed. */
     public JPopupMenu getPopupMenu(Widget widget, Point point) {
-        Object obj = getGraphScene().getHoveredObject();
 
-
+        PageFlowScene scene = (PageFlowScene)widget.getScene();
+        setGraphScene(scene);
+        Object obj = scene.getHoveredObject();
+        PageFlowView view = scene.getPageFlowView();
 
         if (obj != null) {
 
-            Set elements = getGraphScene().getSelectedObjects();            
+            Set elements = scene.getSelectedObjects();            
             if( !elements.contains(obj)) {
                 Set<Object> set = new HashSet<Object>();
                 set.add(obj);
-                getGraphScene().setSelectedObjects(set);
+                scene.setSelectedObjects(set);
             }
 
 //          Node nodes[] = tc.getActivatedNodes();
@@ -121,15 +123,15 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
                     System.arraycopy(fileSystemActions, 0, actions, 0, fileSystemActions.length);
                     System.arraycopy(pageNodeActions, 0, actions, fileSystemActions.length, pageNodeActions.length);
                 }
-                return Utilities.actionsToPopup(actions, getTc().getLookup());
+                return Utilities.actionsToPopup(actions, view.getLookup());
             } else if (obj instanceof Pin) {
                 Pin pinNode = (Pin) obj;
                 Action[] actions = pinNode.getActions();
-                return Utilities.actionsToPopup(actions, getTc().getLookup());
+                return Utilities.actionsToPopup(actions, view.getLookup());
             }
-            return Utilities.actionsToPopup(SystemFileSystemSupport.getActions(PATH_PAGEFLOW_NODE_ACTIONS), getTc().getLookup());
+            return Utilities.actionsToPopup(SystemFileSystemSupport.getActions(PATH_PAGEFLOW_NODE_ACTIONS), view.getLookup());
         }
-        return Utilities.actionsToPopup(SystemFileSystemSupport.getActions(PATH_PAGEFLOW_SCENE_ACTIONS), getTc().getLookup());
+        return Utilities.actionsToPopup(SystemFileSystemSupport.getActions(PATH_PAGEFLOW_SCENE_ACTIONS), view.getLookup());
     }
     /** Weak reference to the lookup. */
     private WeakReference<Lookup> lookupWRef = new WeakReference<Lookup>(null);
@@ -157,22 +159,12 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
             scene = refPageFlowScene.get();
         }
         return scene;
+        
     }
 
     public void setGraphScene(PageFlowScene graphScene) {
         refPageFlowScene = new WeakReference<PageFlowScene>(graphScene);
     }
 
-    private WeakReference<TopComponent> refTC;
-    public TopComponent getTc() {
-        TopComponent tc = null;
-        if( refTC != null ){
-            tc = refTC.get();
-        }
-        return tc;
-    }
 
-    public void setTc(TopComponent tc) {
-        refTC = new WeakReference<TopComponent>(tc);
-    }
 }
