@@ -157,17 +157,14 @@ made subject to such option by the copyright holder.
         <path id="test.unit.lib.cp">
             <pathelement path="${test.unit.lib.cp}"/> <!-- for manual override -->
             <fileset dir="${netbeans.dest.dir}">
-                <include name="ide*/modules/ext/junit-*.jar"/>
-            </fileset>
-            <fileset dir="${netbeans.dest.dir}">
-                <include name="java*/modules/ext/junit-*.jar"/>
+                <include name="*/modules/ext/junit-*.jar"/>
             </fileset>
             <pathelement location="${netbeans.dest.dir}/testtools/modules/ext/nbjunit.jar"/>
             <pathelement location="${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit.jar"/> <!-- new for 6.0 -->
             <pathelement location="${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit-ide.jar"/> <!-- new for 6.0 -->
             <pathelement location="${netbeans.dest.dir}/testtools/modules/ext/insanelib.jar"/>
             <fileset dir="${netbeans.home}/..">
-                <include name="ide*/modules/ext/junit-*.jar"/>
+                <include name="*/modules/ext/junit-*.jar"/>
             </fileset>
             <pathelement location="${netbeans.home}/../testtools/modules/ext/nbjunit.jar"/>
             <pathelement location="${netbeans.home}/../testtools/modules/org-netbeans-modules-nbjunit.jar"/> <!-- new for 6.0 -->
