@@ -47,6 +47,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
@@ -80,12 +81,15 @@ public class JSFInjectionTargetQueryImplementation implements InjectionTargetQue
             if (ddFileObject != null){
                 // Get all jsf configurations files
                 FileObject[] jsfConfigs = ConfigurationUtils.getFacesConfigFiles(webModule);
-                for (FileObject jsfConfigFO : ConfigurationUtils.getFacesConfigFiles(webModule)) {
-                    // Get manage beans from the configuration file
-                    List<ManagedBean> beans = ConfigurationUtils.getConfigModel(jsfConfigFO, true).getRootComponent().getManagedBeans();
-                    for (ManagedBean managedBean : beans) {
-                        if (typeElement.getQualifiedName().contentEquals(managedBean.getManagedBeanClass())) {
-                            return true;
+                for (FileObject jsfConfigFO : jsfConfigs) {
+                    JSFConfigModel model = ConfigurationUtils.getConfigModel(jsfConfigFO, true);
+                    if (model != null) {
+                        // Get manage beans from the configuration file
+                        List<ManagedBean> beans = model.getRootComponent().getManagedBeans();
+                        for (ManagedBean managedBean : beans) {
+                            if (typeElement.getQualifiedName().contentEquals(managedBean.getManagedBeanClass())) {
+                                return true;
+                            }
                         }
                     }
                 }
