@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
@@ -206,9 +207,11 @@ public class ExeLauncher extends CommonLauncher {
     
     private String changeJavaPropertyCounter(final String string) {
         String str = string;
-        int counter = 0 ;
-        while(str.indexOf(getJavaCounter(counter))!=-1) {
-            str=str.replace(getJavaCounter(counter++), "%s");
+        if(str!=null) {
+            int counter = 0 ;
+            while(str.indexOf(getJavaCounter(counter))!=-1) {
+                str=str.replace(getJavaCounter(counter++), "%s");
+            }
         }
         return str;
     }
@@ -250,12 +253,12 @@ public class ExeLauncher extends CommonLauncher {
         }
         
         
-        addData(fos,defaultBundle, StringUtils.EMPTY_STRING, props);
+        addData(fos, defaultBundle, null, StringUtils.EMPTY_STRING, props);
         i18nMap.remove(StringUtils.EMPTY_STRING);
         Object [] locales = i18nMap.keySet().toArray();
         
         for(int i=0;i<locales.length;i++) {
-            addData(fos,i18nMap.get(locales[i]),(String) locales[i], props);
+            addData(fos,i18nMap.get(locales[i]), defaultBundle,(String) locales[i], props);
         }
     }
     
@@ -335,7 +338,7 @@ public class ExeLauncher extends CommonLauncher {
             InputStream is = null;
             try {
                 is = file.getInputStream();
-                addNumber(fos, FileUtils.getCrc32(is), false);            
+                addNumber(fos, FileUtils.getCrc32(is), false);
                 is.close();
                 is = file.getInputStream();
                 addData(fos, is, progress, total);
@@ -353,13 +356,20 @@ public class ExeLauncher extends CommonLauncher {
         }
     }
     
-    private void addData(FileOutputStream fos, PropertyResourceBundle bundle, String localeName, List <String> propertiesNames) throws IOException {
+    private void addData(FileOutputStream fos, PropertyResourceBundle bundle, PropertyResourceBundle backupBundle, String localeName, List <String> propertiesNames) throws IOException {
         String propertyName;
         String localizedString;
         addData(fos, localeName, true);
         Enumeration <String> en = bundle.getKeys();
         for(int i=0;i<propertiesNames.size();i++) {
-            String str = bundle.getString(propertiesNames.get(i));
+            String str = null;
+            try {
+                str = bundle.getString(propertiesNames.get(i));
+            } catch (MissingResourceException e) {
+                if(backupBundle!=null) {
+                    str = backupBundle.getString(propertiesNames.get(i));
+                }
+            }
             str = changeJavaPropertyCounter(str);
             addData(fos, str, true); // localized string as UNICODE
             
