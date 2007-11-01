@@ -67,6 +67,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -133,6 +135,7 @@ public class RetoucheUtils {
     
     private static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
     public static volatile boolean cancel = false;
+    private static final Logger LOG = Logger.getLogger(RetoucheUtils.class.getName());
     
     public static String htmlize(String input) {
         String temp = org.openide.util.Utilities.replaceString(input, "<", "&lt;"); // NOI18N
@@ -207,6 +210,11 @@ public class RetoucheUtils {
         Set<ElementHandle<TypeElement>> subTypes = getImplementorsAsHandles(info.getClasspathInfo().getClassIndex(), info.getClasspathInfo(), parentType);
         for (ElementHandle<TypeElement> subTypeHandle: subTypes){
             TypeElement type = subTypeHandle.resolve(info);
+            if (type == null && LOG.isLoggable(Level.INFO)) {
+                // #120577: log info to find out what is going wrong
+                FileObject file = SourceUtils.getFile(subTypeHandle, info.getClasspathInfo());
+                LOG.log(Level.INFO, "#120577: Cannot resolve " + subTypeHandle + "; file: " + file); // NOI18N
+            }
             for (ExecutableElement method: ElementFilter.methodsIn(type.getEnclosedElements())) {
                 if (info.getElements().overrides(method, e, type)) {
                     result.add(method);
