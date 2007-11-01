@@ -530,7 +530,7 @@ public class WSDLGenerator {
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
             JOptionPane.showMessageDialog(frame,
                     NbBundle.getMessage(WSDLGenerator.class,"LBL_MSG"),
-                    "Warning",
+                    NbBundle.getMessage(WSDLGenerator.class,"WARNING"),
                     JOptionPane.WARNING_MESSAGE);
             throw e;
         }
@@ -738,8 +738,8 @@ public class WSDLGenerator {
         	PrepStmt prep = dbmeta.getPrepStmtMetaData();
         	if(dbmeta.getErrPrepStmtMetaData()) {
 				JOptionPane.showMessageDialog(frame,
-                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
-                    "Warning",
+                    NbBundle.getMessage(WSDLGenerator.class,"LBL_MSG"),
+                    NbBundle.getMessage(WSDLGenerator.class,"WARNING"),
                     JOptionPane.WARNING_MESSAGE);
 			}
         	if (requestElement != null) {
@@ -771,8 +771,8 @@ public class WSDLGenerator {
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getLocalizedMessage());
             JOptionPane.showMessageDialog(frame,
-                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
-                    "Warning",
+                    NbBundle.getMessage(WSDLGenerator.class,"LBL_MSG"),
+                    NbBundle.getMessage(WSDLGenerator.class,"WARNING"),
                     JOptionPane.WARNING_MESSAGE);
         }
     }
@@ -782,8 +782,8 @@ public class WSDLGenerator {
         	PrepStmt prep = dbmeta.getPrepStmtMetaData();
         	if(dbmeta.getErrPrepStmtMetaData()) {
 				JOptionPane.showMessageDialog(frame,
-                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
-                    "Warning",
+                    NbBundle.getMessage(WSDLGenerator.class,"LBL_MSG"),
+                    NbBundle.getMessage(WSDLGenerator.class,"WARNING"),
                     JOptionPane.WARNING_MESSAGE);
 			}
             if (requestElement != null) {
@@ -823,8 +823,8 @@ public class WSDLGenerator {
         	PrepStmt prep = dbmeta.getPrepStmtMetaData();
         	if(dbmeta.getErrPrepStmtMetaData()) {
 				JOptionPane.showMessageDialog(frame,
-                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
-                    "Warning",
+                    NbBundle.getMessage(WSDLGenerator.class,"LBL_MSG"),
+                    NbBundle.getMessage(WSDLGenerator.class,"WARNING"),
                     JOptionPane.WARNING_MESSAGE);
 			}
             if (requestElement != null) {
@@ -864,8 +864,8 @@ public class WSDLGenerator {
         	PrepStmt prep = dbmeta.getPrepStmtMetaData();
         	if(dbmeta.getErrPrepStmtMetaData()) {
 				JOptionPane.showMessageDialog(frame,
-                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
-                    "Warning",
+                    NbBundle.getMessage(WSDLGenerator.class,"LBL_MSG"),
+                    NbBundle.getMessage(WSDLGenerator.class,"WARNING"),
                     JOptionPane.WARNING_MESSAGE);
 			}
             if (requestElement != null) {
@@ -905,8 +905,8 @@ public class WSDLGenerator {
 			PrepStmt prep = dbmeta.getPrepStmtMetaData();
 			if(dbmeta.getErrPrepStmtMetaData()) {
 				JOptionPane.showMessageDialog(frame,
-                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
-                    "Warning",
+                    NbBundle.getMessage(WSDLGenerator.class,"LBL_MSG"),
+                    NbBundle.getMessage(WSDLGenerator.class,"WARNING"),
                     JOptionPane.WARNING_MESSAGE);
 			}
             if (requestElement != null) {
@@ -952,8 +952,8 @@ public class WSDLGenerator {
 			PrepStmt prep = dbmeta.getPrepStmtMetaData();				
 			if(dbmeta.getErrPrepStmtMetaData()) {
 				JOptionPane.showMessageDialog(frame,
-                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
-                    "Warning",
+                    NbBundle.getMessage(WSDLGenerator.class,"LBL_MSG"),
+                    NbBundle.getMessage(WSDLGenerator.class,"WARNING"),
                     JOptionPane.WARNING_MESSAGE);
 			}
 
@@ -1006,8 +1006,8 @@ public class WSDLGenerator {
 			Procedure proc = dbmeta.getProcedureMetaData(catalog, schema, procName,"Procedure");
 			if(dbmeta.getErrProcMetaData()) {
 				JOptionPane.showMessageDialog(frame,
-                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
-                    "Warning",
+                    NbBundle.getMessage(WSDLGenerator.class,"LBL_MSG"),
+                    NbBundle.getMessage(WSDLGenerator.class,"WARNING"),
                     JOptionPane.WARNING_MESSAGE);
 			}
         	if(proc.getHasReturn()) {
