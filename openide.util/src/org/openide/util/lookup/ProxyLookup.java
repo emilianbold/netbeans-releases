@@ -73,7 +73,7 @@ public class ProxyLookup extends Lookup {
 
     /** map of templates to currently active results */
     private HashMap<Template<?>,Reference<R>> results;
-
+    
     /** Create a proxy to some other lookups.
      * @param lookups the initial delegates
      */
@@ -182,7 +182,7 @@ public class ProxyLookup extends Lookup {
             }
 
             for (Reference<R> ref : arr) {
-                R r = ref.get();
+                R<?> r = ref.get();
                 if (r != null) {
                     r.lookupChange(newL, removed, old, lookups, toAdd, toRemove);
                 }
@@ -375,7 +375,7 @@ public class ProxyLookup extends Lookup {
          * @param current array of current lookups
          */
         protected void lookupChange(
-            Set added, Set removed, Lookup[] old, Lookup[] current, 
+            Set<Lookup> added, Set<Lookup> removed, Lookup[] old, Lookup[] current, 
             Map<Result,LookupListener> toAdd, Map<Result,LookupListener> toRemove
         ) {
             synchronized (this) {
