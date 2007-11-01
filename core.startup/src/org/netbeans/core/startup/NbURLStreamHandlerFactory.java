@@ -80,7 +80,7 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
     
     public URLStreamHandler createURLStreamHandler(String protocol) {
         if (protocol.equals("jar") || protocol.equals("file") || // NOI18N
-                protocol.equals("http") || protocol.equals("resource")) { // NOI18N
+                protocol.equals("http") || protocol.equals("https") || protocol.equals("resource")) { // NOI18N
             // Well-known handlers in JRE. Do not try to initialize lookup, etc.
             return null;
         }
@@ -264,6 +264,7 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
                 }
             }
             
+            @Override
             public String getHeaderField(int n) {
                 tryToConnect();
                 if (connected)
@@ -272,6 +273,7 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
                     return null;
             }
             
+            @Override
             public String getHeaderFieldKey(int n) {
                 tryToConnect();
                 if (connected)
@@ -280,6 +282,7 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
                     return null;
             }
             
+            @Override
             public String getHeaderField(String key) {
                 tryToConnect();
                 if (connected) {
@@ -288,11 +291,13 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
                 return null;
             }
             
+            @Override
             public InputStream getInputStream() throws IOException {
                 connect();
                 return real.getInputStream();
             }
             
+            @Override
             public OutputStream getOutputStream() throws IOException {
                 connect();
                 return real.getOutputStream();
@@ -300,6 +305,7 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
             
             // Should not be required, but they are:
             
+            @Override
             public String getContentType() {
                 tryToConnect();
                 if (connected)
@@ -308,6 +314,7 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
                     return "application/octet-stream"; // NOI18N
             }
             
+            @Override
             public int getContentLength() {
                 tryToConnect();
                 if (connected)
