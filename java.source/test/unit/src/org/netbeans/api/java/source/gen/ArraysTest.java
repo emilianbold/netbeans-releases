@@ -45,6 +45,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
@@ -78,6 +79,7 @@ public class ArraysTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ArraysTest("testConstantRename"));
 //        suite.addTest(new ArraysTest("testDuplicateMethodWithArrReturn1"));
 //        suite.addTest(new ArraysTest("testDuplicateMethodWithArrReturn2"));
+//        suite.addTest(new ArraysTest("test120768"));
         return suite;
     }
 
@@ -270,7 +272,42 @@ public class ArraysTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
+    public void test120768() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    byte[] test = new byte[10000];\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    byte[] test = new byte[WHAT_A_F];\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree var = (VariableTree) clazz.getMembers().get(1);
+                NewArrayTree nat = (NewArrayTree) var.getInitializer();
+                workingCopy.rewrite(nat.getDimensions().get(0), make.Identifier("WHAT_A_F"));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }
