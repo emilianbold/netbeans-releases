@@ -158,6 +158,7 @@ public class SvnPropertiesTest extends JellyTestCase {
             oto.waitText("property 'recursiveName' set (recursively) on");
             spo.refresh();
             oto.waitText("Scanning svn properties finished.");
+            Thread.sleep(1000);
             assertEquals("2. Wrong row count of table.", 2, spo.propertiesTable().getRowCount());
             spo.cancel();
 
