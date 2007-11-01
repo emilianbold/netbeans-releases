@@ -124,7 +124,7 @@ public class JavaSourceProviderImpl implements JavaSourceProvider {
                 EditorCookie ec = od.getCookie(EditorCookie.class);
                 Document doc = ec.openDocument();
                 
-                data = new SimplifiedJSPServlet(doc);
+                data = new SimplifiedJSPServlet(doc, charSequence);
                 
                 data.process();
                 return data.getVirtualClassBody();

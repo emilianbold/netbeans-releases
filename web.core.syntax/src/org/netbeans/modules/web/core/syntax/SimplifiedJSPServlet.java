@@ -107,6 +107,7 @@ public class SimplifiedJSPServlet {
             + "\t) throws Throwable {\n"; //NOI18N
     private static final String CLASS_FOOTER = "\n\t}\n}"; //NOI18N
     private final Document doc;
+    private CharSequence charSequence;
     private final FileObject fobj;
     private final ArrayList<CodeBlockData> codeBlocks = new ArrayList<CodeBlockData>();
 
@@ -121,9 +122,22 @@ public class SimplifiedJSPServlet {
     private static final Logger logger = Logger.getLogger(SimplifiedJSPServlet.class.getName());
     private boolean processingSuccessful = true;
 
-    /** Creates a new instance of ScripletsBodyExtractor */
-    public SimplifiedJSPServlet(Document doc) {
+    public SimplifiedJSPServlet(Document doc){
+        this(doc, null);
+    }
+    
+    public SimplifiedJSPServlet(Document doc, CharSequence charSequence) {
         this.doc = doc;
+        
+        if (charSequence == null) {
+            try {
+                this.charSequence = doc.getText(0, doc.getLength());
+            } catch (BadLocationException e) {
+                assert false; // this can never happen!
+            }
+        } else {
+            this.charSequence = charSequence;
+        }
         
         if (doc != null){
             DataObject dobj = NbEditorUtilities.getDataObject(doc);
@@ -163,50 +177,42 @@ public class SimplifiedJSPServlet {
         
         processIncludes();
 
-        doc.render(new Runnable() {
-            public void run() {
-                TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
-                TokenSequence tokenSequence = tokenHierarchy.tokenSequence(); //get top level token sequence
-                if (!tokenSequence.moveNext()) {
-                    return; //no tokens in token sequence
+        TokenHierarchy tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());//TokenHierarchy.get(doc);
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence(); //get top level token sequence
+        if (!tokenSequence.moveNext()) {
+            return; //no tokens in token sequence
+        }
+
+        /**
+         * process java code blocks one by one
+         * note: We count on the fact the scripting language in JSP is Java
+         */
+        do {
+            Token token = tokenSequence.token();
+
+            if (token.id() == JspTokenId.SCRIPTLET) {
+                int blockStart = token.offset(tokenHierarchy);
+                int blockEnd = blockStart + token.length();
+
+                JavaCodeType blockType = (JavaCodeType) token.getProperty(JspTokenId.SCRIPTLET_TOKEN_TYPE_PROPERTY);
+
+                String blockBody = charSequence.subSequence(blockStart, blockEnd).toString(); //doc.getText(blockStart, blockEnd - blockStart);
+                StringBuilder buff = blockType == JavaCodeType.DECLARATION ? buffDeclarations : buffScriplets;
+                int newBlockStart = buff.length();
+
+                if (blockType == JavaCodeType.EXPRESSION) {
+                    String exprPrefix = String.format("\t\tObject expr%1$d = ", expressionIndex++); //NOI18N
+                    newBlockStart += exprPrefix.length();
+                    buff.append(exprPrefix + blockBody + ";\n");
+                } else {
+                    buff.append(blockBody + "\n");
                 }
 
-                /**
-                 * process java code blocks one by one
-                 * note: We count on the fact the scripting language in JSP is Java
-                 */
-                do {
-                    Token token = tokenSequence.token();
-
-                    if (token.id() == JspTokenId.SCRIPTLET) {
-                        int blockStart = token.offset(tokenHierarchy);
-                        int blockEnd = blockStart + token.length();
-
-                        JavaCodeType blockType = (JavaCodeType) token.getProperty(JspTokenId.SCRIPTLET_TOKEN_TYPE_PROPERTY);
-
-                        try {
-                            String blockBody = doc.getText(blockStart, blockEnd - blockStart);
-                            StringBuilder buff = blockType == JavaCodeType.DECLARATION ? buffDeclarations : buffScriplets;
-                            int newBlockStart = buff.length();
-
-                            if (blockType == JavaCodeType.EXPRESSION) {
-                                String exprPrefix = String.format("\t\tObject expr%1$d = ", expressionIndex++); //NOI18N
-                                newBlockStart += exprPrefix.length();
-                                buff.append(exprPrefix + blockBody + ";\n");
-                            } else {
-                                buff.append(blockBody + "\n");
-                            }
-
-                            CodeBlockData blockData = new CodeBlockData(blockStart, newBlockStart, blockEnd, blockType);
-                            codeBlocks.add(blockData);
-                        } catch (BadLocationException e) {
-                            ex[0] = e;
-                            return;
-                        }
-                    }
-                } while (tokenSequence.moveNext());
+                CodeBlockData blockData = new CodeBlockData(blockStart, newBlockStart, blockEnd, blockType);
+                codeBlocks.add(blockData);
             }
-        });
+        } while (tokenSequence.moveNext());
+            
 
         if (ex[0] != null) {
             throw ex[0];
