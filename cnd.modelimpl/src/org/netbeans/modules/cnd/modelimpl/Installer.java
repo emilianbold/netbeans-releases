@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -58,6 +59,7 @@ public class Installer extends ModuleInstall {
 	public void unload();
     }
     
+    @Override
     public void restored() {
         // By default, do nothing.
         // Put your startup code here.
@@ -69,21 +71,39 @@ public class Installer extends ModuleInstall {
 	super.restored();
     }
 
+    @Override
     public void close() {
         super.close();
 	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.close");
-	CsmModel model = CsmModelAccessor.getModel();
+	final CsmModel model = CsmModelAccessor.getModel();
 	if( model instanceof Startupable ) {
-	    ((Startupable) model).shutdown();
+            runTask(model, new Runnable() {
+                public void run() {
+                    ((Startupable) model).shutdown();
+                }
+            });
 	}
     }
    
+    @Override
     public void uninstalled() {
 	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.uninstalled");
-	CsmModel model = CsmModelAccessor.getModel();
+	final CsmModel model = CsmModelAccessor.getModel();
 	if( model instanceof Startupable ) {
-	    ((Startupable) model).unload();
+	    runTask(model, new Runnable() {
+                public void run() {
+                    ((Startupable) model).unload();
+                }
+            });
 	}
 	super.uninstalled();
+    }
+    
+    private void runTask(CsmModel model, Runnable task) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            model.enqueue(task, "close ModelImpl"); // NOI18N
+        } else {
+            task.run();
+        }        
     }
 }
