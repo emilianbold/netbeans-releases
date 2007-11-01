@@ -420,15 +420,16 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
                     EventQueue.invokeAndWait(new java.lang.Runnable() {
 
                         public void run() {
+                            
                             LOG.finest("    PFE: Starting Redraw: " + java.util.Calendar.getInstance().getTime());
-                            java.util.Collection<org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge> redrawCaseNodes = new java.util.ArrayList<org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge>();
-                            java.util.Collection<org.netbeans.modules.web.jsf.navigation.Pin> pinNodes = new java.util.ArrayList<org.netbeans.modules.web.jsf.navigation.Pin>(scene.getPins());
+                            Collection<NavigationCaseEdge> redrawCaseNodes = new ArrayList<NavigationCaseEdge>();
+                            Collection<Pin> pinNodes = new ArrayList<Pin>(scene.getPins());
 
                             widget.removeChild(loadingWidget);
-                            for (org.netbeans.modules.web.jsf.navigation.Pin pin : pinNodes) {
+                            for (Pin pin : pinNodes) {
                                 if (pin.getPage() == pageNode) {
                                     assert pin.getPage().getDisplayName().equals(pageNode.getDisplayName());
-                                    java.util.Collection<org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge> caseNodes = scene.findPinEdges(pin, true, false);
+                                    java.util.Collection<NavigationCaseEdge> caseNodes = scene.findPinEdges(pin, true, false);
                                     redrawCaseNodes.addAll(caseNodes);
                                     if (!pin.isDefault()) {
                                         scene.removePin(pin);
@@ -451,7 +452,14 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (InvocationTargetException ex) {
-                    Exceptions.printStackTrace(ex);
+                    if (scene == null )  {
+                        /* It is okay suppress this exception because it is expected if the scene is deleted (closed)
+                         * before the page has finished loading. 
+                         */
+                        LOG.finer("Scene is has been closed before page has finished loading.:" + ex);
+                    } else {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
         });
