@@ -89,11 +89,8 @@ public class Pin extends PageFlowSceneElement {
      * @param pageContentItem
      */
     public Pin(Page page, PageContentItem pageContentItem) {
-        super();
+        this(page);
         assert pageContentItem != null;
-
-        
-        this.page = page;
         this.pageContentItem = pageContentItem;
         bDefault = false;
     }
@@ -222,27 +219,26 @@ public class Pin extends PageFlowSceneElement {
 
     public Node getNode() {
         if (pinNode == null) {
-            pinNode = new PinNode(this);
+            pinNode = new PinNode();
         }
         return pinNode;
+    }
+    
+    private final Pin getInstance() {
+        return this;
     }
 
     private Node pinNode;
 
     private class PinNode extends AbstractNode {
-        private final Page page;
-        private final Pin pin;
-
-        public PinNode(Pin pin) {
+        public PinNode() {
             super(Children.LEAF);
-            page = pin.getPage();
-            this.pin = pin;
         }
 
         @Override
         public <T extends Cookie> T getCookie(Class<T> type) {
             /* I needed to do this because it seems that the activatedNode requires some sort of DataObject to show things like Windows Title correctly */
-            T cookie = pin.getCookie(type);
+            T cookie = getInstance().getCookie(type);
             if( cookie != null ){
                 return cookie;
             }
