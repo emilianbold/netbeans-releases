@@ -99,10 +99,21 @@ public class DatabaseConnectionConvertorTest extends TestBase {
         assertTrue(conn.rememberPassword());
     }
     
+    public void testWriteNullPassword() throws Exception {
+        testWriteXml(null, true, "null-pwd-connection.xml");
+    }
+    
     public void testWriteXml() throws Exception {
+        testWriteXml("password", true, "bar-connection.xml");
+    }
+    
+    private void testWriteXml(String password, boolean savePassword,
+            String goldenFileName) throws Exception {
+        
         DatabaseConnection conn = new DatabaseConnection("org.bar.BarDriver", 
-                "bar_driver", "jdbc:bar:localhost", "schema", "user", "password",
-                true);
+                "bar_driver", "jdbc:bar:localhost", "schema", "user", password,
+                savePassword);
+        
         DatabaseConnectionConvertor.create(conn);
         
         FileObject fo = Util.getConnectionsFolder().getChildren()[0];
@@ -119,7 +130,7 @@ public class DatabaseConnectionConvertorTest extends TestBase {
         assertFalse("DatabaseConnectionConvertor generates invalid XML acc to the DTD!", errHandler.error);
         
         Document goldenDoc = null;
-        input = getClass().getResourceAsStream("bar-connection.xml");
+        input = getClass().getResourceAsStream(goldenFileName);
         try {
             goldenDoc = XMLUtil.parse(new InputSource(input), true, true, null, EntityCatalog.getDefault());
         } finally {
