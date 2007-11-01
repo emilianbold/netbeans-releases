@@ -1069,7 +1069,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
             } else {
                 Object[] options = { "OK" };
                 JOptionPane.showOptionDialog(WindowManager.getDefault().getMainWindow(),
-                        NbBundle.getMessage(JDBCWizardSelectionPanel.class, "WARNING_IN_SELECTING_TABLES"), "Warning", JOptionPane.DEFAULT_OPTION,
+                        NbBundle.getMessage(JDBCWizardSelectionPanel.class, "WARNING_IN_SELECTING_TABLES"), NbBundle.getMessage(JDBCWizardSelectionPanel.class, "WARNING"), JOptionPane.DEFAULT_OPTION,
                         JOptionPane.WARNING_MESSAGE, null, options, options[0]);
             }
         } else if (JDBCWizardSelectionPanel.LBL_ADD_ALL.equals(cmd)) {
