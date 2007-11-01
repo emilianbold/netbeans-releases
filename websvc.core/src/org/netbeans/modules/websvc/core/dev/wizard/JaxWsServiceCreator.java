@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.core.dev.wizard;
 
+import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.websvc.core.ProjectInfo;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
@@ -322,6 +323,10 @@ public class JaxWsServiceCreator implements ServiceCreator {
         if (service==null) {
             FileObject targetFolder = Templates.getTargetFolder(wiz);
             String targetName = Templates.getTargetName(wiz);
+            
+            // create a fake implementation class to enable WS functionality (to enable WS node creation)
+            if (targetFolder != null) GenerationUtils.createClass(targetFolder, targetName, null);
+            
             WsdlServiceHandler handler = (WsdlServiceHandler)wiz.getProperty(WizardProperties.WSDL_SERVICE_HANDLER);
             JaxWsUtils.generateJaxWsArtifacts(projectInfo.getProject(),targetFolder,targetName,wsdlURL,handler.getServiceName(),handler.getPortName());
             WsdlModeler wsdlModeler = (WsdlModeler) wiz.getProperty(WizardProperties.WSDL_MODELER);
@@ -331,7 +336,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
                                                 wsdlModeler.getCreationException().getLocalizedMessage()),
                             NotifyDescriptor.ERROR_MESSAGE)
                     );
-            }
+            }  
             handle.finish();
         } else {
             final WsdlPort port = (WsdlPort) wiz.getProperty(WizardProperties.WSDL_PORT);
