@@ -209,8 +209,10 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             MessageResources resource = StrutsConfigUtilities.getDefatulMessageResource(wm.getDeploymentDescriptor());
             if (resource != null){
                 String name = resource.getAttributeValue("parameter");
-                name = name.replaceAll("/", ".");
-                panel.setAppResource(name);
+                if (name != null) {
+                    name = name.replaceAll("/", ".");
+                    panel.setAppResource(name);
+                }
             }
         }
         
