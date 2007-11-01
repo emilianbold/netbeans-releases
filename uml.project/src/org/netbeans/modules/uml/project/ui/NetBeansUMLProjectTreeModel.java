@@ -255,6 +255,7 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
 //                                    parent.removeChild(curChild);
 //                    }
 //            }
+
             if (!alreadyHasChild(parent, node) && 
                 !(parent instanceof UMLRelationshipNode))
             {
@@ -333,8 +334,13 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
 				{
 					ITreeItem item = ref.get();
 					
-					if (item != null)
-						retVal.add(item);
+					if (item != null) 
+                                        {
+                                                if ( getModelRootNode(item) != null) 
+                                                {
+                                                        retVal.add(item);
+                                                }
+                                        }
 				}
 			}
 		}
