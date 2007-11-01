@@ -53,6 +53,8 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.xml.jaxb.util.FileSysUtil;
 import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
 import org.openide.DialogDescriptor;
@@ -63,7 +65,8 @@ import org.openide.NotifyDescriptor;
  *
  * @author  gpatil
  */
-public class JAXBBindingInfoPnl extends javax.swing.JPanel {
+public class JAXBBindingInfoPnl extends javax.swing.JPanel 
+        implements DocumentListener{
 
     /** Creates new form JAXBBindingInfoPnl */
     public JAXBBindingInfoPnl(JAXBWizBindingCfgPanel parent) {
@@ -541,6 +544,10 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         this.txtURL.setToolTipText(getMsg("TT_URL")); //NOI18N
         this.txtFilePath.setToolTipText(getMsg("TT_LocalSchemaFile")); //NOI18N
         this.txtSchemaName.setToolTipText(getMsg("TT_SchemaName" )); //NOI18N
+        
+        this.txtSchemaName.getDocument().addDocumentListener(this);
+        this.txtFilePath.getDocument().addDocumentListener(this);
+        this.txtURL.getDocument().addDocumentListener(this);
     }
 
     private void localFileSelected(boolean selected){
@@ -921,6 +928,14 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         return ret;
     }
 
+    public boolean isFromURLSelected(){
+        return this.rdoSelectURL.isSelected();
+    }
+    
+    public boolean isFromFSSelected(){
+        return this.rdoSelectFromFileSys.isSelected();
+    }
+    
     public String getSchemaURL(){
         String ret = null;
         if (this.rdoSelectURL.isSelected()){
@@ -1053,4 +1068,26 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
             return ret;
         }
     }
+
+    // DocumentListener interface methods -begin
+    private void validateDocListenerObjects(DocumentEvent evt){
+        if ((this.txtSchemaName.getDocument() == evt.getDocument()) ||
+             (this.txtFilePath.getDocument() == evt.getDocument()) ||
+             (this.txtURL.getDocument() == evt.getDocument()) ) {
+            this.fireChangeEvent(null);
+        }        
+    }
+    
+    public void insertUpdate(DocumentEvent evt) {
+        validateDocListenerObjects(evt);
+    }
+
+    public void removeUpdate(DocumentEvent evt) {
+        validateDocListenerObjects(evt);
+    }
+
+    public void changedUpdate(DocumentEvent evt) {
+        validateDocListenerObjects(evt);    
+    }
+    // DocumentListener interface methods -begin
 }

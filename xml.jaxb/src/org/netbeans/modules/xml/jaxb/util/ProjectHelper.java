@@ -135,6 +135,9 @@ public class ProjectHelper {
     //private static final String DEFAULT_PLATFORM = "default_platform"; //NOI18N
     private static final String RUN_JVM_ARGS_KEY = "run.jvmargs"; //NOI18N
     private static final String PROP_ENDORSED = "jaxbwiz.endorsed.dirs"; //NOI18N
+    private static final String PROP_XJC_CLASSPATH = "jaxbwiz.xjcdef.classpath" ;//NOI18N
+    private static final String PROP_JAXB_GEN_SRC_CLASSPATH = "jaxbwiz.gensrc.classpath";//NOI18N
+    private static final String PROP_VAL_JAXB_LIB_CLASSPATH = "${libs.jaxb21.classpath}";//NOI18N
     private static final String RUN_JVM_ARGS_VAL_PREFIX = "-Djava.endorsed.dirs"; //NOI18N    
     private static final String RUN_JVM_ARGS_VAL = RUN_JVM_ARGS_VAL_PREFIX + "=${" + PROP_ENDORSED + "}"; //NOI18N
     private static final String PROP_SYS_RUN_ENDORSED = "run-sys-prop.java.endorsed.dirs" ; //NOI18N
@@ -791,11 +794,38 @@ public class ProjectHelper {
         }
     }
 
+    private static void addClasspathProperties(Project prj){
+        String xjcClasspath = getProjectProperty(prj, PROP_XJC_CLASSPATH);
+        boolean modified = false;
+        if ((xjcClasspath == null) || ("".equals(xjcClasspath))){
+            saveProjectProperty(prj, PROP_XJC_CLASSPATH, 
+                    PROP_VAL_JAXB_LIB_CLASSPATH);
+            modified = true;
+        }
+        
+        String jaxbGenSrcClasspath = getProjectProperty(prj, 
+                PROP_JAXB_GEN_SRC_CLASSPATH);
+        if ((jaxbGenSrcClasspath == null) || ("".equals(jaxbGenSrcClasspath))){
+            saveProjectProperty(prj, PROP_JAXB_GEN_SRC_CLASSPATH, 
+                    PROP_VAL_JAXB_LIB_CLASSPATH);
+            modified = true;
+        }
+        
+        if (modified){
+            try{
+                ProjectManager.getDefault().saveProject(prj);
+            }catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+    }
+    
     public static Schema addSchema(Project project, Schemas scs, Schema schema){
         try {
             scs.addSchema(schema);
             saveXMLBindingSchemas(project, scs);
             refreshBuildScript(project);
+            addClasspathProperties(project);
             addEndorsedDir(project);
             // Register our build XML file, if not already.
             // http://wiki.netbeans.org/wiki/view/BuildScriptExtensibility
@@ -809,7 +839,6 @@ public class ProjectHelper {
                 jaxbBuild.addDependency(
                         JAXBWizModuleConstants.JAXB_COMPILE_TARGET_DEPENDS,
                         JAXBWizModuleConstants.JAXB_COMPILE_TARGET);
-                ProjectManager.getDefault().saveProject(project);
                 ProjectManager.getDefault().saveProject(project);
             }
         } catch (IOException ioe) {

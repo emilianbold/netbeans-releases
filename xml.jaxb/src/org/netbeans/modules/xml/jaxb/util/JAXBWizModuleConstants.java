@@ -69,6 +69,7 @@ public class JAXBWizModuleConstants {
     public static final String JAXB_OPTION_EXTENSION = "-extension" ; //NOI18N            
 
     public static final String SRC_LOC_TYPE_URL = "url" ; //NOI18N
+    public static final String SRC_LOC_TYPE_FS = "fileSystem" ; //NOI18N
     public static final String SCHEMA_NAME = "schema.name"; //NOI18N
     public static final String PROJECT_NAME = "project.name"; //NOI18N
     public static final String PROJECT_DIR = "project.dir"; //NOI18N

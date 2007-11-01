@@ -153,10 +153,42 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
             valid = false;
             setError(sb.toString());
             return valid;
+        }else {
+            // When from URL is selected check for empty "http://"
+            if (this.bindingInfoPnl.isFromURLSelected()){
+                String url = this.bindingInfoPnl.getSchemaURL();
+                if (url != null){
+                    url = url.trim();
+                } else {
+                    url = ""; //NOI18N
+                }
+                if (isEmpty(url) || "http://".equalsIgnoreCase(url)){ //NOI18N
+                    sb.append(NbBundle.getMessage(this.getClass(), 
+                                        "MSG_EnterSchemaFileOrURL")); //NOI18N
+                    valid = false;
+                    setError(sb.toString());
+                    return valid;                    
+                }
+                //TODO check for valid URL
+            }
+            
+            // TODO check for valid file
         }
         
         if (!isEmpty(this.bindingInfoPnl.getPackageName())){
-            // TODO make sure path name is valid.
+            String packageName = this.bindingInfoPnl.getPackageName();
+            // Do not allow characters (,\\/;:)
+            if ((packageName.indexOf(",") > -1) ||           //NOI18N
+                    (packageName.indexOf("\\") > -1) ||      //NOI18N
+                    (packageName.indexOf("/") > -1)  ||      //NOI18N
+                    (packageName.indexOf(";") > -1)  ||      //NOI18N
+                    (packageName.indexOf(":") > -1)  ){      //NOI18N  
+                sb.append(NbBundle.getMessage(this.getClass(),
+                        "MSG_InvalidCharInPackageName")); //NOI18N
+                valid = false;
+                setError(sb.toString());
+                return valid;                
+            }            
         }
         
         Map<String, Boolean> options = this.bindingInfoPnl.getOptions();
@@ -248,6 +280,8 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
                     JAXBWizModuleConstants.SRC_LOC_TYPE_URL);
         } else {
             xsdFileList.add(this.bindingInfoPnl.getSchemaFile());            
+            wdNew.putProperty(JAXBWizModuleConstants.SOURCE_LOCATION_TYPE, 
+                    JAXBWizModuleConstants.SRC_LOC_TYPE_FS);            
         }
         
         wdNew.putProperty(JAXBWizModuleConstants.XSD_FILE_LIST, xsdFileList);            
