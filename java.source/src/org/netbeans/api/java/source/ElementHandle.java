@@ -264,7 +264,7 @@ public final class ElementHandle<T extends Element> {
     private static boolean isSameKind (ElementKind k1, ElementKind k2) {
         if ((k1 == k2) ||
            (k1 == ElementKind.OTHER && (k2.isClass() || k2.isInterface())) ||     
-           (k2 == ElementKind.OTHER && (k1.isClass() || k1.isField()))) {
+           (k2 == ElementKind.OTHER && (k1.isClass() || k1.isInterface()))) {
             return true;
         }
         return false;
