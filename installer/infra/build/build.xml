@@ -54,7 +54,7 @@
         <cvs 
             command="checkout -P"
             cvsroot="${cvs.root}" 
-            package="nbi"
+            package="nbi/engine nbi/infra"
             dest="${nbi.all.dir}"
             date="${cvs.timestamp}"
             tag="${cvs.branch}"
