@@ -91,7 +91,7 @@ public class ClientEditor extends javax.swing.JPanel {
         ageConverter = new clienteditor.AgeConverter();
         ageValidator = new clienteditor.AgeValidator();
         maritalStatusConverter = new clienteditor.MaritalStatusConverter();
-        requieredStringValidator = new clienteditor.RequieredStringValidator();
+        requiredStringValidator = new clienteditor.RequiredStringValidator();
         emailValidator = new clienteditor.EmailValidator();
         clientInfoPane = new javax.swing.JTabbedPane();
         personalPanel = new javax.swing.JPanel();
@@ -129,7 +129,7 @@ public class ClientEditor extends javax.swing.JPanel {
         surnameLabel.setText("Surname:"); // NOI18N
 
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, this, org.jdesktop.beansbinding.ELProperty.create("${client.surname}"), surnameTextField, org.jdesktop.beansbinding.BeanProperty.create("text"), "surname"); // NOI18N
-        binding.setValidator(requieredStringValidator);
+        binding.setValidator(requiredStringValidator);
         bindingGroup.addBinding(binding);
 
         maritalComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Single", "Married", "Separated", "Divorced" }));
@@ -361,7 +361,7 @@ public class ClientEditor extends javax.swing.JPanel {
     private javax.swing.JLabel nicknameLabel;
     private javax.swing.JTextField nicknameTextField;
     private javax.swing.JPanel personalPanel;
-    private clienteditor.RequieredStringValidator requieredStringValidator;
+    private clienteditor.RequiredStringValidator requiredStringValidator;
     private javax.swing.ButtonGroup sexButtonGroup;
     private javax.swing.JLabel sexLabel;
     private javax.swing.JLabel surnameLabel;

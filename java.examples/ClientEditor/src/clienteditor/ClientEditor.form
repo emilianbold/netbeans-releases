@@ -10,7 +10,7 @@
     </Component>
     <Component class="clienteditor.MaritalStatusConverter" name="maritalStatusConverter">
     </Component>
-    <Component class="clienteditor.RequieredStringValidator" name="requieredStringValidator">
+    <Component class="clienteditor.RequiredStringValidator" name="requiredStringValidator">
     </Component>
     <Component class="clienteditor.EmailValidator" name="emailValidator">
     </Component>
@@ -174,7 +174,7 @@
               <BindingProperties>
                 <BindingProperty name="text" source="Form" sourcePath="${client.surname}" target="surnameTextField" targetPath="text" updateStrategy="0" immediately="false">
                   <Property name="validator" type="org.jdesktop.beansbinding.Validator" editor="org.netbeans.modules.form.ComponentChooserEditor">
-                    <ComponentRef name="requieredStringValidator"/>
+                    <ComponentRef name="requiredStringValidator"/>
                   </Property>
                   <Property name="name" type="java.lang.String" value="surname" noResource="true"/>
                 </BindingProperty>
