@@ -397,7 +397,9 @@ public class JSPVariablesFilter implements TreeModelFilter {
             Iterator it = new AttributeIterator();
             while (it.hasNext()) {
                 Attribute attribute = (Attribute)it.next();
-                attributes.add(attribute);
+                if (attribute != null) {
+                    attributes.add(attribute);
+                }
             }
         }
 
@@ -462,28 +464,31 @@ public class JSPVariablesFilter implements TreeModelFilter {
             }
 
             public Object next() {
-                
+
                 Object nextElement = null;
                 try {
                     Variable attributeName = reqAttributes.invokeMethod(
-                            "nextElement", 
+                            "nextElement",
                             "()Ljava/lang/Object;",
                             new Variable[0]
                     );
-                    Variable attributeValue = owner.invokeMethod(
-                            "getAttribute",
-                            "(Ljava/lang/String;)Ljava/lang/Object;",
-                            new Variable[] { attributeName }
-                    );
-                    nextElement = new AttributeMap.Attribute(
-                            (attributeName.getValue() == null ? "" : attributeName.getValue()),
-                             attributeValue);
+                    // object collected or vm disconnected if null
+                    if (attributeName != null) {
+                        Variable attributeValue = owner.invokeMethod(
+                                "getAttribute",
+                                "(Ljava/lang/String;)Ljava/lang/Object;",
+                                new Variable[] { attributeName }
+                        );
+                        nextElement = new AttributeMap.Attribute(
+                                (attributeName.getValue() == null ? "" : attributeName.getValue()),
+                                 attributeValue);
+                    }
                 }
                 catch (InvalidExpressionException e) {
                 }
                 catch (NoSuchMethodException e) {
                 }
-                
+
                 return nextElement;
             }
 
