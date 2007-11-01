@@ -46,13 +46,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Properties;
 import java.util.Stack;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileLock;
 
 import org.openide.filesystems.FileObject;
@@ -75,8 +72,7 @@ public class WebSampleProjectGenerator {
     private WebSampleProjectGenerator() {}
 
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/web-project/3";    //NOI18N
-    public static final String JSPC_CLASSPATH = "jspc.classpath"; // NOI18N
-    private static final String SOURCE_ENCODING = "source.encoding";   //NOI18N
+    public static final String JSPC_CLASSPATH = "jspc.classpath";
 
     public static FileObject createProjectFromTemplate(final FileObject template, File projectLocation, final String name) throws IOException {
         assert template != null && projectLocation != null && name != null;
@@ -99,45 +95,11 @@ public class WebSampleProjectGenerator {
                         replaceText(e, name);
                     }
                     saveXml(doc, prjLoc, AntProjectHelper.PROJECT_XML_PATH);
-                    
-                    //update private properties
-                    File privateProperties = createPrivateProperties (prjLoc);
-                    //No need to load the properties the file is empty
-                    Properties p = new Properties ();
-                    p.put("javadoc.preview", "true");   //NOI18N
-                    OutputStream out = new FileOutputStream (privateProperties);
-                    try {
-                        p.store(out,null);
-                    } finally {
-                        out.close();
-                    }
-                    FileObject projectProps = prjLoc.getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    if (projectProps != null) {
-                        FileLock lock = projectProps.lock();
-                        try {
-                            EditableProperties props = new EditableProperties();
-                            InputStream in = projectProps.getInputStream();
-                            try {
-                                props.load(in);
-                            } finally {
-                                in.close();
-                            }
-                            props.put(SOURCE_ENCODING, FileEncodingQuery.getDefaultEncoding().name());
-                            out = projectProps.getOutputStream(lock);
-                            try {
-                                props.store(out);
-                            } finally {
-                                out.close();
-                            }
-                        } finally {
-                            lock.releaseLock();
-                        }
-                    }
                 }
             } catch (Exception e) {
                 throw new IOException(e.toString());
             }
-
+                   
             prjLoc.refresh(false);
         }
         return prjLoc;
@@ -155,19 +117,6 @@ public class WebSampleProjectGenerator {
             assert projLoc != null;
         }
         return projLoc;
-    }
-    
-    private static File createPrivateProperties (FileObject fo) throws IOException {
-        String[] nameElements = AntProjectHelper.PRIVATE_PROPERTIES_PATH.split("/");
-        for (int i=0; i<nameElements.length-1; i++) {
-            FileObject tmp = fo.getFileObject (nameElements[i]);
-            if (tmp == null) {
-                tmp = fo.createFolder(nameElements[i]);
-            }
-            fo = tmp;
-        }
-        fo = fo.createData(nameElements[nameElements.length-1]);
-        return FileUtil.toFile(fo);
     }
 
     private static void unzip(InputStream source, FileObject targetFolder) throws IOException {
