@@ -86,6 +86,9 @@ import org.openide.ErrorManager;
  */
 public class HTMLCompletionQuery  {
     
+    private static final String SCRIPT_TAG_NAME = "SCRIPT"; //NOI18N
+    private static final String STYLE_TAG_NAME = "STYLE"; //NOI18N
+    
     private static boolean lowerCase;
     
     private static final HTMLCompletionQuery DEFAULT = new HTMLCompletionQuery();
@@ -385,6 +388,10 @@ public class HTMLCompletionQuery  {
                         result = translateValues( offset-len, len, arg.getValueList( quotationChar == null ? preText : preText.substring(1)) , quotationChar );
                     }
                 }
+            } else if( id == HTMLTokenId.SCRIPT) {
+                result = addEndTag(SCRIPT_TAG_NAME, preText, offset);
+            } else if( id == HTMLTokenId.STYLE) {
+                result = addEndTag(STYLE_TAG_NAME, preText, offset);
             }
             
         return result;
@@ -398,6 +405,29 @@ public class HTMLCompletionQuery  {
         return null;
     }
     
+    private List<CompletionItem> addEndTag(String tagName, String preText, int offset) {
+        int commonLength = getLastCommonCharIndex("</" + tagName + ">", preText.toUpperCase().trim()); //NOI18N
+        if (commonLength == -1) {
+            commonLength = 0;
+        }
+        if (commonLength == preText.trim().length()) {
+            ArrayList<CompletionItem> items = new ArrayList<CompletionItem>(1);
+            items.add(new EndTagItem(lowerCase ? tagName.toLowerCase() : tagName, offset - commonLength, commonLength));
+            return items;
+        }
+        return null;
+    }
+    
+    private int getLastCommonCharIndex(String base, String pattern) {
+        int i = 0;
+        for(; i < base.length() && i < pattern.length(); i++) {
+            if(base.charAt(i) != pattern.charAt(i)) {
+                i--;
+                break;
+            }
+        }
+        return i;
+    }
     
     List<CompletionItem> translateCharRefs( int offset, int length, List refs ) {
         List result = new ArrayList( refs.size() );
