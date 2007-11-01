@@ -43,11 +43,11 @@ package org.netbeans.modules.ant.freeform;
 
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -66,7 +66,7 @@ import org.openide.filesystems.FileUtil;
 public class FreeformFileEncodingQueryImpl extends FileEncodingQueryImplementation implements AntProjectListener {
     
     private AntProjectHelper helper;
-    private Map<FileObject,String> encodingsCache = null; // source folder -> encoding
+    private EncodingsCache encodingsCache = new EncodingsCache();
     
     public FreeformFileEncodingQueryImpl(AntProjectHelper aph) {
         helper = aph;
@@ -74,17 +74,21 @@ public class FreeformFileEncodingQueryImpl extends FileEncodingQueryImplementati
     
     public Charset getEncoding(FileObject file) {
         synchronized (this) {
-            if (encodingsCache == null) {
-                encodingsCache = computeEncodingsCache();
+            if (encodingsCache.typedFolders == null || encodingsCache.untypedFolders == null) {
+                computeEncodingsCache();
             }
-            for (Iterator<Entry<FileObject,String>> iter = encodingsCache.entrySet().iterator(); iter.hasNext(); ) {
-                Entry<FileObject,String> entry = iter.next();
-                FileObject srcRoot = entry.getKey();
-                if (FileUtil.isParentOf(srcRoot, file)) {
-                    try {
-                        return Charset.forName(entry.getValue());
-                    } catch (IllegalCharsetNameException icne) {
-                        return null;
+            List<Map> encodingsCaches = new ArrayList<Map>();
+            encodingsCaches.add(encodingsCache.typedFolders);
+            encodingsCaches.add(encodingsCache.untypedFolders);
+            for (Map<FileObject,String> encCache : encodingsCaches) {
+                for (Map.Entry<FileObject,String> entry : encCache.entrySet()) {
+                    FileObject srcRoot = entry.getKey();
+                    if (FileUtil.isParentOf(srcRoot, file)) {
+                        try {
+                            return Charset.forName(entry.getValue());
+                        } catch (IllegalCharsetNameException icne) {
+                            return null;
+                        }
                     }
                 }
             }
@@ -93,33 +97,54 @@ public class FreeformFileEncodingQueryImpl extends FileEncodingQueryImplementati
         return null;
     }
     
-    private Map<FileObject,String> computeEncodingsCache() {
+    private void computeEncodingsCache() {
         Element data = Util.getPrimaryConfigurationData(helper);
         Element foldersEl = Util.findElement(data, "folders", Util.NAMESPACE); // NOI18N
-        if (foldersEl == null) {
-            return Collections.<FileObject,String>emptyMap();
-        }
-        for (Element sourceFolderEl : Util.findSubElements(foldersEl)) {
-            if (!sourceFolderEl.getLocalName().equals("source-folder")) { // NOI18N
-                continue;
-            }
-            FileObject srcRoot = null;
-            Element el = Util.findElement(sourceFolderEl, "location", Util.NAMESPACE); // NOI18N
-            if (el != null) {
-                srcRoot = helper.getProjectDirectory().getFileObject(Util.findText(el));
-            }
-            el = Util.findElement(sourceFolderEl, "encoding", Util.NAMESPACE); // NOI18N
-            if (el != null && srcRoot != null) {
-                if (encodingsCache == null) {
-                    encodingsCache = new HashMap<FileObject,String>(3);
+        if (foldersEl != null) {
+            for (Element sourceFolderEl : Util.findSubElements(foldersEl)) {
+                if (!sourceFolderEl.getLocalName().equals("source-folder")) { // NOI18N
+                    continue;
                 }
-                encodingsCache.put(srcRoot, Util.findText(el));
+                boolean typed = false;
+                Element typeEl = Util.findElement(sourceFolderEl, "type", Util.NAMESPACE); // NOI18
+                if (typeEl != null) {
+                    typed = true;
+                }
+                FileObject srcRoot = null;
+                Element locationEl = Util.findElement(sourceFolderEl, "location", Util.NAMESPACE); // NOI18N
+                if (locationEl != null) {
+                    String location = Util.findText(locationEl);
+                    if (location.equals(".")) { // projectdir itself
+                        srcRoot = helper.getProjectDirectory();
+                    } else {
+                        srcRoot = helper.getProjectDirectory().getFileObject(location);
+                    }
+                }
+                Element encodingEl = Util.findElement(sourceFolderEl, "encoding", Util.NAMESPACE); // NOI18N
+                if (typed) {
+                    if (encodingEl != null && srcRoot != null) {
+                        if (encodingsCache.typedFolders == null) {
+                            encodingsCache.typedFolders = new HashMap<FileObject,String>(3);
+                        }
+                        encodingsCache.typedFolders.put(srcRoot, Util.findText(encodingEl));
+                    }
+                } else { // untyped
+                    if (encodingEl != null && srcRoot != null) {
+                        if (encodingsCache.untypedFolders == null) {
+                            encodingsCache.untypedFolders = new HashMap<FileObject,String>(3);
+                        }
+                        encodingsCache.untypedFolders.put(srcRoot, Util.findText(encodingEl));
+                    }
+                }    
             }
         }
-        if (encodingsCache == null) {
-            return Collections.<FileObject,String>emptyMap();
+        if (encodingsCache.typedFolders == null) {
+            encodingsCache.typedFolders = Collections.<FileObject,String>emptyMap();
         }
-        return encodingsCache;
+        if (encodingsCache.untypedFolders == null) {
+            encodingsCache.untypedFolders = Collections.<FileObject,String>emptyMap();
+        }
+        
     }
     
     // ---
@@ -127,12 +152,18 @@ public class FreeformFileEncodingQueryImpl extends FileEncodingQueryImplementati
     public void configurationXmlChanged(AntProjectEvent ev) {
         // invalidate cache
         synchronized (this) {
-            encodingsCache = null;
+            encodingsCache.typedFolders = null;
+            encodingsCache.untypedFolders = null;
         }
     }
     
     public void propertiesChanged(AntProjectEvent ev) {
         // do nothing
+    }
+    
+    private class EncodingsCache {
+        Map<FileObject,String> typedFolders;
+        Map<FileObject,String> untypedFolders;
     }
     
 }

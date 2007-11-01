@@ -117,7 +117,7 @@ public class ProjectModel  {
         }
         if (sourceFolders.size() > 0) {
             JavaProjectGenerator.SourceFolder sf = sourceFolders.get(0);
-            encoding = sf.encoding == null ? null : Charset.forName(sf.encoding).name();
+            this.encoding = sf.encoding == null ? null : Charset.forName(sf.encoding).name();
         }
         resetState();
     }
@@ -173,7 +173,8 @@ public class ProjectModel  {
     /** Instantiate project model as new Java project. */
     public static void instantiateJavaProject(AntProjectHelper helper, ProjectModel model) throws IOException {
         List<JavaProjectGenerator.SourceFolder> sourceFolders = model.updatePrincipalSourceFolders(model.sourceFolders, true);
-
+        
+        updateSourceFolders(sourceFolders, model.encoding);
         if (sourceFolders.size() > 0) {
             JavaProjectGenerator.putSourceFolders(helper, sourceFolders, null);
         }
@@ -204,6 +205,7 @@ public class ProjectModel  {
 
                 List<JavaProjectGenerator.SourceFolder> sourceFolders = JavaProjectGenerator.getSourceFolders(helper, null);
                 sourceFolders = model.updatePrincipalSourceFolders(sourceFolders, false);
+                updateSourceFolders(sourceFolders, model.encoding);
                 JavaProjectGenerator.putSourceFolders(helper, sourceFolders, null);
 
                 AuxiliaryConfiguration aux = Util.getAuxiliaryConfiguration(helper);
@@ -230,7 +232,24 @@ public class ProjectModel  {
             }
         });
     }
-
+    
+    // #120508: special source folder is added to save encoding for files directly under project folder
+    private static void updateSourceFolders(List<JavaProjectGenerator.SourceFolder> list, String enc) {
+        if (enc != null && !enc.equals("")) { // NOI18N
+            for (JavaProjectGenerator.SourceFolder sf : list) {
+                if (sf.label.equals("projectdir") && sf.location.equals(".")) { // NOI18N
+                    sf.encoding = enc;
+                    return;
+                }
+            }
+            JavaProjectGenerator.SourceFolder sf = new JavaProjectGenerator.SourceFolder();
+            sf.label = "projectdir"; // NOI18N
+            sf.location = "."; // NOI18N
+            sf.encoding = enc;
+            list.add(sf);
+        }
+    }
+    
     /**
      * This method according to the state of removed/added source folders
      * will ensure that all added typed external source roots will have
