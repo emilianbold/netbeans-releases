@@ -1405,6 +1405,7 @@ final class NbInstaller extends ModuleInstaller {
                                 t = re;
                             }
                             if (t != null) {
+                                // XXX #106153: consider excluding mobility/ant-ext classes
                                 Util.err.log(Level.WARNING, "From " + clazz + " in " + m.getCodeNameBase() + " with effective classpath " + getEffectiveClasspath(m), t);
                             }
                         }
