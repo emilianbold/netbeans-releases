@@ -189,6 +189,19 @@ public class ClientStubsGenerator extends AbstractGenerator {
         this.projectName = ProjectUtils.getInformation(getProject()).getName();
     }
     
+    public ClientStubsGenerator(FileObject root, String folderName, Project p, 
+            boolean createJmaki, boolean overwrite) throws IOException {
+        assert root != null;
+        assert p != null;
+        this.root = root.getFileObject(folderName);
+        if(this.root == null)
+            this.root = root.createFolder(folderName);
+        this.p = p;
+        this.createJmaki = createJmaki;
+        this.overwrite = overwrite;
+        this.projectName = ProjectUtils.getInformation(getProject()).getName();
+    }
+    
     public FileObject getRootDir() {
         return root;
     }

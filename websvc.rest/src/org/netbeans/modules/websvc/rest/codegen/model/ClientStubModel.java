@@ -122,12 +122,22 @@ public class ClientStubModel {
     
 
     private Resource createResource(JavaSource rSrc) throws IOException {
-        String pkgName = JavaSourceHelper.getPackageName(rSrc);
-        String className = JavaSourceHelper.getClassNameQuietly(rSrc);
-        String name = RestUtils.findStubNameFromClass(className);
-        String path = RestUtils.findUri(rSrc);
-        if (path == null)
+        String name = null;
+        String path = null;
+        String template = RestUtils.findUri(rSrc);
+        if(template != null) {
+            path = template;
+            name = path;
+            if(name.startsWith("/"))
+                name = name.substring(1);
+            if(name.endsWith("/"))
+                name = name.substring(0, name.length()-1);
+            name = name.substring(0, 1).toUpperCase()+name.substring(1);
+        } else {
+            String className = JavaSourceHelper.getClassNameQuietly(rSrc);
+            name = RestUtils.findStubNameFromClass(className);
             path = name.substring(0, 1).toLowerCase()+name.substring(1);
+        }
         Resource r = new Resource(name, path);
         buildResource(r, rSrc);        
         return r;
@@ -145,15 +155,20 @@ public class ClientStubModel {
                     String mAnonType = mAnon.getAnnotationType().toString();
                     List<? extends ExpressionTree> eAnons = mAnon.getArguments();
                     if (Constants.URI_TEMPLATE_ANNOTATION.equals(mAnonType) || Constants.URI_TEMPLATE.equals(mAnonType)) {
-                        if (m == null) {
-                            m = createNavigationMethod(mName);
-                            m.setTree(tree);
-                        }
+                        m = createNavigationMethod(mName);
+                        m.setTree(tree);
                         m.setType(MethodType.GETCHILD);
                         for (ExpressionTree eAnon : eAnons) {
                             String value = eAnon.toString();
                             if(value.contains("{")) {
-                                r.setIsContainer(true);
+                                String childRes = tree.getReturnType().toString();
+                                if(childRes.indexOf(".") != -1)
+                                    childRes = childRes.substring(childRes.lastIndexOf(".")+1);
+                                if(childRes.indexOf("Resource") != -1)
+                                    childRes = childRes.substring(0, childRes.indexOf("Resource"));
+                                String rName = r.getName();
+                                if((childRes+"s").equals(rName))
+                                    r.setIsContainer(true);
                                 value = value.substring(value.indexOf("{") + 1, value.lastIndexOf("}"));
                             } else if(value.contains("\"") && value.contains("/")) {
                                 value = value.substring(value.indexOf("\"") + 1, value.lastIndexOf("/"));

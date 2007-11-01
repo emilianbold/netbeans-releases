@@ -127,21 +127,25 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
         wizard.putProperty(WizardProperties.PROJECTS_TO_STUB, projects);
         wizard.putProperty(WizardProperties.OVERWRITE_EXISTING, overwriteCheckBox.isSelected());
         wizard.putProperty(WizardProperties.CREATE_JMAKI_REST_COMPONENTS, createJmakiCheckBox.isSelected());
+        
         if (stubRootFolder == null && sourceGroups.length > 0) {
-            String path = folderTextField.getText();
-            if (path == null || path.trim().length() == 0) {
-                path = Constants.REST_JMAKI_DIR;
-            }
+
             SourceGroup sg = (SourceGroup) locationCB.getSelectedItem();
-            try {
-                stubRootFolder = FileUtil.createFolder(sg.getRootFolder(), path);
-            } catch(IOException ioe) {
-                AbstractPanel.setErrorMessage(wizard, ioe.getLocalizedMessage());
-            }
+            stubRootFolder = sg.getRootFolder();
         }
         if (stubRootFolder != null) {
             wizard.putProperty(WizardProperties.STUB_ROOT_FOLDER, stubRootFolder);
         }
+        String path = folderTextField.getText();
+        if (path != null && path.trim().length() > 0) {
+            path = folderTextField.getText();
+        } else {
+            if(createJmakiCheckBox.isSelected())
+                path = Constants.REST_JMAKI_DIR;
+            else
+                path = Constants.REST_STUBS_DIR;
+        }
+        wizard.putProperty(WizardProperties.STUB_FOLDER_NAME, path);
     }
 
     public boolean valid(WizardDescriptor wizard) {

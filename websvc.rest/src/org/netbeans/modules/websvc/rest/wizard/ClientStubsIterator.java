@@ -110,6 +110,7 @@ public final class ClientStubsIterator implements WizardDescriptor.Instantiating
     
     public Set instantiate() throws IOException {
         final FileObject stubRoot = (FileObject) wizard.getProperty(WizardProperties.STUB_ROOT_FOLDER);
+        final String stubFolder = (String) wizard.getProperty(WizardProperties.STUB_FOLDER_NAME);
         final Project[] projectsToStub = (Project[]) wizard.getProperty(WizardProperties.PROJECTS_TO_STUB);
         final boolean overwrite = (Boolean) wizard.getProperty(WizardProperties.OVERWRITE_EXISTING);
         final boolean createJmaki = (Boolean) wizard.getProperty(WizardProperties.CREATE_JMAKI_REST_COMPONENTS);
@@ -126,7 +127,7 @@ public final class ClientStubsIterator implements WizardDescriptor.Instantiating
                     
                     try {
                         for (Project project : projectsToStub) {
-                            result.addAll(new ClientStubsGenerator(stubRoot, project, createJmaki, overwrite).generate(pHandle));
+                            result.addAll(new ClientStubsGenerator(stubRoot, stubFolder, project, createJmaki, overwrite).generate(pHandle));
                         }
                     } catch(Exception iox) {
                         Logger.getLogger(getClass().getName()).log(Level.INFO, "instantiate", iox);
