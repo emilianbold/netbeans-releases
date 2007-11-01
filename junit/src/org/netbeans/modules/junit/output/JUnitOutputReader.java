@@ -96,7 +96,7 @@ import static org.netbeans.modules.junit.output.RegexpUtils.XML_DECL_PREFIX;
  * @author  Marian Petras
  */
 final class JUnitOutputReader {
-    
+
     private static final int MAX_REPORT_FILE_SIZE = 1 << 19;    //512 kBytes
     /** number of progress bar workunits */
     private static final int PROGRESS_WORKUNITS = (1 << 15) / 100 * 100;    //sqrt(Integer.MAX), rounded down to hundreds
@@ -166,6 +166,7 @@ final class JUnitOutputReader {
     /** */
     private final long timeOfSessionStart;
     
+    private final Logger LOG;
     private final Logger progressLogger;
     
     /** */
@@ -218,6 +219,7 @@ final class JUnitOutputReader {
         
         this.progressLogger = Logger.getLogger(
                 "org.netbeans.modules.junit.outputreader.progress");    //NOI18N
+        this.LOG = Logger.getLogger(getClass().getName());
     }
     
     /**
@@ -225,9 +227,13 @@ final class JUnitOutputReader {
     void verboseMessageLogged(final AntEvent event) {
         final String msg = event.getMessage();
         if (msg == null) {
+            LOG.finer("VERBOSE MSG: <null>");                           //NOI18N
             return;
         }
-        
+
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("VERBOSE MSG: \"" + msg + '"');                   //NOI18N
+        }
         if (progressLogger.isLoggable(FINEST)) {
             progressLogger.finest("VERBOSE: " + msg);                   //NOI18N
         }
@@ -297,7 +303,12 @@ final class JUnitOutputReader {
     void messageLogged(final AntEvent event) {
         final String msg = event.getMessage();
         if (msg == null) {
+            LOG.finer("NORMAL: <null>");                                //NOI18N
             return;
+        }
+
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("NORMAL: \"" + msg + '"');                        //NOI18N
         }
         if (progressLogger.isLoggable(FINEST)) {
             progressLogger.finest("NORMAL:  " + msg);                   //NOI18N
