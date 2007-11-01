@@ -468,7 +468,29 @@ public class LLSyntaxAnalyser {
         if (l == null) {
             l = new ArrayList<ASTItem> ();
             embeddings.put (mimeType, l);
-            l.addAll (children);
+            l.addAll (children.subList (0, children.size () - 1));
+            ASTToken lastToken = (ASTToken) children.get (children.size () - 1);
+            if (lastToken.getChildren ().isEmpty ())
+                l.add (lastToken);
+            else {
+                List<ASTItem> lastTokenChildren = new ArrayList<ASTItem> (lastToken.getChildren ());
+                lastTokenChildren.add (ASTToken.create (
+                    lastTokenChildren.get (0).getLanguage (),
+                    Language.GAP_TOKEN_TYPE_NAME,
+                    "",
+                    lastTokenChildren.get (lastTokenChildren.size () - 1).getEndOffset (),
+                    0,
+                    null
+                ));
+                l.add (ASTToken.create (
+                    lastToken.getLanguage (),
+                    lastToken.getTypeID (),
+                    lastToken.getIdentifier (),
+                    lastToken.getOffset (),
+                    lastToken.getLength (),
+                    lastTokenChildren
+                ));
+            }
         } else {
             ASTToken token1 = (ASTToken) l.get (l.size () - 1);
             ASTToken token2 = (ASTToken) children.get (0);
@@ -495,22 +517,7 @@ public class LLSyntaxAnalyser {
         List<ASTItem> token1Children = token1.getChildren ();
         List<ASTItem> token2Children = token2.getChildren ();
         List<ASTItem> joinedChildren = new ArrayList<ASTItem> (token1Children);
-        
-        if (token1Children.isEmpty () || token2Children.isEmpty ())
-            joinedChildren.addAll (token2Children);
-        else {
-            ASTToken token1ChildrenLast = (ASTToken) token1Children.get (token1Children.size () - 1);
-            ASTToken gapToken = ASTToken.create (
-                joinedChildren.get (0).getLanguage (),
-                Language.GAP_TOKEN_TYPE_NAME,
-                "",
-                token1ChildrenLast.getEndOffset (),
-                0,
-                null
-            );
-            joinedChildren.add (gapToken);
-            joinedChildren.addAll (token2Children);
-        }
+        joinedChildren.addAll (token2Children);
         return ASTToken.create (
             token1.getLanguage (),
             token1.getTypeID (),
