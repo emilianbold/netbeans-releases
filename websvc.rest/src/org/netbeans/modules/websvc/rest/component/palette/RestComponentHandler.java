@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.rest.component.palette;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -93,7 +94,31 @@ public class RestComponentHandler implements ActiveEditorDrop {
         final Project project = FileOwnerQuery.getOwner(targetFO);
         Lookup pItem = RestPaletteFactory.getCurrentPaletteItem();
         final Node n = pItem.lookup(Node.class);
+        if(n == null) {
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "handleTransfer", 
+                new IOException(NbBundle.getMessage(RestComponentHandler.class, 
+                    "LBL_RestComponentNodeNull")));
+            return false;
+        }
         data = RestPaletteFactory.getRestComponentData(n); 
+        if(data == null) {
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "handleTransfer", 
+                new IOException(NbBundle.getMessage(RestComponentHandler.class, 
+                    "LBL_RestComponentNotFound", n.getName())));
+            return false;
+        }
+        if(data.getService() == null) {
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "handleTransfer", 
+                new IOException(NbBundle.getMessage(RestComponentHandler.class, 
+                    "LBL_RestComponentServiceNotFound", n.getName())));
+            return false;
+        }
+        if(data.getService().getMethods() == null || data.getService().getMethods().size() == 0) {
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "handleTransfer", 
+                new IOException(NbBundle.getMessage(RestComponentHandler.class, 
+                    "LBL_RestComponentMethodNotFound", n.getName())));
+            return false;
+        }
         final String type = data.getService().getMethods().get(0).getType();
        
         final ProgressDialog dialog = new ProgressDialog(
