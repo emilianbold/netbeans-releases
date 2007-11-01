@@ -317,7 +317,8 @@ public class UMLImportsUiSupport
     {
 //        if((element != null) && (inSameProject(importingPackage) == true))
 //        {
-            Project foundProject = ProjectUtil.findElementOwner(element.getOwningPackage());
+            IProject p = ProjectUtil.getOwningProjectOfImportedElement(element);
+            Project foundProject = ProjectUtil.findElementOwner(p);
             Project referencingProject = ProjectUtil.findReferencingProject(importedElement);
             
             // add reference to the project only if it differes from the owner

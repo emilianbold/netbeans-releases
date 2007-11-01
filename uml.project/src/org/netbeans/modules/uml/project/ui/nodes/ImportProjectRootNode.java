@@ -54,11 +54,11 @@ package org.netbeans.modules.uml.project.ui.nodes;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementImport;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackageImport;
-import org.netbeans.modules.uml.project.UMLProject;
 import org.netbeans.modules.uml.project.UMLProjectHelper;
 import org.netbeans.modules.uml.project.ui.customizer.ImportElementListener;
 import javax.swing.Action;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
+import org.netbeans.modules.uml.project.ProjectUtil;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.NbBundle;
@@ -138,18 +138,11 @@ public class ImportProjectRootNode extends AbstractNode implements ImportElement
             e = ((IPackageImport) element).getImportedPackage();
         }
 //        ownerProject = e.getOwner() == null ? proj : e.getOwner().getProject();
-        ownerProject = getOwningProject(e);
+        ownerProject = ProjectUtil.getOwningProjectOfImportedElement(e);
         ImportedProjectChildren children = (ImportedProjectChildren) getChildren();
         children.removeImportElement(ownerProject, element);
     }
 
-    private IProject getOwningProject(IElement imported)
-    {
-        IElement owner = imported.getOwner();
-        if (!(owner instanceof IProject))
-            return getOwningProject(owner);
-        return (IProject)owner;
-    }
     
     public boolean canCopy()
     {

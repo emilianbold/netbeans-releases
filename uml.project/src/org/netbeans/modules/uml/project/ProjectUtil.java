@@ -659,6 +659,13 @@ public class ProjectUtil
         return file.exists() ? null : name;
     }
     
+    public static IProject getOwningProjectOfImportedElement(IElement imported)
+    {
+        IElement owner = imported.getOwner();
+        if (!(owner instanceof IProject))
+            return getOwningProjectOfImportedElement(owner);
+        return (IProject)owner;
+    }
     
     public static class ProjectByDisplayNameComparator implements Comparator
     {
