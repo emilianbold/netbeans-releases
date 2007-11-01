@@ -42,24 +42,24 @@
 package org.netbeans.modules.editor.options;
 
 import java.beans.IntrospectionException;
-import java.util.ArrayList;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Collections;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.editor.NbEditorSettingsInitializer;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
+import org.netbeans.modules.editor.impl.KitsTracker;
 import org.openide.nodes.BeanNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /** Node representing the Editor Settings main node.
  *
  *  @author  Martin Roskanin
  *  @since 08/2001
+ *  @deprecate If you think you need this class you are doing something wrong. It should've never been made public.
  */
 public class AllOptionsNode extends FilterNode {
     
@@ -72,65 +72,51 @@ public class AllOptionsNode extends FilterNode {
     }
     
     /** Gets display name of all options node from bundle */
-    public String getDisplayName(){
+    public @Override String getDisplayName(){
         return NbBundle.getMessage(AllOptionsNode.class, "OPTIONS_all"); //NOI18N
     }
 
-    public String getShortDescription(){
+    public @Override String getShortDescription(){
         return null;
     }
     
     // #7925
-    public boolean canDestroy() {
+    public @Override boolean canDestroy() {
         return false;
     }        
     
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (HELP_ID);
+    public @Override HelpCtx getHelpCtx() {
+        return new HelpCtx(HELP_ID);
     }
     
     /** Class representing subnodes of Editor Settings node.*/
-    private static class EditorSubnodes extends Children.Keys {
+    private static class EditorSubnodes extends Children.Keys implements PropertyChangeListener {
 
-        /** Listens to changes on the Modules folder */
-        private FileChangeListener moduleRegListener;
+        private PropertyChangeListener weakListener = null;
         
         /** Constructor.*/
-        EditorSubnodes() {
-            super();
+        public EditorSubnodes() {
         }        
-        
-        private void mySetKeys() {
-            setKeys(AllOptionsFolder.getDefault().getInstalledOptions());
-        }
         
         /** Called to notify that the children has lost all of its references to
          * its nodes associated to keys and that the keys could be cleared without
          * affecting any nodes (because nobody listens to that nodes). 
          * Overrides superclass method. */
-        protected void removeNotify () {
-            setKeys(new ArrayList());
+        protected @Override void removeNotify () {
+            if (weakListener != null) {
+                KitsTracker.getInstance().removePropertyChangeListener(weakListener);
+                weakListener = null;
+            }
+            setKeys(Collections.EMPTY_SET);
         }
         
         /** Called to notify that the children has been asked for children
          * after and that they should set its keys. Overrides superclass method. */
-        protected void addNotify() {
-            mySetKeys();
-            
-            // listener
-            if(moduleRegListener == null) {
-                moduleRegListener = new FileChangeAdapter() {
-                    public void fileChanged(FileEvent fe){
-                        mySetKeys();
-                    }
-                };
-                
-                FileObject moduleRegistry = Repository.getDefault().getDefaultFileSystem().findResource("Modules"); //NOI18N
-                
-                if (moduleRegistry !=null){ //NOI18N
-                    moduleRegistry.addFileChangeListener(
-                        FileUtil.weakFileChangeListener(moduleRegListener, moduleRegistry));
-                }
+        protected @Override void addNotify() {
+            setKeys(KitsTracker.getInstance().getMimeTypes());
+            if (weakListener != null) {
+                weakListener = WeakListeners.propertyChange(this, KitsTracker.getInstance());
+                KitsTracker.getInstance().addPropertyChangeListener(weakListener);
             }
         }
        
@@ -141,20 +127,38 @@ public class AllOptionsNode extends FilterNode {
          *   nodes for this key
          */
         protected Node[] createNodes(Object key) {
-            if(key == null)
-                return null;
-
-            if(!(key instanceof Class))
-                return null;            
-            
-            BaseOptions baseOptions
-            = (BaseOptions)BaseOptions.findObject((Class)key, true);
-            
-            if (baseOptions == null) return null;
-            
-            return new Node[] {baseOptions.getMimeNode()/* #18678 */.cloneNode()};
+            if (key instanceof String) {
+                String mimeType = (String) key;
+                String genericMimeType = KitsTracker.getGenericPartOfCompoundMimeType(mimeType);
+                
+                BaseOptions baseOptions = MimeLookup.getLookup(mimeType).lookup(BaseOptions.class);
+                
+                if (baseOptions != null) {
+                    if (genericMimeType != null) {
+                        BaseOptions gBO = MimeLookup.getLookup(genericMimeType).lookup(BaseOptions.class);
+                        if (gBO == baseOptions) {
+                            // Options for the compound mime type were inherited
+                            // from the generic mime type. Ignore them, we will show them
+                            // for the generic mime type.
+                            baseOptions = null;
+                        }
+                    }
+                }
+                
+                if (baseOptions != null) {
+                    baseOptions.loadXMLSettings();
+                    Node node = baseOptions.getMimeNode();
+                    if (node != null) {
+                        return new Node[] { node.cloneNode() };
+                    }
+                }
+            }
+            return null;
         }
         
-    }
+        public void propertyChange(PropertyChangeEvent evt) {
+            setKeys(KitsTracker.getInstance().getMimeTypes());
+        }
+    } // End of EditorSubnodes class
     
 }

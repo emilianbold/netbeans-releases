@@ -9,6 +9,8 @@
 
 package org.netbeans.modules.editor.impl;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,6 +52,24 @@ public final class KitsTracker {
         return instance;
     }
     
+    public static String getGenericPartOfCompoundMimeType(String mimeType) {
+        int plusIdx = mimeType.lastIndexOf('+'); //NOI18N
+        if (plusIdx != -1 && plusIdx < mimeType.length() - 1) {
+            int slashIdx = mimeType.indexOf('/'); //NOI18N
+            String prefix = mimeType.substring(0, slashIdx + 1);
+            String suffix = mimeType.substring(plusIdx + 1);
+
+            // fix for #61245
+            if (suffix.equals("xml")) { //NOI18N
+                prefix = "text/"; //NOI18N
+            }
+
+            return prefix + suffix;
+        } else {
+            return null;
+        }
+    }
+    
     /**
      * Gets the list of mime types (<code>String</code>s) that use the given
      * class as an editor kit implementation.
@@ -57,55 +77,9 @@ public final class KitsTracker {
      * @param kitClass The editor kit class to get mime types for.
      * @return The <code>List&lt;String&gt;</code> of mime types.
      */
+    @SuppressWarnings("unchecked")
     public List<String> getMimeTypesForKitClass(Class kitClass) {
-        boolean reload;
-        Map<String, Class> reloadedMap = new HashMap<String, Class>();
-        List<FileObject> newEventSources = new ArrayList<FileObject>();
-        
-        synchronized (mimeType2kitClass) {
-            reload = needsReloading;
-        }
-        
-        // This needs to be outside of the synchronized block to prevent deadlocks
-        // See eg #107400
-        if (reload) {
-            reload(reloadedMap, newEventSources);
-        }
-            
-        synchronized (mimeType2kitClass) {
-            if (reload) {
-                // Stop listening
-                if (eventSources != null) {
-                    for(FileObject fo : eventSources) {
-                        fo.removeFileChangeListener(fcl);
-                    }
-                }
-
-                // Update the cache
-                mimeType2kitClass.clear();
-                mimeType2kitClass.putAll(reloadedMap);
-
-                // Start listening again
-                eventSources = newEventSources;
-                for(FileObject fo : eventSources) {
-                    fo.addFileChangeListener(fcl);
-                }
-
-                // Set the flag
-                needsReloading = false;
-            }
-            
-            // Compute the list
-            ArrayList<String> list = new ArrayList<String>();
-            for(String mimeType : mimeType2kitClass.keySet()) {
-                Class clazz = mimeType2kitClass.get(mimeType);
-                if (kitClass == clazz) {
-                    list.add(mimeType);
-                }
-            }
-
-            return list;
-        }
+        return (List<String>) updateAndGet(kitClass);
     }
 
     /**
@@ -133,6 +107,24 @@ public final class KitsTracker {
             return null;
         }
     }
+
+    /**
+     * Gets all know mime types registered in the system.
+     * 
+     * @return The set of registered mimne types.
+     */
+    @SuppressWarnings("unchecked")
+    public Set<String> getMimeTypes() {
+        return (Set<String>) updateAndGet(null);
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        PCS.addPropertyChangeListener(l);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        PCS.removePropertyChangeListener(l);
+    }
     
     // ------------------------------------------------------------------
     // private implementation
@@ -140,9 +132,11 @@ public final class KitsTracker {
     
     // The map of mime type -> kit class
     private final Map<String, Class> mimeType2kitClass = new HashMap<String, Class>();
+    private final Set<String> knownMimeTypes = new HashSet<String>();
     private List<FileObject> eventSources = null;
     private boolean needsReloading = true;
-
+    private final PropertyChangeSupport PCS = new PropertyChangeSupport(this);
+    
     private final FileChangeListener fcl = new FileChangeAdapter() {
         @Override
         public void fileFolderCreated(FileEvent fe) {
@@ -176,7 +170,7 @@ public final class KitsTracker {
      * @param eventSources The list of folders with registered <code>EditorKits</code>.
      *   Changes in these folders mean that the map may need to be recalculated.
      */
-    private static void reload(Map<String, Class> map, List<FileObject> eventSources) {
+    private static void reload(Map<String, Class> map, Set<String> set, List<FileObject> eventSources) {
         // Get the root of the MimeLookup registry
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Editors"); //NOI18N
 
@@ -215,6 +209,8 @@ public final class KitsTracker {
                             LOG.fine("No kit for '" + mimeType + "'");
                         }
                     }
+                    
+                    set.add(mimeType);
                 }
 
                 eventSources.add(types[i]);
@@ -228,26 +224,9 @@ public final class KitsTracker {
         synchronized (mimeType2kitClass) {
             needsReloading = true;
         }
+        PCS.firePropertyChange(null, null, null);
     }
 
-    private static String getGenericPartOfCompoundMimeType(String mimeType) {
-        int plusIdx = mimeType.lastIndexOf('+'); //NOI18N
-        if (plusIdx != -1 && plusIdx < mimeType.length() - 1) {
-            int slashIdx = mimeType.indexOf('/'); //NOI18N
-            String prefix = mimeType.substring(0, slashIdx + 1);
-            String suffix = mimeType.substring(plusIdx + 1);
-
-            // fix for #61245
-            if (suffix.equals("xml")) { //NOI18N
-                prefix = "text/"; //NOI18N
-            }
-
-            return prefix + suffix;
-        } else {
-            return null;
-        }
-    }
-    
     private static boolean isValidType(FileObject typeFile) {
         if (!typeFile.isFolder()) {
             return false;
@@ -271,5 +250,65 @@ public final class KitsTracker {
             LOG.log(level, msg);
             ALREADY_LOGGED.add(msg);
         }
+    }
+
+    private Object updateAndGet(Class kitClass) {
+        boolean reload;
+        Map<String, Class> reloadedMap = new HashMap<String, Class>();
+        Set<String> reloadedSet = new HashSet<String>();
+        List<FileObject> newEventSources = new ArrayList<FileObject>();
+        
+        ArrayList<String> list = new ArrayList<String>();
+        HashSet<String> set = new HashSet<String>();
+        
+        synchronized (mimeType2kitClass) {
+            reload = needsReloading;
+        }
+        
+        // This needs to be outside of the synchronized block to prevent deadlocks
+        // See eg #107400
+        if (reload) {
+            reload(reloadedMap, reloadedSet, newEventSources);
+        }
+            
+        synchronized (mimeType2kitClass) {
+            if (reload) {
+                // Stop listening
+                if (eventSources != null) {
+                    for(FileObject fo : eventSources) {
+                        fo.removeFileChangeListener(fcl);
+                    }
+                }
+
+                // Update the cache
+                mimeType2kitClass.clear();
+                mimeType2kitClass.putAll(reloadedMap);
+                knownMimeTypes.clear();
+                knownMimeTypes.addAll(reloadedSet);
+
+                // Start listening again
+                eventSources = newEventSources;
+                for(FileObject fo : eventSources) {
+                    fo.addFileChangeListener(fcl);
+                }
+
+                // Set the flag
+                needsReloading = false;
+            }
+            
+            // Compute the list
+            if (kitClass != null) {
+                for(String mimeType : mimeType2kitClass.keySet()) {
+                    Class clazz = mimeType2kitClass.get(mimeType);
+                    if (kitClass == clazz) {
+                        list.add(mimeType);
+                    }
+                }
+            } else {
+                set.addAll(knownMimeTypes);
+            }
+        }
+        
+        return kitClass != null ? list : set;
     }
 }

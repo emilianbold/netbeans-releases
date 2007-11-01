@@ -44,6 +44,7 @@ package org.netbeans.modules.languages.dataobject;
 import java.util.Collections;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.options.BaseOptions;
+import org.netbeans.modules.editor.options.MIMEOptionNode;
 import org.netbeans.modules.editor.options.OptionSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -124,6 +125,11 @@ public class LanguagesOptions extends BaseOptions {
      */
     public HelpCtx getHelpCtx() {
         return new HelpCtx(HELP_ID);
+    }
+
+    public MIMEOptionNode getMimeNode() {
+        // Do not show the shared instance in Advanced Options -> Editor Settings
+        return null;
     }
     
     /**

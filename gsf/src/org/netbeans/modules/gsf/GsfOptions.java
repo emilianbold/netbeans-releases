@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.options.BaseOptions;
+import org.netbeans.modules.editor.options.MIMEOptionNode;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -147,7 +148,13 @@ public class GsfOptions extends BaseOptions {
         } catch (MissingResourceException e) {
             return super.getString(key);
         }
-    }    
+    }
+
+    @Override
+    public MIMEOptionNode getMimeNode() {
+        // Do not show the shared instance in Advanced Options -> Editor Settings
+        return null;
+    }
 
     // Copied from Java
     public boolean getCompletionAutoPopup() {
