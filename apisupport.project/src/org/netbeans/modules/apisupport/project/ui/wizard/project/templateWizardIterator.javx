@@ -6,6 +6,8 @@
 package ${PACKAGENAME};
 
 import java.awt.Component;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +28,14 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+
 
 public class ${TEMPLATENAME}WizardIterator implements WizardDescriptor./*Progress*/InstantiatingIterator {
 
@@ -155,16 +164,10 @@ public class ${TEMPLATENAME}WizardIterator implements WizardDescriptor./*Progres
                     FileUtil.createFolder(projectRoot, entry.getName());
                 } else {
                     FileObject fo = FileUtil.createData(projectRoot, entry.getName());
-                    FileLock lock = fo.lock();
-                    try {
-                        OutputStream out = fo.getOutputStream(lock);
-                        try {
-                            FileUtil.copy(str, out);
-                        } finally {
-                            out.close();
-                        }
-                    } finally {
-                        lock.releaseLock();
+                    if ("nbproject/project.xml".equals(entry.getName())) {
+                        filterprojectXml(fo, str, projectRoot.getName());
+                    } else {
+                        writeFile(str, fo);
                     }
                 }
             }
@@ -172,5 +175,58 @@ public class ${TEMPLATENAME}WizardIterator implements WizardDescriptor./*Progres
             source.close();
         }
     }
+    
+    private static void writeFile(ZipInputStream str, FileObject fo) throws IOException {
+        FileLock lock = fo.lock();
+        try {
+            OutputStream out = fo.getOutputStream(lock);
+            try {
+                FileUtil.copy(str, out);
+            } finally {
+                out.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
+    }
+    
+    
+    private static void filterprojectXml(FileObject fo, ZipInputStream str, String name) throws IOException {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            FileUtil.copy(str, baos);
+            Document doc = XMLUtil.parse(new InputSource(new ByteArrayInputStream(baos.toByteArray())), false, false, null, null);
+            NodeList nl = doc.getDocumentElement().getElementsByTagName("name");
+            if (nl != null) {
+                for (int i = 0; i < nl.getLength();i++) {
+                    Element el = (Element)nl.item(i);
+                    if (el.getParentNode() != null && "data".equals(el.getParentNode().getNodeName())) {
+                        NodeList nl2 = el.getChildNodes();
+                        if (nl2.getLength() > 0) {
+                            nl2.item(0).setNodeValue(name);
+                        }
+                        break;
+                    }
+                }
+            }
+            FileLock lock = fo.lock();
+            try {
+                OutputStream out = fo.getOutputStream(lock);
+                try {
+                    XMLUtil.write(doc, out, "UTF-8");
+                } finally {
+                    out.close();
+                }
+            } finally {
+                lock.releaseLock();
+            }
+            
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            writeFile(str, fo);
+        }
+        
+    }
+    
 
 }
