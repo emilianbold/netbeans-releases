@@ -58,18 +58,12 @@ public class RhtmlOptions extends HTMLOptions {
 
     public static final String RHTML = "rhtml"; // NOI18N
 
-    private static final String HELP_ID = "editing.editor.rhtml"; // !!! NOI18N
-                                        
     static final long serialVersionUID = 75289734362748537L;
    
     public RhtmlOptions() {
         super(RhtmlKit.class, RHTML);
     }
 
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (HELP_ID);
-    }
-    
     /**
      * Get localized string
      */
