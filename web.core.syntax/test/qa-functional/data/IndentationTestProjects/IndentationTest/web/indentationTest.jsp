@@ -6,6 +6,11 @@
     <head>
         <title></title>
         <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+        <style type ="text/css">
+            h1{
+                color: green;
+            }
+        </style>
     </head>
     <body>
         <table style="text-align: center; border: 1px ">
@@ -18,5 +23,16 @@
                 <td>
             </tr>
         </table>
+        <%! 
+        int count = 10;
+        %>
+        <%
+        if (true){
+            for (int i = 0; i< count; i++){
+                
+            }
+        }
+        
+        %>
     </body>
 </html>
