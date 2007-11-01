@@ -106,6 +106,8 @@ class Samples extends JPanel implements Constants {
         String category = null;
 
         FileObject origFile = categoryDO.getPrimaryFile();
+        if( !origFile.isFolder() )
+            return;
         DataFolder df = DataFolder.findFolder( origFile );
         if( null != df ) {
             DataObject[] categoryChildren = df.getChildren();
