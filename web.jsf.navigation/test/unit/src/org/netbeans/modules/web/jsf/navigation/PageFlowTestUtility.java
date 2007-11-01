@@ -104,7 +104,6 @@ public class PageFlowTestUtility {
         setJsfDO(initDOFacesConfig());
         setFacesConfig(initFacesConfig());
         setPageFlowView(initPageFlowView());
-        Thread.sleep(3000); //To make sure everything is created.
     }
 
     public void tearDown() throws Exception {
