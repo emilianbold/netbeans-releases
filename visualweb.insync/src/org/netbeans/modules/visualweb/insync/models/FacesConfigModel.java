@@ -184,7 +184,8 @@ public class FacesConfigModel extends Model{
     }
      
     public void removeManagedBean(ManagedBean bean) {
-        JSFConfigModel model = getDefaultFacesConfigModel();
+        //Get the model in which the bean to be removed exists
+        JSFConfigModel model = bean.getParent().getModel();
         if(!isBusted(model)) {
             model.startTransaction();
             model.getRootComponent().removeManagedBean(bean);
