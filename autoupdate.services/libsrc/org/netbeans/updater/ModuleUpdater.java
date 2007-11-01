@@ -93,6 +93,8 @@ public final class ModuleUpdater extends Thread {
     public static final char SPACE = ' ';
     public static final char QUOTE = '\"';
     
+    private static final String TEMP_FILE_NAME = "temporary";
+    
     /** files that are supposed to be installed (when running inside the ide) */
     private Collection<File> forInstall;
     private Map<File, Collection<File>> files2clustersForInstall;
@@ -364,6 +366,9 @@ public final class ModuleUpdater extends Thread {
                                     bckFile.getParentFile ().mkdirs ();
                                     // System.out.println("Backing up" ); // NOI18N
                                     copyStreams( new FileInputStream( destFile ), new FileOutputStream( bckFile ), -1 );
+                                    if (!destFile.delete() && isWindows()) {
+                                        trickyDeleteOnWindows(destFile);
+                                    }
                                 } else {
                                     destFile.getParentFile ().mkdirs ();
                                 }
@@ -436,7 +441,27 @@ public final class ModuleUpdater extends Thread {
             t.deleteUnusedFiles ();            
         }
     }
-
+    
+    private static boolean trickyDeleteOnWindows(File destFile) {
+        assert isWindows();
+        File f = new File(destFile.getParentFile(), destFile.getName());
+        assert f.exists();        
+        try {
+            File tmpFile = File.createTempFile(TEMP_FILE_NAME, null, f.getParentFile());
+            if (tmpFile.delete()) {
+                f.renameTo(tmpFile);
+            }
+        } catch (IOException ex) {
+            //no special handling needed
+        }
+        return !f.exists();
+    }
+    
+    private static boolean isWindows() {
+        String os = System.getProperty("os.name"); // NOI18N
+        return (os != null && os.toLowerCase().startsWith("windows"));//NOI18N
+    }
+    
     private void startCommand(String torun) {
         Runtime runtime=Runtime.getRuntime();
         Process proces;            
