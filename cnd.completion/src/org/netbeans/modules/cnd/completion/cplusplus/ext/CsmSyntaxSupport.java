@@ -82,7 +82,7 @@ import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
 
 abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
-    // Internal java declaration token processor states
+    // Internal C++ declaration token processor states
     static final int INIT = 0;
     static final int AFTER_TYPE = 1;
     static final int AFTER_VARIABLE = 2;
@@ -125,7 +125,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     }
     
     private static final char[] COMMAND_SEPARATOR_CHARS = new char[] {
-                ';', '{', '}', '#'
+                ';', '{', '}'
             };
 
     private CsmIncludeProcessor javaImport;
@@ -220,16 +220,16 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         int lastPos = getDocument().processText(tbp, pos, 0);
         
         //ensure we return last command separator from last 
-        //block of java tokens from <startPos;endPos> offset interval
+        //block of C++ tokens from <startPos;endPos> offset interval
         //AFAIK this is currently needed only for JSP code completion
         TokenItem item = getTokenChain(pos - 1, pos);
-        //go back throught the token chain and try to find last java token
+        //go back throught the token chain and try to find last C++ token
         do {
             int tokenOffset = item.getOffset();
             if(lastPos != -1 && tokenOffset < lastPos) break; //stop backtracking if we met the lastPos
             //test token type
             if(!item.getTokenContextPath().contains(CCTokenContext.contextPath)) {
-                //return offset of last java token - this token isn't already a java token so return offset of next token
+                //return offset of last C++ token - this token isn't already a C++ token so return offset of next token
                 lastPos = item.getNext() != null ? item.getNext().getOffset() : item.getOffset() + item.getImage().length();
                 break;
             }
@@ -765,7 +765,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         int tokenOffset, int tokenLen) {
             int pos = bufferStartPos + tokenOffset;
 
-	    // Check whether we are really recognizing the java tokens
+	    // Check whether we are really recognizing the C++ tokens
 	    if (!tokenContextPath.contains(CCTokenContext.contextPath)) {
 		state = INIT;
 		return true;

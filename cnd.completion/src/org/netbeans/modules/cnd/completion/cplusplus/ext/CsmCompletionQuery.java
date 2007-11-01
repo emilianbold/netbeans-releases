@@ -170,7 +170,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
             boolean cont = true;
             while (cont) {
-                sup.tokenizeText(tp, (((lastSepOffset + 1) <= offset) ? lastSepOffset + 1 : offset), offset, true);
+                sup.tokenizeText(tp, ((lastSepOffset < offset) ? lastSepOffset + 1 : offset), offset, true);
                 cont = tp.isStopped() && (lastSepOffset = sup.findMatchingBlock(tp.getCurrentOffest(), true)[0]) < offset - 1;
             }
 
