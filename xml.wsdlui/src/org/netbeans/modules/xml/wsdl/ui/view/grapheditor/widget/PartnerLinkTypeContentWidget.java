@@ -162,13 +162,14 @@ public class PartnerLinkTypeContentWidget extends Widget implements PropertyChan
 
     void roleAdded(Role role) {
         RoleWidget rw = (RoleWidget) WidgetFactory.getInstance().getOrCreateWidget(getScene(), role, mLookup, this);
-        if (mRightRoleWidget.getWSDLComponent() == null) {
+            
+        if (rw == mRightRoleWidget || mRightRoleWidget.getWSDLComponent() == null) {
             rw.setLeftSided(false);
             mRightRoleWidget.removeFromParent();
             mRightRoleWidget = rw;
             addChild(1, rw);
             mOperationSceneLayer.updateOperations(true);
-        } else if (mLeftRoleWidget.getWSDLComponent() == null) {
+        } else if (rw == mLeftRoleWidget || mLeftRoleWidget.getWSDLComponent() == null) {
             rw.setLeftSided(true);
             mLeftRoleWidget.removeFromParent();
             mLeftRoleWidget = rw;
