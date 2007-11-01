@@ -803,6 +803,7 @@ public class SvnUtils {
      */
     public static void refreshRecursively(File file) {    
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
         File[] files = file.listFiles();
         if(files != null) {        
             for (int i = 0; i < files.length; i++) {

@@ -109,7 +109,7 @@ public class StatusAction  extends ContextAction {
 
             Subversion.getInstance().getStatusCache().refreshCached(context);
             File[] roots = context.getRootFiles();
-            for (int i=0; i<roots.length; i++) {
+            for (int i = 0; i < roots.length; i++) {
                 if(support.isCanceled()) {
                     return;
                 }
@@ -119,16 +119,23 @@ public class StatusAction  extends ContextAction {
                     return;
                 }
 
+                FileStatusCache cache = Subversion.getInstance().getStatusCache();
                 for (int s = 0; s < statuses.length; s++) {
                     if(support.isCanceled()) {
                         return;
                     }
-                    ISVNStatus status = statuses[s];
-                    FileStatusCache cache = Subversion.getInstance().getStatusCache();
-                    File file = status.getFile();
-                    SVNStatusKind kind = status.getRepositoryTextStatus();
-//                    System.err.println(" File: " + file.getAbsolutePath() + " repo-status:" + kind );
-                    cache.refresh(file, status);
+                    ISVNStatus status = statuses[s];                    
+                    File file = status.getFile();                    
+                    if(file.isDirectory() && status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
+                        // XXX could have been created externally and the cache ignores by designe 
+                        // a newly created folders children. 
+                        // As this is the place were such files should be recognized,
+                        // we will force the refresh recursivelly. 
+                        SvnUtils.refreshRecursively(file);
+                    } else {
+                        cache.refresh(file, status);    
+                    }
+                    
                 }
             }
         } catch (SVNClientException ex) {
