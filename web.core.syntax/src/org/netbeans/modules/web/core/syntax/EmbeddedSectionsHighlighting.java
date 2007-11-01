@@ -73,7 +73,7 @@ import org.openide.util.WeakListeners;
  * Implementation of Highlighting SPI creating coloured background
  * for embedded java sections.
  *
- * @author Marek Fukala
+ * @author Vita Stejskal
  */
 public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer implements TokenHierarchyListener {
 
@@ -81,6 +81,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
     
     private final Document document;
     private final AttributeSet javascripletBackground;
+    private final AttributeSet expressionLanguageBackground;
     private TokenHierarchy<? extends Document> hierarchy = null;
     private long version = 0;
 
@@ -88,23 +89,32 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         this.document = document;
         
         // load the background color for the embedding token
-        AttributeSet attribs = null;
+        AttributeSet jsAttribs = null;
+        AttributeSet elAttribs = null;
         String mimeType = (String) document.getProperty("mimeType"); //NOI18N
         FontColorSettings fcs = MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
         if (fcs != null) {
             Color jsBC = getColoring(fcs, JspTokenId.SCRIPTLET.primaryCategory());
             if (jsBC != null) {
-                attribs = AttributesUtilities.createImmutable(
+                jsAttribs = AttributesUtilities.createImmutable(
                     StyleConstants.Background, jsBC, 
                     ATTR_EXTENDS_EOL, Boolean.TRUE);
             }
+            Color elBC = getColoring(fcs, JspTokenId.EL.primaryCategory());
+            if (elBC != null) {
+                System.out.println("COLOR: el = " + elBC.toString());
+                elAttribs = AttributesUtilities.createImmutable(
+                    StyleConstants.Background, elBC, 
+                    ATTR_EXTENDS_EOL, Boolean.TRUE);
+            }
         }
-        javascripletBackground = attribs;
+        javascripletBackground = jsAttribs;
+        expressionLanguageBackground = elAttribs;
     }
 
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
         synchronized (this) {
-            if (javascripletBackground != null) {
+            if (javascripletBackground != null || expressionLanguageBackground != null) {
                 if (hierarchy == null) {
                     hierarchy = TokenHierarchy.get(document);
                     if (hierarchy != null) {
@@ -165,6 +175,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         private int sectionStart = -1;
         private int sectionEnd = -1;
         private boolean finished = false;
+        private AttributeSet attributeSet;
         
         private Highlights(long version, TokenHierarchy<?> scanner, int startOffset, int endOffset) {
             this.version = version;
@@ -212,10 +223,17 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
                                     {
                                         sectionEnd = lastLineEndOffset;
                                     }
+                                    attributeSet = javascripletBackground;
                                 }
                             } catch (BadLocationException ble) {
                                 LOG.log(Level.WARNING, null, ble);
                             }
+                            
+                            return true;
+                        } else if (sequence.token().id() == JspTokenId.EL) {
+                            sectionStart = sequence.offset();
+                            sectionEnd = sequence.offset() + sequence.token().length();
+                            attributeSet = expressionLanguageBackground;
                             
                             return true;
                         }
@@ -259,7 +277,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
                     throw new NoSuchElementException();
                 } else {
                     assert sequence != null : "Sequence not initialized, call moveNext() first."; //NOI18N
-                    return javascripletBackground;
+                    return attributeSet;
                 }
             }
         }
@@ -274,7 +292,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         public HighlightsLayer[] createLayers(Context context) {
             return new HighlightsLayer[]{ HighlightsLayer.create(
                 "jsp-embedded-java-scriplets-highlighting-layer", //NOI18N
-                ZOrder.SYNTAX_RACK.forPosition(110), 
+                ZOrder.SYNTAX_RACK.forPosition(-10),  //we need to have lower priority than the default syntax from options - 0
                 true, 
                 new EmbeddedSectionsHighlighting(context.getDocument())
             )};

@@ -45,9 +45,9 @@ made subject to such option by the copyright holder.
 <fontscolors>
     <fontcolor name="eol" default="default"/>
     <fontcolor name="char-literal" foreColor="ff006f00" default="default"/>
-    <fontcolor name="errors" foreColor="black" bgColor="pink" default="default"/>
+    <fontcolor name="errors" foreColor="red" default="default"/>
     <fontcolor name="identifier" foreColor="black" default="default"/>
-    <fontcolor name="keywords" foreColor="ff000099" bgColor="ffdf2c4" default="default">
+    <fontcolor name="keywords" foreColor="ff000099" default="default">
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="layer-method" default="default">

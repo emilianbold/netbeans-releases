@@ -317,10 +317,10 @@ public class EmbeddingUpdater implements SyntaxParserListener {
     
     private CharSequence printEmbeddedText(CharSequence text, int startSkipLength, int endSkipLength) {
         StringBuffer sb = new StringBuffer(text);
-        if(startSkipLength > 0) {
+        if(startSkipLength >= 0) {
             sb.insert(startSkipLength, '[');
         }
-        if(endSkipLength > 0) {
+        if(endSkipLength >= 0) {
             sb.insert(sb.length() - endSkipLength, ']');
         }
         return sb;
