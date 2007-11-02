@@ -351,6 +351,8 @@ public final class ParserQueue {
         builder.append(files);
         builder.append("\nqueue content is:\n"); // NOI18N
         builder.append(queue.toString(false));
+        builder.append("\nprojectData content is:\n"); // NOI18N
+        builder.append(projectData);
         return builder.toString();
     }
     
