@@ -346,8 +346,8 @@ public final class ParserQueue {
     private String traceState4File(FileImpl file, Set/*<FileImpl>*/ files) {
         StringBuilder builder = new StringBuilder(" "); // NOI18N
         builder.append(file);
-        builder.append(" of project ").append(file.getProjectImpl()); // NOI18N
-        builder.append(" content of projects files set:\n"); // NOI18N
+        builder.append("\n of project ").append(file.getProjectImpl()); // NOI18N
+        builder.append("\n content of projects files set:\n"); // NOI18N
         builder.append(files);
         builder.append("\nqueue content is:\n"); // NOI18N
         builder.append(queue.toString(false));
