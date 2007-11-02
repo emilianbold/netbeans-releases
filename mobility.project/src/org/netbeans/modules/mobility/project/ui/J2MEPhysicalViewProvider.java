@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.util.HashSet;
 import java.util.Iterator;
 import org.netbeans.api.project.*;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.J2MEActionProvider;
 import org.netbeans.modules.mobility.project.J2MEProject;
@@ -279,7 +280,7 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
         boolean broken;
         Image icon;
         final Task nodeUpdateTask;
-        PropertyChangeListener ref1;
+        PropertyChangeListener ref1,ref3;
         FileStatusListener ref2;
         
         public J2MEProjectRootNode() {
@@ -289,6 +290,8 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
             setName( ProjectUtils.getInformation( project ).getDisplayName() );
             helper.addAntProjectListener(this);
             this.ref1 = WeakListeners.propertyChange(this, JavaPlatformManager.getDefault());
+            this.ref3 = WeakListeners.propertyChange(this, LibraryManager.getDefault());
+            LibraryManager.getDefault().addPropertyChangeListener(ref3);
             JavaPlatformManager.getDefault().addPropertyChangeListener(ref1);
             try {
                 FileSystem fs = helper.getProjectDirectory().getFileSystem();

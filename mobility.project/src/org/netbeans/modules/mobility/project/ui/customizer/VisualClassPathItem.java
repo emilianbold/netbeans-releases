@@ -291,8 +291,15 @@ public final class VisualClassPathItem {
                 //Special case when the library is missing but we want compare values
                 if (cElement == null && element == null && vcpi.getRawText().equals(getRawText()))
                     return true;
+                //And another special case when library was removed from manager
+                if (element == null && cElement instanceof Library  &&
+                    toString().equals(vcpi.toString()) && vcpi.getRawText().equals(getRawText()))
+                        return true;
+                    
                 if (element == null)
                     return false;
+                
+                
                 return element.equals( vcpi.getElement() );
         }
         

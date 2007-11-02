@@ -58,7 +58,6 @@ import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -71,7 +70,7 @@ import java.util.TreeMap;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.openide.ErrorManager;
@@ -98,6 +97,7 @@ import org.openide.nodes.NodeTransfer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.xml.XMLUtil;
 
@@ -675,6 +675,7 @@ static class CfgNode extends ActionNode implements AntProjectListener, PropertyC
     final ReferenceHelper  refHelper;
     final ProjectConfiguration cfg;
     final J2MEProject project;
+    PropertyChangeListener ref1,ref2;
     
     protected CfgNode(Children ch,Lookup lookup,String name,String icon, Action act[])
     {
@@ -683,8 +684,10 @@ static class CfgNode extends ActionNode implements AntProjectListener, PropertyC
         cfg=getLookup().lookup(ProjectConfiguration.class);
         refHelper=project.getLookup().lookup(ReferenceHelper.class);
         antHelper=project.getLookup().lookup(AntProjectHelper.class);
-        
-        JavaPlatformManager.getDefault().addPropertyChangeListener(this);
+        this.ref1 = WeakListeners.propertyChange(this, JavaPlatformManager.getDefault());
+        this.ref2 = WeakListeners.propertyChange(this, LibraryManager.getDefault());
+        JavaPlatformManager.getDefault().addPropertyChangeListener(ref1);
+        LibraryManager.getDefault().addPropertyChangeListener(ref2);
         antHelper.addAntProjectListener(this);
         this.broken = hasBrokenLinks();
         
