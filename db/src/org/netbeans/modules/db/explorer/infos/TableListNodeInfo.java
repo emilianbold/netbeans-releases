@@ -69,8 +69,18 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
             
             // issue 76953: do not display tables from the Recycle Bin on Oracle 10 and higher
             DatabaseMetaData dmd = drvSpec.getMetaData();
-            if ("Oracle".equals(dmd.getDatabaseProductName())) { // NOI18N            
-                recycleBinTables = getOracleRecycleBinTables(dmd);                    
+            if ("Oracle".equals(dmd.getDatabaseProductName())) {
+                try {
+                    if (dmd.getDatabaseMajorVersion() >= 10) {
+                        recycleBinTables = getOracleRecycleBinTables(dmd);
+                    } else {
+                        recycleBinTables = Collections.EMPTY_LIST;
+                    }
+                } catch (SQLException e) {
+                    // Some older versions of Oracle driver throw an exception on getDatabaseMajorVersion()
+                    recycleBinTables = Collections.EMPTY_LIST;
+                }
+
             } else {
                 recycleBinTables = Collections.EMPTY_LIST;
             }
