@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.languages.features;
 
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,7 +53,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.languages.ParserManager;
+import org.netbeans.editor.Utilities;
 import org.openide.text.NbDocument;
 import javax.swing.event.DocumentEvent;
 
@@ -71,6 +75,7 @@ import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.spi.editor.fold.FoldManagerFactory;
@@ -251,43 +256,183 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
                     evalState = STOPPED;
                     return;
                 }
-                FoldHierarchy hierarchy = operation.getHierarchy ();
-                FoldHierarchyTransaction transaction = operation.openTransaction ();
+                FoldHierarchy fh = operation.getHierarchy ();
+
                 try {
+                    //get existing folds
                     Fold fold = operation.getHierarchy ().getRootFold ();
-                    List<Fold> l = new ArrayList<Fold> (fold.getFoldCount ());
-                    int i, k = fold.getFoldCount ();
-                    for (i = 0; i < k; i++) {
-                        Fold f = fold.getFold (i);
+                    List<Fold> existingFolds = new ArrayList<Fold> ();
+                    collectFolds(fold, existingFolds);
+
+                    List<FoldItem> generated = folds != null ? folds : new ArrayList<FoldItem>();
+                    
+                    //...and generate a list of new folds and a list of folds to be removed
+                    final HashSet newborns = new HashSet(generated.size() / 2);
+                    final HashSet zombies = new HashSet(generated.size() / 2);
+
+                    //go through all the parsed elements and compare it with the list of existing folds
+                    Iterator genItr = generated.iterator();
+                    Hashtable newbornsLinesCache = new Hashtable();
+                    HashSet duplicateNewborns = new HashSet();
+                    while(genItr.hasNext()) {
+                        FoldItem fi = (FoldItem)genItr.next();
+                        //do not add more newborns with the same lineoffset
+                        int fiLineOffset = Utilities.getLineOffset((BaseDocument)doc, fi.start);
+                        FoldItem found = (FoldItem)newbornsLinesCache.get(Integer.valueOf(fiLineOffset));
+                        if(found != null) {
+                            //figure out whether the new element is a descendant of the already added one
+                            if(found.end < fi.end) {
+                                //remove the descendant and add the current
+                                duplicateNewborns.add(found);
+                            }
+                        }
+                        newbornsLinesCache.put(Integer.valueOf(fiLineOffset), fi); //add line mapping of the current element
+
+                        //try to find a fold for the fold info
+                        Fold fs = FoldUtilities.findNearestFold(fh, fi.start);
                         //hacky fix - we need to find a better solution
                         //how to check if the fold was created by me
-                        try {
-                            operation.getExtraInfo(f);
-                            //no ISE thrown - my fold
-                            l.add (f);
-                        } catch (IllegalStateException e) {
-                            //not my fold
+                        if (fs != null) {
+                            try {
+                                operation.getExtraInfo(fs);
+                                //no ISE thrown - my fold
+                            } catch (IllegalStateException e) {
+                                //not my fold
+                                fs = null;
+                            }
+                        }
+                        if(fs != null
+                                && fs.getStartOffset() == fi.start
+                                && fs.getEndOffset() == fi.end) {
+                            //there is a fold with the same boundaries as the FoldInfo
+                            if(fi.type != fs.getType() || !(fi.foldName.equals(fs.getDescription()))) {
+                                //the fold has different type or/and description => recreate
+                                zombies.add(fs);
+                                newborns.add(fi);
+                            }
+                        } else {
+                            //create a new fold
+                            newborns.add(fi);
                         }
                     }
-                    for (i = 0; i < l.size(); i++)
-                        operation.removeFromHierarchy (l.get (i), transaction);
-                    if (folds == null) return;
-                    Iterator<FoldItem> it = folds.iterator ();
-                    while (it.hasNext ()) {
-                        FoldItem f = it.next ();
-                        operation.addToHierarchy (
-                            f.type, f.foldName, false, f.start, f.end, 0, 0, 
-                            hierarchy, transaction
-                        );
+                    newborns.removeAll(duplicateNewborns);
+                    existingFolds.removeAll(zombies);
+
+                    Hashtable linesToFoldsCache = new Hashtable(); //needed by ***
+
+                    //remove not existing folds
+                    Iterator extItr = existingFolds.iterator();
+                    while(extItr.hasNext()) {
+                        Fold f = (Fold)extItr.next();
+        //                if(!zombies.contains(f)) { //check if not alread scheduled to remove
+                        Iterator genItr2 = generated.iterator();
+                        boolean found = false;
+                        while(genItr2.hasNext()) {
+                            FoldItem fi = (FoldItem)genItr2.next();
+                            if(f.getStartOffset() == fi.start
+                                    && f.getEndOffset() == fi.end) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if(!found) {
+                            zombies.add(f);
+                        } else {
+                            //store the fold lineoffset 2 fold mapping
+                            int lineoffset = Utilities.getLineOffset((BaseDocument)doc, f.getStartOffset());
+                            linesToFoldsCache.put(Integer.valueOf(lineoffset), f);
+                        }
+        //                }
                     }
+
+                    //*** check for all newborns if there isn't any existing fold
+                    //starting on the same line which is a descendant of this new fold
+                    //if so remove it.
+                    Iterator newbornsItr = newborns.iterator();
+                    HashSet newbornsToRemove = new HashSet();
+                    while(newbornsItr.hasNext()) {
+                        FoldItem fi = (FoldItem)newbornsItr.next();
+                        Fold existing = (Fold)linesToFoldsCache.get(Integer.valueOf(Utilities.getLineOffset((BaseDocument)doc, fi.start)));
+                        if(existing != null) {
+                            //test if the fold is my descendant
+                            if(existing.getEndOffset() < fi.end) {
+                                //descendant - remove it
+                                zombies.add(existing);
+                            } else {
+                                //remove the newborn
+                                newbornsToRemove.add(fi);
+                            }
+                        }
+                    }
+                    newborns.removeAll(newbornsToRemove);
+                    ((BaseDocument)doc).readLock();
+                    try {
+                        //lock the hierarchy
+                        fh.lock();
+                        try {
+                            //open new transaction
+                            FoldHierarchyTransaction transaction = operation.openTransaction ();
+                            try {
+                                //remove outdated folds
+                                Iterator iter = zombies.iterator();
+                                while(iter.hasNext()) {
+                                    Fold f = (Fold)iter.next();
+                                    //test whether the size of the document is greater than zero,
+                                    //if it is then this means that the document has been closed in editor.
+                                    if(doc.getLength() == 0) break;
+                                    operation.removeFromHierarchy(f, transaction);
+                                }
+                                //add new folds
+                                Iterator newFolds = newborns.iterator();
+                                while(newFolds.hasNext()) {
+                                    FoldItem f = (FoldItem)newFolds.next();
+                                    //test whether the size of the document is greater than zero,
+                                    //if it is then this means that the document has been closed in editor.
+                                    if(doc.getLength() == 0) break;
+
+                                    if(f.start >= 0
+                                            && f.end >= 0
+                                            && f.start < f.end
+                                            && f.end <= doc.getLength()) {
+                                        operation.addToHierarchy(f.type, f.foldName, false, f.start , f.end , 0, 0, fh, transaction);
+                                    }
+                                }
+                            }catch(BadLocationException ble) {
+                                ble.printStackTrace();
+                            }finally {
+                                transaction.commit();
+                            }
+                        } finally {
+                            fh.unlock();
+                        }
+                    } finally {
+                        ((BaseDocument)doc).readUnlock();
+                    }
+                
                 } catch (BadLocationException ex) {
                     ex.printStackTrace ();
                 } finally {
-                    transaction.commit ();
                     evalState = STOPPED;
                 }
             }
         });
+    }
+    
+    private void collectFolds(Fold fold, List<Fold> existingFolds) {
+        int i, k = fold.getFoldCount();
+        for (i = 0; i < k; i++) {
+            Fold f = fold.getFold (i);
+            //hacky fix - we need to find a better solution
+            //how to check if the fold was created by me
+            try {
+                operation.getExtraInfo(f);
+                //no ISE thrown - my fold
+                existingFolds.add(f);
+                collectFolds(f, existingFolds);
+            } catch (IllegalStateException e) {
+                //not my fold
+            }
+        }
     }
     
     public String getFeatureName () {
