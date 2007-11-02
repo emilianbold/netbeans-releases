@@ -254,6 +254,7 @@ public class Reformatter implements ReformatTask {
         private Diff lastBlankLinesDiff;
         private boolean afterAnnotation;
         private boolean fieldGroup;
+        private boolean afterNewline;
         private LinkedList<Diff> diffs = new LinkedList<Diff>();
 
         private Pretty(CompilationInfo info, TreePath path, CodeStyle cs) {
@@ -1531,14 +1532,22 @@ public class Reformatter implements ReformatTask {
                 }
             }
             if (inits != null) {
+                int old = indent;
+                indent += (indentSize - continuationIndentSize);
                 spaces(cs.spaceBeforeArrayInitLeftBrace() ? 1 : 0);
                 accept(LBRACE);
                 if (!inits.isEmpty()) {
+                    afterNewline = false;
                     spaces(cs.spaceWithinBraces() ? 1 : 0, true);
                     wrapList(cs.wrapArrayInit(), cs.alignMultilineArrayInit(), inits);
-                    spaces(cs.spaceWithinBraces() ? 1 : 0);
+                    indent -= indentSize;
+                    if (afterNewline)
+                        newline();
+                    else
+                        spaces(cs.spaceWithinBraces() ? 1 : 0);
                 }
                 accept(RBRACE);
+                indent = old;
             }
             return true;
         }
@@ -1888,6 +1897,8 @@ public class Reformatter implements ReformatTask {
                                 if (idx >= 0)
                                     spaces = getNewlines(1) + getIndent();
                             }
+                            if (spaces.indexOf('\n') >= 0) //NOI18N
+                                afterNewline = true;
                             if (!spaces.contentEquals(lastWSToken.text()))
                                 diffs.addFirst(new Diff(tokens.offset() - lastWSToken.length(), tokens.offset(), spaces));
                             lastWSToken = null;
@@ -1897,6 +1908,8 @@ public class Reformatter implements ReformatTask {
                                     : after == 2 //after javadoc comment
                                     ? getNewlines(1) + getIndent()
                                     : null;
+                            if (spaces.indexOf('\n') >= 0) //NOI18N
+                                afterNewline = true;
                             if (spaces != null && spaces.length() > 0)
                                 diffs.addFirst(new Diff(tokens.offset(), tokens.offset(), spaces));
                         }
@@ -1918,6 +1931,8 @@ public class Reformatter implements ReformatTask {
                                     after = 3;
                                 }
                             }
+                            if (spaces.indexOf('\n') >= 0) //NOI18N
+                                afterNewline = true;
                             if (!spaces.contentEquals(lastWSToken.text()))
                                 diffs.addFirst(new Diff(tokens.offset() - lastWSToken.length(), tokens.offset(), spaces));
                             lastWSToken = null;
@@ -1931,6 +1946,8 @@ public class Reformatter implements ReformatTask {
                                     : after == 2 //after javadoc comment
                                     ? getNewlines(1) + getIndent()
                                     : null;
+                            if (spaces.indexOf('\n') >= 0) //NOI18N
+                                afterNewline = true;
                             if (spaces != null && spaces.length() > 0)
                                 diffs.addFirst(new Diff(tokens.offset(), tokens.offset(), spaces));
                             if (after > 0)
@@ -1959,6 +1976,8 @@ public class Reformatter implements ReformatTask {
                                     after = 3;
                                 }
                             }
+                            if (spaces.indexOf('\n') >= 0) //NOI18N
+                                afterNewline = true;
                             if (!spaces.contentEquals(lastWSToken.text()))
                                 diffs.addFirst(new Diff(tokens.offset() - lastWSToken.length(), tokens.offset(), spaces));
                             lastWSToken = null;
@@ -1972,6 +1991,8 @@ public class Reformatter implements ReformatTask {
                                     : after == 2 //after javadoc comment
                                     ? getNewlines(1) + getIndent()
                                     : null;
+                            if (spaces.indexOf('\n') >= 0) //NOI18N
+                                afterNewline = true;
                             if (spaces != null && spaces.length() > 0)
                                 diffs.addFirst(new Diff(tokens.offset(), tokens.offset(), spaces));
                             if (after > 0)
@@ -2000,6 +2021,8 @@ public class Reformatter implements ReformatTask {
                                     after = 3;
                                 }
                             }
+                            if (spaces.indexOf('\n') >= 0) //NOI18N
+                                afterNewline = true;
                             if (!spaces.contentEquals(lastWSToken.text()))
                                 diffs.addFirst(new Diff(tokens.offset() - lastWSToken.length(), tokens.offset(), spaces));
                         } else if (spaces.length() > 0) {
@@ -2023,6 +2046,7 @@ public class Reformatter implements ReformatTask {
         }
 
         private void blankLines(int count) {
+            afterNewline = true;
             if (count >= 0) {
                 if (lastBlankLinesTokenIndex < 0) {
                     lastBlankLines = count;
