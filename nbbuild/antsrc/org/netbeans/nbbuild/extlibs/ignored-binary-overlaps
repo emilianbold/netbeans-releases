@@ -3,7 +3,7 @@
 # Uses standard Ant pattern syntax, with the basedir being the root of the NB build.
 
 # #119122: duplication of these is intentional.
-ruby1/jruby-1.0.1/lib/asm-2.2.3.jar ruby1/modules/ext/asm-2.2.3.jar
-ruby1/jruby-1.0.1/lib/asm-commons-2.2.3.jar ruby1/modules/ext/asm-commons-2.2.3.jar
-ruby1/jruby-1.0.1/lib/backport-util-concurrent.jar ruby1/modules/ext/backport-util-concurrent.jar
-ruby1/jruby-1.0.1/lib/jline-0.9.91.jar ruby1/modules/ext/jline-0.9.91.jar
+ruby1/jruby-1.0.2/lib/asm-2.2.3.jar ruby1/modules/ext/asm-2.2.3.jar
+ruby1/jruby-1.0.2/lib/asm-commons-2.2.3.jar ruby1/modules/ext/asm-commons-2.2.3.jar
+ruby1/jruby-1.0.2/lib/backport-util-concurrent.jar ruby1/modules/ext/backport-util-concurrent.jar
+ruby1/jruby-1.0.2/lib/jline-0.9.91.jar ruby1/modules/ext/jline-0.9.91.jar
