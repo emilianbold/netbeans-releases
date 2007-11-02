@@ -259,12 +259,11 @@ class ExpressionScanner extends TreeScanner<List<Tree>, ExpressionScanner.Expres
     public List<Tree> visitDoWhileLoop(DoWhileLoopTree node, ExpressionScanner.ExpressionsInfo p) {
         List<Tree> statements = scan(node.getStatement(), p);
         List<Tree> cond = null;
-        Tree lastCond = null;
         if (acceptsTree(node.getCondition())) {
             cond = scan(node.getCondition(), p);
-            lastCond = cond.get(cond.size() - 1);
         }
-        if (cond != null && statements != null && statements.size() > 0) {
+        if (cond != null && cond.size() > 0 && statements != null && statements.size() > 0) {
+            Tree lastCond = cond.get(cond.size() - 1);
             p.addNextExpression(lastCond, statements.get(0));
         }
         return reduce(statements, cond);
