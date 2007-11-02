@@ -981,12 +981,8 @@ public class FormEditor {
         paletteListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PaletteController.PROP_SELECTED_ITEM.equals(evt.getPropertyName())) {
-                    Iterator iter = openForms.keySet().iterator();
-                    while (iter.hasNext()) {
-                        FormModel formModel = (FormModel)iter.next();
-                        if(formModel.isReadOnly()) {
-                            continue;
-                        }
+                    FormModel formModel = getFormModel();
+                    if (isFormLoaded() && formModel != null && !formModel.isReadOnly()) {
                         FormDesigner designer = getFormDesigner(formModel);
                         if (designer != null) {
                             // PENDING should be done for all cloned designers
