@@ -601,45 +601,6 @@ public class LLSyntaxAnalyser {
         return errorNode;
     }
     
-//    private int getRule (String nt, TokenInput input) {
-//        Map m = first.get (nt);
-//        if (m == null) return -1;
-//        int i = 1;
-//        while (true) {
-//            ASTToken token = input.next (i);
-//            Map r = null;
-//            if (token != null) {
-//                T t = new T (token);
-//                r = (Map) m.get (t);
-//                if (r == null) {
-//                    t.type = -1;
-//                    r = (Map) m.get (t);
-//                }
-//                if (r == null) {
-//                    t.type = token.getTypeID ();
-//                    t.identifier = null;
-//                    r = (Map) m.get (t);
-//                }
-//            }
-//            if (r == null) {
-//                Set s = (Set) m.get ("#");
-//                if (s == null)
-//                    s = (Set) m.get ("&");
-//                if (s == null) {
-//                    System.out.println("No way! " + nt + " : " + input.next (1) + " " + input.next (2));
-//                    return -1;
-//                }
-//                if (s.size () > 1) {
-//                    System.out.println("Too many choices! " + nt + " : " + input.next (1) + " " + input.next (2) + ":" + input);
-//                    return -1;
-//                }
-//                return ((Integer) s.iterator ().next ()).intValue ();
-//            }
-//            m = r;
-//            i++;
-//        }
-//    }
-    
     private void initTracing () {
         Feature properties = language.getFeature ("PROPERTIES");
         if (properties == null) return;
