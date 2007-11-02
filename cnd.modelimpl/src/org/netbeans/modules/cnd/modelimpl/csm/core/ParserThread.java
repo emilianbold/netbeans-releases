@@ -76,6 +76,7 @@ public class ParserThread implements Runnable {
                     Diagnostic.StopWatch stw = (TraceFlags.TIMING_PARSE_PER_FILE_FLAT && ! file.isParsed()) ? new Diagnostic.StopWatch() : null;
                     APTPreprocHandler preprocHandler = null;
                     try {
+			if( ! file.getProjectImpl().isDisposing() ) { // just in case check
                             APTPreprocHandler.State state = entry.getPreprocState();
                             if (state != null) {
                                 // init from entry
@@ -87,6 +88,7 @@ public class ParserThread implements Runnable {
                                 preprocHandler.setState(state);
                             }
                             file.ensureParsed(preprocHandler);
+			}
                     }
                     catch( Throwable thr ) {
 			DiagnosticExceptoins.register(thr);
@@ -95,7 +97,7 @@ public class ParserThread implements Runnable {
                     finally {
                         if( stw != null ) stw.stopAndReport("parsing " + file.getAbsolutePath()); // NOI18N
 			try {
-                            queue.onFileParsingFinished(file, preprocHandler);
+                            queue.onFileParsingFinished(file);
                             if( TraceFlags.TRACE_PARSER_QUEUE ) trace("parsing done: " + file.getAbsolutePath()); // NOI18N
 			    Notificator.instance().flush();
 			    if( TraceFlags.TRACE_PARSER_QUEUE ) trace("model event flushed"); // NOI18N

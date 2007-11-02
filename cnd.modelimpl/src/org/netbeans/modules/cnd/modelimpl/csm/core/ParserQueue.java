@@ -618,7 +618,7 @@ public final class ParserQueue {
         }
     }
     
-    /*package*/ void onFileParsingFinished(FileImpl file, APTPreprocHandler preprocHandler) {
+    /*package*/ void onFileParsingFinished(FileImpl file) {
         boolean lastFileInProject;
         boolean idle = false;
         ProjectBase project;
@@ -639,7 +639,7 @@ public final class ParserQueue {
                 }
             }
         }
-        ProgressSupport.instance().fireFileParsingFinished(file, preprocHandler);
+        ProgressSupport.instance().fireFileParsingFinished(file);
         if( lastFileInProject ) {
             if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("Last file in project " + project.getName());
             project.onParseFinish();

@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.util.WeakList;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
@@ -100,7 +99,7 @@ public class ProgressSupport {
     }
     
     
-    /*package-local*/ void fireFileParsingFinished(FileImpl file, APTPreprocHandler preprocHandler) {
+    /*package-local*/ void fireFileParsingFinished(FileImpl file) {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: fireFileParsingFinished " + file.getAbsolutePath());
         for( CsmProgressListener listener : progressListeners ) {
 	    try { // have to do this to not allow a listener to crush code model threads
