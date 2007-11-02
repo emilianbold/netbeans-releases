@@ -1017,7 +1017,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             boolean isBoot = isInitialCompilation && ClassIndexManager.getDefault().isBootRoot(root);
             if (!isBoot) {
                 String urlString = root.toExternalForm();
-                if ((urlString.indexOf("/vendor/") != -1) || urlString.endsWith("jruby-javasupport/1.0.1/")) {
+                if (urlString.indexOf("/vendor/") != -1) {
                     isBoot = true;
                 }
             }
@@ -1161,7 +1161,7 @@ Set added = null;
                         //final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompile",rootFile.getAbsolutePath());
                         String path = rootFile.getAbsolutePath();
                         // Shorten path by prefix to ruby location if possible
-                        int rubyIndex = path.indexOf("jruby-1.0.1");
+                        int rubyIndex = path.indexOf("jruby-1.0.2");
                         if (rubyIndex != -1) {
                             path = path.substring(rubyIndex);
                         }

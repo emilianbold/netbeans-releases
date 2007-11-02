@@ -19,10 +19,8 @@
             <include name="config/ModuleAutoDeps/${code.name.base.dashes}.xml" if="has.module.auto.deps"/>
             <include name="ant/nblib/${code.name.base.dashes}.jar"/>
             <!-- JRuby+Rails stuff -->
-            <include name="jruby-1.0.1/**"/>
-            <include name="jruby-javasupport/**"/>
-            <exclude name="jruby-1.0.1/**/netbeans-index-*.zip"/>
-            <exclude name="jruby-javasupport/**/netbeans-index-*.zip"/>
+            <include name="jruby-1.0.2/**"/>
+            <exclude name="jruby-1.0.2/**/netbeans-index-*.zip"/>
         </patternset>
     </target>    
 
@@ -41,7 +39,7 @@
         </copy>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/rake-0.7.3.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/rspec-1.0.8.gem"/>
-        <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rails-gems-1.2.3.zip"/>
+        <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rails-gems-1.2.5.zip"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/jdbc-ActiveRecord-JDBC-0.5.gem"/>
         <!-- Run dist-bin target in JRuby's own build.xml file -->
         <ant dir="${unpatched_source}/jruby-${jruby_src_version}" target="dist-bin" inheritall="false" inheritrefs="false"/>
@@ -54,17 +52,6 @@
     
         <!-- Build JRuby from source (using its own build files -->
         <antcall target="build-jruby-bin"/>
-
-        <!-- Bundle files for Java support.
-             This will hopefully not be necessary very soon - see
-             http://jira.codehaus.org/browse/JRUBY-1474
-        -->
-        <mkdir dir="${cluster}/jruby-javasupport/1.0.1"/>
-        <copy todir="${cluster}/jruby-javasupport/1.0.1" overwrite="true">
-            <fileset dir="${unpatched_source}/jruby-${jruby_src_version}/src/builtin">
-                <include name="java*/**"/>
-            </fileset>
-        </copy>
 
         <chmod perm="ugo+x">
           <fileset dir="${jruby_dir}/">

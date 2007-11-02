@@ -1,4 +1,7 @@
 #!/bin/zsh
+# $GEM_HOME should NOT be set during indexing
+unset GEM_HOME
+
 # Rev repository number in gsf/src/**/Index.java, or
 # if not changing the schema (just updating the bits to be indexed)
 # remove previous index files:
@@ -17,19 +20,19 @@
     netbeans -J-Dgsf.preindexing=true -J-Druby.computeindex --userdir /tmp/preindexing
 #   To index something other than the built-in JRuby (for the native indices for example), set ruby.interpreter; e.g.
     netbeans -J-Dgsf.preindexing=true -J-Druby.computeindex --userdir /tmp/preindexing2 -J-Druby.interpreter=/Users/tor/dev/ruby/install/ruby-1.8.5/bin/ruby
-    netbeans -J-Dgsf.preindexing=true -J-Druby.computeindex --userdir /tmp/preindexing2 -J-Druby.interpreter=/Applications/Locomotive2/Bundles/standardRailsMar2007.locobundle//i386/bin/ruby
+    netbeans -J-Dgsf.preindexing=true -J-Druby.computeindex --userdir /tmp/preindexing3 -J-Druby.interpreter=/Applications/Locomotive2/Bundles/standardRailsMar2007.locobundle//i386/bin/ruby
 # Let indexing finish, exit IDE
 
 # Repeat the above for the a native Ruby installation (such as Ruby 1.8.5) which also contains
 # popular gems like mongrel, zentest, etc.
 
 # cd {netbeans}/ruby1
-# Run
+cd ~/netbeans/work/nbbuild/netbeans/ruby1
     
 # Leave Rails alone, only include JRuby libraries and ActiveRecord-JDBC
 zip -r preindexed-jruby.zip `find . -name "netbeans-index*" | egrep -v "action|active|rails"`
 # Only place ActiveJDBC in the rails portion of jruby - Rails is in the full db. Rake is there too.
-mv preindexed-jruby.zip ~/netbeans/work/ruby/platform/external/preindexed.zip
+mv preindexed-jruby.zip ~/netbeans/work/ruby/platform/release/preindexed.zip
 
 # There is now a set of preindexed databases for other versions. These are maintained in a bit
 # more manual fashion; run with a ruby installation that has the necessary libraries and
@@ -38,16 +41,18 @@ mv preindexed-jruby.zip ~/netbeans/work/ruby/platform/external/preindexed.zip
 
 # Go to the native installation:
 cd ~/dev/ruby/install/ruby-1.8.5
-rm /tmp/native.zip
+rm -f /tmp/native.zip
 zip -r /tmp/native.zip `find . -name "netbeans*.zip"` 
 
-# Go to the Ruby install tree, unpack the gem data, and store it in ruby/platform/external/preindexed-native.zip
+# Go to the Ruby install tree, unpack the gem data, and store it in ruby/platform/release/preindexed-native.zip
 cd ~/netbeans/work/nbbuild/netbeans/ruby1/
 rm -rf preindexed
 mkdir preindexed
 cd preindexed
 unzip /tmp/native.zip  
 cd ..
-rm ~/netbeans/work/ruby/platform/external/preindexed-native.zip
-zip -r ~/netbeans/work/ruby/platform/external/preindexed-native.zip preindexed/
+rm ~/netbeans/work/ruby/platform/release/preindexed-native.zip
+zip -r ~/netbeans/work/ruby/platform/release/preindexed-native.zip preindexed/
+
+
 

@@ -307,18 +307,15 @@ final class IrbTopComponent extends TopComponent {
         RubyInstallation.getInstance().setJRubyLoadPaths();
 
         final PipedInputStream pipeIn = new PipedInputStream();
-        final RubyInstanceConfig config = new RubyInstanceConfig() {
-            {
-                setInput(pipeIn);
-                setOutput(new PrintStream(tar));
-                setError(new PrintStream(tar));
-                setObjectSpaceEnabled(false);
-            }
-        };
+        final RubyInstanceConfig config = new RubyInstanceConfig() {{
+            setInput(pipeIn);
+            setOutput(new PrintStream(tar));
+            setError(new PrintStream(tar));
+            setObjectSpaceEnabled(false);
+            setArgv(new String[] {"-f"});
+        }};
         final Ruby runtime = Ruby.newInstance(config);
 
-        runtime.defineGlobalConstant("ARGV",
-                runtime.newArrayNoCopy(new IRubyObject[]{runtime.newString("-f")})); // NOI18N
         runtime.getLoadService().init(new ArrayList(0));
 
         tar.hookIntoRuntime(runtime);

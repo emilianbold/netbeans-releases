@@ -98,7 +98,7 @@ public class RubyInstallation {
     private static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
 
     /** NOTE: Keep this in sync with ruby/jruby/nbproject/project.properties */
-    private static final String JRUBY_RELEASE = "1.0.1"; // NOI18N
+    private static final String JRUBY_RELEASE = "1.0.2"; // NOI18N
 
     /** NOTE: Keep this in sync with ruby/jruby/nbproject/project.properties */
     public static final String DEFAULT_RUBY_RELEASE = "1.8"; // NOI18N
@@ -780,7 +780,6 @@ public class RubyInstallation {
         // See if the file is under the Ruby libraries
         FileObject rubyLibFo = getRubyLibFo();
         FileObject rubyStubs = getRubyStubs();
-        FileObject javaSupport = getJRubyJavaSupport();
         FileObject gemHome = getRubyLibGemDirFo();
 
         //        FileObject jar = FileUtil.getArchiveFile(file);
@@ -789,7 +788,7 @@ public class RubyInstallation {
         //        }
 
         while (file != null) {
-            if (file == rubyLibFo || file == rubyStubs || file == javaSupport || file == gemHome) {
+            if (file == rubyLibFo || file == rubyStubs || file == gemHome) {
                 return true;
             }
             
@@ -799,27 +798,6 @@ public class RubyInstallation {
         return false;
     }
 
-    public FileObject getJRubyJavaSupport() {
-        if (jrubyJavaSupport == null) {
-            // Core classes: Stubs generated for the "builtin" Ruby libraries.
-            File clusterFile =
-                InstalledFileLocator.getDefault()
-                                    .locate("modules/org-netbeans-modules-ruby-project.jar", null, // NOI18N
-                    false); // NOI18N
-
-            if (clusterFile != null) {
-                File rubyStubs =
-                    new File(clusterFile.getParentFile().getParentFile().getAbsoluteFile(),
-                        // JRUBY_RELEASEDIR + File.separator + 
-                    "jruby-javasupport" + File.separator + JRUBY_RELEASE); // NOI18N
-                assert rubyStubs.exists() && rubyStubs.isDirectory();
-                jrubyJavaSupport = FileUtil.toFileObject(rubyStubs);
-            }
-        }
-
-        return jrubyJavaSupport;
-    }
-    
     public String getRake() {
         if (rake == null) {
             rake = findGemExecutable("rake"); // NOI18N
@@ -1402,11 +1380,6 @@ public class RubyInstallation {
                                 }
                             }
                         }
-                    }
-
-                    FileObject javaDir = getJRubyJavaSupport();
-                    if (javaDir != null) {
-                        nonGemUrls.add(FileUtil.toFile(javaDir).toURI().toURL());
                     }
                 } else if (gemFiles != null) {
                     Set<String> gems = gemFiles.keySet();

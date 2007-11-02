@@ -1,4 +1,5 @@
-/***** BEGIN LICENSE BLOCK *****
+/*
+ ***** BEGIN LICENSE BLOCK *****
  * Version: CPL 1.0/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Common Public
@@ -12,6 +13,7 @@
  * rights and limitations under the License.
  *
  * Copyright (C) 2004 Jan Arne Petersen <jpetersen@uni-bonn.de>
+ * Copyright (C) 2004-2007 Thomas E Enebo <enebo@acm.org>
  * 
  * Alternatively, the contents of this file may be used under the terms of
  * either of the GNU General Public License Version 2 or later (the "GPL"),
@@ -44,12 +46,11 @@ public class HeredocTerm extends StrTerm {
     }
     
     public int parseString(RubyYaccLexer lexer, LexerSource src) throws java.io.IOException {
-        char c;
         boolean indent = (func & RubyYaccLexer.STR_FUNC_INDENT) != 0;
         ByteList str = new ByteList();
         // BEGIN NETBEANS MODIFICATIONS
         if (lexer.getPreserveSpaces()) {
-            boolean done = src.matchString(eos + '\n', indent);
+            boolean done = src.matchString(eos, indent);
             if (done) {
                 lexer.yaccValue = new StrNode(lexer.getPosition(), str);
                 lexer.setStrTerm(new StringTerm(-1, '\0', '\0'));
@@ -58,15 +59,15 @@ public class HeredocTerm extends StrTerm {
             }
         }
         // END NETBEANS MODIFICATIONS
-
-        if ((c = src.read()) == RubyYaccLexer.EOF) {
+        if (src.peek((char) RubyYaccLexer.EOF)) {
             throw new SyntaxException(src.getPosition(), "can't find string \"" + eos + "\" anywhere before EOF");
         }
-        if (src.wasBeginOfLine() && src.matchString(eos + '\n', indent)) {
+        if (src.wasBeginOfLine() && src.matchString(eos, indent)) {
             // BEGIN NETBEANS MODIFICATIONS
             if (lastLine != null)
             // END NETBEANS MODIFICATIONS
-                src.unreadMany(lastLine);
+               src.unreadMany(lastLine);
+            lexer.yaccValue = new Token(eos, lexer.getPosition());
             return Tokens.tSTRING_END;
         }
 
@@ -85,11 +86,6 @@ public class HeredocTerm extends StrTerm {
              * str.append(support.readLine()); str.append("\n"); }
              */
 
-            /*
-             * c was read above and should be unread before we start
-             * to fill the str buffer
-             */
-            src.unread(c);
             do {
                 str.append(src.readLineBytes());
                 str.append('\n');
@@ -97,8 +93,9 @@ public class HeredocTerm extends StrTerm {
                 if (src.peek('\0')) {
                     throw new SyntaxException(src.getPosition(), "can't find string \"" + eos + "\" anywhere before EOF");
                 }
-            } while (!src.matchString(eos + '\n', indent));
+            } while (!src.matchString(eos, indent));
         } else {
+            char c = src.read();
             ByteList buffer = new ByteList();
             if (c == '#') {
                 switch (c = src.read()) {
@@ -126,6 +123,8 @@ public class HeredocTerm extends StrTerm {
 
             src.unread(c);
 
+            // MRI has extra pointer which makes our code look a little bit more strange in 
+            // comparison
             do {
                 // BEGIN NETBEANS MODIFICATIONS
                 //if ((c = new StringTerm(func, '\n', '\0').parseStringIntoBuffer(src, buffer)) == RubyYaccLexer.EOF) {                
@@ -152,7 +151,7 @@ public class HeredocTerm extends StrTerm {
                 // We need to pushback so when whole match looks it did not
                 // lose a char during last EOF
                 src.unread(c);
-            } while (!src.matchString(eos + '\n', indent));
+            } while (!src.matchString(eos, indent));
             str = buffer;
         }
 
@@ -174,7 +173,7 @@ public class HeredocTerm extends StrTerm {
         // When handling heredocs in syntax highlighting mode, process the end marker
         // separately
         if (lastLine == null) {
-            src.unreadMany(eos+"\n");
+            src.unreadMany(eos+"\n"); // \r?
             //done = true;
         } else {
         // END NETBEANS MODIFICATIONS

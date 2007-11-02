@@ -131,22 +131,6 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 }
             }
             
-            // Java support?
-            if (RubyInstallation.getInstance().isJRubySet()) {
-                String java = evaluator.getProperty(SharedRubyProjectProperties.INCLUDE_JAVA);
-                if (java != null && Boolean.valueOf(java)) {
-                    try {
-                        FileObject javaSupport = RubyInstallation.getInstance().getJRubyJavaSupport();
-                        if (javaSupport != null) {
-                            URL url = FileUtil.toFile(javaSupport).toURI().toURL();
-                            result.add(ClassPathSupport.createResource(url));
-                        }
-                    } catch (MalformedURLException mufe) {
-                        Exceptions.printStackTrace(mufe);
-                    }
-                }
-            }
-
             resourcesCache = Collections.unmodifiableList (result);
             RubyInstallation.getInstance().removePropertyChangeListener(this);
             RubyInstallation.getInstance().addPropertyChangeListener(this);

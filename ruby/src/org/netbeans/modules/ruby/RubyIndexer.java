@@ -375,6 +375,9 @@ public class RubyIndexer implements Indexer {
                     //handleRailsBase("ActionWebService::Base", "Base", "ActionWebService"); // NOI18N
                     //handleRailsBase("ActionController:Base", "Base", "ActionController"); // NOI18N
                 }
+            } else if (fileName.equals("assertions.rb") && url.endsWith("lib/action_controller/assertions.rb")) { // NOI18N
+                handleRailsClass("Test::Unit", "Test::Unit::TestCase", "TestCase", "TestCase"); // NOI18N
+                return;
             }
 
             if ((structure == null) || (structure.size() == 0)) {
@@ -416,6 +419,10 @@ public class RubyIndexer implements Indexer {
             analyze(structure);
         }
 
+        private void handleRailsBase(String classIn) {
+            handleRailsClass(classIn, classIn + "::Base", "Base", "base"); // NOI18N
+        }
+
         /** There's some pretty complicated dynamic behavior in Rails in how
          * the ActionController::Base class is decorated with module mixins;
          * my code cannot handle this directly, but it's a really important
@@ -423,7 +430,7 @@ public class RubyIndexer implements Indexer {
          * key controller classes edited by users. (This logic is replicated
          * in several other classes too - ActiveRecord etc.)
          */
-        private void handleRailsBase(String classIn) {
+        private void handleRailsClass(String classIn, String classFqn, String clz, String clzNoCase) {
             Node root = AstUtilities.getRoot(result);
 
             if (root == null) {
@@ -462,9 +469,10 @@ public class RubyIndexer implements Indexer {
             int flags = 0;
             notIndexed.put(FIELD_CLASS_ATTRS, IndexedElement.flagToString(flags));
 
-            indexed.put(FIELD_FQN_NAME, classIn + "::Base"); // NOI18N
-            indexed.put(FIELD_CASE_INSENSITIVE_CLASS_NAME, "base"); // NOI18N
-            indexed.put(FIELD_CLASS_NAME, "Base"); // NOI18N
+
+            indexed.put(FIELD_FQN_NAME, classFqn);
+            indexed.put(FIELD_CASE_INSENSITIVE_CLASS_NAME, clzNoCase);
+            indexed.put(FIELD_CLASS_NAME, clz);
             notIndexed.put(FIELD_IN, classIn);
 
             // Indexed so we can locate these documents when deleting/updating
@@ -481,7 +489,7 @@ public class RubyIndexer implements Indexer {
         /** Add an entry for a class which provides the given includes */
         private void addClassIncludes(String className, String fqn, String in, int flags, String includes) {
             //Set<String> includeSet = new HashSet<String>();
-
+        
             Set<Map<String, String>> indexedList = new HashSet<Map<String, String>>();
             Set<Map<String, String>> notIndexedList = new HashSet<Map<String, String>>();
 
@@ -504,7 +512,7 @@ public class RubyIndexer implements Indexer {
             if (in != null) {
                 notIndexed.put(FIELD_IN, in);
             }
-
+            
             // Indexed so we can locate these documents when deleting/updating
             indexed.put(FIELD_FILENAME, url);
 
@@ -745,6 +753,7 @@ public class RubyIndexer implements Indexer {
                 return ((INameNode)node).getName();
             }
         }
+
         /** 
          * Action view has some special loading behavior of helpers - see actionview's
          * "load_helpers" method.

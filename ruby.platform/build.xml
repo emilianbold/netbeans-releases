@@ -55,8 +55,7 @@ made subject to such option by the copyright holder.
             <!-- Ruby module additions -->
             <include name="preindexed/**"/>
             <include name="rubystubs/**"/>
-            <include name="jruby-1.0.1/**/netbeans-index-*.zip"/>
-            <include name="jruby-javasupport/**/netbeans-index-*.zip"/>
+            <include name="jruby-1.0.2/**/netbeans-index-*.zip"/>
         </patternset>
     </target>    
     

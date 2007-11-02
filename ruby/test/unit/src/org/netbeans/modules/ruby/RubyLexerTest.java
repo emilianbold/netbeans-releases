@@ -236,6 +236,22 @@ public class RubyLexerTest extends RubyTestBase {
     }
 
     @SuppressWarnings("unchecked")
+    public void testHeredocInput0() {
+        // Make sure I can handle input AFTER a heredoc marker and properly tokenize it
+        String text = "f(<<EOT)\nfoo\nEOT\n";
+        TokenHierarchy hi = TokenHierarchy.create(text, RubyTokenId.language());
+        TokenSequence<?extends GsfTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "f");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.LPAREN, "(");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<EOT");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.RPAREN, ")");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "foo\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, "EOT\n");
+        assertFalse(ts.moveNext());
+    }
+    
+    @SuppressWarnings("unchecked")
     public void testHeredocInput() {
         // Make sure I can handle input AFTER a heredoc marker and properly tokenize it
         String text = "f(<<EOT,# Comment\nfoo\nEOT\n";
@@ -272,7 +288,7 @@ public class RubyLexerTest extends RubyTestBase {
     }
     
     @SuppressWarnings("unchecked")
-    public void testHeredocInput3() { // Boiled down failure from postgresql_adapter.rb
+    public void testHeredocInput3a() { // Boiled down failure from postgresql_adapter.rb
         String text = "q(<<S,name)\nHELLO\nS\n";
         TokenHierarchy hi = TokenHierarchy.create(text, RubyTokenId.language());
         TokenSequence<?extends GsfTokenId> ts = hi.tokenSequence();
@@ -288,6 +304,23 @@ public class RubyLexerTest extends RubyTestBase {
         assertFalse(ts.moveNext());
     }
 
+    @SuppressWarnings("unchecked")
+    public void testHeredocInput3b() { // Mutation of 3b
+        String text = "q(<<S,t)\nHELLO\nS\n";
+        TokenHierarchy hi = TokenHierarchy.create(text, RubyTokenId.language());
+        TokenSequence<?extends GsfTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "q");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.LPAREN, "(");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<S");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, ",");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "t");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.RPAREN, ")");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_LITERAL, "HELLO\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.QUOTED_STRING_END, "S\n");
+        assertFalse(ts.moveNext());
+    }
+    
     @SuppressWarnings("unchecked")
     public void testHeredocEmbedded() {
         String text = "f(<<EOT,<<EOY)\nfoo#{hello}foo\n#{hello}\n\n\nEOT\nbar\nEOY\n";
@@ -320,7 +353,8 @@ public class RubyLexerTest extends RubyTestBase {
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "f");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.LPAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<EOT");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_END, "\nEOT\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_END, "EOT\n");
         assertFalse(ts.moveNext());
     }
     
@@ -332,8 +366,9 @@ public class RubyLexerTest extends RubyTestBase {
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, "f");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.LPAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.STRING_BEGIN, "<<EOT");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.WHITESPACE, "\n");
         //LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.IDENTIFIER, ",");
-        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.ERROR, "\nfoo");
+        LexerTestUtilities.assertNextTokenEquals(ts, RubyTokenId.ERROR, "foo");
         assertFalse(ts.moveNext());
     }
 

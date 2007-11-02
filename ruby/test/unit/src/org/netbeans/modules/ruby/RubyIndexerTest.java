@@ -286,6 +286,10 @@ public class RubyIndexerTest extends RubyTestBase {
         checkIndexer("testfiles/active_record.rb");
     }
 
+    public void testRails6() throws Exception {
+        checkIndexer("testfiles/lib/action_controller/assertions.rb");
+    }
+
     public void testTopLevel() throws Exception {
         checkIndexer("testfiles/top_level.rb");
     }

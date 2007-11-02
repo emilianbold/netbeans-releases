@@ -22,9 +22,10 @@ GSF_WHITESPACE  " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,Heredo
 GSF_REGEXP_BEGIN  "/", st=RubyLexerState[regexp,StringTerm[func=escape|expand|regexp,term=/,paren=0,nest=0,embed=1],EXPR_BEG,StringTermState[nest=0,embed=1],HeredocContext(count=4):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
 GSF_REGEXP_LITERAL  "startofregexp", la=1, st=RubyLexerState[regexp,StringTerm[func=escape|expand|regexp,term=/,paren=0,nest=0,embed=1],EXPR_BEG,StringTermState[nest=0,embed=1],HeredocContext(count=4):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
 GSF_REGEXP_END  "/", la=1, st=RubyLexerState[-,null,EXPR_END,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
-QUOTED_STRING_LITERAL  "\nThis is part of the string\n", la=7, st=RubyLexerState[substituting,HeredocTerm[2,TOKEN1,null,1],EXPR_END,HeredocTermState[1],HeredocContext(count=3):end:true,term:HeredocTerm[2,TOKEN1,null,1],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
-QUOTED_STRING_END  "TOKEN1\n", st=RubyLexerState[substituting,null,EXPR_END,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
-GSF_ERROR       "restofregexp/)", la=1, st=RubyLexerState[substituting,null,EXPR_END,null,HeredocContext(count=1):end:true,term:HeredocTerm[2,TOKEN2,null,0]]
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
+QUOTED_STRING_LITERAL  "This is part of the string\n", la=7, st=RubyLexerState[substituting|commandstart,HeredocTerm[2,TOKEN1,null,1],EXPR_BEG,HeredocTermState[1],HeredocContext(count=3):end:true,term:HeredocTerm[2,TOKEN1,null,1],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
+QUOTED_STRING_END  "TOKEN1\n", st=RubyLexerState[substituting|commandstart,null,EXPR_END,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
+GSF_ERROR       "restofregexp/)", la=1, st=RubyLexerState[substituting|commandstart,null,EXPR_END,null,HeredocContext(count=1):end:true,term:HeredocTerm[2,TOKEN2,null,0]]
 ----- EOF -----
 
 <Unnamed test>

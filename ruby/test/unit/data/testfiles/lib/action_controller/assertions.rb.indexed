@@ -1,0 +1,23 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/assertions.rb
+
+Indexed:
+
+Not Indexed:
+
+
+Document 1
+Delete:
+Indexed:
+  class : TestCase
+  class-ig : TestCase
+  fqn : Test::Unit::TestCase
+  source : <TESTURL>/assertions.rb
+
+Not Indexed:
+  attrs : |CLASS|
+  in : Test::Unit
+  includes : ActionController::Assertions,ActionController::Assertions::DeprecatedAssertions,ActionController::Assertions::DomAssertions,ActionController::Assertions::ModelAssertions,ActionController::Assertions::ResponseAssertions,ActionController::Assertions::RoutingAssertions,ActionController::Assertions::SelectorAssertions,ActionController::Assertions::TagAssertions
+  requires : test/unit,test/unit/assertions

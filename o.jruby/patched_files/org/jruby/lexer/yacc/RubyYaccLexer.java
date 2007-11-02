@@ -1,4 +1,5 @@
-/***** BEGIN LICENSE BLOCK *****
+/*
+ ***** BEGIN LICENSE BLOCK *****
  * Version: CPL 1.0/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Common Public
@@ -209,6 +210,7 @@ public class RubyYaccLexer {
     static final int STR_FUNC_REGEXP=0x04;
     static final int STR_FUNC_QWORDS=0x08;
     static final int STR_FUNC_SYMBOL=0x10;
+    // When the heredoc identifier specifies <<-EOF that indents before ident. are ok (the '-').
     static final int STR_FUNC_INDENT=0x20;
 
     private final int str_squote = 0;
@@ -464,7 +466,7 @@ public class RubyYaccLexer {
             do {c = src.read();} while (Character.isWhitespace(c));
             src.unread(c);
             yaccValue = new Token("%"+c+begin, getPosition());
-                return Tokens.tQWORDS_BEG;
+            return Tokens.tQWORDS_BEG;
 
         case 'x':
             lex_strterm = new StringTerm(str_xquote, end, begin);
@@ -1570,6 +1572,7 @@ public class RubyYaccLexer {
                 return Tokens.tPERCENT;
 
             case '$':
+                last_state = lex_state;
                 lex_state = LexState.EXPR_END;
                 tokenBuffer.setLength(0);
                 c = src.read();
@@ -1622,6 +1625,14 @@ public class RubyYaccLexer {
                 case '`':		/* $`: string before last match */
                 case '\'':		/* $': string after last match */
                 case '+':		/* $+: string matches last paren. */
+                    // Explicit reference to these vars as symbols...
+                    if (last_state == LexState.EXPR_FNAME) {
+                        tokenBuffer.append('$');
+                        tokenBuffer.append(c);
+                        yaccValue = new Token(tokenBuffer.toString(), getPosition());
+                        return Tokens.tGVAR;
+                    }
+                    
                     yaccValue = new BackRefNode(getPosition(), c);
                     return Tokens.tBACK_REF;
 
@@ -1634,7 +1645,7 @@ public class RubyYaccLexer {
                         c = src.read();
                     } while (Character.isDigit(c));
                     src.unread(c);
-                    if(last_state == LexState.EXPR_FNAME) {
+                    if (last_state == LexState.EXPR_FNAME) {
                         yaccValue = new Token(tokenBuffer.toString(), getPosition());
                         return Tokens.tGVAR;
                     } else {
@@ -1674,7 +1685,7 @@ public class RubyYaccLexer {
                 break;
 
             case '_':
-                if (src.wasBeginOfLine() && src.matchString("_END__\n", false)) {
+                if (src.wasBeginOfLine() && src.matchString("_END__", false)) {
 // BEGIN NETBEANS MODIFICATIONS
                       if (parserSupport != null)
 // END NETBEANS MODIFICATIONS
@@ -1686,11 +1697,7 @@ public class RubyYaccLexer {
 
             default:
                 if (!isIdentifierChar(c)) {
-                    // BEGIN NETBEANS MODIFICATIONS
-                    // This can throw NumberFormatException on erroneous files
-                    //throw new SyntaxException(getPosition(), "Invalid char `\\" + Integer.parseInt(""+c, 8) + "' in expression");
-                    throw new SyntaxException(getPosition(), "Invalid char " + c + "' in expression");
-                    // END NETBEANS MODIFICATIONS
+                    throw new SyntaxException(getPosition(), "Invalid char `\\" + Integer.toOctalString(c & 0xff) + "' in expression");
                 }
             
                 tokenBuffer.setLength(0);
@@ -1719,7 +1726,6 @@ public class RubyYaccLexer {
             } while (isIdentifierChar(c));
             
             char peek = src.read();
-            
             if ((c == '!' || c == '?') && 
                 isIdentifierChar(tokenBuffer.charAt(0)) && peek != '=') {
                 src.unread(peek);
@@ -1734,6 +1740,7 @@ public class RubyYaccLexer {
             
             int result = 0;
 
+            last_state = lex_state;
             switch (tokenBuffer.charAt(0)) {
                 case '$':
                     lex_state = LexState.EXPR_END;
@@ -1838,6 +1845,7 @@ public class RubyYaccLexer {
 // END NETBEANS MODIFICATIONS
             StaticScope scope = parserSupport.getCurrentScope();
             if (IdUtil.getVarType(tempVal) == IdUtil.LOCAL_VAR &&
+                    last_state != LexState.EXPR_DOT &&
                     (scope instanceof BlockStaticScope && (scope.isDefined(tempVal) >= 0)) ||
                     (scope.getLocalScope().isDefined(tempVal) >= 0)) {
                 lex_state = LexState.EXPR_END;

@@ -1,13 +1,14 @@
-diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/HeredocTerm.java jruby-1.0.1/src/org/jruby/lexer/yacc/HeredocTerm.java
---- jruby-1.0.1/src/org/jruby/lexer/yacc/HeredocTerm.java	2007-08-23 19:14:06.000000000 -0700
-+++ jruby-1.0.1/src/org/jruby/lexer/yacc/HeredocTerm.java	2007-08-31 08:46:21.000000000 -0700
-@@ -47,12 +47,26 @@
-         char c;
+diff -r -u jruby-1.0.2/src/org/jruby/lexer/yacc/HeredocTerm.java jruby-1.0.2/src/org/jruby/lexer/yacc/HeredocTerm.java
+--- jruby-1.0.2/src/org/jruby/lexer/yacc/HeredocTerm.java	2007-11-01 10:31:58.000000000 -0700
++++ jruby-1.0.2/src/org/jruby/lexer/yacc/HeredocTerm.java	2007-11-02 00:47:37.000000000 -0700
+@@ -48,12 +48,25 @@
+     public int parseString(RubyYaccLexer lexer, LexerSource src) throws java.io.IOException {
          boolean indent = (func & RubyYaccLexer.STR_FUNC_INDENT) != 0;
          ByteList str = new ByteList();
+-
 +        // BEGIN NETBEANS MODIFICATIONS
 +        if (lexer.getPreserveSpaces()) {
-+            boolean done = src.matchString(eos + '\n', indent);
++            boolean done = src.matchString(eos, indent);
 +            if (done) {
 +                lexer.yaccValue = new StrNode(lexer.getPosition(), str);
 +                lexer.setStrTerm(new StringTerm(-1, '\0', '\0'));
@@ -16,20 +17,19 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/HeredocTerm.java jruby-1.0.1/src
 +            }
 +        }
 +        // END NETBEANS MODIFICATIONS
- 
-         if ((c = src.read()) == RubyYaccLexer.EOF) {
+         if (src.peek((char) RubyYaccLexer.EOF)) {
              throw new SyntaxException(src.getPosition(), "can't find string \"" + eos + "\" anywhere before EOF");
          }
-         if (src.wasBeginOfLine() && src.matchString(eos + '\n', indent)) {
+         if (src.wasBeginOfLine() && src.matchString(eos, indent)) {
 -            src.unreadMany(lastLine);
 +            // BEGIN NETBEANS MODIFICATIONS
 +            if (lastLine != null)
 +            // END NETBEANS MODIFICATIONS
-+                src.unreadMany(lastLine);
++               src.unreadMany(lastLine);
+             lexer.yaccValue = new Token(eos, lexer.getPosition());
              return Tokens.tSTRING_END;
          }
- 
-@@ -90,10 +104,20 @@
+@@ -88,10 +101,20 @@
                  switch (c = src.read()) {
                  case '$':
                  case '@':
@@ -50,9 +50,9 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/HeredocTerm.java jruby-1.0.1/src
                      lexer.setValue(new Token("#" + c, lexer.getPosition()));
                      return Tokens.tSTRING_DBEG;
                  }
-@@ -103,9 +127,20 @@
-             src.unread(c);
- 
+@@ -103,9 +126,20 @@
+             // MRI has extra pointer which makes our code look a little bit more strange in 
+             // comparison
              do {
 -                if ((c = new StringTerm(func, '\n', '\0').parseStringIntoBuffer(src, buffer)) == RubyYaccLexer.EOF) {
 +                // BEGIN NETBEANS MODIFICATIONS
@@ -72,7 +72,7 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/HeredocTerm.java jruby-1.0.1/src
                  if (c != '\n') {
                      lexer.yaccValue = new StrNode(lexer.getPosition(), buffer);
                      return Tokens.tSTRING_CONTENT;
-@@ -121,9 +156,139 @@
+@@ -121,9 +155,139 @@
              str = buffer;
          }
  
@@ -95,7 +95,7 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/HeredocTerm.java jruby-1.0.1/src
 +        // When handling heredocs in syntax highlighting mode, process the end marker
 +        // separately
 +        if (lastLine == null) {
-+            src.unreadMany(eos+"\n");
++            src.unreadMany(eos+"\n"); // \r?
 +            //done = true;
 +        } else {
 +        // END NETBEANS MODIFICATIONS
@@ -213,9 +213,9 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/HeredocTerm.java jruby-1.0.1/src
 +
 +    // END NETBEANS MODIFICATIONS
  }
-diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/LexState.java jruby-1.0.1/src/org/jruby/lexer/yacc/LexState.java
---- jruby-1.0.1/src/org/jruby/lexer/yacc/LexState.java	2007-08-23 19:14:06.000000000 -0700
-+++ jruby-1.0.1/src/org/jruby/lexer/yacc/LexState.java	2007-08-31 08:46:21.000000000 -0700
+diff -r -u jruby-1.0.2/src/org/jruby/lexer/yacc/LexState.java jruby-1.0.2/src/org/jruby/lexer/yacc/LexState.java
+--- jruby-1.0.2/src/org/jruby/lexer/yacc/LexState.java	2007-11-01 10:31:58.000000000 -0700
++++ jruby-1.0.2/src/org/jruby/lexer/yacc/LexState.java	2007-11-02 00:47:37.000000000 -0700
 @@ -47,6 +47,40 @@
  
      private final String debug;
@@ -257,10 +257,10 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/LexState.java jruby-1.0.1/src/or
      private LexState(String debug) {
          this.debug = debug;
      }
-diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/LexerSource.java jruby-1.0.1/src/org/jruby/lexer/yacc/LexerSource.java
---- jruby-1.0.1/src/org/jruby/lexer/yacc/LexerSource.java	2007-08-23 19:14:06.000000000 -0700
-+++ jruby-1.0.1/src/org/jruby/lexer/yacc/LexerSource.java	2007-08-31 08:46:21.000000000 -0700
-@@ -487,4 +487,24 @@
+diff -r -u jruby-1.0.2/src/org/jruby/lexer/yacc/LexerSource.java jruby-1.0.2/src/org/jruby/lexer/yacc/LexerSource.java
+--- jruby-1.0.2/src/org/jruby/lexer/yacc/LexerSource.java	2007-11-01 10:31:58.000000000 -0700
++++ jruby-1.0.2/src/org/jruby/lexer/yacc/LexerSource.java	2007-11-02 00:47:37.000000000 -0700
+@@ -445,4 +445,24 @@
              return null;
          }
      }
@@ -273,11 +273,11 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/LexerSource.java jruby-1.0.1/src
 +    }
 +    
 +    public boolean isANewLine() {
-+        return nextCharIsOnANewLine;
++        return oneAgo == '\n';
 +    }
 +    // Various places where we call LexerSource.unread(), the nextCharIsOnANewline value gets inaccurate (column/line too, but I don't care about those)
 +    public void setIsANewLine(boolean nextCharIsOnANewLine) {
-+        this.nextCharIsOnANewLine = nextCharIsOnANewLine;
++        oneAgo = nextCharIsOnANewLine ? '\n' : oneAgo;
 +    }
 +    
 +    public void setOffset(int offset) {
@@ -285,10 +285,10 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/LexerSource.java jruby-1.0.1/src
 +    }
 +    // END NETBEANS MODIFICATIONS
  }
-diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java
---- jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java	2007-08-23 19:14:06.000000000 -0700
-+++ jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java	2007-08-31 08:46:21.000000000 -0700
-@@ -73,6 +73,124 @@
+diff -r -u jruby-1.0.2/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0.2/src/org/jruby/lexer/yacc/RubyYaccLexer.java
+--- jruby-1.0.2/src/org/jruby/lexer/yacc/RubyYaccLexer.java	2007-11-01 10:31:58.000000000 -0700
++++ jruby-1.0.2/src/org/jruby/lexer/yacc/RubyYaccLexer.java	2007-11-02 00:47:37.000000000 -0700
+@@ -74,6 +74,124 @@
      // grammar use.
      private LexState lex_state;
      
@@ -413,7 +413,7 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0.1/s
      // Tempory buffer to build up a potential token.  Consumer takes responsibility to reset 
      // this before use.
      private StringBuffer tokenBuffer = new StringBuffer(60);
-@@ -109,6 +227,11 @@
+@@ -111,6 +229,11 @@
      	yaccValue = null;
      	src = null;
          lex_state = null;
@@ -425,16 +425,7 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0.1/s
          resetStacks();
          lex_strterm = null;
          commandStart = true;
-@@ -341,7 +464,7 @@
-             do {c = src.read();} while (Character.isWhitespace(c));
-             src.unread(c);
-             yaccValue = new Token("%"+c+begin, getPosition());
--            return Tokens.tQWORDS_BEG;
-+                return Tokens.tQWORDS_BEG;
- 
-         case 'x':
-             lex_strterm = new StringTerm(str_xquote, end, begin);
-@@ -407,7 +530,40 @@
+@@ -409,7 +532,40 @@
              } while ((c = src.read()) != EOF && isIdentifierChar(c));
              src.unread(c);
          }
@@ -475,7 +466,7 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0.1/s
          String line = src.readLine() + '\n';
          String tok = tokenBuffer.toString();
          lex_strterm = new HeredocTerm(tok, func, line);
-@@ -450,9 +606,15 @@
+@@ -452,9 +608,15 @@
          }
          src.unread(c);
          
@@ -491,7 +482,7 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0.1/s
          
          return c;
      }
-@@ -587,13 +749,56 @@
+@@ -589,13 +751,56 @@
          boolean spaceSeen = false;
          boolean commandState;
          
@@ -548,7 +539,7 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0.1/s
          }
  
          commandState = commandStart;
-@@ -612,13 +817,57 @@
+@@ -614,13 +819,57 @@
                  /* white spaces */
              case ' ': case '\t': case '\f': case '\r':
              case '\13': /* '\v' */
@@ -606,7 +597,7 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0.1/s
              case '\n':
              	// Replace a string of newlines with a single one
                  while((c = src.read()) == '\n') {
-@@ -626,6 +875,22 @@
+@@ -628,6 +877,22 @@
                  }
                  src.unread( c );
                  getPosition();
@@ -629,7 +620,7 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0.1/s
  
                  if (lex_state == LexState.EXPR_BEG ||
                      lex_state == LexState.EXPR_FNAME ||
-@@ -718,11 +983,21 @@
+@@ -720,11 +985,21 @@
                                      tokenBuffer.append(equalLabel);
                                      tokenBuffer.append(src.readLine());
                                      src.unread('\n');
@@ -651,29 +642,17 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0.1/s
                              continue retry;
                          }
  						src.unread(c);
-@@ -1400,6 +1675,9 @@
+@@ -1411,6 +1686,9 @@
  
              case '_':
-                 if (src.wasBeginOfLine() && src.matchString("_END__\n", false)) {
+                 if (src.wasBeginOfLine() && src.matchString("_END__", false)) {
 +// BEGIN NETBEANS MODIFICATIONS
 +                      if (parserSupport != null)
 +// END NETBEANS MODIFICATIONS
                  	parserSupport.getResult().setEndSeen(true);
                      return 0;
                  }
-@@ -1408,13 +1686,21 @@
- 
-             default:
-                 if (!isIdentifierChar(c)) {
--                    throw new SyntaxException(getPosition(), "Invalid char `\\" + Integer.parseInt(""+c, 8) + "' in expression");
-+                    // BEGIN NETBEANS MODIFICATIONS
-+                    // This can throw NumberFormatException on erroneous files
-+                    //throw new SyntaxException(getPosition(), "Invalid char `\\" + Integer.parseInt(""+c, 8) + "' in expression");
-+                    throw new SyntaxException(getPosition(), "Invalid char " + c + "' in expression");
-+                    // END NETBEANS MODIFICATIONS
-                 }
-             
-                 tokenBuffer.setLength(0);
+@@ -1426,6 +1704,10 @@
                  break;
              }
      
@@ -684,7 +663,7 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0.1/s
              do {
                  tokenBuffer.append(c);
                  /* no special multibyte character handling is needed in Java
-@@ -1426,10 +1712,14 @@
+@@ -1437,6 +1719,9 @@
                          tokenBuffer.append(c);
                      }
                  }*/
@@ -694,12 +673,7 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0.1/s
                  c = src.read();
              } while (isIdentifierChar(c));
              
-             char peek = src.read();
-+            
-             if ((c == '!' || c == '?') && 
-                 isIdentifierChar(tokenBuffer.charAt(0)) && peek != '=') {
-                 src.unread(peek);
-@@ -1438,6 +1728,9 @@
+@@ -1449,6 +1734,9 @@
              	src.unread(peek);
              	src.unread(c);
              }
@@ -709,7 +683,7 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0.1/s
              
              int result = 0;
  
-@@ -1540,13 +1833,18 @@
+@@ -1552,6 +1840,9 @@
              // Lame: parsing logic made it into lexer in ruby...So we
              // are emulating
              // FIXME:  I believe this is much simpler now...
@@ -718,7 +692,8 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0.1/s
 +// END NETBEANS MODIFICATIONS
              StaticScope scope = parserSupport.getCurrentScope();
              if (IdUtil.getVarType(tempVal) == IdUtil.LOCAL_VAR &&
-                     (scope instanceof BlockStaticScope && (scope.isDefined(tempVal) >= 0)) ||
+                     last_state != LexState.EXPR_DOT &&
+@@ -1559,7 +1850,9 @@
                      (scope.getLocalScope().isDefined(tempVal) >= 0)) {
                  lex_state = LexState.EXPR_END;
              }
@@ -729,7 +704,7 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0.1/s
              yaccValue = new Token(tempVal, getPosition());
  
              return result;
-@@ -1796,4 +2094,75 @@
+@@ -1809,4 +2102,75 @@
  		yaccValue = getInteger(number, 10);
  		return Tokens.tINTEGER;
      }
@@ -805,9 +780,9 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0.1/s
 +    
 +// END NETBEANS MODIFICATIONS
  }
-diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/StrTerm.java jruby-1.0.1/src/org/jruby/lexer/yacc/StrTerm.java
---- jruby-1.0.1/src/org/jruby/lexer/yacc/StrTerm.java	2007-08-23 19:14:06.000000000 -0700
-+++ jruby-1.0.1/src/org/jruby/lexer/yacc/StrTerm.java	2007-08-31 08:46:21.000000000 -0700
+diff -r -u jruby-1.0.2/src/org/jruby/lexer/yacc/StrTerm.java jruby-1.0.2/src/org/jruby/lexer/yacc/StrTerm.java
+--- jruby-1.0.2/src/org/jruby/lexer/yacc/StrTerm.java	2007-11-01 10:31:58.000000000 -0700
++++ jruby-1.0.2/src/org/jruby/lexer/yacc/StrTerm.java	2007-11-02 00:47:37.000000000 -0700
 @@ -29,4 +29,46 @@
  
  public abstract class StrTerm {
@@ -855,24 +830,9 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/StrTerm.java jruby-1.0.1/src/org
 +    public abstract void setMutableState(Object o);
 +    // END NETBEANS MODIFICATIONS
  }
-diff -u -r jruby-1.0.1/src/org/jruby/libraries/RbConfigLibrary.java jruby-1.0.1/src/org/jruby/libraries/RbConfigLibrary.java
---- jruby-1.0.1/src/org/jruby/libraries/RbConfigLibrary.java	2007-08-23 19:14:44.000000000 -0700
-+++ jruby-1.0.1/src/org/jruby/libraries/RbConfigLibrary.java	2007-09-05 13:43:41.000000000 -0700
-@@ -76,9 +76,9 @@
-         setConfig(configHash, "target_cpu", System.getProperty("os.arch"));
-         
-         String jrubyJarFile = "jruby.jar";
--        URL jrubyPropertiesUrl = Ruby.class.getClassLoader().getResource("jruby.properties");
-+        URL jrubyPropertiesUrl = Ruby.class.getClassLoader().getResource("/org/jruby/jruby.properties");
-         if (jrubyPropertiesUrl != null) {
--            Pattern jarFile = Pattern.compile("jar:file:.*?([a-zA-Z0-9.\\-]+\\.jar)!/jruby.properties");
-+            Pattern jarFile = Pattern.compile("jar:file:.*?([a-zA-Z0-9.\\-]+\\.jar)!/org/jruby/jruby.properties");
-             Matcher jarMatcher = jarFile.matcher(jrubyPropertiesUrl.toString());
-             jarMatcher.find();
-             if (jarMatcher.matches()) {
-diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/StringTerm.java jruby-1.0.1/src/org/jruby/lexer/yacc/StringTerm.java
---- jruby-1.0.1/src/org/jruby/lexer/yacc/StringTerm.java	2007-08-23 19:14:06.000000000 -0700
-+++ jruby-1.0.1/src/org/jruby/lexer/yacc/StringTerm.java	2007-08-31 08:46:21.000000000 -0700
+diff -r -u jruby-1.0.2/src/org/jruby/lexer/yacc/StringTerm.java jruby-1.0.2/src/org/jruby/lexer/yacc/StringTerm.java
+--- jruby-1.0.2/src/org/jruby/lexer/yacc/StringTerm.java	2007-11-01 10:31:58.000000000 -0700
++++ jruby-1.0.2/src/org/jruby/lexer/yacc/StringTerm.java	2007-11-02 00:47:37.000000000 -0700
 @@ -69,8 +69,20 @@
              space = 1;
          }
@@ -1222,9 +1182,24 @@ diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/StringTerm.java jruby-1.0.1/src/
 +    }
 +    // END NETBEANS MODIFICATIONS
  }
-diff -u -r jruby-1.0.1/src/org/jruby/parser/Tokens.java jruby-1.0.1/src/org/jruby/parser/Tokens.java
---- jruby-1.0.1/src/org/jruby/parser/Tokens.java	2007-08-23 19:14:12.000000000 -0700
-+++ jruby-1.0.1/src/org/jruby/parser/Tokens.java	2007-08-31 08:46:21.000000000 -0700
+diff -r -u jruby-1.0.2/src/org/jruby/libraries/RbConfigLibrary.java jruby-1.0.2/src/org/jruby/libraries/RbConfigLibrary.java
+--- jruby-1.0.2/src/org/jruby/libraries/RbConfigLibrary.java	2007-11-01 10:32:20.000000000 -0700
++++ jruby-1.0.2/src/org/jruby/libraries/RbConfigLibrary.java	2007-11-02 00:47:37.000000000 -0700
+@@ -77,9 +77,9 @@
+         setConfig(configHash, "target_cpu", System.getProperty("os.arch"));
+         
+         String jrubyJarFile = "jruby.jar";
+-        URL jrubyPropertiesUrl = Ruby.class.getClassLoader().getResource("jruby.properties");
++        URL jrubyPropertiesUrl = Ruby.class.getClassLoader().getResource("/org/jruby/jruby.properties");
+         if (jrubyPropertiesUrl != null) {
+-            Pattern jarFile = Pattern.compile("jar:file:.*?([a-zA-Z0-9.\\-]+\\.jar)!/jruby.properties");
++            Pattern jarFile = Pattern.compile("jar:file:.*?([a-zA-Z0-9.\\-]+\\.jar)!/org/jruby/jruby.properties");
+             Matcher jarMatcher = jarFile.matcher(jrubyPropertiesUrl.toString());
+             jarMatcher.find();
+             if (jarMatcher.matches()) {
+diff -r -u jruby-1.0.2/src/org/jruby/parser/Tokens.java jruby-1.0.2/src/org/jruby/parser/Tokens.java
+--- jruby-1.0.2/src/org/jruby/parser/Tokens.java	2007-11-01 10:32:02.000000000 -0700
++++ jruby-1.0.2/src/org/jruby/parser/Tokens.java	2007-11-02 00:47:37.000000000 -0700
 @@ -152,6 +152,16 @@
      int tRCURLY     = DefaultRubyParser.tRCURLY;
      int tPIPE       = DefaultRubyParser.tPIPE;
@@ -1242,9 +1217,9 @@ diff -u -r jruby-1.0.1/src/org/jruby/parser/Tokens.java jruby-1.0.1/src/org/jrub
      String[] operators = {"+@", "-@", "**", "<=>", "==", "===", "!=", ">=", "<=", "&&",
                            "||", "=~", "!~", "..", "...", "[]", "[]=", "<<", ">>", "::"};
  }
-diff -u -r jruby-1.0.1/src/org/jruby/runtime/Constants.java jruby-1.0.1/src/org/jruby/runtime/Constants.java
---- jruby-1.0.1/src/org/jruby/runtime/Constants.java	2007-08-23 19:13:48.000000000 -0700
-+++ jruby-1.0.1/src/org/jruby/runtime/Constants.java	2007-09-05 13:14:16.000000000 -0700
+diff -r -u jruby-1.0.2/src/org/jruby/runtime/Constants.java jruby-1.0.2/src/org/jruby/runtime/Constants.java
+--- jruby-1.0.2/src/org/jruby/runtime/Constants.java	2007-11-01 10:31:52.000000000 -0700
++++ jruby-1.0.2/src/org/jruby/runtime/Constants.java	2007-11-02 00:47:37.000000000 -0700
 @@ -52,7 +52,13 @@
  
      static {
@@ -1269,18 +1244,3 @@ diff -u -r jruby-1.0.1/src/org/jruby/runtime/Constants.java jruby-1.0.1/src/org/
          if (matcher.find()) {
              REVISION = matcher.group(1);
          } else {
-diff -u -r jruby-1.0.1/src/org/jruby/runtime/DynamicScope.java jruby-1.0.1/src/org/jruby/runtime/DynamicScope.java
---- jruby-1.0.1/src/org/jruby/runtime/DynamicScope.java	2007-08-23 19:13:48.000000000 -0700
-+++ jruby-1.0.1/src/org/jruby/runtime/DynamicScope.java	2007-08-31 08:46:21.000000000 -0700
-@@ -106,9 +106,10 @@
-             
-             parent.setValue(offset, value, depth - 1);
-         } else {
-+            lazy();
-+
-             assert offset < variableValues.length : "Setting " + offset + " to " + value + ", O: " + this; 
- 
--            lazy();
-             variableValues[offset] = value;
-         }
-     }

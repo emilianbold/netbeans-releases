@@ -97,6 +97,11 @@
             <include name="**/*.rb"/>
         </fileset>
     </copy>
+    <copy todir="${jruby.classes.dir}/builtin">
+        <fileset dir="${lib.dir}/ruby/site_ruby/1.8/builtin">
+            <include name="**/*.rb"/>
+        </fileset>
+    </copy>
     
     <tstamp>
         <format property="build.date" pattern="yyyy-MM-dd"/>
@@ -116,7 +121,7 @@
   </target>
 
   <target name="compile-jruby" depends="compile.tasks, check-for-optional-packages">
-    <javac destdir="${jruby.classes.dir}" debug="true" source="${javac.version}" deprecation="true">
+    <javac destdir="${jruby.classes.dir}" debug="true" source="${javac.version}" deprecation="true" encoding="UTF-8">
        <classpath refid="build.classpath"/>
        <src path="${src.dir}"/>
        <patternset refid="java.src.pattern"/>
@@ -298,6 +303,8 @@
       <arg value="--format"/>
       <arg value="e"/>
       <arg line="${SPEC}"/>
+    	
+      <jvmarg value="-ea"/>
     </java>
   </target>
   
@@ -313,6 +320,8 @@
       <arg value="--format"/>
       <arg value="e"/>
       <arg line="${SPEC}"/>
+    	
+      <jvmarg value="-ea"/>
     </java>
   </target>
 
@@ -374,6 +383,7 @@ test/externals/rubinius/spec/core/nil_spec.rb
 test/externals/rubinius/spec/core/objectspace_spec.rb
 test/externals/rubinius/spec/core/proc_spec.rb
 test/externals/rubinius/spec/core/range_spec.rb
+test/externals/rubinius/spec/core/struct_spec.rb
 test/externals/rubinius/spec/core/symbol_spec.rb
 test/externals/rubinius/spec/core/true_spec.rb
 test/externals/rubinius/spec/language/assignment_spec.rb
@@ -401,6 +411,7 @@ test/externals/rubinius/spec/core/nil_spec.rb
 test/externals/rubinius/spec/core/objectspace_spec.rb
 test/externals/rubinius/spec/core/proc_spec.rb
 test/externals/rubinius/spec/core/range_spec.rb
+test/externals/rubinius/spec/core/struct_spec.rb
 test/externals/rubinius/spec/core/symbol_spec.rb
 test/externals/rubinius/spec/core/true_spec.rb
 test/externals/rubinius/spec/language/assignment_spec.rb
@@ -420,7 +431,7 @@ test/externals/rubinius/spec/parser"/></antcall>
   
   <target name="run-junit-interpreted" description="runs junit tests">
     <taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask" classpath="${lib.dir}/junit.jar"/>
-    <junit fork="yes" haltonfailure="true" dir="${basedir}" maxmemory="384M" showoutput="true">
+    <junit fork="yes" forkMode="once" haltonfailure="true" dir="${basedir}" maxmemory="384M" showoutput="true">
       <classpath>
         <pathelement location="${jruby.instrumented.classes.dir}" />
         <path refid="build.classpath"/>
@@ -438,6 +449,8 @@ test/externals/rubinius/spec/parser"/></antcall>
       <sysproperty key="emma.coverage.out.file" value="${test.results.dir}/coverage.emma" />
       <sysproperty key="emma.coverage.out.merge" value="true" />
 
+      <jvmarg value="-ea"/>
+
       <formatter type="xml"/>
       <formatter type="brief" usefile="false"/>
 
@@ -451,7 +464,7 @@ test/externals/rubinius/spec/parser"/></antcall>
   
   <target name="run-junit-compiled" description="runs junit tests">
     <taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask" classpath="${lib.dir}/junit.jar"/>
-    <junit fork="yes" haltonfailure="true" dir="${basedir}" maxmemory="384M" showoutput="true">
+    <junit fork="yes" forkMode="once" haltonfailure="true" dir="${basedir}" maxmemory="384M" showoutput="true">
       <classpath>
         <pathelement location="${jruby.instrumented.classes.dir}" />
         <path refid="build.classpath"/>
@@ -469,6 +482,8 @@ test/externals/rubinius/spec/parser"/></antcall>
       <sysproperty key="jruby.jit.threshold" value="0"/>
       <sysproperty key="emma.coverage.out.file" value="${test.results.dir}/coverage.emma" />
       <sysproperty key="emma.coverage.out.merge" value="true" />
+    	
+      <jvmarg value="-ea"/>
 
       <formatter type="xml"/>
       <formatter type="brief" usefile="false"/>
@@ -501,7 +516,7 @@ test/externals/rubinius/spec/parser"/></antcall>
     </javadoc>
   </target>
 
-  <patternset id="dist.bin.files">
+  <patternset id="dist.bindir.files">
     <include name="bin/*jruby*"/>
     <include name="bin/*gem*"/>
     <include name="bin/*jirb*"/>
@@ -526,6 +541,14 @@ test/externals/rubinius/spec/parser"/></antcall>
     <exclude name="lib/ruby/**"/>
   </patternset>
 
+  <patternset id="dist.bin.files">
+    <patternset refid="dist.files"/>
+    <exclude name="lib/emma.jar"/>
+    <exclude name="lib/emma_ant.jar"/>
+    <exclude name="lib/junit.jar"/>
+    <exclude name="lib/jarjar-0.7.jar"/>
+  </patternset>
+
   <patternset id="dist.src.files">
     <patternset refid="dist.files"/>
     <include name="src/**"/>
@@ -543,7 +566,7 @@ test/externals/rubinius/spec/parser"/></antcall>
     <mkdir dir="dist"/>
     <copy todir="dist">
       <fileset dir="${basedir}">
-        <patternset refid="dist.bin.files"/>
+        <patternset refid="dist.bindir.files"/>
         <patternset refid="dist.lib.files"/>
       </fileset>
     </copy>
@@ -558,7 +581,7 @@ test/externals/rubinius/spec/parser"/></antcall>
         <include name="lib/**"/>
       </tarfileset>
       <tarfileset dir="${basedir}" prefix="jruby-${version.jruby}">
-        <patternset refid="dist.files"/>
+        <patternset refid="dist.bin.files"/>
       </tarfileset>
     </tar>
     <zip destfile="jruby-bin-${version.jruby}.zip">
@@ -569,7 +592,7 @@ test/externals/rubinius/spec/parser"/></antcall>
         <include name="lib/**"/>
       </zipfileset>
       <zipfileset dir="${basedir}" prefix="jruby-${version.jruby}">
-        <patternset refid="dist.files"/>
+        <patternset refid="dist.bin.files"/>
       </zipfileset>
     </zip>
   </target>
@@ -578,7 +601,7 @@ test/externals/rubinius/spec/parser"/></antcall>
     <mkdir dir="dist"/>
     <copy todir="dist">
       <fileset dir="${basedir}">
-        <patternset refid="dist.bin.files"/>
+        <patternset refid="dist.bindir.files"/>
         <patternset refid="dist.lib.files"/>
       </fileset>
     </copy>
@@ -623,6 +646,7 @@ test/externals/rubinius/spec/parser"/></antcall>
 
   <target name="clean" depends="init" description="clean almost everything">
     <delete dir="${build.dir}"/>
+    <delete dir="${dist.dir}"/>
     <delete quiet="false">
         <fileset dir="${lib.dir}" includes="jruby*.jar"/>
     </delete>
