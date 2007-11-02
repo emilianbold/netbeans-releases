@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.websvc.rest.component.palette;
 
-import java.beans.BeanInfo;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -77,7 +76,7 @@ public class RestPaletteFactory {
     private static PaletteController pc = null;
     
     private static boolean paletteUpdateInProgress = false;
-    
+
     public RestPaletteFactory() {
     }
     
@@ -138,10 +137,7 @@ public class RestPaletteFactory {
             throws IOException, ParserConfigurationException, SAXException {
         if(skipInProgress && isPaletteUpdateInProgress())
             return false;
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        Document doc = db.parse(fo.getInputStream());
-        RestComponentData data = new RestComponentData(doc);
+        RestComponentData data = getComponentData(fo);
 
         String itemsFolderPath = data.getCategoryPath();
         FileObject root = getPaletteRoot();
@@ -168,6 +164,14 @@ public class RestPaletteFactory {
     
     public static void setRestComponentData(Node itemNode, RestComponentData data) {
         itemNode.setValue(REST_COMPONENT_DATA, data);
+    }
+    
+    public static RestComponentData getComponentData(FileObject fo) 
+            throws SAXException, ParserConfigurationException, IOException, FileNotFoundException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.parse(fo.getInputStream());
+        return new RestComponentData(doc);
     }
     
     public static List<FileObject> getAllRestComponentFiles() throws IOException {

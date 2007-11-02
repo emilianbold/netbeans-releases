@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
+import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -66,9 +67,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.ActiveEditorDrop;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -101,11 +104,25 @@ public class RestComponentHandler implements ActiveEditorDrop {
             return false;
         }
         data = RestPaletteFactory.getRestComponentData(n); 
-        if(data == null) {
-            Logger.getLogger(getClass().getName()).log(Level.INFO, "handleTransfer", 
-                new IOException(NbBundle.getMessage(RestComponentHandler.class, 
-                    "LBL_RestComponentNotFound", n.getName())));
-            return false;
+        if(data == null) {//if cannot find data, then try to create it using node's information
+            try {
+                List<FileObject> files = RestPaletteFactory.getAllRestComponentFiles();
+                for (FileObject fo : files) {
+                    if (fo.getName().equals(n.getName())) {
+                        data = RestPaletteFactory.getComponentData(fo);
+                        break;
+                    }
+                }
+                if(data == null) {
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, 
+                        "handleTransfer", new IOException(
+                            NbBundle.getMessage(RestComponentHandler.class, 
+                                "LBL_RestComponentNotFound", n.getName())));
+                    return false;
+                }
+            } catch (Exception e) {
+                Logger.getLogger(getClass().getName()).log(Level.INFO, "handleTransfer", e);
+            }
         }
         if(data.getService() == null) {
             Logger.getLogger(getClass().getName()).log(Level.INFO, "handleTransfer", 
