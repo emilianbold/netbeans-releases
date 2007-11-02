@@ -105,6 +105,21 @@ is the proper place.
 
     <changes>
 
+        <change id="marking.under.development">
+            <summary>Marking the SPI as under development</summary>
+            <version major="1" minor="2"/>
+            <date day="1" month="11" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible" modification="yes"/>
+            <description>
+                <p>
+                    The API has gone through a fast track review, but we would like
+                    to give it one relase as a stabilization period. Therefore its
+                    major version was set to <code>0</code>.
+                </p>
+            </description>
+        </change>
+
         <change id="BracesMatcher.findOrigin.additional.highlights">
             <summary>Additional highlights from BracesMatcher.findOrigin</summary>
             <version major="1" minor="1"/>
