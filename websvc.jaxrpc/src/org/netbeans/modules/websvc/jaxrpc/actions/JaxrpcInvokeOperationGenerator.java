@@ -298,14 +298,16 @@ public class JaxrpcInvokeOperationGenerator {
         return name;
     }
     
-    private static ClientStubDescriptor getStub(FileObject fo, String serviceName) {
+    private static ClientStubDescriptor getStub(DataObject wsdlDobj) {
         ClientStubDescriptor result = null;
-        WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(fo);
+        FileObject wsdlFo = wsdlDobj.getPrimaryFile();
+        
+        WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(wsdlFo);
         if(clientSupport != null) {
             List clients = clientSupport.getServiceClients();
             for(Iterator iter = clients.iterator(); iter.hasNext(); ) {
                 WsCompileClientEditorSupport.ServiceSettings settings = (WsCompileClientEditorSupport.ServiceSettings) iter.next();
-                if(settings.getServiceName().equals(serviceName)) {
+                if(settings.getServiceName().equals(wsdlFo.getName())) {
                     result = settings.getClientStubDescriptor();
                     break;
                 }
@@ -355,7 +357,6 @@ public class JaxrpcInvokeOperationGenerator {
             serviceNode = servicePortNode.getParentNode();
             
             wsdlObj = serviceNode.getLookup().lookup(DataObject.class);
-            wsdlName = wsdlObj.getName();
             serviceOperationName = serviceOperationNode.getName();
             servicePortName = servicePortNode.getName();
             servicePortJaxRpcName = classFromName(servicePortName);
@@ -457,7 +458,7 @@ public class JaxrpcInvokeOperationGenerator {
         
         String serviceDelegateName = "get" + serviceClassName; //NOI18N
         String portDelegateName = "get" + servicePortJaxRpcName; //NOI18N
-        ClientStubDescriptor stubType = getStub(wsdlObj.getPrimaryFile(), wsdlName);
+        ClientStubDescriptor stubType = getStub(wsdlObj);
         EditorCookie cookie = sourceNode.getCookie(EditorCookie.class);
         
         addProjectReference(wsdlObj, sourceNode);
