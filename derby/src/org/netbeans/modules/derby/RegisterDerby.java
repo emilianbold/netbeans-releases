@@ -184,7 +184,9 @@ public class RegisterDerby implements DatabaseRuntime {
                 try {
                     // DerbyDatabases.createDatabase would start the database too, but
                     // doing it beforehand to avoid having two progress bars running
-                    startAndWait();
+                    if (!waitStarted()) {
+                        return;
+                    }
                     
                     ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(
                         RegisterDerby.class, "MSG_CreatingDBProgressLabel", databaseName));
