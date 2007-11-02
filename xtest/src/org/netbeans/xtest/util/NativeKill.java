@@ -62,7 +62,11 @@ public class NativeKill {
     private static final int SIGKILL = 9;
     private static final int SIGQUIT = 3;
     
-    // execute kill 
+    /** Execute given kill command.
+     * @param killCommand command to execute
+     * @return true if it succeeds, false otherwise
+     * @throws java.io.IOException
+     */
     private static boolean executeKillCommand(String killCommand) throws IOException {
         try {
             Process kill = Runtime.getRuntime().exec(killCommand);
@@ -79,13 +83,52 @@ public class NativeKill {
         return false;
     }
     
-    // call kill -9 pid on unixes
+    /** Execute kill command given as array. It is needed to execute shell 
+     * command with pipes on unix.
+     * @param killCommand command to execute
+     * @return true if it succeeds, false otherwise
+     * @throws java.io.IOException
+     */
+    private static boolean executeKillCommand(String[] killCommand) throws IOException {
+        try {
+            Process kill = Runtime.getRuntime().exec(killCommand);
+            kill.waitFor();
+            int exitValue = kill.exitValue();
+            if (exitValue == 0) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (InterruptedException ie) {
+            System.out.println("InterruptedException when killing:"+ie);
+        }
+        return false;
+    }
+    
+    /** Call kill command on Unix.
+     * @param pid pid of process to send signal to
+     * @param signal signal number
+     * @return true if it succeeds, false otherwise
+     * @throws java.io.IOException
+     */
     private static boolean killOnUnix(long pid, int signal) throws IOException {
-        // need to do !!!
-        // should be kill on a default path ?
-        // yes - otherwise it will not work
+        /* Workaround for issue 6624838. When fixed it is enough to have just
+         * String killCommand = "kill -"+signal+" "+pid;
+         * return executeKillCommand(killCommand);
+         */
         String killCommand = "kill -"+signal+" "+pid;
-        return executeKillCommand(killCommand);
+        if(signal == SIGKILL) {
+            return executeKillCommand(killCommand);
+        }
+        String killTreeCommand = "kill -"+signal+" `pstree -pA "+pid+" | head -n 1 | tr -d '[:alpha:]' | tr -d '+-' | tr '()' '  '`";
+        String[] shellCommand = {"/bin/sh", "-c", killTreeCommand};
+        if(!executeKillCommand(shellCommand)) {
+            // if killtree failed do just regular kill
+            System.out.println("killtree command failed: \n"+killTreeCommand);
+            return executeKillCommand(killCommand);
+        } else {
+            return true;
+        }
     }
     
     // call kill.exe pid utilitity supplied with xtest on windows
