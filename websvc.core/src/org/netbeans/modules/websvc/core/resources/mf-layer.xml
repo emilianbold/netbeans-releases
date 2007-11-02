@@ -93,7 +93,7 @@ made subject to such option by the copyright holder.
             </file>
             <file name="SOAPMessageHandler.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/MessageHandler.template">         
                 <attr name="template" boolvalue="true"/>
-                <attr name="position" intvalue="900"/>
+                <attr name="position" intvalue="700"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.MessageHandlerWizard.create"/>
                 <attr name="templateCategory" stringvalue="message-handler"/>
