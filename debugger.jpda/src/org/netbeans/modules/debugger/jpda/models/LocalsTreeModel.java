@@ -323,7 +323,11 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                     return 0;
                 }
                 List<Operation> operations = frame.getThread().getLastOperations();
-                return operations.size();
+                if (operations != null) {
+                    return operations.size();
+                } else {
+                    return 0;
+                }
             } else
             if (node instanceof String && ((String) node).startsWith("operationArguments")) { // NOI18N
                 // Performance, see issue #59058.
