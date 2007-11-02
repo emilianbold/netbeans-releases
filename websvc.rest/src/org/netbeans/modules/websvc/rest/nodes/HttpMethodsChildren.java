@@ -50,20 +50,20 @@ import org.openide.nodes.Node;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.rest.model.api.HttpMethod;
 import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
+import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.openide.util.RequestProcessor;
 
 
 
 public class HttpMethodsChildren extends Children.Keys {
     private Project project;
-    private MetadataModel<RestServicesMetadata> model;
+    private RestServicesModel model;
     private String serviceName;
     private RestServicesListener listener;
     
@@ -73,7 +73,7 @@ public class HttpMethodsChildren extends Children.Keys {
         }
     });
     
-    public HttpMethodsChildren(Project project,MetadataModel<RestServicesMetadata> model, 
+    public HttpMethodsChildren(Project project,RestServicesModel model, 
             String serviceName) {
         this.project = project;
         this.model = model;

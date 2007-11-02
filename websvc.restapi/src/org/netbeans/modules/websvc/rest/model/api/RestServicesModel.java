@@ -39,26 +39,22 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.rest.model.spi;
+package org.netbeans.modules.websvc.rest.model.api;
 
-import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
-import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
-import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
-import org.netbeans.modules.websvc.rest.model.impl.RestServicesMetadataModelImpl;
+import java.beans.PropertyChangeListener;
+import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation;
 
 /**
  *
- * @author Milan Kuchtiak
+ * @author nam
  */
-public class RestServicesMetadataModelFactory {
+public interface RestServicesModel extends MetadataModelImplementation<RestServicesMetadata> {
+    public void addPropertyChangeListener(PropertyChangeListener pcl);
     
-    private RestServicesMetadataModelFactory() {
-    }
+    public void removePropertyChangeListener(PropertyChangeListener pcl);
     
-    public static RestServicesModel createMetadataModel(MetadataUnit metadataUnit) {
-        RestServicesModel impl = new RestServicesMetadataModelImpl(metadataUnit);
-        MetadataModelFactory.createMetadataModel(impl);
-        return impl;
-    }
+    public void disablePropertyChangeListener();
     
+    public void enablePropertyChangeListener();
+
 }

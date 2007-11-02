@@ -47,8 +47,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
+import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
@@ -63,7 +62,7 @@ public class RestServicesNode extends AbstractNode { //implements PropertyChange
     static Icon folderIconCache;
     static Icon openedFolderIconCache;
     
-    public RestServicesNode(Project project, MetadataModel<RestServicesMetadata> model) {
+    public RestServicesNode(Project project, RestServicesModel model) {
         super(new RestServicesChildren(project, model));
         setDisplayName(NbBundle.getBundle(RestServicesNode.class).getString("LBL_RestServices"));
         this.project=project;

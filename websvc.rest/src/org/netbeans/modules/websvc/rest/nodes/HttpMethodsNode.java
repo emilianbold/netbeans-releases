@@ -47,8 +47,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
+import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
@@ -64,7 +63,7 @@ public class HttpMethodsNode extends AbstractNode { //implements PropertyChangeL
     
     private String serviceName;
     
-    public HttpMethodsNode(Project project, MetadataModel<RestServicesMetadata> model, 
+    public HttpMethodsNode(Project project, RestServicesModel model, 
             String serviceName) {
         super(new HttpMethodsChildren(project, model, serviceName));
         this.serviceName = serviceName;

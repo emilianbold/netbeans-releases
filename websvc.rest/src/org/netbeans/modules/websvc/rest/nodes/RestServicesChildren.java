@@ -49,22 +49,19 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.TreeSet;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
+import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.openide.util.RequestProcessor;
 
 
 
 public class RestServicesChildren extends Children.Keys {
     private Project project;
-    private MetadataModel<RestServicesMetadata> model;
+    private RestServicesModel model;
     private RestServicesListener listener;
     
     private RequestProcessor.Task updateNodeTask = RequestProcessor.getDefault().create(new Runnable() {
@@ -73,7 +70,7 @@ public class RestServicesChildren extends Children.Keys {
         }
     });
     
-    public RestServicesChildren(Project project, MetadataModel<RestServicesMetadata> model) {
+    public RestServicesChildren(Project project, RestServicesModel model) {
         this.model = model;
         this.project = project;
     }

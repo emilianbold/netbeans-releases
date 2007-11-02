@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.websvc.rest.model.impl;
 
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.websvc.rest.model.impl.RestServicesImpl;
 import org.netbeans.modules.websvc.rest.model.impl.RestServicesMetadataImpl;
 import java.io.IOException;
@@ -52,12 +53,13 @@ import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 
 /**
  *
  * @author Peter Liu
  */
-public class RestServicesMetadataModelImpl implements MetadataModelImplementation<RestServicesMetadata> {
+public class RestServicesMetadataModelImpl implements RestServicesModel {
     
     private final AnnotationModelHelper helper;
     private final RestServices root;
@@ -90,5 +92,21 @@ public class RestServicesMetadataModelImpl implements MetadataModelImplementatio
                 return action.run(metadata);
             }
         });
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        root.addPropertyChangeListener(pcl);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        root.removePropertyChangeListener(pcl);
+    }
+
+    public void disablePropertyChangeListener() {
+        root.disablePropertyChangeListener();
+    }
+
+    public void enablePropertyChangeListener() {
+        root.enablePropertyChangeListener();
     }
 }

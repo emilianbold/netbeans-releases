@@ -491,10 +491,10 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
 
     private void modifyTargetConverter() throws IOException {
         TypeElement targetResourceType = JavaSourceHelper.getTypeElement(targetResourceJS);
-        System.out.println("targetResourceJS = " + targetResourceJS);
-        System.out.println("targetResourceType = " + targetResourceType);
+        //System.out.println("targetResourceJS = " + targetResourceJS);
+        //System.out.println("targetResourceType = " + targetResourceType);
         TypeElement representationType = JavaSourceHelper.getXmlRepresentationClass(targetResourceType, EntityResourcesGenerator.CONVERTER_SUFFIX);
-        System.out.println("representationType = " + representationType);
+        //System.out.println("representationType = " + representationType);
         if (representationType != null) {
             JavaSource representationJS = JavaSourceHelper.forTypeElement(representationType, project);
             ModificationResult result = representationJS.runModificationTask(new AbstractTask<WorkingCopy>() {

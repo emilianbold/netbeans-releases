@@ -56,6 +56,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
+import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.Node;
@@ -79,7 +80,7 @@ public class RestServicesNodeFactory implements NodeFactory {
     private static class RestNodeList implements NodeList<String> {
         private static final String KEY_SERVICES = "rest_services"; // NOI18N
         private Project project;
-        private MetadataModel<RestServicesMetadata> model;
+        private RestServicesModel model;
         
         private RequestProcessor.Task updateNodeTask = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
@@ -148,37 +149,17 @@ public class RestServicesNodeFactory implements NodeFactory {
         }
         
         public void addNotify() {
-            try {
-                if (model == null) {
-                    return;
-                }
-                model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
-                    public Void run(RestServicesMetadata metadata) throws IOException {
-                        metadata.getRoot().addPropertyChangeListener(restServicesListener);
-                        
-                        return null;
-                    }
-                });
-            } catch (IOException ex) {
-                
+            if (model == null) {
+                return;
             }
+            model.addPropertyChangeListener(restServicesListener);
         }
         
         public void removeNotify() {
-            try {
-                if (model == null) {
-                    return;
-                }
-                model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
-                    public Void run(RestServicesMetadata metadata) throws IOException {
-                        metadata.getRoot().removePropertyChangeListener(restServicesListener);
-                        
-                        return null;
-                    }
-                });
-            } catch (IOException ex) {
-                
+            if (model == null) {
+                return;
             }
+            model.removePropertyChangeListener(restServicesListener);
         }
         
         

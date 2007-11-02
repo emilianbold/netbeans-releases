@@ -47,12 +47,12 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
+import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
@@ -81,22 +81,16 @@ public class WebRestSupportLookupProvider implements LookupProvider {
             
             protected void projectOpened() {
                 
-                final MetadataModel<RestServicesMetadata> wsModel = RestUtils.getRestServicesMetadataModel(prj);
+                final RestServicesModel wsModel = RestUtils.getRestServicesMetadataModel(prj);
                 if (wsModel == null) {
-                    return;
+                    throw new IllegalStateException("can't get model");
                 }
                 try {
                     // make sure REST API jar is included in project compile classpath
                     RestUtils.addRestApiJar(prj);
                     new AntFilesHelper(restSupport).initRestBuildExtension();
-                    wsModel.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
-                        public Void run(final RestServicesMetadata metadata) {
-                            RestServices restServices = metadata.getRoot();
                             pcl = new RestServicesChangeListener(wsModel, prj);
-                            restServices.addPropertyChangeListener(pcl);
-                            return null;
-                        }
-                    });
+                            wsModel.addPropertyChangeListener(pcl);
                 } catch (java.io.IOException ex) {
                     Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
                 }
@@ -104,7 +98,7 @@ public class WebRestSupportLookupProvider implements LookupProvider {
             
             
             protected void projectClosed() {
-                final MetadataModel<RestServicesMetadata> wsModel = RestUtils.getRestServicesMetadataModel(prj);
+                final RestServicesModel wsModel = RestUtils.getRestServicesMetadataModel(prj);
                 if (wsModel == null) {
                     return;
                 }
@@ -137,7 +131,7 @@ public class WebRestSupportLookupProvider implements LookupProvider {
     }
     
     private class RestServicesChangeListener implements PropertyChangeListener {
-        private MetadataModel<RestServicesMetadata> wsModel;
+        private RestServicesModel wsModel;
         private Project prj;
         private RestSupport support;
         
@@ -147,7 +141,7 @@ public class WebRestSupportLookupProvider implements LookupProvider {
             }
         });
         
-        RestServicesChangeListener(MetadataModel<RestServicesMetadata> wsModel, Project prj) {
+        RestServicesChangeListener(RestServicesModel wsModel, Project prj) {
             this.wsModel=wsModel;
             this.prj=prj;
             this.support = prj.getLookup().lookup(RestSupport.class);

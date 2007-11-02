@@ -47,15 +47,9 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.openide.nodes.AbstractNode;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
-import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
-import org.openide.ErrorManager;
-import org.openide.actions.DeleteAction;
+import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.openide.actions.OpenAction;
 import org.openide.actions.PropertiesAction;
-import org.openide.cookies.OpenCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -66,14 +60,14 @@ public class RestServiceNode extends AbstractNode{
     private String uriTemplate;
     private String className;
    
-    private MetadataModel<RestServicesMetadata> model;
+    private RestServicesModel model;
     
-    public  RestServiceNode(Project project, MetadataModel<RestServicesMetadata> model,
+    public  RestServiceNode(Project project, RestServicesModel model,
             RestServiceDescription desc) {
         this(project, model, desc, new InstanceContent());
     }
     
-    private RestServiceNode(Project project, MetadataModel<RestServicesMetadata> model,
+    private RestServiceNode(Project project, RestServicesModel model,
             RestServiceDescription desc, InstanceContent content) {
         super(new RestServiceChildren(project, model, desc.getName()), new AbstractLookup(content));
         this.project = project;

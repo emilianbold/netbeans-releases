@@ -44,21 +44,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 
 
 public class RestServiceChildren extends Children.Keys {
     private Project project;
-    private MetadataModel<RestServicesMetadata> model;
+    private RestServicesModel model;
     private String serviceName;
   
     private static final String KEY_HTTP_METHODS = "http_methods";  //NOI18N
     private static final String KEY_SUB_RESOURCE_LOCATORS = "sub_resource_locators";        //NOI18N
     
-    public RestServiceChildren(Project project, MetadataModel<RestServicesMetadata> model, 
+    public RestServiceChildren(Project project, RestServicesModel model, 
             String serviceName) {
         this.project = project;
         this.model = model;

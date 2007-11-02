@@ -49,15 +49,13 @@ import javax.lang.model.element.AnnotationMirror;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
 import javax.xml.xpath.*;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
+import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -117,7 +115,7 @@ public class RestUtils {
         return project.getLookup().lookup(RestSupport.class);
     }
     
-    public static MetadataModel<RestServicesMetadata> getRestServicesMetadataModel(Project project) {
+    public static RestServicesModel getRestServicesMetadataModel(Project project) {
         RestSupport support = getRestSupport(project);
         if (support != null) {
             return support.getRestServicesMetadataModel();
@@ -126,37 +124,19 @@ public class RestUtils {
     }
     
     public static void disableRestServicesChangeListner(Project project) {
-        final MetadataModel<RestServicesMetadata> wsModel = RestUtils.getRestServicesMetadataModel(project);
+        final RestServicesModel wsModel = RestUtils.getRestServicesMetadataModel(project);
         if (wsModel == null) {
             return;
         }
-        try {
-            wsModel.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
-                public Void run(final RestServicesMetadata metadata) {
-                    metadata.getRoot().disablePropertyChangeListener();
-                    return null;
-                }
-            });
-        } catch (java.io.IOException ex) {
-            
-        }
+        wsModel.disablePropertyChangeListener();
     }
     
     public static void enableRestServicesChangeListner(Project project) {
-         final MetadataModel<RestServicesMetadata> wsModel = RestUtils.getRestServicesMetadataModel(project);
+         final RestServicesModel wsModel = RestUtils.getRestServicesMetadataModel(project);
         if (wsModel == null) {
             return;
         }
-        try {
-            wsModel.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
-                public Void run(final RestServicesMetadata metadata) {
-                    metadata.getRoot().enablePropertyChangeListener();
-                    return null;
-                }
-            });
-        } catch (java.io.IOException ex) {
-            
-        }
+         wsModel.enablePropertyChangeListener();
     }
 
     public static void addRestApiJar(Project project) throws IOException {

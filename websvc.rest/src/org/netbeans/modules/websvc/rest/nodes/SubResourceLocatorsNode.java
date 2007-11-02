@@ -46,20 +46,15 @@ import java.beans.BeanInfo;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
 
 public class SubResourceLocatorsNode extends AbstractNode { //implements PropertyChangeListener{
     private Project project;
@@ -69,7 +64,7 @@ public class SubResourceLocatorsNode extends AbstractNode { //implements Propert
     
     private String serviceName;
     
-    public SubResourceLocatorsNode(Project project, MetadataModel<RestServicesMetadata> model, 
+    public SubResourceLocatorsNode(Project project, RestServicesModel model, 
             String serviceName) {
         super(new SubResourceLocatorsChildren(project, model, serviceName));
         this.serviceName = serviceName;
