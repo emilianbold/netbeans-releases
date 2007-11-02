@@ -103,7 +103,10 @@ import org.openide.util.Utilities;
  * @author Soot Phengsy, inspired by Jeff Dinkins' Swing version
  */
 public class DirectoryChooserUI extends BasicFileChooserUI {
-    
+    private static final String ICON_KEY_UIMANAGER = "Tree.closedIcon"; // NOI18N
+    private static final String OPENED_ICON_KEY_UIMANAGER = "Tree.openIcon"; // NOI18N
+    private static final String ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.icon"; // NOI18N
+    private static final String OPENED_ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.openedIcon"; // NOI18N    
     private static final Dimension horizontalStrut1 = new Dimension(25, 1);
     private static final Dimension verticalStrut1  = new Dimension(1, 4);
     private static final Dimension verticalStrut2  = new Dimension(1, 6);
@@ -2219,7 +2222,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             if(value instanceof DirectoryNode) {
                 tree.setShowsRootHandles(true);
                 DirectoryNode node = (DirectoryNode)value;
-                ((JLabel)stringDisplayer).setIcon(getNodeIcon(node));
+                ((JLabel)stringDisplayer).setIcon(getNodeIcon(node,expanded));
                 ((JLabel)stringDisplayer).setText(getNodeText(node.getFile()));
             }
                 Font f = stringDisplayer.getFont();
@@ -2232,16 +2235,32 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             return stringDisplayer;
         }
         
-        private Icon getNodeIcon(DirectoryNode node) {
+        private Icon getNodeIcon(DirectoryNode node, boolean expanded) {
             if (node.isNetBeansProject()) {
                 return getNbProjectIcon();
             }
             File file = node.getFile();
-            if(file.exists()) {
-                return fileChooser.getIcon(file);
+            if (file.exists()) {
+
+                 return getTreeFolderIcon(expanded);
             } else {
                 return null;
             }
+        }
+        
+        private Icon getTreeFolderIcon(boolean opened) {
+            
+            Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER); // #70263
+            if (baseIcon == null) {
+               Image base ;
+                base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263
+                if (base == null) { // fallback to our owns                
+                    base=Utilities.loadImage("org/openide/loaders/defaultFolder.gif");//NOI18N
+                }
+                baseIcon=new ImageIcon(base);
+            }
+            assert baseIcon != null;
+            return baseIcon;
         }
         
         private String getNodeText(File file) {
