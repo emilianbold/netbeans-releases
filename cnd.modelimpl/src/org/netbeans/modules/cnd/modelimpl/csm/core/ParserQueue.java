@@ -84,7 +84,7 @@ public final class ParserQueue {
         
         public String toString(boolean detailed) {
             StringBuilder retValue = new StringBuilder();
-            retValue.append("ParserQueue.Entry " + file.getAbsolutePath()); // NOI18N
+            retValue.append("ParserQueue.Entry " + file + " of project " + file.getProject()); // NOI18N
             if( detailed ) {
                 retValue.append("\nwith PreprocState:\n"+ppState); // NOI18N
             }
@@ -233,7 +233,7 @@ public final class ParserQueue {
             StringBuilder builder = new StringBuilder();
             Entry cur = head;
             while (cur != null) {
-                builder.append(cur.toString(detailed));
+                builder.append(cur.toString(detailed)).append("\n");
                 cur = cur.next;
             }
             return builder.toString();
