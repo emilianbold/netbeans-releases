@@ -89,6 +89,11 @@ class TabsComponent extends JPanel {
         bar.setBorder(b);
         bar.setFloatable(false);
         bar.setFocusable(true);
+        if( "Windows".equals( UIManager.getLookAndFeel().getID()) 
+                && !isXPTheme()
+                && System.getProperty("java.version").startsWith("1.6") ) {
+            bar.setRollover(true);
+        }
         
         setLayout(new BorderLayout());
         add(bar, BorderLayout.NORTH);
@@ -202,7 +207,9 @@ class TabsComponent extends JPanel {
         if (b != null) {
            button.setBorder(b);
         }
-        if( "Windows".equals( UIManager.getLookAndFeel().getID() ) && !isXPTheme() ) { //NOI18N
+        if( "Windows".equals( UIManager.getLookAndFeel().getID() ) 
+                && !isXPTheme()
+                && System.getProperty("java.version").startsWith("1.5")) { //NOI18N
             button.setBorderPainted(false);
         }
           
