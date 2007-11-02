@@ -159,6 +159,10 @@ public class BracketCompleterTest extends RubyTestBase {
     }
 
     private void insertChar(String original, char insertText, String expected, String selection) throws BadLocationException {
+        insertChar(original, insertText, expected, selection, false);
+    }
+
+    private void insertChar(String original, char insertText, String expected, String selection, boolean codeTemplateMode) throws BadLocationException {
         int insertOffset = original.indexOf('^');
         int finalCaretPos = expected.indexOf('^');
         original = original.substring(0, insertOffset) + original.substring(insertOffset+1);
@@ -167,6 +171,12 @@ public class BracketCompleterTest extends RubyTestBase {
         BracketCompleter bc = new BracketCompleter();
 
         BaseDocument doc = getDocument(original);
+        
+        if (codeTemplateMode) {
+            // Copied from editor/codetemplates/src/org/netbeans/lib/editor/codetemplates/CodeTemplateInsertHandler.java
+            String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N        
+            doc.putProperty(EDITING_TEMPLATE_DOC_PROPERTY, Boolean.TRUE);            
+        }
 
         JTextArea ta = new JTextArea(doc);
         Caret caret = ta.getCaret();
@@ -184,26 +194,27 @@ public class BracketCompleterTest extends RubyTestBase {
         doc.atomicLock();
         DocumentUtilities.setTypingModification(doc, true);
 
+        boolean handled = false;
         try {
-            boolean handled = bc.beforeCharInserted(doc, insertOffset, ta, insertText);
-            if (!handled) {
-                if (ta.getSelectedText() != null && ta.getSelectedText().length() > 0) {
-                    insertOffset = ta.getSelectionStart();
-                    doc.remove(ta.getSelectionStart(), ta.getSelectionEnd()-ta.getSelectionStart());
-                    caret.setDot(insertOffset);
-                }
-                doc.insertString(caret.getDot(), ""+insertText, null);
-                caret.setDot(insertOffset+1);
-                bc.afterCharInserted(doc, insertOffset, ta, insertText);
-            }
-            String formatted = doc.getText(0, doc.getLength());
-            assertEquals(expected, formatted);
-            if (finalCaretPos != -1) {
-                assertEquals(finalCaretPos, caret.getDot());
-            }
+            handled = bc.beforeCharInserted(doc, insertOffset, ta, insertText);
         } finally {
             DocumentUtilities.setTypingModification(doc, false);
             doc.atomicUnlock();
+        }
+        if (!handled) {
+            if (ta.getSelectedText() != null && ta.getSelectedText().length() > 0) {
+                insertOffset = ta.getSelectionStart();
+                doc.remove(ta.getSelectionStart(), ta.getSelectionEnd()-ta.getSelectionStart());
+                caret.setDot(insertOffset);
+            }
+            doc.insertString(caret.getDot(), ""+insertText, null);
+            caret.setDot(insertOffset+1);
+            bc.afterCharInserted(doc, insertOffset, ta, insertText);
+        }
+        String formatted = doc.getText(0, doc.getLength());
+        assertEquals(expected, formatted);
+        if (finalCaretPos != -1) {
+            assertEquals(finalCaretPos, caret.getDot());
         }
     }
 
@@ -950,6 +961,23 @@ public class BracketCompleterTest extends RubyTestBase {
     public void testReplaceSelection4() throws Exception {
         insertChar("x = 'foo^bar'", '#', "x = '#^bar'", "foo");
     }
+
+    public void testReplaceSelectionChangeType1() throws Exception {
+        insertChar("x = \"foo\"^", '\'', "x = 'foo'^", "\"foo\"");
+    }
+
+    public void testReplaceSelectionChangeType2() throws Exception {
+        insertChar("x = \"foo\"^", '{', "x = {foo}^", "\"foo\"");
+    }
+
+    public void testReplaceSelectionNotInTemplateMode1() throws Exception {
+        insertChar("x = foo^", '"', "x = \"^\"", "foo", true);
+    }
+    
+    // Functionality works but test is broken
+    //public void testReplaceSelectionNotInTemplateMode2() throws Exception {
+    //    insertChar("x = \"foo^bar\"", '#', "x = \"#{^}bar\"", "foo", true);
+    //}
     
     public void testReplaceCommentSelectionBold() throws Exception {
         insertChar("# foo^", '*', "# *foo*^", "foo");

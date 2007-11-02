@@ -594,16 +594,45 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         }
 
         if (target.getSelectionStart() != -1) {
-            if (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[') {
+            if (NbUtilities.isCodeTemplateEditing(doc)) {
+                int start = target.getSelectionStart();
+                int end = target.getSelectionEnd();
+                if (start < end) {
+                    target.setSelectionStart(start);
+                    target.setSelectionEnd(start);
+                    caretOffset = start;
+                    caret.setDot(caretOffset);
+                    doc.remove(start, end-start);
+                }
+                // Fall through to do normal insert matching work
+            } else if (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[' || ch == '/') {
                 // Bracket the selection
                 String selection = target.getSelectedText();
-                if (selection != null && selection.length() > 0 && selection.charAt(0) != ch) {
-                    int start = target.getSelectionStart();
-                    doc.remove(start, target.getSelectionEnd()-start);
-                    doc.insertString(start, ch + selection + matching(ch), null);
-                    target.getCaret().setDot(start+selection.length()+2);
-                
-                    return true;
+                if (selection != null && selection.length() > 0) {
+                    char firstChar = selection.charAt(0);
+                    if (firstChar != ch) {
+                        int start = target.getSelectionStart();
+                        int end = target.getSelectionEnd();
+                        int lastChar = selection.charAt(selection.length()-1);
+                        // Replace the surround-with chars?
+                        if (selection.length() > 1 && 
+                                ((firstChar == '"' || firstChar == '\'' || firstChar == '(' || 
+                                firstChar == '{' || firstChar == '[' || firstChar == '/') &&
+                                lastChar == matching(firstChar))) {
+                            doc.remove(end-1, 1);
+                            doc.insertString(end-1, ""+matching(ch), null);
+                            doc.remove(start, 1);
+                            doc.insertString(start, ""+ch, null);
+                            target.getCaret().setDot(end);
+                        } else {
+                            // No, insert around
+                            doc.remove(start,end-start);
+                            doc.insertString(start, ch + selection + matching(ch), null);
+                            target.getCaret().setDot(start+selection.length()+2);
+                        }
+
+                        return true;
+                    }
                 }
             } else if (ch == '#' && 
                     (LexUtilities.isInsideQuotedString(doc, target.getSelectionStart()) &&

@@ -264,4 +264,12 @@ public class NbUtilities {
             }
         }
     }
+    
+    /** Return true iff we're editing code templates */
+    public static boolean isCodeTemplateEditing(Document doc) {
+        // Copied from editor/codetemplates/src/org/netbeans/lib/editor/codetemplates/CodeTemplateInsertHandler.java
+        String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N        
+        
+        return doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY) == Boolean.TRUE;
+    }
 }
