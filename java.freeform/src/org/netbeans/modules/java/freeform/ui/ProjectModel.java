@@ -253,8 +253,8 @@ public class ProjectModel  {
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
-            String prjName = ProjectUtils.getInformation(project).getDisplayName();
-            sf.label = prjName;
+            String label = project != null ? ProjectUtils.getInformation(project).getDisplayName() : "projectdir"; // NOI18N
+            sf.label = label;
             sf.location = "."; // NOI18N
             sf.encoding = model.encoding;
             list.add(sf);

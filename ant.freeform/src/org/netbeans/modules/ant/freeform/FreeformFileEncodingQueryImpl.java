@@ -70,7 +70,7 @@ public class FreeformFileEncodingQueryImpl extends FileEncodingQueryImplementati
     
     private AntProjectHelper helper;
     private PropertyEvaluator evaluator;
-    private Map<FileObject,String> encodingsCache;
+    private Map<FileObject,Charset> encodingsCache;
     
     public FreeformFileEncodingQueryImpl(AntProjectHelper aph, PropertyEvaluator eval) {
         helper = aph;
@@ -93,11 +93,7 @@ public class FreeformFileEncodingQueryImpl extends FileEncodingQueryImplementati
             Set<FileObject> roots = encodingsCache.keySet();
             FileObject parent = getNearestParent(roots, file);
             if (parent != null) {
-                try {
-                    return Charset.forName(encodingsCache.get(parent));
-                } catch (IllegalCharsetNameException icne) {
-                    return null;
-                }
+                return encodingsCache.get(parent);
             }
         }
         
@@ -105,7 +101,7 @@ public class FreeformFileEncodingQueryImpl extends FileEncodingQueryImplementati
         
     }
     
-    private FileObject getNearestParent(Set parents, FileObject file) {
+    private FileObject getNearestParent(Set<FileObject> parents, FileObject file) {
         while (file != null) {
              if (parents.contains(file)) {
                  return file;
@@ -116,7 +112,7 @@ public class FreeformFileEncodingQueryImpl extends FileEncodingQueryImplementati
     }
     
     private void computeEncodingsCache() {
-        Map<FileObject,String> cache = new HashMap<FileObject,String>(3);
+        Map<FileObject,Charset> cache = new HashMap<FileObject,Charset>(3);
         Element data = Util.getPrimaryConfigurationData(helper);
         Element foldersEl = Util.findElement(data, "folders", Util.NAMESPACE); // NOI18N
         if (foldersEl != null) {
@@ -128,25 +124,29 @@ public class FreeformFileEncodingQueryImpl extends FileEncodingQueryImplementati
                 Element locationEl = Util.findElement(sourceFolderEl, "location", Util.NAMESPACE); // NOI18N
                 if (locationEl != null) {
                     String location = evaluator.evaluate(Util.findText(locationEl));
-                    srcRoot = helper.resolveFileObject(location);
+                    if (location != null) {
+                        srcRoot = helper.resolveFileObject(location);
+                    }
                 }
                 Element encodingEl = Util.findElement(sourceFolderEl, "encoding", Util.NAMESPACE); // NOI18N
                 if (encodingEl != null && srcRoot != null) {
                     String encoding = evaluator.evaluate(Util.findText(encodingEl));
                     Charset charset = null;
-                    try {
-                        charset = Charset.forName(encoding);
-                    } catch (IllegalCharsetNameException icne) {
-                        Exceptions.printStackTrace(icne);
+                    if (encoding != null) {
+                        try {
+                            charset = Charset.forName(encoding);
+                        } catch (IllegalCharsetNameException icne) {
+                            Exceptions.printStackTrace(icne);
+                        }
+                        cache.put(srcRoot, charset);
                     }
-                    cache.put(srcRoot, charset.name());
                 }
             }
         }
         if (cache.size() > 0) {
             encodingsCache = cache;
         } else {
-            encodingsCache = Collections.<FileObject,String>emptyMap();
+            encodingsCache = Collections.<FileObject,Charset>emptyMap();
         }
     }
     
