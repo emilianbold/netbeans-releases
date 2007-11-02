@@ -241,7 +241,7 @@ public class HTML {
                     else
                         name = name.toLowerCase ();
                     s.add (name);
-                    s.add (new Integer (l.size ()));
+                    s.add (new Integer (l.size () - 1));
                     
                     /*if(!isSupportedTag(name)) {
                         l.add (clone (node, "unsupportedTag"));
@@ -262,13 +262,13 @@ public class HTML {
                 if (indexS >= 0) {
                     int indexL = ((Integer) s.get (indexS + 1)).intValue ();
                     List ll = l.subList (indexL, l.size ());
-                    ll.set (0, clone ((ASTNode) ll.get (0), "startTag"));
+                    ll.set (1, clone ((ASTNode) ll.get (1), "startTag"));
                     List ll1 = new ArrayList (ll);
                     ll1.add (node);
                     ASTNode tag = clone (
                         node.getLanguage (),
                         "tag",
-                        ((ASTNode) ll1.get (0)).getOffset (),
+                        ((ASTItem) ll1.get (0)).getOffset (),
                         ll1
                     );
                     ll.clear ();
