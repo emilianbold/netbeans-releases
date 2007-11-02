@@ -86,6 +86,18 @@ public class EditWSAttributesCookieImpl implements EditWSAttributesCookie {
     }
 
     public void openWSAttributesEditor() {
+        if(SwingUtilities.isEventDispatchThread()){  //Ensure it is in AWT thread
+            openEditor();
+        }else{
+            SwingUtilities.invokeLater(new Runnable(){
+                public void run(){
+                    openEditor();
+                }
+            });
+        }
+    }
+    
+    private void openEditor() {
         final JFrame mainWin = (JFrame) WindowManager.getDefault().getMainWindow();
         final Cursor origCursor = mainWin.getGlassPane().getCursor();
         mainWin.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));

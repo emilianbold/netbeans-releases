@@ -49,7 +49,6 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 public final class WSEditAttributesAction extends NodeAction {
@@ -73,7 +72,7 @@ public final class WSEditAttributesAction extends NodeAction {
     
     @Override
     protected boolean asynchronous() {
-        return false;
+        return true;
     }
     
     private WSEditorProviderRegistry populateWSEditorProviderRegistry(){
@@ -82,7 +81,6 @@ public final class WSEditAttributesAction extends NodeAction {
             Lookup.Result<WSEditorProvider> results = Lookup.getDefault().
                     lookup(new Lookup.Template<WSEditorProvider>(WSEditorProvider.class));
             Collection<? extends WSEditorProvider> services = results.allInstances();
-            //System.out.println("###number of providers: " + services.size());
             for(WSEditorProvider provider : services){
                 registry.register(provider);
             }
