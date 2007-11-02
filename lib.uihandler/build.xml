@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="netbeans" name="logger/uihandlerlib">
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <property name="nbroot" value="../.."/>
+    <import file="${nbroot}/nbbuild/templates/projectized.xml"/>
 </project>
