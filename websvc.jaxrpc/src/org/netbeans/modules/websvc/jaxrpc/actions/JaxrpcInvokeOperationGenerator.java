@@ -115,7 +115,7 @@ public class JaxrpcInvokeOperationGenerator {
             "\t\tjavax.naming.InitialContext ic = new javax.naming.InitialContext();\n" +
             "\t\t{1} = ({2}) ic.lookup(\"java:comp/env/service/{0}\");\n" +
             "\t'}' catch(javax.naming.NamingException ex) '{'\n" +
-            "\t\t// TODO handle JNDI naming exception\n" +
+            "\t\tjava.util.logging.Logger.getLogger({2}.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);\n" +
             "\t'}'\n" +
             //        "'}'\n\n" +
             "return {1};\n";
@@ -132,7 +132,7 @@ public class JaxrpcInvokeOperationGenerator {
             "        javax.naming.InitialContext ic = new javax.naming.InitialContext();\n" +
             "        {1} = ({2}) ic.lookup(\"java:comp/env/service/{0}\");\n" +
             "    '}' catch(javax.naming.NamingException ex) '{'\n" +
-            "        // TODO handle JNDI naming exception\n" +
+            "        java.util.logging.Logger.getLogger({2}.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);\n" +
             "    '}'" +
             "    return {1};\n" +
             "'}'\n" +
@@ -148,7 +148,7 @@ public class JaxrpcInvokeOperationGenerator {
             "\ntry '{'\n" +
             "\t\t{0} = {2}().get{1}();\n" +
             "\t'}' catch(javax.xml.rpc.ServiceException ex) '{'\n" +
-            "\t\t// TODO handle service exception\n" +
+            "\t\tjava.util.logging.Logger.getLogger({3}.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);\n" +
             "\t'}'\n" +
             //        "'}'\n\n" +
             "return {0};\n";
@@ -165,31 +165,33 @@ public class JaxrpcInvokeOperationGenerator {
             "    try '{'\n" +
             "        {0} = {2}().get{1}();\n" +
             "    '}' catch(javax.xml.rpc.ServiceException ex) '{'\n" +
-            "        // TODO handle service exception\n" +
+            "        java.util.logging.Logger.getLogger({3}.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);\n" +
             "    '}'\n" +
             "    return {0};\n" +
             "'}'\n" +
             "%>\n";
     // {0} = service operation name (e.g. "getFoo")
     // {1} = port delegate name (e.g. "getFooPort")
+    // {2} = fully qualified service name (as type, e.g. com.service.FooService)
     private static final String OPERATION_INVOCATION_BODY =
             "\ntry '{' // This code block invokes the {0} operation on web service\n" +
             "\t{1}().{0}(/* TODO enter operation arguments */);\n" +
             "'}' catch(java.rmi.RemoteException ex) '{'\n" +
-            "\t// TODO handle remote exception\n" +
+            "\tjava.util.logging.Logger.getLogger({2}.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);\n" +
             "'}' catch(Exception ex) '{'\n" +
-            "\t// TODO handle custom exceptions here\n" +
+            "\tjava.util.logging.Logger.getLogger({2}.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);\n" +
             "'}'\n";
     // {0} = service operation name (e.g. "getFoo")
     // {1} = port delegate name (e.g. "getFooPort")
+    // {2} = fully qualified service name (as type, e.g. com.service.FooService)
     private static final String OPERATION_INVOCATION_BODY_JSP =
             "    try '{'\n" +
             "        out.println(\"result = \"+\n" +
             "            {1}().{0}(/* TODO enter operation arguments */));\n" +
             "    '}' catch(java.rmi.RemoteException ex) '{'\n" +
-            "        // TODO handle remote exception\n" +
+            "        java.util.logging.Logger.getLogger({2}.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);\n" +
             "    '}' catch(Exception ex) '{'\n" +
-            "        // TODO handle custom exceptions here\n" +
+            "        java.util.logging.Logger.getLogger({2}.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);\n" +
             "    '}'\n";
     // {0} = service name (as type, e.g. "FooService")
     // {1} = service name (as variable, e.g. "fooService")
@@ -230,11 +232,11 @@ public class JaxrpcInvokeOperationGenerator {
             "\t{6} {4} = {1}.get{5}();\n" +
             "\t{4}.{7}(/* TODO enter operation arguments*/);\n" +
             "'}' catch(javax.xml.rpc.ServiceException ex) '{'\n" +
-            "\t// TODO handle ServiceException\n" +
+            "\tjava.util.logging.Logger.getLogger({2}.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);\n" +
             "'}' catch(java.rmi.RemoteException ex) '{'\n" +
-            "\t// TODO handle remote exception\n" +
+            "\tjava.util.logging.Logger.getLogger({2}.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);\n" +
             "'}' catch(Exception ex) '{'\n" +
-            "\t// TODO handle custom exceptions here\n" +
+            "\tjava.util.logging.Logger.getLogger({2}.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);\n" +
             "'}'\n";
     // {0} = service name (as type, e.g. "FooService")
     // {1} = service name (as variable, e.g. "fooService")
@@ -251,11 +253,11 @@ public class JaxrpcInvokeOperationGenerator {
             "        out.println(\"result = \"+\n" +
             "            {4}.{7}(/* TODO enter operation arguments*/));\n" +
             "    '}' catch(javax.xml.rpc.ServiceException ex) '{'\n" +
-            "        // TODO handle ServiceException\n" +
+            "        java.util.logging.Logger.getLogger({2}.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);\n" +
             "    '}' catch(java.rmi.RemoteException ex) '{'\n" +
-            "        // TODO handle remote exception\n" +
+            "        java.util.logging.Logger.getLogger({2}.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);\n" +
             "    '}' catch(Exception ex) '{'\n" +
-            "        // TODO handle custom exceptions here\n" +
+            "        java.util.logging.Logger.getLogger({2}.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);\n" +
             "    '}'\n";
     
     private static String varFromName(final String name) {
@@ -490,7 +492,7 @@ public class JaxrpcInvokeOperationGenerator {
             String invocationBody = "";
             if (ClientStubDescriptor.JSR109_CLIENT_STUB.equals(stubType.getName())) {
                 // create the inserted text
-                Object[] args = new Object [] { serviceOperationName, portDelegateName };
+                Object[] args = new Object [] { serviceOperationName, portDelegateName, fqServiceClassName };
                 invocationBody = MessageFormat.format(OPERATION_INVOCATION_BODY_JSP, args);
                 
             } else if (ClientStubDescriptor.JAXRPC_CLIENT_STUB.equals(stubType.getName())) { // JAXRPC static stub
@@ -593,7 +595,7 @@ public class JaxrpcInvokeOperationGenerator {
         String invocationBody = "";
         if (ClientStubDescriptor.JSR109_CLIENT_STUB.equals(stubType.getName())) {
             // create the inserted text
-            Object [] args = new Object [] { iserviceOperationName, iPortDelegateName };
+            Object [] args = new Object [] { iserviceOperationName, iPortDelegateName, ifqServiceClassName };
             invocationBody = MessageFormat.format(OPERATION_INVOCATION_BODY, args);
         } else if (ClientStubDescriptor.JAXRPC_CLIENT_STUB.equals(stubType.getName())) { // JAXRPC static stub
             // create the inserted text
