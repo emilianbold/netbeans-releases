@@ -667,10 +667,7 @@ final class LibrariesNode extends AbstractNode {
         if (baseIcon != null) {
             base = Utilities.icon2Image(baseIcon);
         } else {
-            Icon icon = (Icon) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263
-            if (icon != null) {
-                base = Utilities.icon2Image(icon);
-            }
+            base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263
             if (base == null) { // fallback to our owns                
                 final Node n = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
                 base = opened ? n.getOpenedIcon(BeanInfo.ICON_COLOR_16x16) : n.getIcon(BeanInfo.ICON_COLOR_16x16);                                 
