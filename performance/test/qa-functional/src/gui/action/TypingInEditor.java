@@ -87,7 +87,7 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new TypingInEditor("testJavaEditor", "Type a character in Java Editor"));
         suite.addTest(new TypingInEditor("testTxtEditor", "Type a character in Txt Editor"));
-        suite.addTest(new TypingInEditor("testJspEditor", "Type a character in Jsp Editor"));
+//        suite.addTest(new TypingInEditor("testJspEditor", "Type a character in Jsp Editor"));
         return suite;
     }
     
@@ -110,7 +110,7 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
         fileToBeOpened = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|" + fileName);
         doMeasurement();
     }
-   
+/*   
     public void testJspEditor() {
         fileName = "Test.jsp";
         caretPositionX = 6;
@@ -120,7 +120,7 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
         fileToBeOpened = new Node(new WebPagesNode("PerformanceTestWebApplication"), fileName);
         doMeasurement();
     }
-   
+*/   
     public void initialize() {
         // open a java file in the editor
         new OpenAction().performAPI(fileToBeOpened);
@@ -160,7 +160,7 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         
         // set large font size for Editor
-        BaseOptions options = BaseOptions.getOptions(kitClass);
+/*        BaseOptions options = BaseOptions.getOptions(kitClass);
         if (options.getClass().isInstance(optionsClass)) {
             fontSize = options.getFontSize();
             options.setFontSize(20);
@@ -169,21 +169,21 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
         caretBlinkRate = options.getCaretBlinkRate();
         //disable caret blinkering
         options.setCaretBlinkRate(0);
-    }
+*/    }
     
     private void setEditorForMeasuringOff(){
         // measure only paint events from QuietEditorPane
         repaintManager().resetRegionFilters();
         
         // set back the original font size for Editor
-        BaseOptions options = BaseOptions.getOptions(kitClass);
+/*        BaseOptions options = BaseOptions.getOptions(kitClass);
         if (options.getClass().isInstance(optionsClass)) {
             options.setFontSize(fontSize);
         }
         
         // set back the original blink rate
         options.setCaretBlinkRate(caretBlinkRate);
-    }
+*/    }
     
     public static void main(java.lang.String[] args) {
         repeat = 3;
