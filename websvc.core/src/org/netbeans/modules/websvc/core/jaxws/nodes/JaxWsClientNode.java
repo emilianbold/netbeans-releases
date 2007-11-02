@@ -239,8 +239,6 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
             null,
             SystemAction.get(DeleteAction.class),
             null,
-            SystemAction.get(OpenLocalExplorerAction.class),
-            null,
             SystemAction.get(PropertiesAction.class),
         };
     }
