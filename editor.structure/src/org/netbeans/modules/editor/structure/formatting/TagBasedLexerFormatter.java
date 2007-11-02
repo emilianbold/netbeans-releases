@@ -125,6 +125,8 @@ public abstract class TagBasedLexerFormatter {
     protected abstract int getTagEndOffset(JoinedTokenSequence tokenSequence, int tagOffset);
 
     protected abstract LanguagePath supportedLanguagePath();
+    
+    private enum EmbeddingType {CURRENT_LANG, INNER, OUTER}
 
     public void process(Context context) throws BadLocationException{
         if (context.isIndent()){
@@ -165,7 +167,8 @@ public abstract class TagBasedLexerFormatter {
             int lastRefBlockLine = Utilities.getLineOffset(doc, endOffset);
             int firstUnformattableLine = -1;
 
-            boolean currentLanguage[] = new boolean[transferData.getNumberOfLines()];
+            EmbeddingType currentLanguage[] = new EmbeddingType[transferData.getNumberOfLines()];
+            Arrays.fill(currentLanguage, EmbeddingType.OUTER);
             int[] indentsWithinTags = new int[transferData.getNumberOfLines()];
 
             TokenSequence[] tokenSequences = (TokenSequence[]) tokenHierarchy.tokenSequenceList(supportedLanguagePath(), 0, Integer.MAX_VALUE).toArray(new TokenSequence[0]);
@@ -235,7 +238,7 @@ public abstract class TagBasedLexerFormatter {
                         }
 
                         for (int i = firstLineOfEmbeddedBlock; i <= lastLineOfEmbeddedBlock; i++) {
-                            currentLanguage[i] = false;
+                            currentLanguage[i] = EmbeddingType.INNER;
                         }
                     }
 
@@ -266,24 +269,42 @@ public abstract class TagBasedLexerFormatter {
                 absoluteIndents[i] = indentLevels[i] * doc.getShiftWidth() + indentsWithinTags[i];
             }
             
-            boolean lastLineIsCurrentLanguage = false;
             int lastCrossPoint = 0;
+            int lastOuterCrossPoint = 0;
+            EmbeddingType lastEmbeddingType = null;
+            
             int[] newIndents = new int[transferData.getNumberOfLines()];
+            boolean topLevel = isTopLevelLanguage(doc);
 
             for (int i = 0; i < transferData.getNumberOfLines(); i++) {
-                if (lastLineIsCurrentLanguage != currentLanguage[i]) {
-                    // crosspoint
-                    lastLineIsCurrentLanguage = currentLanguage[i];
+                if (lastEmbeddingType != currentLanguage[i]){
                     lastCrossPoint = i;
+                    
+                    if (lastEmbeddingType == EmbeddingType.OUTER){
+                        lastOuterCrossPoint = i;
+                    }
+                    
+                    lastEmbeddingType = currentLanguage[i];
                 }
 
                 if (!transferData.isFormattable(i)) {
                     newIndents[i] = transferData.getOriginalIndent(i);
                 } else {
-                    if (currentLanguage[i]) {
+                    if (currentLanguage[i] == EmbeddingType.OUTER) {
                         newIndents[i] = previousIndents[i] + absoluteIndents[i];
-                    } else {
-                        newIndents[i] = previousIndents[lastCrossPoint] + absoluteIndents[i];
+                    } else if (currentLanguage[i] == EmbeddingType.INNER) { // INNER
+                        if (lastCrossPoint == i){ // first line of inner embedding
+                            int previousLineIndent = i > 0 ? newIndents[lastCrossPoint - 1] : 0;
+                            int absDiff = absoluteIndents[i] - (i > 0 ? absoluteIndents[i - 1] : 0);
+                            newIndents[i] = previousLineIndent + absDiff;
+                        } else {
+                            int diff = topLevel ? (transferData.getOriginalIndent(i) - transferData.getOriginalIndent(lastCrossPoint))
+                                    : (previousIndents[i] - previousIndents[lastCrossPoint]);
+                            
+                            newIndents[i] = newIndents[lastCrossPoint] + diff;
+                        }
+                    } else { // currentLanguage[i] == EmbeddingType.CURRENT_LANG
+                        newIndents[i] = previousIndents[lastOuterCrossPoint] + absoluteIndents[i];
                     }
                 }
             }
@@ -296,7 +317,8 @@ public abstract class TagBasedLexerFormatter {
                         
             for (int line = firstRefBlockLine; line <= lastRefBlockLine; line++) {
                 int lineStart = Utilities.getRowStartFromLineOffset(doc, line);
-                context.modifyIndent(lineStart, newIndents[line] + lineBeforeSelectionBias);
+                int newIndent = newIndents[line] + lineBeforeSelectionBias;
+                context.modifyIndent(lineStart, newIndent > 0 ? newIndent : 0);
             }
             
             transferData.setTransformedOffsets(newIndents);
@@ -311,10 +333,12 @@ public abstract class TagBasedLexerFormatter {
                     
                     if (!transferData.isFormattable(i)){
                         formattingTypeSymbol = '-';
-                    } else if (currentLanguage[i]){
-                        formattingTypeSymbol = 'N';
+                    } else if (currentLanguage[i] == EmbeddingType.INNER){
+                        formattingTypeSymbol = 'I';
+                    } else if (currentLanguage[i] == EmbeddingType.OUTER) {
+                        formattingTypeSymbol = 'O';
                     } else {
-                        formattingTypeSymbol = 'R';
+                        formattingTypeSymbol = 'C';
                     }
                     
                     char formattingRange = (i >= firstRefBlockLine && i <= lastRefBlockLine) 
@@ -571,7 +595,7 @@ public abstract class TagBasedLexerFormatter {
         return new TextBounds(absoluteStart, absoluteEnd, languageBlockStart, languageBlockEnd, firstLineOfTheLanguageBlock, lastLineOfTheLanguageBlock);
     }
 
-    private void markCurrentLanguageLinesAsFormattable(BaseDocument doc, TextBounds languageBounds, boolean[] currentLanguage) throws BadLocationException {
+    private void markCurrentLanguageLinesAsFormattable(BaseDocument doc, TextBounds languageBounds, EmbeddingType[] currentLanguage) throws BadLocationException {
         if (languageBounds.getStartPos() == -1){
             return; // only white spaces
         }
@@ -585,7 +609,7 @@ public abstract class TagBasedLexerFormatter {
         }
 
         for (int i = firstLineOfTheLanguageBlock; i <= languageBounds.getEndLine(); i++) {
-            currentLanguage[i] = true;
+            currentLanguage[i] = EmbeddingType.CURRENT_LANG;
         }
     }
     
