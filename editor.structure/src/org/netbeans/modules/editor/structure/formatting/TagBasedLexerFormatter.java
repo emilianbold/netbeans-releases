@@ -274,8 +274,21 @@ public abstract class TagBasedLexerFormatter {
                 } while (thereAreMoreTokens);
             }
             
+            // PASS 2: handle formatting order for languages on the same level of mime-hierarchy
+            
+            for (int line = 0; line < transferData.numberOfLines; line ++){
+                if (embeddingType[line] == EmbeddingType.CURRENT_LANG){
+                    transferData.setProcessedByNativeFormatter(line);
+                } else if (embeddingType[line] == EmbeddingType.OUTER){
+                    // play master
+                    if (!transferData.wasProcessedByNativeFormatter(line)){
+                        embeddingType[line] = EmbeddingType.INNER; 
+                    }
+                }
+            }
+            
             //****************
-            // PASS 2: calc line indents
+            // PASS 3: calc line indents
             // TODO: optimize it
             int[] indentLevels = new int[transferData.getNumberOfLines()];
             Arrays.fill(indentLevels, 0);
@@ -341,7 +354,7 @@ public abstract class TagBasedLexerFormatter {
                 lineBeforeSelectionBias = transferData.getOriginalIndent(firstRefBlockLine - 1) - newIndents[firstRefBlockLine - 1];
             }
             
-            // PASS 3: apply line indents
+            // PASS 4: apply line indents
             
             for (int line = firstRefBlockLine; line <= lastRefBlockLine; line++) {
                 int lineStart = Utilities.getRowStartFromLineOffset(doc, line);
@@ -678,6 +691,13 @@ public abstract class TagBasedLexerFormatter {
         private int transformedOffsets[];
         
         /**
+         * Indents after calling the current formatter.
+         * It must be filled with valid data for at least 
+         * the current formatting range and the previous line
+         */
+        private boolean alreadyProcessedByNativeFormatter[];
+        
+        /**
          * Number of lines in the document
          */
         private int numberOfLines;
@@ -685,6 +705,7 @@ public abstract class TagBasedLexerFormatter {
         public void init(BaseDocument doc) throws BadLocationException {
             numberOfLines = TagBasedLexerFormatter.getNumberOfLines(doc);
             formattableLines = new boolean[numberOfLines];
+            alreadyProcessedByNativeFormatter = new boolean[numberOfLines];
             Arrays.fill(formattableLines, true);
             originalIndents = new int[numberOfLines];
             transformedOffsets = new int[numberOfLines];
@@ -722,6 +743,14 @@ public abstract class TagBasedLexerFormatter {
         
         private int getOriginalIndent(int i) {
             return originalIndents[i];
+        }
+        
+        public boolean wasProcessedByNativeFormatter(int line){
+            return alreadyProcessedByNativeFormatter[line];
+        }
+        
+        public void setProcessedByNativeFormatter(int line){
+            alreadyProcessedByNativeFormatter[line] = true;
         }
     }
     
