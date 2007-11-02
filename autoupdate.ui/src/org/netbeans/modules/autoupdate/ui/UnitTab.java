@@ -1212,7 +1212,9 @@ public class UnitTab extends javax.swing.JPanel {
                 OperationInfo info = Containers.forDisable ().add (unit.updateUnit, unit.getRelevantElement ());
                 assert info != null;
                 UninstallUnitWizard wizard = new UninstallUnitWizard ();
-                wizard.invokeWizard (false);
+                if (wizard.invokeWizard (false)) {
+                    Containers.forUninstall ().remove (unit.getRelevantElement ());
+                }
                 Containers.forDisable ().removeAll ();
             }
             fireUpdataUnitChange ();

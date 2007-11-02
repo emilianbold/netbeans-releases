@@ -19,7 +19,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="topButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="453" max="32767" attributes="0"/>
+                      <EmptySpace pref="456" max="32767" attributes="0"/>
                       <Component id="lSearch" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                       <Component id="tfSearch" min="-2" pref="114" max="-2" attributes="0"/>
@@ -31,7 +31,7 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="lSelectionInfo" min="-2" max="-2" attributes="2"/>
                       <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-                      <Component id="lWarning" pref="631" max="32767" attributes="0"/>
+                      <Component id="lWarning" pref="653" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
