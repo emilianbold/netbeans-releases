@@ -69,6 +69,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -713,15 +714,26 @@ public class HTMLCompletionQuery  {
         }
         
         @Override
-                protected void reformat(JTextComponent component, String text) {
+        protected void reformat(JTextComponent component, String text) {
             try {
                 BaseDocument doc = (BaseDocument)component.getDocument();
-                ExtFormatter f = (ExtFormatter)doc.getFormatter();
                 int dotPos = component.getCaretPosition();
-                f.reformat(doc, Utilities.getRowStart(doc, dotPos), Utilities.getRowEnd(doc, dotPos), true);
+                Reformat reformat = Reformat.get(doc);
+                reformat.lock();
+
+                try {
+                    doc.atomicLock();
+                    try {
+                        int startOffset = Utilities.getRowStart(doc, dotPos);
+                        int endOffset = Utilities.getRowEnd(doc, dotPos);
+                        reformat.reformat(startOffset, endOffset);
+                    } finally {
+                        doc.atomicUnlock();
+                    }
+                } finally {
+                    reformat.unlock();
+                }
             }catch(BadLocationException e) {
-                //ignore
-            }catch(IOException ioe) {
                 //ignore
             }
         }
@@ -774,19 +786,26 @@ public class HTMLCompletionQuery  {
         }
         
         @Override
-                protected void reformat(JTextComponent component, String text) {
+        protected void reformat(JTextComponent component, String text) {
             try {
                 BaseDocument doc = (BaseDocument)component.getDocument();
-                ExtFormatter f = (ExtFormatter)doc.getFormatter();
-                int[] fmtBlk = f.getReformatBlock(component, text);
-                if (fmtBlk != null) {
-                    fmtBlk[0] = Utilities.getRowStart(doc, fmtBlk[0]);
-                    fmtBlk[1] = Utilities.getRowEnd(doc, fmtBlk[1]);
-                    f.reformat(doc, fmtBlk[0], fmtBlk[1], true);
+                int dotPos = component.getCaretPosition();
+                Reformat reformat = Reformat.get(doc);
+                reformat.lock();
+
+                try {
+                    doc.atomicLock();
+                    try {
+                        int startOffset = Utilities.getRowStart(doc, dotPos);
+                        int endOffset = Utilities.getRowEnd(doc, dotPos);
+                        reformat.reformat(startOffset, endOffset);
+                    } finally {
+                        doc.atomicUnlock();
+                    }
+                } finally {
+                    reformat.unlock();
                 }
             }catch(BadLocationException e) {
-                //ignore
-            }catch(IOException ioe) {
                 //ignore
             }
         }
