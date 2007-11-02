@@ -209,7 +209,7 @@ class NodeCache implements PropertyChangeListener
                     if (gray)
                     {
                         resNode.setDisplayName(NbBundle.getMessage(NodeCache.class, "LBL_NodeCache_InheritedResources", project.getConfigurationHelper().getDefaultConfiguration().getDisplayName())); //NOI18N
-                        ((NodeFactory.ActionNode)resNode).setActions(null);
+                        ((NodeFactory.ActionNode)resNode).setActions(emptyAction);
                     }
                     else
                     {
