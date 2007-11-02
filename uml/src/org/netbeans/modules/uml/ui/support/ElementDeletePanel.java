@@ -58,15 +58,18 @@ public class ElementDeletePanel extends javax.swing.JPanel {
     public ElementDeletePanel(ETList<TSObject> objects, boolean displayRemove) {
         initComponents();
         jCheckBox2.setVisible(displayRemove);
-        if (objects.size() > 1)
-        {
+        if (objects.size() > 1) {
             jLabel1.setText(NbBundle.getMessage(ElementDeletePanel.class,
                     "ElementDeletePanel.jLabel1.text_multi", objects.size()));
-        } else
-        {
+        } else {
             IElement e = TypeConversions.getElement(objects.get(0));
-            jLabel1.setText(NbBundle.getMessage(ElementDeletePanel.class,
-                    "ElementDeletePanel.jLabel1.text_single", e.toString()));
+            if (e.toString().length() > 0) {
+                jLabel1.setText(NbBundle.getMessage(ElementDeletePanel.class,
+                        "ElementDeletePanel.jLabel1.text_single", e.toString()));
+            } else {
+                jLabel1.setText(NbBundle.getMessage(ElementDeletePanel.class,
+                        "ElementDeletePanel.jLabel1.text_unnamed", e.getElementType()));
+            }
         }
     }
 
