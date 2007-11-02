@@ -70,7 +70,7 @@ made subject to such option by the copyright holder.
  <answer id="arch-overall">
   <p>
    The Database module provides the 
-   <api group="java" name="DatabaseExplorerAPI" type="export" category="devel" url="@TOP@index.html"/>
+   <api group="java" name="DatabaseExplorerAPI" type="export" category="official" url="@TOP@index.html"/>
    which allows access to the database connections and drivers
    defined in the Database Explorer. It allows a client to retrieve the
    connection list and their properties and to create new connections.
@@ -79,7 +79,7 @@ made subject to such option by the copyright holder.
    to create new and remove existing drivers.
   </p>
   <p>
-   The <api group="layer" name="DatabaseExplorerLayerAPI" type="export" category="devel" url="@TOP@index.html"/> 
+   The <api group="layer" name="DatabaseExplorerLayerAPI" type="export" category="official" url="@TOP@index.html"/> 
    allows for the declarative registration of database connections and JDBC
    drivers in the module layer. Database runtimes (which are representations of
    an instance of a database server) can also be registered in the layer.
@@ -89,20 +89,20 @@ made subject to such option by the copyright holder.
    those modules don't have Javadoc, therefore the description is here. 
    -->
   <p>
-   <api group="layer" name="Loaders-text-dbschema-Actions" type="export" category="stable" url="@TOP@index.html"/> 
+   <api group="layer" name="Loaders-text-dbschema-Actions" type="export" category="devel" url="@TOP@index.html"/> 
    allows extending <code>.dbschema</code> files with own actions by registering them in the 
    <code>Loaders/text/x-dbschema/Actions</code> folder. Note that this folder is actually provided by the
    <code>org-netbeans-modules-dbschema.jar</code> module.
   </p>
   <p>
-   <api group="layer" name="Loaders-text-sql-Actions" type="export" category="stable" url="@TOP@index.html"/> 
+   <api group="layer" name="Loaders-text-sql-Actions" type="export" category="devel" url="@TOP@index.html"/> 
    allows extending <code>.sql</code> files with own actions by registering them in the 
    <code>Loaders/text/x-sql/Actions</code> folder. Note that this folder is actually provided by the
    <code>org-netbeans-modules-db-core.jar</code> module.
   </p>
   <p>
    This module also provides a <api group="java" name="SQLSupportAPI" type="export"
-     category="devel" url="@TOP@org/netbeans/api/db/sql/support/package-summary.html"/>
+     category="official" url="@TOP@org/netbeans/api/db/sql/support/package-summary.html"/>
      which provides utilities for working with SQL such as quoting identifiers.
   </p>
  </answer>
