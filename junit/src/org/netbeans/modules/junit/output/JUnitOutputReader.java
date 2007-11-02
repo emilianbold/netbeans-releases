@@ -567,7 +567,7 @@ final class JUnitOutputReader {
                         if ((commaIndex != -1)
                                 && formatter.substring(0, commaIndex).equals(XML_FORMATTER_CLASS_NAME)) {
                             String fullReportFileName = formatter.substring(commaIndex + 1);
-                            int lastSlashIndex = fullReportFileName.lastIndexOf('/');
+                            int lastSlashIndex = fullReportFileName.lastIndexOf(File.separatorChar);
                             String dirName = (lastSlashIndex != -1)
                                               ? fullReportFileName.substring(0, lastSlashIndex)
                                               : ".";                    //NOI18N
