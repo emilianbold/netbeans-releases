@@ -71,7 +71,9 @@ public class JaxWsHandlerCreatorProvider implements HandlerCreatorProvider {
         int projectType = projectInfo.getProjectType();
         if ((projectType == ProjectInfo.JSE_PROJECT_TYPE && Util.isSourceLevel16orHigher(project)) ||
                 (projectType == ProjectInfo.JSE_PROJECT_TYPE && Util.getSourceLevel(project).equals("1.5") && wsimportFO != null) || //NOI18N
-                (Util.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)) || //NOI18N
+                (Util.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE 
+                || projectType == ProjectInfo.CAR_PROJECT_TYPE
+                || projectType == ProjectInfo.EJB_PROJECT_TYPE)) || //NOI18N
                 (projectInfo.isJwsdpSupported() || (!projectInfo.isJsr109Supported() && projectType == ProjectInfo.WEB_PROJECT_TYPE && !projectInfo.isJsr109oldSupported()))
                 ) {
             return new JaxWsHandlerCreator(wiz);

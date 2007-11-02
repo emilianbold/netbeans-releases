@@ -69,7 +69,9 @@ public class JaxRpcHandlerCreatorProvider implements HandlerCreatorProvider {
         FileObject wscompileFO = classPath.findResource("com/sun/xml/rpc/tools/ant/Wscompile.class"); // NOI18N
         ProjectInfo projectInfo = new ProjectInfo(project);
         int projectType = projectInfo.getProjectType();
-        if ((projectType == ProjectInfo.JSE_PROJECT_TYPE  && wscompileFO != null) || (!Util.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE))) {
+        if ((projectType == ProjectInfo.JSE_PROJECT_TYPE  && wscompileFO != null)
+                || (!Util.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE 
+                || projectType == ProjectInfo.CAR_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE))) {
             return new JaxRpcHandlerCreator(project, wiz);
         }
         return null;

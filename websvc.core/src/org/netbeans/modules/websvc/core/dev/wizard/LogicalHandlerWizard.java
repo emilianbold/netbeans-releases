@@ -190,7 +190,9 @@ public class LogicalHandlerWizard implements WizardDescriptor.InstantiatingItera
                     return true;
             }
             
-            if (Util.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)) { //NOI18N
+            if (Util.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE 
+                    || projectType == ProjectInfo.CAR_PROJECT_TYPE
+                    || projectType == ProjectInfo.EJB_PROJECT_TYPE)) { //NOI18N
                 return true;
             }
             

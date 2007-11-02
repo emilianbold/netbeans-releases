@@ -61,6 +61,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.openide.filesystems.FileObject;
 
@@ -196,7 +197,8 @@ public class MessageHandlerWizard implements WizardDescriptor.InstantiatingItera
                 return isValidInJavaProject(project);
             }
 
-            if (!Util.isJavaEE5orHigher(project) && WebServicesSupport.getWebServicesSupport(project.getProjectDirectory()) == null) {
+            if (!Util.isJavaEE5orHigher(project) && ((WebServicesSupport.getWebServicesSupport(project.getProjectDirectory()) == null)
+                    && (WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null))) {
                 // check if jaxrpc plugin installed
                 wiz.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(MessageHandlerWizard.class, "ERR_NoJaxrpcPluginFoundHandler")); // NOI18N
                 return false;

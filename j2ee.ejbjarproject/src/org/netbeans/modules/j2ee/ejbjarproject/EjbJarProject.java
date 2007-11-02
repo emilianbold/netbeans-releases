@@ -1006,6 +1006,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         "ejb-types",            // NOI18N
         "ejb-types-server",     // NOI18N
         "web-services",         // NOI18N
+        "message-handler",         // NOI18N
         "wsdl",                 // NOI18N
         "j2ee-14-types",           // NOI18N
         "j2ee-types",           // NOI18N
