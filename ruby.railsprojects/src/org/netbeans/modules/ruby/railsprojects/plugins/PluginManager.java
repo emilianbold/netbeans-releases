@@ -376,33 +376,10 @@ public class PluginManager {
         pb.directory(pwd);
         pb.redirectErrorStream(true);
         
+        Util.adjustProxy(pb);
+        
         // PATH additions for JRuby etc.
-        Map<String, String> env = pb.environment();
-        new RubyExecution(new ExecutionDescriptor("plugin", pb.directory()).cmd(cmd)).setupProcessEnvironment(env); // NOI18N
-        
-        // Proxy
-        String proxy = Util.getNetbeansHttpProxy();
-        
-        if (proxy != null) {
-            // This unfortunately does not work -- plugins blows up. Looks like
-            // a RubyPlugins bug.
-            // ERROR:  While executing plugin ... (NoMethodError)
-            //    undefined method `[]=' for #<Plugin::ConfigFile:0xb6c763 @hash={} ,@args=["--remote", "-p", "http://foo.bar:8080"] ,@config_file_name=nil ,@verbose=true>
-            //argList.add("--http-proxy"); // NOI18N
-            //argList.add(proxy);
-            // (If you uncomment the above, move it up above the args = argList.toArray line)
-            //
-            // Running plugins list -p or --http-proxy triggers this so for now
-            // work around with environment variables instead - which still work
-            if ((env.get("HTTP_PROXY") == null) && (env.get("http_proxy") == null)) { // NOI18N
-                env.put("HTTP_PROXY", proxy); // NOI18N
-            }
-            
-            // PENDING - what if proxy was null so the user has TURNED off proxies while
-            // there is still an environment variable set - should we honor their
-            // environment, or honor their NetBeans proxy settings (e.g. unset HTTP_PROXY
-            // in the environment before launching plugin?
-        }
+        new RubyExecution(new ExecutionDescriptor("plugin", pb.directory()).cmd(cmd)).setupProcessEnvironment(pb.environment()); // NOI18N
         
         if (lines == null) {
             lines = new ArrayList<String>(40);
