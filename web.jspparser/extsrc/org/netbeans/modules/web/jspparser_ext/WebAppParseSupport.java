@@ -83,6 +83,7 @@ import org.apache.jasper.compiler.TldLocationsCache;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.web.jspparser_ext.OptionsImpl;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /** Class that provides JSP parsing support for one web application. It caches 
@@ -420,13 +421,16 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         // PENDING - do caching for individual JSPs
         JspCompilationContext ctxt = createCompilationContext(jspFile, true);
         
-/*        OptionsImpl options = new OptionsImpl(jspPage);
- 
-        CompilationDescriptor cd = new CompilationDescriptor(
-                                       JspCompileUtil.getContextRoot(jspPage.getPrimaryFile()).getFileSystem(), compilationURI);
-        String jspResource = JspCompileUtil.getContextPath(jspPage.getPrimaryFile());
- 
-        AnalyzerCompilerContext ctxt = new AnalyzerCompilerContext(jspResource, cd, options);*/
+        // check also all tlds, whether were not changed. #90845
+        TldLocationsCache cache = ctxt.getOptions().getTldLocationsCache();
+        if (cache != null) {
+            try {
+                getMappingsByReflection(cache);
+            } catch (IOException ex) {
+                //nothing spacial, just all tld can not be reparsed
+                Exceptions.printStackTrace(ex);
+            }
+        }
         
         return callTomcatParser(jspFile, ctxt, waContextClassLoader, errorReportingMode);
     }
