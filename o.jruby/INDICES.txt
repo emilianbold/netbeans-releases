@@ -10,7 +10,7 @@ unset GEM_HOME
 
 # Remove the old preindex files:
 
-    rm -rf ~/netbeans/work/nbbuild/netbeans/ruby1/preindexed/* 
+    rm -rf ~/netbeans/work/nbbuild/netbeans/ruby1/preindexed/lib
 
 # Enable extra indexing by editing RubyIndexerHelper ant changing AVAILABLE from false to true
 # and recompiling ruby/editing

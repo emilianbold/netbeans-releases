@@ -105,7 +105,7 @@ public class RubyInstallation {
     private static final String JRUBY_RELEASEDIR = "jruby-" + JRUBY_RELEASE; // NOI18N
     
     /** Version number of the rubystubs */
-    private static final String RUBYSTUBS_VERSION = "0.2"; // NOI18N
+    private static final String RUBYSTUBS_VERSION = "1.8.6-p110"; // NOI18N
 
     /**
      * MIME type for Ruby. Don't change this without also consulting the various XML files

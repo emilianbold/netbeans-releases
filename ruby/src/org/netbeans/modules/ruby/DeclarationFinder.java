@@ -2215,7 +2215,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                     if (url.indexOf("/stub_") == -1) {
                         // Not a stub file, such as ftools.rb
                         // TODO - don't hardcode for version 0.2
-                        String stub = "rubystubs/0.2/";
+                        String stub = "rubystubs/1.8.6-p110/";
                         int stubStart = url.indexOf(stub);
                         if (stubStart != -1) {
                             filename = filename+": " + url.substring(stubStart);
