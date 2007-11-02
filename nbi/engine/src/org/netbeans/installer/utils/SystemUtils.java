@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -16,13 +16,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -115,7 +115,7 @@ public final class SystemUtils {
     
     public static String resolveString(String string, ClassLoader loader) {
         String parsed = string;
-            
+        
         if (parsed == null) {
             return null;
         }
@@ -123,7 +123,7 @@ public final class SystemUtils {
         try {
             parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{install\\}", StringUtils.escapeRegExp(getDefaultApplicationsLocation().getAbsolutePath()));
         } catch (NativeException e) {
-            ErrorManager.notifyError(ResourceUtils.getString(SystemUtils.class, 
+            ErrorManager.notifyError(ResourceUtils.getString(SystemUtils.class,
                     ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY), e);
         }
         
@@ -409,9 +409,25 @@ public final class SystemUtils {
         
         Process process = builder.start();
         
-        long runningTime;
-        boolean stopped = false;
-        for (runningTime = 0; runningTime < MAX_EXECUTION_TIME; runningTime += DELAY) {
+        long startTime = System.currentTimeMillis();
+        long endTime   = startTime + MAX_EXECUTION_TIME;
+        boolean doRun = true;
+        long delay = INITIAL_DELAY;
+        while (doRun && (System.currentTimeMillis() < endTime)) {
+            try {
+                Thread.sleep(delay);
+                if(delay < MAX_DELAY) {
+                    delay += DELTA_DELAY;
+                }
+            }  catch (InterruptedException e) {
+                ErrorManager.notifyDebug("Interrupted", e);
+            }
+            try {
+                errorLevel = process.exitValue();
+                doRun = false;
+            } catch (IllegalThreadStateException e) {
+                ; // do nothing - the process is still running
+            }
             String string;
             
             string = StringUtils.readStream(process.getInputStream());
@@ -433,36 +449,13 @@ public final class SystemUtils {
                 
                 processStdErr.append(string);
             }
-            
-            try {
-                //one more attempt to read the rest of stderr/stdout and only then exit
-                if(stopped) {
-                    break;
-                } else {                    
-                    errorLevel = process.exitValue();
-                    stopped = true;
-                    continue;
-                }                
-            } catch (IllegalThreadStateException e) {
-                ; // do nothing - the process is still running
-            }
-            
-            try {
-                Thread.sleep(DELAY);
-            }  catch (InterruptedException e) {
-                ErrorManager.notifyDebug("Interrupted", e);
-            }
         }
         
-        if (runningTime >= MAX_EXECUTION_TIME) {
-            process.destroy();
-            LogManager.log(ErrorLevel.MESSAGE, "[return]: killed by timeout");
-        }  else {
-            LogManager.log(ErrorLevel.MESSAGE, "[return]: " + errorLevel);
-        }
-        
-        process.destroy();
-        
+        LogManager.log(ErrorLevel.MESSAGE, 
+                (doRun) ? 
+                    "[return]: killed by timeout" : 
+                    "[return]: " + errorLevel);
+        process.destroy();        
         LogManager.unindent();
         LogManager.log(ErrorLevel.MESSAGE, "... command execution finished");
         
@@ -1078,10 +1071,12 @@ public final class SystemUtils {
     
     public static final int BUFFER_SIZE = 4096;
     
-    public static final int DELAY = 50;
+    public static final int MAX_DELAY = 50; // NOMAGI
+    public static final int INITIAL_DELAY = 5; // NOMAGI
+    public static final int DELTA_DELAY = 5; // NOMAGI
     
-    public static final String ERROR_CANNOT_PARSE_PATTERN_KEY = 
-         "SU.error.cannot.parse.pattern";//NOI18N
+    public static final String ERROR_CANNOT_PARSE_PATTERN_KEY =
+            "SU.error.cannot.parse.pattern";//NOI18N
     public static final String ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY =
-         "SU.error.cannot.get.default.apps.location";//NOI18N
+            "SU.error.cannot.get.default.apps.location";//NOI18N
 }
