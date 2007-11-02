@@ -51,5 +51,5 @@ by invoking "/Web Pages/resources/dojo/rest/rjs/TestStubs.html".
 
 Note:
 
-- If you have unchecked JMaki during stub generation, you could see only
+- If you have unchecked jMaki during stub generation, you could see only
 /web/rest directory. Test file is in /Web Pages/rest/TestStubs.html.

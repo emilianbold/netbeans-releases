@@ -133,7 +133,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String DOJO_SUPPORT_TEMPLATE = "Templates/WebServices/DojoSupport.js"; //NOI18N
     public static final String DOJO_TESTRESOURCESTABLE_TEMPLATE = "Templates/WebServices/DojoTestResourcesTable.html"; //NOI18N
     
-    //JMaki templates
+    //jMaki templates
     public static final String JMAKI_README = "Readme"; //NOI18N
     public static final String JMAKI_COMPONENT = "component"; //NOI18N
     public static final String JMAKI_TESTRESOURCESTABLE = "TestResourcesTable"; //NOI18N

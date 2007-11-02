@@ -7,11 +7,12 @@
         <!-- JS_DECLARE_START - DO NOT REMOVE-->
         <script type="text/javascript" src="./Support.js"></script>
         <!-- JS_DECLARE_END - DO NOT REMOVE-->
-	<script type="text/javascript">
-		var rjsConfig = {
-			isDebug: true
-		};
-	</script>
+	<!--<script type="text/javascript">
+            //rest debug, uncomment to enable debugging
+            var rjsConfig = {
+                isDebug: true
+            };
+	</script>-->
     </head>
     <body>
 

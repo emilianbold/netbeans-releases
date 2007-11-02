@@ -3,17 +3,21 @@
 	<title>Resource table widget</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"></meta>
 	<!--<script type="text/javascript">
-		var djConfig = {
-			isDebug: true,
-			debugAtAllCosts: true
-		};
+            //dojo debug, uncomment to enable debugging
+            var djConfig = {
+                isDebug: true,
+                debugAtAllCosts: true
+            };
 	</script>-->
 	<script type="text/javascript" src="../../resources/libs/dojo/v0.4.3/djd43.js"></script>
         <script type="text/javascript" src="./Support.js"></script>
+ 	<!--<script type="text/javascript">
+            //rest debug, uncomment to enable debugging
+            var rjsConfig = {
+                isDebug: true
+            };
+	</script>-->
 	<script type="text/javascript">
-		var rjsConfig = {
-			isDebug: true
-		};
                 var store = "__CONTAINER_NAME__";
                 var storeUrl = "http://localhost:8080/__PROJECT_NAME__/resources/__CONTAINER_PATH_NAME__/";
 		function loadResourcesTable() {
