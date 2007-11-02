@@ -813,6 +813,10 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                         // Find string
                         int nameOffset = begin+index+target.length();
                         TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(th, nameOffset);
+                        if (ts == null) {
+                            return null;
+                        }
+
                         ts.move(nameOffset);
 
                         StringBuilder sb = new StringBuilder();
