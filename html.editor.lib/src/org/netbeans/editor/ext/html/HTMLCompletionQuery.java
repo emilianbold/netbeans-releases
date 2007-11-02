@@ -542,8 +542,8 @@ public class HTMLCompletionQuery  {
         }
         
         public int getPreferredWidth(Graphics g, Font defaultFont) {
-            Component renderComponent = getPaintComponent(false);
-            return renderComponent.getPreferredSize().width;
+            HTMLCompletionResultItemPaintComponent renderComponent = (HTMLCompletionResultItemPaintComponent)getPaintComponent(false);
+            return renderComponent.getPreferredWidth(g, defaultFont);
         }
         
         public void render(Graphics g, Font defaultFont, Color defaultColor,
