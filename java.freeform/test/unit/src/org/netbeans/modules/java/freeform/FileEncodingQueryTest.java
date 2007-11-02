@@ -77,15 +77,18 @@ public class FileEncodingQueryTest extends NbTestCase {
         prjBase.mkdir();
         File antScript = new File(prjBase, "build.xml");
         antScript.createNewFile();
+        
         File srcDir = new File(prjBase, "src");
         srcDir.mkdir();
-        File srcFile = createFile(srcDir);
+        File srcFile = createFileInPackage(srcDir, "testpackage", "ClassA.java");
+        
         File testDir = new File(prjBase, "test");
         testDir.mkdir();
-        File testFile = createFile(testDir);
+        File testFile = createFileInPackage(testDir, "otherpackage", "ClassB.java");
+        
         File libsrcDir = new File(prjBase, "libsrc");
         libsrcDir.mkdir();
-        File libFile = createFile(libsrcDir);
+        File libFile = createFileInPackage(libsrcDir, "yetanotherpackage", "ClassC.java");
         
         ArrayList sources = new ArrayList();
         AntProjectHelper helper = FreeformProjectGenerator.createProject(prjBase, prjBase, projectName, null);
@@ -95,7 +98,7 @@ public class FileEncodingQueryTest extends NbTestCase {
         sf.type = "java";
         sf.style = "packages";
         sf.location = "src";
-        sf.encoding = "UTF-8";
+        sf.encoding = "ISO-8859-1";
         sources.add(sf);
         
         sf = new JavaProjectGenerator.SourceFolder();
@@ -103,7 +106,13 @@ public class FileEncodingQueryTest extends NbTestCase {
         sf.type = "java";
         sf.style = "packages";
         sf.location = "test";
-        sf.encoding = "UTF-16";
+        sf.encoding = "ISO-8859-2";
+        sources.add(sf);
+        
+        sf = new JavaProjectGenerator.SourceFolder();
+        sf.label = "proj-1";
+        sf.location = ".";
+        sf.encoding = "ISO-8859-3";
         sources.add(sf);
         
         JavaProjectGenerator.putSourceFolders(helper, sources, null);
@@ -117,22 +126,28 @@ public class FileEncodingQueryTest extends NbTestCase {
         assertEquals("Project folder is incorrect", prjDir, p.getProjectDirectory());
         
         FileEncodingQuery feq = p.getLookup().lookup(FileEncodingQuery.class);
+        
         Charset cset = feq.getEncoding(FileUtil.toFileObject(srcFile));
-        assertEquals("UTF-8", cset.name());
+        assertEquals("ISO-8859-1", cset.name());
+        
         cset = feq.getEncoding(FileUtil.toFileObject(testFile));
-        assertEquals("UTF-16", cset.name());
+        assertEquals("ISO-8859-2", cset.name());
+        
         // file not under any src root
-        File lonelyFile = new File(prjBase, "testfile");
+        File lonelyFile = new File(prjBase, "testfile.txt");
         lonelyFile.createNewFile();
         cset = feq.getEncoding(FileUtil.toFileObject(lonelyFile));
-        assertEquals(cset, Charset.forName(System.getProperty("file.encoding")));
+        assertEquals("ISO-8859-3", cset.name());
+        
+        cset = feq.getEncoding(FileUtil.toFileObject(libFile));
+        assertEquals("ISO-8859-3", cset.name());
         
     }
     
-    private File createFile(File root) throws IOException {
-        File pkg = new File(root, "testpackage");
+    private File createFileInPackage(File root, String pkgName, String fileName) throws IOException {
+        File pkg = new File(root, pkgName);
         pkg.mkdir();
-        File file = new File(pkg, "Class.java");
+        File file = new File(pkg, fileName);
         file.createNewFile();
         return file;
     }

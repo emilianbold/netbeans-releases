@@ -109,7 +109,7 @@ public final class FreeformProject implements Project {
 
     private Lookup initLookup() throws IOException {
         aux = helper().createAuxiliaryConfiguration(); // AuxiliaryConfiguration
-        FreeformFileEncodingQueryImpl FEQImpl = new FreeformFileEncodingQueryImpl(helper());
+        FreeformFileEncodingQueryImpl FEQImpl = new FreeformFileEncodingQueryImpl(helper(), evaluator());
         helper().addAntProjectListener(FEQImpl);
         Lookup baseLookup = Lookups.fixed(
             this,

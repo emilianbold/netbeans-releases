@@ -53,7 +53,9 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ant.freeform.spi.ProjectConstants;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.java.freeform.JavaProjectGenerator;
@@ -62,8 +64,10 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
@@ -174,7 +178,7 @@ public class ProjectModel  {
     public static void instantiateJavaProject(AntProjectHelper helper, ProjectModel model) throws IOException {
         List<JavaProjectGenerator.SourceFolder> sourceFolders = model.updatePrincipalSourceFolders(model.sourceFolders, true);
         
-        updateSourceFolders(sourceFolders, model.encoding);
+        updateSourceFolders(sourceFolders, model);
         if (sourceFolders.size() > 0) {
             JavaProjectGenerator.putSourceFolders(helper, sourceFolders, null);
         }
@@ -205,7 +209,7 @@ public class ProjectModel  {
 
                 List<JavaProjectGenerator.SourceFolder> sourceFolders = JavaProjectGenerator.getSourceFolders(helper, null);
                 sourceFolders = model.updatePrincipalSourceFolders(sourceFolders, false);
-                updateSourceFolders(sourceFolders, model.encoding);
+                updateSourceFolders(sourceFolders, model);
                 JavaProjectGenerator.putSourceFolders(helper, sourceFolders, null);
 
                 AuxiliaryConfiguration aux = Util.getAuxiliaryConfiguration(helper);
@@ -234,18 +238,25 @@ public class ProjectModel  {
     }
     
     // #120508: special source folder is added to save encoding for files directly under project folder
-    private static void updateSourceFolders(List<JavaProjectGenerator.SourceFolder> list, String enc) {
-        if (enc != null && !enc.equals("")) { // NOI18N
+    private static void updateSourceFolders(List<JavaProjectGenerator.SourceFolder> list, ProjectModel model) {
+        if (model.encoding != null) {
             for (JavaProjectGenerator.SourceFolder sf : list) {
-                if (sf.label.equals("projectdir") && sf.location.equals(".")) { // NOI18N
-                    sf.encoding = enc;
+                if (sf.location.equals(".")) { // NOI18N
+                    sf.encoding = model.encoding;
                     return;
                 }
             }
             JavaProjectGenerator.SourceFolder sf = new JavaProjectGenerator.SourceFolder();
-            sf.label = "projectdir"; // NOI18N
+            Project project = null;
+            try {
+                project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(model.nbProjectFolder));
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+            String prjName = ProjectUtils.getInformation(project).getDisplayName();
+            sf.label = prjName;
             sf.location = "."; // NOI18N
-            sf.encoding = enc;
+            sf.encoding = model.encoding;
             list.add(sf);
         }
     }
