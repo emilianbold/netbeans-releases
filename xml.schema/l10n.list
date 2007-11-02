@@ -1,0 +1,3 @@
+# xml/schema
+read global
+${l10n-module}/src/org/netbeans/modules/xml/schema/wizard/templates/*.html
