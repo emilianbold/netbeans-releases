@@ -1368,7 +1368,8 @@ public class ResourceUtils implements WizardConstants{
                     url = "jdbc:derby://" + serverName;
                     if (portNo != null && portNo.length() > 0) {
                         url = url + ":" + portNo; //NOI18N
-                    }    
+                    }   
+                    url = url + "/" + dbName; //NOI8N
                 }
             } else {
                 String in_url = getStringVal(poolValues.get(__Url));
