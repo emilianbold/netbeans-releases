@@ -941,8 +941,9 @@ public class WSDLGenerator {
     private void writeWsdl() throws WSDLException {
         try {
             final WSDLWriter writer = WSDLGenerator.factory.newWSDLWriter();
-            final String outputFileName = this.wsdlFileLocation + "/" + this.mWSDLFileName + ".wsdl";
-            final Writer sink = new FileWriter(outputFileName);
+            final String outputFileName = this.wsdlFileLocation + File.separator + this.mWSDLFileName + ".wsdl";
+            java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFileName);
+            final Writer sink = new java.io.OutputStreamWriter(fos,"UTF-8");
             writer.writeWSDL(this.def, sink);
             String str = IOUtil.getText(outputFileName,"UTF-8");
     		StringBuffer sb = new StringBuffer(str);
