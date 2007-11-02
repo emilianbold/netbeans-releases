@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -159,7 +158,10 @@ public class CDCProjectUtil {
         /* Here is the trick to include not build dependent projects */
         ArrayList<ClassPath> srcRoots=new ArrayList<ClassPath>();
         final ArrayList<FileObject> srcRootsFO=new ArrayList<FileObject>();
-        srcRoots.add(ClassPath.getClassPath (root, ClassPath.SOURCE));
+        ClassPath path=ClassPath.getClassPath (root, ClassPath.SOURCE);
+        srcRoots.add(path);
+        for (ClassPath.Entry entry : path.entries())
+            srcRootsFO.add(entry.getRoot());
         Library libs[]=LibraryManager.getDefault().getLibraries();
         HashSet<URL> libSet=new HashSet<URL>();
         for (Library lib : libs)
@@ -177,7 +179,7 @@ public class CDCProjectUtil {
             FileObject[] roots=res.getRoots();
             for ( FileObject r : roots)
             {
-                ClassPath path=ClassPath.getClassPath(r,ClassPath.SOURCE);
+                path=ClassPath.getClassPath(r,ClassPath.SOURCE);
                 entrySet.clear();
                 for (ClassPath.Entry entry : path.entries())
                 {
@@ -288,24 +290,25 @@ public class CDCProjectUtil {
     
     private static boolean isSubclass(final String className, final String baseClassName, final FileObject root)
     {
-        if (className == null)
-            return false;
-        // support for unit testing
-        if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
-            return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
+        final Boolean[] result = new Boolean[]{false};
+        if (className == null) {
+            return result[0];
         }
-        
-        ClassPath boot = ClassPath.getClassPath (root, ClassPath.BOOT);  //Single compilation unit
-        ClassPath rtm2  = ClassPath.getClassPath (root, ClassPath.EXECUTE);  //Single compilation unit'
-        ClassPath rtm1 = ClassPath.getClassPath (root, ClassPath.COMPILE);
-        ClassPath rtm  = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(new ClassPath[] { rtm1, rtm2 } );
-        ClassPath clp = ClassPath.getClassPath (root, ClassPath.SOURCE);        
-        
+
+        if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
+            return MainClassChooser.unitTestingSupport_hasMainMethodResult;
+        }
+
+        ClassPath boot = ClassPath.getClassPath(root, ClassPath.BOOT); //Single compilation unit
+        ClassPath rtm2 = ClassPath.getClassPath(root, ClassPath.EXECUTE); //Single compilation unit'
+        ClassPath rtm1 = ClassPath.getClassPath(root, ClassPath.COMPILE);
+        ClassPath rtm = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(new ClassPath[]{rtm1, rtm2});
+        ClassPath clp = ClassPath.getClassPath(root, ClassPath.SOURCE);
+
         ClasspathInfo cpInfo = ClasspathInfo.create(boot, rtm, clp);
         JavaSource js = JavaSource.create(cpInfo);
-        final boolean[] result = new boolean[]{false};
         try {
-            
+
             js.runUserActionTask(new CancellableTask<CompilationController>() {
 
                 public void run(CompilationController control) throws Exception {
@@ -313,20 +316,21 @@ public class CDCProjectUtil {
                     if (type == null) {
                         return;
                     }
-                    
+
                     TypeElement xtype = control.getElements().getTypeElement(className);
                     if (xtype == null) {
                         return;
                     }
-                    Types types=control.getTypes();
-                    result[0]=types.isSubtype(types.erasure(xtype.asType()),types.erasure(type.asType()));                     
+                    Types types = control.getTypes();
+                    result[0] = types.isSubtype(types.erasure(xtype.asType()), types.erasure(type.asType()));
                 }
 
-                public void cancel() {}
-
-            }, true);            
-        } 
-        catch (IOException ioe) {}
+                public void cancel() {
+                }
+            }, true);
+        } catch (IOException ioe) {
+        }
+        
         return result[0];
     }
 

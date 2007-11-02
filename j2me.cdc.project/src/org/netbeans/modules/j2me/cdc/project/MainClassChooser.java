@@ -62,6 +62,7 @@ import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /** Browses and allows to choose a project's main class.
  *
@@ -140,27 +141,29 @@ public class MainClassChooser extends JPanel {
                         }
                     });                    
                 } else {
-                    final String[] arr = possibleMainClasses.toArray (new String[0]);
+                    String[] arr = possibleMainClasses.toArray (new String[0]);
                     // #46861, sort name of classes
                     Arrays.sort (arr);
-                    SwingUtilities.invokeLater(new Runnable () {
-                        public void run () {
+                    
                             if (onlyMain){ //only execution using main is allowed (tests)
-                                List<String> l = new ArrayList<String>(possibleMainClasses);
+                                final List<String> l = new ArrayList<String>(possibleMainClasses);
                                 for (Iterator<String> it = l.iterator(); it.hasNext();) {
                                     String elem = it.next();
                                     if (!CDCProjectUtil.isMainClass(elem, sourcesRoot) || (executionModes != null && executionModes.containsKey(CDCPlatform.PROP_EXEC_MAIN))){
                                         it.remove();
                                     }   
                                 }
-                                final String[] arr = l.toArray (new String[0]);
-                                if (arr.length == 0){
-                                    jMainClassList.setListData (new String[] { NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_NO_CLASSES_NODE") } ); // NOI18N
-                                    return;
-                                }
-                                Arrays.sort (arr);
-                                jMainClassList.setListData (arr);
-                                jMainClassList.setSelectedIndex (0);
+                                SwingUtilities.invokeLater(new Runnable () {
+                                public void run () {
+                                    String[] arr = l.toArray (new String[0]);
+                                    if (arr.length == 0){
+                                        jMainClassList.setListData (new String[] { NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_NO_CLASSES_NODE") } ); // NOI18N
+                                        return;
+                                    }
+                                    Arrays.sort (arr);
+                                    jMainClassList.setListData (arr);
+                                    jMainClassList.setSelectedIndex (0);
+                                }});
                                 return;
                             } 
                             boolean xlet = false;
@@ -172,7 +175,7 @@ public class MainClassChooser extends JPanel {
                                     }
                                 }
                                 if ( xlet && mainClass != null && mainClass.indexOf(';') != -1 ){ //only multiple xlets execution is selected and there is at least one xlet
-                                    String[] xlets = updateListView(true);
+                                    final String[] xlets = updateListView(true);
                                     StringTokenizer st = new StringTokenizer(mainClass, ";");
                                     List<Integer> indicies = new ArrayList<Integer>();
                                     while (st.hasMoreTokens()){
@@ -183,26 +186,30 @@ public class MainClassChooser extends JPanel {
                                             }
                                         }
                                     }
-                                    int[] sel = new int[indicies.size()];
+                                    final int[] sel = new int[indicies.size()];
                                     for (int i = 0; i < sel.length; i++){
                                         sel[i] = indicies.get(i).intValue();
                                     }
-                                    multipleXlets.setSelected(sel.length > 1);
-                                    jMainClassList.setListData(xlets);
-                                    jMainClassList.setSelectedIndices(sel.length != 0 ? sel : new int[]{0});
+                                    SwingUtilities.invokeLater(new Runnable () {
+                                        public void run () {
+                                            multipleXlets.setSelected(sel.length > 1);
+                                            jMainClassList.setListData(xlets);
+                                            jMainClassList.setSelectedIndices(sel.length != 0 ? sel : new int[]{0});
+                                    }});
                                 } else {
-                                    jMainClassList.setListData(updateListView(false));
-                                    if (mainClass != null && isValidMainClassName(mainClass)) { //have valid seletion
-                                        jMainClassList.setSelectedValue(mainClass, true); 
-                                    }
-                                    else {
-                                        jMainClassList.setSelectedIndex(0); //otherwise
-                                    }
+                                    SwingUtilities.invokeLater(new Runnable () {
+                                        public void run () {
+                                            jMainClassList.setListData(updateListView(false));
+                                            if (mainClass != null && isValidMainClassName(mainClass)) { //have valid seletion
+                                                jMainClassList.setSelectedValue(mainClass, true); 
+                                            }
+                                            else {
+                                                jMainClassList.setSelectedIndex(0); //otherwise
+                                            }
+                                     }});
                                 }
                                 checkSelectionOptions(); //update options                                
                             }
-                        }
-                    });                    
                 }
             }
         });
@@ -214,32 +221,49 @@ public class MainClassChooser extends JPanel {
     
     protected void checkSelectionOptions() {
         if (!multipleXlets.isSelected()){
-            String mainClass = getSelectedMainClass();
-            if (mainClass == null)
-                mainClass=this.mainClass;
-            boolean isMain = CDCProjectUtil.isMainClass(mainClass, sourcesRoot);
-            boolean isXlet = CDCProjectUtil.isXletClass(mainClass, sourcesRoot, specialExecFqnXlet);
-            boolean isApplet = CDCProjectUtil.isAppletClass(mainClass, sourcesRoot, specialExecFqnApplet);
-            MainClassChooser.this.mainExecution.setEnabled(isMain && (executionModes == null || executionModes.containsKey(CDCPlatform.PROP_EXEC_MAIN)));
-            MainClassChooser.this.xletExecution.setEnabled(isXlet && !onlyMain && (executionModes == null || executionModes.containsKey(CDCPlatform.PROP_EXEC_XLET)));
-            MainClassChooser.this.appletExecution.setEnabled(isApplet && !onlyMain && (executionModes == null || executionModes.containsKey(CDCPlatform.PROP_EXEC_APPLET)));
-            MainClassChooser.this.multipleXlets.setEnabled(isXlet && (executionModes == null || executionModes.containsKey(CDCPlatform.PROP_EXEC_XLET)));
-            if (isApplet && MainClassChooser.this.appletExecution.isSelected()) //block the case, when applet exec is already selected
+            String tmpMainClass = getSelectedMainClass();
+            if (tmpMainClass == null)
+                tmpMainClass=this.mainClass;
+            final String mainClass=tmpMainClass;
+            final boolean isMain[]={false};
+            final boolean isXlet[]={false};
+            final boolean isApplet[]={false};
+            Task task=RequestProcessor.getDefault().post(new Runnable()
+            {
+                public void run()
+                {
+                    isMain[0] = CDCProjectUtil.isMainClass(mainClass, sourcesRoot);
+                    isXlet[0] = CDCProjectUtil.isXletClass(mainClass, sourcesRoot, specialExecFqnXlet);
+                    isApplet[0] = CDCProjectUtil.isAppletClass(mainClass, sourcesRoot, specialExecFqnApplet);
+                }
+            });
+            task.waitFinished();
+            MainClassChooser.this.mainExecution.setEnabled(isMain[0] && (executionModes == null || executionModes.containsKey(CDCPlatform.PROP_EXEC_MAIN)));
+            MainClassChooser.this.xletExecution.setEnabled(isXlet[0] && !onlyMain && (executionModes == null || executionModes.containsKey(CDCPlatform.PROP_EXEC_XLET)));
+            MainClassChooser.this.appletExecution.setEnabled(isApplet[0] && !onlyMain && (executionModes == null || executionModes.containsKey(CDCPlatform.PROP_EXEC_APPLET)));
+            MainClassChooser.this.multipleXlets.setEnabled(isXlet[0] && (executionModes == null || executionModes.containsKey(CDCPlatform.PROP_EXEC_XLET)));
+            if (isApplet[0] && MainClassChooser.this.appletExecution.isSelected()) //block the case, when applet exec is already selected
                 return;
-            if (isXlet && MainClassChooser.this.xletExecution.isSelected()) //block the case, when xlet exec is already selected
+            if (isXlet[0] && MainClassChooser.this.xletExecution.isSelected()) //block the case, when xlet exec is already selected
                 return;
-            if (isMain || onlyMain){
-                MainClassChooser.this.mainExecution.setSelected(isMain);
-            } else if (isXlet){
-                MainClassChooser.this.xletExecution.setSelected(isXlet);
-            } else if (isApplet){
-                MainClassChooser.this.appletExecution.setSelected(isApplet);
-            }
+            SwingUtilities.invokeLater(new Runnable () {
+                public void run () {
+                    if (isMain[0] || onlyMain){
+                        MainClassChooser.this.mainExecution.setSelected(isMain[0]);
+                    } else if (isXlet[0]){
+                        MainClassChooser.this.xletExecution.setSelected(isXlet[0]);
+                    } else if (isApplet[0]){
+                        MainClassChooser.this.appletExecution.setSelected(isApplet[0]);
+                    }
+            }});
         } else {
-            MainClassChooser.this.mainExecution.setEnabled(false);
-            MainClassChooser.this.xletExecution.setEnabled(true);
-            MainClassChooser.this.appletExecution.setEnabled(false);
-            MainClassChooser.this.xletExecution.setSelected(true);
+            SwingUtilities.invokeLater(new Runnable () {
+                public void run () {
+                    MainClassChooser.this.mainExecution.setEnabled(false);
+                    MainClassChooser.this.xletExecution.setEnabled(true);
+                    MainClassChooser.this.appletExecution.setEnabled(false);
+                    MainClassChooser.this.xletExecution.setSelected(true);
+            }});
         }
     }
     
