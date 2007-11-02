@@ -63,6 +63,7 @@ import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  * Customized copy of javax.swing.ToolTipManager
@@ -622,7 +623,7 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
                 public void eventDispatched( AWTEvent e ) {
                     if( e instanceof KeyEvent ) {
                         KeyEvent ke = (KeyEvent)e;
-                        if( ke.getKeyCode() == KeyEvent.VK_F1 && ke.isControlDown() ) {
+                        if( ke.getKeyCode() == KeyEvent.VK_F1 && (ke.isControlDown() || ke.isMetaDown()) ) {
                             if( ke.getID() == KeyEvent.KEY_PRESSED ) {
                                 armed = true;
                                 return;
@@ -633,7 +634,7 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
                                 hideTipWindow();
                                 return;
                             }
-                        } else if( ke.getKeyCode() != KeyEvent.VK_CONTROL ) {
+                        } else if( !(ke.getKeyCode() == KeyEvent.VK_CONTROL || ke.getKeyCode() == KeyEvent.VK_META) ) {
                             armed = false;
                         }
                     }
@@ -747,7 +748,8 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
             JScrollPane scroll = new JScrollPane( content );
             scroll.setHorizontalScrollBarPolicy( JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
             add( scroll, new GridBagConstraints(0,0,1,1,1.0,1.0,GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
-            shortcut = new JLabel( NbBundle.getMessage( ToolTipManagerEx.class, "HINT_EnlargeJavaDocToolip" ) ); //NOI18N
+            shortcut = new JLabel( NbBundle.getMessage( ToolTipManagerEx.class, "HINT_EnlargeJavaDocToolip", //NOI18N
+                    Utilities.isMac() ? KeyEvent.getKeyText(KeyEvent.VK_META)+"+F1" : "Ctrl+F1" ) ); //NOI18N //NOI18N
             shortcut.setHorizontalAlignment( JLabel.CENTER );
             shortcut.setBorder( BorderFactory.createLineBorder(Color.black) );
             add( shortcut, new GridBagConstraints(0,1,1,1,0.0,0.0,GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
