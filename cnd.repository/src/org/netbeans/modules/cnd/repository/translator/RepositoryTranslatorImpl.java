@@ -74,6 +74,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
     private static boolean loaded = false;
     private static int DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM = 0;    
     private static int version = DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM;
+    private static final boolean TRACE_EXCEPTIONS = false;
     
     /** Creates a new instance of RepositoryTranslatorImpl */
     public RepositoryTranslatorImpl() {
@@ -177,8 +178,17 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             dis = new DataInputStream(bis);
             indexLoaded = readUnitFilesCache(unitName, dis);
         } catch (FileNotFoundException e) {
+            if (TRACE_EXCEPTIONS){
+                e.printStackTrace();
+            }
         } catch (IOException e) {
+            if (TRACE_EXCEPTIONS){
+                e.printStackTrace();
+            }
         } catch (Throwable tr) {
+            if (TRACE_EXCEPTIONS){
+                tr.printStackTrace();
+            }
         }   finally {
             if (dis != null) {
                 try {
@@ -219,8 +229,17 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             writeUnitFilesCache(unitName, dos);
             indexStored = true;
         } catch (FileNotFoundException e) {
+            if (TRACE_EXCEPTIONS){
+                e.printStackTrace();
+            }
         } catch (IOException e) {
+            if (TRACE_EXCEPTIONS){
+                e.printStackTrace();
+            }
         } catch (Throwable tr) {
+            if (TRACE_EXCEPTIONS){
+                tr.printStackTrace();
+            }
         } finally {
             try {
                 if (dos != null) {
@@ -246,8 +265,17 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             dis = new DataInputStream(bis);
             readUnitsCache(dis);
         } catch (FileNotFoundException e) {
+            if (TRACE_EXCEPTIONS){
+                e.printStackTrace();
+            }
         } catch (IOException e) {
+            if (TRACE_EXCEPTIONS){
+                e.printStackTrace();
+            }
         } catch (Throwable tr) {
+            if (TRACE_EXCEPTIONS){
+                tr.printStackTrace();
+            }
         } finally {
             if (dis != null) {
                 try {
@@ -269,8 +297,17 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             dos = new DataOutputStream(bos);
             writeUnitsCache(dos);
         } catch (FileNotFoundException e) {
+            if (TRACE_EXCEPTIONS){
+                e.printStackTrace();
+            }
         } catch (IOException e)     {
+            if (TRACE_EXCEPTIONS){
+                e.printStackTrace();
+            }
         } catch (Throwable tr) {
+            if (TRACE_EXCEPTIONS){
+                tr.printStackTrace();
+            }
         } finally {
             try {
                 if (dos != null) {
