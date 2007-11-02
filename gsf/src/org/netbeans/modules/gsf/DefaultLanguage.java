@@ -406,4 +406,8 @@ public class DefaultLanguage implements Language {
 
         return coloringManager;
     }
+    
+    public boolean hasStructureScanner() {
+        return this.structureFile != null;
+    }
 }

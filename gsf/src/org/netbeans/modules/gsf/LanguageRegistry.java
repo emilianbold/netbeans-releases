@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.gsf.annotations.NonNull;
+import org.netbeans.modules.gsf.DefaultLanguage;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -401,20 +402,38 @@ public class LanguageRegistry implements Iterable<Language> {
     private void initializeLanguage(Language language) {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
 
-        String navFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance";
+        // I can't call language.getStructure() here - it causes initialization
+        // of the language objects too early (before registry is populated),
+        // so just check if we potentially have a structure scanner
+        if (((DefaultLanguage)language).hasStructureScanner()) {
+            String navFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance";
 
-        FileObject fo = fs.findResource(navFileName);
+            FileObject fo = fs.findResource(navFileName);
 
-        if (fo == null) {
-            try {
-                FileUtil.createData(fs.getRoot(), navFileName);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            if (fo == null) {
+                try {
+                    FileUtil.createData(fs.getRoot(), navFileName);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+                String oldNavFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-retouche-navigation-ClassMemberPanel.instance";
+                // Delete the old navigator description - I have moved the class name
+                FileObject old = fs.findResource(oldNavFileName);
+
+                if (old != null) {
+                    try {
+                        old.delete();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
-            
-            String oldNavFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-retouche-navigation-ClassMemberPanel.instance";
-            // Delete the old navigator description - I have moved the class name
-            FileObject old = fs.findResource(oldNavFileName);
+        } else {
+            // Remove obsolete panel file
+            String navFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance";
+
+            FileObject old = fs.findResource(navFileName);
 
             if (old != null) {
                 try {
