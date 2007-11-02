@@ -133,9 +133,11 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
     private void setUp() {
         if (listener == null) {
             listener = new EngineListener();
+            listener.start();
         }
-        listener.start();
-        setContent();
+        if (content == null) {
+            setContent();
+        }
     }
     
     private synchronized void tearDown() {
@@ -215,7 +217,13 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
         super.componentHidden ();
         if (IS_JDK15) {
             componentHidden_15();
-        } else {
+        }
+    }
+
+    @Override
+    protected void componentClosed() {
+        super.componentClosed();
+        if (!IS_JDK15) {
             tearDown();
             if (listener != null) {
                 listener.stop();
