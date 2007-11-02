@@ -616,6 +616,7 @@ installJVM() {
 	verifyJVM "$jvmDir"
 	if [ -z "$LAUNCHER_JAVA_EXE" ] ; then
 		message "$MSG_ERROR_VERIFY_BUNDLED_JVM"
+		exitProgram $ERROR_VERIFY_BUNDLED_JVM
 	fi
 }
 
@@ -749,28 +750,8 @@ extractFile() {
         fi
 }
 
-searchJava() {
-	message "$MSG_JVM_SEARCH"
-        if [ ! -f "$TEST_JVM_CLASSPATH" ] && [ ! -L "$TEST_JVM_CLASSPATH" ] && [ ! -d "$TEST_JVM_CLASSPATH" ]; then
-                debug "Cannot find file for testing JVM at $TEST_JVM_CLASSPATH"
-		message "$MSG_ERROR_JVM_NOT_FOUND" "$ARG_JAVAHOME"
-                exitProgram $ERROR_TEST_JVM_FILE
-        else
-		if [ -z "$LAUNCHER_JAVA_EXE" ] ; then
-                	if [ -n "$LAUNCHER_JAVA" ] ; then
-                        	verifyJVM "$LAUNCHER_JAVA"
-			
-				if [ $VERIFY_UNCOMPATIBLE -eq $verifyResult ] ; then
-			    		message "$MSG_ERROR_JVM_UNCOMPATIBLE" "$LAUNCHER_JAVA" "$ARG_JAVAHOME"
-			    		exitProgram $ERROR_JVM_UNCOMPATIBLE
-				elif [ $VERIFY_NOJAVA -eq $verifyResult ] ; then
-					message "$MSG_ERROR_USER_ERROR" "$LAUNCHER_JAVA"
-			    		exitProgram $ERROR_JVM_NOT_FOUND
-				fi
-                	fi
-		fi
-
-		if [ -z "$LAUNCHER_JAVA_EXE" ] ; then
+searchJavaEnvironment() {
+     if [ -z "$LAUNCHER_JAVA_EXE" ] ; then
 		    # search java in the environment
 		
             	    ptr="$POSSIBLE_JAVA_ENV"
@@ -786,20 +767,36 @@ searchJava() {
                                 verifyJVM "$evaluated"
                         fi
             	    done
-		fi
-		if [ -z "$LAUNCHER_JAVA_EXE" ] ; then
-		    # search java in the common system paths
-		    javaCounter=0
-            	    while [ $javaCounter -lt $JAVA_LOCATION_NUMBER ] && [ -z "$LAUNCHER_JAVA_EXE" ] ; do
-		    	fileType=`resolveResourceType "JAVA_LOCATION_$javaCounter"`
-		    	argJavaHome=`resolveResourcePath "JAVA_LOCATION_$javaCounter"`
+     fi
+}
 
-		    	debug "... next location $argJavaHome"
-			
-			if [ $fileType -eq 0 ] ; then # bundled
-				installJVM  "$argJavaHome"				
-	        	fi
+installBundledJVMs() {
+	if [ -z "$LAUNCHER_JAVA_EXE" ] ; then
+	    # search bundled java in the common list
+	    javaCounter=0
+    	    while [ $javaCounter -lt $JAVA_LOCATION_NUMBER ] && [ -z "$LAUNCHER_JAVA_EXE" ] ; do
+	    	fileType=`resolveResourceType "JAVA_LOCATION_$javaCounter"`
+		
+		if [ $fileType -eq 0 ] ; then # bundled->install
+			argJavaHome=`resolveResourcePath "JAVA_LOCATION_$javaCounter"`
+			installJVM  "$argJavaHome"				
+        	fi
+		javaCounter=`expr "$javaCounter" + 1`
+    	    done
+	fi
+}
 
+searchJavaSystemPaths() {
+	if [ -z "$LAUNCHER_JAVA_EXE" ] ; then
+	    # search java in the common system paths
+	    javaCounter=0
+    	    while [ $javaCounter -lt $JAVA_LOCATION_NUMBER ] && [ -z "$LAUNCHER_JAVA_EXE" ] ; do
+	    	fileType=`resolveResourceType "JAVA_LOCATION_$javaCounter"`
+	    	argJavaHome=`resolveResourcePath "JAVA_LOCATION_$javaCounter"`
+
+	    	debug "... next location $argJavaHome"
+		
+		if [ $fileType -ne 0 ] ; then # bundled JVMs have already been proceeded
 			argJavaHome=`escapeString "$argJavaHome"`
 			locations=`ls -d -1 $argJavaHome 2>/dev/null`
 			nextItem="$locations"
@@ -810,16 +807,46 @@ searchJava() {
 				nextItem=`removeEndSlashes "$nextItem"`
 				if [ -n "$nextItem" ] ; then
 					if [ -d "$nextItem" ] || [ -L "$nextItem" ] ; then
-		               			debug "... checking item : $nextItem"
+	               				debug "... checking item : $nextItem"
 						verifyJVM "$nextItem"
 					fi
 				fi					
 				itemCounter=`expr "$itemCounter" + 1`
 			done
-			javaCounter=`expr "$javaCounter" + 1`
-            	    done
 		fi
+		javaCounter=`expr "$javaCounter" + 1`
+    	    done
+	fi
+}
+
+searchJavaUserDefined() {
+	if [ -z "$LAUNCHER_JAVA_EXE" ] ; then
+        	if [ -n "$LAUNCHER_JAVA" ] ; then
+                	verifyJVM "$LAUNCHER_JAVA"
+		
+			if [ $VERIFY_UNCOMPATIBLE -eq $verifyResult ] ; then
+		    		message "$MSG_ERROR_JVM_UNCOMPATIBLE" "$LAUNCHER_JAVA" "$ARG_JAVAHOME"
+		    		exitProgram $ERROR_JVM_UNCOMPATIBLE
+			elif [ $VERIFY_NOJAVA -eq $verifyResult ] ; then
+				message "$MSG_ERROR_USER_ERROR" "$LAUNCHER_JAVA"
+		    		exitProgram $ERROR_JVM_NOT_FOUND
+			fi
+        	fi
+	fi
+}
+searchJava() {
+	message "$MSG_JVM_SEARCH"
+        if [ ! -f "$TEST_JVM_CLASSPATH" ] && [ ! -L "$TEST_JVM_CLASSPATH" ] && [ ! -d "$TEST_JVM_CLASSPATH" ]; then
+                debug "Cannot find file for testing JVM at $TEST_JVM_CLASSPATH"
+		message "$MSG_ERROR_JVM_NOT_FOUND" "$ARG_JAVAHOME"
+                exitProgram $ERROR_TEST_JVM_FILE
+        else		
+		searchJavaUserDefined
+		installBundledJVMs
+		searchJavaEnvironment
+		searchJavaSystemPaths		
         fi
+
 	if [ -z "$LAUNCHER_JAVA_EXE" ] ; then
 		message "$MSG_ERROR_JVM_NOT_FOUND" "$ARG_JAVAHOME"
 		exitProgram $ERROR_JVM_NOT_FOUND
