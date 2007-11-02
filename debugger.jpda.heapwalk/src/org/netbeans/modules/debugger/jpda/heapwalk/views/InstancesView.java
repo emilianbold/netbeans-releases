@@ -126,6 +126,8 @@ public class InstancesView extends TopComponent {
                 setHeapFragmentWalker(provider.getHeapFragmentWalker());
             } else if (this.hfw != null) {
                 setHeapFragmentWalker(this.hfw);
+            } else {
+                close(); // We can not show any meaningful content
             }
         } else if (state == JPDADebugger.STATE_RUNNING) {
             if (hfwPanel != null) {
@@ -140,6 +142,7 @@ public class InstancesView extends TopComponent {
                 hfwPanel = null;
             }
             this.hfw = null;
+            close(); // We can not show any meaningful content
         }
     }
     
