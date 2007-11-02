@@ -44,6 +44,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 
 /**
@@ -104,7 +105,7 @@ public class TokenList {
                 } else {
                     while (true) {
                         if (ts == null) {
-                            List<? extends TokenSequence> seqs = new ArrayList<TokenSequence>(TokenHierarchy.get(doc).embeddedTokenSequences(offset, false));
+                            List<? extends TokenSequence> seqs = new ArrayList<TokenSequence>(embeddedTokenSequences(TokenHierarchy.get(doc), offset));
 
                             Collections.reverse(seqs);
 
@@ -243,6 +244,24 @@ public class TokenList {
                 ts.moveNext();
             }
         });
+    }
+    
+    private static List<TokenSequence<? extends TokenId>> embeddedTokenSequences(TokenHierarchy<Document> th, int offset) {
+        TokenSequence<? extends TokenId> embedded = th.tokenSequence();
+        List<TokenSequence<? extends TokenId>> sequences = new ArrayList<TokenSequence<? extends TokenId>>();
+
+        do {
+            TokenSequence<? extends TokenId> seq = embedded;
+            embedded = null;
+
+            seq.move(offset);
+            if (seq.moveNext()) {
+                sequences.add(seq);
+                embedded = seq.embedded();
+            }
+        } while (embedded != null);
+        
+        return sequences;
     }
     
 }
