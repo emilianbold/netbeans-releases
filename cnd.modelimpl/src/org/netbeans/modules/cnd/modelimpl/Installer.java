@@ -101,7 +101,7 @@ public class Installer extends ModuleInstall {
     
     private void runTask(CsmModel model, Runnable task) {
         if (SwingUtilities.isEventDispatchThread()) {
-            model.enqueue(task, "close ModelImpl"); // NOI18N
+            new Thread(task, "close ModelImpl").run(); // NOI18N
         } else {
             task.run();
         }        
