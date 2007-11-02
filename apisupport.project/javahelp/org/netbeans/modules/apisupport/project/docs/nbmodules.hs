@@ -23,7 +23,7 @@
     <name>TOC</name>
     <label>Table Of Contents</label>
     <type>javax.help.TOCView</type>
-    <data>nbmodule-tocs.xml</data> 
+    <data>nbmodule-toc.xml</data> 
   </view>
 
 
