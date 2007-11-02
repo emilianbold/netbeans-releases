@@ -230,7 +230,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         
         Hashtable tomcatTable = new Hashtable();
         Hashtable loadingTable = new Hashtable();
-        FileObject libDir = ContextUtil.findRelativeFileObject(wmRoot, "WEB-INF/lib");  //NOI18N
+        FileObject libDir = ContextUtil.findRelativeFileObject(webInf, "lib");  //NOI18N
         URL helpurl;
         
         if (libDir != null) {
@@ -281,7 +281,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                 }
             }
         }
-        FileObject classesDir = ContextUtil.findRelativeFileObject(wmRoot, "WEB-INF/classes");  //NOI18N
+        FileObject classesDir = ContextUtil.findRelativeFileObject(webInf, "classes");  //NOI18N
         if (classesDir != null && loadingTable.get(helpurl = findInternalURL(classesDir)) == null){
             loadingTable.put(helpurl, helpurl);
             tomcatTable.put(helpurl, helpurl);
