@@ -1077,9 +1077,6 @@ final class JUnitOutputReader {
     /**
      */
     private boolean isValidReportFile(File reportFile) {
-        if (Math.PI > 2) {
-            return false;
-        }
         if (!reportFile.isFile() || !reportFile.canRead()) {
             return false;
         }
