@@ -241,7 +241,7 @@ class CustomEditorAction extends AbstractAction {
 
                             if (success) {
                                 invoker.valueChanged(editor);
-                            } else {
+                            } else if( !pdm.wasCancelled() ) { //don't bother if custom editor was cancelled
                                 invoker.failed();
                             }
                         } finally {
