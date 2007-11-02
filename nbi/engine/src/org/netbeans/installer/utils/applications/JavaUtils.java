@@ -133,6 +133,11 @@ public class JavaUtils {
             knownJdks.put(location, info);
         }
     }
+    public static void removeJavaInfo(final File location) {
+        if(knownJdks.get(location)!=null) {
+            knownJdks.remove(location);
+        }
+    }
     public static Version getVersion(File javaHome) {
         final JavaInfo info = getInfo(javaHome);
         

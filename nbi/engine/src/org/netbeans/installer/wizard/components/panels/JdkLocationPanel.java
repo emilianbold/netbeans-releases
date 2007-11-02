@@ -226,7 +226,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
         // - use an empty path
         final String jdkLocation =
                 getWizard().getProperty(JDK_LOCATION_PROPERTY);
-        if (jdkLocation != null) {
+        if (jdkLocation != null && jdkLocations.contains(new File(jdkLocation))) {
             return new File(jdkLocation);
         }
         

@@ -36,8 +36,10 @@
 
 package org.netbeans.installer.products.jdk.wizard.panels;
 
+import java.io.File;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.wizard.components.actions.SearchForJavaAction;
 import org.netbeans.installer.wizard.components.panels.DestinationPanel;
 import org.netbeans.installer.wizard.components.panels.DestinationPanel.DestinationPanelUi;
@@ -109,9 +111,18 @@ public class JDKPanel extends DestinationPanel {
         
         // protected ////////////////////////////////////////////////////////////////
         @Override
-        protected void initialize() {
-            
+        protected void initialize() {            
             super.initialize();
+            final String location = panel.getWizard().getProperty(Product.INSTALLATION_LOCATION_PROPERTY);
+            if(location!=null) {
+                final File f = new File(location);
+                int index = SearchForJavaAction.getJavaLocations().indexOf(f);
+                if(index!=-1) {                    
+                    SearchForJavaAction.getJavaLocations().remove(index);
+                    SearchForJavaAction.getJavaLabels().remove(index);                    
+                }
+                JavaUtils.removeJavaInfo(f);
+            }
         }
         
         @Override
