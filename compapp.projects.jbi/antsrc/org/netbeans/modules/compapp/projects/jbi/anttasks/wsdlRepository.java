@@ -302,6 +302,9 @@ public class wsdlRepository {
         for (WSDLModel wsdlModel : wsdlModels) {
             String wsdlFilePath = getWsdlFilePath(wsdlModel);
             Definitions def = wsdlModel.getDefinitions();
+            if (def == null) {
+                task.log("ERROR: Malformed WSDL file: " + wsdlFilePath);
+            }
             String tns = def.getTargetNamespace();
             
             // Collect portTypes... (PortType QName -> PortType)
