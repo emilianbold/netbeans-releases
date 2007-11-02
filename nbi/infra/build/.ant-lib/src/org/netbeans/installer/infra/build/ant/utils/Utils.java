@@ -816,7 +816,7 @@ public final class Utils {
         long start = System.currentTimeMillis();
         long end   = start + maxExecutionTime;
     
-        for (long running = 0; doRun && (maxExecutionTime==0 || System.currentTimeMillis() < end); ) {
+        while(doRun && (maxExecutionTime==0 || System.currentTimeMillis() < end)) {
             try {                
                 Thread.sleep(delay);
                 if(delay < MAX_DELAY) {
