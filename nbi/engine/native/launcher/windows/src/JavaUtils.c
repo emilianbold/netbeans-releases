@@ -544,11 +544,11 @@ void unpackJars(LauncherProperties * props, WCHAR * jvmDir, WCHAR * startDir, WC
                 if(lstrcmpW(FindFileData.cFileName, L".")!=0 &&
                         lstrcmpW(FindFileData.cFileName, L"..")!=0) {
                     WCHAR * child = NULL;
-                    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... next item : ", 0);
-                    writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, FindFileData.cFileName, 1);
+                    
                     child = appendStringW(appendStringW(appendStringW(NULL, startDir), FILE_SEP), FindFileData.cFileName);
                     if(isDirectory(child)) {
-                        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... is directory ", 1);
+                        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... directory : ", 0);
+                        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, child, 1);
                         unpackJars(props, jvmDir, child, unpack200exe);
                     } else  if(wcsstr(FindFileData.cFileName, JAR_PACK_GZ_SUFFIX)!=NULL) {
                         WCHAR * jarName = appendStringW(appendStringW(
@@ -556,9 +556,8 @@ void unpackJars(LauncherProperties * props, WCHAR * jvmDir, WCHAR * startDir, WC
                                 appendStringNW(NULL, 0, FindFileData.cFileName,
                                 getLengthW(FindFileData.cFileName) - getLengthW(PACK_GZ_SUFFIX)));
                         WCHAR * unpackCommand = NULL;
-                        
-                        
-                        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... it is a packed jar ", 1);
+                        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... packed jar : ", 0);
+                        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, child, 1);
                         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... jar name : ", 0);
                         writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, jarName, 1);
                         
@@ -593,7 +592,7 @@ void unpackJars(LauncherProperties * props, WCHAR * jvmDir, WCHAR * startDir, WC
     }
     
 }
-void installJVM(LauncherProperties * props, LauncherResource *jvm) {    
+void installJVM(LauncherProperties * props, LauncherResource *jvm) {
     WCHAR * command = NULL;
     WCHAR * jvmDir = getParentDirectory(jvm->resolved);
     
@@ -635,31 +634,68 @@ void installJVM(LauncherProperties * props, LauncherResource *jvm) {
     FREE(jvm->resolved);
     jvm->resolved = jvmDir;
 }
-void findSystemJava(LauncherProperties * props) {
+
+void installBundledJVMs(LauncherProperties * props) {
     if ( props->jvms->size > 0 ) {
         DWORD i=0;
-        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Search jvm using some predefined locations", 1);
-        for(i=0;i<props->jvms->size && !isTerminated(props);i++) {
-            resolvePath(props, props->jvms->items[i]);
-            if(props->jvms->items[i]->type==0) { // bundled
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... search for bundled JVMs", 1);
+        for(i=0;i<props->jvms->size; i++) {
+            if(props->jvms->items[i]->type==0 && !isTerminated(props)) {
+                resolvePath(props, props->jvms->items[i]);
+                writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... install bundled JVM ", 0);
+                writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, props->jvms->items[i]->resolved, 1);
                 installJVM(props, props->jvms->items[i]);
-                if(!isOK(props)) {
+                if(isTerminated(props)) return;                
+                if(isOK(props)) {
+                    trySetCompatibleJava(props->jvms->items[i]->resolved, props);
+                    if(props->java!=NULL) {
+                        break;
+                    } else  {
+                        props->status = ERROR_BUNDLED_JVM_VERIFICATION;
+                        return;
+                    }
+                }
+                else {
                     writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... error occured during JVM extraction", 1);
                     props->status = ERROR_BUNDLED_JVM_EXTRACTION;
                     return;
                 }
             }
-            if(isTerminated(props)) return;
-            if(isOK(props)) {
+        }
+    }
+}
+void searchJavaSystemLocations(LauncherProperties * props) {
+    if ( props->jvms->size > 0 ) {
+        DWORD i=0;
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Search jvm using some predefined locations", 1);
+        for(i=0;i<props->jvms->size && !isTerminated(props);i++) {
+            resolvePath(props, props->jvms->items[i]);
+            if(props->jvms->items[i]->type!=0) { // bundled JVMs are already checked
                 trySetCompatibleJava(props->jvms->items[i]->resolved, props);
                 if(props->java!=NULL) {
                     break;
-                } else if(props->jvms->items[i]->type==0) {
-                    props->status = ERROR_BUNDLED_JVM_VERIFICATION;
-                    return;
                 }
             }
         }
+        
+    }
+}
+void findSystemJava(LauncherProperties *props) {
+    // install bundled JVMs if any
+    if(isTerminated(props)) return;
+    installBundledJVMs(props);
+    
+    if(!isOK(props) || isTerminated(props)) return;
+    // search JVM in the system paths    
+    if(props->java==NULL) {
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Search java in the system paths", 1);
+        searchJavaSystemLocations(props);
+    }
+    
+    if(isTerminated(props)) return;
+    if(props->java==NULL) {
+        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Search java in environment variables", 1);
+        searchJavaFromEnvVariables(props);
     }
     
     // search JVM in the registry
@@ -669,12 +705,7 @@ void findSystemJava(LauncherProperties * props) {
         searchCurrentJavaRegistry(props);
     }
     
-    if(isTerminated(props)) return;
-    // search JVM in the environment
-    if(props->java==NULL) {
-        writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Search java in environment variables", 1);
-        searchJavaFromEnvVariables(props);
-    }
+    
 }
 
 
