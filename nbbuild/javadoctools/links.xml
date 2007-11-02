@@ -158,3 +158,4 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-modules-editor-indent}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-editor-indent"/>
 <link href="${javadoc.docs.org-netbeans-spi-tasklist}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-spi-tasklist"/>
 <link href="${javadoc.docs.org-netbeans-modules-projectui}" offline="true" packagelistloc="${netbeans.javadoc.dir}\org-netbeans-modules-projectui"/>
+<link href="${javadoc.docs.org-netbeans-modules-refactoring-java}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-refactoring-java"/>

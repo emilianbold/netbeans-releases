@@ -127,12 +127,39 @@ made subject to such option by the copyright holder.
 
     <xsl:template match="change" mode="global-overview">
         <li>
-            <xsl:if test="date">(<xsl:apply-templates select="date"/>)<xsl:text> </xsl:text></xsl:if>
-            <a><xsl:attribute name="href"><xsl:value-of select="$url-prefix"/><xsl:value-of select="@url"/>#<xsl:value-of select="@id"/></xsl:attribute>
-                <xsl:value-of select="substring-before(@url,'/')"/>
-            </a>: <xsl:apply-templates select="summary/node()"/>
+            <xsl:variable name="important.change">
+                <xsl:choose>
+                    <xsl:when test="compatibility/@binary='incompatible'">color: #ff0000; font-weight: bold</xsl:when>
+                    <xsl:when test="compatibility/@deletion='yes'">font-weight: bold</xsl:when>
+                    <xsl:when test="compatibility/@source='incompatible'">color: #3f0000; font-weight: bold</xsl:when>
+                    <xsl:otherwise>none</xsl:otherwise>
+                </xsl:choose>
+            </xsl:variable>
+            <xsl:choose>
+                <xsl:when test="not ($important.change = 'none')">
+                    <xsl:comment><xsl:value-of select="$important.change"/></xsl:comment>
+                    <xsl:call-template name="change-url">
+                        <xsl:with-param name="span"><xsl:value-of select="$important.change"/></xsl:with-param>
+                    </xsl:call-template>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:call-template name="change-url"/>
+                </xsl:otherwise>
+            </xsl:choose> 
         </li>
     </xsl:template>
+    
+    <xsl:template name="change-url" mode="global-overview">
+        <xsl:param name="span"></xsl:param>
+        <xsl:if test="date">(<xsl:apply-templates select="date"/>)<xsl:text> </xsl:text></xsl:if>
+        <span><xsl:attribute name="style"><xsl:value-of select="$span"/></xsl:attribute>
+        <xsl:value-of select="substring-before(@url,'/')"/></span>:
+        <a>
+            <xsl:attribute name="href"><xsl:value-of select="$url-prefix"/><xsl:value-of select="@url"/>#<xsl:value-of select="@id"/></xsl:attribute>
+            <xsl:apply-templates select="summary/node()"/>
+        </a>
+    </xsl:template>
+        
     
 </xsl:stylesheet>
 

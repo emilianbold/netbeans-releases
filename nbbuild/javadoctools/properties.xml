@@ -156,3 +156,4 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-editor-indent" value="${javadoc.web.root}/org-netbeans-modules-editor-indent"/>
 <property name="javadoc.docs.org-netbeans-spi-tasklist" value="${javadoc.web.root}/org-netbeans-spi-tasklist"/>
 <property name="javadoc.docs.org-netbeans-modules-projectui" value="${javadoc.web.root}/org-netbeans-modules-projectui"/>
+<property name="javadoc.docs.org-netbeans-modules-refactoring-java" value="${javadoc.web.root}/org-netbeans-modules-refactoring-java"/>
