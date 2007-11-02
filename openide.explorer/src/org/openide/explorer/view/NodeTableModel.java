@@ -52,12 +52,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeMap;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import org.openide.awt.Mnemonics;
 
 
 /**
@@ -78,6 +78,7 @@ public class NodeTableModel extends AbstractTableModel {
     private static final String ATTR_ORDER_NUMBER = "OrderNumberTTV"; // NOI18N
     private static final String ATTR_TREE_COLUMN = "TreeColumnTTV"; // NOI18N
     private static final String ATTR_MNEMONIC_CHAR = "ColumnMnemonicCharTTV"; // NOI18N
+    private static final String ATTR_DISPLAY_NAME_WITH_MNEMONIC = "ColumnDisplayNameWithMnemonicTTV"; // NOI18N
 
     /** all columns of model */
     ArrayColumn[] allPropertyColumns = new ArrayColumn[] {  };
@@ -675,8 +676,9 @@ public class NodeTableModel extends AbstractTableModel {
 
         for (int i = 0; i < allPropertyColumns.length; i++) {
             oldvalues[i] = isVisible(allPropertyColumns[i].getProperty());
-            boxtext = allPropertyColumns[i].getProperty().getDisplayName() + ": " +
-                allPropertyColumns[i].getProperty().getShortDescription(); // NOI18N
+            boxtext = getDisplayNameWithMnemonic( allPropertyColumns[i].getProperty() ) 
+                    + ": " 
+                    + allPropertyColumns[i].getProperty().getShortDescription(); // NOI18N
             sort.put(boxtext, Integer.valueOf(i));
         }
 
@@ -688,6 +690,7 @@ public class NodeTableModel extends AbstractTableModel {
 
             int i = sort.get(boxtext).intValue();
             JCheckBox b = new JCheckBox(boxtext, oldvalues[i]);
+            Mnemonics.setLocalizedText(b, boxtext);
             makeAccessibleCheckBox(b, allPropertyColumns[i].getProperty());
             sortpointer[j] = i;
             panel.add(b, gridBagConstraints);
@@ -742,6 +745,17 @@ public class NodeTableModel extends AbstractTableModel {
         }
 
         return changed;
+    }
+    
+    String getDisplayNameWithMnemonic( Property p ) {
+        String res = null;
+        Object displayNameWithMnemonic = p.getValue(ATTR_DISPLAY_NAME_WITH_MNEMONIC);
+        if( null !=displayNameWithMnemonic && displayNameWithMnemonic.toString().length() > 0 ) {
+            res = displayNameWithMnemonic.toString();
+        } else {
+            res = p.getDisplayName();
+        }
+        return res;
     }
 
     void makeAccessibleCheckBox(JCheckBox box, Property p) {

@@ -44,6 +44,7 @@ package org.openide.explorer.view;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.JCheckBox;
 import org.netbeans.junit.NbTestCase;
+import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 
 /*
@@ -112,6 +113,65 @@ public class NodeTableModelTest extends NbTestCase {
         assertEquals( "Invalid mnemonic", checkBox.getMnemonic(), 0 );
     }
     
+
+    public void testGetDisplayNameWithMnemonic() {
+        MyNodeTableModel model = new MyNodeTableModel( 0 );
+
+        MyProperty p;
+        JCheckBox checkBox;
+
+        p = new MyProperty();
+        p.setDisplayName( "displayName1" );
+        p.setShortDescription( "shortDescription1" );
+        p.setValue( "ColumnMnemonicCharTTV", "" );
+
+        assertEquals( "Invalid display name:", model.getDisplayNameWithMnemonic(p), p.getDisplayName() );
+        
+        
+        p = new MyProperty();
+        p.setDisplayName( "displayName1" );
+        p.setShortDescription( "shortDescription1" );
+        p.setValue( "ColumnDisplayNameWithMnemonicTTV", "otherDisplayName" );
+        p.setValue( "ColumnMnemonicCharTTV", "" );
+        checkBox = new JCheckBox( model.getDisplayNameWithMnemonic(p) );
+        Mnemonics.setLocalizedText(checkBox, checkBox.getText());
+        model.makeAccessibleCheckBox( checkBox, p );
+
+        assertEquals( "Invalid display name:", 
+                p.getValue("ColumnDisplayNameWithMnemonicTTV"),
+                model.getDisplayNameWithMnemonic(p) );
+        assertEquals( "Invalid mnemonic", 0, checkBox.getMnemonic() );
+        
+        
+        p = new MyProperty();
+        p.setDisplayName( "displayName1" );
+        p.setShortDescription( "shortDescription1" );
+        p.setValue( "ColumnDisplayNameWithMnemonicTTV", "otherDisplayName" );
+        p.setValue( "ColumnMnemonicCharTTV", "t" );
+        checkBox = new JCheckBox( model.getDisplayNameWithMnemonic(p) );
+        Mnemonics.setLocalizedText(checkBox, checkBox.getText());
+        model.makeAccessibleCheckBox( checkBox, p );
+
+        assertEquals( "Invalid display name:", 
+                p.getValue("ColumnDisplayNameWithMnemonicTTV"),
+                model.getDisplayNameWithMnemonic(p) );
+        assertEquals( "Invalid mnemonic", 'T', checkBox.getMnemonic() );
+        
+        
+        p = new MyProperty();
+        p.setDisplayName( "displayName1" );
+        p.setShortDescription( "shortDescription1" );
+        p.setValue( "ColumnDisplayNameWithMnemonicTTV", "other&DisplayName" );
+        p.setValue( "ColumnMnemonicCharTTV", "" );
+        checkBox = new JCheckBox( model.getDisplayNameWithMnemonic(p) );
+        Mnemonics.setLocalizedText(checkBox, checkBox.getText());
+        model.makeAccessibleCheckBox( checkBox, p );
+
+        assertEquals( "Invalid display name:", 
+                p.getValue("ColumnDisplayNameWithMnemonicTTV"),
+                model.getDisplayNameWithMnemonic(p) );
+        assertEquals( "Invalid mnemonic", 'D', checkBox.getMnemonic() );
+    }
 
     private static class MyNodeTableModel extends NodeTableModel {
         public MyNodeTableModel( int columnCount ) {

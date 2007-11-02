@@ -152,6 +152,14 @@ import org.openide.explorer.view.TreeView.TreePropertyListener;
  *            If not set, no mnemonic will be displayed.
  *        </TD>
  *    </TR>
+ *    <TR>
+ *        <TD> ColumnDisplayNameWithMnemonicTTV</TD>
+ *        <TD> String </TD>
+ *        <TD> When set, this parameter contains column's display name with
+ *              '&amp;' as the mnemonic. This parameter should be preferred over
+ *              ColumnMnemonicCharTTV.
+ *        </TD>
+ *    </TR>
  * </TABLE>
  *
  * <p>

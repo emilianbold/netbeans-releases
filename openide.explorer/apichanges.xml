@@ -46,6 +46,20 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="ColumnDisplayNameWithMnemonicTTV">
+        <api name="explorer"/>
+        <summary>Added support for property ColumnDisplayNameWithMnemonicTTV.</summary>
+        <version major="6" minor="12"/>
+        <date day="2" month="11" year="2007"/>
+        <author login="saubrecht"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no"/>
+        <description>Added support for property ColumnDisplayNameWithMnemonicTTV. This
+        property may be used to specify column names with mnemonic char using '&amp;' char.
+        Such display name will be used in 'Change Visible Columns' dialog window.
+        </description>
+        <class package="org.openide.explorer.view" name="NodeTableModel"/>
+        <issue number="113642"/>
+    </change>
     <change id="setUseSubstringInQuickSearch">
         <api name="explorer"/>
         <summary>Added method TreeView.setUseSubstringInQuickSearch(boolean).</summary>
