@@ -287,17 +287,19 @@ TestSupport.prototype = {
             if(req != null && req.length > 0) {       
                 //ts.debug(req.length);             
                 for(var i=0;i<req.length;i++) {
-                    var params = req[i].getElementsByTagName('param');
+                    var params = req[i].childNodes;
                     if(params != null) {
-                        //ts.debug(params.length);
                         for(var j=0;j<params.length;j++) {
-                            var pname = params[j].attributes.getNamedItem('name').nodeValue;
+                            var param = params[j];
+                            if(param.nodeName == null || param.nodeName != 'param')
+                                continue;
+                            var pname = param.attributes.getNamedItem('name').nodeValue;
                             var defaultVal = '';
-                            if(params[j].attributes.getNamedItem('default') != null)
-                                defaultVal = params[j].attributes.getNamedItem('default').nodeValue;
+                            if(param.attributes.getNamedItem('default') != null)
+                                defaultVal = param.attributes.getNamedItem('default').nodeValue;
                             var type = 'query';
-                            if(params[j].attributes.getNamedItem('style') != null)
-                                type = params[j].attributes.getNamedItem('style').nodeValue;
+                            if(param.attributes.getNamedItem('style') != null)
+                                type = param.attributes.getNamedItem('style').nodeValue;
                             var paramsId = 'qparams';
                             if(type == 'template')
                                 paramsId = 'tparams';
