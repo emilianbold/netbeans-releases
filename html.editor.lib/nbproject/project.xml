@@ -64,6 +64,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.editor.indent</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -189,7 +198,7 @@ made subject to such option by the copyright holder.
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.lexer.nbbridge</code-name-base>
                         <compile-dependency/>
-                    </test-dependency>                    
+                    </test-dependency>
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>
@@ -200,7 +209,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.web.core</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
-		<friend>org.netbeans.modules.languages.php</friend>
+                <friend>org.netbeans.modules.languages.php</friend>
                 <friend>org.netbeans.modules.web.frameworks.facelets</friend>
                 <package>org.netbeans.editor.ext.html</package>
                 <package>org.netbeans.editor.ext.html.dtd</package>
