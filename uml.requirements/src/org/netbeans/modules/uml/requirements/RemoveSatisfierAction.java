@@ -100,8 +100,8 @@ public class RemoveSatisfierAction extends AbstractAction
     {
         try
          {
-            String strNodeName;
-            String strParentNodeName;
+            String strNodeName = null;
+            String strParentNodeName = null;
 
             ETList < IProjectTreeItem > projectTreeItems2 = new ETArrayList < IProjectTreeItem >();
             //for( int lIdx = 0; lIdx < projectTreeItems.length; lIdx++ )
@@ -144,10 +144,11 @@ public class RemoveSatisfierAction extends AbstractAction
 
                         // Delete the child from the Proxy file.
                         removeItemFromProxy( mTreeControl, childProjectTreeItem, projectTreeItem );
-
-                        // Add elements to a second collection to be deleted later.
-                        projectTreeItems2.add( projectTreeItem );
                      }  // End For..Loop
+                     
+                     // Add elements to a second collection to be deleted later.
+                     projectTreeItems2.add( projectTreeItem );
+                     
                   }  // EndElse - Node is a Satisfiers folder
                }  // EndIf - Node is a satisfier(s} folder
 
