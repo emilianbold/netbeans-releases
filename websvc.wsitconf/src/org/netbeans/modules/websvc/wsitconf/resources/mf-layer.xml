@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
    <folder name="Templates">
         <folder name="WebServices">
             <file name="STSWizard.java">
-             <attr name="position" intvalue="700"/>
+             <attr name="position" intvalue="680"/>
              <attr name="template" boolvalue="true"/>
              <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.wsitconf.wizard.STSWizard.create"/>
              <attr name="templateCategory" stringvalue="web-services"/>
