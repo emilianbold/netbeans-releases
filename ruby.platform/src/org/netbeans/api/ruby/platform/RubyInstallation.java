@@ -1091,6 +1091,7 @@ public class RubyInstallation {
 
                 ProcessBuilder pb = new ProcessBuilder(argv);
                 pb.directory(binDir);
+                Util.adjustProxy(pb);
 
                 Process process = pb.start();
 
