@@ -41,9 +41,14 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
+import java.awt.Image;
+import java.beans.BeanInfo;
+import javax.swing.Icon;
+import javax.swing.UIManager;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public class DriverListNode extends DatabaseNode {
     public DriverListNode() {
@@ -66,4 +71,47 @@ public class DriverListNode extends DatabaseNode {
         return new HelpCtx(DriverListNode.class);
     }
 
-}
+    // XXX so much code for such a simple thing as retrieving the default folder icon.
+    // See issue 120978.
+
+    public Image getIcon(int type) {
+        Image result = null;
+        if (type == BeanInfo.ICON_COLOR_16x16) {
+            result = icon2Image("Nb.Explorer.Folder.icon"); // NOI18N
+        }
+        if (result == null) {
+            result = icon2Image("Tree.closedIcon"); // NOI18N
+        }
+        if (result == null) {
+            result = super.getIcon(type);
+        }
+        return result;
+    }
+
+    public Image getOpenedIcon(int type) {
+        Image result = null;
+        if (type == BeanInfo.ICON_COLOR_16x16) {
+            result = icon2Image("Nb.Explorer.Folder.openedIcon"); // NOI18N
+        }
+        if (result == null) {
+            result = icon2Image("Tree.openIcon"); // NOI18N
+        }
+        if (result == null) {
+            result = super.getOpenedIcon(type);
+        }
+        return result;
+    }
+
+    private static Image icon2Image(String key) {
+        Object obj = UIManager.get(key);
+        if (obj instanceof Image) {
+            return (Image)obj;
+        }
+
+        if (obj instanceof Icon) {
+            Icon icon = (Icon)obj;
+            return Utilities.icon2Image(icon);
+        }
+
+        return null;
+    }  }
