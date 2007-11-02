@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.j2ee.ejbverification.rules;
 
+import com.sun.source.tree.ClassTree;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Set;
@@ -88,20 +89,33 @@ public class LegalModifiers extends EJBVerificationRule {
             }
             
             if (modifiers.contains(Modifier.ABSTRACT)){
-                Fix fix = new RemoveModifier(ctx.getFileObject(),
-                        ElementHandle.create(ctx.getClazz()),
-                        Modifier.ABSTRACT);
-                
-                ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
-                NbBundle.getMessage(LegalModifiers.class, "MSG_BeanClassMustNotBeAbstract"), fix);
-                
-                problemsFounds.add(err);
+                if (isInterface(ctx)){
+                    // no fix for interfaces, just a warning
+                    ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
+                            NbBundle.getMessage(LegalModifiers.class, "MSG_BeanClassMustNotBeAbstract"));
+
+                    problemsFounds.add(err);
+                } else {
+                    Fix fix = new RemoveModifier(ctx.getFileObject(),
+                            ElementHandle.create(ctx.getClazz()),
+                            Modifier.ABSTRACT);
+
+                    ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
+                    NbBundle.getMessage(LegalModifiers.class, "MSG_BeanClassMustNotBeAbstract"), fix);
+
+                    problemsFounds.add(err);
+                }
             }
             
             return problemsFounds;
         }
         
         return null;
+    }
+    
+    private boolean isInterface(EJBProblemContext ctx){
+        ClassTree classTree = ctx.getComplilationInfo().getTrees().getTree(ctx.getClazz());
+        return ctx.getComplilationInfo().getTreeUtilities().isInterface(classTree);
     }
     
 }
