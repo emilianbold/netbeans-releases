@@ -85,7 +85,7 @@ public class QuickRunPanel extends JPanel implements ActionListener {
             }
         }
         jComboBoxPlatform.setModel(new DefaultComboBoxModel(a));
-        jComboBoxPlatform.setSelectedIndex(selected);
+        if (a.size() > 0) jComboBoxPlatform.setSelectedIndex(selected);
         actionPerformed(null);
         jComboBoxPlatform.addActionListener(this);
         jComboBoxDevice.addActionListener(this);
