@@ -48,6 +48,10 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -74,6 +78,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -191,34 +196,80 @@ public class SecurityConfiguration implements WSConfiguration {
     }
         
     public void set() {
-        binding = WSITModelSupport.getBinding(service, implementationFile.getPrimaryFile(), project, true, null);
-        if (binding == null) return;
-
-        addCListener(binding);
+        final ProgressPanel progressPanel = new ProgressPanel(
+                NbBundle.getMessage(SecurityConfiguration.class, "LBL_Wait")); //NOI18N
         
-        if (!(SecurityPolicyModelHelper.isSecurityEnabled(binding))) {
-            
-            // default profile with the easiest setup
-            SecurityProfile secProf = SecurityProfileRegistry.getDefault().getProfile(ComboConstants.PROF_MUTUALCERT);
-            secProf.profileSelected(binding);
-            if (secProf instanceof SecureConversationFeature) {
-                ((SecureConversationFeature)secProf).enableSecureConversation(binding, true);
-            }
-            
-            Util.fillDefaults(project, false,true);
-            ProfilesModelHelper.setServiceDefaults(ComboConstants.PROF_MUTUALCERT, binding, project);
+        final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(null);
+        final JComponent progressComponent = ProgressHandleFactory.createProgressComponent(progressHandle);
+                
+        SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    progressHandle.start();
+                    progressHandle.switchToIndeterminate();
+                    progressPanel.open(progressComponent);
+                }
+        });
 
-            WSITModelSupport.save(binding);
-        }
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    binding = WSITModelSupport.getBinding(service, implementationFile.getPrimaryFile(), project, true, null);
+                    if (binding == null) return;
+
+                    addCListener(binding);
+
+                    if (!(SecurityPolicyModelHelper.isSecurityEnabled(binding))) {
+
+                        // default profile with the easiest setup
+                        SecurityProfile secProf = SecurityProfileRegistry.getDefault().getProfile(ComboConstants.PROF_MUTUALCERT);
+                        secProf.profileSelected(binding);
+                        if (secProf instanceof SecureConversationFeature) {
+                            ((SecureConversationFeature)secProf).enableSecureConversation(binding, true);
+                        }
+
+                        Util.fillDefaults(project, false,true);
+                        ProfilesModelHelper.setServiceDefaults(ComboConstants.PROF_MUTUALCERT, binding, project);
+
+                        WSITModelSupport.save(binding);
+                    }
+                } finally {
+                    progressHandle.finish();
+                    progressPanel.close();
+                }
+            }
+        });
     }
 
     public void unset() {
-        if (binding == null) return;
-        if (SecurityPolicyModelHelper.isSecurityEnabled(binding)) {
-            addCListener(binding);
-            SecurityPolicyModelHelper.disableSecurity(binding, true);
-            WSITModelSupport.save(binding);
-        }
+        final ProgressPanel progressPanel = new ProgressPanel(
+                NbBundle.getMessage(SecurityConfiguration.class, "LBL_Wait")); //NOI18N
+        
+        final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(null);
+        final JComponent progressComponent = ProgressHandleFactory.createProgressComponent(progressHandle);
+                
+        SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    progressHandle.start();
+                    progressHandle.switchToIndeterminate();
+                    progressPanel.open(progressComponent);
+                }
+        });
+
+        RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        if (binding == null) return;
+                        if (SecurityPolicyModelHelper.isSecurityEnabled(binding)) {
+                            addCListener(binding);
+                            SecurityPolicyModelHelper.disableSecurity(binding, true);
+                            WSITModelSupport.save(binding);
+                        }
+                    } finally {
+                        progressHandle.finish();
+                        progressPanel.close();
+                    }
+                }
+        });
     }
 
     public void registerListener(PropertyChangeListener listener) {

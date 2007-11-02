@@ -51,7 +51,6 @@ import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyReference;
 import org.netbeans.modules.xml.wsdl.model.*;
 
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10WsdlQName;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10WsdlUsingAddressing;
@@ -105,7 +104,7 @@ public class PolicyModelHelper {
                         msgName = ((BindingOperation)c.getParent()).getName() + "_Input";          //NOI18N
                     }
                     Binding b = (Binding)c.getParent().getParent();
-                    policyName = b.getName() + "_" + msgName + "_" + POLICY;           //NOI18N
+                    policyName = b.getName() + "_".concat(msgName).concat("_").concat(POLICY);           //NOI18N
                 }
                 if (c instanceof BindingOutput) {
                     msgName = ((BindingOutput)c).getName();
@@ -113,7 +112,7 @@ public class PolicyModelHelper {
                         msgName = ((BindingOperation)c.getParent()).getName() + "_Output";          //NOI18N
                     }
                     Binding b = (Binding)c.getParent().getParent();
-                    policyName = b.getName() + "_" + msgName + "_" + POLICY;           //NOI18N
+                    policyName = b.getName() + "_".concat(msgName).concat("_").concat(POLICY);           //NOI18N
                 }
                 if (c instanceof BindingFault) {
                     msgName = ((BindingFault)c).getName();
@@ -121,7 +120,7 @@ public class PolicyModelHelper {
                         msgName = ((BindingOperation)c.getParent()).getName() + "_Fault";          //NOI18N
                     }
                     Binding b = (Binding)c.getParent().getParent();
-                    policyName = b.getName() + "_" + msgName + "_" + POLICY;           //NOI18N
+                    policyName = b.getName() + "_".concat(msgName).concat("_").concat(POLICY);           //NOI18N
                 }
                 if (c instanceof BindingOperation) {
                     msgName = ((BindingOperation)c).getName();
@@ -129,27 +128,27 @@ public class PolicyModelHelper {
                         msgName = ((BindingOperation)c.getParent()).getName();          //NOI18N
                     }
                     Binding b = (Binding)c.getParent();
-                    policyName = b.getName() + "_" + msgName + "_" + POLICY;           //NOI18N
+                    policyName = b.getName() + "_".concat(msgName).concat("_").concat(POLICY);           //NOI18N
                 }
             }
 
-            boolean isTransaction = model.isIntransaction();
-            if (!isTransaction) {
-                model.startTransaction();
-            }
+            List<Policy> policies = d.getExtensibilityElements(Policy.class);
             
+            boolean isTransaction = model.isIntransaction();
             try {            
-                List<Policy> policies = d.getExtensibilityElements(Policy.class);
+                if (!isTransaction) {
+                    model.startTransaction();
+                }
                 for (Policy p : policies) {
                     if (policyName.equals(p.getID())) {
                         List<PolicyReference> policyRefs = c.getExtensibilityElements(PolicyReference.class);
                         PolicyReference policyRef;
                         if ((policyRefs == null) || (policyRefs.isEmpty())) {
-                            policyRef = (PolicyReference)model.getFactory().create(c, PolicyQName.POLICYREFERENCE.getQName());
+                            policyRef = (PolicyReference)wcf.create(c, PolicyQName.POLICYREFERENCE.getQName());
                         } else {
                             policyRef = policyRefs.get(0);
                         }
-                        policyRef.setPolicyURI("#" + policyName);                   //NOI18N
+                        policyRef.setPolicyURI("#".concat(policyName));                   //NOI18N
                         c.addExtensibilityElement(policyRef);
                         All all = createTopExactlyOneAll(p);
                         if ((c instanceof Binding) && (addressing)) {
@@ -160,8 +159,8 @@ public class PolicyModelHelper {
                 }            
                 policy = (Policy)wcf.create(d, PolicyQName.POLICY.getQName());
                 policy.setID(policyName);
-                PolicyReference policyRef = (PolicyReference)model.getFactory().create(c, PolicyQName.POLICYREFERENCE.getQName());
-                policyRef.setPolicyURI("#" + policyName);                   //NOI18N
+                PolicyReference policyRef = (PolicyReference)wcf.create(c, PolicyQName.POLICYREFERENCE.getQName());
+                policyRef.setPolicyURI("#".concat(policyName));                   //NOI18N
                 c.addExtensibilityElement(policyRef);
                 d.addExtensibilityElement(policy);
             } finally {

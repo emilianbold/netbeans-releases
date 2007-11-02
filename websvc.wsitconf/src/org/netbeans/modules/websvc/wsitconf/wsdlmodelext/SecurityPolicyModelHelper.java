@@ -878,10 +878,7 @@ public class SecurityPolicyModelHelper {
     
     public static ExtensibilityElement addHeaderElementForListItem(String item, WSDLComponent c, WSDLComponentFactory wcf) {
         
-        //TODO - get addressing namespace
-        
-        Header h = null;
-        h = (Header)wcf.create(c, SecurityPolicyQName.HEADER.getQName());
+        Header h = (Header)wcf.create(c, SecurityPolicyQName.HEADER.getQName());
         if (MessageHeader.ADDRESSING_TO.equals(item)) {
             h.setName("To");        //NOI18N
             h.setNamespace(Addressing10QName.ADDRESSING10_NS_URI);
