@@ -287,8 +287,6 @@ public class Reformatter implements ReformatTask {
             tokens.moveEnd();
             tokens.movePrevious();
             this.endPos = tokens.offset();
-            if (tokens.token().id() != WHITESPACE || tokens.token().text().toString().indexOf('\n') < 0)
-                diffs.addFirst(new Diff(text.length(), text.length(), NEWLINE));
             tokens.moveStart();
             tokens.moveNext();
         }
@@ -297,12 +295,24 @@ public class Reformatter implements ReformatTask {
             Pretty pretty = new Pretty(info, path, cs);
             if (pretty.indent >= 0)
                 pretty.scan(path, null);
+            if (path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+                pretty.tokens.moveEnd();
+                pretty.tokens.movePrevious();
+                if (pretty.tokens.token().id() != WHITESPACE || pretty.tokens.token().text().toString().indexOf('\n') < 0) {
+                    String text = info.getText();
+                    pretty.diffs.addFirst(new Diff(text.length(), text.length(), NEWLINE));
+                }
+            }
             return pretty.diffs;
         }
 
         public static LinkedList<Diff> reformat(String text, TreePath path, SourcePositions sp, TokenSequence<JavaTokenId> tokens, CodeStyle cs) {
             Pretty pretty = new Pretty(null, text, sp, tokens, path, cs);
             pretty.scan(path, null);
+            tokens.moveEnd();
+            tokens.movePrevious();
+            if (tokens.token().id() != WHITESPACE || tokens.token().text().toString().indexOf('\n') < 0)
+                pretty.diffs.addFirst(new Diff(text.length(), text.length(), NEWLINE));
             return pretty.diffs;
         }
 
@@ -1534,7 +1544,8 @@ public class Reformatter implements ReformatTask {
             if (inits != null) {
                 int old = indent;
                 indent += (indentSize - continuationIndentSize);
-                spaces(cs.spaceBeforeArrayInitLeftBrace() ? 1 : 0);
+                if (type != null)
+                    spaces(cs.spaceBeforeArrayInitLeftBrace() ? 1 : 0);
                 accept(LBRACE);
                 if (!inits.isEmpty()) {
                     afterNewline = false;
