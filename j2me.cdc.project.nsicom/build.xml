@@ -17,7 +17,7 @@
             <fileset dir="antsrc" excludesfile="../../standard-jar-excludes.txt"/>
         </copy>
         <mkdir dir="${cluster}/modules/ext"/>
-        <jar jarfile="${cluster}/modules/ext/${code.name.base.dashes}.jar" compress="false">
+        <jar jarfile="${cluster}/ant/nblib/${code.name.base.dashes}.jar" compress="false">
             <fileset dir="build/antclasses">
                 <excludesfile name="../../standard-jar-excludes.txt"/>
             </fileset>

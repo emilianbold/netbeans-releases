@@ -62,8 +62,8 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.mobility.activesync</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/nbactivesync.jar</runtime-relative-path>
-                <binary-origin>external/nbactivesync.jar</binary-origin>
+                <runtime-relative-path>ext/nbactivesync-5.0.jar</runtime-relative-path>
+                <binary-origin>external/nbactivesync-5.0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

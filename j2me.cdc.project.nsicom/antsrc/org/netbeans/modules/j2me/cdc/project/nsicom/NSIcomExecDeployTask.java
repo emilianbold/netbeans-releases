@@ -49,20 +49,14 @@ package org.netbeans.modules.j2me.cdc.project.nsicom;
 //     <pathelement location="${ant.home}/lib/ant.jar"/>
 // </classpath>
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.Socket;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -72,7 +66,6 @@ import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
 
 import org.netbeans.mobility.activesync.*;
-import org.openide.util.NbBundle;
 
 /**
  * @author suchys
@@ -114,7 +107,6 @@ public class NSIcomExecDeployTask extends Task {
     }    
     
     public void execute() throws BuildException {
-
         if (deploy){
             runOnDevice = true; //deploy is always on device operation
         }
@@ -261,17 +253,28 @@ public class NSIcomExecDeployTask extends Task {
                     }
                     
                     RemoteLogReader remoteReader = null;
+                    RemoteProcess remote = null;
                     try {
-                        RemoteProcess remote = activeSync.executeRemoteProcess(remoteVMLocation, arg);
-                        remoteReader = new RemoteLogReader(log);
-                        remoteReader.start();
-                        //long id = remote.getProcessId();
-                        int exit = activeSync.waitFor(remote);
-                        if (exit != 0){
-                            throw new BuildException("Application execution on remote device failed!");//NOI18N
+                        try {
+                            remote = activeSync.executeRemoteProcess(remoteVMLocation, arg);
+                            remoteReader = new RemoteLogReader(remoteFolder);
+                            remoteReader.start();
+                            //long id = remote.getProcessId();
+                            ProcessHandler handler = new ProcessHandler(remote);
+                            handler.start();
+                            try {
+                                handler.join();
+                            } catch (InterruptedException ie){
+                            }
+                            if (handler.getExitCode() != 0){
+                                throw handler.getCause();
+                            }
+                        } finally {
+                            remoteReader.finish();
                         }
-                    } finally {
-                        remoteReader.finish();
+                    } catch (ThreadDeath threadDeath) { //ant task has been shut down
+                        activeSync.destroyRemoteProcess(remote);
+                        throw threadDeath;
                     }
                 }
             } catch (IOException ex) {
@@ -426,9 +429,16 @@ public class NSIcomExecDeployTask extends Task {
         public void run(){
             BufferedReader br = null;
             while(running){
+                if (br == null && !new RemoteFile(logFile.getFullPath(), "jspcout.txt").exists()){
+                    try {
+                        Thread.sleep(50); //wait for VM to create log
+                    } catch (InterruptedException ex) {
+                    }
+                    continue;
+                }
                 try {
                     if (br == null){
-                        InputStream is = null;//todo not implemented yet activeSync.getRemoteInputStream(logFile);
+                        InputStream is = activeSync.getRemoteInputStream(new RemoteFile(logFile.getFullPath(), "jspcout.txt"));
                         if (is != null){
                             br = new BufferedReader(new InputStreamReader(is));
                         } 
@@ -618,5 +628,35 @@ public class NSIcomExecDeployTask extends Task {
 
     public void setDeploy(boolean deploy) {
         this.deploy = deploy;
+    }
+    
+    class ProcessHandler extends Thread {
+
+        private RemoteProcess remote;
+        private int exitCode = -1;
+        private IOException cause = null;
+        
+        public ProcessHandler(RemoteProcess remote) {
+            this.remote = remote;
+            setDaemon(true);
+        }
+
+        public void run(){
+            try {
+                exitCode = activeSync.waitFor(remote);
+            } catch (ActiveSyncException asEx){
+                cause = asEx;
+            } catch (IOException ioEx){
+                cause = ioEx;
+            }
+        }
+
+        public int getExitCode() {
+            return exitCode;
+        }
+
+        public IOException getCause() {
+            return cause;
+        }
     }
 }
