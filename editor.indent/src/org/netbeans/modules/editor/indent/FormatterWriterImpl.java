@@ -93,35 +93,26 @@ public final class FormatterWriterImpl extends Writer {
 
     @Override
     public void close() throws IOException {
+        indentImpl.reformatLock();
         try {
-            indentImpl.reformatLock();
-            try {
-                Document doc = indentImpl.document();
-                String text = buffer.toString();
-                int docLen = doc.getLength();
-                if (text.length() > 0 && offset <= docLen) {
-                    try {
-                        // Text can have various line separators so the text.length()
-                        // might not correspond to the number of characters really present
-                        // in the document after the insertion.
-                        doc.insertString(offset, text, null);
-                        int insertedLen = doc.getLength() - docLen;
-                        Position startPos = doc.createPosition(offset);
-                        Position endPos = doc.createPosition(offset + insertedLen);
-                        indentImpl.reformat(startPos.getOffset(), endPos.getOffset());
-                        int len = endPos.getOffset() - startPos.getOffset();
-                        String reformattedText = doc.getText(startPos.getOffset(), len);
-                        doc.remove(startPos.getOffset(), len);
-                        writer.write(reformattedText);
-                    } catch (BadLocationException e) {
-                        Exceptions.printStackTrace(e);
-                    }
+            Document doc = indentImpl.document();
+            String text = buffer.toString();
+            if (text.length() > 0 && offset <= doc.getLength()) {
+                try {
+                    doc.insertString(offset, text, null);
+                    Position startPos = doc.createPosition(offset);
+                    Position endPos = doc.createPosition(offset + text.length());
+                    indentImpl.reformat(startPos.getOffset(), endPos.getOffset());
+                    int len = endPos.getOffset() - startPos.getOffset();
+                    String reformattedText = doc.getText(startPos.getOffset(), len);
+                    doc.remove(startPos.getOffset(), len);
+                    writer.write(reformattedText);
+                } catch (BadLocationException e) {
+                    Exceptions.printStackTrace(e);
                 }
-            } finally {
-                indentImpl.reformatUnlock();
             }
         } finally {
-            writer.close();
+            indentImpl.reformatUnlock();
         }
     }
 

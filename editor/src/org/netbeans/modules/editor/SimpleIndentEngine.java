@@ -41,11 +41,7 @@
 
 package org.netbeans.modules.editor;
 
-import java.io.Writer;
-import javax.swing.text.Document;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.Formatter;
 import org.netbeans.editor.ext.ExtFormatter;
 
 /**
@@ -67,16 +63,6 @@ public class SimpleIndentEngine extends FormatterIndentEngine {
 
     protected boolean acceptMimeType(String mimeType) {
         return true;
-    }
-
-    public Writer createWriter(Document doc, int offset, Writer writer) {
-        if (doc instanceof BaseDocument) {
-            Formatter f = ((BaseDocument)doc).getFormatter();
-            if (f != getFormatter()) { // Only if overriden by the new infrastructure
-                return f.createWriter(doc, offset, writer);
-            }
-        }
-        return super.createWriter(doc, offset, writer);
     }
 
 }
