@@ -17,7 +17,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
-import org.jruby.runtime.builtin.IRubyObject;
 import java.io.Serializable;
 import javax.swing.UIManager;
 import javax.swing.text.Caret;
@@ -52,6 +51,7 @@ import org.openide.util.Utilities;
  *   last line, etc.
  */
 final class IrbTopComponent extends TopComponent {
+    
     private boolean finished = true;
     private JTextPane text;
 
@@ -312,7 +312,6 @@ final class IrbTopComponent extends TopComponent {
             setOutput(new PrintStream(tar));
             setError(new PrintStream(tar));
             setObjectSpaceEnabled(false);
-            setArgv(new String[] {"-f"});
         }};
         final Ruby runtime = Ruby.newInstance(config);
 
