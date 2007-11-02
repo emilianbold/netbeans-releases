@@ -80,7 +80,7 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
                     }
                 } catch (AbstractMethodError ame) {
                     // Some older versions of Oracle driver throw an exception on getDatabaseMajorVersion()
-                    LOGGER.log(Level.SEVERE, "Some older versions of the Oracle driver do not support getDatabaseMajorVersion().  Setting recycleBinTables to an empty list.", ame); // NOI18N
+                    LOGGER.log(Level.WARNING, "Some older versions of the Oracle driver do not support getDatabaseMajorVersion().  Setting recycleBinTables to an empty list.", ame); // NOI18N
                     recycleBinTables = Collections.EMPTY_LIST;                
                 } catch (SQLException e) {
                     LOGGER.log(Level.WARNING, "Some older versions of the Oracle driver do not support getDatabaseMajorVersion().  Setting recycleBinTables to an empty list.", e); // NOI18N
