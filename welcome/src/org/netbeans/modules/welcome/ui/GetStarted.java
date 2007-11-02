@@ -125,9 +125,6 @@ class GetStarted extends JPanel implements Constants {
             panel.add( new JLabel(), 
                     new GridBagConstraints(2,0,1,3,1.0,0.0,GridBagConstraints.WEST,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
             
-            //TODO remove when the 'tour' link is actually available on the web
-            lb.setEnabled( !("tour".equals( dob.getName() )) );
-            
             String bundleName = (String)dob.getPrimaryFile().getAttribute("SystemFileSystem.localizingBundle");//NOI18N
             if( null != bundleName ) {
                 ResourceBundle bundle = NbBundle.getBundle(bundleName);
