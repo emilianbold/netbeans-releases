@@ -467,29 +467,8 @@ public class LLSyntaxAnalyser {
         if (l == null) {
             l = new ArrayList<ASTItem> ();
             embeddings.put (mimeType, l);
-            l.addAll (children.subList (0, children.size () - 1));
-            ASTToken lastToken = (ASTToken) children.get (children.size () - 1);
-            if (lastToken.getChildren ().isEmpty ())
-                l.add (lastToken);
-            else {
-                List<ASTItem> lastTokenChildren = new ArrayList<ASTItem> (lastToken.getChildren ());
-                lastTokenChildren.add (ASTToken.create (
-                    lastTokenChildren.get (0).getLanguage (),
-                    Language.GAP_TOKEN_TYPE_NAME,
-                    "",
-                    lastTokenChildren.get (lastTokenChildren.size () - 1).getEndOffset (),
-                    0,
-                    null
-                ));
-                l.add (ASTToken.create (
-                    lastToken.getLanguage (),
-                    lastToken.getTypeID (),
-                    lastToken.getIdentifier (),
-                    lastToken.getOffset (),
-                    lastToken.getLength (),
-                    lastTokenChildren
-                ));
-            }
+            l.addAll (children.subList (0, children.size ()));
+            appendGap (l);
         } else {
             ASTToken token1 = (ASTToken) l.get (l.size () - 1);
             ASTToken token2 = (ASTToken) children.get (0);
@@ -498,6 +477,7 @@ public class LLSyntaxAnalyser {
                 ASTToken joinedToken = join (token1, token2);
                 l.add (joinedToken);
                 l.addAll (children.subList (1, children.size ()));
+                appendGap (l);
             } else {
                 l.addAll (children);
             }
@@ -547,6 +527,29 @@ public class LLSyntaxAnalyser {
             token2.getEndOffset () - token1.getOffset (),
             joinedChildren
         );
+    }
+    
+    private static void appendGap (List<ASTItem> children) {
+        ASTToken lastToken = (ASTToken) children.get (children.size () - 1);
+        if (lastToken.getChildren ().isEmpty ()) return;
+        List<ASTItem> lastTokenChildren = new ArrayList<ASTItem> (lastToken.getChildren ());
+        lastTokenChildren.add (ASTToken.create (
+            lastTokenChildren.get (0).getLanguage (),
+            Language.GAP_TOKEN_TYPE_NAME,
+            "",
+            lastTokenChildren.get (lastTokenChildren.size () - 1).getEndOffset (),
+            0,
+            null
+        ));
+        children.remove (children.size () - 1);
+        children.add (ASTToken.create (
+            lastToken.getLanguage (),
+            lastToken.getTypeID (),
+            lastToken.getIdentifier (),
+            lastToken.getOffset (),
+            lastToken.getLength (),
+            lastTokenChildren
+        ));
     }
     
     private ASTNode readNoGrammar (
