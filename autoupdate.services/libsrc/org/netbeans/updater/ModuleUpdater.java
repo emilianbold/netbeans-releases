@@ -443,9 +443,9 @@ public final class ModuleUpdater extends Thread {
     }
     
     private static boolean trickyDeleteOnWindows(File destFile) {
-        assert isWindows();
+        assert isWindows() : "Call it only on Windows but system is " + System.getProperty("os.name");
         File f = new File(destFile.getParentFile(), destFile.getName());
-        assert f.exists();        
+        assert f.exists() : "The file " + f + " must exists.";        
         try {
             File tmpFile = File.createTempFile(TEMP_FILE_NAME, null, f.getParentFile());
             if (tmpFile.delete()) {
