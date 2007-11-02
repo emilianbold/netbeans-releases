@@ -890,7 +890,16 @@ System.out.println("--------ENDSTACK------");        */
         // now construct the ErrorDescriptor
         try {
             String errContextPath = ContextUtil.findRelativeContextPath(wmRoot, errorFile);
-            String errorMessage = errContextPath + " [" + line + ";" + col + "] " + m1.substring(rpar + 1).trim();
+            // some information in the message are unnecessary
+            int index = m1.indexOf("PWC");  //NOI18N
+            String errorMessage;
+            if (index > -1) {
+                index = m1.indexOf(':', index);
+                errorMessage = m1.substring(index + 2).trim();
+            }
+            else {
+                errorMessage = errContextPath + " [" + line + ";" + col + "] " + m1.substring(rpar + 1).trim();
+            }
             return new JspParserAPI.ErrorDescriptor(
                     wmRoot, errorFile, Integer.parseInt(line), Integer.parseInt(col),
                     errorMessage, ""); // NOI18N
