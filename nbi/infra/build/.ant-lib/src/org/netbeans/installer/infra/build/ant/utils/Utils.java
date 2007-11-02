@@ -669,10 +669,6 @@ public final class Utils {
             final String keystore,
             final String alias,
             final String password) throws IOException {
-        StringBuilder stdout = new StringBuilder();
-        StringBuilder stderr = new StringBuilder();
-        int exitcode = 0;
-        
         List<String> command = new ArrayList<String>();
         
         command.add(JARSIGNER_EXECUTABLE);
@@ -681,41 +677,10 @@ public final class Utils {
         command.add(file.getAbsolutePath());
         command.add(alias);
         
-        Process process = new ProcessBuilder(command).start();
-        
+        Process process = new ProcessBuilder(command).start();        
         process.getOutputStream().write(password.getBytes());
         
-        long running;
-        for (running = 0; running < MAX_EXECUTION_TIME; running += DELAY) {
-            CharSequence string;
-            
-            string = read(process.getInputStream());
-            if (string.length() > 0) {
-                stdout.append(string);
-            }
-            
-            string = read(process.getErrorStream());
-            if (string.length() > 0) {
-                stderr.append(string);
-            }
-            
-            try {
-                exitcode = process.exitValue();
-                break;
-            } catch (IllegalThreadStateException e) {
-                ; // do nothing - the process is still running
-            }
-            
-            try {
-                Thread.sleep(DELAY);
-            }  catch (InterruptedException e) {
-                // do nothing - this may happen every now and then
-            }
-        }
-        
-        process.destroy();
-        
-        return new Results(stdout, stderr, exitcode);
+        return handleProcess(process);
     }
     
     public static int getPermissions(final File file) {
@@ -836,26 +801,27 @@ public final class Utils {
         return run(command.toArray(new String[command.size()]));
     }
     
-    /**
-     * Runs the specified command using the <code>ProcessBuilder</code> class.
-     *
-     * @param command Path to the executable and its arguments.
-     * @return Results of executing the command (exitcode, stdout and stderr
-     *      contents).
-     * @throws java.io.IOException if an I/O error occurs.
-     */
-    private static Results run(final String... command) throws IOException {
+    private static Results handleProcess(Process process) throws IOException {
         StringBuilder processStdOut = new StringBuilder();
         StringBuilder processStdErr = new StringBuilder();
-        int errorCode = 0;
         
-        Process process = new ProcessBuilder(command).start();
-        
+        int errorCode = 0;        
         boolean doRun = true;
-        long running;
-        for (running = 0; doRun && (running < MAX_EXECUTION_TIME); running += DELAY) {
-            try {
-                Thread.sleep(DELAY);
+        long delay = INITIAL_DELAY;
+        
+        final String projectMaxTime = project.getProperty(MAX_EXECUTION_TIME_PROPERTY);
+        long maxExecutionTime = (projectMaxTime!=null) ? 
+            Long.parseLong(projectMaxTime) :
+            MAX_EXECUTION_TIME;
+        long start = System.currentTimeMillis();
+        long end   = start + maxExecutionTime;
+    
+        for (long running = 0; doRun && (maxExecutionTime==0 || System.currentTimeMillis() < end); ) {
+            try {                
+                Thread.sleep(delay);
+                if(delay < MAX_DELAY) {
+                    delay += DELTA_DELAY;
+                }
             }  catch (InterruptedException e) {
                 // do nothing - this may happen every now and then
             }
@@ -877,10 +843,22 @@ public final class Utils {
                 processStdErr.append(string);
             }
         }
-        
         process.destroy();
-        
         return new Results(processStdOut, processStdErr, errorCode);
+    }
+    /**
+     * Runs the specified command using the <code>ProcessBuilder</code> class.
+     *
+     * @param command Path to the executable and its arguments.
+     * @return Results of executing the command (exitcode, stdout and stderr
+     *      contents).
+     * @throws java.io.IOException if an I/O error occurs.
+     */
+    private static Results run(final String... command) throws IOException {
+        
+        Process process = new ProcessBuilder(command).start();
+        
+        return handleProcess(process);
     }
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -972,10 +950,27 @@ public final class Utils {
             300000; // NOMAGI
     
     /**
-     * Deplay (in milliseconds) which to wait between cheking the process state.
+     * Property for setting maximum allowed execution time for a process.
      */
-    public static final int DELAY =
-            10; // NOMAGI
+    public static final String MAX_EXECUTION_TIME_PROPERTY =
+            "process.max.execution.time"; // NOI18N
+    
+    /**
+     * Max deplay (in milliseconds) which to wait between cheking the process state.
+     */
+    public static final int MAX_DELAY =
+            50; // NOMAGI
+    
+    /**
+     * Delta deplay (in milliseconds) which to increase the delay between cheking the process state.
+     */
+    public static final int DELTA_DELAY =
+            1; // NOMAGI
+    /**
+     * Initial deplay (in milliseconds) between cheking the process state.
+     */
+    public static final int INITIAL_DELAY =
+            1; // NOMAGI
     
     /**
      * Prefix for JVM command-line arguments.
