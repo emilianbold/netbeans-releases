@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -96,8 +96,8 @@ public class SaveAsTemplateOperator extends NbDialogOperator {
     public JLabelOperator lblSelectTheCategory() {
         if (_lblSelectTheCategory == null) {
             _lblSelectTheCategory = new JLabelOperator(this,
-                                  Bundle.getString("org.openide.loaders.Bundle",
-                                                   "CTL_SaveAsTemplate"));
+                                  Bundle.getStringTrimmed("org.openide.loaders.Bundle",
+                                                          "CTL_SaveAsTemplate"));
         }
         return _lblSelectTheCategory;
     }

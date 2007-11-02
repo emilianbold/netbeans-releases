@@ -99,8 +99,8 @@ public class SaveAsTemplateOperatorTest extends JellyTestCase {
     public void testLblSelectTheCategory() {
         SaveAsTemplateOperator sato = new SaveAsTemplateOperator();
         String labelText = sato.lblSelectTheCategory().getText();
-        String expectedText = Bundle.getString("org.openide.loaders.Bundle",
-                                               "CTL_SaveAsTemplate");
+        String expectedText = Bundle.getStringTrimmed("org.openide.loaders.Bundle",
+                                                      "CTL_SaveAsTemplate");
         assertEquals("Wrong label found.", expectedText, labelText);
     }
     
