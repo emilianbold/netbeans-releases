@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright Â© 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
@@ -21,9 +21,24 @@
         <p>If you want to change the encoding for a project, see: 
             <a href="../files/encoding.html">Setting Character Encoding</a></p>
             
+        <h3>Encoding detection in the IDE</h3>
+        
+        <p>The IDE implements the FileEncodingQuery (FEQ) layer model. FEQ is an 
+            interface for obtaining information about which encoding can be used 
+            for reading from/writing to a particular file. The layer model prioritizes
+            encoding based on the following hierarchy:</p>
+            
+        <ol>
+            <li><strong>File FEQ</strong>. The encoding value declared within a file.</li>
+            <li><strong>Project FEQ</strong>. The value of the current global project encoding in a session.</li>
+            <li><strong>Fallback FEQ</strong>. The encoding of the locale in which the IDE is running.</li>
+        </ol>
+        
         <h3>Opening Older Projects</h3>
         
-        <p>If you open a project created in a previous version of the IDE</p>
+        <p>Previous versions of the IDE (including 5.x) did not implement the FEQ. 
+            Consequently, any project created from older versions will be opened
+            using the fallback FEQ, i.e. the default locale set by your system's environment.</p>
 
         <h4>Notes:</h4>
         
@@ -46,50 +61,11 @@
                 Neither the IDE nor the programming language performs automatic encoding 
                 detection of files.</li>
         </ul>    
-        
-        
-
-
-  
-        
-        
-when new project supporting the FEQ is created. The fall back encoding is an encoding 
-used by the IDE when no one provides encoding for the file (project doesn't implement 
-the FEQ), the fall back encoding is Charset.defaultCharset() which is the system encoding. 
-The project which don't implement FEQ will work in the same way as in the NB 5.x.
-
-New for NetBeans 6 is a project encoding property and a global project encoding 
-value that is used for newly created projects.
-
-This could apply to projects whose encoding property is not changed, but if files like 
-jsp, xml and html files encoding tags are changed, since besides the encoding value 
-used for runtime, the encoding tag affects how file is viewed internally during designtime, 
-like in editor, debugger, etc.
-
-A new project uses the ide's current view of what the project encoding should be  for 
-setting the value of this new project's  project encoding property, which is the encoding 
-used for reading and writing and creating all files and data in that project.
-
-This ide view of the project encoding value, which is what is used for new projects that 
-will be created during this session comes from the encoding of the last project created 
-before this new one, or from the new encoding of an existing project where the user changed 
-its project encoding - whichever of these actions were more recent (before a new project 
-was created).
-
-When one changes project encoding, all subsequently created new projects that have 
-implemented feq use that changed encoding; projects that have not implemented it, or 
-projects from previous nb in which there was not concept of feq, will use the encoding 
-of the locale in which user was in when started n
-
-the ide does not know how to do automatic encoding detection; for files like jsp/html/xml 
-that have encoding or charset values, it uses those values as the file encoding but does 
-not autodetect actual file encoding
-
-
+       
         <dl>
             <dt><a name="seealso">See Also</a></dt>
-            <dd><a href="../proj_stand_about.html">About Standard Projects</a></dd>
-            <dd><a href="../proj_free_about.html">About Free-Form Projects</a></dd>
+            <dd><a href="../files/file_encoding.html">About File Encodings</a></dd>
+            <dd><a href="../files/encoding.html">Setting Character Encoding</a></dd>
         </dl>
         
         <hr>
