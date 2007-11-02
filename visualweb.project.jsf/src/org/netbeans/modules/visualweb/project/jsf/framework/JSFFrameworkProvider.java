@@ -102,7 +102,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     
     private static final String DEFAULT_LOCALE = Locale.getDefault().toString();  // NOI18N
     private static final String[] SUPPORTED_LOCALES = {
-                    "de", // NOI18N
+                    "en", // NOI18N
                     "ja", // NOI18N
                     "zh_CN", // NOI18N
                     "pt_BR", // NOI18N
