@@ -81,10 +81,10 @@ public class SimpleLanguageProvider extends LanguageProvider {
         instance = this;
     }
 
-    public Language<? extends TokenId> findLanguage(String mimePath) {
-        if (LanguageManagerTest.MIME_TYPE_KNOWN.equals(mimePath)) {
+    public Language<? extends TokenId> findLanguage(String mimeType) {
+        if (LanguageManagerTest.MIME_TYPE_KNOWN.equals(mimeType)) {
             return new LH().language();
-        } else if (TestChangingTokenId.MIME_TYPE.equals(mimePath)) {
+        } else if (TestChangingTokenId.MIME_TYPE.equals(mimeType)) {
             return TestChangingTokenId.language();
         }
         return null;

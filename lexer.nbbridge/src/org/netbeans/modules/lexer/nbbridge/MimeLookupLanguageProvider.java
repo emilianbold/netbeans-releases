@@ -62,8 +62,8 @@ public final class MimeLookupLanguageProvider extends LanguageProvider {
         super();
     }
 
-    public Language<? extends TokenId> findLanguage(String mimePath) {
-        Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimePath));
+    public Language<? extends TokenId> findLanguage(String mimeType) {
+        Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimeType));
         return (Language<? extends TokenId>)lookup.lookup(Language.class);
     }
 

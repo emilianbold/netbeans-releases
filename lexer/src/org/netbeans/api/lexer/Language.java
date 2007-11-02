@@ -134,7 +134,7 @@ public final class Language<T extends TokenId> {
      * 
      * <p>This method uses information from <code>LanguageProvider</code>s registered
      * in the default lookup to find <code>Language</code> for a given
-     * mime path.
+     * mime type.
      * 
      * <div class="nonnormative">
      * <p>Netbeans provide an implementation of <code>LanguageProvider</code>
@@ -142,25 +142,12 @@ public final class Language<T extends TokenId> {
      * Therefore Netbeans modules can register their <code>Language</code>s
      * in MimeLookup as any other mime-type related service.
      * 
-     * <p>Since this method takes <code>mimePath</code> as a parameter it is
-     * possible to look up <code>Language</code> registered for
-     * a mime type that is embedded in some other mime type (i.e. the nesting
-     * can go any number of levels deep). In reality, however, there is usually
-     * no difference between a language, which uses its own file and the same
-     * language embedded in some other language's file (e.g. there is no difference
-     * between java language in <code>hello.java</code> and a java scriplet in
-     * <code>goodbye.jsp</code>). Therefore <code>Language</code>s are
-     * usually registered only for top level mime types and if a language
-     * can be embedded in another language the embedded language is referenced
-     * by its top level mime type.
-     * </div>
-     * 
-     * @param mimePath The mime path of the language you want to find.
-     * @return The <code>Language</code> of the language registered
-     *         for the given <code>mimePath</code>.
+     * @param mimeType The mime type of a language that you want to find.
+     * @return The <code>Language</code> registered
+     *         for the given <code>mimeType</code>.
      */
-    public static Language<? extends TokenId> find(String mimePath) {
-        return LanguageManager.getInstance().findLanguage(mimePath);
+    public static Language<? extends TokenId> find(String mimeType) {
+        return LanguageManager.getInstance().findLanguage(mimeType);
     }
     
     /**
@@ -417,12 +404,12 @@ public final class Language<T extends TokenId> {
     }
     
     /** The languages are equal only if they are the same objects. */
-    public boolean equals(Object obj) {
+    public @Override boolean equals(Object obj) {
         return super.equals(obj);
     }
     
     /** The hashCode of the language is the identity hashCode. */
-    public int hashCode() {
+    public @Override int hashCode() {
         return super.hashCode();
     }
 

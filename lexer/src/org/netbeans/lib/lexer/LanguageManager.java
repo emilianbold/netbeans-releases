@@ -130,14 +130,15 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
     //  LanguageProvider implementation
     // -------------------------------------------------------------------
     
-    public Language<? extends TokenId> findLanguage(String mimePath) {
+    public Language<? extends TokenId> findLanguage(String mimeType) {
+        assert mimeType != null : "The mimeType parameter can't be null"; //NOI18N
         synchronized(LOCK) {
-            WeakReference<Language<? extends TokenId>> ref = langCache.get(mimePath);
+            WeakReference<Language<? extends TokenId>> ref = langCache.get(mimeType);
             Language<? extends TokenId> lang = ref == null ? null : ref.get();
             
             if (lang == null) {
                 for(LanguageProvider p : providers) {
-                    if (null != (lang = p.findLanguage(mimePath))) {
+                    if (null != (lang = p.findLanguage(mimeType))) {
                         break;
                     }
                 }
@@ -146,7 +147,7 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
                     lang = NO_LANG();
                 }
                 
-                langCache.put(mimePath, new WeakReference<Language<? extends TokenId>>(lang));
+                langCache.put(mimeType, new WeakReference<Language<? extends TokenId>>(lang));
             }
             
             return lang == NO_LANG() ? null : lang;

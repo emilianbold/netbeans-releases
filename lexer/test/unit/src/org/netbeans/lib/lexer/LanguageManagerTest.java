@@ -49,7 +49,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.lib.lexer.lang.TestChangingTokenId;
 import org.netbeans.lib.lexer.lang.TestCharTokenId;
 import org.netbeans.lib.lexer.test.simple.SimpleLanguageProvider;
 import org.netbeans.lib.lexer.lang.TestPlainTokenId;
@@ -69,14 +68,6 @@ public class LanguageManagerTest extends NbTestCase {
         super(name);
     }
 
-    public void testBasic() {
-        Language lang = LanguageManager.getInstance().findLanguage(null);
-        assertNull("There should be no language for null mime type", lang);
-
-        lang = LanguageManager.getInstance().findLanguage("");
-        assertNull("There should be no language for '' mime type", lang);
-    }
-    
     public void testUnknownMimeType() {
         Language lang = LanguageManager.getInstance().findLanguage(MIME_TYPE_UNKNOWN);
         assertNull("There should be no language for " + MIME_TYPE_UNKNOWN, lang);

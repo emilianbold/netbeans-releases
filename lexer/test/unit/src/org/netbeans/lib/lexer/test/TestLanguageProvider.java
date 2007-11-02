@@ -118,9 +118,9 @@ public class TestLanguageProvider extends LanguageProvider {
             throw new IllegalStateException("No instance of created yet.");
     }
 
-    public Language<? extends TokenId> findLanguage(String mimePath) {
+    public Language<? extends TokenId> findLanguage(String mimeType) {
         synchronized (LOCK) {
-            return mime2language.get(mimePath);
+            return mime2language.get(mimeType);
         }
     }
 

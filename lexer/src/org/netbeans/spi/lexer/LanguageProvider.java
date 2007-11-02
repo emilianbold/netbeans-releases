@@ -81,7 +81,7 @@ public abstract class LanguageProvider {
     public static final String PROP_EMBEDDED_LANGUAGE = "LanguageProvider.PROP_EMBEDDED_LANGUAGE"; //NOI18N
     
     /**
-     * Finds <code>Language</code> for a given mime path.
+     * Finds <code>Language</code> for a given mime type.
      * 
      * <p>The lexer framework uses this method to find a <code>Language</code>
      * for <code>Document</code>s that are used as an input source. If the document
@@ -89,11 +89,10 @@ public abstract class LanguageProvider {
      * will consult registered <code>LanguageProvider</code>s to find out the
      * <code>Language</code> appropriate for the document's mime type.
      * 
-     * @param mimePath The mime path or mime type to get a <code>Language</code>
-     *   for. It is allowed to pass in an empty string or <code>null</code>.
+     * @param mimeType The mime type of a <code>Language</code> to find.
      * 
      * @return The <code>Language</code> registered for the given
-     * mime path or <code>null</code> if no such <code>Language</code> exists.
+     *   mime type or <code>null</code> if no such <code>Language</code> exists.
      */
     public abstract Language<? extends TokenId> findLanguage(String mimePath);
     
