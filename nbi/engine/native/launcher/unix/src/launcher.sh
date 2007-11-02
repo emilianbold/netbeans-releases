@@ -337,6 +337,13 @@ ifNumber()
 	fi 
 	echo $result
 }
+resolveRelativity() {
+	if [ 1 -eq `ifPathRelative "$1"` ] ; then
+		echo "$CURRENT_DIRECTORY"/"$1" | sed 's/\"//g' 2>/dev/null
+	else 
+		echo "$1"
+	fi
+}
 
 ifPathRelative() {
 	param="$1"
@@ -380,13 +387,7 @@ parseJvmAppArgument() {
 
 getLauncherLocation() {
 	# if file path is relative then prepend it with current directory
-	if [ 1 -eq `ifPathRelative "$LAUNCHER_NAME"` ] ; then
-		debug "Running launcher with relative path"
-		LAUNCHER_FULL_PATH=`echo "$CURRENT_DIRECTORY"/"$LAUNCHER_NAME" | sed 's/\"//g' 2>/dev/null`
-	else 
-		debug "Running launcher with absolute path"
-		LAUNCHER_FULL_PATH="$LAUNCHER_NAME"
-	fi
+	LAUNCHER_FULL_PATH=`resolveRelativity "$LAUNCHER_NAME"`
 	debug "... normalizing full path"
 	LAUNCHER_FULL_PATH=`normalizePath "$LAUNCHER_FULL_PATH"`
 	debug "... getting dirname"
@@ -567,19 +568,28 @@ extractTestJVMFile() {
 
 installJVM() {
 	message "$MSG_PREPARE_JVM"	
-	jvmFile="$1"
+	jvmFile=`resolveRelativity "$1"`
 	jvmDir=`dirname "$jvmFile"`/_jvm
-	mkdir "$jvmDir"
+	debug "JVM Directory : $jvmDir"
+	mkdir "$jvmDir" > /dev/null 2>&1
+	if [ $? != 0 ] ; then
+		message "$MSG_ERROR_EXTRACT_JVM"
+		exitProgram $ERROR_JVM_EXTRACTION
+	fi
         chmod +x "$jvmFile" > /dev/null  2>&1
 	jvmFileEscaped=`escapeString "$jvmFile"`
         jvmDirEscaped=`escapeString "$jvmDir"`
-	cmd="$jvmFileEscaped -d $jvmDirEscaped"
-        runCommand "$cmd"
-        	
-	if [ $? != 0 ] ; then
+	cd "$jvmDir"
+        runCommand "$jvmFileEscaped"
+	ERROR_CODE=$?
+
+        cd "$CURRENT_DIRECTORY"
+
+	if [ $ERROR_CODE != 0 ] ; then		
 	        message "$MSG_ERROR_EXTRACT_JVM"
 		exitProgram $ERROR_JVM_EXTRACTION
 	fi
+	
 	files=`find "$jvmDir" -name "*.jar.pack.gz" -print`
 	debug "Packed files : $files"
 	f="$files"
