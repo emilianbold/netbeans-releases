@@ -255,9 +255,9 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      *   two tokens. If <code>false</code> the forward lying token will be used.
      * 
      * @return The list of all sequences embedded at the given offset. The list
-     *   has always at least one element and that is the top level
-     *   <code>TokenSequence</code>. The sequences in the list are ordered from
-     *   the top level sequence to the bottom one.
+     *   may be empty if there are no tokens in the top level <code>TokenSequence</code>
+     *   at the given offset and in the specified direction.
+     *   The sequences in the list are ordered from the top level sequence to the bottom one.
      * 
      * @since 1.20
      */
@@ -269,19 +269,21 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
 
         do {
             TokenSequence<? extends TokenId> seq = embedded;
-            sequences.add(seq);
             embedded = null;
 
             seq.move(offset);
             if (seq.moveNext()) {
                 if (seq.offset() == offset && backwardBias) {
                     if (seq.movePrevious()) {
+                        sequences.add(seq);
                         embedded = seq.embedded();
                     }
                 } else {
+                    sequences.add(seq);
                     embedded = seq.embedded();
                 }
             } else if (backwardBias && seq.movePrevious()) {
+                sequences.add(seq);
                 embedded = seq.embedded();
             }
         } while (embedded != null);

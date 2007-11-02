@@ -223,15 +223,17 @@ public class JSPLexerFormatter extends TagBasedLexerFormatter {
     public void enterPressed(Context context) {
         TokenHierarchy<Document> hi = TokenHierarchy.get(context.document());
         List<TokenSequence<? extends TokenId>> sequences = hi.embeddedTokenSequences(context.caretOffset(), true);
-        TokenSequence mostEmbedded = sequences.get(sequences.size() - 1);
-        if(mostEmbedded.language() == JavaTokenId.language()) {
-            ExtFormatter formatter = new JspJavaFormatter(JavaKit.class);
-            try {
-                formatter.reformat((BaseDocument)context.document(), context.caretOffset(), context.caretOffset() + 1, true);
-            }catch(BadLocationException e) {
-                Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
-            }catch(IOException e) {
-                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, null, e);
+        if (!sequences.isEmpty()) {
+            TokenSequence mostEmbedded = sequences.get(sequences.size() - 1);
+            if(mostEmbedded.language() == JavaTokenId.language()) {
+                ExtFormatter formatter = new JspJavaFormatter(JavaKit.class);
+                try {
+                    formatter.reformat((BaseDocument)context.document(), context.caretOffset(), context.caretOffset() + 1, true);
+                }catch(BadLocationException e) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
+                }catch(IOException e) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING, null, e);
+                }
             }
         }
         super.enterPressed(context);

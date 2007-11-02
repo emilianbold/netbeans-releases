@@ -28,6 +28,8 @@
 package org.netbeans.modules.javadoc;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavadocTokenId;
@@ -47,6 +49,8 @@ import org.netbeans.spi.editor.bracesmatching.support.BracesMatcherSupport;
  */
 public final class JavadocBracesMatcher implements BracesMatcher, BracesMatcherFactory {
 
+    private static final Logger LOG = Logger.getLogger(JavadocBracesMatcher.class.getName());
+    
     private final MatcherContext context;
     
     private TokenSequence<? extends TokenId> jdocSeq;
@@ -93,7 +97,12 @@ public final class JavadocBracesMatcher implements BracesMatcher, BracesMatcherF
             }
         }
 
-        assert jdocSeq != null : "Not in javadoc"; //NOI18N
+        if (jdocSeq == null) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Not javadoc TokenSequence."); //NOI18N
+            }
+            return null;
+        }
         
 //        if (caretOffset >= jdocStart && 
 //            ((backward && caretOffset <= jdocStart + 3) ||

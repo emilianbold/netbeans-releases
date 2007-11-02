@@ -386,12 +386,14 @@ public final class ColorModel {
                 private String findLexerElement(TokenHierarchy<Document> hierarchy, int offset) {
                     String elementName = null;
                     List<TokenSequence<? extends TokenId>> sequences = hierarchy.embeddedTokenSequences(offset, false);
-                    TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
-                    seq.move(offset);
-                    if (seq.moveNext()) {
-                        elementName = seq.token().id().primaryCategory();
-                        if (elementName == null) {
-                            elementName = seq.token().id().name();
+                    if (!sequences.isEmpty()) {
+                        TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
+                        seq.move(offset);
+                        if (seq.moveNext()) {
+                            elementName = seq.token().id().primaryCategory();
+                            if (elementName == null) {
+                                elementName = seq.token().id().name();
+                            }
                         }
                     }
                     return elementName;

@@ -41,6 +41,7 @@
 
 package org.netbeans.api.lexer;
 
+import java.util.List;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.junit.NbTestCase;
@@ -61,10 +62,10 @@ public class TokenHierarchyTest extends NbTestCase {
         super(testName);
     }
     
-    protected void setUp() throws java.lang.Exception {
+    protected @Override void setUp() throws java.lang.Exception {
     }
 
-    protected void tearDown() throws java.lang.Exception {
+    protected @Override void tearDown() throws java.lang.Exception {
     }
     
     public void testLanguagePaths() {
@@ -163,6 +164,32 @@ public class TokenHierarchyTest extends NbTestCase {
         assertNotNull(et2);
         
         assertSame(et, et2);
+    }
+
+    public void test120906() throws Exception {
+        Document doc = new ModificationTextDocument();
+        String text = "/**abc*/";
+        doc.insertString(0, text, null);
+        doc.putProperty(Language.class,TestTokenId.language());
+        
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        List<TokenSequence<? extends TokenId>> ets1 = hi.embeddedTokenSequences(4, false);
+        assertEquals("Wrong number of embedded TokenSequences", 2, ets1.size());
+        assertEquals("Wrong offset from the most embedded TokenSequence", 3, ets1.get(1).offset());
+        
+        List<TokenSequence<? extends TokenId>> ets2 = hi.embeddedTokenSequences(6, false);
+        assertEquals("Wrong number of embedded TokenSequences", 1, ets2.size());
+        assertEquals("Wrong offset from the most embedded TokenSequence", 0, ets2.get(0).offset());
+        
+        List<TokenSequence<? extends TokenId>> ets3 = hi.embeddedTokenSequences(3, true);
+        assertEquals("Wrong number of embedded TokenSequences", 1, ets3.size());
+        assertEquals("Wrong offset from the most embedded TokenSequence", 0, ets3.get(0).offset());
+
+        List<TokenSequence<? extends TokenId>> ets4 = hi.embeddedTokenSequences(0, true);
+        assertEquals("Wrong number of embedded TokenSequences", 0, ets4.size());
+
+        List<TokenSequence<? extends TokenId>> ets5 = hi.embeddedTokenSequences(doc.getLength(), false);
+        assertEquals("Wrong number of embedded TokenSequences", 0, ets5.size());
     }
 
 }

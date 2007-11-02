@@ -104,7 +104,10 @@ public class JspBracesMatching implements BracesMatcher, BracesMatcherFactory {
                 return new JspBracesMatching(context, ts.languagePath());
             }
         }
-        throw new IllegalStateException("No text/x-jsp language found on the MatcherContext's search offset! This should never happen!");
+        return null;
+// We might be trying to search at the end or beginning of a document. In which
+// case there is nothing to find and/or search through, so don't create a matcher.
+//        throw new IllegalStateException("No text/x-jsp language found on the MatcherContext's search offset! This should never happen!");
     }
     
 }
