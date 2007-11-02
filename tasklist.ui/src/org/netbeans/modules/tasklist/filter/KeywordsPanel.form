@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="matchGroup">
     </Component>
@@ -28,9 +28,9 @@
                       <Component id="fewerButton" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="matchAllRadio" max="32767" attributes="0"/>
+                      <Component id="matchAllRadio" pref="149" max="32767" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="matchAnyRadio" max="32767" attributes="0"/>
+                      <Component id="matchAnyRadio" pref="157" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="278" max="-2" attributes="0"/>
                   </Group>
                   <Component id="conditionsScrollPane" alignment="1" pref="584" max="32767" attributes="0"/>

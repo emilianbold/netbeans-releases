@@ -46,6 +46,7 @@ import java.awt.event.ActionListener;
 import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
@@ -69,6 +70,10 @@ final class TypesPanel extends JPanel {
     public TypesPanel( TypesFilter filter ) {
         this.filter = filter;
         init();
+        if( "Metal".equals( UIManager.getLookAndFeel().getID() ) ) //NOI18N
+            setOpaque( true );
+        else 
+            setOpaque( false );
     }
     
     public boolean isValueValid() {
