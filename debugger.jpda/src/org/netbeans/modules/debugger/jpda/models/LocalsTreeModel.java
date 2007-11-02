@@ -65,6 +65,7 @@ import java.util.WeakHashMap;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -173,7 +174,18 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                     return new Object[] {};
                 }
                 Operation currentOperation = frame.getThread().getCurrentOperation();
-                if (currentOperation != null && currentOperation.getReturnValue() == null) {
+                Operation lastOperation = null;
+                if (currentOperation != null) {
+                    JPDAThread t = debugger.getCurrentThread();
+                    if (t != null) {
+                        java.util.List<Operation> lastOperations = t.getLastOperations();
+                        if (lastOperations != null && lastOperations.size() > 0) {
+                            lastOperation = lastOperations.get(lastOperations.size() - 1);
+                        }
+                    }
+                }
+                boolean isNotDone = currentOperation != lastOperation;
+                if (isNotDone) {
                     ret[0] = "operationArguments " + currentOperation.getMethodName(); // NOI18N
                 }
                 List<Operation> operations = frame.getThread().getLastOperations();
