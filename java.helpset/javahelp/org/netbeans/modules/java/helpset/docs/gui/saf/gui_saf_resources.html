@@ -13,26 +13,38 @@
         <p><small><a href="#seealso">See Also</a></small>
         
 <p>The Swing Application Framework simplifies the handling of resources in 
-    applications and makes it possible for more things to stored in resource bundles. 
+    applications and makes it possible for more things to be stored in resource bundles. 
 </p>
 <p>A typical Swing Application Framework application has resource bundles 
 at both the application level and the class level. The class-level resource bundles have the same names as their 
 corresponding <tt>.java</tt> classes except that they contain the <tt>.properties</tt> 
 extension. All of these bundles are encapsulated by a <tt>ResourceMap</tt> object.</p>
-<p>You can edit application level resources in the Project Properties dialog box. 
-Open the Project Properties dialog box by right-clicking the project's node and 
-choosing Properties. The application properties appear in the Application panel 
+<p>You can edit some standard application level resources (such as 
+    application name) in the 
+    Project Properties dialog box. Any application-level resources not 
+    included in the Project Properties dialog box (such as resources that 
+you define yourself)  can be edited in the 
+    the <tt>.properties</tt> file that corresponds with the name of the main 
+    application class.</p>
+<p>You can open the Project Properties dialog box by right-clicking the project's node and 
+choosing Properties. Application properties appear in the Application panel 
 and the Desktop Application panel.</p>
 <p>When you start an application from the Java Desktop Application project template, 
 by default your code is generated with the Swing Application Framework's conventions for 
 managing resources, such as UI text. The values of component properties that you 
 set are stored as resources as well.
 </p>
+<p><b>Notes:</b></p>
 <ul class="note">
-    <li>If you do not want values to be stored in <tt>.properties</tt> files, you 
-    change the way the values are stored. Click the ellipsis (...) 
+    <li>If you do not want resources to be stored in <tt>.properties</tt> files 
+        for a form, you can change the way the values are stored. Select the root form 
+        node in the Inspector window. In the Properties window, select Off from 
+        the Automatic Resource Management drop-down list.</li>
+    <li>If you do not want the value for a specific property to be stored in 
+        a <tt>.properties</tt> file, click the ellipsis (...) 
 button next to the given property in the Properties window. Then clear the 
 Define as Resource property.</li>
+
 </ul>
 
 <p>You can read more about resource management in the Swing Application Framework's 

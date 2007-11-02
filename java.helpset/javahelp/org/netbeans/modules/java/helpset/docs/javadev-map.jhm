@@ -226,12 +226,24 @@
 <mapID target="propfiles.intro" url="propfiles/about_resourcebundles.html" />
 <mapID target="propfiles.creating" url="propfiles/creating_resourcebundles.html" />
 <mapID target="propfiles.adding" url="propfiles/addingprops.html" />
+<!--below ID is also CSH for visual .properties editor-->
 <mapID target="propfiles.modifying" url="propfiles/modifyprops.html" />
 <!--<mapID target="propfiles.removing" url="propfiles/removingprops.html" />-->
 <mapID target="propfiles.addlocale" url="propfiles/addinglocale.html" />
-
-<!--this topic also a CSH ID for .properties files in Source Editor-->
 <mapID target="propfiles.editlocale" url="propfiles/editinglocale.html" />
+
+
+
+<!--CSH for properties text editor-->
+<mapID target="text.x-properties" url="propfiles/editinglocale.html" />
+
+<!--CSH for java source editor-->
+<mapID target="text.x-java" url="editing/csh/about_source_editor.html" />
+
+<!--CSH for manifest source editor-->
+<mapID target="text.x-manifest" url="pending.html" />
+
+
 
 <!--Java Persistence API topics - some more are in the j2ee/platform help set-->
     <mapID target="persist_about" url="persistence/general/persistence_about.html" />

@@ -13,13 +13,16 @@
         <p><small><a href="#seealso">See Also</a></small>
             
             <p>The Swing Application Framework provides support to help you 
-            define and manage actions.</p> You define actions with the <tt>&Action</tt> 
-            annotation and the framework encapsulates all such defined actions with 
-        its <tt>ActionMap</tt> class. In addition, you can configure actions to 
-    run asynchronously.</p>
+            define and manage actions.</p> You define an action by adding the  
+            <tt>&Action</tt> annotation to a method. The framework then uses 
+            that method to perform the given action. You can also specify 
+            various attributes for the action that determine things such as 
+        the enabled state of the action, the action's blocking behavior, and 
+    whether the action runs in the background.</p>
         <p>In the IDE, you can use  
             <a href="gui_saf_action_csh.html">Set Action dialog box</a> to 
-            generate code for actions. In 
+            generate code for actions, including the annotation and any 
+            attributes. In 
         the Set Action dialog box, you can do the following:</p>
         <ul>
             <li>Set a component to use an action.</li>     
@@ -44,12 +47,13 @@
             its <tt>action</tt> property in the Properties window.</li>
         </ul>
         
+<p><b>Notes:</b></p>        
         <ul class="note">
-<li>When you assign an action to a component, that component derives some of its 
-<tt>text</tt> and <tt>toolTipText</tt> properties from what you specify in the 
+<li>When you assign an action to a component, that component derives its 
+<tt>text</tt>, <tt>toolTipText</tt>, <tt>icon</tt> properties from what you specify in the 
 Set Action dialog box. If you have previously set these properties for the component, they 
 will be overridden by what is specified in the Set Action dialog box.</li>
-<li>Some attributes of the action are stored as resources in the <tt>.properties</tt> 
+<li>Resources for the action are stored in a <tt>.properties</tt> 
 file that has the same name as the action's <tt>.java</tt> file. 
 The property keys 
 are derived from the action name. The affected attributes are text, tooltip, 
@@ -59,6 +63,7 @@ accelerator, small icon, large icon, blocking title, and blocking message.</li>
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="gui_saf_about.html">About the Swing Application Framework</a></dd>
+            <dd><a href="gui_saf_resources.html">About Resources in the Swing Application Framework</a></dd>
             <dd><a href="../gui_about.html">About Java GUIs</a></dd>
             <dd><a href="../gui_quickref.html">GUI Builder Tasks: Quick Reference</a></dd>
             <dd><a href="../gui_designing.html">Designing Java GUIs with the GUI Builder</a></dd>
