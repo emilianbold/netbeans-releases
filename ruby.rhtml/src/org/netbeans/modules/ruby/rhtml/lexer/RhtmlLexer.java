@@ -182,13 +182,8 @@ public final class RhtmlLexer implements Lexer<RhtmlTokenId> {
                 case ISI_COMMENT_SCRIPTLET:
                     switch(actChar) {
                         case '%':
-                            if (input.readLength() == 1) {
-                                state = ISI_COMMENT_SCRIPTLET_PC;
-                                break;
-                            } else {
-                                input.backup(1);
-                                return token(RhtmlTokenId.RUBYCOMMENT);
-                            }
+                            state = ISI_COMMENT_SCRIPTLET_PC;
+                            break;
                     }
                     break;
                     
@@ -196,13 +191,8 @@ public final class RhtmlLexer implements Lexer<RhtmlTokenId> {
                 case ISI_SCRIPTLET:
                     switch(actChar) {
                         case '%':
-                            if (input.readLength() == 1) {
-                                state = ISI_SCRIPTLET_PC;
-                                break;
-                            } else {
-                                input.backup(1);
-                                return token(RhtmlTokenId.RUBY);
-                            }
+                            state = ISI_SCRIPTLET_PC;
+                            break;
                     }
                     break;
                     
@@ -229,13 +219,8 @@ public final class RhtmlLexer implements Lexer<RhtmlTokenId> {
                 case ISI_EXPR_SCRIPTLET:
                     switch(actChar) {
                         case '%':
-                            if (input.readLength() == 1) {
-                                state = ISI_EXPR_SCRIPTLET_PC;
-                                break;
-                            } else {
-                                input.backup(1);
-                                return token(RhtmlTokenId.RUBY);
-                            }
+                            state = ISI_EXPR_SCRIPTLET_PC;
+                            break;
                     }
                     break;
                     
