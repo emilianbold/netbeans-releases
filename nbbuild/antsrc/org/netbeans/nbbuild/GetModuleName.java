@@ -89,7 +89,9 @@ public class GetModuleName extends Task {
             }
             
             //log("Basedir: " + basedir + " rootdir: " + rootdir);
-            if (dir == null) throw new BuildException( "This module in on different path than the root dir",this.getLocation());
+            if (dir == null) {
+                throw new BuildException("This module (" + this.getProject().getBaseDir() + ") is on different path than the root dir", this.getLocation());
+            }
             this.getProject().setProperty(name, modulename.toString()); // XXX should be setNewProperty, when that is possible
         }
         catch (IOException ex) {
