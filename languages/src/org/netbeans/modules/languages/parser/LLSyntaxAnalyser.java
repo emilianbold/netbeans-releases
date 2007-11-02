@@ -66,7 +66,6 @@ import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.api.languages.TokenInput;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
-import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.Rule;
@@ -291,7 +290,7 @@ public class LLSyntaxAnalyser {
                                 stack.push (it);
                                 stack.push (node);
                             } else {
-                                if (rule.getRight ().isEmpty () && removeEmpty (rule.getNT ()))
+                                if (rule.getRight ().isEmpty () && removeEmpty (language, rule.getNT ()))
                                     continue;
                                 ASTNode nnode = ASTNode.create (
                                     language,
@@ -654,63 +653,20 @@ public class LLSyntaxAnalyser {
         printFirst = properties.getBoolean ("printFirst", false);
     }
     
-    private boolean removeEmpty = false;
-    private boolean removeSimple = false;
-    private boolean removeEmptyN = true;
-    private boolean removeSimpleN = true;
-    private Set<String> empty;
-    private Set<String> simple;
-    
-    private void initASTFeatures () {
-        if (empty != null) return;
-        empty = new HashSet<String> ();
-        simple = new HashSet<String> ();
-        Feature optimiseProperty = language.getFeature ("AST");
-        if (optimiseProperty == null) return;
-        
-        String s = (String) optimiseProperty.getValue ("removeEmpty");
-        if (s != null) {
-            if (s.startsWith ("!")) {
-                removeEmptyN = false;
-                s = s.substring (1);
-            }
-            removeEmpty = "true".equals (s);
-            if (!"false".equals (s)) {
-                StringTokenizer st = new StringTokenizer (s, ",");
-                while (st.hasMoreTokens ())
-                    empty.add (st.nextToken ());
-            }
-        }
-        
-        s = (String) optimiseProperty.getValue ("removeSimple");
-        if (s != null) {
-            if (s.startsWith ("!")) {
-                removeSimpleN = false;
-                s = s.substring (1);
-            }
-            removeSimple = "true".equals (s);
-            if (!"false".equals (s)) {
-                StringTokenizer st = new StringTokenizer (s, ",");
-                while (st.hasMoreTokens ())
-                    simple.add (st.nextToken ());
-            }
-        }
-    }
-    
     private boolean removeNode (ASTNode node) {
         List l = node.getChildren ();
         if (!l.isEmpty ()) return false;
-        initASTFeatures ();
-        return removeEmpty || (removeEmptyN == empty.contains (node.getNT ()));
+        ASTFeatures astFeatures = ASTFeatures.get ((Language) node.getLanguage ());
+        return astFeatures.removeEmpty || (astFeatures.removeEmptyN == astFeatures.empty.contains (node.getNT ()));
     }
     
     private ASTItem replaceNode (ASTNode node) {
-        initASTFeatures ();
+        ASTFeatures astFeatures = ASTFeatures.get ((Language) node.getLanguage ());
         ASTItem result = null;
         do {
             List<ASTItem> l = node.getChildren ();
             if (l.size () != 1) return result;
-            if (!removeSimple && (removeSimpleN != simple.contains (node.getNT ())))
+            if (!astFeatures.removeSimple && (astFeatures.removeSimpleN != astFeatures.simple.contains (node.getNT ())))
                 return result;
             result = l.get (0);
             if (!(result instanceof ASTNode)) return result;
@@ -718,9 +674,9 @@ public class LLSyntaxAnalyser {
         } while (true);
     }
     
-    private boolean removeEmpty (String nt) {
-        initASTFeatures ();
-        return removeEmpty || (removeEmptyN == empty.contains (nt));
+    private boolean removeEmpty (Language language, String nt) {
+        ASTFeatures astFeatures = ASTFeatures.get (language);
+        return astFeatures.removeEmpty || (astFeatures.removeEmptyN == astFeatures.empty.contains (nt));
     }
         
     
