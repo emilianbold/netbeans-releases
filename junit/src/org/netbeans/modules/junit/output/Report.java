@@ -165,7 +165,12 @@ final class Report {
      */
     static final class Trouble {
         
-        private final boolean error;
+        static final String COMPARISON_FAILURE_JUNIT3
+                = "junit.framework.ComparisonFailure";                  //NOI18N
+        static final String COMPARISON_FAILURE_JUNIT4
+                = "org.junit.ComparisonFailure";                        //NOI18N
+
+        boolean error;
         String message;
         String exceptionClsName;
         String[] stackTrace;
@@ -180,6 +185,18 @@ final class Report {
         /** */
         boolean isError() {
             return error;
+        }
+
+        /** */
+        boolean isComparisonFailure() {
+            return (exceptionClsName != null)
+                   && (exceptionClsName.equals(COMPARISON_FAILURE_JUNIT3)
+                       || exceptionClsName.equals(COMPARISON_FAILURE_JUNIT4));
+        }
+
+        /** */
+        boolean isFakeError() {
+            return error && isComparisonFailure();
         }
         
     }

@@ -180,6 +180,44 @@ final class XmlOutputParser extends DefaultHandler {
                 if (state >= 0) {     //i.e. the element is "failure" or "error"
                     assert testcase != null;
                     trouble = new Report.Trouble(state == STATE_ERROR);
+
+                    String attrValue;
+                    attrValue = attrs.getValue("type");                 //NOI18N
+                    if (attrValue != null) {
+                        trouble.exceptionClsName = attrValue;
+                    }
+                    attrValue = attrs.getValue("message");              //NOI18N
+                    if (attrValue != null) {
+                        trouble.message = attrValue;
+                    }
+
+                    /*
+                     * Comparison failures are incorrectly reported as errors
+                     * (Ant 1.7 + JUnit 4.1) so there is a workaround here:
+                     * If the failure/error's is of type ComparisonFailure,
+                     * then set the status to "FAILURE", even though it is
+                     * reported to be "ERROR":
+                     */
+                    if (trouble.isFakeError()) {
+                        trouble.error = false;
+
+                        /* fix also the statistics: */
+                        report.errors--;
+                        report.failures++;
+                    }
+
+                    /*
+                     * Another hack-workaround:
+                     * When run with Ant 1.7 + JUnit 4.1, comparison failures
+                     * with no given failure message are reported as if they
+                     * had failure message "null". The following workaround
+                     * removes this fake message:
+                     */
+                    if (trouble.isComparisonFailure()
+                            && (trouble.message != null)
+                            && trouble.message.startsWith("null expected:")) {  //NOI18N
+                        trouble.message = trouble.message.substring(5);
+                    }
                 }
                 break;  //</editor-fold>
             //<editor-fold defaultstate="collapsed" desc="STATE_OUT_OF_SCOPE">

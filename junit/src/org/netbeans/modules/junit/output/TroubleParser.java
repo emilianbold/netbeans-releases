@@ -65,18 +65,25 @@ final class TroubleParser {
     private final Trouble trouble;
     /** */
     private final RegexpUtils regexp;
+    /** */
+    private final boolean callstackOnly;
 
     /** */
     private Trouble currTrouble;
     /** */
     private List<String> callstackBuffer;
+    /** */
+    private int emptyLines = 0;
+    /** */
+    private boolean isHiddenComparisonFailure;
 
     /**
      */
     TroubleParser(Trouble trouble, RegexpUtils regexp) {
         this.trouble = trouble;
         this.regexp = regexp;
-        
+        this.callstackOnly = (trouble.exceptionClsName != null);
+
         currTrouble = trouble;
     }
 
@@ -88,61 +95,86 @@ final class TroubleParser {
      *          trouble is finished, <code>{@value #WANT_MORE}</code>
      *          otherwise
      */
-    boolean processMessage(final String msg) {
+    boolean processMessage(String msg) {
         Matcher matcher;
         if (trouble.exceptionClsName == null) {
             matcher = regexp.getTestcaseExceptionPattern().matcher(msg);
             if (matcher.matches()) {
                 trouble.exceptionClsName = matcher.group(1);
-                String exceptionMsg = matcher.group(2);
-                if (exceptionMsg != null) {
-                    trouble.message = exceptionMsg;
-                }
+                trouble.message = matcher.group(2);     //possibly null
+
+                isHiddenComparisonFailure = false;
+                return WANT_MORE;
             }
-            return WANT_MORE;     //ignore other texts until
-                                  //we get exception class name
         }
         
-        String trimmed = RegexpUtils.specialTrim(msg);
-        if (trimmed.length() == 0) {
-            finishProcessing();
-            return DONE;
-        }
-        
-        if (msg.startsWith(NESTED_EXCEPTION_PREFIX)) {
-            if (callstackBuffer != null) {
-                matcher = regexp.getNestedExceptionPattern().matcher(
-                        msg.substring(NESTED_EXCEPTION_PREFIX.length()));
-                if (matcher.matches()) {
-                    fixateStackTrace();
-                    
-                    Trouble nestedTrouble = new Trouble(false);
-                    nestedTrouble.exceptionClsName = matcher.group(1);
-                    nestedTrouble.message = matcher.group(2);
-                    
-                    currTrouble.nestedTrouble = nestedTrouble;
-                    currTrouble = nestedTrouble;
-                    return WANT_MORE;
-                }
+        if (msg.length() == 0) {
+            if ((trouble.exceptionClsName != null) && (callstackBuffer != null)
+                    || (++emptyLines == 2)) {
+                finishProcessing();
+                return DONE;
             }
         } else {
-            if (trimmed.startsWith(CALLSTACK_LINE_PREFIX_CATCH)) {
-                trimmed = trimmed.substring(CALLSTACK_LINE_PREFIX_CATCH.length());
-            }
-            if (trimmed.startsWith(CALLSTACK_LINE_PREFIX)) {
-                matcher = regexp.getCallstackLinePattern().matcher(msg);
-                if (matcher.matches()) {
-                    if (callstackBuffer == null) {
-                        callstackBuffer = new ArrayList<String>(8);
-                    }
-                    callstackBuffer.add(
-                            trimmed.substring(CALLSTACK_LINE_PREFIX.length()));
-                    return WANT_MORE;
-                }
+            emptyLines = 0;
+        }
+        
+        if ((trouble.exceptionClsName != null)
+                && (callstackBuffer != null)
+                && msg.startsWith(NESTED_EXCEPTION_PREFIX)) {
+            matcher = regexp.getNestedExceptionPattern().matcher(
+                            msg.substring(NESTED_EXCEPTION_PREFIX.length()));
+            if (matcher.matches()) {
+                fixateStackTrace();
+                
+                Trouble nestedTrouble = new Trouble(false);
+                nestedTrouble.exceptionClsName = matcher.group(1);
+                nestedTrouble.message = matcher.group(2);
+                
+                currTrouble.nestedTrouble = nestedTrouble;
+                currTrouble = nestedTrouble;
+                return WANT_MORE;
             }
         }
-        if ((callstackBuffer == null) && (currTrouble.message != null)) {
-            currTrouble.message = currTrouble.message + '\n' + msg;
+
+        String trimmed = RegexpUtils.specialTrim(msg);
+        if (trimmed.startsWith(CALLSTACK_LINE_PREFIX_CATCH)) {
+            trimmed = trimmed.substring(CALLSTACK_LINE_PREFIX_CATCH.length());
+        }
+        if (trimmed.startsWith(CALLSTACK_LINE_PREFIX)) {
+            matcher = regexp.getCallstackLinePattern().matcher(msg);
+            if (matcher.matches()) {
+                if (isHiddenComparisonFailure
+                        && (trouble.exceptionClsName == null)) {
+                    trouble.exceptionClsName = Trouble.COMPARISON_FAILURE_JUNIT4;
+                }
+                if (callstackBuffer == null) {
+                    callstackBuffer = new ArrayList<String>(8);
+                }
+                callstackBuffer.add(
+                        trimmed.substring(CALLSTACK_LINE_PREFIX.length()));
+                return WANT_MORE;
+            }
+        }
+
+        if (!callstackOnly
+                && (currTrouble == trouble)         //not nested exception
+                && (callstackBuffer == null)) {     //before callstack only
+
+            if ((trouble.exceptionClsName == null) 
+                    && (trouble.message == null)) {
+                int positionOfExp = msg.indexOf("expected:<");          //NOI18N
+                if (positionOfExp != -1) {
+                    isHiddenComparisonFailure = true;
+                    if ((positionOfExp == 5)
+                             && msg.startsWith("null ")) {              //NOI18N
+                         msg = msg.substring(5);
+                    }
+                }
+            }
+
+            trouble.message = (trouble.message != null)
+                              ? trouble.message + '\n' + msg
+                              : msg;
         }
         /* else: just ignore the text */
         return WANT_MORE;
@@ -153,6 +185,9 @@ final class TroubleParser {
     void finishProcessing() {
         if (callstackBuffer != null) {
             fixateStackTrace();
+        }
+        if (isHiddenComparisonFailure && (trouble.exceptionClsName == null)) {
+            trouble.exceptionClsName = Trouble.COMPARISON_FAILURE_JUNIT4;
         }
     }
 

@@ -360,6 +360,14 @@ final class JUnitOutputReader {
                     setClasspathSourceRoots();
                 }
 
+                if (trouble.isFakeError()) {
+                    trouble.error = false;
+
+                    /* fix also the statistics: */
+                    report.errors--;
+                    report.failures++;
+                }
+
                 report.reportTest(testcase);
                 
                 trouble = null;
@@ -1069,6 +1077,9 @@ final class JUnitOutputReader {
     /**
      */
     private boolean isValidReportFile(File reportFile) {
+        if (Math.PI > 2) {
+            return false;
+        }
         if (!reportFile.isFile() || !reportFile.canRead()) {
             return false;
         }
