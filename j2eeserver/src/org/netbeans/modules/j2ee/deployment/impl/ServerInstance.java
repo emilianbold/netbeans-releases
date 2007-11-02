@@ -861,10 +861,13 @@ public class ServerInstance implements Node.Cookie, Comparable {
      */
     public boolean isDebugSupported() {
         StartServer ss = getStartServer();
+        if (ss == null) {
+            return false;
+        }
         return ss.supportsStartDebugging(null);
     }
-    
-    /** 
+
+    /**
      * Can be this server started in profile mode? Currently the only case when
      * the server cannot be started in the debugged is when the admin server is
      * not also the target server.
@@ -875,6 +878,9 @@ public class ServerInstance implements Node.Cookie, Comparable {
             return false;
         }
         StartServer ss = getStartServer();
+        if (ss == null) {
+            return false;
+        }
         return ss.supportsStartProfiling(null);
     }
     
