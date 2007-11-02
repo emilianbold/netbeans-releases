@@ -26,6 +26,9 @@ made subject to such option by the copyright holder.
 package org.netbeans.core.windows.actions;
 
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 
@@ -45,6 +48,19 @@ public class ToggleFullScreenAction extends SystemAction implements DynamicMenuC
 
     private JCheckBoxMenuItem [] menuItems;
     
+    public ToggleFullScreenAction() {
+        addPropertyChangeListener( new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                if( Action.ACCELERATOR_KEY.equals(evt.getPropertyName()) ) {
+                    //119127 - make sure shortcut gets updated in the menu
+                    menuItems = null;
+                    createItems();
+                }
+            }
+        });
+    }
+    
     public JComponent[] getMenuPresenters() {
         createItems();
         updateState();
@@ -53,7 +69,7 @@ public class ToggleFullScreenAction extends SystemAction implements DynamicMenuC
 
     public JComponent[] synchMenuPresenters(JComponent[] items) {
         updateState();
-        return items;
+        return menuItems;
     }
     
     private void updateState() {
@@ -84,6 +100,7 @@ public class ToggleFullScreenAction extends SystemAction implements DynamicMenuC
         return new HelpCtx(ToggleFullScreenAction.class);
     }
 
+    @Override
     public boolean isEnabled() {
         return WindowManager.getDefault().getMainWindow() instanceof MainWindow;
     }
