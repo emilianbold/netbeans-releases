@@ -50,6 +50,7 @@
 
 package org.netbeans.modules.websvc.core.wseditor.support;
 
+import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -58,6 +59,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
@@ -69,97 +71,101 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.windows.WindowManager;
 
 /**
  *
  * @author rico
  */
-public class EditWSAttributesCookieImpl implements EditWSAttributesCookie{
-    
+public class EditWSAttributesCookieImpl implements EditWSAttributesCookie {
+
     /** Creates a new instance of EditWSAttributesCookieImpl */
     public EditWSAttributesCookieImpl(Node node, JaxWsModel jaxWsModel) {
         this.node = node;
         this.jaxWsModel = jaxWsModel;
     }
-    
-    public void openWSAttributesEditor(){
+
+    public void openWSAttributesEditor() {
+        final JFrame mainWin = (JFrame) WindowManager.getDefault().getMainWindow();
+        final Cursor origCursor = mainWin.getGlassPane().getCursor();
+        mainWin.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        mainWin.getGlassPane().setVisible(true);
+
         tc = cachedTopComponents.get(node);
-        if(tc == null){
+        if (tc == null) {
             //populate the editor registry if needed
             populateWSEditorProviderRegistry();
             //get all providers
-            providers =
-                    WSEditorProviderRegistry.getDefault().getEditorProviders();
+            providers = WSEditorProviderRegistry.getDefault().getEditorProviders();
             tc = new EditWSAttributesPanel();
             cachedTopComponents.put(this, tc);
         }
         populatePanels();
-        SwingUtilities.invokeLater(new Runnable(){
-            public void run(){
-                tc.addTabs(editors, node, jaxWsModel );
-                DialogDescriptor dialogDesc = new DialogDescriptor(tc, node.getName());
-                dialogDesc.setHelpCtx(new HelpCtx(EditWSAttributesCookieImpl.class));
-                Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
-                dialog.setVisible(true);
-                if(dialogDesc.getValue() == NotifyDescriptor.OK_OPTION){
-                    for(WSEditor editor : editors){
-                        editor.save(node, jaxWsModel);
-                    }
-                } else{
-                    for(WSEditor editor: editors){
-                        editor.cancel(node, jaxWsModel);
-                    }
-                }
+        tc.addTabs(editors, node, jaxWsModel);
+        DialogDescriptor dialogDesc = new DialogDescriptor(tc, node.getName());
+        dialogDesc.setHelpCtx(new HelpCtx(EditWSAttributesCookieImpl.class));
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
+        dialog.setVisible(true);
+
+        mainWin.getGlassPane().setCursor(origCursor);
+        mainWin.getGlassPane().setVisible(false);
+
+
+        if (dialogDesc.getValue() == NotifyDescriptor.OK_OPTION) {
+            for (WSEditor editor : editors) {
+                editor.save(node, jaxWsModel);
             }
-        });
-    }
-    
-    
-    
-    class DialogWindowListener extends WindowAdapter{
-        Set<WSEditor> editors;
-        public DialogWindowListener(Set<WSEditor> editors){
-            this.editors = editors;
-        }
-        public void windowClosing(WindowEvent e){
-            for(WSEditor editor: editors){
+        } else {
+            for (WSEditor editor : editors) {
                 editor.cancel(node, jaxWsModel);
             }
         }
     }
-    
-    public Set getWSEditorProviders(){
+
+    class DialogWindowListener extends WindowAdapter {
+
+        Set<WSEditor> editors;
+
+        public DialogWindowListener(Set<WSEditor> editors) {
+            this.editors = editors;
+        }
+
+        public void windowClosing(WindowEvent e) {
+            for (WSEditor editor : editors) {
+                editor.cancel(node, jaxWsModel);
+            }
+        }
+    }
+
+    public Set getWSEditorProviders() {
         return providers;
     }
-    
-    private void populatePanels(){
+
+    private void populatePanels() {
         editors = new HashSet<WSEditor>();
-        for(WSEditorProvider provider : providers){
-            if(provider.enable(node)){
+        for (WSEditorProvider provider : providers) {
+            if (provider.enable(node)) {
                 //for each provider, create a WSAttributesEditor
                 WSEditor editor = provider.createWSEditor();
                 editors.add(editor);
             }
         }
     }
-    
-    private void populateWSEditorProviderRegistry(){
+
+    private void populateWSEditorProviderRegistry() {
         WSEditorProviderRegistry registry = WSEditorProviderRegistry.getDefault();
-        if(registry.getEditorProviders().isEmpty()){
-            Lookup.Result<WSEditorProvider> results = Lookup.getDefault().
-                    lookup(new Lookup.Template<WSEditorProvider>(WSEditorProvider.class));
+        if (registry.getEditorProviders().isEmpty()) {
+            Lookup.Result<WSEditorProvider> results = Lookup.getDefault().lookup(new Lookup.Template<WSEditorProvider>(WSEditorProvider.class));
             Collection<? extends WSEditorProvider> services = results.allInstances();
             //System.out.println("###number of editors: " + services.size());
-            for(WSEditorProvider provider : services){
+            for (WSEditorProvider provider : services) {
                 registry.register(provider);
             }
         }
     }
-    
     private Set<WSEditorProvider> providers;
     private Set<WSEditor> editors;
-    private static Map<EditWSAttributesCookie, EditWSAttributesPanel> cachedTopComponents
-            = new WeakHashMap<EditWSAttributesCookie, EditWSAttributesPanel>();
+    private static Map<EditWSAttributesCookie, EditWSAttributesPanel> cachedTopComponents = new WeakHashMap<EditWSAttributesCookie, EditWSAttributesPanel>();
     private EditWSAttributesPanel tc;
     private Node node;
     private JaxWsModel jaxWsModel;

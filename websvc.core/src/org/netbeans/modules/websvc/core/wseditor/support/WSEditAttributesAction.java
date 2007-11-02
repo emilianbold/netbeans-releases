@@ -58,12 +58,7 @@ public final class WSEditAttributesAction extends NodeAction {
         if (activatedNodes.length == 1) {
             final EditWSAttributesCookie cookie = activatedNodes[0].getLookup().lookup(EditWSAttributesCookie.class);
             if (cookie!=null) {
-                Runnable task = new Runnable() {
-                    public void run() {
-                        cookie.openWSAttributesEditor();
-                    }
-                };
-                RequestProcessor.getDefault().post(task, 10);
+                cookie.openWSAttributesEditor();
             }
         }
     }
