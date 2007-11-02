@@ -73,7 +73,9 @@ import org.openide.util.Utilities;
 public class RegisterDerby implements DatabaseRuntime {
     
     // XXX this class does too much. Should maybe be split into 
-    // DatabaseRuntimeImpl and the rest.
+    // DatabaseRuntimeImpl, DerbyStartStop and the rest.
+    
+    // XXX refactor this soon, it is full of race conditions!
     
     private static final Logger LOGGER = Logger.getLogger(RegisterDerby.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
@@ -135,25 +137,9 @@ public class RegisterDerby implements DatabaseRuntime {
      * Start the database server.
      */
     public void start(){
-        startAndWait();
+        start(START_TIMEOUT);
     }
     
-    /**
-     * Starts the database server and waits for it to start.
-     *
-     * @return true if the server is started, false otherwise.
-     */
-    public boolean startAndWait() {
-        return start(START_TIMEOUT); // wait for Derby to start
-    }
-    
-    /**
-     * Starts the database server and does not wait until it has started.
-     */
-    public void startNoWait() {
-        start(0);
-    }
-
     private String getNetworkServerClasspath() {
         return 
             Util.getDerbyFile("lib/derby.jar").getAbsolutePath() + File.pathSeparator +
@@ -184,7 +170,7 @@ public class RegisterDerby implements DatabaseRuntime {
                 try {
                     // DerbyDatabases.createDatabase would start the database too, but
                     // doing it beforehand to avoid having two progress bars running
-                    if (!waitStarted()) {
+                    if (!ensureStarted(true)) {
                         return;
                     }
                     
@@ -393,27 +379,26 @@ public class RegisterDerby implements DatabaseRuntime {
     }
     
     /**
-     * Starts the server if necessary, but does not wait until it is started.
-     */
-    public void ensureStarted() {
-        if (!isRunning() && canStart()) {
-            startNoWait();
-        }
-    }
-    
-    /**
-     * Starts the server if necessary, and if the server was not started, waits
-     * for it to start.
+     * Starts the server if necessary, and can wait for it to start if it was
+     * not already started.
      *
-     * @return true if the server is started, false otherwise.
+     * @param  waitIfNotStarted true if to wait for a certain period of time for the server to start 
+     *         if it is not already started; false otherwise.
+     *
+     * @return true if the server is definitely known to be started, false otherwise.
      */
-    public boolean waitStarted() {
+    public boolean ensureStarted(boolean waitIfNotStarted) {
         if (isRunning()) {
             return true;
         }
         if (!canStart()) {
             return false;
         }
-        return startAndWait();
+        if (waitIfNotStarted) {
+            return start(START_TIMEOUT);
+        } else {
+            start(0);
+            return false;
+        }
     }
 }

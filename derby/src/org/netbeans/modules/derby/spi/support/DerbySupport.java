@@ -121,6 +121,6 @@ public class DerbySupport {
      * @since 1.5
      */
     public static void ensureStarted() {
-        RegisterDerby.getDefault().ensureStarted();
+        RegisterDerby.getDefault().ensureStarted(false);
     }
 }
