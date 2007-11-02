@@ -55,7 +55,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -67,6 +66,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportProvider;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
+import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.netbeans.modules.websvc.rest.model.spi.RestServicesMetadataModelFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -110,7 +110,7 @@ public abstract class RestSupport {
     public static final String JSR311_API_LOCATION = "modules/ext/rest/jsr311-api.jar";
     
     private AntProjectHelper helper;
-    protected MetadataModel<RestServicesMetadata> restServicesMetadataModel;
+    protected RestServicesModel restServicesMetadataModel;
     protected final Project project;
 
     /** Creates a new instance of RestSupport */
@@ -155,7 +155,7 @@ public abstract class RestSupport {
         return null;
     }
 
-    public MetadataModel<RestServicesMetadata> getRestServicesMetadataModel() {
+    public RestServicesModel getRestServicesMetadataModel() {
         FileObject sourceRoot = findSourceRoot();
         if (restServicesMetadataModel == null && sourceRoot != null) {
             ClassPathProvider cpProvider = getProject().getLookup().lookup(ClassPathProvider.class);
