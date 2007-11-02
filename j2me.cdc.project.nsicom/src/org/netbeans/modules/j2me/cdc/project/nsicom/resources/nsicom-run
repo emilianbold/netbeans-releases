@@ -1,6 +1,6 @@
 <xsl:comment>nsicom-run</xsl:comment>
     <target name="nsicom-run" if="nsicom-platform.trigger">
-        <taskdef name="nsicomExecDeploy" classname="org.netbeans.modules.j2me.cdc.project.nsicom.NSIcomExecDeployTask" classpath="${{libs.nsicom-ant-utils.classpath}}:${{libs.ActiveSync.classpath}}:"/>
+        <!--<taskdef name="nsicomExecDeploy" classname="org.netbeans.modules.j2me.cdc.project.nsicom.NSIcomExecDeployTask" classpath="${{libs.nsicom-ant-utils.classpath}}:${{libs.ActiveSync.classpath}}:"/> -->
         <nsicomExecDeploy home="${{platform.home}}" mainclass="${{main.class}}" args="${{application.args}}" jvmargs="${{run.jvmargs}}" device="${{platform.device}}" profile="${{platform.profile}}" xlet="${{main.class.xlet}}" applet="${{main.class.applet}}" 
                             verbose="${{nsicom.application.runverbose}}" hostip="${{nsicom.application.monitorhost}}" runondevice="${{nsicom.application.runremote}}" remotevmlocation="${{nsicom.remotevm.location}}" remoteDataLocation="${{nsicom.remoteapp.location}}">
             <fileset dir="${{dist.dir}}">

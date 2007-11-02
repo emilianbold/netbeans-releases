@@ -270,7 +270,8 @@ public class NSIcomExecDeployTask extends Task {
                                 throw handler.getCause();
                             }
                         } finally {
-                            remoteReader.finish();
+                            if (remoteReader != null)
+                                remoteReader.finish();
                         }
                     } catch (ThreadDeath threadDeath) { //ant task has been shut down
                         activeSync.destroyRemoteProcess(remote);
