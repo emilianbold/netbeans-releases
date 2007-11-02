@@ -77,11 +77,11 @@ public class Installer extends ModuleInstall {
 	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.close");
 	final CsmModel model = CsmModelAccessor.getModel();
 	if( model instanceof Startupable ) {
-            runTask(model, new Runnable() {
+            runTask(new Runnable() {
                 public void run() {
                     ((Startupable) model).shutdown();
                 }
-            });
+            }, "close ModelImpl"); // NOI18N
 	}
     }
    
@@ -90,18 +90,18 @@ public class Installer extends ModuleInstall {
 	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.uninstalled");
 	final CsmModel model = CsmModelAccessor.getModel();
 	if( model instanceof Startupable ) {
-	    runTask(model, new Runnable() {
+	    runTask(new Runnable() {
                 public void run() {
                     ((Startupable) model).unload();
                 }
-            });
+            }, "uninstall ModelImpl"); // NOI18N
 	}
 	super.uninstalled();
     }
     
-    private void runTask(CsmModel model, Runnable task) {
+    private void runTask(Runnable task, String name) {
         if (SwingUtilities.isEventDispatchThread()) {
-            new Thread(task, "close ModelImpl").run(); // NOI18N
+            new Thread(task, name).run();
         } else {
             task.run();
         }        
