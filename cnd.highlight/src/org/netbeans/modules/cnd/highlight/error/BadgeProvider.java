@@ -73,6 +73,7 @@ public class BadgeProvider {
     public void invalidateProject(CsmProject project){
         boolean badgeStateChanged = false;
         synchronized (listLock){
+            boolean oldState = storage.contains(project);
             ProjectFiles: for( CsmFile file : project.getAllFiles() ) {
                 for (CsmInclude incl : file.getIncludes()) {
                     if (incl.getIncludeFile() == null) {
@@ -88,6 +89,11 @@ public class BadgeProvider {
                     badgeStateChanged = true;
                 }
             }
+            boolean newState = storage.contains(project);
+            // if state not changed no need to fire till file badging is not provided
+            if (oldState == newState) {
+                badgeStateChanged = false;
+            }
         }
         if (badgeStateChanged) {
             fireBadgeChanged(project);
@@ -96,7 +102,9 @@ public class BadgeProvider {
 
     public void invalidateFile(CsmFile file){
         boolean badgeStateChanged = false;
+        CsmProject project = file.getProject();
         synchronized (listLock){
+            boolean oldState = storage.contains(project);
             boolean badFile = false;
             for (CsmInclude incl : file.getIncludes()){
                 if (incl.getIncludeFile() == null) {
@@ -112,9 +120,14 @@ public class BadgeProvider {
                 storage.remove(file);
                 badgeStateChanged = true;
             }
+            boolean newState = storage.contains(project);
+            // if state not changed no need to fire till file badging is not provided
+            if (oldState == newState) {
+                badgeStateChanged = false;
+            }
         }
         if (badgeStateChanged) {
-            fireBadgeChanged(file);
+            fireBadgeChanged(project);
         }
     }
     
@@ -132,14 +145,21 @@ public class BadgeProvider {
     
     public void onFileRemoved(CsmFile file) {
         boolean badgeStateChanged = false;
+        CsmProject project = file.getProject();
         synchronized (listLock){
+            boolean oldState = storage.contains(project);
             if (storage.contains(file)){
                 storage.remove(file);
                 badgeStateChanged = true;
             }
+            boolean newState = storage.contains(project);
+            // if state not changed no need to fire till file badging is not provided
+            if (oldState == newState) {
+                badgeStateChanged = false;
+            }
         }
         if (badgeStateChanged) {
-            fireBadgeChanged(file);
+            fireBadgeChanged(project);
         }
     }
     
