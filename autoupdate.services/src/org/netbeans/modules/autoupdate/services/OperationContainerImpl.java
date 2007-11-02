@@ -181,7 +181,7 @@ public final class OperationContainerImpl<Support> {
         return new ArrayList<OperationInfo<Support>>(operations);
     }
     
-    public List<OperationInfo<Support>> listAllWithPossibleEager () {
+    synchronized public List<OperationInfo<Support>> listAllWithPossibleEager () {
         // handle eager modules
         if (type == OperationType.INSTALL) {
             Collection<UpdateElement> all = new HashSet<UpdateElement> ();
