@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.j2ee.clientproject.wsclient;
 
+import org.netbeans.modules.j2ee.dd.api.client.AppClient;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import static org.netbeans.modules.websvc.api.client.WebServicesClientConstants.*;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -449,6 +451,35 @@ public class AppClientProjectWebServicesClientSupport implements WebServicesClie
                 NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
             }
+        }
+        removeServiceRef(serviceName);
+    }
+    
+    private void removeServiceRef(String serviceName) {
+        FileObject ddFO = getDeploymentDescriptor();
+
+        // If we get null for the deployment descriptor, ignore this step.
+        if (ddFO != null) {
+            String wsdlLocation = "META-INF/wsdl/"+serviceName+".wsdl"; //NOI18N;
+            try {
+                AppClient appClient = DDProvider.getDefault().getDDRoot(ddFO);
+                ServiceRef serviceRef = null;
+                for (ServiceRef ref:appClient.getServiceRef()) {
+                    URI wsdl = ref.getWsdlFile();
+                    if (wsdlLocation.equals(ref.getWsdlFile().getPath())) {
+                        serviceRef = ref;
+                    }
+                }
+                if (serviceRef != null) {
+                    appClient.removeServiceRef(serviceRef);
+                    appClient.write(ddFO);
+                }
+            } catch (IOException ex) {
+                Logger.getLogger("global").log(Level.INFO, null, ex); //NOI18N;
+            } catch (VersionNotSupportedException ex) {
+                // for old versions of DD
+                Logger.getLogger("global").log(Level.INFO, null, ex); //NOI18N;
+            }           
         }
     }
     

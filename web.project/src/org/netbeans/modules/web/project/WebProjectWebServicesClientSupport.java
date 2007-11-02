@@ -62,6 +62,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -183,6 +184,34 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
             new NotifyDescriptor.Message(NbBundle.getMessage(this.getClass(), "MSG_Unable_WRITE_WS_DD"), // NOI18N
             NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(ndd);
+        }
+    }
+    
+    private void removeServiceRef(String serviceName) {
+        FileObject ddFO = getDeploymentDescriptor();
+
+        // If we get null for the deployment descriptor, ignore this step.
+        if (ddFO != null) {
+            String wsdlLocation = "WEB-INF/wsdl/"+serviceName+".wsdl"; //NOI18N;
+            try {
+                WebApp webApp = DDProvider.getDefault().getDDRoot(ddFO);
+                ServiceRef serviceRef = null;
+                for (ServiceRef ref:webApp.getServiceRef()) {
+                    URI wsdl = ref.getWsdlFile();
+                    if (wsdlLocation.equals(ref.getWsdlFile().getPath())) {
+                        serviceRef = ref;
+                    }
+                }
+                if (serviceRef != null) {
+                    webApp.removeServiceRef(serviceRef);
+                    webApp.write(ddFO);
+                }
+            } catch (IOException ex) {
+                Logger.getLogger("global").log(Level.INFO, null, ex); //NOI18N;
+            } catch (VersionNotSupportedException ex) {
+                // for old versions of DD
+                Logger.getLogger("global").log(Level.INFO, null, ex); //NOI18N;
+            }           
         }
     }
     
@@ -539,6 +568,7 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
                 DialogDisplayer.getDefault().notify(desc);
             }
         }
+        removeServiceRef(serviceName);
     }
     
     public FileObject getWsdlFolder(boolean create) throws IOException {
