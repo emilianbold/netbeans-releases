@@ -236,7 +236,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             try {
                 for(File dir : jdkDirs) {
                     for(File f : dir.listFiles()) {
-                        SystemUtils.executeCommand("mv", "-f","-v", f.getPath(), location.getAbsolutePath());
+                        SystemUtils.executeCommand("mv", "-f", f.getPath(), location.getAbsolutePath());
                     }
                     FileUtils.deleteFile(dir);
                 }
