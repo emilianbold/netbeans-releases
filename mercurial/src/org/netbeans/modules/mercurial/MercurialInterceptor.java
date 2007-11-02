@@ -85,7 +85,9 @@ public class MercurialInterceptor extends VCSInterceptor {
                     i.remove();
                 }
             }
-            dirsToDelete.add(file);
+            if (SharabilityQuery.getSharability(file) != SharabilityQuery.NOT_SHARABLE) {
+                dirsToDelete.add(file);
+            }
         }
         return true;
     }
@@ -155,10 +157,10 @@ public class MercurialInterceptor extends VCSInterceptor {
                     }
                     while (tmpFile != null);
                 }
+                file.delete();
                 HgProgressSupport support = new HgProgressSupport() {
                     public void perform() {
                         try {
-                            file.delete();
                             HgCommand.doRemove(root, file);
                             cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                         } catch (HgException ex) {
