@@ -1585,6 +1585,112 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 	}
     }
     
+/*
+    private APTPreprocHandler restorePreprocHandler(File interestedFile, APTPreprocHandler preprocHandler, APTPreprocHandler.State state) {
+	assert state != null;
+	assert state.isCleaned();
+	// walk through include stack to restore preproc information
+	List<APTIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(state);
+	assert (reverseInclStack != null);
+	if (reverseInclStack.isEmpty()) {
+	    if (TRACE_PP_STATE_OUT) System.err.println("stack is empty; return default for " + interestedFile);
+	    return getStartEntryInfo(preprocHandler, state).preprocHandler;
+	} else {
+	    if (TRACE_PP_STATE_OUT) System.err.println("restoring for " + interestedFile);
+	    // we need to reverse includes stack
+	    assert (!reverseInclStack.isEmpty()) : "state of stack is " + reverseInclStack;
+	    StartEntryInfo sei = getStartEntryInfo(preprocHandler, state);
+	    FileImpl csmFile = sei.csmFile;
+	    ProjectBase startProject = sei.startProject;
+	    preprocHandler = sei.preprocHandler;
+            
+            ProjectBase prevProject = startProject;
+            // for testing remember restored file
+            long time = REMEMBER_RESTORED ? System.currentTimeMillis() : 0;
+            boolean ppStateRestored = false;
+            for (int i = 0; i < reverseInclStack.size() && !ppStateRestored; i++) {
+                Stack<APTIncludeHandler.IncludeInfo> inclStack = reverse(reverseInclStack);
+                if (i > 0) {
+                    System.err.println("need to try smaller stack");
+                    sei = getStartEntryInfo(preprocHandler, state);
+                    preprocHandler = sei.preprocHandler;                        
+                    for (int j = i; j > 0; j--) {
+                        inclStack.pop();
+                    }
+                    String includedPath = inclStack.peek().getIncludedPath();
+                    File startFile = new File(includedPath);
+                    csmFile = null;
+                    if (prevProject != null) {
+                        startProject = LibraryManager.getInstance().searchInProjectFiles(prevProject, startFile);
+                        csmFile = startProject == null ? null : startProject.getFile(startFile);
+                    }
+                    if (csmFile == null) {
+                        CsmFile foundCsmFile = CsmModelAccessor.getModel().findFile(includedPath);
+                        if (foundCsmFile instanceof FileImpl) {
+                            csmFile = (FileImpl)foundCsmFile;
+                        }
+                    }
+                    if (csmFile != null) {
+                        prevProject = csmFile.getProjectImpl();
+                    }
+                }
+                APTFile aptLight = null;
+                try {
+                    aptLight = csmFile == null ? null : getAPTLight(csmFile);
+                } catch (IOException ex) {
+                    System.err.println("can't restore preprocessor state for " + interestedFile + //NOI18N
+                            "\nreason: " + ex.getMessage());//NOI18N
+                }
+                if (aptLight != null) {
+                    int stackSize = inclStack.size();
+                    APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile, preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false));
+                    walker.visit();
+                    if (preprocHandler.isValid()) {
+                        if (REMEMBER_RESTORED) {
+                            if (testRestoredFiles == null) {
+                                testRestoredFiles = new ArrayList<String>();
+                            }
+                            FileImpl interestedFileImpl = getFile(interestedFile);
+                            assert interestedFileImpl != null;
+                            String msg = interestedFile.getAbsolutePath() + " [" + (interestedFileImpl.isHeaderFile() ? "H" : interestedFileImpl.isSourceFile() ? "S" : "U") + "]"; // NOI18N
+                            time = System.currentTimeMillis() - time;
+                            msg = msg + " within " + time + "ms" + " stack " + stackSize + " elems" + " orininal size was " + reverseInclStack.size(); // NOI18N
+                            System.err.println("#" + testRestoredFiles.size() + " restored: " + msg); // NOI18N
+                            testRestoredFiles.add(msg);
+                        }
+                        if (TRACE_PP_STATE_OUT) {
+                            System.err.println("after restoring " + preprocHandler); // NOI18N
+                        }
+                        ppStateRestored = true;
+                    }
+                }
+	    } 
+            if (!ppStateRestored) {
+                // need to recover from the problem, when start file is invalid or absent
+                // try to find project who can create default handler with correct
+                // compiler settings
+                // preferences is start project
+                if (startProject == null) {
+                    // otherwise use the project owner
+                    startProject = this;
+                }
+                preprocHandler = startProject.createDefaultPreprocHandler(interestedFile);
+                // remember
+                // TODO: file container should accept all without checks
+                // otherwise state will not be replaced
+//                synchronized (getFileContainer().getLock(interestedFile)) {
+//                    if (state.equals(getPreprocState(interestedFile))) {
+//                        APTPreprocHandler.State recoveredState = preprocHandler.getState();
+//                        assert !recoveredState.isCompileContext();
+//                        putPreprocState(interestedFile, recoveredState);
+//                    }
+//                }
+            }
+            return preprocHandler;
+	}
+    }  
+*/
+    
     private NativeProject findNativeProjectHolder(Set<ProjectBase> visited) {
         visited.add(this);
         NativeProject nativeProject = ModelSupport.instance().getNativeProject(getPlatformProject());
