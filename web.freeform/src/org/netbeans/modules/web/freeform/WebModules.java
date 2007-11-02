@@ -293,13 +293,13 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         public static final String FOLDER_WEB_INF = "WEB-INF";//NOI18N
         public static final String FILE_DD        = "web.xml";//NOI18N
     
-        private FileObject docRootFO;
-        private FileObject [] sourcesFOs;
-        private ClassPath webClassPath;
-        private ClassPath javaSourcesClassPath;
-        private ClassPath composedClassPath = null;
-        private String j2eeSpec;
-        private String contextPath;
+        private final FileObject docRootFO;
+        private final FileObject [] sourcesFOs;
+        private final ClassPath webClassPath;
+        private final ClassPath javaSourcesClassPath;
+        private final Map<String, ClassPath> composedClassPath = new HashMap<String, ClassPath>();
+        private final String j2eeSpec;
+        private final String contextPath;
         private FileObject webInf;
         
         FFWebModule (FileObject docRootFO, String j2eeSpec, String contextPath, FileObject sourcesFOs[], ClassPath classPath, FileObject webInf) {
@@ -326,39 +326,48 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
             return docRootFO;
         }
         
-        public ClassPath findClassPath (FileObject file, String type) {
+        public ClassPath findClassPath(FileObject file, String type) {
+           // because of composedClassPath, caller has to do: synchronized(this){}
+           assert Thread.holdsLock(WebModules.this);
+           
            int fileType = getType(file);
-            
            if (fileType == 0) {
-               if (!type.equals(ClassPath.SOURCE))
+               if (!type.equals(ClassPath.SOURCE)) {
                    return null;
-               else
-                   return javaSourcesClassPath;
-            } else 
-                if (fileType == 1){
-                    if (composedClassPath == null) {
-                        HashSet all = new HashSet();
-                        FileObject[] javaRoots = null;
-                        for (int i = 0; i < sourcesFOs.length; i++){
-                            javaRoots = ClassPath.getClassPath(sourcesFOs[i], type).getRoots();
-                            for (int j = 0; j < javaRoots.length; j++)
-                                if (!all.contains(javaRoots[j]))
-                                    all.add(javaRoots[j]);
-                        }
-                                                
-                        for (int i = 0; i < webClassPath.getRoots().length; i++)
-                            if (!all.contains(webClassPath.getRoots()[i]))
-                                all.add(webClassPath.getRoots()[i]);
-                        
-                        FileObject[] roots = new FileObject[all.size()];
-                        int i = 0;
-                        for (Iterator it = all.iterator(); it.hasNext();) 
-                            roots[i++] = (FileObject)it.next();
-
-                        composedClassPath = ClassPathSupport.createClassPath(roots);
-                    }
-                    return composedClassPath;
+               }
+               return javaSourcesClassPath;
+            } else if (fileType == 1) {
+                ClassPath classPath = composedClassPath.get(type);
+                if (classPath != null) {
+                    return classPath;
                 }
+                Set<FileObject> all = new HashSet<FileObject>();
+                FileObject[] javaRoots = null;
+                for (int i = 0; i < sourcesFOs.length; i++) {
+                    javaRoots = ClassPath.getClassPath(sourcesFOs[i], type).getRoots();
+                    for (int j = 0; j < javaRoots.length; j++) {
+                        if (!all.contains(javaRoots[j])) {
+                            all.add(javaRoots[j]);
+                        }
+                    }
+                }
+
+                for (int i = 0; i < webClassPath.getRoots().length; i++) {
+                    if (!all.contains(webClassPath.getRoots()[i])) {
+                        all.add(webClassPath.getRoots()[i]);
+                    }
+                }
+
+                FileObject[] roots = new FileObject[all.size()];
+                int i = 0;
+                for (Iterator<FileObject> it = all.iterator(); it.hasNext();) {
+                    roots[i++] = it.next();
+                }
+
+                classPath = ClassPathSupport.createClassPath(roots);
+                composedClassPath.put(type, classPath);
+                return classPath;
+            }
             return webClassPath;
         }
         
