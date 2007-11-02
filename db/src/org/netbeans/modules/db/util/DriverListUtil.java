@@ -211,7 +211,7 @@ public class DriverListUtil {
 
         names.add("Microsoft SQL Server 2005");
         drivers.add("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-        urls.add("jdbc:sqlserver://<hostname>:<PORT>;databaseName=<database>;selectMethod=cursor");
+        urls.add("jdbc:sqlserver://<HOST>:<PORT>;databaseName=<DB>");
         
         names.add("MySQL (Connector/J driver)");
         drivers.add("com.mysql.jdbc.Driver");
