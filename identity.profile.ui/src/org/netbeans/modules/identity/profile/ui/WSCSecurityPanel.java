@@ -507,7 +507,7 @@ public class WSCSecurityPanel extends SectionNodeInnerPanel {
 
     private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_formAncestorAdded
         // TODO add your handling code here:
-        requestFocusInWindow();
+        //requestFocusInWindow();
     }//GEN-LAST:event_formAncestorAdded
 
     private void useDefaultKeyStoreCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useDefaultKeyStoreCBActionPerformed
