@@ -94,6 +94,8 @@ public final class InspectorManagerView implements DesignDocumentAwareness, Acti
             document.getListenerManager().addDesignListener(this, new DesignEventFilter().setGlobal(true));
             IOUtils.runInAWTNoBlocking(new Runnable() {
                 public void run() {
+                    if (folderWrapperTree == null)
+                        return;
                      folderWrapperTree.buildTree(null);
                      ui.getExplorerManager().setRootContext(folderWrapperTree.getRootWrapperFolder().getNode());
                 }
@@ -165,6 +167,8 @@ public final class InspectorManagerView implements DesignDocumentAwareness, Acti
         } else if (activatedDocument == document) {
             IOUtils.runInAWTNoBlocking(new Runnable() {
                 public void run() {
+                    if (InspectorPanel.getInstance() == null)
+                        return;
                     JComponent panel = InspectorPanel.getInstance().getComponent();
                     panel.removeAll();
                     panel.add(ui, BorderLayout.CENTER);
