@@ -67,15 +67,56 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.util.IntToStringCache;
 
 /**
- *
+ * This class is responsible for int <-> String translation for both
+ *  1) file names
+ *  2) unit names
+ * It is also responsible for master index processing
+ * and the required units verification.
+ * 
+ * The required units issue is caused by the following two circumstances:
+ * a) Each unit stores its own int to string table that is used for decoding its keys
+ * b) A unit can store other units (required units) keys
+ * 
+ * By required units verification we prevent the following situation
+ * (which otherwise causes a huge mess).
+ * Consider two projects, App1, App2 and a library Lib  * that is required for both App1 and App2.
+ * User performs the following steps:
+ * 1) Opens App1 - App1 and Lib persistence is created. Then closes IDE.
+ * 2) Now Lib persistence is erased (well, if user makes this by hands, we aren't responsible...
+ * but it can happen if user opens Lib and IDE exits abnormally - then upon  Lib reopen
+ * its persistence is erased)
+ * 3) User opens App2 - Lib persistence is recreated 
+ * 4) User opens App1 again.
+ * Now App1 contains Lin keys, but Lib now contain int/string tables that are quite different!!!
+ * 
+ * To prevent this situation, the following algorithm is used:
+ * - Each unit's int/string table has a timestamp of its creation.
+ * - When a unit closes, it stores all reqiured units timestams.
+ * - When a unit opens, it checks that required inits timestamps are the same 
+ * as they were at closure. Otherwise persistence is invalidated (erased)
+ * for main unit and requires units.
+ * 
  * @author Nickolay Dalmatov
  */
 public class RepositoryTranslatorImpl implements RepositoryTranslation{
     
+    /**
+     * It is 
+     * 1) an int/string table of the unit names
+     * 2) a container for int/string table for each unit's file names (a table per unit)
+     * (stores units timestamps as well)
+     */
     private static UnitsCache unitNamesCache = new UnitsCache();  
+    
     private static boolean loaded = false;
-    private static int DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM = 0;    
+    
+    private static final int DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM = 0;
     private static int version = DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM;
+    
+    private final static String MASTER_INDEX_FILE_NAME = System.getProperty("netbeans.user") + //NOI18N
+            File.separator + "var" + File.separator + "cache" + File.separator + "cnd-projects-index"; //NOI18N
+    
+    private final static String PROJECT_INDEX_FILE_NAME = "project-index"; //NOI18N
     
     /** Creates a new instance of RepositoryTranslatorImpl */
     public RepositoryTranslatorImpl() {
@@ -115,9 +156,8 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
 	return unitNamesCache.getFileNames(unitId);
     }    
     
-   private static void readUnitsCache(DataInput stream) throws IOException {
+   private static void readMasterIndex(DataInput stream) throws IOException {
         assert stream != null;
-        
         unitNamesCache = new UnitsCache(stream);
     }
     
@@ -147,8 +187,8 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
         assert stream != null;
         
         int unitId = unitNamesCache.getId(unitName);
-        IntToStringCache cache = unitNamesCache.getFileNames(unitId);
-        cache.write(stream);
+        IntToStringCache filesCache = unitNamesCache.getFileNames(unitId);
+        filesCache.write(stream);
     }    
     
     public static void closeUnit(String unitName, Set<String> requiredUnits) {
@@ -259,7 +299,10 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
        } 
     }
     
-    public static void loadMasterIndex(){
+    /**
+     * Loads master index and unit/timestamp pairs
+     */
+    private static void loadMasterIndex(){
         InputStream fis = null;
         InputStream bis = null;
         DataInputStream dis = null;
@@ -267,7 +310,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             fis = new FileInputStream(MASTER_INDEX_FILE_NAME);
             bis = new BufferedInputStream(fis);
             dis = new DataInputStream(bis);
-            readUnitsCache(dis);
+            readMasterIndex(dis);
         } catch (FileNotFoundException e) {
             if (Stats.TRACE_FILE_INDEX){
                 e.printStackTrace();
@@ -338,12 +381,14 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
         return version;
     }
     
-    
-
  
 ////////////////////////////////////////////////////////////////////////////
-    // impl details
+//  impl details
     
+    /**
+     * Just a structure that holds name and stimestamp
+     * for required unit
+     */
     private static class RequiredUnit {
         private String unitName;
         private long   timestamp;
@@ -371,15 +416,42 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
         }
     }
     
+    /**
+     * This class
+     * 1) Acts as a int/string table for unit names;
+     * 2) Contains int/string tables for file names (a table per unit);
+     */
     private static class UnitsCache extends IntToStringCache {
+	
+	/** 
+	 * A list of int/string tables for unitsm a table per unit.
+	 * It is "parallel" to the super.cache array.
+	 * 
+	 * Since it has an entry *for each unit in the persistence*
+	 * (not only for open units),
+	 * the super.cache contains empty instances of IntToStringCache
+	 * (for units that are not yet open)
+	 */
         private static ArrayList<IntToStringCache>              fileNamesCaches = new ArrayList<IntToStringCache>();
+	
+	/**
+	 * Stores unit timestamps.
+	 * For open units they (as I understand) coincide with 
+	 * fileNamesCaches[idx].getTimestamp().
+	 * But for units that are not open, the correct value is in unit2timestamp map.
+	 */
         private static Map<String, Long>                        unit2timestamp = new ConcurrentHashMap<String, Long>();
+	
+	/**
+	 * Maps a unit to its required units
+	 */
         private static Map<String, Collection<RequiredUnit>>    unit2requnint = 
                 new ConcurrentHashMap<String, Collection<RequiredUnit>>();
         
-        public static void updateReqUnitInfo(String unitName, Set<String> reqUnits) {
+	// package-local
+        static void updateReqUnitInfo(String unitName, Set<String> reqUnits) {
             // update timestamps
-            for (int i = 0; i < unitNamesCache.cache.size(); i++) {
+            for (int i = 0; i < unitNamesCache.cache.size(); i++) { // unitNamesCache AKA this
                 String uName = unitNamesCache.cache.get(i);
                 long uTs = fileNamesCaches.get(i).getTimestamp();
                 unit2timestamp.put(uName, uTs);
@@ -475,7 +547,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             }
             int id = unitNamesCache.cache.indexOf(unitName);
             
-            if (fileNamesCaches.get(id).size() != 0) {
+            if (fileNamesCaches.get(id).size() != 0) { //incorrect! there might be 0 files!
                 
                 return true;
             }
@@ -487,7 +559,12 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             
         }
         
+	/**
+	 * Reads master index.
+	 * Fills fileNamesCaches with an empty int/string tables.
+	 */
         public UnitsCache (DataInput stream) throws IOException {
+	    
             assert stream != null;
             assert cache != null;
             
@@ -535,20 +612,22 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
          * synchronization is controlled by calling getId() method
          */
 	@Override
-        protected int makeId(String value) {
+        protected int makeId(String unitName) {
             int id = cache.indexOf(null);
             IntToStringCache fileCache = new IntToStringCache();
             
             if (id == -1) {
-                id = super.makeId(value);
+                id = super.makeId(unitName);
                 fileNamesCaches.add(fileCache);
             } else {
-                cache.set(id, value);
+                cache.set(id, unitName);
                 fileNamesCaches.set(id, fileCache);
             }
-
-            unit2requnint.put(value, new CopyOnWriteArraySet<RequiredUnit>());
-            unit2timestamp.put(value, fileCache.getTimestamp());
+	    
+	    assert fileNamesCaches.size() == cache.size();
+	    
+            unit2requnint.put(unitName, new CopyOnWriteArraySet<RequiredUnit>());
+            unit2timestamp.put(unitName, fileCache.getTimestamp());
             
             return id;
         }
@@ -568,9 +647,5 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             unit2timestamp.put(unitName, fileCache.getTimestamp());            
         }
     }    
-    
-    private final static String MASTER_INDEX_FILE_NAME = System.getProperty("netbeans.user") + //NOI18N
-            File.separator + "var" + File.separator + "cache" + File.separator + "cnd-projects-index"; //NOI18N
-    private final static String PROJECT_INDEX_FILE_NAME = "project-index"; //NOI18N
-        
 }
+
