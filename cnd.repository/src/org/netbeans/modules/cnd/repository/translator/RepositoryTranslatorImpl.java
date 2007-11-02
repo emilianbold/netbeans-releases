@@ -55,6 +55,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -126,12 +127,12 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
         unitNamesCache.write(stream);
     }
     
-    private static boolean readUnitFilesCache(String name, DataInput stream) throws IOException {
+    private static boolean readUnitFilesCache(String name, DataInput stream, Set<String> antiLoop) throws IOException {
         assert name != null;
         assert stream != null;
         
         IntToStringCache filesCache = new IntToStringCache(stream);
-        if ((filesCache.getVersion() == version) && UnitsCache.validateReqUnits(name)) {
+        if ((filesCache.getVersion() == version) && UnitsCache.validateReqUnits(name, antiLoop)) {
             unitNamesCache.insertUnitFileCache(name, filesCache);        
             return true;
         } else {
@@ -160,12 +161,15 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
         storeMasterIndex();
     }
     
-    
     public static void loadUnitIndex(final String unitName){
+        loadUnitIndex(unitName, new HashSet<String>());
+    }
+    
+    private static void loadUnitIndex(final String unitName, Set<String> antiLoop){
         // check if the index is already loaded
-        if (UnitsCache.isUnitIndexLoaded(unitName))
+        if (UnitsCache.isUnitIndexLoaded(unitName)) {
             return;
-        
+        }
         InputStream fis = null;
         InputStream bis = null;
         DataInputStream dis = null;
@@ -176,7 +180,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             fis = new FileInputStream(unitIndexFileName);
             bis = new BufferedInputStream(fis);
             dis = new DataInputStream(bis);
-            indexLoaded = readUnitFilesCache(unitName, dis);
+            indexLoaded = readUnitFilesCache(unitName, dis, antiLoop);
         } catch (FileNotFoundException e) {
             if (Stats.TRACE_FILE_INDEX){
                 e.printStackTrace();
@@ -392,13 +396,17 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             unit2requnint.put(unitName, unitReqUnits);
         }
 
-        public static boolean validateReqUnits(String unitName) {
+        private static boolean validateReqUnits(String unitName, Set<String> antiLoop) {
+            if (antiLoop.contains(unitName)) {
+                return true;
+            }
+            antiLoop.add(unitName);
             boolean result = true;
             Collection<RequiredUnit> reqUnits = unit2requnint.get(unitName);
             for (RequiredUnit rU: reqUnits) {
                                 
                 if (!isUnitIndexLoaded(rU.getName())) {
-                    RepositoryTranslatorImpl.loadUnitIndex(rU.getName());
+                    RepositoryTranslatorImpl.loadUnitIndex(rU.getName(), antiLoop);
                 }
                 
                 Long tsL = unit2timestamp.get(rU.getName());
