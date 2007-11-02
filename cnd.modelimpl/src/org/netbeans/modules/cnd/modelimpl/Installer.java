@@ -101,7 +101,7 @@ public class Installer extends ModuleInstall {
     
     private void runTask(Runnable task, String name) {
         if (SwingUtilities.isEventDispatchThread()) {
-            new Thread(task, name).run();
+            new Thread(task, name).start();
         } else {
             task.run();
         }        
