@@ -60,6 +60,15 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 
 /**
+ * The contract for the order of calling formatters based on this class
+ * 
+ *  - isTopLevelLanguage() must return true always and only for the first formatter called.
+ *    Note that the HTML formatter can be hacked to act as a top-level formatters by setting 
+ *    HTMLLexerFormatter.HTML_FORMATTER_ACTS_ON_TOP_LEVEL document property.
+ * 
+ *  - all the formatters called *before* any formatter based on this class must maintain
+ *    the TRANSFER_DATA_DOC_PROPERTY. All formatters based on this class automatically do it
+ * 
  * Handling embedded languages:
  *
  * When formatting a language that is split into several blocks:
@@ -102,6 +111,10 @@ import org.netbeans.modules.editor.indent.spi.Context;
  */
 public abstract class TagBasedLexerFormatter {
 
+    public static final String TRANSFER_DATA_DOC_PROPERTY = "TagBasedFormatter.TransferData"; //NOI18N
+    
+    public static final String ORG_CARET_OFFSET_DOCPROPERTY = "TagBasedFormatter.org_caret_offset";
+    
     private static final Logger logger = Logger.getLogger(TagBasedLexerFormatter.class.getName());
 
     protected abstract boolean isClosingTag(JoinedTokenSequence tokenSequence, int tagOffset);
@@ -126,7 +139,19 @@ public abstract class TagBasedLexerFormatter {
 
     protected abstract LanguagePath supportedLanguagePath();
     
-    private enum EmbeddingType {CURRENT_LANG, INNER, OUTER}
+    private enum EmbeddingType {
+        /**
+         * The line belongs to the language being currently formatted
+         */
+        CURRENT_LANG,
+        /**
+         * The line belongs to a language embedded <em>inside</em> currently formatted one
+         */
+        INNER,
+        /**
+         * The line belongs to a languge in which currently formatted languaged is embedded
+         */
+        OUTER}
 
     public void process(Context context) throws BadLocationException{
         if (context.isIndent()){
@@ -156,19 +181,24 @@ public abstract class TagBasedLexerFormatter {
             TransferData transferData = null;
             
             if (isTopLevelLanguage(doc)){
+                // store data for compatible formatters that will be called later
                 transferData = new TransferData();
                 transferData.init(doc);
             } else {
+                // read data from compatible formatters called before
                 transferData = TransferData.readFromDocument(doc);
                 assert transferData != null;
             }
+            
+            // PASS 1: Calculate EmbeddingType and AbsoluteIndentLevel 
+            // (determined by the tags of the current language) for each line
             
             int firstRefBlockLine = Utilities.getLineOffset(doc, startOffset);
             int lastRefBlockLine = Utilities.getLineOffset(doc, endOffset);
             int firstUnformattableLine = -1;
 
-            EmbeddingType currentLanguage[] = new EmbeddingType[transferData.getNumberOfLines()];
-            Arrays.fill(currentLanguage, EmbeddingType.OUTER);
+            EmbeddingType embeddingType[] = new EmbeddingType[transferData.getNumberOfLines()];
+            Arrays.fill(embeddingType, EmbeddingType.OUTER);
             int[] indentsWithinTags = new int[transferData.getNumberOfLines()];
 
             TokenSequence[] tokenSequences = (TokenSequence[]) tokenHierarchy.tokenSequenceList(supportedLanguagePath(), 0, Integer.MAX_VALUE).toArray(new TokenSequence[0]);
@@ -179,12 +209,11 @@ public abstract class TagBasedLexerFormatter {
 
                 if (tokenSequenceBounds[i].getStartLine() > -1) {
                     // skip white-space blocks
-                    markCurrentLanguageLinesAsFormattable(doc, tokenSequenceBounds[i], currentLanguage);
+                    markCurrentLanguageLines(doc, tokenSequenceBounds[i], embeddingType);
                 }
             }
 
             if (tokenSequences.length > 0) {
-                // calc line indents - pass 1
                 JoinedTokenSequence tokenSequence = new JoinedTokenSequence(tokenSequences, tokenSequenceBounds);
                 tokenSequence.moveStart();
                 boolean thereAreMoreTokens = tokenSequence.moveNext();
@@ -227,7 +256,7 @@ public abstract class TagBasedLexerFormatter {
                         firstUnformattableLine = -1;
                     }
                     
-                    // Mark blocks of embedded language for relative formatting
+                    // Mark blocks of embedded language
                     if (tokenSequence.embedded() != null) {
                         int firstLineOfEmbeddedBlock = Utilities.getLineOffset(doc, tokenSequence.offset());
                         int lastLineOfEmbeddedBlock = Utilities.getLineOffset(doc, tokenSequence.offset() + getTxtLengthWithoutWhitespaceSuffix(tokenSequence.token().text()));
@@ -238,18 +267,15 @@ public abstract class TagBasedLexerFormatter {
                         }
 
                         for (int i = firstLineOfEmbeddedBlock; i <= lastLineOfEmbeddedBlock; i++) {
-                            currentLanguage[i] = EmbeddingType.INNER;
+                            embeddingType[i] = EmbeddingType.INNER;
                         }
                     }
 
                 } while (thereAreMoreTokens);
             }
             
-            // pass 2 - calculate block shifts for each block of different language code
-            
-            
             //****************
-            // calc line indents - pass 3
+            // PASS 2: calc line indents
             // TODO: optimize it
             int[] indentLevels = new int[transferData.getNumberOfLines()];
             Arrays.fill(indentLevels, 0);
@@ -277,22 +303,22 @@ public abstract class TagBasedLexerFormatter {
             boolean topLevel = isTopLevelLanguage(doc);
 
             for (int i = 0; i < transferData.getNumberOfLines(); i++) {
-                if (lastEmbeddingType != currentLanguage[i]){
+                if (lastEmbeddingType != embeddingType[i]){
                     lastCrossPoint = i;
                     
                     if (lastEmbeddingType == EmbeddingType.OUTER){
                         lastOuterCrossPoint = i;
                     }
                     
-                    lastEmbeddingType = currentLanguage[i];
+                    lastEmbeddingType = embeddingType[i];
                 }
 
                 if (!transferData.isFormattable(i)) {
                     newIndents[i] = transferData.getOriginalIndent(i);
                 } else {
-                    if (currentLanguage[i] == EmbeddingType.OUTER) {
+                    if (embeddingType[i] == EmbeddingType.OUTER) {
                         newIndents[i] = previousIndents[i] + absoluteIndents[i];
-                    } else if (currentLanguage[i] == EmbeddingType.INNER) { // INNER
+                    } else if (embeddingType[i] == EmbeddingType.INNER) { // INNER
                         if (lastCrossPoint == i){ // first line of inner embedding
                             int previousLineIndent = i > 0 ? newIndents[lastCrossPoint - 1] : 0;
                             int absDiff = absoluteIndents[i] - (i > 0 ? absoluteIndents[i - 1] : 0);
@@ -303,7 +329,7 @@ public abstract class TagBasedLexerFormatter {
                             
                             newIndents[i] = newIndents[lastCrossPoint] + diff;
                         }
-                    } else { // currentLanguage[i] == EmbeddingType.CURRENT_LANG
+                    } else { // embeddingType[i] == EmbeddingType.CURRENT_LANG
                         newIndents[i] = previousIndents[lastOuterCrossPoint] + absoluteIndents[i];
                     }
                 }
@@ -314,7 +340,9 @@ public abstract class TagBasedLexerFormatter {
             if (firstRefBlockLine > 0){
                 lineBeforeSelectionBias = transferData.getOriginalIndent(firstRefBlockLine - 1) - newIndents[firstRefBlockLine - 1];
             }
-                        
+            
+            // PASS 3: apply line indents
+            
             for (int line = firstRefBlockLine; line <= lastRefBlockLine; line++) {
                 int lineStart = Utilities.getRowStartFromLineOffset(doc, line);
                 int newIndent = newIndents[line] + lineBeforeSelectionBias;
@@ -333,9 +361,9 @@ public abstract class TagBasedLexerFormatter {
                     
                     if (!transferData.isFormattable(i)){
                         formattingTypeSymbol = '-';
-                    } else if (currentLanguage[i] == EmbeddingType.INNER){
+                    } else if (embeddingType[i] == EmbeddingType.INNER){
                         formattingTypeSymbol = 'I';
-                    } else if (currentLanguage[i] == EmbeddingType.OUTER) {
+                    } else if (embeddingType[i] == EmbeddingType.OUTER) {
                         formattingTypeSymbol = 'O';
                     } else {
                         formattingTypeSymbol = 'C';
@@ -595,7 +623,7 @@ public abstract class TagBasedLexerFormatter {
         return new TextBounds(absoluteStart, absoluteEnd, languageBlockStart, languageBlockEnd, firstLineOfTheLanguageBlock, lastLineOfTheLanguageBlock);
     }
 
-    private void markCurrentLanguageLinesAsFormattable(BaseDocument doc, TextBounds languageBounds, EmbeddingType[] currentLanguage) throws BadLocationException {
+    private void markCurrentLanguageLines(BaseDocument doc, TextBounds languageBounds, EmbeddingType[] embeddingType) throws BadLocationException {
         if (languageBounds.getStartPos() == -1){
             return; // only white spaces
         }
@@ -609,7 +637,7 @@ public abstract class TagBasedLexerFormatter {
         }
 
         for (int i = firstLineOfTheLanguageBlock; i <= languageBounds.getEndLine(); i++) {
-            currentLanguage[i] = EmbeddingType.CURRENT_LANG;
+            embeddingType[i] = EmbeddingType.CURRENT_LANG;
         }
     }
     
@@ -629,11 +657,29 @@ public abstract class TagBasedLexerFormatter {
         return Math.min(eol - lineStart, nextNonWS - lineStart);
     }
     
+    /**
+     *  This class is used to pass data to the formatters of embedded languages
+     */
     public static class TransferData{
-        private static final String DOC_PROPERTY = "TagBasedFormatterData"; //NOI18N
+        /**
+         * Lines that must not be touched
+         */
         private boolean formattableLines[];
+        /**
+         * Indents before any formatter was called
+         */
         private int originalIndents[];
+        
+        /**
+         * Indents after calling the current formatter.
+         * It must be filled with valid data for at least 
+         * the current formatting range and the previous line
+         */
         private int transformedOffsets[];
+        
+        /**
+         * Number of lines in the document
+         */
         private int numberOfLines;
         
         public void init(BaseDocument doc) throws BadLocationException {
@@ -645,14 +691,13 @@ public abstract class TagBasedLexerFormatter {
             
             for (int i = 0; i < numberOfLines; i++) {
                 originalIndents[i] = getExistingIndent(doc, i);
-                //transformedOffsets[i] = originalIndents[i];
             }
             
-            doc.putProperty(DOC_PROPERTY, this);
+            doc.putProperty(TRANSFER_DATA_DOC_PROPERTY, this);
         }
         
         public static TransferData readFromDocument(BaseDocument doc){
-            return (TransferData) doc.getProperty(DOC_PROPERTY);
+            return (TransferData) doc.getProperty(TRANSFER_DATA_DOC_PROPERTY);
         }
         
         public int getNumberOfLines(){
@@ -680,15 +725,11 @@ public abstract class TagBasedLexerFormatter {
         }
     }
     
-    private static final String ORG_CARET_OFFSET_DOCPROPERTY = "TagBasedFormatter.org_caret_offset";
-    
     public void enterPressed(Context context) {
-        BaseDocument doc = (BaseDocument)context.document();
-        
+        BaseDocument doc = (BaseDocument)context.document();   
         doc.atomicLock();
         
         try {
-            
             if (isTopLevelLanguage(doc)) {
                 doc.putProperty(ORG_CARET_OFFSET_DOCPROPERTY, new Integer(context.caretOffset()));
             }
@@ -832,8 +873,7 @@ public abstract class TagBasedLexerFormatter {
         return true;
     }
 
-//TODO: replace TextBounds with some generic class
-    protected static class TextBounds {
+    public static class TextBounds {
 
         private int absoluteStart; // start offset regardless of white spaces
         private int absoluteEnd; // end --
