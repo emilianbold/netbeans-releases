@@ -51,18 +51,16 @@ made subject to such option by the copyright holder.
     
     
     <target name="-run-server">
-        <!--
         <tempfile deleteonexit="true" property="url.file"/>
-        <subant target="deploy">
+        <subant target="run-server">
             <property name="url.file" value="${url.file}"/>
             <property name="skip.checkout" value="true"/>
             <dirset dir="..">
                 <include name="uihandlerserver"/>
             </dirset>
         </subant>
-        <loadfile property="client.url" srcfile="${url.file}"/>
+        <loadfile property="client.url" srcfile="${url.file}" failonerror="true"/>
         <delete file="${url.file}" failonerror="true"/>
-        <property name="tryme.args" value="-J-Dorg.netbeans.modules.uihandler.Submit=${client.url}/upload.jsp"/>
-        -->
+        <property name="tryme.args" value="-J-Dorg.netbeans.modules.uihandler.Submit=${client.url}/analytics//upload.jsp"/>
     </target>
 </project>
