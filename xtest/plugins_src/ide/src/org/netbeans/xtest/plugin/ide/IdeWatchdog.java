@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -85,7 +85,7 @@ public class IdeWatchdog implements Runnable {
         // Even if we redirect it to a file, it can't be deleted sometimes.
         // So, if you want to debug it uncomment the following line
         // redirect output stream
-        //System.setOut(new PrintStream(new FileOutputStream(new File(ideWatchdog.xtestWorkdir, "watchdog.log"))));
+        //System.setOut(new PrintStream(new FileOutputStream(new File(xtestHome, "watchdog.log"))));
         System.out.println("TIMEOUT="+timeout);
         System.out.println("XTEST.HOME="+xtestHome);
         System.out.println("XTEST.WORKDIR="+ideWatchdog.xtestWorkdir);
