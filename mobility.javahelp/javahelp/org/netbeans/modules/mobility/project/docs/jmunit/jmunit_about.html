@@ -34,12 +34,10 @@
     being tested.</li>
 </ul>
 <p><strong>Note:</strong> The IDE cannot create unit tests with JMunit for MIDlet classes or private 
-    methods at this time. </p>
+    methods. </p>
 <h3>JMUnit Test Structure</h3>
-<p>The IDE represents unit tests as subtrees which mirror the project's Java package 
-  structure. Each test class has the name of the class it is testing appended 
-  by the word Test (for example, <tt>MyClassTest.java</tt>).</p>
-<p>Each standard project has a default test folder that is used to store your 
+<p>When generating tests with JMUnit the IDE creates empty test skeletons by default.  Each test class has the name of the class it is testing appended 
+by the word Test (for example, <tt>MyClassTest.java</tt>). Each standard project has a default test folder that is used to store your 
   tests. This folder is displayed as the Test Packages node in the Projects window. 
   You can add any number of test folders to your project. Test files must be located 
   in a separate source tree than the source files they test.</p>
@@ -47,31 +45,55 @@
 <p>You can generate and navigate to tests by selecting any class or package node 
   in the Projects window and choosing from the Tools &gt; JUnit menu.</p>
 <p>When you generate your first test, a TestSuite MIDlet from the framework JAR 
-  gets added to the list of MIDlets This MIDlet will be shown in the emulator 
+  gets added to the list of MIDlets. This MIDlet will be shown in the emulator 
   window&acute;s Run list when you run the project. </p>
-<p>All test classes are added to a property in the JAD manifest called 
-    JMunitTestClasses. When you generate your first test for the project, the JMunit 
-  framework JAR gets added to the project libraries for all project configurations. The framework JAR builds a list of tests to run from the JMUnittestClasses property.<br>
+<p>All test classes are added to a property in the JAD manifest called JMunitTestClasses. 
+When you generate your first test for the project, the JMunit 
+framework JAR gets added to the project libraries for all project configurations. 
+The framework JAR builds a list of tests to run from the JMUnittestClasses property. 
+Remember that Java ME does not support the reflective API as JUnit does. Therefore the
+ empty tests JMUnit creates must be modified to include assertions of expected results to 
+ give the Pass/Fail results relevance.</p>
+
+<p>For more information about using JMUnit in Mobility projects see:<br>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/kb/55/jmunit-tutorial.html">
+    <param name="text" value="<html><u>Testing Java ME Code with JMUnit</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+  </object>
+  <br>
 </p>
-<p><a name="seealso">See Also</a></p>
+</p>
 <dl>
-  <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/junit/junit_about.html">About 
+<dt><a name="seealso">See Also</a></dt>
+  <dd>&nbsp;</dd>   
+<dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/junit/junit_about.html">About 
     JUnit</a></dd>
-    
-  <dd><a href="jmunit_working.html"> 
-    Working With JMunit</a></dd>
+<dd><a href="jmunit_working.html">Working With JMunit</a></dd>
 </dl>
-<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small> 
 <table border="0" cellpadding="20">
+
   <tr>
+
     <td width="398">&nbsp;</td>
+
   </tr>
+
   <tr>
+
     <td>&nbsp;</td>
+
   </tr>
+
   <tr>
+
     <td>&nbsp;</td>
+
   </tr>
+
 </table>
 </body>
 </html>
