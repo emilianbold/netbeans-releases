@@ -109,9 +109,9 @@ public class DriverListUtil {
         drivers.add("org.apache.derby.jdbc.ClientDriver");
         urls.add("jdbc:derby://<HOST>[:<PORT>]/databaseName[;attr1=value1[;...]]");
         
-        names.add("Apache Derby (Net)");
+        names.add("DB2 JDBC");
         drivers.add("com.ibm.db2.jcc.DB2Driver");
-        urls.add("jdbc:derby:net://<HOST>[:<PORT>]/<DB>");
+        urls.add("jdbc:db2://<hostname>:<port>/<database>");
         
         names.add("Firebird (JCA/JDBC driver)");
         drivers.add("org.firebirdsql.jdbc.FBDriver");
@@ -208,6 +208,10 @@ public class DriverListUtil {
         names.add("Microsoft SQL Server 2000 (Microsoft driver)");
         drivers.add("com.microsoft.jdbc.sqlserver.SQLServerDriver");
         urls.add("jdbc:microsoft:sqlserver://<HOST>:<PORT>[;DatabaseName=<DB>]");
+
+        names.add("Microsoft SQL Server 2005");
+        drivers.add("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        urls.add("jdbc:sqlserver://<hostname>:<PORT>;databaseName=<database>;selectMethod=cursor");
         
         names.add("MySQL (Connector/J driver)");
         drivers.add("com.mysql.jdbc.Driver");
