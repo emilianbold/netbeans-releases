@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -59,7 +60,6 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.autoupdate.ui.Containers;
-import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -172,7 +172,8 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                     ((InstallUnitWizardModel) model).hasCustomComponents ();
                     ((InstallUnitWizardModel) model).hasStandardComponents ();
                 }
-                if (model.hasBrokenDependencies ()) {
+                boolean hasBrokenDependencies = model.hasBrokenDependencies ();
+                if (hasBrokenDependencies) {
                     body = new OperationDescriptionPanel ("", "",
                             prepareBrokenDependenciesForShow (model),
                             "",
@@ -185,7 +186,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                                 ! OperationWizardModel.getVisibleUpdateElements (model.getRequiredUpdateElements (), true, model.getOperation ()).isEmpty ());
                 }
                 final JPanel finalPanel = body;
-                readyToGo = model != null && ! model.hasBrokenDependencies ();
+                readyToGo = model != null && ! hasBrokenDependencies;
                 SwingUtilities.invokeLater (new Runnable () {
                     public void run () {
                         component.setBody (finalPanel);
@@ -199,20 +200,30 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
     
     private String prepareBrokenDependenciesForShow (OperationWizardModel model) {
         String s = new String ();
-        for (String plugin : model.getBrokenDependencies ().keySet ()) {
-            s += "<h3>" + NbBundle.getMessage (OperationDescriptionStep.class, "OperationDescriptionStep_PluginHasBrokenDependencies", plugin) + "</h3>";
-            if (model.getBrokenDependencies ().get (plugin) != null) {
-                SortedSet<String> sset = new TreeSet<String> (model.getBrokenDependencies ().get (plugin));
+        boolean moreBroken = false;
+        SortedMap<String, Set<String>> broken2deps = model.getBrokenDependencies ();
+        for (String plugin : broken2deps.keySet ()) {
+            if (OperationWizardModel.MORE_BROKEN_PLUGINS.equals(plugin)) {
+                moreBroken = true;
+                continue;
+            }
+            s += "<h3>" + getBundle ("OperationDescriptionStep_PluginHasBrokenDependencies", plugin) + "</h3>";
+            if (broken2deps.get (plugin) != null) {
+                SortedSet<String> sset = new TreeSet<String> (broken2deps.get (plugin));
                 for (String dep : sset) {
                     s += "      " + tryTakeDisplayName (dep) + "<br>"; // NOI18N
                 }
             }
+        }
+        if (moreBroken) {
+            s += getBundle (OperationWizardModel.MORE_BROKEN_PLUGINS);
         }
         return s.trim ();
     }
     
     private String tryTakeDisplayName (String dep) {
         String displayName = null;
+        boolean isPending = false;
         if (dep != null && dep.startsWith ("module")) { // NOI18N
             String codeName = dep.substring (6).trim ();
             int end = codeName.indexOf ('/'); // NOI18N
@@ -221,20 +232,26 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
             }
             if (end != -1) {
                 codeName = codeName.substring (0, end);
-                for (UpdateUnit u : UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ())) {
+                for (UpdateUnit u : UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE)) {
                     if (codeName.equals (u.getCodeName ())) {
                         if (u.getInstalled () != null) {
                             displayName = u.getInstalled ().getDisplayName ();
-                            break;
                         } else if (u.getAvailableUpdates ().size () > 0) {
                             displayName = u.getAvailableUpdates ().get (0).getDisplayName ();
-                            break;
                         }
+                        if (u != null) {
+                            isPending = u.isPending ();
+                        }
+                        break;
                     }
                 }
             }
             if (displayName != null) {
-                displayName = NbBundle.getMessage (OperationDescriptionStep.class, "OperationDescriptionStep_PluginNameFormat", displayName, dep);
+                if (isPending) {
+                    displayName = getBundle ("OperationDescriptionStep_PendingPluginNameFormat", displayName, dep);
+                } else {
+                    displayName = getBundle ("OperationDescriptionStep_PluginNameFormat", displayName, dep);
+                }
             }
         }
         return displayName == null ? dep : displayName;
@@ -247,7 +264,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
             for (UpdateElement el : plugins) {
                 String updatename;
                 updatename = "<b>"  + el.getDisplayName () + "</b> " // NOI18N
-                        + NbBundle.getMessage (OperationDescriptionStep.class, "OperationDescriptionStep_PluginVersionFormat",  // NOI18N
+                        + getBundle ("OperationDescriptionStep_PluginVersionFormat",  // NOI18N
                         el.getSpecificationVersion ()) + "<br>"; // NOI18N
                 String notification = el.getNotification ();
                 if (notification != null && notification.length () > 0) {
@@ -264,11 +281,11 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
             names = new ArrayList<String> ();
             for (UpdateElement el : customHandled) {
                 names.add ("<b>"  + el.getDisplayName () + "</b> " // NOI18N
-                        + NbBundle.getMessage (OperationDescriptionStep.class, "OperationDescriptionStep_PluginVersionFormat",
+                        + getBundle ("OperationDescriptionStep_PluginVersionFormat", // NOI18N
                         el.getSpecificationVersion ()) + "<br>"); // NOI18N
             }
             Collections.sort (names);
-            s += "<br>" + NbBundle.getMessage (OperationDescriptionStep.class, "OperationDescriptionStep_CustomHandled_Head", customHandled.size ()) + "<br>"; // NOI18N
+            s += "<br>" + getBundle ("OperationDescriptionStep_CustomHandled_Head", customHandled.size ()) + "<br>"; // NOI18N
             for (String name : names) {
                 s += name;
             }
@@ -325,8 +342,8 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         }
     }
 
-    private String getBundle (String key) {
-        return NbBundle.getMessage (OperationDescriptionPanel.class, key);
+    private String getBundle (String key, Object... params) {
+        return NbBundle.getMessage (OperationDescriptionPanel.class, key, params);
     }
 
 }

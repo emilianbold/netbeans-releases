@@ -44,6 +44,7 @@ package org.netbeans.modules.autoupdate.ui.wizards;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -78,6 +79,8 @@ public abstract class OperationWizardModel {
     private JButton originalFinish = null;
     private boolean reconized = false;
     static Dimension PREFFERED_DIMENSION = new Dimension (500, 550);
+    private static int MAX_TO_REPORT = 10;
+    static String MORE_BROKEN_PLUGINS = "OperationWizardModel_MoreBrokenPlugins"; // NOTICES
     
     abstract OperationType getOperation ();
     abstract OperationContainer getBaseContainer ();
@@ -120,6 +123,18 @@ public abstract class OperationWizardModel {
             
             for (OperationInfo<?> info : getStandardInfos ()) {
                 requiredElements.addAll (info.getRequiredElements ());
+            }
+            
+            Collection<UpdateElement> pending = new HashSet<UpdateElement> ();
+            for (UpdateElement el : requiredElements) {
+                if (el != null && el.getUpdateUnit () != null && el.getUpdateUnit ().isPending ()) {
+                    pending.add (el);
+                }
+            }
+            if (! pending.isEmpty ()) {
+                Logger.getLogger (OperationWizardModel.class.getName ()).log (Level.INFO, "Required UpdateElements " + pending +
+                        " cannot be in pending state.");
+                requiredElements.removeAll (pending);
             }
             
             // add requiredElements to container
@@ -175,11 +190,16 @@ public abstract class OperationWizardModel {
     public SortedMap<String, Set<String>> getBrokenDependencies () {
         SortedMap<String, Set<String>> brokenDeps = new TreeMap<String, Set<String>> ();
 
-        for (OperationInfo<?> info : listAll ()) {
+        int brokenPlugins = 0;
+        for (OperationInfo<?> info : getStandardInfos ()) {
             Set<String> broken = info.getBrokenDependencies ();
             if (! broken.isEmpty()) {
                 brokenDeps.put (info.getUpdateElement ().getDisplayName (),
                         new HashSet<String> (broken));
+                if (++brokenPlugins >= MAX_TO_REPORT) {
+                    brokenDeps.put (MORE_BROKEN_PLUGINS, null);
+                    break;
+                }
             }
         }
         return brokenDeps;
@@ -375,6 +395,7 @@ public abstract class OperationWizardModel {
             if (el == null || el.getUpdateUnit () == null) {
                 Logger.getLogger (OperationWizardModel.class.getName ()).log (Level.INFO, "UpdateElement " + el + " cannot be null"
                         + (el == null ? "" : " or UpdateUnit " + el.getUpdateUnit () + " cannot be null"));
+                continue;
             }
             if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == el.getUpdateUnit ().getType ()) {
                 getCustomHandledContainer ().add (el);

@@ -45,6 +45,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -270,9 +272,10 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
     
     private static String prepareBrokenDependenciesForShow (OperationWizardModel model) {
         String s = new String ();
-        for (String plugin : model.getBrokenDependencies ().keySet ()) {
+        SortedMap<String, Set<String>> broken2deps = model.getBrokenDependencies ();
+        for (String plugin : broken2deps.keySet ()) {
             s += "<br><b>" + NbBundle.getMessage (OperationDescriptionStep.class, "UninstallStep_PluginHasBrokenDependencies", plugin) + "</b><br>"; // NOI18N
-            SortedSet<String> sset = new TreeSet<String> (model.getBrokenDependencies ().get (plugin));
+            SortedSet<String> sset = new TreeSet<String> (broken2deps.get (plugin));
             for (String dep : sset) {
                 s += "      " + tryTakeDisplayName (dep) + "<br>"; // NOI18N
             }

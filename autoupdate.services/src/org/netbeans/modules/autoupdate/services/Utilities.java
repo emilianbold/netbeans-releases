@@ -728,6 +728,10 @@ public class Utilities {
     static List<ModuleInfo> getModuleInfos (Collection<UpdateElement> elements) {
         List<ModuleInfo> infos = new ArrayList<ModuleInfo> (elements.size ());
         for (UpdateElement el : elements) {
+            if (el.getUpdateUnit () != null && el.getUpdateUnit ().isPending ()) {
+                // cannot depend of UpdateElement in pending state
+                continue;
+            }
             UpdateElementImpl impl = Trampoline.API.impl (el);
             infos.addAll (impl.getModuleInfos ());
         }
