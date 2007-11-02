@@ -240,7 +240,29 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 }
             }
         }
-        this.lastOperation = tr.getCurrentOperation();
+        Operation currentOp = tr.getCurrentOperation();
+        if (currentOp != null) {
+            Operation theLastOperation = null;
+            java.util.List<Operation> lastOperations = tr.getLastOperations();
+            if (lastOperations != null && lastOperations.size() > 0) {
+                theLastOperation = lastOperations.get(lastOperations.size() - 1);
+            }
+            if (theLastOperation == currentOp) {
+                // We're right after some operation
+                // Check, whether there is some other operation directly on this
+                // position. If yes, it must be executed next.
+                for (Operation op : ops) {
+                    if (op.getBytecodeIndex() == codeIndex) {
+                        tr.setCurrentOperation(op);
+                        if (! getHidden()) {
+                            setStoppedStateNoContinue[0] = true;
+                        }
+                        return true;
+                    }
+                }
+            }
+        }
+        this.lastOperation = currentOp;
         VirtualMachine vm = loc.virtualMachine();
         if (lastOperation != null) {
              // Set the method exit breakpoint to get the return value
