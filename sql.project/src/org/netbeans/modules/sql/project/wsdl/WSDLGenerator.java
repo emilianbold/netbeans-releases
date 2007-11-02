@@ -1251,10 +1251,12 @@ public class WSDLGenerator {
      */
     private void writeWsdl() throws WSDLException {
         try {
+        	String outputFileName = wsdlFileLocation + File.separator + wsdlFileName + ".wsdl";
             WSDLWriter writer = factory.newWSDLWriter();
-            Writer sink = new FileWriter(wsdlFileLocation + File.separator + wsdlFileName + ".wsdl");
-            writer.writeWSDL(def, sink);
-            String str = IOUtil.getText(wsdlFileLocation + File.separator + wsdlFileName + ".wsdl","UTF-8");
+            java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFileName);
+            final Writer sink = new java.io.OutputStreamWriter(fos,"UTF-8");
+            writer.writeWSDL(this.def, sink);
+            String str = IOUtil.getText(outputFileName,"UTF-8");
             StringBuffer sb = new StringBuffer(str);
     	    sb.replace(30,35,org.netbeans.modules.sql.project.ui.SQLproLogicalViewProvider.encoding);
 	    str = sb.toString();
