@@ -559,7 +559,9 @@ public class Installer extends ModuleInstall implements Runnable {
                 try {
                     url[0] = new URL((String) post);
                 } catch (MalformedURLException ex) {
+                    LOG.log(Level.WARNING, "Cannot decode URL: " + post, ex); // NOI18N
                     url[0] = null;
+                    return null;
                 }
             }
             return b.getActionCommand();
@@ -915,7 +917,7 @@ public class Installer extends ModuleInstall implements Runnable {
             
             LOG.log(Level.FINE, "actionPerformed: command = {0}", e.getActionCommand()); // NOI18N
             
-            boolean submit = Button.SUBMIT.isCommand(e.getActionCommand());
+            boolean submit = Button.SUBMIT.isCommand(actionURL);
             if (Button.AUTO_SUBMIT.isCommand(e.getActionCommand())) {
                 submit = true;
                 prefs.putBoolean("autoSubmitWhenFull", true); // NOI18N
