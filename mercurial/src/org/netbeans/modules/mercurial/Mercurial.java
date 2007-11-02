@@ -295,6 +295,7 @@ public class Mercurial {
                  return;
             }
             org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
+            original.delete();
         } catch (IOException e) {
             Logger.getLogger(Mercurial.class.getName()).log(Level.INFO, "Unable to get original file", e); // NOI18N
         }
