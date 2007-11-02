@@ -214,8 +214,11 @@
 <mapID target="netbeans.optionsDialog.advanced.todo" url="configure/options_todo_settings.html" />
 
 
+<!--CSH for plain text editor-->
+<mapID target="text.plain" url="pending.html" />
 
-
+<!--CSH for css text editor-->
+<mapID target="text.x-css" url="pending.html" />
 
 <!--Add New Class dialog box-->
 <mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceEditSupport$AddNewClass" url="pending.html"/>
