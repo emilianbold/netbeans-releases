@@ -63,7 +63,8 @@ public class SQLResultPanelModel {
             SQLExecutionResult result = (SQLExecutionResult)executionResults.getResults().iterator().next();
             
             if (result.getResultSet() != null) {
-                resultSetModel = ResultSetTableModel.create(result.getResultSet());
+                resultSetModel = ResultSetTableModel.create(
+                        result.getDatabaseMetaData(), result.getResultSet());
                 if (resultSetModel == null) { // thread interrupted
                     return null;
                 }

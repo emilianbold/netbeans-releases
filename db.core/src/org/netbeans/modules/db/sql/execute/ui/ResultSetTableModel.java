@@ -42,6 +42,7 @@
 package org.netbeans.modules.db.sql.execute.ui;
 
 import java.io.IOException;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -77,9 +78,10 @@ public class ResultSetTableModel extends AbstractTableModel {
      * @return a TableModel for the ResultSet or null if the calling thread was
      *         interrupted
      */
-    public static ResultSetTableModel create(ResultSet rs) throws SQLException, IOException {
+    public static ResultSetTableModel create(DatabaseMetaData dbmd, 
+            ResultSet rs) throws SQLException, IOException {
         ResultSetMetaData rsmd = rs.getMetaData();
-        List columnDefs = ResultSetTableModelSupport.createColumnDefs(rsmd);
+        List columnDefs = ResultSetTableModelSupport.createColumnDefs(dbmd, rsmd);
         if (columnDefs == null) { // thread interrupted
             return null;
         }

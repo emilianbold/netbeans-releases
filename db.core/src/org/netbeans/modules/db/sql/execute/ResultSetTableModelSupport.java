@@ -47,6 +47,7 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -58,6 +59,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class is used to create a TableModel for a ResultSet.
@@ -65,6 +68,9 @@ import java.util.Map;
  * @author Andrei Badea
  */
 public class ResultSetTableModelSupport {
+    
+    private static Logger LOGGER = Logger.getLogger(
+            ResultSetTableModelSupport.class.getName());
     
     /**
      * Holds the ColumnTypeDef for all the types in java.sql.Types.
@@ -87,7 +93,7 @@ public class ResultSetTableModelSupport {
         TYPE_TO_DEF.put(Integer.valueOf(Types.BIT), booleanTypeDef);
         
         ColumnTypeDef integerTypeDef = new GenericWritableColumnDef(Integer.class);
-        
+
         TYPE_TO_DEF.put(Integer.valueOf(Types.TINYINT), integerTypeDef);
         TYPE_TO_DEF.put(Integer.valueOf(Types.SMALLINT), integerTypeDef);
         TYPE_TO_DEF.put(Integer.valueOf(Types.INTEGER), integerTypeDef);
@@ -115,7 +121,7 @@ public class ResultSetTableModelSupport {
         ColumnTypeDef dateTypeDef = new GenericWritableColumnDef(Date.class);
         
         TYPE_TO_DEF.put(Integer.valueOf(Types.DATE), dateTypeDef);
-        
+                
         // TIME type must displayed as time -- issue 72607
         
         ColumnTypeDef timeTypeDef = new ColumnTypeDef() {
@@ -305,6 +311,25 @@ public class ResultSetTableModelSupport {
         }
     }
     
+    /** 
+     * Issue 49994 - Oracle dates need to display both date and time info
+     * 
+     * ColumnTypeDef for Oracle dates
+     */
+    private static final class OracleDateColumnTypeDef implements ColumnTypeDef {
+        public boolean isWritable() {
+            return true;
+        }
+        
+        public Class getColumnClass() {
+            return Timestamp.class;
+        }
+        
+        public Object getColumnValue(ResultSet rs, int column) throws SQLException, IOException {
+            return rs.getTimestamp(column);
+        }
+    }
+    
     /**
      * Represents the value of a long varchar or clob column. Instances of this
      * class are placed in the table model for the result set.
@@ -458,7 +483,8 @@ public class ResultSetTableModelSupport {
      * Returns a List of ColumnDef objects or null if the calling thread was
      * interrupted.
      */
-    public static List<ColumnDef> createColumnDefs(ResultSetMetaData rsmd) throws SQLException {
+    public static List<ColumnDef> createColumnDefs(DatabaseMetaData dbmd,
+            ResultSetMetaData rsmd) throws SQLException {
         int count = rsmd.getColumnCount();
         List<ColumnDef> columns = new ArrayList<ColumnDef>(count);
 
@@ -468,7 +494,15 @@ public class ResultSetTableModelSupport {
             }
             
             int type = rsmd.getColumnType(i);
-            ColumnTypeDef ctd = getColumnTypeDef(type);
+            
+            // Issue 49994: Oracle DATE type needs to be retrieved as full 
+            // date and time
+            ColumnTypeDef ctd;
+            if ( isOracle(dbmd) && type == Types.DATE ) {
+                ctd = new OracleDateColumnTypeDef();
+            } else {
+                ctd = getColumnTypeDef(type);
+            }
             
             // TODO: does writable depend on the result set type (updateable?)
 
@@ -488,6 +522,15 @@ public class ResultSetTableModelSupport {
             columns.add(column);
         }
         return columns;
+    }
+    
+    private static boolean isOracle(DatabaseMetaData dbmd) throws SQLException {
+        try {
+            return "Oracle".equals(dbmd.getDatabaseProductName());
+        } catch ( SQLException sqle ) {
+            LOGGER.log(Level.WARNING, "Unable to obtain database product name", sqle);
+            return false;
+        }
     }
     
     public static List<List<Object>> retrieveRows(ResultSet rs, ResultSetMetaData rsmd, FetchLimitHandler handler) throws SQLException, IOException {

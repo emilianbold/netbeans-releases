@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.db.sql.execute;
 
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -121,6 +122,10 @@ public class SQLExecutionResult {
     
     public long getExecutionTime() {
         return executionTime;
+    }
+    
+    public DatabaseMetaData getDatabaseMetaData() throws SQLException {
+        return statement.getConnection().getMetaData();
     }
     
     public void close() throws SQLException {
