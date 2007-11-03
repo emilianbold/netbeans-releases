@@ -41,28 +41,64 @@
 package org.netbeans.modules.ruby.rubyproject.classpath;
 
 import java.beans.PropertyChangeEvent;
+import java.util.regex.Pattern;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.spi.gsfpath.classpath.ClassPathImplementation;
 import org.netbeans.spi.gsfpath.classpath.PathResourceImplementation;
 import org.netbeans.spi.gsfpath.classpath.support.ClassPathSupport;
-import org.netbeans.api.gsfpath.classpath.ClassPath;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 final class BootClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
+
+    private static final Pattern GEM_EXCLUDE_FILTER;
+    private static final Pattern GEM_INCLUDE_FILTER;
+    static {
+        String userExcludes = System.getProperty("ruby.prj.excludegems");
+        if (userExcludes == null) {
+            // activerecord? Apparently often used outside of Rails
+            String deflt = "^(rails|action[a-z]+|activesupport)-\\d+\\.\\d+\\.\\d+(-\\S+)?$"; // NOI18N
+            GEM_EXCLUDE_FILTER = Pattern.compile(deflt);
+        } else if ("none".equals(userExcludes)) {
+            GEM_EXCLUDE_FILTER = null;
+        } else {
+            Pattern p;
+            try {
+                p = Pattern.compile(userExcludes);
+            } catch (PatternSyntaxException pse) {
+                Logger.getAnonymousLogger().log(Level.WARNING,"Invalid regular expression: " + userExcludes);
+                Logger.getAnonymousLogger().log(Level.WARNING, pse.toString());
+                p = null;
+            }
+            GEM_EXCLUDE_FILTER = p;
+        }
+        String userIncludes = System.getProperty("ruby.prj.includegems");
+        if (userIncludes == null || "all".equals(userIncludes)) {
+            GEM_INCLUDE_FILTER = null;
+        } else {
+            Pattern p;
+            try {
+                p = Pattern.compile(userIncludes);
+            } catch (PatternSyntaxException pse) {
+                Logger.getAnonymousLogger().log(Level.WARNING,"Invalid regular expression: " + userIncludes);
+                Logger.getAnonymousLogger().log(Level.WARNING, pse.toString());
+                p = null;
+            }
+            GEM_INCLUDE_FILTER = p;
+        }
+    }
 
 //    private static final String PLATFORM_ACTIVE = "platform.active";        //NOI18N
 //    private static final String ANT_NAME = "platform.ant.name";             //NOI18N
@@ -86,7 +122,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             this.evaluator = null;
         }
     }
-
+    
     public synchronized List<PathResourceImplementation> getResources() {
         if (this.resourcesCache == null) {
 //            JavaPlatform jp = findActivePlatform ();
@@ -100,9 +136,40 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             }
 
             Map<String,URL> gemUrls = RubyInstallation.getInstance().getGemUrls();
-            Map<String,String> gemVersions = RubyInstallation.getInstance().getGemVersions();
+            //Map<String,String> gemVersions = RubyInstallation.getInstance().getGemVersions();
+            
+            Pattern includeFilter = GEM_INCLUDE_FILTER;
+            Pattern excludeFilter = GEM_EXCLUDE_FILTER;
+
+            String include = evaluator.getProperty("ruby.includegems");
+            String exclude = evaluator.getProperty("ruby.excludegems");
+            try {
+                if (include != null && include.length() > 0) {
+                    includeFilter = Pattern.compile(include);
+                }
+                if (exclude != null && exclude.length() > 0) {
+                    excludeFilter = Pattern.compile(exclude);
+                }
+            } catch (PatternSyntaxException pse) {
+                Exceptions.printStackTrace(pse);
+            }
             
             for (URL url : gemUrls.values()) {
+                if (includeFilter != null) {
+                    String gem = getGemName(url);
+                    if (includeFilter.matcher(gem).find()) {
+                        result.add(ClassPathSupport.createResource(url));
+                        continue;
+                    }
+                }
+
+                if (excludeFilter != null) {
+                    String gem = getGemName(url);
+                    if (excludeFilter.matcher(gem).find()) {
+                        continue;
+                    }
+                }
+                    
                 result.add(ClassPathSupport.createResource(url));
             }
 
@@ -111,6 +178,16 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             RubyInstallation.getInstance().addPropertyChangeListener(this);
         }
         return this.resourcesCache;
+    }
+
+    private static String getGemName(URL gemUrl) {
+        String urlString = gemUrl.getFile();
+        if (urlString.endsWith("/lib/")) {
+            urlString = urlString.substring(urlString.lastIndexOf('/', urlString.length()-6)+1,
+                    urlString.length()-5);
+        }
+        
+        return urlString;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {

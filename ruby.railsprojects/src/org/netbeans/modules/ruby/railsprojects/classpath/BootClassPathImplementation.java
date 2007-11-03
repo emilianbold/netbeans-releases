@@ -59,16 +59,50 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
+import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 final class BootClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
+
+    
+    private static final Pattern GEM_EXCLUDE_FILTER;
+    private static final Pattern GEM_INCLUDE_FILTER;
+    static {
+        String userExcludes = System.getProperty("rails.prj.excludegems");
+        if (userExcludes == null || "none".equals(userExcludes)) {
+            GEM_EXCLUDE_FILTER = null;
+        } else {
+            Pattern p;
+            try {
+                p = Pattern.compile(userExcludes);
+            } catch (PatternSyntaxException pse) {
+                Logger.getAnonymousLogger().log(Level.WARNING,"Invalid regular expression: " + userExcludes);
+                Logger.getAnonymousLogger().log(Level.WARNING, pse.toString());
+                p = null;
+            }
+            GEM_EXCLUDE_FILTER = p;
+        }
+        String userIncludes = System.getProperty("rails.prj.includegems");
+        if (userIncludes == null || "all".equals(userIncludes)) {
+            GEM_INCLUDE_FILTER = null;
+        } else {
+            Pattern p;
+            try {
+                p = Pattern.compile(userIncludes);
+            } catch (PatternSyntaxException pse) {
+                Logger.getAnonymousLogger().log(Level.WARNING,"Invalid regular expression: " + userIncludes);
+                Logger.getAnonymousLogger().log(Level.WARNING, pse.toString());
+                p = null;
+            }
+            GEM_INCLUDE_FILTER = p;
+        }
+    }
 
 //    private static final String PLATFORM_ACTIVE = "platform.active";        //NOI18N
 //    private static final String ANT_NAME = "platform.ant.name";             //NOI18N
@@ -108,6 +142,22 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             
             // Perhaps I can filter vendor/rails iff the installation contains it
 
+            Pattern includeFilter = GEM_INCLUDE_FILTER;
+            Pattern excludeFilter = GEM_EXCLUDE_FILTER;
+
+            String include = evaluator.getProperty("ruby.includegems");
+            String exclude = evaluator.getProperty("ruby.excludegems");
+            try {
+                if (include != null) {
+                    includeFilter = Pattern.compile(include);
+                }
+                if (exclude != null) {
+                    excludeFilter = Pattern.compile(exclude);
+                }
+            } catch (PatternSyntaxException pse) {
+                Exceptions.printStackTrace(pse);
+            }
+            
             // Add in all the vendor/ paths, if any
             File vendor = new File(projectDirectory, "vendor");
             if (vendor.exists()) {
@@ -122,11 +172,41 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                         new HashMap<String,String>(gemVersions), 
                         new HashMap<String,URL>(gemUrls));
                 for (URL url : combinedGems) {
+                    if (includeFilter != null) {
+                        String gem = getGemName(url);
+                        if (includeFilter.matcher(gem).find()) {
+                            result.add(ClassPathSupport.createResource(url));
+                            continue;
+                        }
+                    }
+
+                    if (excludeFilter != null) {
+                        String gem = getGemName(url);
+                        if (excludeFilter.matcher(gem).find()) {
+                            continue;
+                        }
+                    }
+
                     result.add(ClassPathSupport.createResource(url));
                 }
 
             } else {
                 for (URL url : gemUrls.values()) {
+                    if (includeFilter != null) {
+                        String gem = getGemName(url);
+                        if (includeFilter.matcher(gem).find()) {
+                            result.add(ClassPathSupport.createResource(url));
+                            continue;
+                        }
+                    }
+
+                    if (excludeFilter != null) {
+                        String gem = getGemName(url);
+                        if (excludeFilter.matcher(gem).find()) {
+                            continue;
+                        }
+                    }
+
                     result.add(ClassPathSupport.createResource(url));
                 }
             }
@@ -136,6 +216,16 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             RubyInstallation.getInstance().addPropertyChangeListener(this);
         }
         return this.resourcesCache;
+    }
+
+    private static String getGemName(URL gemUrl) {
+        String urlString = gemUrl.getFile();
+        if (urlString.endsWith("/lib/")) {
+            urlString = urlString.substring(urlString.lastIndexOf('/', urlString.length()-6)+1,
+                    urlString.length()-5);
+        }
+        
+        return urlString;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
