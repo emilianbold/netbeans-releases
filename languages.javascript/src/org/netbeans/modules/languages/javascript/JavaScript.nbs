@@ -42,7 +42,7 @@
 ########### tokens #############################################################
 
 TOKEN:js_comment: ("/*" - "*/")
-TOKEN:js_comment: ("<!--")
+TOKEN:js_comment: ("<!--" | "-->")
 TOKEN:js_line_comment: ("//"[^"\n""\r"]*)
 TOKEN:js_keyword: (
     "abstract" | 
