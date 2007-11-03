@@ -61,7 +61,7 @@ public class MarkOccurrencesHighlighterFactory extends CaretAwareSourceTaskFacto
 
     /** Creates a new instance of SemanticHighlighterFactory */
     public MarkOccurrencesHighlighterFactory() {
-        super(Phase.PARSED, Priority.NORMAL);
+        super(Phase.PARSED, Priority.LOW);
     }
 
     public CancellableTask<CompilationInfo> createTask(FileObject file) {

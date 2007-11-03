@@ -77,7 +77,7 @@ public final class ClassMemberNavigatorSourceFactory extends LookupBasedSourceTa
     }
     
     public ClassMemberNavigatorSourceFactory() {        
-        super(Phase.ELEMENTS_RESOLVED, Priority.NORMAL);
+        super(Phase.ELEMENTS_RESOLVED, Priority.LOW);
     }
 
     public synchronized CancellableTask<CompilationInfo> createTask(FileObject file) {
