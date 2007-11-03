@@ -66,6 +66,8 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.Position;
 import javax.swing.text.TextAction;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.*;
 import org.netbeans.editor.BaseKit.DeleteCharAction;
@@ -73,6 +75,7 @@ import org.netbeans.editor.ext.*;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.html.*;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
 import org.netbeans.modules.languages.dataobject.LanguagesEditorKit;
 
@@ -150,8 +153,32 @@ public class HTMLKit extends LanguagesEditorKit implements org.openide.util.Help
                 boolean overwrite) throws BadLocationException {
             super.insertString(doc, dotPos, caret, str, overwrite);
             HTMLAutoCompletion.charInserted(doc, dotPos, caret, str.charAt(0));
+            handleTagClosingSymbol(doc, dotPos, str.charAt(0));
         }
         
+        private void handleTagClosingSymbol(BaseDocument doc, int dotPos, char lastChar) throws BadLocationException {
+            if (lastChar == '>') {
+                HTMLLexerFormatter htmlFormatter = new HTMLLexerFormatter(LanguagePath.get(HTMLTokenId.language()));
+
+                if (htmlFormatter.isJustAfterClosingTag(doc, dotPos)) {
+                    Reformat reformat = Reformat.get(doc);
+                    reformat.lock();
+
+                    try {
+                        doc.atomicLock();
+                        try {
+                            int startOffset = Utilities.getRowStart(doc, dotPos);
+                            int endOffset = Utilities.getRowEnd(doc, dotPos);
+                            reformat.reformat(startOffset, endOffset);
+                        } finally {
+                            doc.atomicUnlock();
+                        }
+                    } finally {
+                        reformat.unlock();
+                    }
+                }
+            }
+        }
     }
     
     public static class HTMLDeleteCharAction extends DeleteCharAction {

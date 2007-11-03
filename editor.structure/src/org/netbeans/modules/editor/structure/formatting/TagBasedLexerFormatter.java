@@ -397,6 +397,27 @@ public abstract class TagBasedLexerFormatter {
         }
     }
     
+    public boolean isJustAfterClosingTag(BaseDocument doc, int pos) throws BadLocationException {
+        doc.atomicLock();
+        try {
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+            
+            TokenSequence[] tokenSequences = (TokenSequence[]) tokenHierarchy.tokenSequenceList(supportedLanguagePath(), 0, Integer.MAX_VALUE).toArray(new TokenSequence[0]);
+            TextBounds[] tokenSequenceBounds = new TextBounds[tokenSequences.length];
+
+            for (int i = 0; i < tokenSequenceBounds.length; i++) {
+                tokenSequenceBounds[i] = findTokenSequenceBounds(doc, tokenSequences[i]);
+            }
+
+            JoinedTokenSequence tokenSequence = new JoinedTokenSequence(tokenSequences, tokenSequenceBounds);
+            tokenSequence.moveStart(); tokenSequence.moveNext();
+            int tagPos = getTagEndingAtPosition(tokenSequence, pos);
+            return tagPos >= 0 && isClosingTag(tokenSequence, tagPos);
+        } finally {
+            doc.atomicUnlock();
+        }
+    }
+    
     private static int getTxtLengthWithoutWhitespaceSuffix(CharSequence txt){
         for (int i = txt.length(); i > 0; i --){
             if (!Character.isWhitespace(txt.charAt(i - 1))){

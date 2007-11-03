@@ -54,6 +54,7 @@ import java.awt.event.ActionEvent;
 import java.beans.*;
 import javax.swing.Action;
 import javax.swing.text.*;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -73,9 +74,13 @@ import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.BaseKit.InsertBreakAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
+import org.netbeans.editor.ext.html.HTMLLexerFormatter;
+import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.web.core.syntax.formatting.JSPLexerFormatter;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.util.RequestProcessor;
 
@@ -290,19 +295,17 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
     }
     
     public static class JspInsertBreakAction extends InsertBreakAction {
+
         public void actionPerformed(ActionEvent e, JTextComponent target) {
-            if (target!=null){
-                TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(
-                        TokenHierarchy.get(target.getDocument()),
-                        JavaTokenId.language(),
-                        target.getCaret().getDot() - 1);
-                
-                if (javaTokenSequence != null){
-                    JavaKit jkit = (JavaKit)getKit(JavaKit.class);
-                    if (jkit!=null){
+            if (target != null) {
+                TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
+
+                if (javaTokenSequence != null) {
+                    JavaKit jkit = (JavaKit) getKit(JavaKit.class);
+                    if (jkit != null) {
                         Action action = jkit.getActionByName(DefaultEditorKit.insertBreakAction);
-                        if (action != null && action instanceof JavaKit.JavaInsertBreakAction){
-                            ((JavaKit.JavaInsertBreakAction)action).actionPerformed(e, target);
+                        if (action != null && action instanceof JavaKit.JavaInsertBreakAction) {
+                            ((JavaKit.JavaInsertBreakAction) action).actionPerformed(e, target);
                             return;
                         }
                     }
@@ -311,27 +314,69 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
             super.actionPerformed(e, target);
         }
     }
-    
+
     public static class JspDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
+
         public void actionPerformed(ActionEvent e, JTextComponent target) {
-            if (target!=null){
-                TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(
-                        TokenHierarchy.get(target.getDocument()),
-                        JavaTokenId.language(),
-                        target.getCaret().getDot() - 1);
-                
-                if (javaTokenSequence != null){
-                    JavaKit jkit = (JavaKit)getKit(JavaKit.class);
-                    if (jkit!=null){
+            if (target != null) {
+                TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
+
+                if (javaTokenSequence != null) {
+                    JavaKit jkit = (JavaKit) getKit(JavaKit.class);
+                    if (jkit != null) {
                         Action action = jkit.getActionByName(DefaultEditorKit.defaultKeyTypedAction);
-                        if (action != null && action instanceof JavaKit.JavaDefaultKeyTypedAction){
-                            ((JavaKit.JavaDefaultKeyTypedAction)action).actionPerformed(e, target);
+                        if (action != null && action instanceof JavaKit.JavaDefaultKeyTypedAction) {
+                            ((JavaKit.JavaDefaultKeyTypedAction) action).actionPerformed(e, target);
                             return;
                         }
                     }
                 }
             }
             super.actionPerformed(e, target);
+        }
+        
+        @Override
+        protected void insertString(BaseDocument doc, int dotPos,
+                Caret caret, String str,
+                boolean overwrite) throws BadLocationException {
+            super.insertString(doc, dotPos, caret, str, overwrite);
+            handleTagClosingSymbol(doc, dotPos, str.charAt(0));
+        }
+
+        private void handleTagClosingSymbol(BaseDocument doc, int dotPos, char lastChar) throws BadLocationException {
+            if (lastChar == '>') {
+                LanguagePath jspLanguagePath = LanguagePath.get(JspTokenId.language());
+                LanguagePath htmlInJSPPath = LanguagePath.get(jspLanguagePath, HTMLTokenId.language());
+                HTMLLexerFormatter htmlFormatter = new HTMLLexerFormatter(htmlInJSPPath);
+
+                if (htmlFormatter.isJustAfterClosingTag(doc, dotPos)) {
+                    reformat(doc, dotPos);
+                } else {
+                    JSPLexerFormatter jspFormatter = new JSPLexerFormatter();
+                    
+                    if (jspFormatter.isJustAfterClosingTag(doc, dotPos)){
+                        reformat(doc, dotPos);
+                    }
+                }
+            }
+        }
+        
+        private void reformat(BaseDocument doc, int dotPos) throws BadLocationException {
+            Reformat reformat = Reformat.get(doc);
+            reformat.lock();
+
+            try {
+                doc.atomicLock();
+                try {
+                    int startOffset = org.netbeans.editor.Utilities.getRowStart(doc, dotPos);
+                    int endOffset = org.netbeans.editor.Utilities.getRowEnd(doc, dotPos);
+                    reformat.reformat(startOffset, endOffset);
+                } finally {
+                    doc.atomicUnlock();
+                }
+            } finally {
+                reformat.unlock();
+            }
         }
     }
     
