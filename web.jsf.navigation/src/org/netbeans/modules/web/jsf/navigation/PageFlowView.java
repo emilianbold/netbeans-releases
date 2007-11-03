@@ -72,7 +72,6 @@ import org.netbeans.modules.web.jsf.navigation.graph.SceneSerializer;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
-import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -93,7 +92,7 @@ import org.openide.windows.TopComponent;
  * the necessary setting of activated nodes, focus setting, etc.
  * @author Joelle Lam
  */
-public class PageFlowView extends TopComponent implements Lookup.Provider, ExplorerManager.Provider {
+public class PageFlowView extends TopComponent implements Lookup.Provider {
 
     private JSFConfigEditorContext context;
     private PageFlowScene scene;
@@ -631,16 +630,6 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         return null;
     }
 
-    public ExplorerManager getExplorerManager() {
-        return explorer;
-    }
-    private ExplorerManager explorer;
-
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        explorer = ExplorerManager.find(this);
-    }
 
     @SuppressWarnings(value = "deprecation")
     @Override
