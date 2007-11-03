@@ -308,7 +308,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         
         private NbiTextPane textPane;
         private NbiTextPane textScrollPane;
-        private NbiScrollPane scrollPane;
+        //private NbiScrollPane scrollPane;
         private NbiButton customizeButton;
         private NbiLabel installationSizeLabel;
         
@@ -522,9 +522,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             textScrollPane.setBackground(Color.WHITE);
             
             // scrollPane ////////////////////////////////////////////////////
-            scrollPane = new NbiScrollPane(textScrollPane);
-            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-            scrollPane.setBorder(new EmptyBorder(new Insets(0, 0, 0, 0)));
+            //scrollPane = new NbiScrollPane(textScrollPane);
+            //scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            //scrollPane.setBorder(new EmptyBorder(new Insets(0, 0, 0, 0)));
             
             // customizeButton //////////////////////////////////////////////////////
             customizeButton = new NbiButton();
@@ -575,7 +575,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             BundleType type = BundleType.getType(
                     System.getProperty(WELCOME_PAGE_TYPE_PROPERTY));
             if(!type.equals(BundleType.JAVAEE) && !type.equals(BundleType.JAVAEE_JDK)) {
-                add(scrollPane, new GridBagConstraints(
+                add(/*scrollPane*/textScrollPane, new GridBagConstraints(
                         1, dy++,                           // x, y
                         3, 1,                              // width, height
                         1.0, 10.0,                         // weight-x, weight-y
