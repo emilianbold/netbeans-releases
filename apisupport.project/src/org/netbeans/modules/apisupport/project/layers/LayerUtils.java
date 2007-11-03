@@ -448,14 +448,16 @@ public class LayerUtils {
                     }
                     try {
                         NbModuleProvider module = project.getLookup().lookup(NbModuleProvider.class);
-                        // Check to see if the manifest entry is already specified.
-                        String layerSrcPath = ManifestManager.getInstance(Util.getManifest(module.getManifestFile()), false).getLayer();
-                        if (layerSrcPath == null) {
-                            layerSrcPath = newLayerPath();
-                            FileObject manifest = module.getManifestFile();
-                            EditableManifest m = Util.loadManifest(manifest);
-                            m.setAttribute(ManifestManager.OPENIDE_MODULE_LAYER, layerSrcPath, null);
-                            Util.storeManifest(manifest, m);
+                        FileObject manifest = module.getManifestFile();
+                        if (manifest != null) { // #121056
+                            // Check to see if the manifest entry is already specified.
+                            String layerSrcPath = ManifestManager.getInstance(Util.getManifest(manifest), false).getLayer();
+                            if (layerSrcPath == null) {
+                                layerSrcPath = newLayerPath();
+                                EditableManifest m = Util.loadManifest(manifest);
+                                m.setAttribute(ManifestManager.OPENIDE_MODULE_LAYER, layerSrcPath, null);
+                                Util.storeManifest(manifest, m);
+                            }
                         }
                         xml = NbModuleProjectGenerator.createLayer(project.getProjectDirectory(), module.getResourceDirectoryPath(false) + '/' + newLayerPath());
                     } catch (IOException e) {
