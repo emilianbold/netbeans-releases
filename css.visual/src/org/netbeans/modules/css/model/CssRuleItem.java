@@ -142,7 +142,7 @@ public final class CssRuleItem {
         }
 
         public String toString() {
-            return "Item[" + name + "; " + offset + "]";
+            return "Item[" + name + "; " + offset.getOffset() + "]";
         }
 
         public boolean equals(Object o) {

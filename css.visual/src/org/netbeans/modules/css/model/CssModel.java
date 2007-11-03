@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTItem;
@@ -255,68 +256,42 @@ public final class CssModel {
                         
                         List<CssRuleItem> items = new ArrayList<CssRuleItem>();
                         
+                        //recursively find declarations - the grammar now produces strange
+                        //parse tree - the declaration nodes are recursively nested instead
+                        //of being on the same tree-path level.
+                        //this is largely a workaround for the invalud css grammar which
+                        //is probably risky to change now before release.
+                        //the change should be reverted to the previous version after
+                        //the grammar gets fixed
                         ASTNode declarations = body.getNode("declarations"); //NOI18N
-                        if(declarations != null) {
-                            
-                            List<ASTItem> declarationsChildren = declarations.getChildren();
-                            for(int i = 0; i < declarationsChildren.size(); i++) {
-                                ASTItem item = declarationsChildren.get(i);
-                                if(item instanceof ASTNode) {
-                                    ASTNode node = (ASTNode)item;
-                                    if(node.getNT().equals("declaration")) { //NOI18N
-                                        //find ':' token
-                                        int colonOffset = -1;
-                                        ASTToken colon = node.getTokenType("css_operator");
-                                        if(colon != null && colon.getIdentifier().equals(":")) {
-                                            colonOffset = colon.getOffset();
-                                        }
-                                 
-                                        int semicolonOffset = -1;
-                                        //try to find ending semicolon
-                                        if(i < (declarationsChildren.size() - 1)) {
-                                            //not last item
-                                            ASTItem nextItem = declarationsChildren.get(i + 1);
-                                            if(nextItem instanceof ASTToken) {
-                                                ASTToken token = (ASTToken)nextItem;
-                                                if(token.getTypeName().equals("css_operator")
-                                                        && token.getIdentifier().equals(";")) {
-                                                    semicolonOffset = token.getOffset();
-                                                }
-                                            }
-                                                    
-                                        }
-                                        
-                                        ASTNode key = node.getNode("key"); //NOI18N
-                                        ASTNode value = node.getNode("expr"); //NOI18N
-                                        CssRuleItem ruleItem = new CssRuleItem(doc, key.getAsText().trim(), key.getOffset(), value.getAsText().trim(), value.getOffset(), colonOffset, semicolonOffset);
-                                        items.add(ruleItem);
-                                    }
-                                }
-                            }
-                            
-                            ASTToken openBracket = null, closeBracket = null;
-                            for(ASTItem item : body.getChildren()) {
-                                if(item instanceof ASTToken) {
-                                    ASTToken token = (ASTToken)item;
-                                    if(token.getTypeName().equals("css_operator")) {
-                                        if(token.getIdentifier().equals("{")) {
-                                            openBracket = token;
-                                        } else if(token.getIdentifier().equals("}")) {
-                                            closeBracket = token;
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            if(openBracket == null || closeBracket == null) {
-                                continue;
-                            }
-                            
-                            CssRuleContent styleData = new CssRuleContent(items, isImmutable());
-                            String ruleName = selectors.getAsText().trim(); //do we really need a structural info about the selector???
-                            CssRule rule = new CssRule(ruleName, selectors.getOffset(), openBracket.getOffset(), closeBracket.getOffset(), styleData);
-                            newRules.add(rule);
+                        if (declarations != null) {
+                            findRuleItems(declarations, items);
                         }
+                        
+                        //find curly barckets offsets
+                        ASTToken openBracket = null, closeBracket = null;
+                        for (ASTItem item : body.getChildren()) {
+                            if (item instanceof ASTToken) {
+                                ASTToken token = (ASTToken) item;
+                                if (token.getTypeName().equals("css_operator")) {
+                                    if (token.getIdentifier().equals("{")) {
+                                        openBracket = token;
+                                    } else if (token.getIdentifier().equals("}")) {
+                                        closeBracket = token;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (openBracket == null || closeBracket == null) {
+                            continue;
+                        }
+                        
+                        CssRuleContent styleData = new CssRuleContent(items, isImmutable());
+                        String ruleName = selectors.getAsText().trim(); //do we really need a structural info about the selector???
+                        CssRule rule = new CssRule(ruleName, selectors.getOffset(), openBracket.getOffset(), closeBracket.getOffset(), styleData);
+                        newRules.add(rule);
+                        
                     }
                 }
                 rules = newRules;
@@ -325,6 +300,46 @@ public final class CssModel {
         } catch (final Throwable t) {
             Exceptions.printStackTrace(t);
         }
+    }
+
+    private void findRuleItems(ASTNode base, List<CssRuleItem> items) throws BadLocationException {
+        ASTNode declaration = base.getNode("declaration");
+        ASTNode declarations1 = base.getNode("declarations1");
+                    
+        if(declaration == null || declarations1 == null) {
+            return ;
+        }
+        
+        //find ':' token
+        int colonOffset = -1;
+        ASTToken colon = declaration.getTokenType("css_operator");
+        if (colon != null && colon.getIdentifier().equals(":")) {
+            colonOffset = colon.getOffset();
+        }
+
+        //try to find ending semicolon
+        int semicolonOffset = -1;
+        if(!declarations1.getChildren().isEmpty()) {
+            ASTItem item = declarations1.getChildren().get(0);
+            if (item instanceof ASTToken) {
+                ASTToken token = (ASTToken) item;
+                if (token.getTypeName().equals("css_operator") && token.getIdentifier().equals(";")) {
+                    semicolonOffset = token.getOffset();
+                }
+            }
+        }
+        
+        ASTNode key = declaration.getNode("key"); //NOI18N
+        ASTNode value = declaration.getNode("expr"); //NOI18N
+        CssRuleItem ruleItem = new CssRuleItem(doc, key.getAsText().trim(), key.getOffset(), value.getAsText().trim(), value.getOffset(), colonOffset, semicolonOffset);
+        items.add(ruleItem);
+
+        //go deeper to another declaration
+        ASTNode declarations2 = declarations1.getNode("declarations2");
+        if(declarations2 != null) {
+            findRuleItems(declarations2, items);
+        }
+
     }
     
     private class CssModelASTEvaluator extends ASTEvaluator {
