@@ -146,50 +146,31 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
                             } else if(oldRule == null && newRule != null) {
                                 //add the new rule at the end of the rule block:
                                 List<CssRuleItem> items = myRule.ruleContent().ruleItems();
-                                int offset = -1;
-                                int ruleCloseBracketOffset = myRule.getRuleCloseBracketOffset();
-                                
-                                boolean increaseIndent = false;
-                                if(items.isEmpty()) {
-                                    //no item so far, lets generate the position from the rule
-                                    //opening bracket
-                                    offset = myRule.getRuleOpenBracketOffset();
-                                    increaseIndent = true;
-                                } else {
+                                final int INDENT = doc.getFormatter().getShiftWidth();
+
+                                boolean initialNewLine = false;
+                                 if(!items.isEmpty()) {
                                     //find latest rule and add the item behind
                                     CssRuleItem last = items.get(items.size() - 1);
-                                    offset = last.key().offset();
                                     
                                     //check if the last item has semicolon
                                     //add it if there is no semicolon
                                     if(last.semicolonOffset() == -1) {
                                         doc.insertString(last.value().offset() + last.value().name().length(), ";", null); //NOI18N
-                                        ruleCloseBracketOffset++; //we shifted the brace
                                     }
                                     
+                                    initialNewLine = Utilities.getLineOffset(doc, myRule.getRuleCloseBracketOffset()) == Utilities.getLineOffset(doc, last.key().offset());
+                                } else {
+                                    initialNewLine = Utilities.getLineOffset(doc, myRule.getRuleCloseBracketOffset()) == Utilities.getLineOffset(doc, myRule.getRuleOpenBracketOffset());
                                 }
+                               
+                                int insertOffset = myRule.getRuleCloseBracketOffset();
+                                String text = (initialNewLine ? LINE_SEPARATOR : "") + 
+                                        makeIndentString(INDENT) + 
+                                        newRule.key().name() + ": " + newRule.value().name() + ";" + 
+                                        LINE_SEPARATOR;
                                 
-                                int line = Utilities.getLineOffset(doc, offset);
-                                int lineEnd = Utilities.getRowEnd(doc, offset);
-                                
-                                //check the case where the rule closing bracket is on the same line as the last item
-                                // h1 { color: red; }
-                                if(lineEnd > ruleCloseBracketOffset) {
-                                    lineEnd = ruleCloseBracketOffset;
-                                }
-                                
-                                int indent = Utilities.getRowIndent(doc, offset);
-                                doc.insertString(lineEnd, LINE_SEPARATOR, null); //NOI18N
-                                int new_line_start = Utilities.getRowStartFromLineOffset(doc, line + 1);
-                                doc.getFormatter().changeRowIndent(doc, new_line_start, indent + (increaseIndent ? doc.getFormatter().getShiftWidth() : 0));
-                                int insertOffset = Utilities.getRowEnd(doc, new_line_start);
-                                
-                                if(lineEnd == ruleCloseBracketOffset) {
-                                    //the new item's line has rule close bracket at the end
-                                    insertOffset = Utilities.getFirstNonWhiteFwd(doc, new_line_start);
-                                }
-                                
-                                doc.insertString(insertOffset, newRule.key().name() + ": " + newRule.value().name() + ";", null);
+                                doc.insertString(insertOffset, text, null);
                                 
                             } else if (oldRule != null && newRule != null) {
                                 //update the existing rule in document
@@ -212,6 +193,14 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
                 });
         }
     };
+    
+    private String makeIndentString(int level) {
+        StringBuffer sb = new StringBuffer();
+        for(int i = 0; i < level; i++) {
+            sb.append(' ');
+        }
+        return sb.toString();
+    }
     
     private CaretListener CARET_LISTENER = new CaretListener() {
         public void caretUpdate(CaretEvent ce) {

@@ -41,6 +41,10 @@
 
 package org.netbeans.modules.css.model;
 
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Position;
+
 /**
  * Immutable content of a CSS rule.
  *
@@ -53,15 +57,16 @@ package org.netbeans.modules.css.model;
  */
 public class CssRule {
 
-    private int ruleNameOffset, ruleOpenBracketOffset, ruleCloseBracketOffset;
+    private Position ruleNameOffset, ruleOpenBracketOffset, ruleCloseBracketOffset;
+    //private int ruleNameOffset, ruleOpenBracketOffset, ruleCloseBracketOffset;
     private String ruleName;
     private CssRuleContent styleData;
     
-    public CssRule(String ruleName, int ruleNameOffset, int ruleOpenBracketOffset, int ruleCloseBracketOffset,CssRuleContent styleData) {
+    public CssRule(Document doc, String ruleName, int ruleNameOffset, int ruleOpenBracketOffset, int ruleCloseBracketOffset,CssRuleContent styleData) throws BadLocationException {
         this.ruleName = ruleName;
-        this.ruleNameOffset = ruleNameOffset;
-        this.ruleOpenBracketOffset = ruleOpenBracketOffset;
-        this.ruleCloseBracketOffset = ruleCloseBracketOffset;
+        this.ruleNameOffset = doc.createPosition(ruleNameOffset);
+        this.ruleOpenBracketOffset = doc.createPosition(ruleOpenBracketOffset);
+        this.ruleCloseBracketOffset = doc.createPosition(ruleCloseBracketOffset);
         this.styleData = styleData;
     }
 
@@ -79,17 +84,17 @@ public class CssRule {
 
     /** @return offset of the rule name in the model's document. */
     public int getRuleNameOffset() {
-        return ruleNameOffset;
+        return ruleNameOffset.getOffset();
     }
     
     /** @return offset of the rule's closing bracket in the model's document. */
     public int getRuleCloseBracketOffset() {
-        return ruleCloseBracketOffset;
+        return ruleCloseBracketOffset.getOffset();
     }
 
     /** @return offset of the rule's opening bracket in the model's document. */
     public int getRuleOpenBracketOffset() {
-        return ruleOpenBracketOffset;
+        return ruleOpenBracketOffset.getOffset();
     }
     
     

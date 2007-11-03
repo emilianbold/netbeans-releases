@@ -289,7 +289,7 @@ public final class CssModel {
                         
                         CssRuleContent styleData = new CssRuleContent(items, isImmutable());
                         String ruleName = selectors.getAsText().trim(); //do we really need a structural info about the selector???
-                        CssRule rule = new CssRule(ruleName, selectors.getOffset(), openBracket.getOffset(), closeBracket.getOffset(), styleData);
+                        CssRule rule = new CssRule(doc, ruleName, selectors.getOffset(), openBracket.getOffset(), closeBracket.getOffset(), styleData);
                         newRules.add(rule);
                         
                     }
