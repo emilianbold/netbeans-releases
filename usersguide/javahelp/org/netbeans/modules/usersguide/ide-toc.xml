@@ -28,7 +28,7 @@
     <tocitem text="Creating a Template" target="files.template" />
     <tocitem text="Working with Unknown File Extensions" target="files.unknown" />
     <tocitem text="Specifying Files to Ignore" target="files.ignore-files" />
-    <tocitem text="Setting Character Encoding" target="files.encoding" />
+    <tocitem text="About File Encodings" target="files.about-encoding" />
   </tocitem>
 
  <tocitem text="Keyboard Shortcuts" >
@@ -109,6 +109,7 @@
     <tocitem text="Working with IDE Configurations" target="configure.overview" />    
     <tocitem text="Configuration Tasks: Quick Reference" target="configure.quickref" />          
     <tocitem text="Importing Settings from a Previous Version of the IDE" target="configure.importing" />  
+    <tocitem text="About Project Encodings" target="project.encoding" />              
     <tocitem text="Configuring General IDE Settings" >
       <tocitem text="Using the Options Window" target="configure.options" />
       <tocitem text="Setting Keyboard Shortcuts" target="shortcuts.menucuts-setting" />

@@ -28,6 +28,7 @@
 <mapID target="files.unknown" url="files/files_unknown.html" />
 <mapID target="files.runtime" url="files/files_runtime.html" />
 <mapID target="files.encoding" url="files/encoding.html" />
+<mapID target="files.about-encoding" url="files/file_encoding.html" />
 <mapID target="find_regexp" url="files/find_regexp.html" />
 
 
@@ -102,6 +103,7 @@
 <mapID target="configure.options" url="configure/configure_options.html" />
 <mapID target="configure.startup-switches" url="configure/configure_startup-switches.html" />
 <mapID target="configure.system.settings" url="configure/system_settings.html" />
+<mapID target="project.encoding" url="project/proj_encoding.html" />
 
 <mapID target="workspace.window.managing" url="configure/workspace/window_managing.html" />
 <mapID target="workspace.window.mode" url="configure/workspace/window_modes.html" />
