@@ -1,4 +1,5 @@
-#!/bin/zsh
+# See UPDATE.zsh for an automated script performing most of these steps.
+ 
 # $GEM_HOME should NOT be set during indexing
 unset GEM_HOME
 
