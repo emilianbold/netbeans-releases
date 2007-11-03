@@ -61,6 +61,7 @@ import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.web.core.syntax.spi.AutoTagImporterProvider;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.core.syntax.*;
@@ -173,13 +174,7 @@ public class JspCompletionItem {
                     }
                     
                     //format the inserted text
-                    ExtFormatter f = (ExtFormatter)doc.getFormatter();
-                    int[] fmtBlk = f.getReformatBlock(c, fill);
-                    if (fmtBlk != null) {
-                        fmtBlk[0] = Utilities.getRowStart(doc, fmtBlk[0]);
-                        fmtBlk[1] = Utilities.getRowEnd(doc, fmtBlk[1]);
-                        f.reformat(doc, fmtBlk[0], fmtBlk[1], true);
-                    }
+                    reformat(c);
                 } finally {
                     doc.atomicUnlock();
                 }
@@ -190,10 +185,32 @@ public class JspCompletionItem {
                 }
             } catch( BadLocationException exc ) {
                 return false;    //not sucessfull
-            } catch( IOException exc ) {
-                return false;    //not sucessfull
-            }
+            } 
             return true;
+        }
+        
+        private void reformat(JTextComponent component) {
+            try {
+                BaseDocument doc = (BaseDocument)component.getDocument();
+                int dotPos = component.getCaretPosition();
+                Reformat reformat = Reformat.get(doc);
+                reformat.lock();
+
+                try {
+                    doc.atomicLock();
+                    try {
+                        int startOffset = Utilities.getRowStart(doc, dotPos);
+                        int endOffset = Utilities.getRowEnd(doc, dotPos);
+                        reformat.reformat(startOffset, endOffset);
+                    } finally {
+                        doc.atomicUnlock();
+                    }
+                } finally {
+                    reformat.unlock();
+                }
+            }catch(BadLocationException e) {
+                //ignore
+            }
         }
         
         public String getPaintText() {
@@ -303,6 +320,7 @@ public class JspCompletionItem {
             } else
                 // closing tag
                 return substituteText(c, offset, len, getItemText().substring(1) + ">", 0);  // NOI18N
+
         }
         
         protected boolean substituteText( JTextComponent c, int offset, int len, String fill, int moveBack) {
