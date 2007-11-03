@@ -63,6 +63,7 @@ import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.jdbc.SQLPart;
 import com.sun.sql.framework.utils.AttributeMap;
 import com.sun.sql.framework.utils.Logger;
+import com.sun.sql.framework.utils.StringUtil;
 
 /**
  * @author Girish Patil
@@ -77,6 +78,21 @@ public class StagingStrategyBuilder extends BaseETLStrategyBuilder {
         super(model);
     }
 
+    private String getTargetTableUserDefinedSchema(TargetTable tt)
+    {
+    	String schemaName = null;
+    	// If User has defined Schema name use it.
+        String uSchema = tt.getUserDefinedSchemaName();
+        if (StringUtil.isNullString(uSchema)){
+            if (!StringUtil.isNullString(tt.getSchema())){
+                schemaName = tt.getSchema().toUpperCase();
+            }
+        }else{
+            schemaName = uSchema.toUpperCase();
+        }
+        
+        return schemaName;
+    }
     /**
      * Before calling apply appropriate applyConnections
      */
@@ -135,6 +151,7 @@ public class StagingStrategyBuilder extends BaseETLStrategyBuilder {
         ETLTaskNode xformPredecessor = null;
         List sourceTables = context.getTargetTable().getSourceTableList();
         String dropSQLStr = "";
+        String truncateSql = "";
 
         // Loop Thru the source tables to generate
         if (sourceTables == null || sourceTables.isEmpty()) {
@@ -162,7 +179,7 @@ public class StagingStrategyBuilder extends BaseETLStrategyBuilder {
                 // same DB as the target table.
                 if (isExtractionRequired(sourceTable, targetTable)) {
                     ETLTaskNode extractorTask = createExtractorNode(sourceTable, targetDB, waitTaskId, waitTaskId, getTargetConnName(),
-                        targetTable.getSchema().toUpperCase());
+                    		getTargetTableUserDefinedSchema(targetTable));
 
                     // Add staging table to the drop list only if user specifies
                     // that it is deleteable - otherwise preserve the contents of the
@@ -177,6 +194,18 @@ public class StagingStrategyBuilder extends BaseETLStrategyBuilder {
                         }
                         dropSQLStr += dropSQLPartTemp.getSQL();
                     }
+                    if(sourceTable.isTruncateStagingTable()) {
+                       // User has specified the "Staging Table Name" property. Use it and truncate the data.
+                        StatementContext trcontext = new StatementContext();
+                        trcontext.setUsingTempTableName(sourceTable, true);
+                        trcontext.putClientProperty(StatementContext.IF_EXISTS, Boolean.TRUE);
+                        SQLPart doTruncate = getTargetStatements().getTruncateStatement(sourceTable, trcontext);
+                        if(truncateSql.length() > 0 ) {
+                            truncateSql += SQLPart.STATEMENT_SEPARATOR;
+                        }
+                        truncateSql += doTruncate.getSQL().trim();
+                        
+                     }
 
                     context.getPredecessorTask().addNextETLTaskNode(ETLTask.SUCCESS, extractorTask.getId());
                     if (dependentTasks.length() > 0) {
@@ -203,6 +232,11 @@ public class StagingStrategyBuilder extends BaseETLStrategyBuilder {
             SQLPart dropSQLPart = new SQLPart(dropSQLStr, SQLPart.STMT_DROP, getTargetConnName()); // NOI18N
             SQLPart etlSQLPart = dropSQLPart;
             context.getNextTaskOnException().addStatement(etlSQLPart);
+        }
+        
+        if(truncateSql != null && truncateSql.trim().length() != 0 ) {
+            SQLPart truncateSQLPart = new SQLPart(truncateSql, SQLPart.STMT_TRUNCATEBEFOREPROCESS, getTargetConnName()); // NOI18N
+            context.getNextTaskOnException().addStatement(truncateSQLPart);
         }
 
         // Set dependent list for predecessor to transform nodes

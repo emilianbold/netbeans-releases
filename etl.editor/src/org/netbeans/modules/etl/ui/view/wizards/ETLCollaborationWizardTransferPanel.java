@@ -1386,8 +1386,24 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
      * Called whenever the value of the selection changes.
      *
      * @param e the event that characterizes the change.
+	 * To be included in the TODO list-to be implemented
      */
     public void valueChanged(ListSelectionEvent e) {
+     //   Object src = e.getSource();
+
+        // Enforce mutually exclusive focus between source and destination
+        // lists.
+//        if (sourceList.equals(src)) {
+       //     if (!destList.isSelectionEmpty()) {
+       //         destList.clearSelection();
+       //     }
+       // } else if (destList.equals(src)) {
+         //   if (!sourceList.isSelectionEmpty()) {
+         //       sourceList.clearSelection();
+         //   }
+       // } else {
+            // TODO Log unhandled ListSelectionEvent as DEBUG message.
+        // }
     }
     
     /**
