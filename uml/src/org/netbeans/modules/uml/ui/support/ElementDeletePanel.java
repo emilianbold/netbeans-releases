@@ -43,10 +43,11 @@
 package org.netbeans.modules.uml.ui.support;
 
 import com.tomsawyer.util.TSObject;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+//import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.uml.ui.products.ad.diagramengines.DiagramEngineResources;
+//import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
+//import org.openide.util.NbBundle;
 
 /**
  *
@@ -58,19 +59,20 @@ public class ElementDeletePanel extends javax.swing.JPanel {
     public ElementDeletePanel(ETList<TSObject> objects, boolean displayRemove) {
         initComponents();
         jCheckBox2.setVisible(displayRemove);
-        if (objects.size() > 1) {
-            jLabel1.setText(NbBundle.getMessage(ElementDeletePanel.class,
-                    "ElementDeletePanel.jLabel1.text_multi", objects.size()));
-        } else {
-            IElement e = TypeConversions.getElement(objects.get(0));
-            if (e.toString().length() > 0) {
-                jLabel1.setText(NbBundle.getMessage(ElementDeletePanel.class,
-                        "ElementDeletePanel.jLabel1.text_single", e.toString()));
-            } else {
-                jLabel1.setText(NbBundle.getMessage(ElementDeletePanel.class,
-                        "ElementDeletePanel.jLabel1.text_unnamed", e.getElementType()));
-            }
-        }
+//        if (objects.size() > 1) {
+//            jLabel1.setText(NbBundle.getMessage(ElementDeletePanel.class,
+//                    "ElementDeletePanel.jLabel1.text_multi", objects.size()));
+//        } else {
+//            IElement e = TypeConversions.getElement(objects.get(0));
+//            if (e.toString().length() > 0) {
+//                jLabel1.setText(NbBundle.getMessage(ElementDeletePanel.class,
+//                        "ElementDeletePanel.jLabel1.text_single", e.toString()));
+//            } else {
+//                jLabel1.setText(NbBundle.getMessage(ElementDeletePanel.class,
+//                        "ElementDeletePanel.jLabel1.text_unnamed", e.getElementType()));
+//            }
+//        }
+        jLabel1.setText(DiagramEngineResources.getString("ADCoreEngine.DELETE_GRAPH_OBJECTS_MESSAGE"));
     }
 
     public boolean getDeleteFromOriginal()
