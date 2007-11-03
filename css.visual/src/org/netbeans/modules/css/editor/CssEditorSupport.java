@@ -186,7 +186,7 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
                                 
                                 if(lineEnd == ruleCloseBracketOffset) {
                                     //the new item's line has rule close bracket at the end
-                                    insertOffset--; //move before the '}' char
+                                    insertOffset = Utilities.getFirstNonWhiteFwd(doc, new_line_start);
                                 }
                                 
                                 doc.insertString(insertOffset, newRule.key().name() + ": " + newRule.value().name() + ";", null);
