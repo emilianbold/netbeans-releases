@@ -5,7 +5,6 @@ djd43.registerModulePath("rdj", "../../../../../dojo/rest/rdj"); //relative to d
 djd43.require("rdj.widget.ResourcesTable");
 djd43.hostenv.writeIncludes();
 
-var resourceIds = [];
 var resourcesTable;
 var restStore;
 var rdjTable;
@@ -59,7 +58,6 @@ rdj.displayResourcesTable = function(datastore, query, tableElement) {
                     var value = datastore.get(item, attribute);
                     object[attribute] = value;
             }
-            resourceIds.push(object[attributes[0]]);
             dataInSimpleStoreFormat.push(object);
             if (!columnsInResourcesTableFormat) {
                     columnsInResourcesTableFormat = [];

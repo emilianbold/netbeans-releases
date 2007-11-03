@@ -5,10 +5,11 @@ djd43.require("rdj.data.__CONTAINER_NAME__Store");
 // define the namespaces
 jmaki.namespace("jmaki.widgets.dojo.rest.__CONTAINER_PATH_NAME__table");
 
-var resourceIds = [];
+//To Enable jmaki debug, uncomment next line
+//jmaki.debug = true;
+
 var resourcesTable;
 var restStore;
-var rdjTable;
 
 jmaki.widgets.dojo.rest.__CONTAINER_PATH_NAME__table.Widget = function(wargs) {
 
@@ -328,7 +329,6 @@ rdj.initResource = function (url, widget, container) {
             var value = restStore.get(item, attribute);
             object[attribute] = value;
         }
-        resourceIds.push(object[attributes[0]]);
         dataInSimpleStoreFormat.push(object);
         if (!columnsInResourcesTableFormat) {
             columnsInResourcesTableFormat = [];
@@ -359,14 +359,15 @@ rdj.initResource = function (url, widget, container) {
         for(var i=0;i<tables.length;i++) {
             if(tables[i].id.substring(0, 9) == 'dojo_rest') {
                 tableElement = tables[i];
-                rdjTable = tableElement;
             }
         }
         var body = document.getElementsByTagName('body')[0];
-        if(tableElement == null)
+        if(tableElement == null) {
             actions = body.appendChild(document.createElement('div'));
-        else
-            actions = body.insertBefore(document.createElement('div'), tableElement);
+        } else {
+            var tableParent = tableElement.parentNode;
+            actions = tableParent.insertBefore(document.createElement('div'), tableElement);
+        }
         actions.id = 'actions';
     }
     var actionTable = actions.appendChild(document.createElement('table'));
