@@ -43,7 +43,6 @@ package org.netbeans.spi.lexer;
 
 import org.netbeans.lib.editor.util.AbstractCharSequence;
 import org.netbeans.lib.lexer.CharProvider;
-import org.netbeans.lib.lexer.IntegerCache;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 
 /**
@@ -297,19 +296,19 @@ public final class LexerInput {
         }
     }
     
-    /**
-     * Lexer may call this method to get cached <code>java.lang.Integer</code> instance.
-     * <br/>
-     * The caching is only guaranteed if the given int value is below or equal to certain value
-     * - the present implementation uses 127.
-     * <br/>
-     * If the value is above this constant a new value will be constructed
-     * during each call. In such case the clients could possibly
-     * implement their own caching.
-     */
-    public static Integer integerState(int state) {
-        return IntegerCache.integer(state);
-    }
+//    /**
+//     * Lexer may call this method to get cached <code>java.lang.Integer</code> instance.
+//     * <br/>
+//     * The caching is only guaranteed if the given int value is below or equal to certain value
+//     * - the present implementation uses 127.
+//     * <br/>
+//     * If the value is above this constant a new value will be constructed
+//     * during each call. In such case the clients could possibly
+//     * implement their own caching.
+//     */
+//    public static Integer integerState(int state) {
+//        return IntegerCache.integer(state);
+//    }
     
     /**
      * Helper character sequence being returned from <code>readText()</code>.
