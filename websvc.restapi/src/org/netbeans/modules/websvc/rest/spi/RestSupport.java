@@ -62,10 +62,8 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportProvider;
-import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.netbeans.modules.websvc.rest.model.spi.RestServicesMetadataModelFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -133,7 +131,7 @@ public abstract class RestSupport {
      * Cleanup the project from previously added REST development support artifacts.
      * This should not remove any user source code.
      */
-    public abstract void cleanupRestDevelopment();
+    public abstract void removeRestDevelopmentReadiness() throws IOException;
 
     /**
      * Is the REST development setup ready: SWDP library added, REST adaptors configured, 
@@ -313,6 +311,23 @@ public abstract class RestSupport {
         }
     }
     
+    public void removeSwdpLibrary(String[] classPathTypes) throws IOException {
+        Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
+        if (swdpLibrary == null) {
+            return;
+        }
+
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        FileObject sourceRoot = sgs[0].getRootFolder();
+        for (String type : classPathTypes) {
+            try {
+                ProjectClassPathModifier.removeLibraries(new Library[] { swdpLibrary }, sourceRoot, type);
+            } catch(UnsupportedOperationException ex) {
+                Logger.getLogger(getClass().getName()).info(type+" not supported.");
+            }
+        }
+    }
+    
     public  void addJSR311apiJar() throws IOException {
         Project project = getProject();
         if (project == null) {
@@ -351,7 +366,7 @@ public abstract class RestSupport {
         FileObject jsr311FO = FileUtil.toFileObject(f);
         ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
         ClassPath cp = cpp.findClassPath(sourceRoot, ClassPath.COMPILE);
-        if (isRestSupportOn() || cp.contains(jsr311FO)) {
+        if (cp.contains(jsr311FO)) {
             return;
         }
         

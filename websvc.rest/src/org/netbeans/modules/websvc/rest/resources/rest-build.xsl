@@ -25,7 +25,12 @@
         <project name="{$codename}-rest-build">
             <xsl:attribute name="basedir">..</xsl:attribute>
             
-            <target name="-init-rest" if="rest.support.on">
+            <target name="-check-rest">
+                <condition property="do.rest">
+                    <istrue value="${{rest.support.on}}"/>
+                </condition>
+            </target>
+            <target name="-init-rest" if="do.rest" depends="-check-rest">
                 <condition property="platform.restlib.classpath" value="${{j2ee.platform.classpath}}">
                     <and>
                         <isset property="restlib.ignore.platform"/>
@@ -64,7 +69,7 @@
                 </taskdef>
             </target>
     
-            <target name="-rest-post-compile" depends="-init-rest" if="rest.support.on">
+            <target name="-rest-post-compile" depends="-check-rest,-init-rest" if="do.rest">
                 <mkdir dir="${{build.generated.dir}}/rest-gen"/>
                 <restapt fork="true" xEndorsed="true" sourcePath="${{src.dir}}" nocompile="true"
                          destdir="${{build.generated.dir}}/rest-gen" 

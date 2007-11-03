@@ -160,6 +160,8 @@ public class WebRestSupportLookupProvider implements LookupProvider {
                         
                         if (root.sizeRestServiceDescription() > 0) {
                             RestUtils.ensureRestDevelopmentReady(prj);
+                        } else {
+                            RestUtils.removeRestDevelopmentReadiness(prj);
                         }
                         
                         return null;

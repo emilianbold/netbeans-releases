@@ -91,6 +91,15 @@ public class RestUtils {
     }
     
     /**
+     *  Makes sure project is ready for REST development.
+     *  @param project project to make REST development ready
+     */
+    public static void removeRestDevelopmentReadiness(Project project) throws IOException {
+        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        restSupport.removeRestDevelopmentReadiness();
+    }
+    
+    /**
      *  Returns true if the project supports REST framework.
      *  @param project project to make REST development ready
      */
