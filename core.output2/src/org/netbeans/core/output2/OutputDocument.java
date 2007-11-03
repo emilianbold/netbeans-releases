@@ -80,6 +80,12 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
         getLines().addChangeListener(this);
         inBuffer = new StringBuffer();
     }
+    
+    //#119985
+    public int getOutputLength() {
+        return getLines().getCharCount();
+    }
+    
     //#114290
     public void setPane(AbstractOutputPane pane) {
         this.pane = pane;
