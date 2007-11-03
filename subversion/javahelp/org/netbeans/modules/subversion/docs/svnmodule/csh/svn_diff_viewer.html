@@ -25,7 +25,7 @@
             also be accessed by selecting the Diff view for a revision in the 
             <a href="svn_history_viewer.html">History Viewer</a>.</p>
         
-        <p>The Diff Viewer toolbar enables you to perform the following functions:</p>
+        <p>The icons in the Diff Viewer toolbar enable you to perform the following functions:</p>
 
         <ul>
             <li><strong>Change viewing criteria</strong>. You can choose whether to view files 
@@ -33,39 +33,41 @@
                 simultaneously.
             
                 <ul>
-                    <li><img src="../images/locally_mod.png" alt="locally modified icon">: 
-                        Show locally modified files.</li>
-                    <li><img src="../images/remotely_mod.png" alt="remotely modified icon">: 
-                        Show remotely modified files.</li>
-                        <li><img src="../images/both_mod.png" alt="locally and remotely modified icon">: 
-                        Show both locally and remotely modified files.</li>            
+                    <li><strong>Local</strong> (<img src="../images/locally_mod.png" alt="locally modified icon">). 
+                        Displays locally modified files only.</li>
+                    <li><strong>Remote</strong> (<img src="../images/remotely_mod.png" alt="remotely modified icon">). 
+                        Displays remotely modified files only.</li>
+                    <li><strong>Local and Remote</strong> (<img src="../images/both_mod.png" alt="locally and remotely modified icon">). 
+                        Displays both locally and remotely modified files.</li>            
                 </ul></li>
                 
             <li><strong>Navigate among differences found in the compared files</strong>. You can
                 view differences as they appear from top to bottom.
                 
                 <ul>
-                    <li><img src="../images/diff-prev.png" alt="previous difference button">: Go to 
-                        previous difference.</li>
-                    <li><img src="../images/diff-next.png" alt="next difference button">: Go to next 
-                        difference.</li>
+                    <li><strong>Previous</strong> (<img src="../images/diff-prev.png" alt="previous difference button">). 
+                        Goes to previous difference displayed in the diff.</li>
+                    <li><strong>Next</strong> (<img src="../images/diff-next.png" alt="next difference button">). 
+                        Goes to next difference displayed in the diff.</li>
                 </ul></li>
         
-            <li><strong>Perform refresh/update</strong>. You can refresh the status of the diff in 
+            <li><strong>Perform refresh/update on the diff</strong>. You can refresh the status of the diff in 
                 the event that changes to your local working directory have been made externally. 
-                You can also update the status of repository versions of files listed in the diff.
+                You can also update the status of repository versions of files shown in the diff.
             
                 <ul>
-                    <li><img src="../images/refresh.png" alt="refresh diff button">: Refresh Diff.</li>
-                    <li><img src="../images/update.png" alt="update button">: Update the selected item
-                        from the repository.</li>
+                    <li><strong>Refresh</strong> (<img src="../images/refresh.png" alt="refresh diff button">). 
+                        Refreshes the diff in the event that you have made changes to your local 
+                        working directory externally.</li>
+                    <li><strong>Update</strong> (<img src="../images/update.png" alt="update button">). 
+                        Updates the repository version of the file displayed in the diff.</li>
                 </ul></li>
                 
-            <li><strong>Perform commit</strong>. You can commit any changes you have made locally.
+            <li><strong>Commit changes</strong>. You can commit changes in your local version to the repository.
             
                 <ul>
-                    <li><img src="../images/commit.png" alt="commit button">: Commit the selected 
-                        item to the repository.</li>
+                    <li><strong>Commit</strong> (<img src="../images/commit.png" alt="commit button">). 
+                        Commits any changes you have made in the local version to the repository.</li>
                 </ul></li>
         </ul>
         
@@ -86,14 +88,11 @@
         <p>The Diff Viewer highlights changes in the files using the following color encoding.</p>
 
         <ul>
-            <li><span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> 
-                <strong>Blue</strong>.
+            <li><strong>Blue</strong> (<span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>).
                 Indicates lines that have been changed since the earlier revision</li>
-            <li><span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> 
-                <strong>Green</strong>.
+            <li><strong>Green</strong> (<span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>).
                 Indicates lines that have been added since the earlier revision</li>
-            <li><span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                <strong>Red</strong>.
+            <li><strong>Red</strong> (<span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>).
                 Indicates lines that have been removed since the earlier revision</li>
         </ul>
         
@@ -108,13 +107,13 @@
         <p>The following icons enable you to make changes directly within the Diff Viewer</p>
         
         <ul>
-            <li><img src="../images/insert.png" alt="replace icon"> <strong>Replace</strong>. 
+            <li><strong>Replace</strong> (<img src="../images/insert.png" alt="replace icon">). 
                 Inserts the highlighted text from the previous revision into the current 
                 revision</li>
-            <li><img src="../images/arrow.png" alt="move all icon"> <strong>Move All</strong>. 
+            <li><strong>Move All</strong> (<img src="../images/arrow.png" alt="move all icon">). 
                 Reverts the file's current version to the state of the selected previous 
                 version.</li>
-            <li>&nbsp;<img src="../images/remove.png" alt="remove icon"> <strong>Remove</strong>. 
+            <li><strong>Remove</strong>&nbsp;(<img src="../images/remove.png" alt="remove icon">). 
                 Removes the highlighted text from the current version so that it mirrors the 
                 previous version.</li>
         </ul>
