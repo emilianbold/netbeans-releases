@@ -46,11 +46,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
@@ -58,17 +54,11 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
-import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -260,7 +250,7 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 }//GEN-LAST:event_addButtonActionPerformed
 
 private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
-    ElementHandle<TypeElement> handle = browseExceptions();
+    final ElementHandle<TypeElement> handle = browseExceptions();
     if (handle != null) {
         int index = table.getSelectedRow();
         table.getSelectionModel().setSelectionInterval(index, index);
@@ -268,6 +258,18 @@ private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         tableModel.setValueAt(handle.getQualifiedName(), index, 0);
     }
 }//GEN-LAST:event_editButtonActionPerformed
+
+    private ElementHandle<TypeElement> browseExceptions() {
+        return TypeElementFinder.find(cpInfo, new TypeElementFinder.Customizer() {
+            public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {                                            
+                return classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes);
+            }
+
+            public boolean accept(ElementHandle<TypeElement> typeHandle) {
+                return true;
+            }
+        });
+    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -288,49 +290,6 @@ private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         editButton.setEnabled(oneSelected);
         upButton.setEnabled(oneSelected && (selIndex > 0));
         downButton.setEnabled(oneSelected && (selIndex < tableModel.getRowCount() - 1));
-    }
-    
-    private static Set<ElementHandle<TypeElement>> getImplementors(ElementHandle<TypeElement> parent, ClassIndex classIndex) {
-        Set<ElementHandle<TypeElement>> directImplementors = classIndex.getElements(
-                parent,
-                EnumSet.of(SearchKind.IMPLEMENTORS),
-                EnumSet.of(SearchScope.SOURCE, SearchScope.DEPENDENCIES));
-        Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>(directImplementors);
-        for (ElementHandle<TypeElement> elementHandle : directImplementors) {
-            result.addAll(getImplementors(elementHandle, classIndex));
-        }
-        return result;
-    }
-    
-    private ElementHandle<TypeElement> browseExceptions() {
-        return TypeElementFinder.find(cpInfo, new TypeElementFinder.Customizer() {
-            public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {                                            
-                ClassIndex classIndex = classpathInfo.getClassIndex();
-                final List<ElementHandle<TypeElement>> handle = new ArrayList<ElementHandle<TypeElement>>();
-                JavaSource javaSource = JavaSource.create(cpInfo);
-                try {
-                    javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-                        public void run(CompilationController controller) throws IOException {
-                            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                            TypeElement throwableElement = controller.getElements().getTypeElement(Throwable.class.getName());
-                            handle.add(ElementHandle.create(throwableElement));
-                        }
-                    }, true);
-                    Set<ElementHandle<TypeElement>> implementors = getImplementors(handle.get(0), classIndex);
-                    Set<ElementHandle<TypeElement>> types = new HashSet<ElementHandle<TypeElement>>(
-                            classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes));
-                    types.retainAll(implementors);
-                    return types;
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-                return Collections.<ElementHandle<TypeElement>>emptySet();
-            }
-
-            public boolean accept(ElementHandle<TypeElement> typeHandle) {
-                return true;
-            }
-        });
     }
     
     // accessible for test
