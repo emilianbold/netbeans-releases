@@ -43,6 +43,8 @@ package org.netbeans.modules.css.actions;
 import java.awt.event.ActionEvent;
 import java.net.*;
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
@@ -120,6 +122,10 @@ public class CheckStyleAction extends BaseAction implements ErrorHandler, Docume
             failed = true;
         } catch (CSSParseException ex) {
             // ??? provide better feedback
+            failed = true;
+        } catch (Throwable t) {
+            disp.display("Unexpected exception from CSS parser: " + t.getMessage()); //NOI18N
+            Logger.global.log(Level.INFO, "Unexpected exception from CSS parser", t); //NOI18N
             failed = true;
         }
         
