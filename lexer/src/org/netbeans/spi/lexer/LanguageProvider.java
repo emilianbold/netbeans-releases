@@ -94,7 +94,7 @@ public abstract class LanguageProvider {
      * @return The <code>Language</code> registered for the given
      *   mime type or <code>null</code> if no such <code>Language</code> exists.
      */
-    public abstract Language<? extends TokenId> findLanguage(String mimePath);
+    public abstract Language<? extends TokenId> findLanguage(String mimeType);
     
     /**
      * Finds <code>LanguageEmbedding</code> that will define what language is
