@@ -237,18 +237,20 @@ public final class ClassIndex extends Index {
             if (this.depsIndeces == null) {
                 Set<ClassIndexImpl> indeces = new HashSet<ClassIndexImpl>();
                 // BEGIN TOR MODIFICATIONS
-                //createQueriesForRoots (this.bootPath, false, indeces);     
-                // The boot class path for Ruby queries is always the same.
-                // I can't rely on this.bootPath.getRoots() because this relies
-                // upon getting the ClassPath for the file, and for files outside
-                // of Ruby projects (such as Ruby files in the libraries themselves,
-                // in case I'm navigating from one super class to another) these
-                // do not get the Ruby bootclass path. They instead have a 
-                // fallback Java platform classpath with jars. 
-                // I -always- want the Ruby bootclass path here so use it
-                // directly.
-                Set<ClassIndexImpl> bootIndices = ClassIndexManager.getDefault().getBootIndices();
-                indeces.addAll(bootIndices);
+                List<ClassPath.Entry> entries = this.classPath.entries();
+                if (entries.size() == 0) {
+                    // For files outside of my projects (such as the libraries in the ruby
+                    // installation) I don't get a classpath, so I end up with a fallback
+                    // boot ClassPath containing Java .jar files. I don't want that - I want
+                    // the boot indices from the Ruby libraries instead. I need to look
+                    // into the ClassPath platform to support to fix it there, but that's
+                    // too late/risky for now; so work around this instead. When we have an
+                    // empty classpath, use the boot indices instead.
+                    Set<ClassIndexImpl> bootIndices = ClassIndexManager.getDefault().getBootIndices();
+                    indeces.addAll(bootIndices);
+                } else {
+                    createQueriesForRoots (this.bootPath, false, indeces);     
+                }
                 // END TOR MODIFICATIONS
                 createQueriesForRoots (this.classPath, false, indeces);	    
                 this.depsIndeces = indeces;
