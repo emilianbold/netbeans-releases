@@ -58,6 +58,7 @@ import junit.framework.TestResult;
  */
 public class LoggingTest extends NbTestCase {
     private Throwable toThrow;
+    private Throwable toMsg;
     
     public LoggingTest(String testName) {
         super(testName);
@@ -81,6 +82,9 @@ public class LoggingTest extends NbTestCase {
     /** Used in testIOExceptionIsWrappedWithLogMsg. */
     public void throwIOThrowable() throws Throwable {
         Logger log = Logger.getLogger(getName());
+        if (toMsg != null) {
+            log.log(Level.WARNING, "Msg", toMsg);
+        }
         log.warning("Going to throw: " + toThrow);
         throw toThrow;
     }
@@ -228,6 +232,29 @@ public class LoggingTest extends NbTestCase {
         TestFailure f = (TestFailure)res.errors().nextElement();
         
         if (f.exceptionMessage() == null || f.exceptionMessage().indexOf("Going to throw") == -1) {
+            fail("There should be output of the log:\n" + f.exceptionMessage());
+        }
+    }
+    public void testMyExceptionWithStackTrace() throws Exception {
+        LoggingTest inner = new LoggingTest("throwMyThrowable");
+        
+        class MyEx extends Exception {
+        }
+        
+        inner.toThrow = new MyEx();
+        inner.toMsg = new MyEx();
+        
+        TestResult res = inner.run();
+        assertEquals("One error", 1, res.errorCount());
+        assertEquals("No failure", 0, res.failureCount());
+        
+        TestFailure f = (TestFailure)res.errors().nextElement();
+        
+        if (
+            f.exceptionMessage() == null || 
+            f.exceptionMessage().indexOf("Going to throw") == -1 ||
+            f.exceptionMessage().indexOf("testMyExceptionWithStackTrace") == -1
+       ) {
             fail("There should be output of the log:\n" + f.exceptionMessage());
         }
     }

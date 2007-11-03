@@ -243,6 +243,13 @@ public final class Log extends Handler {
         }
         sb.append(msg);
         
+        Throwable t = record.getThrown();
+        if (t != null) {
+            for (StackTraceElement s : t.getStackTrace()) {
+                sb.append("\n  ").append(s.toString());
+            }
+        }
+        
         getLog(record).println(sb.toString());
 
 

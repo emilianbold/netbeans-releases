@@ -97,4 +97,25 @@ public class LoggingExceptionTest extends NbTestCase {
     public void testLoggedExceptionIsPrintedWithTimeout() throws Exception {
         testLoggedExceptionIsPrinted();
     }
+    public void testLoggedExceptionIsPrintedNoFormat() throws Exception {
+        Exception ex = new IOException("Ahoj");
+        Logger.global.log(Level.WARNING, "No format Jardo", ex);
+        
+        File[] arr = getWorkDir().listFiles();
+        assertEquals("One log file", 1, arr.length);
+        String s = LoggingTest.readFile(arr[0]);
+        
+        if (s.indexOf("Ahoj") == -1) {
+            fail("There needs to be 'Ahoj':\n" + s);
+        }
+        if (s.indexOf("Jardo") == -1) {
+            fail("There needs to be 'Jardo':\n" + s);
+        }
+        if (s.indexOf("testLoggedExceptionIsPrinted") == -1) {
+            fail("There needs to be name of the method:\n" + s);
+        }
+    }
+    public void testLoggedExceptionIsPrintedWithTimeoutNoFormat() throws Exception {
+        testLoggedExceptionIsPrintedNoFormat();
+    }
 }
