@@ -59,6 +59,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.xml.parsers.DocumentBuilder;
@@ -410,10 +411,14 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
                 try {
                     if (projectBuiltQueryStatus != null && projectBuiltQueryStatus.isBuilt()) {
                         classPathChanged();
-                        // Now refresh all models
-                        for (Iterator i = getModelsMap().values().iterator(); i.hasNext(); ) {
-                            ((FacesModel)i.next()).refresh(true);
-                        }
+                        SwingUtilities.invokeLater(new Runnable() {
+                           public void run() {
+                               // Now refresh all models
+                               for (Iterator i = getModelsMap().values().iterator(); i.hasNext(); ) {
+                                   ((FacesModel)i.next()).refreshUnits();
+                               }                               
+                           }
+                        });
                     }
                 } catch (IllegalStateException ise) {
                     ErrorManager.getDefault().notify(ise);

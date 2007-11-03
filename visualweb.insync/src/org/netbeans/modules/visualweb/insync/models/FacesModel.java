@@ -1805,6 +1805,34 @@ public class FacesModel extends Model {
         
         clearHtml();
     }
+
+    void refreshUnits() {
+        SourceUnit markupUnit = getMarkupUnit();
+        SourceUnit javaUnit = getJavaUnit();
+        
+        // flush
+        if ((markupUnit != null && markupUnit.getState() == Unit.State.MODELDIRTY) || 
+            (javaUnit != null && javaUnit.getState() == Unit.State.MODELDIRTY)) {
+            flush();
+        }
+        
+        boolean doSync = false;
+        
+        // clean
+        if (markupUnit != null && markupUnit.getState() == Unit.State.CLEAN) {
+            markupUnit.setSourceDirty();
+            doSync = true;
+        }
+        if (javaUnit != null && javaUnit.getState() == Unit.State.CLEAN) {
+            javaUnit.setSourceDirty();
+            doSync = true;
+        }
+        
+        // sync
+        if (doSync) {       
+            sync();
+        }
+    }
     
     private class ModelOperationListener implements OperationListener {
         public void operationPostCreate(OperationEvent ev) {}
