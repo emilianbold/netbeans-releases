@@ -48,6 +48,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
@@ -62,29 +64,30 @@ public class RestWebCustomizerPanel extends javax.swing.JPanel implements Action
     private static final String RESTAPT_PREFIX = "rest.apt.";
     private static final int COLUMN_KEY = 0;
     private static final int COLUMN_VALUE = 1;
-    public static final String[] COLUMN_NAMES = {NbBundle.getMessage(RestWebCustomizerPanel.class, "LBL_Key"),
-            NbBundle.getMessage(RestWebCustomizerPanel.class, "LBL_Value")};
-    private static TreeMap<String, Object> defaults = new TreeMap<String, Object>();
-    static {
-        defaults.put("redirect", Boolean.TRUE);
-        defaults.put("normalizeURI", Boolean.TRUE);
-        defaults.put("canonicalizeURIPath", Boolean.TRUE);
-        defaults.put("ignoreMatrixParams", Boolean.TRUE);
-    }
+    private static final int COLUMN_DEFAULT = 2;
+    public static final String[] COLUMN_NAMES = {
+        NbBundle.getMessage(RestWebCustomizerPanel.class, "LBL_Key"),
+        NbBundle.getMessage(RestWebCustomizerPanel.class, "LBL_Value"),
+        NbBundle.getMessage(RestWebCustomizerPanel.class, "LBL_Default")};
 
-    private TreeMap<String, Object> options = new TreeMap<String, Object>();
-    private RestSupport support;
+    private final RestSupport support;
 
     /** Creates new form RestWebCustomizerPanel */
     public RestWebCustomizerPanel(RestSupport support) {
-        initComponents();
+        assert support != null : "Null restSupport";
         this.support = support;
-        initOptions();
-        optionsTable.setModel(new OptionsModel());
-    }
+        initComponents();
+        optionsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 
-    private String getKey(int row) {
-        return (String) defaults.keySet().toArray()[row];
+            public void valueChanged(ListSelectionEvent e) {
+                int row = optionsTable.getSelectedRow();
+                String desc = ""; //NOI18N
+                if (row > -1 && row < getOptions().length) {
+                    desc = getOptions()[row].getDescription();
+                }
+                optionDescription.setText("<html>"+desc+"</html>");
+            }
+        });
     }
 
     private class OptionsModel extends DefaultTableModel {
@@ -101,7 +104,7 @@ public class RestWebCustomizerPanel extends javax.swing.JPanel implements Action
 
         @Override
         public int getRowCount() {
-            return defaults.size();
+            return getOptions().length;
         }
 
         @Override
@@ -111,15 +114,17 @@ public class RestWebCustomizerPanel extends javax.swing.JPanel implements Action
 
         @Override
         public Object getValueAt(int row, int column) {
+            CustomizerOption co = getOptions()[row];
             if (column == COLUMN_KEY) {
-                return getKey(row);
+                return co.getName();
             } else if (column == COLUMN_VALUE) {
-                String key = getKey(row);
-                Object value = options.get(key);
+                Object value = co.getValue();
                 if (value == null) {
-                    return defaults.get(key);
+                    return co.getDefaultValue();
                 }
                 return value;
+            } else if (column == COLUMN_DEFAULT) {
+                return co.getDefaultValue();
             }
             return super.getValueAt(row, column);
         }
@@ -131,40 +136,46 @@ public class RestWebCustomizerPanel extends javax.swing.JPanel implements Action
 
         @Override
         public void setValueAt(Object v, int row, int column) {
+            CustomizerOption co = getOptions()[row];
             if (column == 1) {
-                String key = getKey(row);
-                if (defaults.get(key).getClass().isAssignableFrom(v.getClass())) {
-                    options.put(key, v);
+                if (co.getType().isAssignableFrom(v.getClass())) {
+                    co.setValue(v);
                 }
             }
             super.setValueAt(v, row, column);
         }
     }
 
-    private void initOptions() {
-        for (String key : defaults.keySet()) {
-            String name = RESTAPT_PREFIX + key;
-            String v = support.getProjectProperty(name);
-            if (v != null) {
-                if (defaults.get(key) instanceof Boolean) {
-                    options.put(key,Boolean.valueOf(v));
-                } else if (defaults.get(key) instanceof String) {
-                    options.put(key,v);
+    CustomizerOption[] options;
+    private CustomizerOption[] getOptions() {
+        if (options == null) {
+            options = CustomizerOption.createOptions();
+            for (CustomizerOption co : options) {
+                String name = RESTAPT_PREFIX + co.getName();
+                String s = support.getProjectProperty(name);
+                if (s != null) {
+                    if (Boolean.class.isAssignableFrom(co.getType())) {
+                        co.setValue(Boolean.valueOf(s));
+                    } else {
+                        co.setValue(s);
+                    }
                 }
             }
         }
-        
+        return options;
     }
     
     public void actionPerformed(ActionEvent e) {
-        for (Map.Entry<String, Object> entry : options.entrySet()) {
-            String name = RESTAPT_PREFIX + entry.getKey();
-            support.setProjectProperty(name, entry.getValue().toString());
+        for (CustomizerOption co : getOptions()) {
+            String name = RESTAPT_PREFIX + co.getName();
+            if (co.getValue() != null) {
+                support.setProjectProperty(name, co.getValue().toString());
+            }
         }
+        
         try {
             new AntFilesHelper(support).refreshRestBuildXml();
             ProjectManager.getDefault().saveProject(support.getProject());
-
         } catch(IOException ex) {
             Logger.getLogger(getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
         }
@@ -181,30 +192,12 @@ public class RestWebCustomizerPanel extends javax.swing.JPanel implements Action
         jScrollPane1 = new javax.swing.JScrollPane();
         optionsTable = new javax.swing.JTable();
         aptOptionsLabel = new javax.swing.JLabel();
+        optionDescription = new javax.swing.JLabel();
 
-        optionsTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+        jScrollPane1.setOpaque(false);
 
-            },
-            new String [] {
-                "Key", "Value"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.Object.class
-            };
-            boolean[] canEdit = new boolean [] {
-                false, true
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
+        optionsTable.setModel(new OptionsModel());
+        optionsTable.setGridColor(new java.awt.Color(255, 255, 255));
         optionsTable.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(optionsTable);
 
@@ -212,16 +205,20 @@ public class RestWebCustomizerPanel extends javax.swing.JPanel implements Action
         aptOptionsLabel.setLabelFor(optionsTable);
         aptOptionsLabel.setText(org.openide.util.NbBundle.getMessage(RestWebCustomizerPanel.class, "RestWebCustomizerPanel.aptOptionsLabel.text")); // NOI18N
 
+        optionDescription.setText(org.openide.util.NbBundle.getMessage(RestWebCustomizerPanel.class, "RestWebCustomizerPanel.optionDescription.text")); // NOI18N
+        optionDescription.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(aptOptionsLabel)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 279, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(92, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, optionDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, aptOptionsLabel))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -229,14 +226,17 @@ public class RestWebCustomizerPanel extends javax.swing.JPanel implements Action
                 .addContainerGap()
                 .add(aptOptionsLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 195, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(optionDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 75, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel aptOptionsLabel;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel optionDescription;
     private javax.swing.JTable optionsTable;
     // End of variables declaration//GEN-END:variables
 
