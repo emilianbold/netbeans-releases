@@ -703,14 +703,14 @@ public final class SourcesHelper {
             return groups.toArray(new SourceGroup[groups.size()]);
         }
         
-        private void listen(File rootLocation) {
+        private synchronized void listen(File rootLocation) {
             // #40845. Need to fire changes if a source root is added or removed.
             if (rootsListenedTo.add(rootLocation) && /* be lazy */ haveAttachedListeners) {
                 FileChangeSupport.DEFAULT.addListener(this, rootLocation);
             }
         }
         
-        public void addChangeListener(ChangeListener listener) {
+        public synchronized void addChangeListener(ChangeListener listener) {
             if (!haveAttachedListeners) {
                 haveAttachedListeners = true;
                 for (File rootLocation : rootsListenedTo) {
