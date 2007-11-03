@@ -41,6 +41,7 @@
 package org.netbeans.spi.editor.bracesmatching;
 
 import javax.swing.text.Document;
+import org.netbeans.modules.editor.bracesmatching.MasterMatcher;
 import org.netbeans.modules.editor.bracesmatching.SpiAccessor;
 
 /**
@@ -124,6 +125,22 @@ public final class MatcherContext {
         return lookahead;
     }
 
+    /**
+     * Determines if a braces matching task was canceled.
+     * 
+     * <p>IMPORTANT: This method may only
+     * be called from the thread running a braces matching task, ie. the one
+     * that calls your <code>BracesMatcher</code>'s <code>findOrigin</code> and
+     * <code>findMatches</code> methods. Calling this method from a different thread
+     * will assert and fail.
+     * 
+     * @return <code>true</code> if the task was canceled, <code>false</code> otherwise
+     * @since 1.3
+     */
+    public static boolean isTaskCanceled() {
+        return MasterMatcher.isTaskCanceled();
+    }
+    
     private static final class SpiAccessorImpl extends SpiAccessor {
         
         public MatcherContext createCaretContext(Document document, int offset, boolean backward, int lookahead) {

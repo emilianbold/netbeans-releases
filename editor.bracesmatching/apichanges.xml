@@ -105,6 +105,29 @@ is the proper place.
 
     <changes>
 
+        <change id="MatcherContext.isTastCanceled-added">
+            <summary>Added MatcherContext.isTastCanceled()</summary>
+            <version major="1" minor="3"/>
+            <date day="3" month="11" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="incompatible" modification="yes" addition="yes"/>
+            <description>
+                <p>
+                    The concept of using <code>Thread.currentThread().interrupt()</code>
+                    for canceling braces matching tasks is flawed. The call breaks
+                    synchronization of other parts ofthe system that are used from the
+                    braces matching tasks, which results in <code>InterruptedException</code>s
+                    throw from various random places and possibly in corruption of
+                    internal data.
+                </p>
+                <p>
+                    We introduced <code>MatcherContext.isTaskCanceled()</code> method
+                    for determinig if a braces matching task was caceled.
+                </p>
+            </description>
+            <issue number="114651"/>
+        </change>
+
         <change id="marking.under.development">
             <summary>Marking the SPI as under development</summary>
             <version major="1" minor="2"/>

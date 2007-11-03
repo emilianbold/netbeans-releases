@@ -99,7 +99,7 @@ import javax.swing.text.BadLocationException;
  *         
  *         // look a bit furter in the document ....
  * 
- *         if (Thread.currentThread().isInterrupted()) {
+ *         if (MatcherContext.isTaskCanceled()) {
  *             return null;
  *         }
  *     }
@@ -152,7 +152,7 @@ public interface BracesMatcher {
      * <p>
      * 
      * <pre>
-     * if (Thread.currentThread().isInterrupted()) {
+     * if (MatcherContext.isTaskCanceled()) {
      *     return;
      * }
      * </pre>

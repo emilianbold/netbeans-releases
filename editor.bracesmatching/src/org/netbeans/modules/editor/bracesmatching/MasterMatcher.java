@@ -31,7 +31,9 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
@@ -91,6 +93,12 @@ public final class MasterMatcher {
         return mm;
     }
     
+    public static boolean isTaskCanceled() {
+        Result threadTask = THREAD_RESULTS.get(Thread.currentThread());
+        assert threadTask != null : "MatcherContext.isTaskCanceled() should only be called from the matcher task's thread"; //NOI18N
+        return threadTask.isCanceled();
+    }
+    
     public void highlight(
         Document document,
         int caretOffset, 
@@ -121,7 +129,7 @@ public final class MasterMatcher {
                     lastResult.addHighlightingJob(highlights, matchedColoring, mismatchedColoring);
                 } else {
                     // Different request, cancel the current task
-                    task.cancel();
+                    lastResult.cancel();
                     task = null;
                 }
             }
@@ -170,7 +178,7 @@ public final class MasterMatcher {
                     waitFor = task;
                 } else {
                     // Different request, cancel the current task
-                    task.cancel();
+                    lastResult.cancel();
                     task = null;
                 }
             }
@@ -197,6 +205,8 @@ public final class MasterMatcher {
     }
     
     private static final RequestProcessor PR = new RequestProcessor("EditorBracesMatching", 5, true); //NOI18N
+    // package private just for tests
+    /* package */ static final Map<Thread, Result> THREAD_RESULTS = Collections.synchronizedMap(new HashMap<Thread, Result>());
 
     private final String LOCK = new String("MasterMatcher.LOCK"); //NOI18N
 
@@ -374,7 +384,8 @@ public final class MasterMatcher {
         private final int maxFwdLookahead;
 
         private boolean inDocumentRender = false;
-
+        private volatile boolean canceled = false;
+        
         private final List<Object []> highlightingJobs = new ArrayList<Object []>();
         private final List<Object []> navigationJobs = new ArrayList<Object []>();
         
@@ -432,6 +443,14 @@ public final class MasterMatcher {
             return maxFwdLookahead;
         }
         
+        public boolean isCanceled() {
+            return canceled;
+        }
+        
+        public void cancel() {
+            this.canceled = true;
+        }
+        
         // ------------------------------------------------
         // Runnable implementation
         // ------------------------------------------------
@@ -440,17 +459,20 @@ public final class MasterMatcher {
             // Read lock the document
             if (!inDocumentRender) {
                 inDocumentRender = true;
+                THREAD_RESULTS.put(Thread.currentThread(), this);
                 try {
                     document.render(this);
                 } catch (ThreadDeath t) {
                     throw t;
                 } catch (Error t) {
                     // ignore, can happen when the task is interrupted
+                } finally {
+                    THREAD_RESULTS.remove(Thread.currentThread());
                 }
                 return;
             }
 
-            if (Thread.currentThread().isInterrupted()) {
+            if (canceled) {
                 return;
             }
             
@@ -484,7 +506,7 @@ public final class MasterMatcher {
                 }
 //                System.out.println("!!! --------------------------------------------------------");
                 
-                if (origin != null && !Thread.currentThread().isInterrupted()) {
+                if (origin != null && !canceled) {
                     // Find matching areas
                     matches = matcher[0].findMatches();
                 }
@@ -503,7 +525,7 @@ public final class MasterMatcher {
             // Show the results
             synchronized (LOCK) {
                 // If the task was cancelled, we must exit immediately
-                if (Thread.currentThread().isInterrupted()) {
+                if (canceled) {
                     return;
                 }
 
