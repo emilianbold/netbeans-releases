@@ -16,9 +16,10 @@
           <Group type="102" alignment="1" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="jScrollPane1" min="-2" pref="203" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
-                      <Component id="panelButtons" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="jScrollPane1" pref="186" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="panelButtons" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
@@ -26,12 +27,12 @@
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jScrollPane2" min="-2" pref="203" max="-2" attributes="0"/>
+                  <Component id="jScrollPane2" pref="172" max="32767" attributes="0"/>
                   <Component id="labelSelectedEntities" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -43,10 +44,10 @@
                   <Component id="labelSelectedEntities" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jScrollPane1" pref="364" max="32767" attributes="2"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="jScrollPane1" pref="355" max="32767" attributes="2"/>
                   <Component id="panelButtons" alignment="0" max="32767" attributes="2"/>
-                  <Component id="jScrollPane2" pref="364" max="32767" attributes="2"/>
+                  <Component id="jScrollPane2" alignment="0" pref="355" max="32767" attributes="2"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -106,8 +107,8 @@
             </Property>
           </AccessibilityProperties>
           <Events>
-            <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="listSelectedValueChanged"/>
             <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="listSelectedPropertyChange"/>
+            <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="listSelectedValueChanged"/>
           </Events>
         </Component>
       </SubComponents>
@@ -146,10 +147,10 @@
               <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="buttonRemove" alignment="0" pref="124" max="32767" attributes="0"/>
-                      <Component id="buttonAdd" alignment="0" pref="124" max="32767" attributes="0"/>
-                      <Component id="buttonAddAll" alignment="0" pref="124" max="32767" attributes="1"/>
-                      <Component id="buttonRemoveAll" alignment="0" pref="124" max="32767" attributes="1"/>
+                      <Component id="buttonRemove" alignment="0" pref="121" max="32767" attributes="0"/>
+                      <Component id="buttonAdd" alignment="0" pref="121" max="32767" attributes="0"/>
+                      <Component id="buttonAddAll" alignment="0" pref="121" max="32767" attributes="1"/>
+                      <Component id="buttonRemoveAll" alignment="0" pref="121" max="32767" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -166,7 +167,7 @@
                   <Component id="buttonAddAll" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="buttonRemoveAll" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="140" max="32767" attributes="0"/>
+                  <EmptySpace pref="131" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
