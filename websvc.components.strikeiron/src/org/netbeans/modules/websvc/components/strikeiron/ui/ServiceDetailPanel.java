@@ -153,6 +153,10 @@ public class ServiceDetailPanel extends JTextPane {
         return scrollPane;
     }
     
+    void clear() {
+        setCurrentService(null);
+    }
+    
     void setCurrentService(ServiceData service) {
         if (currentData != null) {
             currentData.setPackageName(tfPackageName.getText());
@@ -163,6 +167,10 @@ public class ServiceDetailPanel extends JTextPane {
             tfPackageName.setText(currentData.getPackageName());
             setTitle(currentData.getServiceName());
             setDetails();
+        } else {
+            setTitle("");
+            tfPackageName.setText("");
+            setText("");
         }
     }
     
@@ -178,6 +186,8 @@ public class ServiceDetailPanel extends JTextPane {
     public void setTitle(String value) {
         if (value != null) {                            
             title.setText("<html><h3>"+value+"</h3></html>");//NOI18N
+        } else {
+            title.setText("");
         }
     }
 

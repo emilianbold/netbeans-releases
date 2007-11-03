@@ -191,11 +191,11 @@ public class ServiceTableModel extends DefaultTableModel {
         }
     }
     
-    public void doSearch(final String searchTerm, final SORTBY sortBy) {
+    public void doSearch(final String searchTerm) {
         cancelSearch();
         searchTask = RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                callSearch(searchTerm, sortBy);
+                callSearch(searchTerm);
             }
         });
     }
@@ -264,15 +264,12 @@ public class ServiceTableModel extends DefaultTableModel {
         warnsOrErrors = false;
     }
     
-    private void callSearch(String searchTerm, SORTBY sortBy) {
+    private void callSearch(String searchTerm) {
         clearStatusMessage();
         selectedRows = new HashSet<Integer>();
         result = new ArrayList<ServiceData>();
         fireTableDataChanged();
         
-        if (sortBy == null) {
-            sortBy = this.sortBy;
-        }
         try {
             // init service only when needed to avoid unecessary internet access
             if (sservice == null) {
