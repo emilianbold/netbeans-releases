@@ -157,6 +157,9 @@ public class LanguageRegistry implements Iterable<Language> {
      */
     public boolean isSupported(@NonNull
     String mimeType) {
+        if (mimeType == null) {
+            return false;
+        }
         for (Language language : this) {
             if (mimeType.equals(language.getMimeType())) {
                 return true;
