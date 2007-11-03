@@ -306,8 +306,8 @@ ArrayLiteral = "[" (",")* [AssignmentExpression] ( (",")+ AssignmentExpression)*
 ObjectLiteral = "{" [PropertyNameAndValue ("," PropertyNameAndValue)*] "}";
 PropertyNameAndValue = PropertyName ":" AssignmentExpression;
 PropertyName = <js_identifier> | <js_string> | <js_number>;
-FunctionDeclaration = "function" [FunctionName] "(" FormalParameterList ")" FunctionBody;
-FunctionName = <js_identifier>;
+FunctionDeclaration = "function" [<GAP>] [FunctionName] "(" FormalParameterList ")" FunctionBody;
+FunctionName = <GAP> | <js_identifier>;
 FunctionBody = Block;
 
 RegularExpression = <js_regularExpression>;
