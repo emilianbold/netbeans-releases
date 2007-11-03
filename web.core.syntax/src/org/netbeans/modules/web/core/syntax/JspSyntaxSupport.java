@@ -1087,7 +1087,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     
     private TagInfo[] getTagInfos(){
         TagInfo[] rValue;
-        if ("text/x-jsp".equals(fobj.getMIMEType()) || "text/x-tag".equals(fobj.getMIMEType())){
+        if (fobj != null && 
+                ("text/x-jsp".equals(fobj.getMIMEType()) || 
+                "text/x-tag".equals(fobj.getMIMEType()))){
             if ( isXmlSyntax()){
                 if (NbEditorUtilities.getMimeType(getDocument()).equals(JspUtils.TAG_MIME_TYPE))
                     rValue = xmlTagFileTagDatas;
