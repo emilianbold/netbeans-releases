@@ -155,6 +155,7 @@ public class MoveFilePanel extends JPanel implements ActionListener, DocumentLis
     }
     
     public void requestFocus() {
+        setCombosEnabled(true);
         packageComboBox.requestFocus();
     }
     

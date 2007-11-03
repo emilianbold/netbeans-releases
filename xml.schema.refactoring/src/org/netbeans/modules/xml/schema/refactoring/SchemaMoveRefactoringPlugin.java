@@ -49,19 +49,32 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.Action;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
+import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.spi.ProblemDetailsFactory;
+import org.netbeans.modules.refactoring.spi.ProblemDetailsImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.xml.refactoring.ErrorItem;
 import org.netbeans.modules.xml.refactoring.FauxRefactoringElement;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringPlugin;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
+import org.netbeans.modules.xml.refactoring.ui.WhereUsedQueryUI;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.schema.model.SchemaModelReference;
@@ -74,8 +87,10 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 
 
@@ -101,7 +116,7 @@ public class SchemaMoveRefactoringPlugin extends SchemaRefactoringPlugin  implem
         FileObject targetF = URLMapper.findFileObject(url);  
         if ((targetF!=null && !targetF.canWrite())) {
             return new Problem(true, NbBundle.getMessage(SchemaMoveRefactoringPlugin.class,"ERR_PackageIsReadOnly"));                   
-        }
+        }                  
         return null;
     }
     
@@ -144,7 +159,7 @@ public class SchemaMoveRefactoringPlugin extends SchemaRefactoringPlugin  implem
             return null;
         if( !(obj instanceof Model) )
             return null;
-        fireProgressListenerStart(ProgressEvent.START, -1);
+        fireProgressListenerStart(ProgressEvent.START, -1);           
         //get the gloabl XML transaction object
         XMLRefactoringTransaction transaction = request.getContext().lookup(XMLRefactoringTransaction.class);
         
@@ -164,8 +179,8 @@ public class SchemaMoveRefactoringPlugin extends SchemaRefactoringPlugin  implem
             if (founds != null && founds.size() > 0) {
                    elements.addAll(founds);
             }
-        }
-        
+        }        
+            
          //register with the gloabl XML transaction object
          transaction.register((XMLRefactoringPlugin)this, elements);
         
@@ -185,9 +200,26 @@ public class SchemaMoveRefactoringPlugin extends SchemaRefactoringPlugin  implem
         FileObject fo = mod.getModelSource().getLookup().lookup(FileObject.class);
         if ( XSD_MIME_TYPE.equals(FileUtil.getMIMEType(fo))) {
            refactoringElements.add(request, new FauxRefactoringElement(obj, NbBundle.getMessage(SchemaMoveRefactoringPlugin.class, "LBL_Move")));
-        }      
-        if(findErrors.size() > 0)
-            return processErrors(findErrors);
+        } 
+        
+        
+        if(isMoveToDifferentPackage()) {
+               RefactoringSession inner = RefactoringSession.create("move");
+               Referenceable ref = (Referenceable)obj;
+               WhereUsedQuery query = new WhereUsedQuery(Lookups.singleton(ref));
+               query.prepare(inner);
+               WhereUsedQueryUI ui = new WhereUsedQueryUI((Referenceable) ref);
+               List<ErrorItem> errors = checkDifferentPackageMoveErrors(inner);
+               if(errors != null && errors.size() > 0) {
+                  Problem problem = processErrors(errors, ui, inner);
+                  fireProgressListenerStop();
+                  return problem; 
+               }
+         } 
+         if(findErrors.size() > 0 ) {
+            Problem problem = processErrors(findErrors);
+            return problem;
+        }
         
         fireProgressListenerStop();
         return null;
@@ -252,7 +284,105 @@ public class SchemaMoveRefactoringPlugin extends SchemaRefactoringPlugin  implem
                model.endTransaction();
         }
     }
-
+     
+     private boolean isMoveToDifferentPackage() {
+         Referenceable obj = request.getRefactoringSource().lookup(Referenceable.class);
+         URL url = ((MoveRefactoring)request).getTarget().lookup(URL.class);
+         if(url == null)
+            return false;
+         FileObject targetF = URLMapper.findFileObject(url); 
+         
+         if(targetF == null) {
+         try {         
+             targetF = SharedUtils.getOrCreateFolder(url);
+            } catch(Exception e) {
+                return false;
+            }
+         }
+         List<ErrorItem> errors = new ArrayList<ErrorItem>();
+         if((obj instanceof Model)) {
+             FileObject fobj =((Model)obj).getModelSource().getLookup().lookup(FileObject.class);
+              Project project = FileOwnerQuery.getOwner(fobj);
+              FileObject sourceFolder = SharedUtils.getSourceFolder(project, fobj);
+               SourceGroup [] srcGrps = ProjectUtils.getSources(project).getSourceGroups("java");
+               if(srcGrps != null && srcGrps.length > 0 ){
+                   if (sourceFolder != null && targetF!= null && sourceFolder != targetF && !FileUtil.isParentOf(sourceFolder,targetF)) {
+                       return true;
+                   }
+               } 
+         } 
+         
+         return false;
+         
+                   
+     }
+     private List<ErrorItem> checkDifferentPackageMoveErrors (RefactoringSession inner) {
+         Referenceable obj = request.getRefactoringSource().lookup(Referenceable.class);
+         List<ErrorItem> errors = new ArrayList<ErrorItem>();
+         if(! inner.getRefactoringElements().isEmpty()) {
+             ErrorItem error = new ErrorItem(obj, NbBundle.getMessage(SchemaMoveRefactoringPlugin.class, "ERR_MoveToDifferentSourcePackage"), ErrorItem.Level.WARNING);
+             errors.add(error);
+         }
+         if( obj instanceof SchemaModel) {
+             if( ! ( super.getExternalReferences((Model)obj).isEmpty()) ) {
+                 ErrorItem error = new ErrorItem(obj, NbBundle.getMessage(SchemaMoveRefactoringPlugin.class, "ERR_MoveToDifferentSourcePackage"), ErrorItem.Level.WARNING);
+                 errors.add(error);  
+             }
+         }
+         return errors;        
+     }
+     
+     public Problem processErrors(List<ErrorItem> errorItems, WhereUsedQueryUI ui, RefactoringSession inner) {
+        if (errorItems == null || errorItems.size()== 0){
+            return null;
+        }
+        Problem parent = null;
+        Problem child = null;
+        Problem head = null;
+        Iterator<ErrorItem> iterator = errorItems.iterator();
+                
+        while(iterator.hasNext()) {
+            ErrorItem error = iterator.next();
+            if(parent == null ){
+                parent = new Problem(isFatal(error), error.getMessage(),ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(ui, inner)));
+                child = parent;
+                head = parent;
+                //the 5.5.1 code shows only the first error
+                //the comments from original code
+                //TODO straighten out usability issue of Safe Delete whether to allow 
+                // cascade delete where possible
+                // for now just a hack to show only first one assuming all entailed cascade delete not supported.
+                break;
+                //continue;
+            }
+            child = new Problem(isFatal(error), error.getMessage());
+            parent.setNext(child);
+            parent = child;
+            
+        }      
+        return head;        
+    }
+    
+    private class ProblemDetailsImplemen implements ProblemDetailsImplementation {
+        
+        private RefactoringUI ui;
+        private RefactoringSession rs;
+        
+        public ProblemDetailsImplemen(RefactoringUI ui, RefactoringSession rs) {
+            this.ui = ui;
+            this.rs = rs;
+        }
+        
+        public void showDetails(Action callback, Cancellable parent) {
+            parent.cancel();
+            UI.openRefactoringUI(ui, rs, callback);
+        }
+        
+        public String getDetailsHint() {
+            return NbBundle.getMessage(SchemaSafeDeleteRefactoringPlugin.class, "LBL_ShowUsages");
+                        
+        }
+    }
      
 }
 

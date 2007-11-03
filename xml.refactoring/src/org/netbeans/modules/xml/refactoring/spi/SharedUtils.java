@@ -201,7 +201,7 @@ public class SharedUtils {
         Project p = FileOwnerQuery.getOwner(file);
         if (p != null) {
             return (ProjectCatalogSupport) p.getLookup().lookup(ProjectCatalogSupport.class);
-        }
+        } 
         return null;
     }
     
@@ -684,17 +684,17 @@ public class SharedUtils {
         
         StringBuffer relString = new StringBuffer();
         for (int i = count; i < relativeToPathStack.size(); i++) {
-             relString.append(".."+File.separator);
+             relString.append(".."+File.separatorChar);
         }
         // now back down to the file
         for (int i = count; i <filePathStack.size()-1; i++) {
-            relString.append(((File)filePathStack.get(i)).getName()+File.separator);
+            relString.append(((File)filePathStack.get(i)).getName()+File.separatorChar);
         }
             relString.append(((File)filePathStack.get(filePathStack.size()-1)).getName());
         return relString.toString();
-        }
+        }    
     */
-    
+        
      public static List<String> getSourceGroups() {
         List<String> srcGroups = new ArrayList<String>();
         srcGroups.add(SOURCES_TYPE_JAVA);
@@ -745,7 +745,7 @@ public class SharedUtils {
                     getUsableProjectName(targetProject)).
                     concat("/").concat(relPathFromTgtGroup));
         } else {
-            FileObject targetSourceFolder = getSourceFolder(targetProject, target);
+            FileObject targetSourceFolder = getSourceFolder(targetProject, target);            
             if (targetSourceFolder == null) {
                 throw new IllegalArgumentException(target.getPath()+" is not in project source"); //NOI18N
             }
@@ -801,7 +801,7 @@ public class SharedUtils {
         TYPE_WEB_INF
     };
     
-    private static FileObject getSourceFolder(Project project, FileObject source) {
+      public static FileObject getSourceFolder(Project project, FileObject source) {
         Sources sources = ProjectUtils.getSources(project);
         assert sources !=null;
         ArrayList<SourceGroup> sourceGroups = new ArrayList<SourceGroup>();
