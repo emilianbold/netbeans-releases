@@ -276,7 +276,11 @@ public class EmbeddingUpdater implements SyntaxParserListener {
                 if(!ts.moveNext() && !ts.movePrevious()) {
                     return ; //no token
                 }
-                
+                if(ts.offset() < startOffset || ts.offset() > endOffset) {
+                    //a bug #121045 in lexer, we got a token sequence outside of the specified area
+                    //just ignore...
+                    continue;
+                }
                 do {
                     Token item = ts.token();
                     //test if we are last token
@@ -300,7 +304,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
                                 LOGGER.log(Level.WARNING, null, new IllegalStateException("Token.text() of " + item.toString() + " == null without any previous modification of the underlying document! This seems to be a bug in lexer. Please report the issue to lexer module and attach the info dumped into the log, the document and possibly steps to reproduce."));
                                 LOGGER.log(Level.WARNING, "TokenSequence:\n" + ts.toString());
                             } else {
-                                LOGGER.log(Level.FINE, "Embedding for " + mimeType + " created [" + startOffset + " - "  + endOffset + "] (" + printEmbeddedText(text, iAmFirstToken ? startSkipLength : 0, iAmLastToken ? endSkipLength : 0) + ")\n");
+                                LOGGER.log(Level.FINE, "Embedding for " + mimeType + " created [" + startOffset + " - "  + endOffset + "] (" + printEmbeddedText(text, iAmFirstToken ? startSkipLength : 0, iAmLastToken && iAmLastSequence ? endSkipLength : 0) + ")\n");
                             }
                         }
                     }
