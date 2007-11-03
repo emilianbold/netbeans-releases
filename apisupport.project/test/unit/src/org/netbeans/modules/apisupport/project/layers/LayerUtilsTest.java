@@ -72,7 +72,7 @@ public class LayerUtilsTest extends LayerTestBase {
         super(name);
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
     }
@@ -310,7 +310,7 @@ public class LayerUtilsTest extends LayerTestBase {
     
     public void testSystemFilesystemNetBeansOrgProject() throws Exception {
         FileObject nbcvsroot = FileUtil.toFileObject(new File(System.getProperty("test.nbcvsroot")));
-        NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(nbcvsroot.getFileObject("beans"));
+        NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(nbcvsroot.getFileObject("image"));
         FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(p);
         assertDisplayName(fs, "right display name for netbeans.org standard file", "Menu/RunProject", "Run");
         assertNull("not loading files from extra modules", fs.findResource("Templates/Documents/docbook-article.xml"));
