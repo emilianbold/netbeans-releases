@@ -205,7 +205,9 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
                                     // multiline scriplet section
                                     // adjust the sections start to the beginning of the firts line
                                     int firstLineStartOffset = Utilities.getRowStartFromLineOffset((BaseDocument) document, startLine);
-                                    if (isWhitespace(document, firstLineStartOffset, sectionStart - 2)) { // always preceeded by '<%' hence -2
+                                    if (firstLineStartOffset < sectionStart - 2 &&
+                                        isWhitespace(document, firstLineStartOffset, sectionStart - 2)) // always preceeded by '<%' hence -2
+                                    {
                                         sectionStart = firstLineStartOffset;
                                     }
 
@@ -219,7 +221,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
                                     }
                                     
                                     if (sectionEnd + 2 >= lastLineEndOffset || // unclosed section
-                                        isWhitespace(document, sectionEnd + 2, lastLineEndOffset)) // always succeeded by '%>' hence -2
+                                        isWhitespace(document, sectionEnd + 2, lastLineEndOffset)) // always succeeded by '%>' hence +2
                                     {
                                         sectionEnd = lastLineEndOffset;
                                     }
