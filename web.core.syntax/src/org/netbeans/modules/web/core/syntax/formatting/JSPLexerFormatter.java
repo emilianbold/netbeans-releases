@@ -83,7 +83,9 @@ public class JSPLexerFormatter extends TagBasedLexerFormatter {
                 boolean moveSuccessful;
                 do {
                     moveSuccessful = tokenSequence.movePrevious();
-                } while (moveSuccessful && tokenSequence.token().id() != JspTokenId.TAG);
+                } while (moveSuccessful 
+                        && !(tokenSequence.token().id() == JspTokenId.TAG 
+                        || tokenSequence.token().id() == JspTokenId.ENDTAG));
                 
                 if (moveSuccessful) {
                     int r = tokenSequence.offset();
