@@ -296,6 +296,10 @@ public final class Source {
 
     private static Map<FileObject, Reference<Source>> file2JavaSource = new WeakHashMap<FileObject, Reference<Source>>();
 
+    public static void clearSourceCache() {
+        file2JavaSource.clear();
+    }
+    
     /**
      * Returns a {@link Source} instance associated to given {@link org.openide.filesystems.FileObject},
      * it returns null if the {@link Document} is not associanted with data type providing the {@link Source}.

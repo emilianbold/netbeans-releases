@@ -70,6 +70,7 @@ import javax.swing.SwingUtilities;
 
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
+import org.netbeans.napi.gsfret.source.Source;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -1111,6 +1112,9 @@ public class RubyInstallation {
         // This should be done in a cleaner way.
         org.netbeans.modules.gsfret.source.usages.Index.setPreindexRootUrl(getRubyHomeUrl());
 
+        // Ensure that source cache is wiped and classpaths recomputed for existing files
+        Source.clearSourceCache();
+        
         if (pcs != null) {
             pcs.firePropertyChange("roots", null, null); // NOI18N
         }
