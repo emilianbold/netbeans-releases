@@ -409,14 +409,19 @@ public abstract class TagBasedLexerFormatter {
             for (int i = 0; i < tokenSequenceBounds.length; i++) {
                 tokenSequenceBounds[i] = findTokenSequenceBounds(doc, tokenSequences[i]);
             }
-
-            JoinedTokenSequence tokenSequence = new JoinedTokenSequence(tokenSequences, tokenSequenceBounds);
-            tokenSequence.moveStart(); tokenSequence.moveNext();
-            int tagPos = getTagEndingAtPosition(tokenSequence, pos);
-            return tagPos >= 0 && isClosingTag(tokenSequence, tagPos);
+            
+            if (tokenSequences.length > 0) {
+                JoinedTokenSequence tokenSequence = new JoinedTokenSequence(tokenSequences, tokenSequenceBounds);
+                tokenSequence.moveStart();
+                tokenSequence.moveNext();
+                int tagPos = getTagEndingAtPosition(tokenSequence, pos);
+                return tagPos >= 0 && isClosingTag(tokenSequence, tagPos);
+            }
         } finally {
             doc.atomicUnlock();
         }
+        
+        return false;
     }
     
     private static int getTxtLengthWithoutWhitespaceSuffix(CharSequence txt){

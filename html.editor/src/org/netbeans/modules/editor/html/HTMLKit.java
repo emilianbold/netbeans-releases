@@ -51,6 +51,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -158,23 +159,28 @@ public class HTMLKit extends LanguagesEditorKit implements org.openide.util.Help
         
         private void handleTagClosingSymbol(BaseDocument doc, int dotPos, char lastChar) throws BadLocationException {
             if (lastChar == '>') {
-                HTMLLexerFormatter htmlFormatter = new HTMLLexerFormatter(LanguagePath.get(HTMLTokenId.language()));
+                TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+                for (LanguagePath languagePath : (Set<LanguagePath>) tokenHierarchy.languagePaths()) {
+                    if (languagePath.innerLanguage() == HTMLTokenId.language()) {
+                        HTMLLexerFormatter htmlFormatter = new HTMLLexerFormatter(languagePath);
 
-                if (htmlFormatter.isJustAfterClosingTag(doc, dotPos)) {
-                    Reformat reformat = Reformat.get(doc);
-                    reformat.lock();
+                        if (htmlFormatter.isJustAfterClosingTag(doc, dotPos)) {
+                            Reformat reformat = Reformat.get(doc);
+                            reformat.lock();
 
-                    try {
-                        doc.atomicLock();
-                        try {
-                            int startOffset = Utilities.getRowStart(doc, dotPos);
-                            int endOffset = Utilities.getRowEnd(doc, dotPos);
-                            reformat.reformat(startOffset, endOffset);
-                        } finally {
-                            doc.atomicUnlock();
+                            try {
+                                doc.atomicLock();
+                                try {
+                                    int startOffset = Utilities.getRowStart(doc, dotPos);
+                                    int endOffset = Utilities.getRowEnd(doc, dotPos);
+                                    reformat.reformat(startOffset, endOffset);
+                                } finally {
+                                    doc.atomicUnlock();
+                                }
+                            } finally {
+                                reformat.unlock();
+                            }
                         }
-                    } finally {
-                        reformat.unlock();
                     }
                 }
             }
