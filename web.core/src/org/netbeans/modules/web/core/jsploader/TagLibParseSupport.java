@@ -80,8 +80,6 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
     private RequestProcessor.Task parsingTask = null;
     private static RequestProcessor requestProcessor;
 
-    private Object openedLock = new Object(); //lock for parsing thread
-    private boolean opened; //is an editor pane opened?
     private static final int WAIT_FOR_EDITOR_TIMEOUT = 15 * 1000; //15 seconds
 
     /** Holds a reference to the JSP coloring data. */
@@ -116,6 +114,9 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
     
     private boolean parsingTaskCancelled = false;
     
+    /** Whether parser task was started (at least once) or not. */
+    private boolean parserStarted = false;
+    
     /** Holds reference for annotation errors
      */
     private ErrorAnnotation annotations;
@@ -132,7 +133,8 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
 
     /** Gets the tag library data relevant for the editor. */
     public JSPColoringData getJSPColoringData() {
-        return getJSPColoringData(true);
+        // #120530 - do not start parsing
+        return getJSPColoringData(false);
     }
     
     private WebModule getWebModule(FileObject fo){
@@ -180,13 +182,15 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
         //do not parse if it is not necessary
         //this is the BaseJspEditorSupport optimalization since the autoParse causes the webmodule
         //to be reparsed even if it has already been reparsed.
-        if(!isDocumentDirty()) {
+        if(isDocumentDirty() || !isParserStarted()) {
+            return parseObject(Thread.MIN_PRIORITY);
+        } else {
             return requestProcessor.post(new Runnable() {
                 public void run() {
                     //do nothing, just a dummy task
                 }
             });
-        } else return parseObject(Thread.MIN_PRIORITY);
+        }
     }
 
     /** Method that instructs the implementation of the source element
@@ -215,6 +219,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
                 t.setPriority(Math.max(t.getPriority(), priority));
                 return t;
             }
+            setParserStarted();
 
             setDocumentDirty(false);
             t = requestProcessor.post(new ParsingRunnable(), 0, priority);
@@ -225,15 +230,12 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
     
     
     //used for notifying the parsing thread (to start the parsing)
-    void setEditorOpened(boolean state) {
+    void setEditorOpened(boolean editorOpened) {
         //mark that the an editor pane open event was fired
         wasAnEditorPaneChangeEvent = true;
         
-        synchronized (openedLock) {
-            opened = state;
-            if(opened) {
-                openedLock.notifyAll();
-            } else {
+        synchronized (parseResultLock) {
+            if(!editorOpened) {
                 //clean the stronref to the parsing data when the editor is closed
                 parseResultSuccessfulRefStrongReference = null;
             }
@@ -249,11 +251,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
             jspColoringDataRef = null;
         }
         
-        //resume tha parsing thread if waiting on openedLock
         parsingTaskCancelled = true;
-        synchronized (openedLock) {
-            openedLock.notifyAll();
-        }
     }
     
     public JspParserAPI.JspOpenInfo getCachedOpenInfo(boolean preferCurrent, boolean useEditor) {
@@ -323,6 +321,14 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
     
     // Flag, whether there is already an error in the jsp page. 
     private boolean hasError = false;
+
+    private synchronized boolean isParserStarted() {
+        return parserStarted;
+    }
+
+    private synchronized void setParserStarted() {
+        this.parserStarted = true;
+    }
     
     private class ParsingRunnable implements Runnable {
         
@@ -336,21 +342,6 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
         }
         
         public void run() {
-            //wait with the parsing until an editor pane is opened
-            synchronized(TagLibParseSupport.this.openedLock) {
-                if(!opened) {
-                    try {
-                        //wait max 15 seconds - then start parsing
-                        TagLibParseSupport.this.openedLock.wait(WAIT_FOR_EDITOR_TIMEOUT);
-                    }catch(InterruptedException e) { }
-
-                    //since the EditorCookie.Observable fires the event for changed(opened) view panes 
-                    //before the document is really rendered, we need to slow down the current parsing task,
-                    //so the thread doesn't affect the document showing speed significantly.
-                    Thread.currentThread().setPriority(Thread.NORM_PRIORITY - 1);
-                }
-            }
-            long a = System.currentTimeMillis();
             //test whether the parsing task has been cancelled -
             //someone called EditorCookie.close() during the parsing was waiting
             //on openedLock

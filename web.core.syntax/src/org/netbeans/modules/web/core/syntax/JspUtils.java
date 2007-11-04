@@ -117,7 +117,7 @@ public class JspUtils {
         if(contextInfo == null) {
             return null;
         } else {
-            return contextInfo.getCachedParseResult(doc, fo, successfulOnly, preferCurrent);
+            return contextInfo.getCachedParseResult(doc, fo, successfulOnly, preferCurrent, forceParse);
         }
     }
     

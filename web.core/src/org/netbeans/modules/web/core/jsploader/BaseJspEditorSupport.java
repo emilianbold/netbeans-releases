@@ -228,7 +228,6 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
     }
     
     public void open(){
-//        long a = System.currentTimeMillis(); // 
         ((JspDataObject)getDataObject()).updateFileEncoding(false);
         encoding = ((JspDataObject)getDataObject()).getFileEncoding(); //use encoding from fileobject
         
@@ -244,6 +243,9 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
             if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;
         }
         super.open();
+        
+        // #120530 - make sure parsing task is started
+        restartTimer(false);
     }
     
 //    protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
