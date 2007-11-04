@@ -72,8 +72,8 @@ public class NSIcomPropertiesDescriptor implements ProjectPropertiesDescriptor {
             set.add(new PropertyDescriptor(PROP_MONITOR_HOST, true, DefaultPropertyParsers.STRING_PARSER,  "")); //NOI18N
             set.add(new PropertyDescriptor(PROP_VERBOSE, true, DefaultPropertyParsers.BOOLEAN_PARSER,  "")); //NOI18N
             set.add(new PropertyDescriptor(PROP_RUN_REMOTE, true, DefaultPropertyParsers.BOOLEAN_PARSER,  "")); //NOI18N
-            set.add(new PropertyDescriptor(PROP_REMOTE_VM, true, DefaultPropertyParsers.STRING_PARSER,  "")); //NOI18N
-            set.add(new PropertyDescriptor(PROP_REMOTE_APP, true, DefaultPropertyParsers.STRING_PARSER,  "")); //NOI18N
+            set.add(new PropertyDescriptor(PROP_REMOTE_VM, true, DefaultPropertyParsers.STRING_PARSER,  "\\Windows\\creme\\bin\\CrEme.exe")); //NOI18N
+            set.add(new PropertyDescriptor(PROP_REMOTE_APP, true, DefaultPropertyParsers.STRING_PARSER,  "\\My Documents\\NetBeans Applications")); //NOI18N
             ref = new WeakReference(set);
         }
         return set;

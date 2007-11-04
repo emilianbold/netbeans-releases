@@ -66,6 +66,7 @@ import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
 
 import org.netbeans.mobility.activesync.*;
+import org.openide.util.Exceptions;
 
 /**
  * @author suchys
@@ -217,25 +218,28 @@ public class NSIcomExecDeployTask extends Task {
             try {
                 if (!runOnDevice){
                     Process p = null;
-                    p = Runtime.getRuntime().exec(arg);
-                    StreamReader inputReader =
-                            new StreamReader(p.getInputStream(), Project.MSG_INFO);
-                    StreamReader errorReader =
-                            new StreamReader(p.getErrorStream(), Project.MSG_WARN);
+                    try {
+                        p = Runtime.getRuntime().exec(arg);
+                        StreamReader inputReader =
+                                new StreamReader(p.getInputStream(), Project.MSG_INFO);
+                        StreamReader errorReader =
+                                new StreamReader(p.getErrorStream(), Project.MSG_WARN);
 
-                    // starts pumping away the generated output/error
-                    inputReader.start();
-                    errorReader.start();
+                        // starts pumping away the generated output/error
+                        inputReader.start();
+                        errorReader.start();
 
-                    // Wait for everything to finish
-                    p.waitFor();
-                    inputReader.join();
-                    errorReader.join();
-                    p.destroy();
-
-                    // close the output file if required
-                    logFlush();
-
+                        // Wait for everything to finish
+                        p.waitFor();
+                        inputReader.join();
+                        errorReader.join();
+                    } catch (ThreadDeath td){
+                        p.destroy();
+                        throw td;
+                    } finally {
+                        // close the output file if required
+                        logFlush();
+                    }
                     if (p.exitValue() != 0)
                         throw new BuildException("Emulator execution failed!"); //NOI18N
                 } else {
@@ -251,30 +255,20 @@ public class NSIcomExecDeployTask extends Task {
                         //ignore
                         log("Can not delete log file", Project.MSG_VERBOSE); //NOI18N only internal debug
                     }
-                    
-                    RemoteLogReader remoteReader = null;
-                    RemoteProcess remote = null;
+                    ProcessHandler handler = null;
                     try {
+                        handler = new ProcessHandler(remoteDataLocation, arg, remoteFolder);
+                        handler.start();
                         try {
-                            remote = activeSync.executeRemoteProcess(remoteVMLocation, arg);
-                            remoteReader = new RemoteLogReader(remoteFolder);
-                            remoteReader.start();
-                            //long id = remote.getProcessId();
-                            ProcessHandler handler = new ProcessHandler(remote);
-                            handler.start();
-                            try {
-                                handler.join();
-                            } catch (InterruptedException ie){
-                            }
-                            if (handler.getExitCode() != 0){
-                                throw handler.getCause();
-                            }
-                        } finally {
-                            if (remoteReader != null)
-                                remoteReader.finish();
+                            handler.join();
+                        } catch (InterruptedException ie){
+                        }
+                        if (handler.getExitCode() != 0){
+                            throw handler.getCause();
                         }
                     } catch (ThreadDeath threadDeath) { //ant task has been shut down
-                        activeSync.destroyRemoteProcess(remote);
+                        if (handler.getProcess() != null)
+                            handler.destroyRemoteProcess();
                         throw threadDeath;
                     }
                 }
@@ -425,6 +419,7 @@ public class NSIcomExecDeployTask extends Task {
         
         RemoteLogReader(RemoteFile logFile){
             this.logFile = logFile;
+            setDaemon(true);
         }
         
         public void run(){
@@ -633,22 +628,34 @@ public class NSIcomExecDeployTask extends Task {
     
     class ProcessHandler extends Thread {
 
-        private RemoteProcess remote;
+        private RemoteProcess process;
         private int exitCode = -1;
         private IOException cause = null;
+        private RemoteFile remoteFolder;
+        private String[] vmArguments;
+        private String vmLocation;
+        private RemoteLogReader remoteReader = null;
         
-        public ProcessHandler(RemoteProcess remote) {
-            this.remote = remote;
+        public ProcessHandler(String vmLocation, String[] vmArguments, RemoteFile remoteFolder) {
+            this.vmLocation = vmLocation;
+            this.vmArguments = vmArguments;
+            this.remoteFolder = remoteFolder;
             setDaemon(true);
         }
 
         public void run(){
             try {
-                exitCode = activeSync.waitFor(remote);
+                process = activeSync.executeRemoteProcess(remoteVMLocation, vmArguments);
+                remoteReader = new RemoteLogReader(remoteFolder);
+                remoteReader.start();
+                exitCode = activeSync.waitFor(process);
             } catch (ActiveSyncException asEx){
                 cause = asEx;
             } catch (IOException ioEx){
                 cause = ioEx;
+            } finally {
+                if (remoteReader != null)
+                    remoteReader.finish();
             }
         }
 
@@ -658,6 +665,22 @@ public class NSIcomExecDeployTask extends Task {
 
         public IOException getCause() {
             return cause;
+        }
+
+        public RemoteProcess getProcess() {
+            return process;
+        }
+
+        private void destroyRemoteProcess() {
+            try {
+                if (process != null)
+                    activeSync.destroyRemoteProcess(process);
+            } catch (ActiveSyncException ex) {
+            } catch (IllegalArgumentException ex) {
+            } finally {
+                if (remoteReader != null)
+                    remoteReader.finish();
+            }
         }
     }
 }
