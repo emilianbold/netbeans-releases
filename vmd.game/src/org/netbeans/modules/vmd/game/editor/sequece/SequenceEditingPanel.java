@@ -510,10 +510,20 @@ When having more than one frame selected only play the selected frames in the pr
 
 	//------------ SequenceListener ---------------
     public void frameAdded(Sequence sequence, int index) {
-		if (DEBUG) System.out.println("SequenceEditingPanel.frameAdded"); // NOI18N
-		this.scrollRectToVisible(this.getAreaForColumn(this.getColumnForFrame(index)));
 		this.revalidate();
 		this.repaint();
+		if (DEBUG) System.out.println("SequenceEditingPanel.frameAdded index: " + index); // NOI18N
+		Rectangle r;
+		//if last frame then scroll all the way to the end
+		if (index == this.sequence.getFrameCount()-1) {
+			if (DEBUG) System.out.println("SequenceEditingPanel last frame Added"); // NOI18N
+			r = new Rectangle(new Point(this.getWidth() + this.filmUnitWidth, 0));
+		}
+		else {
+			if (DEBUG) System.out.println("SequenceEditingPanel NON-last frame Added"); // NOI18N
+			r = this.getAreaForColumn(this.getColumnForFrame(index));
+		}
+		this.scrollRectToVisible(r);
     }
 
     public void frameRemoved(Sequence sequence, int index) {
