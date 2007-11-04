@@ -462,5 +462,9 @@ rdj.addResource = function () {
     b.value.Id = newId;
     b.value['Identity'] = data.length-1;
     jmaki.publish(restTopic  + "/addRow", b);
-    alert('Please refresh page to see the new item.');
+    try {
+        submitForm();
+    } catch(e) {
+        alert('Please refresh page to see updated table.');
+    }
 }
