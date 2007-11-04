@@ -279,9 +279,6 @@ public class LanguagesEditorKit extends NbEditorKit {
         c.addMouseListener (hl);
         c.addKeyListener(hl);
         c.addCaretListener (new MarkOccurrencesSupport (c));
-
-        //HACK:
-        c.getInputMap ().put (KeyStroke.getKeyStroke (KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK), "in-place-refactoring");
     }
 
     public @Override String getContentType() {

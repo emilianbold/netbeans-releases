@@ -43,5 +43,4 @@ made subject to such option by the copyright holder.
 <!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN" "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
 
 <bindings>
-    <bind actionName="in-place-refactoring" key="D-R"/>
 </bindings>

@@ -107,6 +107,7 @@ made subject to such option by the copyright holder.
     <bind actionName="goto" key="O-G"/>
     <bind actionName="goto-declaration" key="O-PERIOD"/>
     <bind actionName="goto-declaration" key="CO-G"/>
+    <bind actionName="in-place-refactoring" key="D-R"/>
     <bind actionName="insert-break" key="ENTER"/>
     <bind actionName="insert-tab" key="C-Q$TAB"/>
     <bind actionName="make-getter" key="O-U$G"/>

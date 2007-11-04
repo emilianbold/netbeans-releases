@@ -78,6 +78,7 @@ made subject to such option by the copyright holder.
     <bind actionName="goto" key="D-L"/>
     <bind actionName="goto-declaration" key="F3"/>
     <bind actionName="goto-source" key="D-F3"/>
+    <bind actionName="in-place-refactoring" key="D-R"/>
     <bind actionName="insert-break" key="ENTER"/>
     <bind actionName="insert-tab" key="TAB"/>
     <bind actionName="jump-list-last-edit" key="D-Q"/>

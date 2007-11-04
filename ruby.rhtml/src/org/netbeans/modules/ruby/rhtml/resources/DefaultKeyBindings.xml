@@ -55,7 +55,6 @@ See http://wiki.netbeans.info/wiki/view/DevFaqLogicalKeybindings for action name
     <bind actionName="select-element-next" key="OS-PERIOD"/>
     <bind actionName="select-element-previous" key="OS-COMMA"/>
     -->
-    <bind actionName="in-place-refactoring" key="D-R"/>
     <bind actionName="ruby-reflow-paragraph" key="DS-P"/>
     <bind actionName="run-focused-spec" key="OS-F6"/>
 </bindings>

@@ -62,7 +62,6 @@ made subject to such option by the copyright holder.
     <bind actionName="select-element-next" key="OS-PERIOD"/>
     <bind actionName="select-element-previous" key="OS-COMMA"/>
 
-    <bind actionName="in-place-refactoring" key="D-R"/>
     <bind actionName="generate-code" key="O-INSERT"/>
     <bind actionName="complete-line" key="D-SEMICOLON"/>
     <bind actionName="complete-line-newline" key="DS-SEMICOLON"/>

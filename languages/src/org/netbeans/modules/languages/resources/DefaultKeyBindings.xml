@@ -46,5 +46,4 @@ made subject to such option by the copyright holder.
      this file, with minor diffs, in ide/applemenu.  Any changes made here should
      be made there too -->                            
 <bindings>
-    <bind actionName="in-place-refactoring" key="D-R"/>
 </bindings>
