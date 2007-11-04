@@ -381,7 +381,9 @@ public final class SourceRoots {
         return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
             public String[] run() {
                 synchronized (SourceRoots.this) {
-                    initializeRoots();
+                    if (sourceRootNames == null) {
+                        initializeRoots();
+                    }
                     assert sourceRootNames != null;
                     return sourceRootNames.toArray(new String[sourceRootNames.size()]);
                 }
@@ -398,7 +400,9 @@ public final class SourceRoots {
         return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
             public String[] run() {
                 synchronized (SourceRoots.this) {
-                    initializeRoots();
+                    if (sourceRootProperties == null) {
+                        initializeRoots();
+                    }
                     assert sourceRootProperties != null;
                     return sourceRootProperties.toArray(new String[sourceRootProperties.size()]);
                 }
