@@ -171,7 +171,7 @@ public class TaskManagerImpl extends TaskManager {
     
     private void attachFileScanners( TaskFilter newFilter, TaskFilter oldFilter ) {
         for( FileTaskScanner scanner : getFileScanners() ) {
-            if( oldFilter.isEnabled( scanner ) && !newFilter.isEnabled( scanner ) )
+            if( !newFilter.isEnabled( scanner ) )
                 scanner.attach( null );
             else if( newFilter.isEnabled( scanner ) )
                 scanner.attach( Accessor.createCallback( this, scanner ) );
@@ -180,10 +180,11 @@ public class TaskManagerImpl extends TaskManager {
     
     private void attachPushScanners( TaskScanningScope newScope, TaskFilter newFilter, TaskFilter oldFilter ) {
         for( PushTaskScanner scanner : getPushScanners() ) {
-            if( oldFilter.isEnabled( scanner ) && !newFilter.isEnabled( scanner ) )
+            if( !newFilter.isEnabled( scanner ) ){
                 scanner.setScope( null, null );
-            else if( newFilter.isEnabled( scanner ) )
+            }else if( newFilter.isEnabled( scanner ) ){
                 scanner.setScope( newScope, Accessor.createCallback( this, scanner ) );
+            }
         }
     }
     
