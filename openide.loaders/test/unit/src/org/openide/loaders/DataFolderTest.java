@@ -41,6 +41,7 @@
 
 package org.openide.loaders;
 
+import java.util.Set;
 import org.openide.filesystems.*;
 
 import java.beans.*;
@@ -49,6 +50,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
+import javax.swing.SwingUtilities;
 import junit.framework.Test;
 
 import org.netbeans.junit.*;
@@ -390,12 +392,21 @@ public class DataFolderTest extends LoggingTestCaseHid {
 
         
         DataFolder df = DataFolder.findFolder (lfs.findResource ("AA"));
-        DataObject[] arr = df.getChildren ();
+        Set<FileObject> files = df.files();
+        assertEquals("One", 1, files.size());
+        assertEquals("The primary", df.getPrimaryFile(), files.iterator().next());
 
         CharSequence seq = Log.enable("org.openide.nodes", Level.WARNING);
         df.getNodeDelegate().setName("BBBB");
         
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {}
+        });
         
+        assertEquals("new name", "BBBB", df.getName());
+        if (seq.length() > 0) {
+            fail("No warnings:\n" + seq);
+        }
     }
     
     private static final class OrderListener implements PropertyChangeListener {
