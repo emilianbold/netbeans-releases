@@ -126,7 +126,8 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     }
 
     public char childTokenCharAt(int rawOffset, int index) {
-        return text.charAt(childTokenOffset(rawOffset) + index);
+        index += childTokenOffset(rawOffset);
+        return text.charAt(index);
     }
     
     public int childTokenOffset(int rawOffset) {
@@ -261,7 +262,17 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         int offset = change.offset();
         for (int i = 0; i < removeTokenCount; i++) {
             Object tokenOrEmbeddingContainer = removedTokensOrEmbeddingContainers[i];
-            AbstractToken<T> token = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
+            AbstractToken<?> token;
+            // It's necessary to update-status of all removed tokens' contained embeddings
+            // since otherwise (if they would not be up-to-date) they could not be updated later
+            // as they lose their parent token list which the update-status relies on.
+            if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
+                EmbeddingContainer<?> ec = (EmbeddingContainer<?>)tokenOrEmbeddingContainer;
+                ec.updateStatusAndInvalidate();
+                token = ec.token();
+            } else { // Regular token
+                token = (AbstractToken<?>)tokenOrEmbeddingContainer;
+            }
             if (!token.isFlyweight()) {
                 updateElementOffsetRemove(token);
                 token.setTokenList(null);

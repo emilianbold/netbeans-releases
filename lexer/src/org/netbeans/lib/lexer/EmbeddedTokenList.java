@@ -224,6 +224,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
      * in the TokenSequence explicitly by adding TokenSequence.tokenOffsetDiff.
      */
     public int tokenOffset(int index) {
+//        embeddingContainer().checkStatusUpdated();
         return elementOffset(index);
     }
 
@@ -234,6 +235,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     }
     
     public int childTokenOffsetNoUpdate(int rawOffset) {
+//        embeddingContainer().checkStatusUpdated();
         return embeddingContainer.tokenStartOffset() + embedding.startSkipLength()
             + childTokenRelOffset(rawOffset);
     }
@@ -259,6 +261,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     }
 
     public char childTokenCharAt(int rawOffset, int index) {
+//        embeddingContainer().checkStatusUpdated();
         // Do not update the start offset shift - the token.text()
         // did it before returning its result and its contract
         // specifies that.
@@ -275,11 +278,14 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         return embeddingContainer.cachedModCount();
     }
     
+    @Override
     public int startOffset() { // used by FlyOffsetGapList
+//        embeddingContainer.checkStatusUpdated();
         return embeddingContainer.tokenStartOffset() + embedding.startSkipLength();
     }
     
     public int endOffset() {
+//        embeddingContainer.checkStatusUpdated();
         return embeddingContainer.tokenStartOffset() + embeddingContainer.token().length()
                 - embedding.endSkipLength();
     }
@@ -349,6 +355,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
 
     public LexerInputOperation<T> createLexerInputOperation(
     int tokenIndex, int relexOffset, Object relexState) {
+//        embeddingContainer.checkStatusUpdated();
         CharSequence tokenText = embeddingContainer.token().text();
         int tokenStartOffset = embeddingContainer.tokenStartOffset();
         if (tokenText == null) { // Should not normally happen - debug the state
@@ -375,7 +382,17 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         int offset = change.offset();
         for (int i = 0; i < removeTokenCount; i++) {
             Object tokenOrEmbeddingContainer = removedTokensOrEmbeddingContainers[i];
-            AbstractToken<T> token = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
+            AbstractToken<?> token;
+            // It's necessary to update-status of all removed tokens' contained embeddings
+            // since otherwise (if they would not be up-to-date) they could not be updated later
+            // as they lose their parent token list which the update-status relies on.
+            if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
+                EmbeddingContainer<?> ec = (EmbeddingContainer<?>)tokenOrEmbeddingContainer;
+                ec.updateStatusAndInvalidate();
+                token = ec.token();
+            } else { // Regular token
+                token = (AbstractToken<?>)tokenOrEmbeddingContainer;
+            }
             if (!token.isFlyweight()) {
                 updateElementOffsetRemove(token);
                 token.setTokenList(null);
@@ -437,12 +454,20 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         this.embeddingContainer = embeddingContainer;
     }
     
+    public String toStringHeader() {
+        StringBuilder sb = new StringBuilder(50);
+        sb.append("ETL: <").append(startOffset());
+        sb.append(",").append(endOffset());
+        sb.append(">");
+        sb.append(" IHC=").append(System.identityHashCode(this));
+        sb.append('\n');
+        return sb.toString();
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(256);
-        sb.append("EmbeddedTokenList: startOffset=").append(startOffset());
-        sb.append(", endOffset=").append(endOffset());
-        sb.append('\n');
+        sb.append(toStringHeader());
         LexerUtilsConstants.appendTokenList(sb, this);
         return sb.toString();
     }

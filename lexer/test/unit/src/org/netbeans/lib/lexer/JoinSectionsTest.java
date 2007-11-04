@@ -41,8 +41,6 @@
 package org.netbeans.lib.lexer;
 
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.PartType;
@@ -104,7 +102,6 @@ public class JoinSectionsTest extends NbTestCase {
 
         LexerTestUtilities.assertConsistency(hi);
         
-
         // Do modifications
         // Remove second closing brace '}'
         doc.remove(8, 1);
@@ -116,7 +113,7 @@ public class JoinSectionsTest extends NbTestCase {
         tsList = hi.tokenSequenceList(innerLP, 0, Integer.MAX_VALUE);
         assertEquals(4, tsList.size()); // 2 sections
 
-        // 1.section
+        // 1.section "a{b"
         ts = tsList.get(0);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.TEXT, "a", -1);
@@ -126,7 +123,7 @@ public class JoinSectionsTest extends NbTestCase {
         assertEquals(PartType.START, token.partType());
         assertFalse(ts.moveNext());
         
-        // 2.section
+        // 2.section "ef"
         ts = tsList.get(1);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "ef", -1);
@@ -134,7 +131,7 @@ public class JoinSectionsTest extends NbTestCase {
         assertEquals(PartType.MIDDLE, token.partType());
         assertFalse(ts.moveNext());
         
-        // 3.section
+        // 3.section "i{j"
         ts = tsList.get(2);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "i{j", -1);
@@ -142,7 +139,7 @@ public class JoinSectionsTest extends NbTestCase {
         assertEquals(PartType.MIDDLE, token.partType());
         assertFalse(ts.moveNext());
         
-        // 4.section
+        // 4.section "m}n"
         ts = tsList.get(3);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "m}", -1);

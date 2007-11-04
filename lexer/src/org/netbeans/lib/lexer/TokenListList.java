@@ -332,6 +332,7 @@ public final class TokenListList extends GapList<EmbeddedTokenList<?>> {
         int lastEndOffset = 0;
         for (int i = 0; i < size(); i++) {
             EmbeddedTokenList<?> etl = get(i);
+            etl.embeddingContainer().updateStatusImpl();
             if (etl.startOffset() < lastEndOffset) {
                 return "TOKEN-LIST-LIST Invalid start offset at index=" + i +
                         ": etl[" + i + "].startOffset()=" + etl.startOffset() +
@@ -357,7 +358,8 @@ public final class TokenListList extends GapList<EmbeddedTokenList<?>> {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("TokenListList for ");
+        StringBuilder sb = new StringBuilder(2048);
+        sb.append("TokenListList for ");
         sb.append(languagePath().mimePath());
         if (joinSections()) {
             sb.append(", joinSections");
@@ -370,11 +372,9 @@ public final class TokenListList extends GapList<EmbeddedTokenList<?>> {
         for (int i = 0; i < size(); i++) {
             EmbeddedTokenList<?> etl = get(i);
             ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
-            // Should updateStatus() be called? - better mark that the range is possibly not up-to-date
-            sb.append("range:[").append(etl.startOffset()).append(",").
-                    append(etl.endOffset()).append(']');
+            etl.embeddingContainer().updateStatus();
+            sb.append(etl.toStringHeader());
             EmbeddingContainer ec = etl.embeddingContainer();
-            sb.append(", IHC=").append(System.identityHashCode(etl));
             if (ec != null && ec.isRemoved()) {
                 sb.append(", <--REMOVED-->");
             }

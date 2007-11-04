@@ -66,6 +66,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.ArrayUtilities;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.lexer.inc.OriginalText;
 import org.netbeans.lib.lexer.inc.SnapshotTokenList;
 import org.netbeans.lib.lexer.inc.TokenListChange;
@@ -218,6 +219,13 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             : null;
     }
     
+    public CharSequence text() {
+        if (mutableTextInput != null) {
+            return LexerSpiPackageAccessor.get().text(mutableTextInput);
+        }
+        return null;
+    }
+    
     public void setActive(boolean active) {
         assert (isMutable());
         if (this.active != active) {
@@ -278,7 +286,6 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             incTokenList.incrementModCount();
             TokenListChange<T> change = new TokenListChange<T>(incTokenList);
             CharSequence text = LexerSpiPackageAccessor.get().text(mutableTextInput);
-            int endOffset = incTokenList.existingTokensEndOffset();
             TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
                 this, TokenHierarchyEventType.REBUILD, 0, 0, text, 0);
             change.setIndex(0);
@@ -334,7 +341,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                 // through original text
                 CharSequence text = incTokenList.text();
                 assert (text != null);
-                incTokenList.setText(new OriginalText(text, offset, removedText, insertedLength));
+                incTokenList.setText(eventInfo.originalText());
                 // Dump all contents
                 TokenHierarchyUpdate.LOG.finest(toString());
                 // Return the original text
@@ -342,7 +349,10 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             }
             
             if (TokenHierarchyUpdate.LOG.isLoggable(Level.FINE)) {
-                TokenHierarchyUpdate.LOG.fine("EVENT-INFO: " + eventInfo + "\n"); // NOI18N
+                StringBuilder sb = new StringBuilder(150);
+                sb.append("<<<<<<<<<<<<<<<<<< LEXER CHANGE START ------------------\n"); // NOI18N
+                sb.append(eventInfo.modificationDescription(false));
+                TokenHierarchyUpdate.LOG.fine(sb.toString());
             }
 
             new TokenHierarchyUpdate(eventInfo).update(incTokenList);

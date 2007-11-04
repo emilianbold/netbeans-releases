@@ -361,6 +361,7 @@ public final class EmbeddingContainer<T extends TokenId> {
                         // Check for presence of etl in a token list list
                         TokenListList tll = tokenHierarchyOperation.existingTokenListList(etl.languagePath());
                         if (tll != null) {
+                            // update-status already called
                             new TokenHierarchyUpdate(eventInfo).updateRemoveEmbedding(etl);
                         }
 
@@ -476,6 +477,24 @@ public final class EmbeddingContainer<T extends TokenId> {
     public int cachedModCount() {
         return cachedModCount;
     }
+    
+    /**
+     * Check if this embedding container is up-to-date (updateStatusImpl() was called on it)
+     * which is useful for missing-update-status checks.
+     */
+    public void checkStatusUpdated() {
+        if (cachedModCount != -2 && cachedModCount != rootTokenList.modCount()
+                && !checkStatusUpdatedThrowingException
+        ) {
+            // Prevent OOME because of nested throwing of exc
+            checkStatusUpdatedThrowingException = true;
+            String excMsg = "!!!INTERNAL ERROR!!! Status not updated on " +
+                    this + "\nin token hierarchy\n" + rootTokenList.tokenHierarchyOperation();
+            checkStatusUpdatedThrowingException = false;
+            throw new IllegalStateException(excMsg);
+        }
+    }
+    private static boolean checkStatusUpdatedThrowingException;
 
     public AbstractToken<T> token() {
         return token;
@@ -485,8 +504,16 @@ public final class EmbeddingContainer<T extends TokenId> {
      * Make this container serve a different token.
      * The updateStatusImpl() should be called afterwards to update tokenStartOffset etc.
      */
-    public void setToken(AbstractToken<T> token) {
+    public void reinit(AbstractToken<T> token) {
         this.token = token;
+        TokenList<?> parentTokenList = token.tokenList();
+        assert (parentTokenList != null);
+        if (parentTokenList.getClass() == EmbeddedTokenList.class) {
+            rootToken = ((EmbeddedTokenList<?>)parentTokenList).rootToken();
+        } else { // parent is a root token list: rootToken == token
+            rootToken = token;
+        }
+        updateStatusImpl();
     }
     
     public TokenList<? extends TokenId> rootTokenList() {
@@ -498,14 +525,17 @@ public final class EmbeddingContainer<T extends TokenId> {
     }
 
     public int tokenStartOffset() {
+//        checkStatusUpdated();
         return tokenStartOffset;
     }
     
     public int rootTokenOffsetShift() {
+//        checkStatusUpdated();
         return offsetShiftFromRootToken;
     }
     
     public char charAt(int tokenRelOffset) {
+//        checkStatusUpdated();
         return rootToken.charAt(offsetShiftFromRootToken + tokenRelOffset);
     }
     
@@ -561,12 +591,6 @@ public final class EmbeddingContainer<T extends TokenId> {
         return defaultEmbeddedTokenList;
     }
     
-    public boolean updateStatus() {
-        synchronized (rootTokenList) {
-            return (updateStatusImpl() != null);
-        }
-    }
-    
     /**
      * Check whether this embedding container is no longer present
      * in the token hierarchy.
@@ -575,28 +599,40 @@ public final class EmbeddingContainer<T extends TokenId> {
      * (it updates rootToken variable).
      */
     public boolean isRemoved() {
+//        checkStatusUpdated();
         return (rootToken == null);
+    }
+    
+    public void updateStatusAndInvalidate() {
+        updateStatusImpl();
+        invalidate();
+    }
+    
+    public boolean updateStatus() {
+        synchronized (rootTokenList) {
+            return (updateStatusImpl() != null);
+        }
     }
     
     /**
      * Update and return root token corresponding to this embedding container.
      */
-    AbstractToken<? extends TokenId> updateStatusImpl() {
+    public AbstractToken<? extends TokenId> updateStatusImpl() {
         if (rootToken == null)
             return null; // Removed from hierarchy
         int rootModCount;
         if (cachedModCount != (rootModCount = rootTokenList.modCount())) {
             cachedModCount = rootModCount;
-            TokenList<?> tl = token.tokenList();
-            if (tl == null) {
+            TokenList<?> parentTokenList = token.tokenList();
+            if (parentTokenList == null) {
                 rootToken = null;
-            } else if (tl.getClass() == EmbeddedTokenList.class) {
-                EmbeddedTokenList<?> etl = (EmbeddedTokenList<?>)tl;
-                rootToken = etl.embeddingContainer().updateStatusImpl();
-                if (rootToken != null) {
-                    tokenStartOffset = etl.childTokenOffsetNoUpdate(token.rawOffset());
-                    offsetShiftFromRootToken = tokenStartOffset - rootToken.offset(null);
-                }
+            } else if (parentTokenList.getClass() == EmbeddedTokenList.class) {
+                EmbeddedTokenList<?> parentEtl = (EmbeddedTokenList<?>)parentTokenList;
+                rootToken = parentEtl.embeddingContainer().updateStatusImpl();
+                tokenStartOffset = parentEtl.childTokenOffsetNoUpdate(token.rawOffset());
+                EmbeddingContainer parentEC = parentEtl.embeddingContainer();
+                offsetShiftFromRootToken = tokenStartOffset - parentEC.tokenStartOffset()
+                        + parentEC.rootTokenOffsetShift();
             } else { // parent is a root token list: rootToken == token
                 rootToken = token;
                 tokenStartOffset = token.offset(null);

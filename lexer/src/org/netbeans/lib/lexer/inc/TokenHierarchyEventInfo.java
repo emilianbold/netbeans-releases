@@ -44,9 +44,11 @@ package org.netbeans.lib.lexer.inc;
 import org.netbeans.api.lexer.TokenChange;
 import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.lexer.LexerApiPackageAccessor;
 import org.netbeans.lib.lexer.LexerSpiPackageAccessor;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
+import org.netbeans.spi.lexer.MutableTextInput;
 
 /**
  * Shared information for all the token list changes
@@ -156,6 +158,10 @@ public final class TokenHierarchyEventInfo {
         return insertedLength;
     }
     
+    public CharSequence insertedText() {
+        return currentText().subSequence(modificationOffset(), modificationOffset() + insertedLength());
+    }
+    
     /**
      * Get <code>Math.max(0, insertedLength() - removedLength())</code>.
      */
@@ -174,12 +180,45 @@ public final class TokenHierarchyEventInfo {
                         + " should be provided." // NOI18N
                         );
             }
-            originalText = new OriginalText(
-                    LexerSpiPackageAccessor.get().text(tokenHierarchyOperation.mutableTextInput()),
-                    modificationOffset, removedText, insertedLength
-                    );
+            originalText = new OriginalText(currentText(),
+                    modificationOffset, removedText, insertedLength);
         }
         return originalText;
+    }
+    
+    public CharSequence currentText() {
+        return tokenHierarchyOperation.text();
+    }
+    
+    public String modificationDescription(boolean detail) {
+        StringBuilder sb = new StringBuilder(originalText().length() + 300);
+        if (removedLength() > 0) {
+            sb.append("TEXT REMOVED <").append(modificationOffset()).append(","). // NOI18N
+                    append(modificationOffset() + removedLength()).append('>');
+            sb.append(':').append(removedLength());
+            if (removedText() != null) {
+                sb.append(" \"");
+                CharSequenceUtilities.debugText(sb, removedText());
+                sb.append('"');
+            }
+            sb.append('\n');
+        }
+        if (insertedLength() > 0) {
+            sb.append("TEXT INSERTED <").append(modificationOffset()).append(","). // NOI18N
+                    append(modificationOffset() + insertedLength()).append(">:"). // NOI18N
+                    append(insertedLength()).append(" \""); // NOI18N
+            CharSequenceUtilities.debugText(sb, insertedText());
+            sb.append("\"\n");
+        }
+        if (detail) {
+            sb.append("\n\n----------------- ORIGINAL TEXT -----------------\n" + // NOI18N
+                originalText() +
+                "\n----------------- BEFORE-CARET TEXT -----------------\n" + // NOI18N
+                originalText().subSequence(0, modificationOffset()) +
+                "|<--CARET\n" // NOI18N
+            );
+        }
+        return sb.toString();
     }
     
     public String dumpAffected() {
@@ -191,6 +230,7 @@ public final class TokenHierarchyEventInfo {
         return sb.toString();
     }
     
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("modOffset="); // NOI18N

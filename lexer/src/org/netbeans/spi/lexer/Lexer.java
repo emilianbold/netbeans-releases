@@ -143,7 +143,6 @@ public interface Lexer<T extends TokenId> {
      * <br/>
      * If possible the non-default lexer states should be expressed
      * as small non-negative integers.
-     * The {@link LexerInput#integerState(int)} can be used for convenience.
      * <br/>
      * There is an optimization that shrinks the storage costs for small
      * <code>java.lang.Integer</code>s to single bytes.

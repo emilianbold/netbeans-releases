@@ -244,7 +244,7 @@ public final class LexerUtilsConstants {
     public static <T extends TokenId> StringBuilder appendTokenListIndented(
         StringBuilder sb, TokenList<T> tokenList, int indent
     ) {
-        return appendTokenList(sb, tokenList, -1, 0, Integer.MAX_VALUE, true, indent);
+        return appendTokenList(sb, tokenList, -1, 0, Integer.MAX_VALUE, false, indent);
     }
 
     public static <T extends TokenId> StringBuilder appendTokenList(StringBuilder sb,

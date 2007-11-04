@@ -215,7 +215,12 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
                 "index=" + index + ", length=" + length() // NOI18N
             );
         }
-        
+        if (tokenList == null) { // Should normally not happen
+            // A bit strange to throw IOOBE but it's more practical since
+            // TokenHierarchy's dump can overcome IOOBE and deliver a useful debug but not NPEs etc.
+            throw new IndexOutOfBoundsException("index=" + index + ", length=" + length() +
+                    " but tokenList==null for token " + dumpInfo(null));
+        }
         return tokenList.childTokenCharAt(rawOffset, index);
     }
 
@@ -226,18 +231,14 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
     /**
      * This method is in fact <code>CharSequence.toString()</code> implementation.
      */
+    @Override
     public String toString() {
         // To prevent NPEs when token.toString() would called without checking
         // (text() == null) there is an extra check for that.
         CharSequence text = text();
-        try {
         return (text != null)
                 ? CharSequenceUtilities.toString(this, 0, length())
                 : "<null>";
-        } catch (NullPointerException e) {
-            System.err.println("id=" + LexerUtilsConstants.idToString(id) + ", IHC=" + System.identityHashCode(this));
-            throw e;
-        }
     }
 
     /**
@@ -271,10 +272,16 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
         } else {
             sb.append("<null-text>"); // NOI18N
         }
-        sb.append(", ").append(id != null ? id.name() + '[' + id.ordinal() + ']' : "<null-id>"); // NOI18N
-        sb.append(", ").append(offset(tokenHierarchy)); // NOI18N
-        sb.append(", ").append(length()); // NOI18N
-        sb.append(", ").append(dumpInfoTokenType());
+        sb.append(' ');
+        if (isFlyweight()) {
+            sb.append("F(").append(length()).append(')');
+        } else {
+            int offset = offset(tokenHierarchy);
+            sb.append('<').append(offset); // NOI18N
+            sb.append(",").append(offset + length()).append('>'); // NOI18N
+        }
+        sb.append(' ').append(id != null ? id.name() + '[' + id.ordinal() + ']' : "<null-id>"); // NOI18N
+        sb.append(" ").append(dumpInfoTokenType());
         return sb.toString();
     }
     

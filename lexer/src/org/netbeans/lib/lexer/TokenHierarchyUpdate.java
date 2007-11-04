@@ -95,7 +95,6 @@ public final class TokenHierarchyUpdate {
         eventInfo.setTokenChangeInfo(rootChange.tokenChangeInfo());
 
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("<<<<<<<<<<<<<<<<<< LEXER CHANGE START ------------------\n"); // NOI18N
             LOG.fine("ROOT CHANGE: " + rootChange.toString(0) + "\n"); // NOI18N
         }
 
@@ -147,14 +146,25 @@ public final class TokenHierarchyUpdate {
     public void updateCreateEmbedding(EmbeddedTokenList<?> addedTokenList) {
         TLLInfo info = info(addedTokenList.languagePath());
         if (info != NO_INFO) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("THU.updateCreateEmbedding(): " + addedTokenList.toStringHeader());
+            }
             info.markAdded(addedTokenList);
             processLevelInfos();
         }
     }
     
+    /**
+     * update-status must be called by the caller.
+     * @param removedTokenList token list removed by TS.removeEmbedding().
+     */
     public void updateRemoveEmbedding(EmbeddedTokenList<?> removedTokenList) {
         TLLInfo info = info(removedTokenList.languagePath());
         if (info != NO_INFO) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("THU.updateRemoveEmbedding(): " + removedTokenList.toStringHeader());
+            }
+            // update-status called by caller.
             info.markRemoved(removedTokenList);
             processLevelInfos();
         }
@@ -193,12 +203,14 @@ public final class TokenHierarchyUpdate {
                     ) { // Modification within embedding's bounds => embedding can stay
                         // Mark that the embedding should be updated
                         if (childInfo != NO_INFO) {
+                            // update-status called by rewrap-ec-token above
                             childInfo.markBoundsChange(etl);
                         } else { // No child but want to update nested possible bounds changes
                             if (etl.isInited()) {
                                 parentChange = change;
                                 // Perform change in child - it surely does not join the sections
                                 // since otherwise the childInfo could not be null
+                                // update-status done above for the embedding container
                                 change = updateTokenListByModification(etl, null);
                                 if (change.isBoundsChange()) {
                                     processBoundsChangeEmbeddings(change, parentChange);
@@ -213,7 +225,7 @@ public final class TokenHierarchyUpdate {
 
                     } else { // Mod in skip lengths => Remove the etl from chain
                         if (childInfo != NO_INFO) {
-                            // updateStatusImpl() already done in rewrapECToken()
+                            // update-status already done as part of rewrap-token
                             childInfo.markRemoved(etl);
                         }
                         // Remove embedding and get the next embedded token list (prevEtl stays the same)
@@ -263,6 +275,7 @@ public final class TokenHierarchyUpdate {
                 while (etl != null && etl != EmbeddedTokenList.NO_DEFAULT_EMBEDDING) {
                     TLLInfo info = info(etl.languagePath());
                     if (info != NO_INFO) {
+                        // update-status called above
                         info.markRemoved(etl);
                     }
                     etl = etl.nextEmbeddedTokenList();
@@ -316,9 +329,12 @@ public final class TokenHierarchyUpdate {
         }
     }
     
-    private <T extends TokenId> TokenListChange<T> updateTokenListByModification(
+    <T extends TokenId> TokenListChange<T> updateTokenListByModification(
     MutableTokenList<T> tokenList, Object zeroIndexRelexState) {
         TokenListChange<T> change = new TokenListChange<T>(tokenList);
+//        if (tokenList instanceof EmbeddedTokenList) {
+//            ((EmbeddedTokenList)tokenList).embeddingContainer().checkStatusUpdated();
+//        }
         TokenListUpdater.update(tokenList, eventInfo.modificationOffset(),
                 eventInfo.insertedLength(), eventInfo.removedLength(), change, zeroIndexRelexState);
         return change;
@@ -356,7 +372,7 @@ public final class TokenHierarchyUpdate {
     private <T extends TokenId> void rewrapECToken(EmbeddingContainer<T> ec, TokenListChange<?> change) {
         @SuppressWarnings("unchecked")
         TokenListChange<T> tChange = (TokenListChange<T>)change;
-        ec.setToken(tChange.addedToken(0));
+        ec.reinit(tChange.addedToken(0));
         ec.updateStatusImpl();
         tChange.tokenList().wrapToken(tChange.index(), ec);
     }
@@ -406,6 +422,7 @@ public final class TokenHierarchyUpdate {
          */
         public void markRemoved(EmbeddedTokenList<?> removedTokenList) {
             boolean indexWasMinusOne; // Used for possible exception cause debugging
+//            removedTokenList.embeddingContainer().checkStatusUpdated();
             if (index == -1) {
                 checkUpdateNotCalledYet();
                 indexWasMinusOne = true;
@@ -424,7 +441,7 @@ public final class TokenHierarchyUpdate {
                         "Wishing to remove tokenList\n" + removedTokenList + // NOI18N
                         "\nbut marked-for-remove tokenList is \n" + markedForRemoveTokenList + // NOI18N
                         "\nfrom tokenListList\n" + tokenListList + // NOI18N
-                        "\nevent-info:" + update.eventInfo // NOI18N
+                        "\n\nModification description:\n" + update.eventInfo.modificationDescription(true) // NOI18N
                 );
             }
             removeCount++;
@@ -438,7 +455,8 @@ public final class TokenHierarchyUpdate {
          * It's expected that updateStatusImpl() was already called
          * on the corresponding embedding container.
          */
-        public void markAdded(TokenList<?> addedTokenList) {
+        public void markAdded(EmbeddedTokenList<?> addedTokenList) {
+//            addedTokenList.embeddingContainer().checkStatusUpdated();
             if (added.size() == 0) {
                 checkUpdateNotCalledYet();
                 if (index == -1) {
@@ -457,10 +475,11 @@ public final class TokenHierarchyUpdate {
          * It's expected that updateStatusImpl() was already called
          * on the corresponding embedding container.
          */
-        public void markBoundsChange(TokenList<?> tokenList) {
+        public void markBoundsChange(EmbeddedTokenList<?> etl) {
             assert (index == -1) : "index=" + index + " != -1"; // Should be the first one
+//            etl.embeddingContainer().checkStatusUpdated();
             checkUpdateNotCalledYet();
-            index = tokenListList.findIndex(tokenList.startOffset());
+            index = tokenListList.findIndex(etl.startOffset());
         }
         
         public void update() {
@@ -484,6 +503,7 @@ public final class TokenHierarchyUpdate {
                 etl.embeddingContainer().updateStatusImpl();
                 Object matchState = LexerUtilsConstants.endState(etl);
                 Object relexState = tokenListList.relexState(index);
+                // update-status called above
                 TokenListChange<?> chng = update.updateTokenListByModification(etl, relexState);
                 if (chng.isBoundsChange()) {
                     TokenListChange<?> parentChange = (tokenListList.languagePath().size() == 2)
@@ -556,6 +576,11 @@ public final class TokenHierarchyUpdate {
                 }
             }
             
+//            for (EmbeddedTokenList<?> etl : tokenListList) {
+//                etl.embeddingContainer().updateStatusImpl();
+//                if (etl.embeddingContainer().isRemoved())
+//                    throw new IllegalStateException();
+//            }
             // Set index to -1 to simplify correctness checking
             index = -1;
         }
@@ -588,9 +613,10 @@ public final class TokenHierarchyUpdate {
         }
         
         private <T extends TokenId> TokenListChange<T> updateTokenListAtStart(
-        MutableTokenList<T> tokenList, int offset, Object zeroIndexRelexState) {
-            TokenListChange<T> chng = new TokenListChange<T>(tokenList);
-            TokenListUpdater.update(tokenList, offset, 0, 0, chng, zeroIndexRelexState);
+        EmbeddedTokenList<T> etl, int offset, Object zeroIndexRelexState) {
+            TokenListChange<T> chng = new TokenListChange<T>(etl);
+//            etl.embeddingContainer().checkStatusUpdated();
+            TokenListUpdater.update(etl, offset, 0, 0, chng, zeroIndexRelexState);
             update.eventInfo.setMaxAffectedEndOffset(chng.addedEndOffset());
             return chng;
         }
