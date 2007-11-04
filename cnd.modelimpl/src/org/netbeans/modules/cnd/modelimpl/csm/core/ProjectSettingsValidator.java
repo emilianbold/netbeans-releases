@@ -119,7 +119,7 @@ public class ProjectSettingsValidator {
 	}
 	Key key = new ProjectSettingsValidatorKey(csmProject.getUniqueName());
 	data = (Data) RepositoryUtils.get(key);
-	assert data != null;
+	assert data != null : "Can not get project settings validator data by the key " + key; //NOI18N
     }
     
     public boolean exists(FileImpl fileImpl) {
