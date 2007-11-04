@@ -153,12 +153,15 @@ public class YAML {
     public static String itemName (SyntaxContext context) {
         ASTPath path = context.getASTPath ();
         ASTNode item = (ASTNode) path.getLeaf ();
-        ASTNode node = item.getNode("SequenceValue");
+        ASTNode node = item.getNode ("SequenceValue");
         if (node != null) {
-            return node.getTokenType("sequence").getIdentifier();
+            return node.getTokenType ("sequence").getIdentifier();
         }
-        node = item.getNode("MapKey");
-        return node == null ? null : node.getTokenType("key").getIdentifier();
+        node = item.getNode ("MapKey");
+        if (node == null) return null;
+        ASTToken token = node.getTokenType ("key");
+        if (token == null) return null;
+        return token.getIdentifier ();
     }
     
 }
