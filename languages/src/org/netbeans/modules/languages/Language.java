@@ -261,44 +261,52 @@ public class Language extends org.netbeans.api.languages.Language {
     void importLanguage (
         Feature feature
     ) {
+        String mimeType = (String) feature.getValue ("mimeType");
+        if (feature.getPattern ("start") != null) {
+            //feature.put ("token", Language.EMBEDDING_TOKEN_TYPE_NAME);
+            assert (preprocessorImport == null);
+            preprocessorImport = feature;
+            try {
+                importedLangauges.add (LanguagesManager.getDefault ().getLanguage (mimeType));
+            } catch (LanguageDefinitionNotFoundException ex) {
+                importedLangauges.add (Language.create (mimeType));
+            }
+            return;
+        }
+        if (feature.getValue ("state") == null) {
+            String tokenName = feature.getSelector ().getAsString ();
+            assert (!tokenImports.containsKey (tokenName));
+            tokenImports.put (tokenName, feature);
+            try {
+                importedLangauges.add (LanguagesManager.getDefault ().getLanguage (mimeType));
+            } catch (LanguageDefinitionNotFoundException ex) {
+                importedLangauges.add (Language.create (mimeType));
+            }
+            return;
+        }
         try {
-            String mimeType = (String) feature.getValue ("mimeType");
             Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
-            if (feature.getPattern ("start") != null) {
-                //feature.put ("token", Language.EMBEDDING_TOKEN_TYPE_NAME);
-                assert (preprocessorImport == null);
-                preprocessorImport = feature;
-                importedLangauges.add (language);
-                return;
-            }
-            if (feature.getValue ("state") == null) {
-                String tokenName = feature.getSelector ().getAsString ();
-                assert (!tokenImports.containsKey (tokenName));
-                tokenImports.put (tokenName, feature);
-                importedLangauges.add (language);
-                return;
-            }
 
             String state = (String) feature.getValue ("state"); 
             String tokenName = feature.getSelector ().getAsString ();
 
             // import tokenTypes
-//!!            Iterator<TokenType> it = language.getTokenTypes ().iterator ();
-//            while (it.hasNext ()) {
-//                TokenType tt = it.next ();
-//                String startState = tt.getStartState ();
-//                Pattern pattern = tt.getPattern ().clonePattern ();
-//                String endState = tt.getEndState ();
-//                if (startState == null || Parser.DEFAULT_STATE.equals (startState)) 
-//                    startState = state;
-//                else
-//                    startState = tokenName + '-' + startState;
-//                if (endState == null || Parser.DEFAULT_STATE.equals (endState)) 
-//                    endState = state;
-//                else
-//                    endState = tokenName + '-' + endState;
-//                //!!addToken (startState, tt.getType (), pattern, endState, tt.getProperties ());
-//            }
+    //!!            Iterator<TokenType> it = language.getTokenTypes ().iterator ();
+    //            while (it.hasNext ()) {
+    //                TokenType tt = it.next ();
+    //                String startState = tt.getStartState ();
+    //                Pattern pattern = tt.getPattern ().clonePattern ();
+    //                String endState = tt.getEndState ();
+    //                if (startState == null || Parser.DEFAULT_STATE.equals (startState)) 
+    //                    startState = state;
+    //                else
+    //                    startState = tokenName + '-' + startState;
+    //                if (endState == null || Parser.DEFAULT_STATE.equals (endState)) 
+    //                    endState = state;
+    //                else
+    //                    endState = tokenName + '-' + endState;
+    //                //!!addToken (startState, tt.getType (), pattern, endState, tt.getProperties ());
+    //            }
 
             // import grammar rues
             if (language.analyser != null)
