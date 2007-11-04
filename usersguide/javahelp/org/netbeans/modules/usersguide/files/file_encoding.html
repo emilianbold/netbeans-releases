@@ -21,27 +21,46 @@
             declarations in the file template.</p>
             
         <p>When determining the character encoding for a file, the IDE applies the 
-            FileEncodingQuery (FEQ) layer model. It first looks if the encoding is 
-            declared in the file. If no encoding declaration can be found, the IDE
+            FileEncodingQuery (FEQ) layer model. It first determines whether the encoding
+            is declared in the file. If no encoding declaration can be found, the IDE
             presumes the file encoding is specified by the project's encoding property. 
             If the project encoding is not specified (e.g. imported or older projects), 
             the IDE applies the encoding set by the environment in which it runs.</p>
 
+        <h3>Setting Character Encoding for Files</h3>
+        
+        <p>To change the encoding for a file (e.g. HTMl, XML, or JSP files) you need 
+            to change the encoding and charset specified in the corresponding tag in 
+            the file. When an encoding is specified in a file, this setting overrides 
+            the encoding set in the project.</p>        
+        
+        <h4>To manually change the character encoding for a file:</h4>        
+        
+        <ol>
+            <li>Open the file in the Source editor.</li>
+            <li>Modify the encoding and charset tags for the file, if available.</li>
+        </ol>        
+
         <h4>Notes:</h4>
         
         <ul class="note">
-            <li>The IDE does not convert characters when the encoding of the file changes.
+            <li>The IDE does not convert characters when the encoding of a file changes.
                 If you manually change the encoding declaration within the file, and that 
                 encoding does not match the project encoding, you risk preventing the project 
                 from compiling and running. This is due to the fact that the encoding tag 
                 affects how file contents are viewed internally - not only during runtime,
-                but during the design phase (i.e. adding content in a text editor) as well.</li>
+                but also during the design phase (i.e. adding content in the Source Editor).</li>
+            <li>Manually changing the character encoding declaration within a file changes 
+                how the IDE reads and displays that file. When you change the file encoding, 
+                the IDE does not convert the existing contents of the file to the new encoding. 
+                Care should be taken when changing the encoding of a file because the file 
+                may contain characters that cannot be saved or that may not display properly 
+                in the new encoding.</li>
         </ul>
   
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="../project/proj_encoding.html">About Project Encodings</a></dd>
-            <dd><a href="encoding.html">Setting Character Encoding</a></dd>
         </dl>
         
         <hr>

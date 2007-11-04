@@ -27,7 +27,6 @@
 <mapID target="files.template" url="files/files_template.html" />
 <mapID target="files.unknown" url="files/files_unknown.html" />
 <mapID target="files.runtime" url="files/files_runtime.html" />
-<mapID target="files.encoding" url="files/encoding.html" />
 <mapID target="files.about-encoding" url="files/file_encoding.html" />
 <mapID target="find_regexp" url="files/find_regexp.html" />
 

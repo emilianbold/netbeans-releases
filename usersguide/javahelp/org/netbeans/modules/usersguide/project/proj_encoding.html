@@ -14,14 +14,37 @@
         
         <p><small><a href="#seealso">See Also</a></small></p>
         
-        <p>By default, projects in the IDE are created using UTF-8 encoding. If you
+        <p>By default, newly-created projects in the IDE use UTF-8 character encoding. 
+            This encoding determines how the IDE interprets characters beyond the 
+            ASCII character set. The IDE displays and saves any new files you create 
+            using the encoding set by the project in which they reside. If you
             want to change encoding properties, the IDE provides you with the ability 
             to do so manually.</p>
+
+        <h3>Setting Character Encoding</h3>
             
-        <p>If you want to change the encoding for a project, see: 
-            <a href="../files/encoding.html">Setting Character Encoding</a></p>
+        <p><strong>To change the character encoding for a project:</strong></p>
+        
+        <ol>
+            <li>Right-click the project node in the Projects window and choose Properties.</li>
+            <li>In the left column under Categories, select Sources.</li>  <!-- this needs to be verified for all project types (i.e. C++, Ruby) -->
+            <li>In the Encoding drop-down menu, select the character encoding that you want 
+                to be applied to the project. Click OK. The new encoding is applied to the 
+                project you are working in.</li>
+        </ol>
+        
+        <p><strong>Notes:</strong></p>
+        
+        <ul>
+            <li>When you change the encoding for a project, all new files are created using 
+                the new project encoding.</li>            
+            <li>The new value that you set for project encoding is retained as the global 
+                project encoding value for your session. Therefore, when you create a new 
+                project, the IDE uses the encoding value of the previously created project 
+                for the new project.</li>
+        </ul>        
             
-        <h3>Encoding detection in the IDE</h3>
+        <h3>Encoding Detection in the IDE</h3>
         
         <p>The IDE implements the FileEncodingQuery (FEQ) layer model. FEQ is an 
             interface for obtaining information about which encoding can be used 
@@ -30,8 +53,10 @@
             
         <ol>
             <li><strong>File FEQ</strong>. The encoding value declared within a file.</li>
-            <li><strong>Project FEQ</strong>. The value of the current global project encoding in a session.</li>
-            <li><strong>Fallback FEQ</strong>. The encoding of the locale in which the IDE is running.</li>
+            <li><strong>Project FEQ</strong>. The value of the current global project 
+                encoding in a session.</li>
+            <li><strong>Fallback FEQ</strong>. The encoding of the locale in which the 
+                IDE is running.</li>
         </ol>
         
         <h3>Opening Older Projects</h3>
@@ -65,7 +90,6 @@
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="../files/file_encoding.html">About File Encodings</a></dd>
-            <dd><a href="../files/encoding.html">Setting Character Encoding</a></dd>
         </dl>
         
         <hr>
