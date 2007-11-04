@@ -9,6 +9,7 @@
         <ant dir="../grailsproject"/>
         <ant dir="../support"/>
         <ant dir="../groovyproject"/>
+        <ant dir="../gsp"/>
         <antcall target="netbeans"/>
     </target>
 
