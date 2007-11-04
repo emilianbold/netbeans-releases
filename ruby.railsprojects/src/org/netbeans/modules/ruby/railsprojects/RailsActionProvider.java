@@ -101,7 +101,7 @@ public class RailsActionProvider implements ActionProvider {
     public static final String COMMAND_AUTOTEST = "autotest"; // NOI18N
     
     /**
-     * Standard command for running rake migrate on a project
+     * Standard command for running the Rails console for a project
      */
     public static final String COMMAND_RAILS_CONSOLE = "rails-console"; // NOI18N
     
