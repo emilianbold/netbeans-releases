@@ -86,9 +86,13 @@ public final class DelegateRepository implements Repository {
     public Persistent get(Key key) {
         Persistent result = delegate.get(key);
 	if( result == null && Stats.useNullWorkaround ) {
-	    System.err.printf("NULL returned for key %s on attempt 1\n", key);
-	    result = delegate.get(key);
-	    System.err.printf("%s value returned for key %s on attempt 2\n", (result == null) ? "NULL" : "NON-NULL", key);
+	    String keyClassName = key.getClass().getName();
+	    // repository is often asked for projects when theis persistence just does not exist
+	    if( ! keyClassName.endsWith(".ProjectKey") && ! keyClassName.endsWith(".OffsetableDeclarationKey") ) {  
+		System.err.printf("NULL returned for key %s on attempt 1\n", key);
+		result = delegate.get(key);
+		System.err.printf("%s value returned for key %s on attempt 2\n", (result == null) ? "NULL" : "NON-NULL", key);
+	    }
 	}
 	return result;
     }

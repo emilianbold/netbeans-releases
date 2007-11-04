@@ -131,6 +131,7 @@ public class StorageAllocator {
     }
     
     public void deleteUnitFiles (String unitName, boolean removeUnitFolder) {
+	if( Stats.TRACE_UNIT_DELETION ) System.err.printf("Deleting unit files for %s\n", unitName);
         String path = getUnitStorageName(unitName);
         File pathFile = new File (path);
         deleteDirectory(pathFile, removeUnitFolder);

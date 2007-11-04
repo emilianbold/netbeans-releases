@@ -95,7 +95,8 @@ public class Stats {
             
     public final static String ENCODING = System.getProperty("file.encoding"); // NOI18N
     
-    public final static boolean TRACE_FILE_INDEX = getBoolean("cnd.repository.trace.fileIndex", false); //NOI18N
+    public final static boolean TRACE_REPOSITORY_TRANSLATOR = getBoolean("cnd.repository.trace.translator", false); //NOI18N
+    public final static boolean TRACE_UNIT_DELETION = getBoolean("cnd.repository.trace.unit.deletion", false); //I18N
     
     public static final boolean isTraceKey(Key key) {
 	if( traceKey ) {

@@ -143,6 +143,8 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
 
     public int getUnitId(String unitName) {
         if (!unitNamesCache.containsValue(unitName)) {
+	    // NB: this unit can't be open (since there is no such unit in unitNamesCache)
+	    // so we are just removing some ocassionally existing in persisntence files
             StorageAllocator.getInstance().deleteUnitFiles(unitName, false);
         }
         return unitNamesCache.getId(unitName);         
@@ -156,7 +158,15 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
 	return unitNamesCache.getFileNames(unitId);
     }    
     
-   private static void readMasterIndex(DataInput stream) throws IOException {
+    /** 
+     * Reads master index - 
+     * a list if 
+     *	- units
+     *  - their timestamps
+     *	- their required units 
+     *	- required units  timestamps 
+     */
+    private static void readMasterIndex(DataInput stream) throws IOException {
         assert stream != null;
         unitNamesCache = new UnitsCache(stream);
     }
@@ -222,15 +232,15 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             dis = new DataInputStream(bis);
             indexLoaded = readUnitFilesCache(unitName, dis, antiLoop);
         } catch (FileNotFoundException e) {
-            if (Stats.TRACE_FILE_INDEX){
+            if (Stats.TRACE_REPOSITORY_TRANSLATOR){
                 e.printStackTrace();
             }
         } catch (IOException e) {
-            if (Stats.TRACE_FILE_INDEX){
+            if (Stats.TRACE_REPOSITORY_TRANSLATOR){
                 e.printStackTrace();
             }
         } catch (Throwable tr) {
-            if (Stats.TRACE_FILE_INDEX){
+            if (Stats.TRACE_REPOSITORY_TRANSLATOR){
                 tr.printStackTrace();
             }
         }   finally {
@@ -273,15 +283,15 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             writeUnitFilesCache(unitName, dos);
             indexStored = true;
         } catch (FileNotFoundException e) {
-            if (Stats.TRACE_FILE_INDEX){
+            if (Stats.TRACE_REPOSITORY_TRANSLATOR){
                 e.printStackTrace();
             }
         } catch (IOException e) {
-            if (Stats.TRACE_FILE_INDEX){
+            if (Stats.TRACE_REPOSITORY_TRANSLATOR){
                 e.printStackTrace();
             }
         } catch (Throwable tr) {
-            if (Stats.TRACE_FILE_INDEX){
+            if (Stats.TRACE_REPOSITORY_TRANSLATOR){
                 tr.printStackTrace();
             }
         } finally {
@@ -312,15 +322,15 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             dis = new DataInputStream(bis);
             readMasterIndex(dis);
         } catch (FileNotFoundException e) {
-            if (Stats.TRACE_FILE_INDEX){
+            if (Stats.TRACE_REPOSITORY_TRANSLATOR){
                 e.printStackTrace();
             }
         } catch (IOException e) {
-            if (Stats.TRACE_FILE_INDEX){
+            if (Stats.TRACE_REPOSITORY_TRANSLATOR){
                 e.printStackTrace();
             }
         } catch (Throwable tr) {
-            if (Stats.TRACE_FILE_INDEX){
+            if (Stats.TRACE_REPOSITORY_TRANSLATOR){
                 tr.printStackTrace();
             }
         } finally {
@@ -344,15 +354,15 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             dos = new DataOutputStream(bos);
             writeUnitsCache(dos);
         } catch (FileNotFoundException e) {
-            if (Stats.TRACE_FILE_INDEX){
+            if (Stats.TRACE_REPOSITORY_TRANSLATOR){
                 e.printStackTrace();
             }
         } catch (IOException e)     {
-            if (Stats.TRACE_FILE_INDEX){
+            if (Stats.TRACE_REPOSITORY_TRANSLATOR){
                 e.printStackTrace();
             }
         } catch (Throwable tr) {
-            if (Stats.TRACE_FILE_INDEX){
+            if (Stats.TRACE_REPOSITORY_TRANSLATOR){
                 tr.printStackTrace();
             }
         } finally {
@@ -448,15 +458,20 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
         private static Map<String, Collection<RequiredUnit>>    unit2requnint = 
                 new ConcurrentHashMap<String, Collection<RequiredUnit>>();
         
+	/**
+	 * Is called before closing a unit.
+	 * Stores the list of required inits and their timestamps.
+	 */
 	// package-local
         static void updateReqUnitInfo(String unitName, Set<String> reqUnits) {
             // update timestamps
+	    // ???! why do we copy the timestamps from unitNamesCache.cache to unit2timestamp for ALL modules???
             for (int i = 0; i < unitNamesCache.cache.size(); i++) { // unitNamesCache AKA this
                 String uName = unitNamesCache.cache.get(i);
                 long uTs = fileNamesCaches.get(i).getTimestamp();
                 unit2timestamp.put(uName, uTs);
             }
-            //
+            // store required units set
             Collection<RequiredUnit> unitReqUnits = new CopyOnWriteArraySet<RequiredUnit>();
             if (reqUnits != null) {
                 for (String rUnitName: reqUnits) {
@@ -468,6 +483,16 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             unit2requnint.put(unitName, unitReqUnits);
         }
 
+	/**
+	 * Validates required units - 
+	 * checks at least one required unit was re-created off-line. 
+	 * If so, the cache of the unit that was re-created 
+	 * and the cache of the unit that depends on it
+	 * should be invalidated
+	 * @param unitName name of the unit top check
+	 * @param antiLoop  prevents infinite recursion (in the case of cyclic dependencies)
+	 * @return
+	 */
         private static boolean validateReqUnits(String unitName, Set<String> antiLoop) {
             if (antiLoop.contains(unitName)) {
                 return true;
@@ -496,6 +521,11 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             return result;
         }
         
+	/**
+	 * For the given unit, 
+	 * stores the collection of it's required units 
+	 * (instances of RequiredUnit)
+	 */
         private static void writeRequiredUnits(String unitName, DataOutput stream) throws IOException {
             assert unitName != null;
             assert stream != null;
@@ -509,7 +539,10 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
                 unit.write(stream);
             }
         }
-        
+
+	/**
+	 * Reads the collection of units (instances of RequiredUnit)
+	 */
         private static Collection<RequiredUnit> readRequiredUnits(DataInput stream) throws IOException {
             assert stream != null;
             Collection<RequiredUnit> units = new CopyOnWriteArraySet<RequiredUnit>();
@@ -577,11 +610,19 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             int size = stream.readInt();
             
             for (int i = 0; i < size; i++) {
+		
                 String value = FilePathCache.getString(stream.readUTF());
                 cache.add(value);
+		
+		// timestamp from master index -> unit2timestamp
                 long ts = stream.readLong();
                 unit2timestamp.put(value, Long.valueOf(ts));
+		
+		// req. units list from master index -> unit2requnint
+		// (with timestamps from master index)
                 unit2requnint.put(value, readRequiredUnits(stream));
+		
+		// new dummy int/string cache (with the current (???!) timestamp
                 fileNamesCaches.add(new IntToStringCache());
             }
         }
