@@ -38,15 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midpnb.producers;
 
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
-import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
+import org.netbeans.modules.vmd.midp.java.JavaClassNameResolver;
 import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
 import org.netbeans.modules.vmd.midpnb.components.commands.SVGWaitScreenFailureCommandCD;
 import org.netbeans.modules.vmd.midpnb.components.commands.SVGWaitScreenSuccessCommandCD;
@@ -62,17 +61,20 @@ import org.openide.util.NbBundle;
  * @author Anton Chechel
  */
 public class SVGWaitScreenProducer extends MidpComponentProducer {
-    
+
     public SVGWaitScreenProducer() {
-        super(SVGWaitScreenCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, NbBundle.getMessage(SVGWaitScreenProducer.class, "DISP_SVG_Wait_Screen"), NbBundle.getMessage(SVGWaitScreenProducer.class, "TTIP_SVG_Wait_Screen"), SVGWaitScreenCD.ICON_PATH, SVGWaitScreenCD.ICON_LARGE_PATH)); // NOI18N
+        super(SVGWaitScreenCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG,
+                NbBundle.getMessage(SVGWaitScreenProducer.class, "DISP_SVG_Wait_Screen"), // NOI18N
+                NbBundle.getMessage(SVGWaitScreenProducer.class, "TTIP_SVG_Wait_Screen"), // NOI18N
+                SVGWaitScreenCD.ICON_PATH, SVGWaitScreenCD.ICON_LARGE_PATH));
     }
 
     @Override
-    public Result postInitialize (DesignDocument document, DesignComponent waitScreen) {
-        return produceSVGWaitScreen (document, waitScreen, true);
+    public Result postInitialize(DesignDocument document, DesignComponent waitScreen) {
+        return produceSVGWaitScreen(document, waitScreen, true);
     }
 
-    public static Result produceSVGWaitScreen (DesignDocument document, DesignComponent waitScreen, boolean createTask) {
+    public static Result produceSVGWaitScreen(DesignDocument document, DesignComponent waitScreen, boolean createTask) {
         DesignComponent successCommand = MidpDocumentSupport.getSingletonCommand(document, SVGWaitScreenSuccessCommandCD.TYPEID);
         DesignComponent failureCommand = MidpDocumentSupport.getSingletonCommand(document, SVGWaitScreenFailureCommandCD.TYPEID);
 
@@ -89,18 +91,22 @@ public class SVGWaitScreenProducer extends MidpComponentProducer {
         MidpDocumentSupport.addEventSource(waitScreen, DisplayableCD.PROP_COMMANDS, failureEventSource);
 
         if (createTask) {
-            DesignComponent task = document.createComponent (SimpleCancellableTaskCD.TYPEID);
-            MidpDocumentSupport.getCategoryComponent (document, ResourcesCategoryCD.TYPEID).addComponent (task);
-            waitScreen.writeProperty (SVGWaitScreenCD.PROP_TASK, PropertyValue.createComponentReference (task));
+            DesignComponent task = document.createComponent(SimpleCancellableTaskCD.TYPEID);
+            MidpDocumentSupport.getCategoryComponent(document, ResourcesCategoryCD.TYPEID).addComponent(task);
+            waitScreen.writeProperty(SVGWaitScreenCD.PROP_TASK, PropertyValue.createComponentReference(task));
 
-            return new Result (waitScreen, successCommand, failureCommand, successEventSource, failureEventSource, task);
-        } else
-            return new Result (waitScreen, successCommand, failureCommand, successEventSource, failureEventSource);
+            return new Result(waitScreen, successCommand, failureCommand, successEventSource, failureEventSource, task);
+        } else {
+            return new Result(waitScreen, successCommand, failureCommand, successEventSource, failureEventSource);
+        }
     }
 
     @Override
     public boolean checkValidity(DesignDocument document) {
-            return MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage") && // NOI18N
-                   MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
+        JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
+        resolver.addResolveListenerIfNotRegistered(this);
+        Boolean isValid1 = resolver.isValid("javax.microedition.m2g.SVGImage"); // NOI18N
+        Boolean isValid2 = resolver.isValid("javax.microedition.lcdui.Canvas"); // NOI18N
+        return isValid1 != null && isValid2 != null ? isValid1 && isValid2 : true;
     }
 }

@@ -58,6 +58,7 @@ public class IfPointProducer extends ComponentProducer {
         super (PRODUCER_ID, IfPointCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, NbBundle.getMessage(IfPointProducer.class, "DISP_IfPoint"), NbBundle.getMessage(IfPointProducer.class, "TTIP_IfPoint"), IfPointCD.ICON_PATH, IfPointCD.LARGE_ICON_PATH)); // NOI18N
     }
 
+    @Override
     public Result postInitialize (DesignDocument document, DesignComponent ifCallPoint) {
         DesignComponent trueCase = document.createComponent (IfTrueEventSourceCD.TYPEID);
         ifCallPoint.addComponent (trueCase);

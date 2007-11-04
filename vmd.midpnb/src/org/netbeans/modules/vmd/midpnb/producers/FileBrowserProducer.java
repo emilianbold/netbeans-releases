@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midpnb.producers;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -46,9 +45,9 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
-import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
+import org.netbeans.modules.vmd.midp.java.JavaClassNameResolver;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
 import org.netbeans.modules.vmd.midpnb.components.commands.FileBrowserOpenCommandCD;
@@ -61,24 +60,31 @@ import org.openide.util.NbBundle;
  * @author Karol Harezlak
  */
 public class FileBrowserProducer extends MidpComponentProducer {
-    
+
     public FileBrowserProducer() {
-        super(FileBrowserCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(FileBrowserProducer.class, "DISP_File_Browser"), NbBundle.getMessage(FileBrowserProducer.class, "TTIP_File_Browser"), FileBrowserCD.ICON_PATH, FileBrowserCD.ICON_LARGE_PATH)); // NOI18N
+        super(FileBrowserCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES,
+                NbBundle.getMessage(FileBrowserProducer.class, "DISP_File_Browser"), // NOI18N
+                NbBundle.getMessage(FileBrowserProducer.class, "TTIP_File_Browser"), // NOI18N
+                FileBrowserCD.ICON_PATH, FileBrowserCD.ICON_LARGE_PATH));
     }
 
     @Override
-    public Result postInitialize (DesignDocument document, DesignComponent fileBrowser) {
+    public Result postInitialize(DesignDocument document, DesignComponent fileBrowser) {
         DesignComponent openCommand = MidpDocumentSupport.getSingletonCommand(document, FileBrowserOpenCommandCD.TYPEID);
         DesignComponent openEventSource = document.createComponent(FileBrowserOpenCommandEventSourceCD.TYPEID);
         openEventSource.writeProperty(CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(fileBrowser));
         openEventSource.writeProperty(CommandEventSourceCD.PROP_COMMAND, PropertyValue.createComponentReference(openCommand));
         MidpDocumentSupport.addEventSource(fileBrowser, DisplayableCD.PROP_COMMANDS, openEventSource);
-        
+
         return new Result(fileBrowser, openCommand, openEventSource);
     }
-    
+
     @Override
     public boolean checkValidity(DesignDocument document) {
-        return MidpJavaSupport.checkValidity(document, "javax.microedition.io.file.FileSystemRegistry"); // NOI18N
+        JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
+        resolver.addResolveListenerIfNotRegistered(this);
+        Boolean isValid = resolver.isValid("javax.microedition.io.file.FileSystemRegistry"); // NOI18N
+        return isValid != null ? isValid : true;
     }
+
 }

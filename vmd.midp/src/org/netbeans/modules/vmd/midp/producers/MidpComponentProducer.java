@@ -42,7 +42,8 @@
 package org.netbeans.modules.vmd.midp.producers;
 
 import org.netbeans.modules.vmd.api.model.*;
-import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
+import org.netbeans.modules.vmd.api.palette.PaletteSupport;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midp.components.displayables.*;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
@@ -50,20 +51,33 @@ import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
 import org.netbeans.modules.vmd.midp.components.resources.ResourceCD;
 import org.netbeans.modules.vmd.midp.components.items.*;
+import org.netbeans.modules.vmd.midp.java.JavaClassNameResolver;
+import org.netbeans.modules.vmd.midp.java.ResolveListener;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Anton Chechel
  */
-public abstract class MidpComponentProducer extends ComponentProducer {
+public abstract class MidpComponentProducer extends ComponentProducer implements ResolveListener {
 
     public MidpComponentProducer(TypeID typeID, PaletteDescriptor paletteDescriptor) {
         super(typeID.toString(), typeID, paletteDescriptor);
     }
 
     public boolean checkValidity(DesignDocument document) {
-        return MidpJavaSupport.checkValidity(document, getMainComponentTypeID ());
+        JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
+        resolver.addResolveListenerIfNotRegistered(this);
+        Boolean isValid = resolver.isValid(MidpTypes.getFQNClassName(getMainComponentTypeID()));
+        return isValid != null ? isValid : true;
+    }
+
+    public void resolveFinished() {
+        PaletteSupport.schedulePaletteRefresh();
+    }
+    
+    public void resolveExpired() {
+        PaletteSupport.schedulePaletteRefresh();
     }
 
     public static final class Form extends MidpComponentProducer {

@@ -71,8 +71,9 @@ import org.openide.util.LookupListener;
  */
 public class PaletteKit implements Runnable, LookupListener {
 
-    static final String CUSTOM_CATEGORY_NAME = "custom"; // NOI18N
     private static final String PALETTE_FOLDER_NAME = "palette"; // NOI18N
+    static final String CUSTOM_CATEGORY_NAME = "custom"; // NOI18N
+
     private WeakReference<DesignDocument> activeDocument;
     private PaletteController paletteController;
     private DNDHandler dndHandler;
@@ -84,8 +85,9 @@ public class PaletteKit implements Runnable, LookupListener {
     private final Object validationSynch = new Object();
     private Result<PaletteProvider> lookupResult;
     private final AtomicBoolean requiresPaletteInit = new AtomicBoolean(false);
+    private final AtomicBoolean requiresPaletteUpdate = new AtomicBoolean(false);
 
-    public PaletteKit(final String projectType) {
+    PaletteKit(final String projectType) {
         this.fs = Repository.getDefault().getDefaultFileSystem();
 
         validationQueue = new LinkedList<Lookup>();
@@ -180,6 +182,7 @@ public class PaletteKit implements Runnable, LookupListener {
 
     void refreshPaletteController() {
         if (paletteController == null) {
+            Debug.warning("Can't get PaletteController"); // NOI18N
             return;
         }
         paletteController.refresh();
@@ -246,7 +249,7 @@ public class PaletteKit implements Runnable, LookupListener {
                 try {
                     catFO = DataFolder.create(rootFolder, catID).getPrimaryFile();
                 } catch (IOException ex) {
-                    Debug.warning("Can't create folder for palette category: " + ex); // NOI18N
+                    Debug.warning("Can't create folder for palette category: ", ex); // NOI18N
                 }
             }
             
@@ -288,7 +291,16 @@ public class PaletteKit implements Runnable, LookupListener {
                         lock.releaseLock();
                     }
                 } catch (IOException e) {
-                    Debug.warning("Can't create file for palette item: " + path + ", " + producerID + ", " + producerID + "." + PaletteItemDataLoader.EXTENSION + ": " + e); // NOI18N
+                    StringBuffer str = new StringBuffer();
+                    str.append("Can't create file for palette item: "); // NOI18N
+                    str.append(path);
+                    str.append(", "); // NOI18N
+                    str.append(producerID);
+                    str.append("."); // NOI18N
+                    str.append(PaletteItemDataLoader.EXTENSION);
+                    str.append(": "); // NOI18N
+                    str.append(e);
+                    Debug.warning(str.toString());
                 }
             }
         }
@@ -383,6 +395,21 @@ public class PaletteKit implements Runnable, LookupListener {
         }
 
         node.setValid(isValid);
+    }
+    
+    public void schedulePaletteRefresh() {
+        if (requiresPaletteUpdate.getAndSet(true)) {
+            return;
+        }
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                while (requiresPaletteUpdate.getAndSet(false)) {
+                    clearNodesStateCache();
+                    refreshPaletteController();
+                }
+            }
+        });
     }
 
     void clearNodesStateCache() {

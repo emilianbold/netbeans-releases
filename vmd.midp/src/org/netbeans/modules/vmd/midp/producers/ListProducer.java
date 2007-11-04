@@ -60,6 +60,7 @@ public class ListProducer extends MidpComponentProducer {
         super (ListCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(ListProducer.class, "DISP_List"), NbBundle.getMessage(ListProducer.class, "TTIP_List"), ListCD.ICON_PATH, ListCD.ICON_LARGE_PATH)); // NOI18N
     }
 
+    @Override
     public Result postInitialize (DesignDocument document, DesignComponent list) {
         DesignComponent listSelectCommand = MidpDocumentSupport.getSingletonCommand (document, ListSelectCommandCD.TYPEID);
 

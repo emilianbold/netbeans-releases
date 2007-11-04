@@ -42,10 +42,10 @@ package org.netbeans.modules.vmd.midpnb.producers;
 
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
-import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
+import org.netbeans.modules.vmd.midp.java.JavaClassNameResolver;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
 import org.netbeans.modules.vmd.midpnb.components.commands.WaitScreenFailureCommandCD;
@@ -61,19 +61,22 @@ import org.openide.util.NbBundle;
  * @author Karol Harezlak
  */
 public class WaitScreenProducer extends MidpComponentProducer {
-   
+
     public WaitScreenProducer() {
-       super(WaitScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(WaitScreenProducer.class, "DISP_Wait_Screen"), NbBundle.getMessage(WaitScreenProducer.class, "TTIP_Wait_Screen"), WaitScreenCD.ICON_PATH, WaitScreenCD.ICON_LARGE_PATH)); // NOI18N
+        super(WaitScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES,
+                NbBundle.getMessage(WaitScreenProducer.class, "DISP_Wait_Screen"), // NOI18N
+                NbBundle.getMessage(WaitScreenProducer.class, "TTIP_Wait_Screen"), // NOI18N
+                WaitScreenCD.ICON_PATH, WaitScreenCD.ICON_LARGE_PATH));
     }
 
     @Override
-    public Result postInitialize (DesignDocument document, DesignComponent waitScreen) {
-        return produceWaitScreen (document, waitScreen, true);
+    public Result postInitialize(DesignDocument document, DesignComponent waitScreen) {
+        return produceWaitScreen(document, waitScreen, true);
     }
 
-    public static Result produceWaitScreen (DesignDocument document, DesignComponent waitScreen, boolean createTask) {
-        DesignComponent successCommand = MidpDocumentSupport.getSingletonCommand (document, WaitScreenSuccessCommandCD.TYPEID);
-        DesignComponent failureCommand = MidpDocumentSupport.getSingletonCommand (document, WaitScreenFailureCommandCD.TYPEID);
+    public static Result produceWaitScreen(DesignDocument document, DesignComponent waitScreen, boolean createTask) {
+        DesignComponent successCommand = MidpDocumentSupport.getSingletonCommand(document, WaitScreenSuccessCommandCD.TYPEID);
+        DesignComponent failureCommand = MidpDocumentSupport.getSingletonCommand(document, WaitScreenFailureCommandCD.TYPEID);
 
         DesignComponent successEventSource = document.createComponent(WaitScreenSuccessCommandEventSourceCD.TYPEID);
         DesignComponent failureEventSource = document.createComponent(WaitScreenFailureCommandEventSourceCD.TYPEID);
@@ -88,17 +91,21 @@ public class WaitScreenProducer extends MidpComponentProducer {
         MidpDocumentSupport.addEventSource(waitScreen, DisplayableCD.PROP_COMMANDS, failureEventSource);
 
         if (createTask) {
-            DesignComponent task = document.createComponent (SimpleCancellableTaskCD.TYPEID);
-            MidpDocumentSupport.getCategoryComponent (document, ResourcesCategoryCD.TYPEID).addComponent (task);
-            waitScreen.writeProperty (WaitScreenCD.PROP_TASK, PropertyValue.createComponentReference (task));
+            DesignComponent task = document.createComponent(SimpleCancellableTaskCD.TYPEID);
+            MidpDocumentSupport.getCategoryComponent(document, ResourcesCategoryCD.TYPEID).addComponent(task);
+            waitScreen.writeProperty(WaitScreenCD.PROP_TASK, PropertyValue.createComponentReference(task));
 
-            return new Result (waitScreen, successCommand, failureCommand, successEventSource, failureEventSource, task);
-        } else
-            return new Result (waitScreen, successCommand, failureCommand, successEventSource, failureEventSource);
+            return new Result(waitScreen, successCommand, failureCommand, successEventSource, failureEventSource, task);
+        } else {
+            return new Result(waitScreen, successCommand, failureCommand, successEventSource, failureEventSource);
+        }
     }
 
     @Override
     public boolean checkValidity(DesignDocument document) {
-        return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
+        JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
+        resolver.addResolveListenerIfNotRegistered(this);
+        Boolean isValid = resolver.isValid("javax.microedition.lcdui.Canvas"); // NOI18N
+        return isValid != null ? isValid : true;
     }
 }

@@ -42,9 +42,9 @@ package org.netbeans.modules.vmd.midpnb.producers;
 
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
-import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
+import org.netbeans.modules.vmd.midp.java.JavaClassNameResolver;
 import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
 import org.netbeans.modules.vmd.midpnb.components.commands.SVGMenuSelectCommandCD;
 import org.netbeans.modules.vmd.midpnb.components.handlers.SVGMenuEventHandlerCD;
@@ -58,29 +58,36 @@ import org.openide.util.NbBundle;
  * @author Anton Chechel
  */
 public class SVGMenuProducer extends MidpComponentProducer {
-    
+
     public SVGMenuProducer() {
-        super(SVGMenuCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, NbBundle.getMessage(SVGMenuProducer.class, "DISP_SVG_Menu"), NbBundle.getMessage(SVGMenuProducer.class, "TTIP_SVG_Menu"), SVGMenuCD.ICON_PATH, SVGMenuCD.ICON_LARGE_PATH)); // NOI18N
+        super(SVGMenuCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG,
+                NbBundle.getMessage(SVGMenuProducer.class, "DISP_SVG_Menu"), // NOI18N
+                NbBundle.getMessage(SVGMenuProducer.class, "TTIP_SVG_Menu"), // NOI18N
+                SVGMenuCD.ICON_PATH, SVGMenuCD.ICON_LARGE_PATH));
     }
 
     @Override
-    public Result postInitialize (DesignDocument document, DesignComponent menu) {
+    public Result postInitialize(DesignDocument document, DesignComponent menu) {
         DesignComponent selectCommand = MidpDocumentSupport.getSingletonCommand(document, SVGMenuSelectCommandCD.TYPEID);
-        
+
         DesignComponent selectEventSource = document.createComponent(SVGMenuSelectCommandEventSourceCD.TYPEID);
         selectEventSource.writeProperty(CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(menu));
         selectEventSource.writeProperty(CommandEventSourceCD.PROP_COMMAND, PropertyValue.createComponentReference(selectCommand));
         MidpDocumentSupport.addEventSource(menu, DisplayableCD.PROP_COMMANDS, selectEventSource);
-        
+
         DesignComponent menuEventHandler = document.createComponent(SVGMenuEventHandlerCD.TYPEID);
         MidpDocumentSupport.updateEventHandlerWithNew(selectEventSource, menuEventHandler);
-        
+
         return new Result(menu, selectCommand, selectEventSource);
     }
-    
+
     @Override
     public boolean checkValidity(DesignDocument document) {
-            return MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage") && // NOI18N
-                   MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
+        JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
+        resolver.addResolveListenerIfNotRegistered(this);
+        Boolean isValid1 = resolver.isValid("javax.microedition.m2g.SVGImage"); // NOI18N
+        Boolean isValid2 = resolver.isValid("javax.microedition.lcdui.Canvas"); // NOI18N
+        return isValid1 != null && isValid2 != null ? isValid1 && isValid2 : true;
     }
+
 }

@@ -394,6 +394,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.vmd.midp.general</package>
                 <package>org.netbeans.modules.vmd.midp.inspector.controllers</package>
                 <package>org.netbeans.modules.vmd.midp.inspector.folders</package>
+                <package>org.netbeans.modules.vmd.midp.java</package>
                 <package>org.netbeans.modules.vmd.midp.palette</package>
                 <package>org.netbeans.modules.vmd.midp.palette.wizard</package>
                 <package>org.netbeans.modules.vmd.midp.producers</package>
@@ -404,7 +405,6 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.date</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.element</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.eventhandler</package>
-                <package>org.netbeans.modules.vmd.midp.propertyeditors.imagechooser</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.resource.elements</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.timezone</package>
                 <package>org.netbeans.modules.vmd.midp.screen</package>

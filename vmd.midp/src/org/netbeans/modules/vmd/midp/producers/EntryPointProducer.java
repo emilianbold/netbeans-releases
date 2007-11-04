@@ -57,6 +57,7 @@ public class EntryPointProducer extends ComponentProducer {
         super (EntryPointProducer.PRODUCER_ID, EntryPointCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, NbBundle.getMessage(EntryPointProducer.class, "DISP_EntryPoint"), NbBundle.getMessage(EntryPointProducer.class, "TTIP_EntryPoint"), EntryPointCD.ICON_PATH, EntryPointCD.LARGE_ICON_PATH)); // NOI18N
     }
 
+    @Override
     public Result postInitialize (DesignDocument document, DesignComponent entryPoint) {
         DesignComponent eventSource = document.createComponent (EntryStartEventSourceCD.TYPEID);
         entryPoint.addComponent (eventSource);

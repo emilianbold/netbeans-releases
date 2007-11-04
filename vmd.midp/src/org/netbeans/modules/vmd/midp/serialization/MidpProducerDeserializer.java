@@ -43,19 +43,21 @@ import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.ProducerDeserializer;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
-import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.java.JavaClassNameResolver;
 
 /**
  * @author David Kaspar
  */
 public class MidpProducerDeserializer extends ProducerDeserializer {
 
-    public MidpProducerDeserializer () {
-        super (MidpDocumentSupport.PROJECT_TYPE_MIDP);
+    public MidpProducerDeserializer() {
+        super(MidpDocumentSupport.PROJECT_TYPE_MIDP);
     }
 
-    public boolean checkValidity (DesignDocument document, ComponentProducer producer) {
-        return MidpJavaSupport.checkValidity(document, producer.getMainComponentTypeID ());
+    public boolean checkValidity(DesignDocument document, ComponentProducer producer) {
+        JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
+        Boolean isValid = resolver.isValid(MidpTypes.getFQNClassName(producer.getMainComponentTypeID()));
+        return isValid != null ? isValid : true;
     }
-
 }

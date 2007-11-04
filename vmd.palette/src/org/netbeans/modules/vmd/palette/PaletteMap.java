@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.vmd.palette;
 
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -53,28 +52,24 @@ import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.openide.filesystems.*;
 import org.openide.util.Lookup;
-import org.openide.util.WeakListeners;
 import javax.swing.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.openide.util.RequestProcessor;
 
 /**
+ * 
  * @author David Kaspar, Anton Chechel
  */
-public final class PaletteMap implements ActiveDocumentSupport.Listener, DescriptorRegistryListener, PropertyChangeListener {
+public final class PaletteMap implements ActiveDocumentSupport.Listener, DescriptorRegistryListener {
 
     private static final PaletteMap instance = new PaletteMap();
-    private final WeakHashMap<String, WeakReference<PaletteKit>> kitMap = new WeakHashMap<String, WeakReference<PaletteKit>>();
+    private static RequestProcessor updateRP = new RequestProcessor("Update paletteKit"); // NOI18N
+    
+    private final WeakHashMap<String, WeakReference<PaletteKit>> kitMap = new WeakHashMap<String, WeakReference<PaletteKit>>(1);
     private String activeProjectID;
     private DescriptorRegistry registeredRegistry;
-    private final AtomicBoolean requiresPaletteUpdate = new AtomicBoolean(false);
-    private final Set<String> registeredProjects = new HashSet<String>();
-    private static RequestProcessor updateRP = new RequestProcessor("Update paletteKit"); // NOI18N
 
     private PaletteMap() {
         ActiveDocumentSupport.getDefault().addActiveDocumentListener(this);
@@ -107,10 +102,6 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, Descrip
         }
 
         boolean isProjectIDChanged = !activeProjectID.equals(oldProjectID);
-        if (isProjectIDChanged) {
-            registerClassPathListener(activatedDocument);
-        }
-
         updatePalette(activatedDocument, isProjectIDChanged);
     }
 
@@ -174,18 +165,16 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, Descrip
         }
     }
 
-    private void checkNeedUpdate(final PropertyChangeEvent evt) {
-        schedulePaletteUpdate();
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        checkNeedUpdate(evt);
-    }
-
     private void scheduleUpdateAfteCPScanned(DesignDocument document, final PaletteKit kit) {
         final Project project = ProjectUtils.getProject(document);
+        if (project == null) {
+            Debug.warning("Can't get project for " + document.getDocumentInterface().getProjectID()); // NOI18N
+            return;
+        }
+        
         final ClasspathInfo info = getClasspathInfo(project);
         if (info == null) {
+            Debug.warning("Can't get classPathInfo for " + document.getDocumentInterface().getProjectID()); // NOI18N
             return;
         }
 
@@ -199,30 +188,11 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, Descrip
                 }
             }
 
-            public void run(CompilationController controller) throws Exception {
+            public void run(CompilationController cc) throws Exception {
                 kit.init();
             }
         }
         updateRP.post(new UpdateTask());
-    }
-
-    private void registerClassPathListener(DesignDocument document) {
-        final Project project = ProjectUtils.getProject(document);
-        final ClasspathInfo info = getClasspathInfo(project);
-        if (info == null) {
-            return;
-        }
-
-        String projID = document.getDocumentInterface().getProjectID();
-        if (!registeredProjects.contains(projID)) {
-            Task<CompilationController> ct = new ListenerCancellableTask(info);
-            try {
-                JavaSource.create(info).runUserActionTask(ct, true);
-                registeredProjects.add(projID);
-            } catch (IOException ex) {
-                Debug.warning(ex);
-            }
-        }
     }
 
     private ClasspathInfo getClasspathInfo(Project project) {
@@ -244,42 +214,5 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, Descrip
         }
         return sourceGroups[0];
     }
-
-    private void schedulePaletteUpdate() {
-        if (requiresPaletteUpdate.getAndSet(true)) {
-            return;
-        }
-
-        SwingUtilities.invokeLater(new Runnable() {
-
-                    public void run() {
-                        while (requiresPaletteUpdate.getAndSet(false)) {
-                            for (WeakReference<PaletteKit> kitReference : kitMap.values()) {
-                                PaletteKit kit = kitReference.get();
-                                if (kit == null) {
-                                    continue;
-                                }
-                                kit.clearNodesStateCache();
-                                // HINT refresh only visible palette
-                                kit.refreshPaletteController();
-                            }
-                        }
-                    }
-                });
-    }
-
-    private final class ListenerCancellableTask implements Task<CompilationController> {
-
-        private ClasspathInfo info;
-
-        public ListenerCancellableTask(ClasspathInfo info) {
-            this.info = info;
-        }
-
-        public void run(CompilationController controller) throws Exception {
-            ClassPath cp = info.getClassPath(ClasspathInfo.PathKind.BOOT);
-            PropertyChangeListener wcl = WeakListeners.propertyChange(PaletteMap.this, cp);
-            cp.addPropertyChangeListener(wcl);
-        }
-    }
+    
 }

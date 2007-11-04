@@ -44,18 +44,20 @@ import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
+import org.netbeans.modules.vmd.api.palette.PaletteSupport;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
-import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
+import org.netbeans.modules.vmd.midp.java.JavaClassNameResolver;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.java.ResolveListener;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
  */
-public abstract class CommandProducer extends ComponentProducer {
+public abstract class CommandProducer extends ComponentProducer implements ResolveListener {
 
     public static final String PRODUCER_ID_BACK_COMMAND = "#BackCommand"; // NOI18N
     public static final String PRODUCER_ID_CANCEL_COMMAND = "#CancelCommand"; // NOI18N
@@ -77,6 +79,7 @@ public abstract class CommandProducer extends ComponentProducer {
         this.type = type;
     }
 
+    @Override
     public Result postInitialize (DesignDocument document, DesignComponent mainComponent) {
         mainComponent.writeProperty(ClassCD.PROP_INSTANCE_NAME, InstanceNameResolver.createFromSuggested(mainComponent, lower + "Command")); // NOI18N
         mainComponent.writeProperty(CommandCD.PROP_LABEL, MidpTypes.createStringValue (upper));
@@ -85,7 +88,18 @@ public abstract class CommandProducer extends ComponentProducer {
     }
 
     public boolean checkValidity(DesignDocument document) {
-        return MidpJavaSupport.checkValidity(document, CommandCD.TYPEID);
+        JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
+        resolver.addResolveListenerIfNotRegistered(this);
+        Boolean isValid = resolver.isValid(MidpTypes.getFQNClassName(CommandCD.TYPEID));
+        return isValid != null ? isValid : true;
+    }
+
+    public void resolveFinished() {
+        PaletteSupport.schedulePaletteRefresh();
+    }
+    
+    public void resolveExpired() {
+        PaletteSupport.schedulePaletteRefresh();
     }
 
     public static final class BackCommand extends CommandProducer { public BackCommand() { super("back", NbBundle.getMessage (CommandProducer.class, "DISP_Command_Back"), CommandCD.VALUE_BACK); } } // NOI18N

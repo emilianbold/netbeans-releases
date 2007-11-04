@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midpnb.producers;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -46,10 +45,10 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
-import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
+import org.netbeans.modules.vmd.midp.java.JavaClassNameResolver;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
 import org.netbeans.modules.vmd.midpnb.components.commands.LoginScreenLoginCommandCD;
@@ -57,13 +56,16 @@ import org.netbeans.modules.vmd.midpnb.components.displayables.LoginScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.LoginScreenLoginCommandEventSourceCD;
 import org.openide.util.NbBundle;
 
- /*
+/*
  * @author Karol Harezlak
  */
 public class LoginScreenProducer extends MidpComponentProducer {
 
     public LoginScreenProducer() {
-        super(LoginScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(LoginScreenProducer.class, "DISP_Login_Screen"), NbBundle.getMessage(LoginScreenProducer.class, "TTIP_Login_Screen"), LoginScreenCD.ICON_PATH, LoginScreenCD.ICON_LARGE_PATH)); // NOI18N
+        super(LoginScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES,
+                NbBundle.getMessage(LoginScreenProducer.class, "DISP_Login_Screen"), // NOI18N
+                NbBundle.getMessage(LoginScreenProducer.class, "TTIP_Login_Screen"), // NOI18N
+                LoginScreenCD.ICON_PATH, LoginScreenCD.ICON_LARGE_PATH));
     }
 
     @Override
@@ -78,13 +80,16 @@ public class LoginScreenProducer extends MidpComponentProducer {
         loginScreen.writeProperty(LoginScreenCD.PROP_USE_LOGIN_BUTTON, MidpTypes.createBooleanValue(Boolean.FALSE));
         loginScreen.writeProperty(LoginScreenCD.PROP_USERNAME_LABEL, MidpTypes.createStringValue(LoginScreenCD.USERNAME_LOGIN));
         loginScreen.writeProperty(LoginScreenCD.PROP_PASSWORD_LABEL, MidpTypes.createStringValue(LoginScreenCD.PASSWORD_LOGIN));
-        PropertyValue loginButtonScreen = MidpTypes.createStringValue(NbBundle.getMessage(LoginScreenProducer.class, "LBL_LoginScreen_LoginButtonScreen"));//NOI18
-        loginScreen.writeProperty(LoginScreenCD.PROP_LOGIN_BUTTON_TEXT,loginButtonScreen);
+        PropertyValue loginButtonScreen = MidpTypes.createStringValue(NbBundle.getMessage(LoginScreenProducer.class, "LBL_LoginScreen_LoginButtonScreen")); // NOI18N
+        loginScreen.writeProperty(LoginScreenCD.PROP_LOGIN_BUTTON_TEXT, loginButtonScreen);
         return new Result(loginScreen, loginCommand, loginEventSource);
     }
 
     @Override
     public boolean checkValidity(DesignDocument document) {
-        return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
+        JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
+        resolver.addResolveListenerIfNotRegistered(this);
+        Boolean isValid = resolver.isValid("javax.microedition.lcdui.Canvas"); // NOI18N
+        return isValid != null ? isValid : true;
     }
 }
