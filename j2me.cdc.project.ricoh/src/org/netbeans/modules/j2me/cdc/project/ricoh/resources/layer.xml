@@ -145,6 +145,7 @@ made subject to such option by the copyright holder.
                                 <attr name="platform" stringvalue="ricoh"/>
                                 <attr name="sampletype" stringvalue="xlet"/>
                             </file>
+<!--                            
                             <file name="FormBrowser.zip" url="samples/FormBrowser.zip">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
                                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
@@ -154,6 +155,7 @@ made subject to such option by the copyright holder.
                                 <attr name="platform" stringvalue="ricoh"/>
                                 <attr name="sampletype" stringvalue="xlet"/>
                             </file>
+-->                            
                             <file name="HardKey.zip" url="samples/HardKey.zip">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
                                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
