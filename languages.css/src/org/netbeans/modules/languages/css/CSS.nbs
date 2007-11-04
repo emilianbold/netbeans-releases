@@ -134,7 +134,9 @@ declarations2 = declaration declarations1;
 declarations2 = ;
 declaration = <GAP> | key ":" expr [prio];
 key = <css_identifier>;
-expr = <GAP> | term (operator term)*;
+expr = gap | term (operator term)*;
+gap = <GAP> ["pt" | "pc" | "in" | "mm" | "cm" | "em" |
+      "ex" | "px" | "ms" | "s"];
 term = ["-" | "+"] (<css_number> | <css_string> | <css_url> | <css_hash> | function);
 operator = "/" | "," |;
 function = <css_identifier> ["(" expr ")"];
