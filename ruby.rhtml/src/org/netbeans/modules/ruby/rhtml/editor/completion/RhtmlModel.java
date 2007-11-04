@@ -40,21 +40,15 @@
  */
 
 package org.netbeans.modules.ruby.rhtml.editor.completion;
-import java.lang.ref.Reference;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 
 /**
  * Creates a Ruby model for an RHTML file. Simulates ERB to generate Ruby from
@@ -114,11 +108,17 @@ public class RhtmlModel {
             //}
             codeBlocks.clear();
             StringBuilder buffer = new StringBuilder();
-            TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get(doc);
-            TokenSequence<RhtmlTokenId> tokenSequence = tokenHierarchy.tokenSequence(RhtmlTokenId.language()); //get top level token sequence
+            
+            BaseDocument d = (BaseDocument) doc;
+            try {
+                d.readLock();
+                TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get(doc);
+                TokenSequence<RhtmlTokenId> tokenSequence = tokenHierarchy.tokenSequence(RhtmlTokenId.language()); //get top level token sequence
 
-            eruby(buffer, tokenHierarchy, tokenSequence);
-
+                eruby(buffer, tokenHierarchy, tokenSequence);
+            } finally {
+                d.readUnlock();
+            }
             rubyCode = buffer.toString();
         }
         
