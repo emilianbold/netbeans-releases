@@ -42,12 +42,14 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.netbeans.api.project.ProjectManager;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
+import org.openide.util.Mutex.Action;
 
 
 
@@ -72,7 +74,15 @@ public class J2SEFileBuiltQuery implements FileBuiltQueryImplementation, Propert
         this.testRoots.addPropertyChangeListener (this);
     }
 
-    public synchronized FileBuiltQuery.Status getStatus(FileObject file) {
+    public FileBuiltQuery.Status getStatus(final FileObject file) {
+        return ProjectManager.mutex().readAccess(new Action<FileBuiltQuery.Status>() {
+            public FileBuiltQuery.Status run() {
+                return getStatusImpl(file);
+            }
+        });
+    }
+    
+    private synchronized FileBuiltQuery.Status getStatusImpl(FileObject file) {
         if (this.delegate == null) {
             this.delegate = createDelegate ();
         }
