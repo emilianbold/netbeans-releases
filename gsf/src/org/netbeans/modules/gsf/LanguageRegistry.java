@@ -419,18 +419,6 @@ public class LanguageRegistry implements Iterable<Language> {
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-
-                String oldNavFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-retouche-navigation-ClassMemberPanel.instance";
-                // Delete the old navigator description - I have moved the class name
-                FileObject old = fs.findResource(oldNavFileName);
-
-                if (old != null) {
-                    try {
-                        old.delete();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
             }
         } else {
             // Remove obsolete panel file
@@ -444,6 +432,18 @@ public class LanguageRegistry implements Iterable<Language> {
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
+            }
+        }
+        
+        String oldNavFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-retouche-navigation-ClassMemberPanel.instance";
+        // Delete the old navigator description - I have moved the class name
+        FileObject old = fs.findResource(oldNavFileName);
+
+        if (old != null) {
+            try {
+                old.delete();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }
@@ -502,23 +502,25 @@ public class LanguageRegistry implements Iterable<Language> {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            
-            // Delete old names present up to and including beta2
-            FileObject oldSidebar = root.getFileObject("SideBar/org-netbeans-modules-editor-retouche-GsfCodeFoldingSideBarFactory.instance");
-
-            if (oldSidebar != null) {
-                try {
-                    oldSidebar.delete();
-                    oldSidebar = root.getFileObject("FoldManager/org-netbeans-modules-retouche-editor-fold-GsfFoldManagerFactory.instance");
-                    if (oldSidebar != null) {
-                        oldSidebar.delete();
-                    }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
         }
 
+        boolean checkUserdirUpgrade = false;
+        // Delete old names present up to and including beta2
+        FileObject oldSidebar = root.getFileObject("SideBar/org-netbeans-modules-editor-retouche-GsfCodeFoldingSideBarFactory.instance");
+
+        if (oldSidebar != null) {
+            checkUserdirUpgrade = true;
+            try {
+                oldSidebar.delete();
+                oldSidebar = root.getFileObject("FoldManager/org-netbeans-modules-retouche-editor-fold-GsfFoldManagerFactory.instance");
+                if (oldSidebar != null) {
+                    oldSidebar.delete();
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
         // init hyperlink provider
         FileObject hyperlinkProvider = root.getFileObject("HyperlinkProviders/GsfHyperlinkProvider.instance");
         if (hyperlinkProvider == null) {
@@ -530,7 +532,7 @@ public class LanguageRegistry implements Iterable<Language> {
                 Exceptions.printStackTrace(ex);
             }
         } else { 
-            if ("org.netbeans.modules.retouche.editor.hyperlink.GsfHyperlinkProvider".equals(hyperlinkProvider.getAttribute("instanceClass"))) {
+            if (checkUserdirUpgrade && "org.netbeans.modules.retouche.editor.hyperlink.GsfHyperlinkProvider".equals(hyperlinkProvider.getAttribute("instanceClass"))) {
                 // Userdir upgrade
                 try {
                     hyperlinkProvider.setAttribute("instanceClass", "org.netbeans.modules.gsfret.editor.hyperlink.GsfHyperlinkProvider");
@@ -594,14 +596,14 @@ public class LanguageRegistry implements Iterable<Language> {
                 sep2.setAttribute("position", 780);
                 // Temporary - userdir upgrade
                 // Obsolete - nuke
-                if (popup.getFileObject("pretty-print") != null) {
+                if (checkUserdirUpgrade && popup.getFileObject("pretty-print") != null) {
                     popup.getFileObject("pretty-print").delete();
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         } else {
-            if (popup.getFileObject("generate-goto-popup") != null) {
+            if (checkUserdirUpgrade && popup.getFileObject("generate-goto-popup") != null) {
                 FileObject f = popup.getFileObject("generate-goto-popup");
 
                 try {
@@ -612,7 +614,7 @@ public class LanguageRegistry implements Iterable<Language> {
             }
 
             // Temporary userdir upgrade
-            if (root.getFileObject("Popup/format") == null) {
+            if (checkUserdirUpgrade && root.getFileObject("Popup/format") == null) {
                 try {
                     popup.createData("format");
                 } catch (IOException ex) {
@@ -621,7 +623,7 @@ public class LanguageRegistry implements Iterable<Language> {
             }
 
             // Obsolete - nuke
-            if (root.getFileObject("Popup/pretty-print") != null) {
+            if (checkUserdirUpgrade && root.getFileObject("Popup/pretty-print") != null) {
                 try {
                     FileObject d = root.getFileObject("Popup/pretty-print");
                     d.delete();
@@ -638,7 +640,8 @@ public class LanguageRegistry implements Iterable<Language> {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            
+        }
+        if (checkUserdirUpgrade) {
             // Delete old name present up to and including beta2
             FileObject old = root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-retouche-hints-GsfUpToDateStateProviderFactory.instance");
             if (old != null) {
@@ -657,6 +660,8 @@ public class LanguageRegistry implements Iterable<Language> {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+        if (checkUserdirUpgrade) {
             // Delete old name present up to and including beta2
             FileObject old = root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-retouche-editor-semantic-OccurrencesMarkProviderCreator.instance");
             if (old != null) {
@@ -713,6 +718,8 @@ public class LanguageRegistry implements Iterable<Language> {
                     Exceptions.printStackTrace(ex);
                 }
                 
+            }
+            if (checkUserdirUpgrade) {
                 // Delete old name present up to and including beta2
                 FileObject old = completion.getFileObject("org-netbeans-modules-retouche-editor-completion-GsfCompletionProvider.instance");
                 if (old != null) {
@@ -748,7 +755,8 @@ public class LanguageRegistry implements Iterable<Language> {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            
+        }
+        if (checkUserdirUpgrade) {
             // Delete old name present up to and including beta2
             FileObject old = root.getFileObject("CodeTemplateProcessorFactories/org-netbeans-modules-retouche-editor-codetemplates-GsfCodeTemplateProcessor$Factory.instance");
             if (old != null) {
@@ -759,6 +767,7 @@ public class LanguageRegistry implements Iterable<Language> {
                 }
             }
         }
+
         // init code templates filters
         if (root.getFileObject("CodeTemplateFilterFactories/org-netbeans-modules-gsfret-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance") == null) {
             try {
@@ -766,6 +775,8 @@ public class LanguageRegistry implements Iterable<Language> {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+        if (checkUserdirUpgrade) {
             // Delete old name present up to and including beta2
             FileObject old = root.getFileObject("CodeTemplateFilterFactories/org-netbeans-modules-retouche-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance");
             if (old != null) {
