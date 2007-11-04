@@ -20,11 +20,11 @@ table.resourcesTable thead td, table.resourcesTable thead th {
     background-position:top right;
 }
 table.resourcesTable thead td.selectedUp, table.resourcesTable thead th.selectedUp {
-    background-image:url(images/rtable1.gif);
+    background-image:url(images/rtableUp.gif);
 }
 
 table.resourcesTable thead td.selectedDown, table.resourcesTable thead th.selectedDown {
-    background-image:url(images/rtable2.gif);
+    background-image:url(images/rtableDown.gif);
 }
     
 table.resourcesTable tbody tr td{
@@ -41,4 +41,15 @@ table.resourcesTable tbody tr:hover td{
 }
 table.resourcesTable tbody tr.selected:hover td{
     background:#ff9;
+}
+.action
+{
+    background-image: url(images/rtable.gif); 
+    width: 100px; 
+    border-right: #2574B7 1px solid; 
+    border-top: #2574B7 1px solid; 
+    border-left: #2574B7 1px solid; 
+    border-bottom: #2574B7 1px solid; 
+    color: #000000; 
+    text-align: center;
 }

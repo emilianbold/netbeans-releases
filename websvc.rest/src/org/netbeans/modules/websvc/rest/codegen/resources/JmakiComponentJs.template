@@ -5,11 +5,9 @@ djd43.require("rdj.data.__CONTAINER_NAME__Store");
 // define the namespaces
 jmaki.namespace("jmaki.widgets.dojo.rest.__CONTAINER_PATH_NAME__table");
 
-//To Enable jmaki debug, uncomment next line
-//jmaki.debug = true;
-
 var resourcesTable;
 var restStore;
+var restTopic;
 
 jmaki.widgets.dojo.rest.__CONTAINER_PATH_NAME__table.Widget = function(wargs) {
 
@@ -60,6 +58,8 @@ jmaki.widgets.dojo.rest.__CONTAINER_PATH_NAME__table.Widget = function(wargs) {
             subscribe = wargs.subscribe;
         }
     }
+    
+    restTopic = topic;
     
     // initialize the widget
     this.init = function() {   
@@ -181,14 +181,22 @@ jmaki.widgets.dojo.rest.__CONTAINER_PATH_NAME__table.Widget = function(wargs) {
  
     this.removeRow = function(b){
         var index;
-        if (b.message)b = b.message;
+        var data;
+        if (b) data = b;
+        if (b.message) {
+            b = b.message;
+        }
+        if (b.value) {
+            data = b.value;    
+        }
         if (b.targetId) {
            index = b.targetId;
         } else {
             index = b;
-        }    
+        }  
         if (index && table.store.getDataByKey(index)) {
             table.store.removeDataByKey(index);
+            restStore.deleteItem(data);
         }
     };
     
@@ -217,11 +225,12 @@ jmaki.widgets.dojo.rest.__CONTAINER_PATH_NAME__table.Widget = function(wargs) {
                 // update the table cells to match the model
               	for (var j = 0; j < table.columns.length; j++) {
                     // update the visible
-		    r.childNodes[j].childNodes[0].innerHTML = data[table.columns[j].id];
+		    r.childNodes[j].childNodes[0].innerHTML = data[table.columns[j].field];
                     // update the input element
-                    r.childNodes[j].childNodes[1].childNodes[0].value = data[table.columns[j].id];
+                    r.childNodes[j].childNodes[1].childNodes[0].value = data[table.columns[j].field];
                 } 
             } 
+            restStore.save({sync: true, Id: s['Id'], method: "put", data: data});
         }
     };
     
@@ -256,6 +265,7 @@ jmaki.widgets.dojo.rest.__CONTAINER_PATH_NAME__table.Widget = function(wargs) {
         }
         var targetId;
         if (r.id) targetId = r.id;
+        if (r.Id) targetId = r.Id;
         
         if (table.store.getDataByKey(targetId)) {
             jmaki.log(wargs.uuid  + " : Warning. Attempt to add record to dojo.rest.__CONTAINER_PATH_NAME__table with duplicate row id: " + targetId + ". Autogenerating new id.");
@@ -266,6 +276,11 @@ jmaki.widgets.dojo.rest.__CONTAINER_PATH_NAME__table.Widget = function(wargs) {
         if (typeof r.id == "undefined") {  
             r.id = genId();
         }
+        var kwArgs = {        
+            attribute: "Id"   
+        }
+        restStore.newItem({Id: targetId}, kwArgs);
+        restStore.save({sync: true, Id: targetId, method: "post"});
         table.store.addData(r, null, false);
      }
     
@@ -312,7 +327,14 @@ jmaki.widgets.dojo.rest.__CONTAINER_PATH_NAME__table.Widget = function(wargs) {
             doSubscribe(subscribe[_i]  + "/updateRow", _widget.updateRow);
             doSubscribe(subscribe[_i]  + "/removeRow", _widget.removeRow);
             doSubscribe(subscribe[_i]  + "/select", _widget.select);
-        }                
+        }
+       
+        jmaki.subscribe(_widget.topic  + "/clear", _widget.clear);
+        jmaki.subscribe(_widget.topic  + "/addRow", _widget.addRow);
+        jmaki.subscribe(_widget.topic  + "/addRows", _widget.addRows);
+        jmaki.subscribe(_widget.topic  + "/updateRow", _widget.updateRow);
+        jmaki.subscribe(_widget.topic  + "/removeRow", _widget.removeRow);
+        jmaki.subscribe(_widget.topic  + "/select", _widget.select);
     }
 }
 
@@ -372,19 +394,18 @@ rdj.initResource = function (url, widget, container) {
     }
     var actionTable = actions.appendChild(document.createElement('table'));
     var tr = actionTable.appendChild(document.createElement('tr'));
-    var tab = ' background-image: url(../__CONTAINER_PATH_NAME__table/images/rtable.gif); width: 100px; border-right: #2574B7 1px solid; border-top: #2574B7 1px solid; border-left: #2574B7 1px solid; border-bottom: #2574B7 1px solid; color: #000000; text-align: center;';
     var text2 = 'color: #000000';
 
     if(dataInSimpleStoreFormat.length > 0) {
-        var addActionStr = '<div style="'+tab+'"><a style="text-decoration: none" href="javascript:rdj.addResource()"><span style="'+text2+'">Add</span></a></div>';        
+        var addActionStr = '<div class="action"><a style="text-decoration: none" href="javascript:rdj.addResource()"><span style="'+text2+'">Add</span></a></div>';        
         var addAction = tr.appendChild(document.createElement('td'));
         addAction.innerHTML = addActionStr;
 
-        var updActionStr = '<div style="'+tab+'"><a style="text-decoration: none" href="javascript:rdj.updateResource()"><span style="'+text2+'">Update</span></a></div>';
+        var updActionStr = '<div class="action"><a style="text-decoration: none" href="javascript:rdj.updateResource()"><span style="'+text2+'">Update</span></a></div>';
         var updAction = tr.appendChild(document.createElement('td'));
         updAction.innerHTML = updActionStr;   
 
-        var delActionStr = '<div style="'+tab+'"><a style="text-decoration: none" href="javascript:rdj.deleteResource()"><span style="'+text2+'">Delete</span></a></div>';
+        var delActionStr = '<div class="action"><a style="text-decoration: none" href="javascript:rdj.deleteResource()"><span style="'+text2+'">Delete</span></a></div>';
         var delAction = tr.appendChild(document.createElement('td'));
         delAction.innerHTML = delActionStr;
     } else {
@@ -397,35 +418,49 @@ rdj.initResource = function (url, widget, container) {
 djd43.provide("rdj.updateResource");
 rdj.updateResource = function () {
     var a = resourcesTable.getSelectedData();
-    restStore.save({sync: true, Id: a['Id'], method: "put", data: a});   
+    if(a == null) {
+        alert('Please select an item, by clicking the item in the table, then click Update button.');
+        return;
+    }
+    var b = {};
+    b.targetId = a['Id'];
+    b.value = a;
+    jmaki.publish(restTopic  + "/updateRow", b);
 }
 
 djd43.provide("rdj.deleteResource");
 rdj.deleteResource = function () {
     var a = resourcesTable.getSelectedData();
-    restStore.deleteItem(a);
-    try {
-        submitForm();
-    } catch(e) {
-        alert('Please refresh page to see updated table.');
+    if(a == null) {
+        alert('Please select an item, by clicking the item in the table, then click Delete button.');
+        return;
     }
+    var b = {};
+    b.targetId = a['Id'];
+    b.value = a;
+    jmaki.publish(restTopic  + "/removeRow", b);
 }
 
 djd43.provide("rdj.addResource");
 rdj.addResource = function () {
+    var data = resourcesTable.store.get();
+    if(data == null || data.length == 0) {
+        alert('There need to be atleast 1 item in the store (as seed item) to add new item.');
+        return;
+    }
+    var a = data[0].src;
     var kwArgs = {        
         attribute: "Id"   
     }
-    var id = 1000+restStore.getSize()+1;
     var newId = '';
     while(newId == '') {
         newId = prompt("Please provide Id for new item: ", "");
     }
-    restStore.newItem({Id: newId}, kwArgs);
-    restStore.save({sync: true, Id: newId, method: "post"});
-    try {
-        submitForm();
-    } catch(e) {
-        alert('Please refresh page to see new Item.');
-    }
+    var b = {};
+    b.id = newId;
+    b.value = a;
+    b.value.Id = newId;
+    b.value['Identity'] = data.length-1;
+    jmaki.publish(restTopic  + "/addRow", b);
+    alert('Please refresh page to see the new item.');
 }

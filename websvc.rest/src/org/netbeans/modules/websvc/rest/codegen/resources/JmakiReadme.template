@@ -17,10 +17,9 @@ REST component. This displays a table of resources.
 
 Note: 
 
-- If you see any error on the jsp page, enable debugging by uncommenting line 
-that looks like 'jmaki.debug = true' in file 
-\Web Pages\resources\dojo\rest\<ResourcesName>table\component.js, then redeploy
-the application and test the jsp page.
+- If you see any error on the jsp page, enable debugging by changing line 
+that looks like 'jmaki.debug = false' to 'jmaki.debug = true' in file 
+\Web Pages\glue.js, then redeploy the application and test the jsp page.
 
 - After successful execution of Step 4 above, a <ProjectName>.zip is created in
 the project root directory (Select "Files" tab to see this file in the IDE). 
