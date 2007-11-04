@@ -409,6 +409,37 @@ public class DataFolderTest extends LoggingTestCaseHid {
         }
     }
     
+    public void testRenameFolderDoesNotPrintDirectly() throws Exception {
+        String fsstruct [] = new String [] {
+            "AA/AAA/",
+            "AA/BBB/",
+            "AA/CCC/"
+        };
+        
+        TestUtilHid.destroyLocalFileSystem (getName());
+        FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), fsstruct);
+
+        
+        DataFolder df = DataFolder.findFolder (lfs.findResource ("AA"));
+        Set<FileObject> files = df.files();
+        assertEquals("One", 1, files.size());
+        assertEquals("The primary", df.getPrimaryFile(), files.iterator().next());
+
+        CharSequence seq = Log.enable("org.openide.nodes", Level.WARNING);
+        FileLock l = df.getPrimaryFile().lock();
+        df.getPrimaryFile().rename(l, "BBBB", null);
+        l.releaseLock();
+        
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {}
+        });
+        
+        assertEquals("new name", "BBBB", df.getNodeDelegate().getName());
+        if (seq.length() > 0) {
+            fail("No warnings:\n" + seq);
+        }
+    }
+    
     private static final class OrderListener implements PropertyChangeListener {
         public int count = 0;
         public synchronized void propertyChange(PropertyChangeEvent ev) {
