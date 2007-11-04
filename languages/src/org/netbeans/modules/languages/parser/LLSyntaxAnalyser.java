@@ -116,10 +116,10 @@ public class LLSyntaxAnalyser {
         a.first = First.create (a.grammarRules, language);
 //        boolean hasConflicts = AnalyserAnalyser.printConflicts (a.first, null);
 //        if (hasConflicts)
-            AnalyserAnalyser.printRules (a.grammarRules, null);
+//            AnalyserAnalyser.printRules (a.grammarRules, null);
         //if (a.printFirst)
 //            AnalyserAnalyser.printF (a.first, null, language);
-        System.out.println(a.first);
+//        System.out.println(a.first);
 //        AnalyserAnalyser.printUndefinedNTs (a.grammarRules, null);
         return a;
     }
