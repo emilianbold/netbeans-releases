@@ -188,8 +188,8 @@ public final class TokenSequenceList extends AbstractList<TokenSequence<? extend
     private void findTokenSequenceWithIndex(int index) {
         while (index >= tokenSequences.size() && tokenListIndex != Integer.MAX_VALUE) {
             EmbeddedTokenList<?> etl = tokenListList.getOrNull(++tokenListIndex);
-            if (etl != null) {
-                etl.embeddingContainer().updateStatusImpl();
+            if (etl != null && (endOffset == Integer.MAX_VALUE || etl.startOffset() < endOffset)) {
+                etl.embeddingContainer().updateStatus();
                 boolean wrapEnd = ((endOffset != Integer.MAX_VALUE)
                         && (etl.startOffset() < endOffset)
                         && (endOffset < etl.endOffset()));

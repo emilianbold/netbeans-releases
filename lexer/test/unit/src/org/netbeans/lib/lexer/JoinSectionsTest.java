@@ -102,6 +102,14 @@ public class JoinSectionsTest extends NbTestCase {
 
         LexerTestUtilities.assertConsistency(hi);
         
+        // Check tokenSequenceList() with explicit offsets
+        // Check correct TSs bounds
+        tsList = hi.tokenSequenceList(innerLP, 0, 7);
+        assertEquals(1, tsList.size());
+        tsList = hi.tokenSequenceList(innerLP, 0, 8);
+        assertEquals(2, tsList.size());
+        
+        
         // Do modifications
         // Remove second closing brace '}'
         doc.remove(8, 1);
