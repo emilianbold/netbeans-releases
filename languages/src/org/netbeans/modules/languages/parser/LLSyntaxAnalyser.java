@@ -116,10 +116,10 @@ public class LLSyntaxAnalyser {
         a.first = First.create (a.grammarRules, language);
 //        boolean hasConflicts = AnalyserAnalyser.printConflicts (a.first, null);
 //        if (hasConflicts)
-//            AnalyserAnalyser.printRules (a.grammarRules, null);
+            AnalyserAnalyser.printRules (a.grammarRules, null);
         //if (a.printFirst)
 //            AnalyserAnalyser.printF (a.first, null, language);
-//        System.out.println(a.first);
+        System.out.println(a.first);
 //        AnalyserAnalyser.printUndefinedNTs (a.grammarRules, null);
         return a;
     }
@@ -477,10 +477,9 @@ public class LLSyntaxAnalyser {
                 ASTToken joinedToken = join (token1, token2);
                 l.add (joinedToken);
                 l.addAll (children.subList (1, children.size ()));
-                appendGap (l);
-            } else {
+            } else
                 l.addAll (children);
-            }
+            appendGap (l);
         }
         return ASTToken.create (
             token.getLanguage (),
