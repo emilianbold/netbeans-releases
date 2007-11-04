@@ -115,26 +115,47 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         TreeUtilities treeUtils = compiler.getTreeUtilities();
         if (t.getKind() == Tree.Kind.CLASS) {
             int[] pos = treeUtils.findNameSpan((ClassTree)t);
-            start = pos[0];
-            end = pos[1];
+            if (pos == null) {
+                //#121084 hotfix
+                //happens for anonymous innerclasses
+                start = end = (int) sp.getStartPosition(unit, t);
+            } else {
+                start = pos[0];
+                end = pos[1];
+            }
         } else if (t.getKind() == Tree.Kind.METHOD) {
             int[] pos = treeUtils.findNameSpan((MethodTree)t);
-            start = pos[0];
-            end = pos[1];
+            if (pos == null) {
+                //#121084 hotfix
+                start = end = (int) sp.getStartPosition(unit, t);
+            } else {
+                start = pos[0];
+                end = pos[1];
+            }
         } else if (t.getKind() == Tree.Kind.NEW_CLASS) {
             ExpressionTree ident = ((NewClassTree)t).getIdentifier();
             if (ident.getKind()== Tree.Kind.MEMBER_SELECT) {
                 int[] pos = treeUtils.findNameSpan((MemberSelectTree) ident);
-                start = pos[0];
-                end = pos[1];
+                if (pos == null) {
+                    //#121084 hotfix
+                    start = end = (int) sp.getStartPosition(unit, ident);
+                } else {
+                    start = pos[0];
+                    end = pos[1];
+                }
             } else {
                 start = (int) sp.getStartPosition(unit, ident);
                 end = (int) sp.getEndPosition(unit, ident);
             }
         } else if (t.getKind() == Tree.Kind.MEMBER_SELECT) {
             int[] pos = treeUtils.findNameSpan((MemberSelectTree) t);
-            start = pos[0];
-            end = pos[1];
+            if (pos == null) {
+                //#121084 hotfix
+                start = end = (int) sp.getStartPosition(unit, t);
+            } else {
+                start = pos[0];
+                end = pos[1];
+            }
         } else {
             start = (int) sp.getStartPosition(unit, t);
             end = (int) sp.getEndPosition(unit, t);
