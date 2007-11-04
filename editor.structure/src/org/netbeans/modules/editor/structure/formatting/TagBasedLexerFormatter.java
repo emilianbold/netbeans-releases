@@ -57,6 +57,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 
 /**
@@ -687,14 +688,7 @@ public abstract class TagBasedLexerFormatter {
     
     protected static int getExistingIndent(BaseDocument doc, int line) throws BadLocationException{
         int lineStart = Utilities.getRowStartFromLineOffset(doc, line);
-        int eol = Utilities.getRowEnd(doc, lineStart);
-        int nextNonWS = Utilities.getFirstNonWhiteFwd(doc, lineStart);
-        
-        if (nextNonWS == -1){
-            nextNonWS = Integer.MAX_VALUE;
-        }
-        
-        return Math.min(eol - lineStart, nextNonWS - lineStart);
+        return IndentUtils.lineIndent(doc, lineStart);
     }
     
     /**
