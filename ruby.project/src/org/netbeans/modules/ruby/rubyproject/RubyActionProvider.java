@@ -103,6 +103,11 @@ public class RubyActionProvider implements ActionProvider {
      */
     public static final String COMMAND_AUTOTEST = "autotest"; // NOI18N
 
+    /**
+     * Standard command for running the IRB console on a project
+     */
+    public static final String COMMAND_IRB_CONSOLE = "irb-console"; // NOI18N
+    
     // Commands available from Ruby project
     private static final String[] supportedActions = {
         COMMAND_BUILD,
@@ -110,6 +115,7 @@ public class RubyActionProvider implements ActionProvider {
         COMMAND_REBUILD,
         COMMAND_AUTOTEST,
         COMMAND_RDOC,
+        COMMAND_IRB_CONSOLE,
         //        COMMAND_COMPILE_SINGLE,
         COMMAND_RUN,
         COMMAND_RUN_SINGLE,
@@ -306,6 +312,27 @@ public class RubyActionProvider implements ActionProvider {
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);
         }
+    }
+    
+    private void openIrbConsole(Lookup context) {
+        RubyInstallation.getInstance().findGemExecutable("irb"); // NOI18N
+        
+        String displayName = "IRB"; //NbBundle.getMessage(RailsActionProvider.class, "RailsConsole");
+        File pwd = FileUtil.toFile(project.getProjectDirectory());
+        String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
+
+        new RubyExecution(new ExecutionDescriptor(displayName, pwd).
+                showSuspended(false).
+                showProgress(false).
+                classPath(classPath).
+                allowInput().
+                initialArgs("-e \"require 'irb';" /* + " require 'irb/completion';"*/ + " IRB.start\""). // NOI18N
+                //additionalArgs(getApplicationArguments()).
+                fileLocator(new RubyFileLocator(context, project)).
+                addStandardRecognizers(),
+                project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
+                ).
+                run();
     }
     
     public void invokeAction(final String command, final Lookup context) throws IllegalArgumentException {
@@ -623,6 +650,11 @@ public class RubyActionProvider implements ActionProvider {
 
             //return;
             throw new RuntimeException("Not yet implemented");
+        }
+        
+        if (COMMAND_IRB_CONSOLE.equals(command)) {
+            openIrbConsole(context);
+            return;
         }
         
         

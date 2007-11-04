@@ -106,6 +106,8 @@ import org.openide.xml.XMLUtil;
  * @author Petr Hrebejk
  */
 public class RubyLogicalViewProvider implements LogicalViewProvider {
+    /** Add an IRB console action to Ruby projects, like the Rails console for Rails projects */
+    private static final boolean INCLUDE_IRB_CONSOLE = Boolean.getBoolean("ruby.irbconsole"); // NOI18N
     
     //private static final RequestProcessor BROKEN_LINKS_RP = new RequestProcessor("RubyPhysicalViewProvider.BROKEN_LINKS_RP"); // NOI18N
     
@@ -524,6 +526,10 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             actions.add(SystemAction.get(RakeTargetsDebugAction.class));
             actions.add(ProjectSensitiveActions.projectCommandAction(RubyActionProvider.COMMAND_RDOC, bundle.getString("LBL_RDocAction_Name"), null)); // NOI18N
             actions.add(null);
+            if (INCLUDE_IRB_CONSOLE) {
+                actions.add(ProjectSensitiveActions.projectCommandAction(RubyActionProvider.COMMAND_IRB_CONSOLE, "IRB" /*bundle.getString("LBL_ConsoleAction_Name")*/, null)); // NOI18N
+                actions.add(null);
+            }
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null)); // NOI18N
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null)); // NOI18N
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null)); // NOI18N
