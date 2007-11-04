@@ -35,7 +35,7 @@
         
         <p><strong>Notes:</strong></p>
         
-        <ul>
+        <ul class="note">
             <li>When you change the encoding for a project, all new files are created using 
                 the new project encoding.</li>            
             <li>The new value that you set for project encoding is retained as the global 
@@ -65,19 +65,8 @@
             Consequently, any project created from older versions will be opened
             using the fallback FEQ, i.e. the default locale set by your system's environment.</p>
 
-        <h4>Notes:</h4>
-        
-        <ul class="note">
-            <li>When you change the encoding for a project, the following occurs:
-            
-                <ul>
-                    <li>All new files are created using the new project encoding.</li>
-                    <li>All subsequent projects are created using the new encoding.</li>
-                </ul></li>
-            <li>The project encoding property value persists beyond the project that
-                it applies to. This means that if you change the encoding for a 
-                project, the new encoding value will become the default value for
-                future created projects.</li>
+        <br>
+        <ul class="warning">    
             <li>If you change the project encoding property on a project that already 
                 contains files that were created using a specific character encoding, 
                 there is a risk that compiling and running the project may not succeed. 
