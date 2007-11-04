@@ -242,6 +242,10 @@ public class CodeCompleterTest extends RubyTestBase {
             }
 
             @Override
+            public void active(boolean start) {
+            }
+
+            @Override
             public void name(ElementKind kind, boolean start) {
             }
 
@@ -522,7 +526,7 @@ public class CodeCompleterTest extends RubyTestBase {
         int[] anchorOffsetHolder = new int[1];
         int lexOffset = caretOffset;
         int astOffset = caretOffset;
-        boolean ok = cc.computeMethodCall(info, lexOffset, astOffset, methodHolder, paramIndexHolder, anchorOffsetHolder);
+        boolean ok = cc.computeMethodCall(info, lexOffset, astOffset, methodHolder, paramIndexHolder, anchorOffsetHolder, null);
 
         if (expectSuccess) {
             assertTrue(ok);
@@ -612,6 +616,16 @@ public class CodeCompleterTest extends RubyTestBase {
 //        checkComputeMethodCall("testfiles/calls/call10.rb", "File.exists?(^)",
 //                "File#exists", "file", true);
 //    }
+
+    public void testCall16() throws Exception {
+        checkComputeMethodCall("testfiles/calls/call11.rb", " ^#",
+                null, null, false);
+    }
+
+    public void testCall17() throws Exception {
+        checkComputeMethodCall("testfiles/calls/call12.rb", " ^#",
+                null, null, false);
+    }
     
     // TODO - test more non-fc calls (e.g. x.foo)
     // TODO test with splat args (more args than are in def list)

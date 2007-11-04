@@ -147,6 +147,15 @@ public class StructureAnalyzerTest extends RubyTestBase {
             }
 
             @Override
+            public void active(boolean start) {
+                if (start) {
+                    sb.append("ACTIVE{");
+                } else {
+                    sb.append("}");
+                }
+            }
+            
+            @Override
             public void parameters(boolean start) {
                 if (start) {
                     sb.append("PARAMETERS{");

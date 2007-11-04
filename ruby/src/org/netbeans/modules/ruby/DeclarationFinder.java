@@ -857,8 +857,19 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
     
     private DeclarationLocation findMethod(String name, String possibleFqn, String type, Call call,
         CompilationInfo info, int caretOffset, int lexOffset, AstPath path, Node closest, RubyIndex index) {
-        Set<IndexedMethod> methods = Collections.emptySet();
+        Set<IndexedMethod> methods = getApplicableMethods(name, possibleFqn, type, call, index);
 
+        int astOffset = caretOffset;
+        DeclarationLocation l = getMethodDeclaration(info, name, methods, 
+             path, closest, index, astOffset, lexOffset);
+
+        return l;
+    }
+        
+
+    private Set<IndexedMethod> getApplicableMethods(String name, String possibleFqn, 
+            String type, Call call, RubyIndex index) {
+        Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
         String fqn = possibleFqn;
         if (type == null && possibleFqn != null && call.getLhs() == null && call != Call.UNKNOWN) {
             fqn = possibleFqn;
@@ -902,13 +913,31 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
             if (methods.size() == 0) {
                 // Add methods in the class (without an FQN)
                 methods = index.getInheritedMethods(type, name, NameKind.EXACT_NAME);
+                
+                if (methods.size() == 0 && type.indexOf("::") == -1) {
+                    // Perhaps we specified a class without its FQN, such as "TableDefinition"
+                    // -- go and look for the full FQN and add in all the matches from there
+                    Set<IndexedClass> classes = index.getClasses(type, NameKind.EXACT_NAME, false, false, false);
+                    Set<String> fqns = new HashSet<String>();
+                    for (IndexedClass cls : classes) {
+                        String f = cls.getFqn();
+                        if (f != null) {
+                            fqns.add(f);
+                        }
+                    }
+                    for (String f : fqns) {
+                        if (!f.equals(type)) {
+                            methods.addAll(index.getInheritedMethods(f, name, NameKind.EXACT_NAME));
+                        }
+                    }
+                }
             }
             
             // Fall back to ALL methods across classes
             // Try looking at the libraries too
             if (methods.size() == 0) {
                 fqn = possibleFqn;
-                while ((methods.size() == 0) && (fqn.length() > 0)) {
+                while ((methods.size() == 0) && fqn != null && (fqn.length() > 0)) {
                     methods = index.getMethods(name, fqn + "::" + type, NameKind.EXACT_NAME);
 
                     int f = fqn.lastIndexOf("::");
@@ -928,12 +957,8 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 methods = index.getMethods(name, null, NameKind.EXACT_NAME);
             }
         }
-
-        int astOffset = caretOffset;
-        DeclarationLocation l = getMethodDeclaration(info, name, methods, 
-             path, closest, index, astOffset, lexOffset);
-
-        return l;
+        
+        return methods;
     }
 
     private DeclarationLocation findClass(String name, String possibleFqn, CompilationInfo info,
@@ -1068,7 +1093,8 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
     }
     
     /** Locate the method declaration for the given method call */
-    public IndexedMethod findMethodDeclaration(CompilationInfo info, Node callNode, AstPath path) {
+    public IndexedMethod findMethodDeclaration(CompilationInfo info, Node callNode, AstPath path,
+            Set<IndexedMethod>[] alternativesHolder) {
         int astOffset = AstUtilities.getCallRange(callNode).getStart();
 
         // Is this a require-statement? If so, jump to the required file
@@ -1146,8 +1172,6 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
             boolean done = call.isMethodExpected();
             boolean skipInstanceMethods = call.isStatic();
 
-            Set<IndexedMethod> methods = Collections.emptySet();
-            
             String type = call.getType();
             String lhs = call.getLhs();
             NameKind kind = NameKind.EXACT_NAME;
@@ -1190,45 +1214,16 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                         type = "Object"; // NOI18N
                     }
                 }
-
-                if ((type != null) && (type.length() > 0)) {
-                    // Possibly a class on the left hand side: try searching with the class as a qualifier.
-                    // Try with the LHS + current FQN recursively. E.g. if we're in
-                    // Test::Unit when there's a call to Foo.x, we'll try
-                    // Test::Unit::Foo, and Test::Foo
-                    while (methods.size() == 0) {
-                        methods = index.getInheritedMethods(fqn + "::" + type, name, kind);
-
-                        int f = fqn.lastIndexOf("::");
-
-                        if (f == -1) {
-                            break;
-                        } else {
-                            fqn = fqn.substring(0, f);
-                        }
-                    }
-
-                    // Add methods in the class (without an FQN)
-                    Set<IndexedMethod> m = index.getInheritedMethods(type, name, kind);
-
-                    if (m.size() > 0) {
-                        methods.addAll(m);
-                    }
-                }
+            }
+            if (call == Call.LOCAL && fqn != null && fqn.length() == 0) {
+                fqn = "Object";
             }
 
-            // Try just the method call (e.g. across all classes). This is ignoring the 
-            // left hand side because we can't resolve it.
-            if ((methods.size() == 0)) {
-                methods = index.getMethods(name, null, kind);
-            }
+            Set<IndexedMethod> methods = getApplicableMethods(name, fqn, type, call, index);
             
             if (name.equals("new")) { // NOI18N
-                                      // Also look for initialize
-
-                Set<IndexedMethod> initializeMethods =
-                    index.getMethods("initialize", null, NameKind.EXACT_NAME);
-                //initializeMethods.size(); methods.size()
+                // Also look for initialize
+                Set<IndexedMethod> initializeMethods = getApplicableMethods("initialize", fqn, type, call, index);
                 methods.addAll(initializeMethods);
             }
 
@@ -1237,6 +1232,9 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                     findBestMethodMatch(name, methods, (BaseDocument)info.getDocument(),
                         astOffset, lexOffset, path, callNode, index);
 
+                if (alternativesHolder != null) {
+                    alternativesHolder[0] = methods;
+                }
                 return candidate;
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);

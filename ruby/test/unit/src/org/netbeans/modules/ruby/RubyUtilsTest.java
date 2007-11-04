@@ -200,6 +200,19 @@ public class RubyUtilsTest extends TestCase {
         assertEquals(2, RubyUtils.getRowLastNonWhite("abc       ", 10));
         assertEquals(2, RubyUtils.getRowLastNonWhite("abc       ", 5));
         assertEquals(7, RubyUtils.getRowLastNonWhite("\ndef\nabc\r", 6));
+        assertEquals(-1, RubyUtils.getRowLastNonWhite("x\n", 2));
+    }
+    
+    public void testGetRowFirstNonWhite() throws Exception {
+        assertEquals(-1, RubyUtils.getRowFirstNonWhite("", 0));
+        assertEquals(-1, RubyUtils.getRowFirstNonWhite("   ", 0));
+        assertEquals(-1, RubyUtils.getRowFirstNonWhite("abc\r\n", 5));
+        assertEquals(-1, RubyUtils.getRowFirstNonWhite("\nabc", 0));
+        assertEquals(4, RubyUtils.getRowFirstNonWhite("    a", 0));
+        assertEquals(6, RubyUtils.getRowFirstNonWhite("\r\n    a", 2));
+        assertEquals(6, RubyUtils.getRowFirstNonWhite("\r\n    a", 4));
+        assertEquals(6, RubyUtils.getRowFirstNonWhite("\r\n    a", 6));
+        assertEquals(2, RubyUtils.getRowFirstNonWhite("\r\nxy", 4));
     }
     
     public void testIsRowEmpty() throws Exception {

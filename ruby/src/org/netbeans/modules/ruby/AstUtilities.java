@@ -792,14 +792,25 @@ public class AstUtilities {
 
                 for (int index = 0; index < children.size(); index++) {
                     Node child = children.get(index);
-                    ISourcePosition pos = child.getPosition();
+                    if (child.nodeId == NodeTypes.HASHNODE) {
+                        // Invalid offsets - the hashnode often has the wrong offset
+                        OffsetRange range = AstUtilities.getRange(child);
+                        if ((offset <= range.getEnd()) &&
+                                ((offset >= prevEnd) || (offset >= range.getStart()))) {
+                            return index;
+                        }
 
-                    if ((offset <= pos.getEndOffset()) &&
-                            ((offset >= prevEnd) || (offset >= pos.getStartOffset()))) {
-                        return index;
+                        prevEnd = range.getEnd();
+                    } else {
+                        ISourcePosition pos = child.getPosition();
+                        if ((offset <= pos.getEndOffset()) &&
+                                ((offset >= prevEnd) || (offset >= pos.getStartOffset()))) {
+                            return index;
+                        }
+
+                        prevEnd = pos.getEndOffset();
                     }
 
-                    prevEnd = pos.getEndOffset();
                 }
 
                 // Caret -inside- empty parentheses?
@@ -1057,9 +1068,28 @@ public class AstUtilities {
     /**
      * Return a range that matches the given node's source buffer range
      */
+    @SuppressWarnings("unchecked")
     public static OffsetRange getRange(Node node) {
-        ISourcePosition pos = node.getPosition();
-        OffsetRange range = new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
+        OffsetRange range;
+        if (node.nodeId == NodeTypes.HASHNODE) {
+            // Workaround for incorrect JRuby AST offsets for hashnodes :
+            //   render :action => 'list'
+            // has wrong argument offsets, which we want to correct.
+            // Just adopt the start offset of its first child (if any) and
+            // the end offset of its last child (if any)
+            List<Node> list = node.childNodes();
+            if (list != null && list.size() > 0) {
+                int start = list.get(0).getPosition().getStartOffset();
+                int end = list.get(list.size()-1).getPosition().getEndOffset();
+                range = new OffsetRange(start, end);
+            } else {
+                ISourcePosition pos = node.getPosition();
+                range = new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
+            }
+        } else {
+            ISourcePosition pos = node.getPosition();
+            range = new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
+        }
 
         return range;
     }

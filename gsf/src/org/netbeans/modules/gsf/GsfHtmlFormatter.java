@@ -130,6 +130,11 @@ public class GsfHtmlFormatter extends HtmlFormatter {
         }
     }
 
+    @Override
+    public void active(boolean start) {
+        emphasis(start);
+    }
+
     public void type(boolean start) {
         assert start != isType;
         isType = start;

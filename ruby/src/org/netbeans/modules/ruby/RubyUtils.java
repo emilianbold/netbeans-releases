@@ -837,6 +837,38 @@ public class RubyUtils {
         }
     }
 
+    public static int getRowFirstNonWhite(String text, int offset) throws BadLocationException {
+        try {
+            // Find start of line
+            int i = offset-1;
+            if (i < text.length()) {
+                for (; i >= 0; i--) {
+                    char c = text.charAt(i);
+                    if (c == '\n') {
+                        break;
+                    }
+                }
+                i++;
+            }
+            // Search forwards to find first nonspace char from offset
+            for (; i < text.length(); i++) {
+                char c = text.charAt(i);
+                if (c == '\n') {
+                    return -1;
+                }
+                if (!Character.isWhitespace(c)) {
+                    return i;
+                }
+            }
+
+            return -1;
+        } catch (Exception ex) {
+            BadLocationException ble = new BadLocationException(offset + " out of " + text.length(), offset);
+            ble.initCause(ex);
+            throw ble;
+        }
+    }
+    
     public static int getRowStart(String text, int offset) throws BadLocationException {
         try {
             // Search backwards

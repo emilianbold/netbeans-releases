@@ -78,16 +78,6 @@ public abstract class GsfCompletionItem implements CompletionItem {
         
     private static class DelegatedItem extends GsfCompletionItem {
         private org.netbeans.api.gsf.CompletionProposal item;
-        private static final String METHOD_PUBLIC = "org/netbeans/modules/editor/resources/completion/method_16.png"; //NOI18N
-        private static final String METHOD_PROTECTED = "org/netbeans/modules/editor/resources/completion/method_protected_16.png"; //NOI18N
-        private static final String METHOD_PACKAGE = "org/netbeans/modules/editor/resources/completion/method_package_private_16.png"; //NOI18N
-        private static final String METHOD_PRIVATE = "org/netbeans/modules/editor/resources/completion/method_private_16.png"; //NOI18N        
-        private static final String METHOD_ST_PUBLIC = "org/netbeans/modules/editor/resources/completion/method_static_16.png"; //NOI18N
-        private static final String METHOD_ST_PROTECTED = "org/netbeans/modules/editor/resources/completion/method_static_protected_16.png"; //NOI18N
-        private static final String METHOD_ST_PRIVATE = "org/netbeans/modules/editor/resources/completion/method_static_private_16.png"; //NOI18N
-        private static final String METHOD_ST_PACKAGE = "org/netbeans/modules/editor/resources/completion/method_static_package_private_16.png"; //NOI18N
-        private static final String METHOD_COLOR = "<font color=#000000>"; //NOI18N
-        private static final String PARAMETER_NAME_COLOR = "<font color=#a06001>"; //NOI18N
         private static ImageIcon icon[][] = new ImageIcon[2][4];
         
         private DelegatedItem(CompilationInfo info, org.netbeans.api.gsf.CompletionProposal item) {
@@ -99,8 +89,9 @@ public abstract class GsfCompletionItem implements CompletionItem {
         public int getSortPriority() {
             switch (item.getKind()) {
             case ERROR: return -5000;
-            case DB: return item.isSmart() ? 55 - SMART_TYPE : 55;
+            case DB: return item.isSmart() ? 155 - SMART_TYPE : 155;
             case PARAMETER: return item.isSmart() ? 105 - SMART_TYPE : 105;
+            case CALL: return item.isSmart() ? 110 - SMART_TYPE : 110;
             case CONSTRUCTOR: return item.isSmart() ? 400 - SMART_TYPE : 400;
             case MODULE: return item.isSmart() ? 900 - SMART_TYPE : 900;
             case CLASS: return item.isSmart() ? 800 - SMART_TYPE : 800;
@@ -349,6 +340,11 @@ public abstract class GsfCompletionItem implements CompletionItem {
     
     public void defaultAction(JTextComponent component) {
         if (component != null) {
+            // Items with no insert prefix and no custom code template
+            // are "read-only" (such as the method call items)
+            if (getInsertPrefix().length() == 0) {
+                return;
+            }
             Completion.get().hideDocumentation();
             Completion.get().hideCompletion();
             int caretOffset = component.getSelectionEnd();

@@ -188,6 +188,43 @@ public class RubyParser implements Parser {
             return false;
         }
 
+        if (sanitizing == Sanitize.BLOCK_START) {
+            try {
+                int start = RubyUtils.getRowFirstNonWhite(doc, offset);
+                if (start != -1 && 
+                        start+2 < doc.length() &&
+                        doc.regionMatches(start, "if", 0, 2)) {
+                    // TODO - check lexer
+                    char c = 0;
+                    if (start+2 < doc.length()) {
+                        c = doc.charAt(start+2);
+                    }
+                    if (!Character.isLetter(c)) {
+                        int removeStart = start;
+                        int removeEnd = removeStart+2;
+                        StringBuilder sb = new StringBuilder(doc.length());
+                        sb.append(doc.substring(0, removeStart));
+                        for (int i = removeStart; i < removeEnd; i++) {
+                            sb.append(' ');
+                        }
+                        if (removeEnd < doc.length()) {
+                            sb.append(doc.substring(removeEnd, doc.length()));
+                        }
+                        assert sb.length() == doc.length();
+                        context.sanitizedRange = new OffsetRange(removeStart, removeEnd);
+                        context.sanitizedSource = sb.toString();
+                        context.sanitizedContents = doc.substring(removeStart, removeEnd);
+                        return true;
+                    }
+                }
+                
+                return false;
+            } catch (BadLocationException ble) {
+                Exceptions.printStackTrace(ble);
+                return false;
+            }
+        }
+        
         try {
             // Sometimes the offset shows up on the next line
             if (RubyUtils.isRowEmpty(doc, offset) || RubyUtils.isRowWhite(doc, offset)) {
@@ -336,6 +373,14 @@ public class RubyParser implements Parser {
         // Fall through to try the next trick
         case ERROR_DOT:
 
+            // We've tried removing dots - now try removing the whole line at the error position
+            if (context.caretOffset != -1) {
+                return parseBuffer(context, Sanitize.BLOCK_START);
+            }
+            
+        // Fall through to try the next trick
+        case BLOCK_START:
+            
             // We've tried removing dots - now try removing the whole line at the error position
             if (context.errorOffset != -1) {
                 return parseBuffer(context, Sanitize.ERROR_LINE);
@@ -681,6 +726,10 @@ public class RubyParser implements Parser {
         /** Try to remove the trailing . or :: at the error position, or the prior
          * line, or the caret line */
         ERROR_DOT, 
+        /** Try to remove the initial "if" or "unless" on the block
+         * in case it's not terminated
+         */
+        BLOCK_START,
         /** Try to cut out the error line */
         ERROR_LINE, 
         /** Try to cut out the current edited line, if known */

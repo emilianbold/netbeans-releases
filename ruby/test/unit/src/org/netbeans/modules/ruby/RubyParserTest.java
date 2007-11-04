@@ -142,7 +142,7 @@ public class RubyParserTest extends RubyTestBase {
     }
 
     public void testPartial5() throws Exception {
-        checkParseTree("testfiles/broken5.rb", "if true^", "DefnNode");
+        checkParseTree("testfiles/broken5.rb", "if true^", "TrueNode");
     }
 
     public void testPartial5MissingEnd() throws Exception {
@@ -155,5 +155,8 @@ public class RubyParserTest extends RubyTestBase {
         checkParseTree("testfiles/broken6.rb", "def ^", "ClassNode");
     }
 
+    public void testPartial12() throws Exception {
+        checkParseTree("testfiles/broken12.rb", " File.exists?(^)", "ArrayNode");
+    }
 
 }

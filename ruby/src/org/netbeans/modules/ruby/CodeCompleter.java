@@ -178,6 +178,9 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class CodeCompleter implements Completable {
+    /** Include call items in code completion? */
+    private static final boolean INCLUDE_CALL_ITEMS = true;
+    
     /** Another good logical parameter would be SINGLE_WHITESPACE which would insert a whitespace separator IF NEEDED */
     /** Live code template parameter: require the given file, if not already done so */
     private static final String KEY_REQUIRE = "require"; // NOI18N
@@ -1290,7 +1293,8 @@ public class CodeCompleter implements Completable {
      * called in methodHolder[0].
      */
     boolean computeMethodCall(CompilationInfo info, int lexOffset, int astOffset,
-            IndexedMethod[] methodHolder, int[] parameterIndexHolder, int[] anchorOffsetHolder) {
+            IndexedMethod[] methodHolder, int[] parameterIndexHolder, int[] anchorOffsetHolder,
+            Set<IndexedMethod>[] alternativesHolder) {
         try {
             Node root = AstUtilities.getRoot(info);
 
@@ -1536,7 +1540,20 @@ public class CodeCompleter implements Completable {
                 }
             }
 
-            if (index != -1 && haveSanitizedComma) {
+            if (index != -1 && haveSanitizedComma && call != null) {
+                Node an = null;
+                if (call.nodeId == NodeTypes.FCALLNODE) {
+                    an = ((FCallNode)call).getArgsNode();
+                } else if (call.nodeId == NodeTypes.CALLNODE) {
+                    an = ((CallNode)call).getArgsNode();
+                }
+                if (an != null && index < an.childNodes().size() &&
+                        ((Node)an.childNodes().get(index)).nodeId == NodeTypes.HASHNODE) {
+                    // We should stay within the hashnode, so counteract the
+                    // index++ which follows this if-block
+                    index--;
+                }
+
                 // Adjust the index to account for our removed
                 // comma
                 index++;
@@ -1549,7 +1566,8 @@ public class CodeCompleter implements Completable {
             } else if (targetMethod == null) {
                 // Look up the
                 // See if we can find the method corresponding to this call
-                targetMethod = new DeclarationFinder().findMethodDeclaration(info, call, path);
+                targetMethod = new DeclarationFinder().findMethodDeclaration(info, call, path, 
+                        alternativesHolder);
                 if (targetMethod == null) {
                     return false;
                 }
@@ -1576,22 +1594,46 @@ public class CodeCompleter implements Completable {
 
         return true;
     }
-
+    
     private boolean addParameters(List<CompletionProposal> proposals, CompletionRequest request) {
         IndexedMethod[] methodHolder = new IndexedMethod[1];
+        @SuppressWarnings("unchecked")
+        Set<IndexedMethod>[] alternatesHolder = new Set[1];
         int[] paramIndexHolder = new int[1];
         int[] anchorOffsetHolder = new int[1];
         CompilationInfo info = request.info;
         int lexOffset = request.lexOffset;
         int astOffset = request.astOffset;
         if (!computeMethodCall(info, lexOffset, astOffset,
-                methodHolder, paramIndexHolder, anchorOffsetHolder)) {
+                methodHolder, paramIndexHolder, anchorOffsetHolder, alternatesHolder)) {
 
             return false;
         }
 
         IndexedMethod targetMethod = methodHolder[0];
         int index = paramIndexHolder[0];
+        
+        if (INCLUDE_CALL_ITEMS) {
+            CallItem callItem = new CallItem(targetMethod, index, anchor, request);
+            proposals.add(callItem);
+            // Also show other documented, not nodoc'ed items (except for those
+            // with identical signatures, such as overrides of the same method)
+            if (alternatesHolder[0] != null) {
+                Set<String> signatures = new HashSet<String>();
+                signatures.add(targetMethod.getSignature().substring(targetMethod.getSignature().indexOf('#')+1));
+                for (IndexedMethod m : alternatesHolder[0]) {
+                    if (m != targetMethod && m.isDocumented() && !m.isNoDoc()) {
+                        String sig = m.getSignature().substring(m.getSignature().indexOf('#')+1);
+                        if (!signatures.contains(sig)) {
+                            CallItem item = new CallItem(m, index, anchor, request);
+                            proposals.add(item);
+                            signatures.add(sig);
+                        }
+                    }
+                }
+            }
+        }
+        
         List<String> params = targetMethod.getParameters();
         if (params == null || params.size() <= index) {
             return false;
@@ -3318,7 +3360,7 @@ public class CodeCompleter implements Completable {
         int[] anchorOffsetHolder = new int[1];
         int astOffset = AstUtilities.getAstOffset(info, lexOffset);
         if (!computeMethodCall(info, lexOffset, astOffset,
-                methodHolder, paramIndexHolder, anchorOffsetHolder)) {
+                methodHolder, paramIndexHolder, anchorOffsetHolder, null)) {
 
             return ParameterInfo.NONE;
         }
@@ -3995,7 +4037,84 @@ public class CodeCompleter implements Completable {
         public String getInsertPrefix() {
             return insert;
         }
+    }
+    
+    private class CallItem extends MethodItem {   
+        private IndexedMethod method;
+        private int index;
+        
+        CallItem(IndexedMethod method, int parameterIndex, int anchorOffset, CompletionRequest request) {
+            super(method, anchorOffset, request);
+            this.method = method;
+            this.index = parameterIndex;
+        }
 
+        @Override
+        public String getRhsHtml() {
+            return super.getRhsHtml();//null;
+        }
+        
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.CALL;
+        }
+
+        @Override
+        public String getInsertPrefix() {
+            return "";
+        }
+
+        @Override
+        public String getLhsHtml() {
+            ElementKind kind = getKind();
+            HtmlFormatter formatter = request.formatter;
+            formatter.reset();
+            formatter.name(kind, true);
+            formatter.appendText(getName());
+
+            List<String> parameters = method.getParameters();
+
+            if ((parameters != null) && (parameters.size() > 0)) {
+                formatter.appendHtml("("); // NOI18N
+
+                if (index > 0 && index < parameters.size()) {
+                    formatter.appendText("... , ");
+                }
+                
+                formatter.active(true);
+                formatter.appendText(parameters.get(Math.min(parameters.size()-1, index)));
+                formatter.active(false);
+                
+                if (index < parameters.size()-1) {
+                    formatter.appendText(", ...");
+                }
+
+                formatter.appendHtml(")"); // NOI18N
+            }
+            
+            if (method.hasBlock() && !method.isBlockOptional()) {
+                formatter.appendText(" { }");
+            }
+
+            formatter.name(kind, false);
+
+            return formatter.getText();
+        }
+
+        @Override
+        public boolean isSmart() {
+            return true;
+        }
+
+        @Override
+        public List<String> getInsertParams() {
+            return null;
+        }
+        
+        @Override
+        public String getCustomInsertTemplate() {
+            return null;
+        }
     }
 
     /** Methods/attributes inferred from ActiveRecord migrations */

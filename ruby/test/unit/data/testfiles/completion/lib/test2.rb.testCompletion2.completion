@@ -1,1 +1,4 @@
 Results for Result is #{@myfield} and #@another. with queryType=COMPLETION and nameKind=PREFIX
+CALL       puts(*args)                                Zlib::GzipWriter
+CALL       puts(obj)                                  StringIO
+CALL       puts(string)                               Net::Telnet

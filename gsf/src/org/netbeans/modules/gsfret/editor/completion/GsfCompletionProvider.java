@@ -645,6 +645,8 @@ public class GsfCompletionProvider implements CompletionProvider {
         private static final String VARIABLE_COLOR = "<font color=#00007c>"; //NOI18N
         private static final String CONSTRUCTOR_COLOR = "<font color=#b28b00>"; //NOI18N
         private static final String INTERFACE_COLOR = "<font color=#404040>"; //NOI18N
+        private static final String PARAMETERS_COLOR = "<font color=#808080>"; //NOI18N
+        private static final String ACTIVE_PARAMETER_COLOR = "<font color=#000000>"; //NOI18N
 
         @Override
         public void parameters(boolean start) {
@@ -659,6 +661,17 @@ public class GsfCompletionProvider implements CompletionProvider {
         }
         
         @Override
+        public void active(boolean start) {
+            if (start) {
+                sb.append(ACTIVE_PARAMETER_COLOR);
+                sb.append("<b>");
+            } else {
+                sb.append("</b>");
+                sb.append(END_COLOR);
+            }
+        }
+        
+        @Override
         public void name(ElementKind kind, boolean start) {
             assert start != isName;
             isName = start;
@@ -667,6 +680,9 @@ public class GsfCompletionProvider implements CompletionProvider {
                 switch (kind) {
                 case CONSTRUCTOR:
                     sb.append(CONSTRUCTOR_COLOR);
+                    break;
+                case CALL:
+                    sb.append(PARAMETERS_COLOR);
                     break;
                 case DB:
                 case METHOD:

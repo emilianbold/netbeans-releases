@@ -1045,23 +1045,59 @@ public class LexUtilities {
         return OffsetRange.NONE;
     }
 
-    /** Back up to the first space character prior to the given offset */
+    /**
+     * Back up to the first space character prior to the given offset - as long as 
+     * it's on the same line!  If there's only leading whitespace on the line up
+     * to the lex offset, return the offset itself 
+     */
     public static int findSpaceBegin(BaseDocument doc, int lexOffset) {
         TokenSequence ts = LexUtilities.getRubyTokenSequence(doc, lexOffset);
         if (ts == null) {
+            return lexOffset;
+        }
+        boolean allowPrevLine = false;
+        int lineStart;
+        try {
+            lineStart = Utilities.getRowStart(doc, Math.min(lexOffset, doc.getLength()));
+            int prevLast = lineStart-1;
+            if (lineStart > 0) {
+                prevLast = Utilities.getRowLastNonWhite(doc, lineStart-1);
+                if (prevLast != -1) {
+                    char c = doc.getText(prevLast, 1).charAt(0);
+                    if (c == ',') {
+                        // Arglist continuation? // TODO : check lexing
+                        allowPrevLine = true;
+                    }
+                }
+            }
+            if (!allowPrevLine) {
+                int firstNonWhite = Utilities.getRowFirstNonWhite(doc, lineStart);
+                if (lexOffset <= firstNonWhite || firstNonWhite == -1) {
+                    return lexOffset;
+                }
+            } else {
+                // Make lineStart so small that Math.max won't cause any problems
+                int firstNonWhite = Utilities.getRowFirstNonWhite(doc, lineStart);
+                if (prevLast >= 0 && (lexOffset <= firstNonWhite || firstNonWhite == -1)) {
+                    return prevLast+1;
+                }
+                lineStart = 0;
+            }
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
             return lexOffset;
         }
         ts.move(lexOffset);
         if (ts.moveNext()) {
             if (lexOffset > ts.offset()) {
                 // We're in the middle of a token
-                return (ts.token().id() == RubyTokenId.WHITESPACE) ?
-                    ts.offset() : lexOffset;
+                return Math.max((ts.token().id() == RubyTokenId.WHITESPACE) ?
+                    ts.offset() : lexOffset, lineStart);
             }
             while (ts.movePrevious()) {
                 Token token = ts.token();
                 if (token.id() != RubyTokenId.WHITESPACE) {
-                    return ts.offset() + token.length();
+                    return Math.max(ts.offset() + token.length(), lineStart);
                 }
             }
         }

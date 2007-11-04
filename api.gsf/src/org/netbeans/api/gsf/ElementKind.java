@@ -48,5 +48,5 @@ package org.netbeans.api.gsf;
 public enum ElementKind {
     CONSTRUCTOR, MODULE, CLASS, METHOD, FIELD, VARIABLE,
     ATTRIBUTE, CONSTANT, KEYWORD, OTHER, PARAMETER, GLOBAL,
-    ERROR, DB
+    ERROR, DB, CALL
 }
