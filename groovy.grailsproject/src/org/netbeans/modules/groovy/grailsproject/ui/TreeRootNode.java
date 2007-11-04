@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.groovy.grailsproject.ui;
 
 import java.awt.Image;
@@ -74,91 +73,95 @@ import javax.swing.Action;
 import org.netbeans.modules.groovy.grailsproject.actions.*;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import java.io.File;
-import org.openide.actions.NewAction;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.datatransfer.NewType;
-import org.openide.util.HelpCtx;
-
 import java.util.logging.Logger;
-import java.util.logging.Level;
 
 /**
  * 
  * @author Martin Adamek
  */
 public final class TreeRootNode extends FilterNode implements PropertyChangeListener {
-    
-    private static Image PACKAGE_BADGE = Utilities.loadImage( "org/netbeans/modules/groovy/grailsproject/resources/packageBadge.gif" ); // NOI18N
 
+    private static Image PACKAGE_BADGE = Utilities.loadImage("org/netbeans/modules/groovy/grailsproject/resources/packageBadge.gif"); // NOI18N
     private final SourceGroup g;
     private SourceCategory category = SourceCategory.NONE;
-    
-    private  final Logger LOG = Logger.getLogger(TreeRootNode.class.getName());
-    
-    
+    private final Logger LOG = Logger.getLogger(TreeRootNode.class.getName());
+
     public TreeRootNode(SourceGroup g) {
         this(DataFolder.findFolder(g.getRootFolder()), g);
-        
+
         int lastSlash = g.getName().lastIndexOf(File.separator);
         String dirName = g.getName().substring(lastSlash + 1);
-        
-   
-             if(dirName.startsWith("conf"))         { category = SourceCategory.CONFIGURATION; }
-        else if(dirName.startsWith("controllers"))  { category = SourceCategory.CONTROLLERS; }
-        else if(dirName.startsWith("domain"))       { category = SourceCategory.DOMAIN; }
-        else if(dirName.startsWith("i18n"))         { category = SourceCategory.MESSAGES; }
-        else if(dirName.startsWith("services"))     { category = SourceCategory.SERVICES; }
-        else if(dirName.startsWith("taglib"))       { category = SourceCategory.TAGLIB; }
-        else if(dirName.startsWith("util"))         { category = SourceCategory.UTIL; }
-        else if(dirName.startsWith("views"))        { category = SourceCategory.VIEWS; }
+
+
+        if (dirName.startsWith("conf")) {
+            category = SourceCategory.CONFIGURATION;
+        } else if (dirName.startsWith("controllers")) {
+            category = SourceCategory.CONTROLLERS;
+        } else if (dirName.startsWith("domain")) {
+            category = SourceCategory.DOMAIN;
+        } else if (dirName.startsWith("i18n")) {
+            category = SourceCategory.MESSAGES;
+        } else if (dirName.startsWith("services")) {
+            category = SourceCategory.SERVICES;
+        } else if (dirName.startsWith("taglib")) {
+            category = SourceCategory.TAGLIB;
+        } else if (dirName.startsWith("util")) {
+            category = SourceCategory.UTIL;
+        } else if (dirName.startsWith("views")) {
+            category = SourceCategory.VIEWS;
+        }
     }
-    
+
     private TreeRootNode(DataFolder folder, SourceGroup g) {
         this(new FilterNode(folder.getNodeDelegate(), folder.createNodeChildren(new VisibilityQueryDataFilter(g))), g);
     }
-    
-    private TreeRootNode (Node originalNode, SourceGroup g) {
+
+    private TreeRootNode(Node originalNode, SourceGroup g) {
         super(originalNode, new PackageFilterChildren(originalNode),
-            new ProxyLookup(
+                new ProxyLookup(
                 originalNode.getLookup(),
-                Lookups.singleton(new PathFinder(g))
-                // no need for explicit search info
-            ));
+                Lookups.singleton(new PathFinder(g)) // no need for explicit search info
+                ));
         this.g = g;
         g.addPropertyChangeListener(WeakListeners.propertyChange(this, g));
     }
 
-    
     /*  Here we can customize the Actions on the different source-directories.
-        Dispatching based on the Nodes name (better type) needs to be done here.
+    Dispatching based on the Nodes name (better type) needs to be done here.
      */
-    
     public Action[] getActions(boolean context) {
         List<Action> result = new ArrayList<Action>();
-        
-        switch(category) {
-            case CONFIGURATION: result.add(new NewConfigurationAction());
-                                break;
-            case CONTROLLERS:   result.add(new NewControllerAction());
-                                break;
-            case DOMAIN:        result.add(new NewDomainAction());
-                                break;                                
-            case MESSAGES:      result.add(new NewMessageAction());
-                                break;                                
-            case SERVICES:      result.add(new NewServiceAction());
-                                break;                                
-            case TAGLIB:        result.add(new NewTaglibAction());
-                                break;                                
+
+        switch (category) {
+            case CONFIGURATION:
+                result.add(new NewConfigurationAction());
+                break;
+            case CONTROLLERS:
+                result.add(new NewControllerAction());
+                break;
+            case DOMAIN:
+                result.add(new NewDomainAction());
+                break;
+            case MESSAGES:
+                result.add(new NewMessageAction());
+                break;
+            case SERVICES:
+                result.add(new NewServiceAction());
+                break;
+            case TAGLIB:
+                result.add(new NewTaglibAction());
+                break;
             case UTIL:          // result.add(new NewU());
-                                break;                                
-            case VIEWS:         result.add(new NewViewAction());
-                                break;                                
+                break;
+            case VIEWS:
+                result.add(new NewViewAction());
+                break;
         }
-        
+
         return result.toArray(new Action[result.size()]);
-        }
-    
-//        public NewType[] getNewTypes() {
+    }
+
+    //        public NewType[] getNewTypes() {
 //        return new NewType[] { new NewType() {
 //            public String getName() {
 //                return "create somethin new...";
@@ -171,10 +174,6 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
 //            }
 //            } };
 //        }
-    
-    
-    
-    
     /** Copied from PackageRootNode with modifications. */
     private Image computeIcon(boolean opened, int type) {
         Icon icon = g.getIcon(opened);
@@ -185,7 +184,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
             return Utilities.icon2Image(icon);
         }
     }
-    
+
     public Image getIcon(int type) {
         return computeIcon(false, type);
     }
@@ -223,11 +222,11 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
     }
 
     public static Node findPath(Node rootNode, Object object) {
-        
+
         TreeRootNode.PathFinder pf = rootNode.getLookup().lookup(TreeRootNode.PathFinder.class);
-        
-        if ( pf != null ) {
-            return pf.findPath( rootNode, object );
+
+        if (pf != null) {
+            return pf.findPath(rootNode, object);
         } else {
             TreeRootNode.PathFinder pf2 = rootNode.getLookup().lookup(TreeRootNode.PathFinder.class);
             if (pf2 != null) {
@@ -240,13 +239,13 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
 
     /** Copied from PhysicalView and PackageRootNode. */
     public static final class PathFinder {
-        
+
         private final SourceGroup g;
-        
+
         PathFinder(SourceGroup g) {
             this.g = g;
         }
-        
+
         public Node findPath(Node rootNode, Object o) {
             FileObject fo;
             if (o instanceof FileObject) {
@@ -264,19 +263,19 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 StringTokenizer strtok = new StringTokenizer(relPath, File.separator); // NOI18N
                 while (strtok.hasMoreTokens()) {
                     String token = strtok.nextToken();
-                   path.add(token);
+                    path.add(token);
                 }
                 try {
-                    Node folderNode =  folder.equals(groupRoot) ? rootNode : NodeOp.findPath(rootNode, Collections.enumeration(path));
+                    Node folderNode = folder.equals(groupRoot) ? rootNode : NodeOp.findPath(rootNode, Collections.enumeration(path));
                     if (fo.isFolder()) {
                         return folderNode;
                     } else {
                         Node[] childs = folderNode.getChildren().getNodes(true);
                         for (int i = 0; i < childs.length; i++) {
-                           DataObject dobj = childs[i].getLookup().lookup(DataObject.class);
-                           if (dobj != null && dobj.getPrimaryFile().getNameExt().equals(fo.getNameExt())) {
-                               return childs[i];
-                           }
+                            DataObject dobj = childs[i].getLookup().lookup(DataObject.class);
+                            if (dobj != null && dobj.getPrimaryFile().getNameExt().equals(fo.getNameExt())) {
+                                return childs[i];
+                            }
                         }
                     }
                 } catch (NodeNotFoundException e) {
@@ -284,33 +283,32 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 }
             } else if (groupRoot.equals(fo)) {
                 return rootNode;
-            } 
+            }
             return null;
         }
     }
-    
+
     private static final class VisibilityQueryDataFilter implements ChangeListener, PropertyChangeListener, ChangeableDataFilter {
-        
+
         private static final long serialVersionUID = 1L; // in case a DataFolder.ClonedFilterHandle saves me
-        
         private final EventListenerList ell = new EventListenerList();
         private final SourceGroup g;
-        
+
         public VisibilityQueryDataFilter(SourceGroup g) {
             this.g = g;
             VisibilityQuery.getDefault().addChangeListener(WeakListeners.change(this, VisibilityQuery.getDefault()));
             g.addPropertyChangeListener(WeakListeners.propertyChange(this, g));
         }
-        
+
         public boolean acceptDataObject(DataObject obj) {
             FileObject fo = obj.getPrimaryFile();
             return g.contains(fo) && VisibilityQuery.getDefault().isVisible(fo);
         }
-        
+
         public void stateChanged(ChangeEvent e) {
             fireChange();
         }
-        
+
         public void propertyChange(PropertyChangeEvent e) {
             if (SourceGroup.PROP_CONTAINERSHIP.equals(e.getPropertyName())) {
                 fireChange();
@@ -325,52 +323,47 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                     if (event == null) {
                         event = new ChangeEvent(this);
                     }
-                    ((ChangeListener) listeners[i+1]).stateChanged(event);
+                    ((ChangeListener) listeners[i + 1]).stateChanged(event);
                 }
             }
         }
-        
+
         public void addChangeListener(ChangeListener listener) {
             ell.add(ChangeListener.class, listener);
         }
-        
+
         public void removeChangeListener(ChangeListener listener) {
             ell.remove(ChangeListener.class, listener);
         }
-        
     }
-    
-    
+
     private static final class PackageFilterChildren extends FilterNode.Children {
-        
-        public PackageFilterChildren (final Node originalNode) {
-            super (originalNode);
-        }       
-                
+
+        public PackageFilterChildren(final Node originalNode) {
+            super(originalNode);
+        }
+
         @Override
         protected Node copyNode(final Node originalNode) {
             DataObject dobj = originalNode.getLookup().lookup(DataObject.class);
-            return (dobj instanceof DataFolder) ? new PackageFilterNode (originalNode) : super.copyNode(originalNode);
+            return (dobj instanceof DataFolder) ? new PackageFilterNode(originalNode) : super.copyNode(originalNode);
         }
     }
-    
+
     private static final class PackageFilterNode extends FilterNode {
-        
-        public PackageFilterNode (final Node origNode) {
-            super (origNode, new PackageFilterChildren (origNode));
+
+        public PackageFilterNode(final Node origNode) {
+            super(origNode, new PackageFilterChildren(origNode));
         }
-        
+
         @Override
-        public void setName (final String name) {
-            if (Utilities.isJavaIdentifier (name)) {
-                super.setName (name);
+        public void setName(final String name) {
+            if (Utilities.isJavaIdentifier(name)) {
+                super.setName(name);
+            } else {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(TreeRootNode.class, "MSG_InvalidPackageName"), NotifyDescriptor.INFORMATION_MESSAGE));
             }
-            else {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message (
-                    NbBundle.getMessage(TreeRootNode.class,"MSG_InvalidPackageName"), NotifyDescriptor.INFORMATION_MESSAGE));
-            }
-        }                
-        
+        }
     }
-    
 }
