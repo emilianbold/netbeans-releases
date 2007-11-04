@@ -378,6 +378,26 @@ public class DataFolderTest extends LoggingTestCaseHid {
         assertChildrenArrays ("", arr, df.getChildren (), false);
     }
     
+    public void testRenameFolderDoesNotPrintWarning() throws Exception {
+        String fsstruct [] = new String [] {
+            "AA/AAA/",
+            "AA/BBB/",
+            "AA/CCC/"
+        };
+        
+        TestUtilHid.destroyLocalFileSystem (getName());
+        FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), fsstruct);
+
+        
+        DataFolder df = DataFolder.findFolder (lfs.findResource ("AA"));
+        DataObject[] arr = df.getChildren ();
+
+        CharSequence seq = Log.enable("org.openide.nodes", Level.WARNING);
+        df.getNodeDelegate().setName("BBBB");
+        
+        
+    }
+    
     private static final class OrderListener implements PropertyChangeListener {
         public int count = 0;
         public synchronized void propertyChange(PropertyChangeEvent ev) {
