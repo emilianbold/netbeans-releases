@@ -31,7 +31,6 @@ package org.netbeans.modules.groovy.grails;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.Exceptions;
@@ -51,6 +50,7 @@ public class GrailsServerRunnable implements Runnable {
     String cwdName;
     String cmd;
     private BufferedReader procOutput;
+    private Process process;
     CountDownLatch outputReady = null;
     
     private  final Logger LOG = Logger.getLogger(GrailsServerRunnable.class.getName());
@@ -72,9 +72,9 @@ public class GrailsServerRunnable implements Runnable {
 
                 File cwd = new File(cwdName);
 
-                Process process = grailsProcessDesc.exec(null, null, cwd);
+                process = grailsProcessDesc.exec(null, null, cwd);
 
-                procOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                // procOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 outputReady.countDown();
 
                 } catch (IOException ex) {
@@ -87,8 +87,13 @@ public class GrailsServerRunnable implements Runnable {
             }
     }
 
-    public BufferedReader getProcOutput() {
-        return procOutput;
-    }
+//    public BufferedReader getProcOutput() {
+//        return procOutput;
+//    }
+    
+    public Process getProcess() {
+        return process;
+    } 
+    
     
 }

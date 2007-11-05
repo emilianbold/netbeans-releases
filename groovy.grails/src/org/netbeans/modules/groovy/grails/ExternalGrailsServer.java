@@ -48,15 +48,11 @@ import java.io.File;
 public class ExternalGrailsServer implements GrailsServer{
 
     CountDownLatch outputReady = new CountDownLatch(1);
-    BufferedReader procOutput = null;
-
     GrailsServerRunnable gsr;
     
     private  final Logger LOG = Logger.getLogger(ExternalGrailsServer.class.getName());
     
-    
-    public BufferedReader runCommand(Project prj, String cmd, InputOutput io, String dirName) {
-        
+    public Process runCommand(Project prj, String cmd, InputOutput io, String dirName) {
                 
         if(cmd.startsWith("create-app")) {
             // in this case we don't have a Project yet, therefore i should be null
@@ -68,19 +64,14 @@ public class ExternalGrailsServer implements GrailsServer{
             String workDir = dirName.substring(0, lastSlash);
             String newDir  = dirName.substring(lastSlash + 1);
             
-            // LOG.log(Level.WARNING, "workDir:" + workDir);
-            // LOG.log(Level.WARNING, "newDir:"  + newDir);
-            
-                gsr = new GrailsServerRunnable(outputReady, workDir, "create-app " + newDir);
-                new Thread(gsr).start();
+            gsr = new GrailsServerRunnable(outputReady, workDir, "create-app " + newDir);
+            new Thread(gsr).start();
 
-                try {
-                    outputReady.await();
-                    } catch (InterruptedException ex) {
-                            Exceptions.printStackTrace(ex);
-                            }
-            
-            procOutput = gsr.getProcOutput();
+            try {
+                outputReady.await();
+                } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                        }
         
             }
         else if(cmd.startsWith("run-app")) {
@@ -110,16 +101,37 @@ public class ExternalGrailsServer implements GrailsServer{
                 else {
                     LOG.log(Level.WARNING, "Could not get serverState through lookup");
                     }
+        }
+        else if(cmd.startsWith("shell")) {
+
+                String tabName = "Grails Shell for: " + prj.getProjectDirectory().getName();
                 
-                procOutput = gsr.getProcOutput();
-  
+                ExecutionEngine engine = ExecutionEngine.getDefault();
+                
+                String cwdName = File.separator + prj.getProjectDirectory().getPath();
+                
+                gsr = new GrailsServerRunnable(outputReady, cwdName, cmd);
+                ExecutorTask exTask = engine.execute(tabName, gsr, io);
+
+                try {
+                    outputReady.await();
+                    } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                            }
+
+//                GrailsServerState serverState = prj.getLookup().lookup(GrailsServerState.class);
+//
+//                if (serverState != null) {
+//                    serverState.setRunning(true);
+//                    serverState.setExTask(exTask);
+//                    exTask.addTaskListener(serverState);
+//                    }
+//                else {
+//                    LOG.log(Level.WARNING, "Could not get serverState through lookup");
+//                    }
         }
         
-        return procOutput;
+        return gsr.getProcess();
     }
-    
-
-    
-    
 
 }

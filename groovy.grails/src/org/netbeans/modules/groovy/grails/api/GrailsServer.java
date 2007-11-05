@@ -40,6 +40,6 @@ import org.openide.windows.InputOutput;
  * @return 
  */
 public interface GrailsServer {
-    public BufferedReader runCommand(Project prj, String cmd, InputOutput io, String dirName);
+    public Process runCommand(Project prj, String cmd, InputOutput io, String dirName);
 
 }

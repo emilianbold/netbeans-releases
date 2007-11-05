@@ -53,6 +53,7 @@ import org.netbeans.modules.groovy.grails.api.GrailsServerFactory;
 import org.netbeans.api.progress.ProgressHandle;
 import java.io.BufferedReader;
 import java.util.concurrent.CountDownLatch;
+import java.io.InputStreamReader;
 
 
 
@@ -209,7 +210,10 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
             pls.fireChangeEvent();
             handle.start(100);
             GrailsServer server = GrailsServerFactory.getServer();    
-            procOutput = server.runCommand(null, "create-app", null, (String) wiz.getProperty("projectFolder"));
+            
+            Process process = server.runCommand(null, "create-app", null, (String) wiz.getProperty("projectFolder"));
+            procOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            
             
             String errString;
             assert procOutput != null;

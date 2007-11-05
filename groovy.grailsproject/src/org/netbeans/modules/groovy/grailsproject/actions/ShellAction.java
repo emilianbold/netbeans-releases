@@ -27,10 +27,10 @@
  */
 package org.netbeans.modules.groovy.grailsproject.actions;
 
-
-import org.netbeans.modules.groovy.grails.api.GrailsServerState;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import org.netbeans.api.project.Project;
+
 import java.io.BufferedReader;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.GrailsServer;
@@ -41,63 +41,61 @@ import org.openide.windows.OutputWriter;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.openide.util.Exceptions;
-import java.io.InputStreamReader;
+import org.netbeans.modules.groovy.grailsproject.StreamRedirectThread;
+import java.io.IOException;
 
-
-public class RunGrailsServerCommandAction extends AbstractAction {
+public class ShellAction extends AbstractAction {
 
     Project prj;
-    GrailsServerState serverState = null;
             
-    public RunGrailsServerCommandAction (Project prj){
-        super ("Run Application");
+    public ShellAction (Project prj){
+        super ("Open Shell");
         this.prj = prj;
-        
     }
 
     public boolean isEnabled(){
-            serverState = prj.getLookup().lookup(GrailsServerState.class);
-            return ! serverState.isRunning();
+            return true;
         }
             
     public void actionPerformed(ActionEvent e) {
         new PrivateSwingWorker().start();
     }
     
-    
-    public class PrivateSwingWorker extends Thread {
+        public class PrivateSwingWorker extends Thread {
 
         BufferedReader procOutput;
-        OutputWriter writer =  null;
-        private  final Logger LOG = Logger.getLogger(RunGrailsServerCommandAction.class.getName());
+        private  final Logger LOG = Logger.getLogger(ShellAction.class.getName());
 
         public void run() {
+            
 
-        try {
-            String errString = null;
-            
-            String tabName = "Grails Server for: " + prj.getProjectDirectory().getName();
-            InputOutput io = IOProvider.getDefault().getIO(tabName, true);
-            
-            io.select();
-            writer = io.getOut();
-          
-            GrailsServer server = GrailsServerFactory.getServer();    
-            Process process = server.runCommand(prj, "run-app", io, null);
-            
-            procOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            
-            assert procOutput != null;
-            assert writer != null;
-            
-            while ((errString = procOutput.readLine()) != null) {
-                writer.print(errString + "\n");
-            }
-                } catch (Exception e) {
-                    Exceptions.printStackTrace(e);
-                    LOG.log(Level.WARNING, "Could not read Process output " +e);
-                    }
-            }
-        }   
+                String tabName = "Grails Shell for: " + prj.getProjectDirectory().getName();
+                InputOutput io = IOProvider.getDefault().getIO(tabName, false);
 
+                io.setInputVisible(true);
+                
+                try {
+                    io.getOut().reset();
+                } catch (IOException exc) {
+                    // doesn't matter if output window can't be cleared before script starts.
+                }
+
+                GrailsServer server = GrailsServerFactory.getServer();
+                Process process = server.runCommand(prj, "shell", io, null);
+
+                assert process != null;
+
+                (new StreamRedirectThread(process.getInputStream(), io.getOut())).start();
+                (new StreamRedirectThread(process.getErrorStream(), io.getErr())).start();
+                
+                try {
+                    int exitVal = process.waitFor();
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                            }
+        
+            }
+        }
+    
+    
     }
