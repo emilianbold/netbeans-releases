@@ -29,7 +29,6 @@
 package org.netbeans.modules.groovy.grails.api;
 
 import org.netbeans.api.project.Project;
-import java.io.BufferedReader;
 import org.openide.windows.InputOutput;
 
 /**
@@ -40,6 +39,12 @@ import org.openide.windows.InputOutput;
  * @return 
  */
 public interface GrailsServer {
+    
+    // FIXME: this can not stay Process, since with some groovy/grails engine running
+    // in the NetBeans VM we certainly don't have a Process. This was changed from the output 
+    // Stream to process to have access to the input-stream as well as a preparation for 
+    // the Grails shell command. 
+    
     public Process runCommand(Project prj, String cmd, InputOutput io, String dirName);
-
+    public boolean serverConfigured ();
 }

@@ -40,6 +40,7 @@ import java.io.BufferedReader;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.File;
+import org.netbeans.modules.groovy.grails.settings.Settings;
 
 /**
  *
@@ -51,6 +52,18 @@ public class ExternalGrailsServer implements GrailsServer{
     GrailsServerRunnable gsr;
     
     private  final Logger LOG = Logger.getLogger(ExternalGrailsServer.class.getName());
+    
+    boolean checkForGrailsExecutable ( File pathToGrails ) {
+        return new File (new File (pathToGrails, "bin"), "grails").isFile ();
+        }
+    
+    
+    public boolean serverConfigured () {
+        Settings settings = Settings.getInstance();
+
+        return checkForGrailsExecutable(new File(settings.getGrailsBase()));
+        }
+    
     
     public Process runCommand(Project prj, String cmd, InputOutput io, String dirName) {
                 

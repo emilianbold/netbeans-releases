@@ -37,6 +37,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -51,9 +52,11 @@ public class GetProjectLocationStep implements  WizardDescriptor.Panel,
     private WizardDescriptor wizardDescriptor;
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     boolean        serverRunning = false;
+    boolean        serverConfigured = true;
 
-    public GetProjectLocationStep(boolean serverRunning) {
+    public GetProjectLocationStep(boolean serverRunning, boolean serverConfigured) {
         this.serverRunning = serverRunning;
+        this.serverConfigured = serverConfigured;
     }
 
     public Component getComponent() {
@@ -81,7 +84,14 @@ public class GetProjectLocationStep implements  WizardDescriptor.Panel,
 
     public boolean isValid() {
         getComponent();
-        return  !serverRunning && component.valid( wizardDescriptor );
+        
+        if(!serverConfigured) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", 
+                NbBundle.getMessage(NewGrailsProjectWizardIterator.class, 
+                "NewGrailsProjectWizardIterator.NoGrailsServerConfigured"));
+            }
+        
+        return  !serverRunning && serverConfigured && component.valid( wizardDescriptor );
     }
 
     public void addChangeListener(ChangeListener l) {

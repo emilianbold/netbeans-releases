@@ -24,6 +24,17 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
         initComponents();
         // TODO listen to changes in form fields and call controller.changed()
     }
+    
+    boolean checkForGrailsExecutable ( File pathToGrails ) {
+        return new File (new File (pathToGrails, "bin"), "grails").isFile ();
+        }
+    
+    void displayGrailsHomeWarning() {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+            NbBundle.getMessage(GrailsRuntimePanel.class, "LBL_Not_grails_home"),
+            NotifyDescriptor.Message.WARNING_MESSAGE
+            ));
+        }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -141,11 +152,8 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
                 SwingUtilities.getWindowAncestor (this), NbBundle.getMessage(GrailsRuntimePanel.class, "LBL_Select_Directory"));
             if (r == JFileChooser.APPROVE_OPTION) {
                 File file = chooser.getSelectedFile ();
-                if (!new File (new File (file, "bin"), "grails").isFile ()) {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        NbBundle.getMessage(GrailsRuntimePanel.class, "LBL_Not_grails_home"),
-                        NotifyDescriptor.Message.WARNING_MESSAGE
-                    ));
+                if (!checkForGrailsExecutable(file)) {
+                    displayGrailsHomeWarning();
                     return;
                 }
                 grailsHomeLocation.setText (file.getAbsolutePath ());
@@ -181,8 +189,15 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
     }
 
     void store() {
+        String location = grailsHomeLocation.getText();
         
-        settings.setGrailsBase(grailsHomeLocation.getText());
+        if (!checkForGrailsExecutable(new File(location))) {
+            displayGrailsHomeWarning();
+            return;
+            }
+        else {
+            settings.setGrailsBase(location);
+            }
         
     }
 

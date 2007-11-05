@@ -54,6 +54,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import java.io.BufferedReader;
 import java.util.concurrent.CountDownLatch;
 import java.io.InputStreamReader;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 
 
@@ -73,10 +75,13 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
     ProgressHandle handle = null;
     CountDownLatch serverFinished = new CountDownLatch(1);
     boolean        serverRunning = false;
+    boolean        serverConfigured = true;
+    GrailsServer server = GrailsServerFactory.getServer();
+    
     
     private WizardDescriptor.Panel[] createPanels () {
         
-        pls = new GetProjectLocationStep(serverRunning);
+        pls = new GetProjectLocationStep(serverRunning, serverConfigured);
         
         return new WizardDescriptor.Panel[] { pls };
     }
@@ -120,17 +125,6 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
 
             Set<FileObject> resultSet = new HashSet<FileObject>();
 
-            // new PrivateSwingWorker(grailsServerOutputTextArea).start();
-            
-            
-//            File dirF = new File((String) wiz.getProperty("projectFolder"));
-//
-//            if (dirF != null) {
-//                dirF = FileUtil.normalizeFile(dirF);
-//                FileObject dir = FileUtil.toFileObject(dirF);
-//                resultSet.add(dir);
-//            }
-
             return resultSet;
 
     }
@@ -138,6 +132,14 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
     public void initialize(WizardDescriptor wizard) {
         this.wiz = wizard;
         index = 0;
+        
+        if(!server.serverConfigured()) {
+            wizard.putProperty("WizardPanel_errorMessage", 
+                    NbBundle.getMessage(NewGrailsProjectWizardIterator.class, 
+                    "NewGrailsProjectWizardIterator.NoGrailsServerConfigured"));
+            serverConfigured = false;
+            }
+        
         panels = createPanels();
         String[] steps = createSteps();
         
@@ -164,7 +166,7 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
     }
 
     public Panel current() {
-        return panels[index];
+            return panels[index];
     }
 
     public String name() {
@@ -173,11 +175,11 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
     }
 
     public boolean hasNext() {
-        return index < panels.length - 1;
+            return index < panels.length - 1;
     }
 
     public boolean hasPrevious() {
-        return index > 0;
+            return index > 0;
     }
 
     public void nextPanel() {
@@ -209,7 +211,7 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
             
             pls.fireChangeEvent();
             handle.start(100);
-            GrailsServer server = GrailsServerFactory.getServer();    
+              
             
             Process process = server.runCommand(null, "create-app", null, (String) wiz.getProperty("projectFolder"));
             procOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
