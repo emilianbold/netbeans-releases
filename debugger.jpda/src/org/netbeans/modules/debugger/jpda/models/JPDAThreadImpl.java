@@ -183,6 +183,12 @@ public final class JPDAThreadImpl implements JPDAThread {
     }
     
     public synchronized void clearLastOperations() {
+        if (lastOperations != null) {
+            for (Operation last : lastOperations) {
+                last.setReturnValue(null); // reset the returned value.
+                // Operation might be reused, but the execution path is gone.
+            }
+        }
         lastOperations = null;
     }
     
