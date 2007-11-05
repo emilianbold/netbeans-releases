@@ -73,6 +73,9 @@ public class GotoTestTest extends RubyProjectTestBase {
         // Create some data files where the class -contents- are used to locate the test
         createFile(dir, "lib/hello.rb", "class Hello\ndef foo\nend\nend\n");
         createFile(dir, "test/world.rb", "class HelloTest\ndef foobar\nend\nend\n");
+
+        createFile(dir, "whatever/donkey.rb", "#foo");
+        createFile(dir, "whatever/donkey_spec.rb", "#foo");
         
         gotoTest = new GotoTest();
     }
@@ -341,5 +344,27 @@ public class GotoTestTest extends RubyProjectTestBase {
         assertNotNull(project);
         DeclarationLocation loc = gotoTest.findTest(getProjFile("test/unit/rest_phone/phone_call_test.rb"), -1);
         assertSame(DeclarationLocation.NONE, loc);
+    }
+    
+    public void testRSpecSingle() {
+        assertNotNull(project);
+        
+        FileObject f = getProjFile("whatever/donkey_spec.rb");
+        assertNotNull(f);
+        DeclarationLocation loc = gotoTest.findTested(f, -1);
+        assertNotSame(DeclarationLocation.NONE, loc);
+        assertIsProjFile("whatever/donkey.rb", loc.getFileObject());
+        assertEquals(-1, loc.getOffset());
+    }
+
+    public void testRSpecSingle2() {
+        assertNotNull(project);
+        
+        FileObject f = getProjFile("whatever/donkey.rb");
+        assertNotNull(f);
+        DeclarationLocation loc = gotoTest.findTest(f, -1);
+        assertNotSame(DeclarationLocation.NONE, loc);
+        assertIsProjFile("whatever/donkey_spec.rb", loc.getFileObject());
+        assertEquals(-1, loc.getOffset());
     }
 }

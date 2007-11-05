@@ -97,6 +97,7 @@ public class GotoTest implements TestLocator {
             "app/controllers/" + FILE + "\\." + EXT, "spec/controllers/" + FILE + "_spec\\." + EXT, // NOI18N
             "app/views/" + FILE + "\\." + EXT, "spec/views/" + FILE + "_spec\\." + EXT, // NOI18N
             "app/helpers/" + FILE + "\\." + EXT, "spec/helpers/" + FILE + "_spec\\." + EXT, // NOI18N
+            "/" + FILE + "\\." + EXT, "/" + FILE + "_spec\\." + EXT, // NOI18N
         };
     private final String[] RAILS_PATTERNS =
         {
@@ -109,9 +110,9 @@ public class GotoTest implements TestLocator {
             "lib/" + FILE + "\\." + EXT, "test/test_" + FILE + "\\." + EXT, // NOI18N
             "lib/" + FILE + "\\." + EXT, "test/" + FILE + "_test\\." + EXT, // NOI18N
             "lib/" + FILE + "\\." + EXT, "test/tc_" + FILE + "\\." + EXT, // NOI18N
-            FILE + "\\." + EXT, "test_" + FILE + "\\." + EXT, // NOI18N
-            FILE + "\\." + EXT, FILE + "_test\\." + EXT, // NOI18N
-            FILE + "\\." + EXT, "tc_" + FILE + "\\." + EXT, // NOI18N
+            "/" + FILE + "\\." + EXT, "/test_" + FILE + "\\." + EXT, // NOI18N
+            "/" + FILE + "\\." + EXT, "/" + FILE + "_test\\." + EXT, // NOI18N
+            "/" + FILE + "\\." + EXT, "/tc_" + FILE + "\\." + EXT, // NOI18N
         };
 
     public GotoTest() {
