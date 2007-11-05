@@ -377,7 +377,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         try {
             kit.write(w, doc, 0, doc.getLength());
         } finally {
-            w.flush();
+            w.close();
         }
     }        
 
