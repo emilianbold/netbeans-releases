@@ -271,7 +271,10 @@ public final class VCSContext {
         if (folders.size() > 0) {
             for (Iterator j = folders.iterator(); j.hasNext();) {
                 NonRecursiveFolder nonRecursiveFolder = (NonRecursiveFolder) j.next();
-                nodeFiles.add(new FlatFolder(FileUtil.toFile(nonRecursiveFolder.getFolder()).getAbsolutePath()));
+                File file = FileUtil.toFile(nonRecursiveFolder.getFolder());
+                if (file != null) {
+                    nodeFiles.add(new FlatFolder(file.getAbsolutePath()));
+                }
             }
         } else {
             Collection<? extends FileObject> fileObjects = node.getLookup().lookup(new Lookup.Template<FileObject>(FileObject.class)).allInstances();
