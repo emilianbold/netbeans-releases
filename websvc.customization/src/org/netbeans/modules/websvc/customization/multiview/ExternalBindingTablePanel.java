@@ -324,7 +324,9 @@ public class ExternalBindingTablePanel extends DefaultTablePanel{
     private static class XmlFileFilter extends FileFilter {
         public boolean accept(File f) {
             boolean result;
-            if(f.isDirectory() || "xml".equalsIgnoreCase(FileUtil.getExtension(f.getName()))) { // NOI18N
+            if(f.isDirectory() || "xml".equalsIgnoreCase(FileUtil.getExtension(f.getName()))    // NOI18N
+                               || "jxb".equalsIgnoreCase(FileUtil.getExtension(f.getName()))    // NOI18N
+                               || "xjb".equalsIgnoreCase(FileUtil.getExtension(f.getName()))) { // NOI18N
                 result = true;
             } else {
                 result = false;
