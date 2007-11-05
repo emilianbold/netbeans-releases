@@ -47,8 +47,10 @@ import javax.swing.event.ChangeListener;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 import org.netbeans.modules.mobility.end2end.util.ServiceNodeManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Children;
@@ -61,7 +63,7 @@ import org.openide.nodes.AbstractNode;
  * Date: Dec 12, 2003
  * Time: 3:57:41 PM
  */
-public class MethodCheckedTreeBeanView extends BeanTreeView {
+public class MethodCheckedTreeBeanView extends BeanTreeView implements Runnable {
     
     private Node root;
     private MethodCheckedNodeEditor editor;
@@ -110,8 +112,14 @@ public class MethodCheckedTreeBeanView extends BeanTreeView {
         if (root == null) return;
         if (n != null) forceState(n.getChildren(), (MultiStateCheckBox.State)n.getValue(ServiceNodeManager.NODE_SELECTION_ATTRIBUTE));
         updateMixedStates(root);
-        ((DefaultTreeModel)tree.getModel()).reload();
         fireChange();        
+        SwingUtilities.invokeLater(this);
+    }
+
+    public void run() {
+        TreePath tp = tree.getSelectionPath();
+        ((DefaultTreeModel)tree.getModel()).reload();
+        if (tp != null) tree.scrollPathToVisible(tp);
     }
     
     private void forceState(Children ch, MultiStateCheckBox.State state) {
