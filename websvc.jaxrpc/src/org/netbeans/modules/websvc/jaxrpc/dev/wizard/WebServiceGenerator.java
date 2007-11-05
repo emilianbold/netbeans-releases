@@ -506,7 +506,6 @@ public class WebServiceGenerator {
             try {
                 final FileObject wsxmlTemplate = Repository.getDefault().getDefaultFileSystem().
                         findResource("org-netbeans-modules-websvc-jaxrpc/webservices.xml"); //NOI18N
-                System.out.println("wsxmlTemplate = " + wsxmlTemplate);
                 final FileObject wsddFolder = wsSupport.getWsDDFolder();
                 FileSystem fs = wsddFolder.getFileSystem();
                 fs.runAtomicAction(new FileSystem.AtomicAction() {
