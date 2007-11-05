@@ -289,6 +289,7 @@ final class PropertyDialogManager implements VetoableChangeListener, ActionListe
                     if ((editor != null) && !(component instanceof Window)) {
                         // if someone provides a window (s)he has to handle
                         // the cancel him/herself
+                        cancelled = true; // XXX shouldn't this be reset otherwise?
                         cancelValue();
                     }
 
