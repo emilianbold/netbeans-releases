@@ -279,8 +279,8 @@ public final class BuildImplTest extends NbTestCase {
         assertNotNull(root.getFileObject("build/classes/p/A.class"));
         assertNotNull(root.getFileObject("build/classes/p/B.class"));
         assertNull(root.getFileObject("build/classes/p/C.class"));
-        TestFileUtils.touch(a, root.getFileObject("build/classes/p/A.class"));
         TestFileUtils.writeFile(root, "src/p/A.java", "BROKEN");
+        TestFileUtils.touch(a, root.getFileObject("build/classes/p/A.class"));
         assertBuildFailure(ActionUtils.runTarget(buildXml, new String[] {"compile-single"}, p));
         TestFileUtils.touch(a, root.getFileObject("build/classes/p/A.class"));
         TestFileUtils.writeFile(root, "src/p/A.java", "package p; class A {}");
@@ -371,6 +371,7 @@ public final class BuildImplTest extends NbTestCase {
         TestFileUtils.writeFile(d, "src/p/X.java", "package p; public class X {static {Y.y1();}}");
         TestFileUtils.touch(x, d.getFileObject("build/classes/p/X.class"));
         TestFileUtils.writeFile(d, "src/p/Y.java", "package p; public class Y {static void y1() {}}");
+        assertNotNull(d.getFileObject("build/classes/p/Y.class"));
         TestFileUtils.touch(y, d.getFileObject("build/classes/p/Y.class"));
         assertBuildFailure(ActionUtils.runTarget(buildXml, new String[] {"compile-test"}, getProperties()));
         TestFileUtils.writeFile(d, "test/p/YTest.java", "package p; public class YTest extends junit.framework.TestCase {public void testY() {Y.y1();}}");
