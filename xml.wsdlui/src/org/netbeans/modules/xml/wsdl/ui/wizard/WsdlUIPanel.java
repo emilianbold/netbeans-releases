@@ -44,7 +44,6 @@ package org.netbeans.modules.xml.wsdl.ui.wizard;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -161,9 +160,11 @@ public class WsdlUIPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 2, 0);
         add(schemaTF, gridBagConstraints);
-        schemaTF.getAccessibleContext().setAccessibleDescription("null");
+        schemaTF.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "LBL_schemaFiles")); // NOI18N
+        schemaTF.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "A11Y_schemaTF")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "LBL_browse")); // NOI18N
+        browseButton.setToolTipText(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "A11Y_browse")); // NOI18N
         browseButton.setEnabled(false);
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -176,7 +177,7 @@ public class WsdlUIPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 2, 0);
         add(browseButton, gridBagConstraints);
-        browseButton.getAccessibleContext().setAccessibleDescription("null");
+        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "LBL_browse")); // NOI18N
 
         schemaLB.setLabelFor(schemaTF);
         org.openide.awt.Mnemonics.setLocalizedText(schemaLB, org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "LBL_schemaFiles")); // NOI18N
@@ -210,7 +211,8 @@ public class WsdlUIPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 2, 0);
         add(nsTF, gridBagConstraints);
-        nsTF.getAccessibleContext().setAccessibleDescription("null");
+        nsTF.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "WsdlUIPanel.nsTF.AccessibleContext.accessibleName")); // NOI18N
+        nsTF.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "HINT_targetNamespace")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
