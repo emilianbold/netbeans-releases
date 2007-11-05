@@ -420,6 +420,14 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
     
     /** Notifies all registered listeners about the event. */
     private void fireStateChanged() {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            Logger.getAnonymousLogger().warning(
+                "All state changes to the tab component must happen on the event thread!"); //NOI18N
+            Exception e = new Exception();
+            e.fillInStackTrace();
+            Logger.getAnonymousLogger().warning(e.getStackTrace()[1].toString());
+        }
+
         //Note: Firing the events while holding the tree lock avoids many
         //gratuitous repaints that slow down switching tabs.  To demonstrate this,
         //comment this code out and run the IDE with -J-Dawt.nativeDoubleBuffering=true
@@ -429,17 +437,15 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         //selected node is even changed to the appropriate one for the new tab.
         //Synchronizing here ensures that never happens.
         
-        if (!SwingUtilities.isEventDispatchThread()) {
-            Logger.getAnonymousLogger().warning(
-                "All state changes to the tab component must happen on the event thread!"); //NOI18N
-            Exception e = new Exception();
-            e.fillInStackTrace();
-            Logger.getAnonymousLogger().warning(e.getStackTrace()[1].toString());
-        }
+        // [dafe]: Firing under tree lock is bad practice and causes deadlocking,
+        // see http://www.netbeans.org/issues/show_bug.cgi?id=120874
+        // Comments above seems not to be valid anymore in JDK 1.5 and
+        // newer. Even if running with -J-Dawt.nativeDoubleBuffering=true, there
+        // is no difference in number of repaints no matter if holding the tree
+        // lock or not. Repeated redrawing seems to be coalesced well, so removing
+        // AWT tree lock
         
-        synchronized (getTreeLock()) {
-            cs.fireChange();
-        }
+        cs.fireChange();
     }
     
     private static void debugLog(String message) {
