@@ -208,6 +208,9 @@ made subject to such option by the copyright holder.
             <file name="wizardDescription.html" url="../wizard/wizard/wizardDescription.html"/>
             <file name="wizardIterator.java" url="../wizard/wizard/wizardIterator.javx"/>
             <file name="wizardPanel.java" url="../wizard/wizard/wizardPanel.javx"/>
+            <!-- XXX should be moved into wizard package: -->
+            <file name="NBSTemplate.nbs" url="NBSTemplate.nbs"/>
+            <file name="nbsresolver.xml" url="../wizard/glf/nbsresolver.xml"/>
         </folder>
         
         <folder name="Licenses">

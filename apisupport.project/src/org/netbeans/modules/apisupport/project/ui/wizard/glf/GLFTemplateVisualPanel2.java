@@ -37,16 +37,14 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
         if (getMimeType ().trim ().length () < 1) {
             wizardPanel.getIterator ().getWizardDescriptor ().putProperty (
                 "WizardPanel_errorMessage",  // NOI18N
-                NbBundle.getMessage (GLFTemplateVisualPanel1.class, "CTL_Invalid_Mime_Type") //NOI18N
-            );
+                NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Invalid_Mime_Type"));
             wizardPanel.setValid (false);
             return;
         }
         if (getExtensions ().trim ().length () < 1) {
             wizardPanel.getIterator ().getWizardDescriptor ().putProperty (
                 "WizardPanel_errorMessage",  // NOI18N
-                NbBundle.getMessage (GLFTemplateVisualPanel1.class, "CTL_Invalid_Extensions") //NOI18N
-            );
+                NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Invalid_Extensions"));
             wizardPanel.setValid (false);
             return;
         }
@@ -57,8 +55,8 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
         wizardPanel.setValid (true);
     }
     
-    public String getName () {
-        return NbBundle.getMessage (GLFTemplateVisualPanel1.class, "CTL_Step2");
+    public @Override String getName () {
+        return NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Step2");
     }
     
     /** This method is called from within the constructor to

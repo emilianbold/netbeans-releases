@@ -1,6 +1,5 @@
-#
-# NBS Template
-#
+<#assign licensePrefix = "# ">
+<#include "../Licenses/license-${project.license}.txt">
 
 # definition of tokens
 TOKEN:keyword:( "while" | "if" | "else")

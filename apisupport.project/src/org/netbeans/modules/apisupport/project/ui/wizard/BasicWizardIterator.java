@@ -301,7 +301,7 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
     public final void addChangeListener(ChangeListener  l) {}
     public final void removeChangeListener(ChangeListener l) {}
     
-    protected Set<FileObject> getCreatedFiles(final CreatedModifiedFiles cmf, final Project project) throws IOException {
+    public static Set<FileObject> getCreatedFiles(final CreatedModifiedFiles cmf, final Project project) throws IOException {
         Collection<DataObject> toBeShown = new HashSet<DataObject>();
         Set<FileObject> set = new HashSet<FileObject>();
         for (String path : cmf.getCreatedPaths()) {
