@@ -17,7 +17,6 @@ ArrayStoreException
 AssertionError
 Assign
 Boolean
-Byte
 CharSequence
 Character
 Class
@@ -31,13 +30,11 @@ Cloneable
 Comparable
 Compiler
 Deprecated
-Double
 Enum
 EnumConstantNotPresentException
 Error
 Exception
 ExceptionInInitializerError
-Float
 IllegalAccessError
 IllegalAccessException
 IllegalArgumentException
@@ -49,13 +46,11 @@ IndexOutOfBoundsException
 InheritableThreadLocal
 InstantiationError
 InstantiationException
-Integer
 InternalError
 InterruptedException
 Iterable
 LinkageError
 List
-Long
 Math
 NegativeArraySizeException
 NoClassDefFoundError
@@ -64,7 +59,6 @@ NoSuchFieldException
 NoSuchMethodError
 NoSuchMethodException
 NullPointerException
-Number
 NumberFormatException
 Object
 OutOfMemoryError
@@ -79,7 +73,6 @@ RuntimeException
 RuntimePermission
 SecurityException
 SecurityManager
-Short
 SmartCC
 StackOverflowError
 StackTraceElement

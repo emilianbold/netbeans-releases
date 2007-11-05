@@ -55,6 +55,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.filesystems.FileObject;
 import org.netbeans.editor.*;
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.modules.editor.completion.CompletionImpl;
 import org.netbeans.modules.editor.completion.CompletionResultSetImpl;
@@ -65,6 +66,7 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.LazyCompletionItem;
+import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileUtil;
@@ -279,10 +281,10 @@ public class CompletionTest extends java.lang.Object {
                     public void run() {
                         try {
                             JEditorPane editor  = getAnEditorPane(testFile, log);
-                            testPerform(out, log, editor, unsorted, assign, line, queryType);
+                            testPerform(out, log, editor, unsorted, assign, line, queryType);                            
                         } catch (Exception e) {
                             e.printStackTrace(log);
-                        };
+                        }
                     }
                 };
                 if (SwingUtilities.isEventDispatchThread()) {
@@ -292,6 +294,8 @@ public class CompletionTest extends java.lang.Object {
                 }
             } finally {
                 testFile.setModified(false);
+                String fileName = testFileName.substring(testFileName.lastIndexOf('/')+1);
+                new EditorOperator(fileName).close();
                 //((CloseCookie) testFile.getCookie(CloseCookie.class)).close();
             }
         } catch (Exception e) {

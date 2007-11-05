@@ -39,7 +39,6 @@ IllegalThreadStateException
 IncompatibleClassChangeError
 IndexOutOfBoundsException
 InheritableThreadLocal
-InnerClass
 InstantiationError
 InstantiationException
 Integer
@@ -49,7 +48,6 @@ Iterable
 LinkageError
 Long
 Math
-MyClass
 NegativeArraySizeException
 NoClassDefFoundError
 NoSuchFieldError

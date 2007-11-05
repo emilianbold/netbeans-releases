@@ -10,6 +10,8 @@ CopyOnWriteArrayList#40#java.util.concurrent
 FinalArrayList#70#com.sun.istack.internal
 FinalArrayList#70#com.sun.xml.internal.messaging.saaj.util
 FreezableList#70#com.sun.corba.se.impl.ior
+HeaderList#70#com.sun.xml.internal.ws.api.message
+HttpAdapterList#70#com.sun.xml.internal.ws.transport.http
 IIOPProfileTemplate#70#com.sun.corba.se.spi.ior.iiop
 IIOPProfileTemplateImpl#70#com.sun.corba.se.impl.ior.iiop
 IOR#70#com.sun.corba.se.spi.ior
@@ -19,6 +21,8 @@ IORTemplateImpl#70#com.sun.corba.se.impl.ior
 IORTemplateList#70#com.sun.corba.se.spi.ior
 IORTemplateListImpl#70#com.sun.corba.se.impl.ior
 IdentifiableContainerBase#70#com.sun.corba.se.spi.ior
+IdentityArrayList#80#sun.awt.util
+IdentityLinkedList#80#sun.awt.util
 Index#70#com.sun.java.util.jar.pack.ConstantPool
 LinkedList#40#java.util
 List#40#java.util
@@ -77,7 +81,6 @@ InternalError
 InterruptedException
 Iterable
 LinkageError
-List
 Long
 Math
 NegativeArraySizeException

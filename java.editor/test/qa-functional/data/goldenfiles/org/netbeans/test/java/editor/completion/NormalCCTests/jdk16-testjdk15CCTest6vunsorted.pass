@@ -1,3 +1,4 @@
+#02#(String,String...)
 copyValueOf#01#(char[])#String
 copyValueOf#03#(char[],int,int)#String
 format#02#(String,Object...)#String

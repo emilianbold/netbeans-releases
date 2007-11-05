@@ -1,3 +1,7 @@
+#00#()
+#01#(String)
+#01#(Throwable)
+#02#(String,Throwable)
 fillInStackTrace#00#()
 getCause#00#()
 getLocalizedMessage#00#()

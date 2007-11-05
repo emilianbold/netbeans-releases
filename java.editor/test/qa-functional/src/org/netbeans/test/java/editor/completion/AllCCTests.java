@@ -55,7 +55,7 @@ public class AllCCTests extends CompletionTestPerformer{
     }
   
     public void testAllSymbols() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "he", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/allcompletion/AllSymbols.java", 28,CompletionProvider.COMPLETION_ALL_QUERY_TYPE);        
+        new CompletionTest().test(outputWriter, logWriter, "heap", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/allcompletion/AllSymbols.java", 28,CompletionProvider.COMPLETION_ALL_QUERY_TYPE);        
     }
     
     public void testFilteredSymbols() throws Exception {
