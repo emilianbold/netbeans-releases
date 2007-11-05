@@ -48,6 +48,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.*;
 import java.net.*;
+import org.netbeans.junit.MockServices;
 
 /**
  *
@@ -80,6 +81,8 @@ public class FileObjectTestHid extends TestBaseHid {
     }
     
     protected void setUp() throws java.lang.Exception {
+        MockServices.setServices();
+        
         super.setUp();
         
         /**Should be deleted and testedFS renamed to fs*/
@@ -1012,6 +1015,53 @@ public class FileObjectTestHid extends TestBaseHid {
         FileUtil.setMIMEType(fo.getExt(),mimeType);
         String actualMT = fo.getMIMEType();
         fsAssert("mimeType for this fo was registered; was really " + actualMT, actualMT.equals(mimeType));
+    }
+
+    public void testGetMIMETypeWithResolver() {
+        checkSetUp();
+        FileObject fo = getTestFile1(root);
+        MockServices.setServices(MR.class);
+        
+        String actualMT = fo.getMIMEType();
+        assertNotNull("queried", MR.tested);
+        assertEquals("right mime type", "ahoj", actualMT);
+    }
+
+    public void DISABLEDtestGetMIMETypeWithResolverWhileOpenOutputStream() throws Exception {
+        checkSetUp();
+        FileObject fo = getTestFile1(root);
+        MockServices.setServices(MR.class);
+        
+        FileLock lock = fo.lock();
+        OutputStream os = fo.getOutputStream(lock);
+        try {
+            String actualMT = fo.getMIMEType();
+            assertNotNull("queried", MR.tested);
+            assertEquals("right mime type", "ahoj", actualMT);
+        } finally {
+            os.close();
+            lock.releaseLock();
+        }
+    }
+    
+    public static final class MR extends MIMEResolver {
+        static FileObject tested;
+        
+        public String findMIMEType(FileObject fo) {
+            try {
+                return f(fo);
+            } catch (IOException ex) {
+                throw new IllegalStateException(ex);
+            }
+        }
+        private String f(FileObject fo) throws IOException {
+            InputStream is = fo.getInputStream();
+            byte[] arr = new byte[4096];
+            is.read(arr);
+            is.close();
+            tested = fo;
+            return "ahoj";
+        }
     }
     
     /** Default mime type for files that do not contain
