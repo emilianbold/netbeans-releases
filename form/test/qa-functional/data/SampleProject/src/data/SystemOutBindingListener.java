@@ -41,38 +41,25 @@
 
 package data;
 
+import org.jdesktop.beansbinding.AbstractBindingListener;
 import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.Binding.SyncFailure;
-import org.jdesktop.beansbinding.BindingListener;
 
 /**
  * Very very very simple binding listener ;)
  * 
  * @author Jiri Vagner
  */
-class SystemOutBindingListener implements BindingListener {
+class SystemOutBindingListener extends AbstractBindingListener {
     
-    public void bindingBecameBound(Binding arg) {
-        System.out.println("bindingBecameBound");  // NOI18N
+    @Override
+    public void syncFailed(Binding arg, SyncFailure failure) {
+        System.out.println("syncFailed: " + failure.getValidationResult().getDescription());  // NOI18N
     }
 
-    public void bindingBecameUnbound(Binding arg) {
-        System.out.println("bindingBecameBound");  // NOI18N
-    }
-
-    public void syncFailed(Binding arg, SyncFailure... arg1) {
-        System.out.println("syncFailed: " + arg1[0].getValidationResult().getDescription());  // NOI18N
-    }
-
+    @Override
     public void synced(Binding arg) {
         System.out.println("synced");  // NOI18N
     }
 
-    public void sourceEdited(Binding arg) {
-        System.out.println("sourceEdited");  // NOI18N
-    }
-
-    public void targetEdited(Binding arg) {
-        System.out.println("targetEdited");  // NOI18N
-    }
 }
