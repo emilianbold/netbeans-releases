@@ -59,8 +59,6 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.ComponentPaletteOperator;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -149,18 +147,7 @@ public class JsfFunctionalTest extends JellyTestCase{
         } else {
             tableOper.selectCell(0, 0);
         }
-        frameworkStep.btFinish().pushNoBlock();
-        // Opening Projects
-        String openingProjectsTitle = Bundle.getString(
-                "org.netbeans.modules.project.ui.Bundle",
-                "LBL_Opening_Projects_Progress");
-        try {
-            // wait at most 60 second until progress dialog dismiss
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 60000);
-            new NbDialogOperator(openingProjectsTitle).waitClosed();
-        } catch (TimeoutExpiredException e) {
-            // ignore when progress dialog was closed before we started to wait for it
-        }
+        frameworkStep.finish();
         ProjectSupport.waitScanFinished();
         // Check project contains all needed files.
         WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
@@ -340,17 +327,6 @@ public class JsfFunctionalTest extends JellyTestCase{
         lop.setProjectName(PROJECT_NAME+"2");
         lop.setProjectLocation(getDataDir().getCanonicalPath());
         lop.finish();
-        // Opening Projects
-        String openingProjectsTitle = Bundle.getString(
-                "org.netbeans.modules.project.ui.Bundle",
-                "LBL_Opening_Projects_Progress");
-        try {
-            // wait at most 60 second until progress dialog dismiss
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 60000);
-            new NbDialogOperator(openingProjectsTitle).waitClosed();
-        } catch (TimeoutExpiredException e) {
-            // ignore when progress dialog was closed before we started to wait for it
-        }
         
         // add JSF framework using project properties
         // open project properties
