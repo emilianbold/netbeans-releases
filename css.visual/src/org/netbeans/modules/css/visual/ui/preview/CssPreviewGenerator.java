@@ -43,6 +43,7 @@ package org.netbeans.modules.css.visual.ui.preview;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.StringTokenizer;
 import org.netbeans.modules.css.model.CssModel;
 import org.netbeans.modules.css.model.CssRule;
@@ -84,8 +85,14 @@ public class CssPreviewGenerator {
             //pseudo classes hack ( A:link { color: red; }
             //we need to generate an artificial element so we can spot various states of the element (a:visited, active etc.)
             //which depends on the state of the browser.
-            sb.append(rule.name().replace(':', 'X'));
-            
+            String ruleName = rule.name();
+            while (ruleName.indexOf('[') > 0){// remove [ ] blocks !!!FIX ME in future
+                int startBracket = ruleName.indexOf('[');
+                int endBracket = ruleName.indexOf(']', startBracket);
+                ruleName = ruleName.substring(0, startBracket) + ruleName.substring(endBracket+1);
+            }
+
+            sb.append(ruleName.replaceAll(":", "X"));//#118277 a:visited:hover
             sb.append(" {\n");
             sb.append(rule.ruleContent().getFormattedString().replace('"', '\''));
             sb.append("\n }\n");
@@ -94,7 +101,6 @@ public class CssPreviewGenerator {
         preview.append(HTML_MIDDLE);
         CssRule selected = content.selectedRule();
         String ruleName = selected.name();
-        
         ruleName = ruleName.replace('\n', ' '); //hotfix #117690 (selectors on multiple lines break the css previrew)
         
         //We do not support preview of multiple elements in selector e.g.
@@ -105,164 +111,110 @@ public class CssPreviewGenerator {
         if(commaIndex  > 0) {
             ruleName = ruleName.substring(0, commaIndex);
         }
-        
-        //pseudo classes ( A:link { color: red; }
-        int colonIndex = ruleName.indexOf(':');
-        if(colonIndex  > 0) {
-            //the colon in the styles has been replaced by 'X' character
-            //so to properly render the style we need to inherit the style form the selector
-            //to do this - put the element generated from the pseudo class element by
-            //the element without the pseudo class.
-            //for example   a:visited { color: gray; }
-            //will generate
-            // <a>
-            //    <aXvisited>SampleText</aXvisited>
-            // </a>
-            //which will show the same result as if the link is visited in the browser
-            
-            String selector = ruleName.substring(0, colonIndex);
-            String pseudoclass = ruleName.substring(colonIndex + 1, ruleName.length());
-            
-            preview.append("<");
-            preview.append(selector);
-            preview.append(">");
-            
-            preview.append("<");
-            preview.append(selector);
-            preview.append('X');
-            preview.append(pseudoclass);
-            preview.append(">");
-            
-            preview.append(SAMPLE_TEXT);
-            
-            preview.append("</");
-            preview.append(selector);
-            preview.append('X');
-            preview.append(pseudoclass);
-            preview.append(">");
-            
-            preview.append("</");
-            preview.append(selector);
-            preview.append(">");
-            
-        } else {
-            
-            //check if the ruleName contains space delimited selectors
-            StringTokenizer st = new StringTokenizer(ruleName, " "); //NOI18N
-            List<String> selectors = new ArrayList<String>();
-            if(st.countTokens() > 1) {
-                while(st.hasMoreTokens()) {
-                    //check if the selector contains just characters or numbers (what else is allowed in selector name?)
-                    String selector = st.nextToken();
-                    if(!isPureSelector(selector)) {
-                        selectors = null;
-                        break;
-                    } else {
-                        selectors.add("*".equals(selector.trim()) ? "div" : selector);
-                    }
+        while (ruleName.indexOf('[') > 0){// remove [ ] blocks
+            int startBracket = ruleName.indexOf('[');
+            int endBracket = ruleName.indexOf(']', startBracket);
+            ruleName = ruleName.substring(0, startBracket) + ruleName.substring(endBracket+1);
+        }
+        //parse selectors by  space and ">" char
+        StringTokenizer st = new StringTokenizer(ruleName, " >"); //NOI18N
+        List<String> selectors = new ArrayList<String>();
+        while(st.hasMoreTokens()) {
+            //check if the selector contains just characters or numbers (what else is allowed in selector name?)
+            String selector = st.nextToken();
+            selectors.add("*".equals(selector.trim()) ? "div" : selector);
+        }
+        if (selectors.size() == 0){
+            selectors.add("div");
+        }
+
+        int previewFocus = preview.length();
+        for (String selectorItem : selectors) {
+            StringBuilder opening = new StringBuilder();
+            StringBuilder closing = new StringBuilder();
+
+            //pseudo classes ( A:link { color: red; }
+            int firstColonIndex = selectorItem.indexOf(':');
+            if (firstColonIndex > 0) {
+                //the colon in the styles has been replaced by 'X' character
+                //so to properly render the style we need to inherit the style form the selector
+                //to do this - put the element generated from the pseudo class element by
+                //the element without the pseudo class.
+                //for example   a:visited { color: gray; }
+                //will generate
+                // <a>
+                //    <aXvisited>SampleText</aXvisited>
+                // </a>
+                //which will show the same result as if the link is visited in the browser
+
+                String selector = selectorItem.substring(0, firstColonIndex);
+                List<String> pseudoclass = new ArrayList<String>(2);
+                int colonIndex = selectorItem.indexOf(':', firstColonIndex + 1);
+                String realName;
+                while (colonIndex > 0) {
+                    realName = selectorItem.substring(firstColonIndex + 1, colonIndex);
+                    pseudoclass.add(realName.replaceAll(":", "X"));
+                    colonIndex = selectorItem.indexOf(':', colonIndex + 1);
                 }
+                realName = selectorItem.substring(firstColonIndex + 1, selectorItem.length());
+                pseudoclass.add(realName.replaceAll(":", "X"));
+
+                opening.append("<");
+                opening.append(selector);
+                opening.append(">");
+                for (String pseudoclassName : pseudoclass) {
+                    opening.append("<");
+                    opening.append(selector);
+                    opening.append('X');
+                    opening.append(pseudoclassName);
+                    opening.append(">");
+                }
+                ListIterator<String> iter = pseudoclass.listIterator(pseudoclass.size());
+                while (iter.hasPrevious()) {// reverse order
+                    String pseudoclassName = iter.previous();
+                    closing.append("</");
+                    closing.append(selector);
+                    closing.append('X');
+                    closing.append(pseudoclassName);
+                    closing.append(">");
+                }
+                closing.append("</");
+                closing.append(selector);
+                closing.append(">");
+            } else if (isPureSelector(selectorItem)) {
+                opening.append("<");
+                opening.append(selectorItem);
+                opening.append(">");
+                closing.append("</");
+                closing.append(selectorItem);
+                closing.append(">");
+            } else{
+
+                SelectorInfo info = parseSelector(selectorItem);
+
+                opening.append("<");
+                opening.append(info.elementName);
+                if (info.className != null) {
+                    opening.append(" class=\"");
+                    opening.append(info.className);
+                    opening.append("\"");
+                }
+                if (info.id != null) {
+                    opening.append(" id=\"");
+                    opening.append(info.id);
+                    opening.append("\"");
+                }
+                opening.append(">");
+                closing.append("</");
+                closing.append(info.elementName);
+                closing.append(">\n");
             }
-            
-            if(selectors != null && selectors.size() > 0) {
-                /**
-                 * found space delimited selectors e.g.:
-                 * P EM { color: red; }
-                 *
-                 * in this case generate following html code:
-                 * <P>
-                 *    <EM>Sample Text</EM>
-                 * </P>
-                 */
-                for(int i = 0; i < selectors.size() - 1; i++) {
-                    String selector = selectors.get(i);
-                    preview.append("<");
-                    preview.append(selector);
-                    preview.append(">");
-                }
-                
-                //add the deepest element
-                {
-                    preview.append("<");
-                    String selector = selectors.get(selectors.size() - 1);
-                    preview.append(selector);
-                    preview.append(">");
-                    preview.append(SAMPLE_TEXT);
-                    preview.append("</");
-                    preview.append(selector);
-                    preview.append(">");
-                }
-                
-                for(int i = selectors.size() - 2; i >= 0;  i--) {
-                    String selector = selectors.get(i);
-                    preview.append("</");
-                    preview.append(selector);
-                    preview.append(">");
-                }
-                
-            } else if(ruleName.contains(".")) {
-                //class selector
-                String elementName, className;
-                if(ruleName.charAt(0) == '.') {
-                    //anonymous class selector
-                    elementName = "div"; //NOI18N
-                    className = ruleName.substring(1);
-                } else {
-                    //element class selector
-                    int index = ruleName.indexOf('.');
-                    elementName = ruleName.substring(0, index);
-                    className = ruleName.substring(index + 1);
-                }
-                
-                preview.append("<");
-                preview.append(elementName);
-                preview.append(" class=\"");
-                preview.append(className);
-                preview.append("\">");
-                preview.append(SAMPLE_TEXT);
-                preview.append("</");
-                preview.append(elementName);
-                preview.append(">\n");
-                
-            } else if(ruleName.contains("#")){
-                //id selector
-                String elementName, id;
-                if(ruleName.charAt(0) == '#') {
-                    //anonymous id selector
-                    elementName = "div"; //NOI18N
-                    id = ruleName.substring(1);
-                } else {
-                    //element class selector
-                    int index = ruleName.indexOf('#');
-                    elementName = ruleName.substring(0, index);
-                    id = ruleName.substring(index + 1);
-                }
-                
-                preview.append("\n<");
-                preview.append(elementName);
-                preview.append(" id=\"");
-                preview.append(id);
-                preview.append("\">");
-                preview.append(SAMPLE_TEXT);
-                preview.append("</");
-                preview.append(elementName);
-                preview.append(">\n");
-                
-            } else {
-                //'normal' element selector
-                if("*".equals(ruleName.trim())) {
-                    ruleName = "div";
-                }
-                
-                preview.append("\n<");
-                preview.append(ruleName);
-                preview.append(">");
-                preview.append(SAMPLE_TEXT);
-                preview.append("</");
-                preview.append(ruleName);
-                preview.append(">\n");
-            }
+            preview.insert(previewFocus, opening);
+            previewFocus = previewFocus + opening.length();
+            preview.insert(previewFocus, closing);
         }
         
+        preview.insert(previewFocus, SAMPLE_TEXT);
         preview.append(HTML_POSTFIX);
         
         return preview;
@@ -271,11 +223,51 @@ public class CssPreviewGenerator {
     private static boolean isPureSelector(String selectorName) {
         for(int i = 0; i < selectorName.length(); i++) {
             char ch = selectorName.charAt(i);
-            if(!(Character.isLetter(ch) || Character.isDigit(ch) || ch == '*')) {
+            if(!(Character.isLetter(ch) || Character.isDigit(ch) || ch == '*')||(ch == '.')) {
                 return false;
             }
         }
         return true;
     }
+    
+    private static class SelectorInfo{
+        String elementName, className, id;
+    }
+    
+    private static SelectorInfo parseSelector(String selector){
+        SelectorInfo result = new SelectorInfo();
+        int dotIndex = selector.indexOf('.');
+        int hashIndex = selector.indexOf('#', dotIndex);
+        
+        if (dotIndex > 0){//text.class
+            result.elementName = selector.substring(0, dotIndex);
+            if (hashIndex > 0){
+                result.className = selector.substring(dotIndex + 1, hashIndex);
+                result.id = selector.substring(hashIndex + 1);
+            }else{
+                result.className =  selector.substring(dotIndex + 1);
+            }
+        }else if(dotIndex == 0){//.class
+            result.elementName = "div";
+            if (hashIndex > 0){
+                result.className = selector.substring(1, hashIndex);
+                result.id = selector.substring(hashIndex + 1);
+            }else{
+                result.className = selector.substring(1);
+            }
+        }else if (hashIndex > 0){// dotIndex < 0
+            result.elementName = selector.substring(0, hashIndex);
+            result.id = selector.substring(hashIndex + 1);
+        }else if (hashIndex == 0){
+            result.elementName = "div";
+            result.id = selector.substring(1);
+        }else if ("*".equals(selector.trim())){ // no class and no id
+            result.elementName = "div";
+        }else{
+            result.elementName = selector;
+        }
+        return result;
+    }
+    
     
 }
