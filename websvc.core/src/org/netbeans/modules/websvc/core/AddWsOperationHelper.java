@@ -57,8 +57,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -213,10 +215,8 @@ public class AddWsOperationHelper {
                         ClassTree javaClass = genUtils.getClassTree();
                         TypeElement webMethodAn = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
                         TypeElement webParamAn = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
-                        
-                        AssignmentTree opName = make.Assignment(make.Identifier("operationName"), make.Literal(method.getName().toString())); //NOI18N
-                        
-                        // Public modifier
+                                               
+                       // Public modifier
                         ModifiersTree modifiersTree = make.Modifiers(
                                 Collections.<Modifier>singleton(Modifier.PUBLIC),
                                 Collections.<AnnotationTree>emptyList()
@@ -224,6 +224,13 @@ public class AddWsOperationHelper {
                         
                         // add @WebMethod annotation
                         if(createAnnotations && seiClass[0] == null) {
+
+                            String methodName = method.getName().toString();
+                            // find value for @WebMethod:oparationName
+                            String operationName = findNewOperationName(genUtils, workingCopy, methodName);
+                                                     
+                            AssignmentTree opName = make.Assignment(make.Identifier("operationName"), make.Literal(operationName)); //NOI18N
+
                             AnnotationTree webMethodAnnotation = make.Annotation(
                                     make.QualIdent(webMethodAn),
                                     Collections.<ExpressionTree>singletonList(opName)
@@ -231,9 +238,12 @@ public class AddWsOperationHelper {
                             modifiersTree = make.addModifiersAnnotation(modifiersTree, webMethodAnnotation);
 
                             // add @Oneway annotation
+                            
+                            boolean isOneWay = false;
                             if (Kind.PRIMITIVE_TYPE == method.getReturnType().getKind()) {
                                 PrimitiveTypeTree primitiveType = (PrimitiveTypeTree)method.getReturnType();
                                 if (TypeKind.VOID == primitiveType.getPrimitiveTypeKind()) {
+                                    isOneWay = true;
                                     TypeElement oneWayAn = workingCopy.getElements().getTypeElement("javax.jws.Oneway"); //NOI18N
                                     AnnotationTree oneWayAnnotation = make.Annotation(
                                             make.QualIdent(oneWayAn),
@@ -241,6 +251,28 @@ public class AddWsOperationHelper {
                                             );
 
                                         modifiersTree = make.addModifiersAnnotation(modifiersTree, oneWayAnnotation);
+                                }
+                            }
+                            if (!methodName.equals(operationName)) {
+                                // generate Request/Response wrapper annotations to avoid class conflicts
+                                // this enables to generate operations with identical method names
+                                String packagePrefix = getPackagePrefix(genUtils.getTypeElement().getQualifiedName().toString());
+
+                                TypeElement reqWrapperAn = workingCopy.getElements().getTypeElement("javax.xml.ws.RequestWrapper"); //NOI18N
+                                AssignmentTree className = make.Assignment(make.Identifier("className"), make.Literal(packagePrefix+operationName)); //NOI18N
+                                AnnotationTree reqWrapperAnnotation = make.Annotation(
+                                        make.QualIdent(reqWrapperAn),
+                                        Collections.<ExpressionTree>singletonList(className)
+                                        );
+                                modifiersTree = make.addModifiersAnnotation(modifiersTree, reqWrapperAnnotation);
+                                if (!isOneWay) {
+                                    TypeElement resWrapperAn = workingCopy.getElements().getTypeElement("javax.xml.ws.ResponseWrapper"); //NOI18N
+                                    className = make.Assignment(make.Identifier("className"), make.Literal(packagePrefix+operationName+"Response")); //NOI18N
+                                    AnnotationTree resWrapperAnnotation = make.Annotation(
+                                            make.QualIdent(resWrapperAn),
+                                            Collections.<ExpressionTree>singletonList(className)
+                                            );
+                                    modifiersTree = make.addModifiersAnnotation(modifiersTree, resWrapperAnnotation);
                                 }
                             }
                         }
@@ -366,6 +398,53 @@ public class AddWsOperationHelper {
             }
         }
         return null;
+    }
+    
+    private String findNewOperationName(GenerationUtils genUtils, CompilationController controller, String suggestedMethodName) 
+        throws IOException {
+        
+        TypeElement methodElement = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
+        TypeElement classEl = genUtils.getTypeElement();
+        Set<String> operationNames = new HashSet<String>();
+        if (methodElement != null) {
+            List<ExecutableElement> methods = getMethods(controller,classEl);
+            for (ExecutableElement m:methods) {
+                String opName = null;
+                List<? extends AnnotationMirror> annotations = m.getAnnotationMirrors();
+                for (AnnotationMirror anMirror : annotations) {
+                    if (controller.getTypes().isSameType(methodElement.asType(), anMirror.getAnnotationType())) {
+                        Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
+                        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry: expressions.entrySet()) {
+                            if (entry.getKey().getSimpleName().contentEquals("operationName")) { //NOI18N
+                                opName = (String) expressions.get(entry.getKey()).getValue();
+                                break;
+                            }
+                        }
+                    } // end if
+                    if (opName != null) break;
+                } //enfd for
+                if (opName == null) opName = m.getSimpleName().toString();
+                operationNames.add(opName);
+            }
+        }
+        return findNewOperationName(operationNames, suggestedMethodName);
+    }
+    
+    
+    private String findNewOperationName(Set<String> operationNames, String suggestedMethodName) {       
+        int i=0;
+        String newName = suggestedMethodName; //NOI18N
+        while(operationNames.contains(newName)) {
+            newName = suggestedMethodName+"_"+String.valueOf(++i); //NOI18N
+        }
+        return newName;
+    }
+    
+    
+    private String getPackagePrefix (String className) {
+        int lastDot = className.indexOf("."); //NOI18N
+        if (lastDot > 0) return className.substring(0,lastDot+1);
+        else return "";
     }
     
     private void saveFile(FileObject file) throws IOException {
