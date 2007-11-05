@@ -149,6 +149,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             } else {
                 // If we are deleting a parent directory of this file
                 // skip the call to hg remove as we will do it for the directory
+                file.delete();
                 for (File dir : dirsToDelete) {
                     File tmpFile = file;
                     do {
@@ -157,7 +158,6 @@ public class MercurialInterceptor extends VCSInterceptor {
                     }
                     while (tmpFile != null);
                 }
-                file.delete();
                 HgProgressSupport support = new HgProgressSupport() {
                     public void perform() {
                         try {
