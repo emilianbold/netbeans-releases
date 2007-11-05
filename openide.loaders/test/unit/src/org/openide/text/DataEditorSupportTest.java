@@ -43,7 +43,10 @@
 package org.openide.text;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import javax.swing.JEditorPane;
@@ -67,6 +70,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.Lookup;
@@ -243,19 +247,39 @@ public class DataEditorSupportTest extends NbTestCase {
      */
     private static final class MyFileObject extends org.openide.filesystems.FileObject {
         private org.openide.filesystems.FileObject delegate;
+        private int openStreams;
+        private Throwable previousStream;
         
         public MyFileObject (org.openide.filesystems.FileObject del) {
             delegate = del;
         }
 
         public java.io.OutputStream getOutputStream (FileLock lock) throws IOException {
+            if (openStreams != 0) {
+                IOException e = new IOException("There is stream already, cannot write down!");
+                if (previousStream != null) {
+                    e.initCause(previousStream);
+                }
+                throw e;
+            }
             class ContentStream extends java.io.ByteArrayOutputStream {
+                public ContentStream() {
+                    openStreams = -1;
+                }
                 public void close () throws java.io.IOException {
+                    if (openStreams != -1) {
+                        IOException ex = new IOException("One output stream");
+                        ex.initCause(previousStream);
+                        throw ex;
+                    }
+                    //assertEquals("One output stream", -1, openStreams);
+                    openStreams = 0;
+                    previousStream = new Exception("Closed");
                     super.close ();
                     RUNNING.content = new String (toByteArray ());
                 }
             }
-
+            previousStream = new Exception("Output");
             return new ContentStream ();
         }
 
@@ -296,7 +320,29 @@ public class DataEditorSupportTest extends NbTestCase {
         }
 
         public java.io.InputStream getInputStream () throws java.io.FileNotFoundException {
-            return new java.io.ByteArrayInputStream (RUNNING.content.getBytes ());
+            if (openStreams < 0) {
+                FileNotFoundException e = new FileNotFoundException("Already exists output stream");
+                if (previousStream != null) {
+                    e.initCause(previousStream);
+                }
+                throw e;
+            }
+            
+            class IS extends ByteArrayInputStream {
+                public IS(byte[] arr) {
+                    super(arr);
+                    openStreams++;
+                }
+
+                @Override
+                public void close() throws IOException {
+                    openStreams--;
+                    super.close();
+                }
+            }
+            previousStream = new Exception("Input");
+            
+            return new IS(RUNNING.content.getBytes ());
         }
 
         public FileSystem getFileSystem () throws FileStateInvalidException {
@@ -414,7 +460,23 @@ public class DataEditorSupportTest extends NbTestCase {
         }
             
         public Charset getEncoding(FileObject file) {
-            this.file = file;
+            InputStream is  = null;
+            try {
+                this.file = file;
+                byte[] arr = new byte[4096];
+                is = file.getInputStream();
+                is.read(arr);
+            } catch (IOException ex) {
+                throw new IllegalStateException(ex);
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ex) {
+                        throw new IllegalStateException(ex);
+                    }
+                }
+            }
             return Charset.defaultCharset();
         }
         

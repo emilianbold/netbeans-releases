@@ -353,6 +353,10 @@ public class DataEditorSupport extends CloneableEditorSupport {
         }
     }
 
+    /** can hold the right charset to be used during save, needed for communication
+     * between saveFromKitToStream and saveDocument
+     */
+    private static ThreadLocal<Charset> charsetForSave = new ThreadLocal<Charset>();
     /**
      * @inheritDoc
      */
@@ -365,12 +369,15 @@ public class DataEditorSupport extends CloneableEditorSupport {
             throw new NullPointerException("Kit is null"); // NOI18N
         }
         
-        final Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
-        final Writer w = new OutputStreamWriter (stream, c);
+        Charset c = charsetForSave != null ? charsetForSave.get() : null;
+        if (c == null) {
+            c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+        }
+        Writer w = new OutputStreamWriter (stream, c);
         try {
             kit.write(w, doc, 0, doc.getLength());
         } finally {
-            w.close();
+            w.flush();
         }
     }        
 
@@ -387,7 +394,15 @@ public class DataEditorSupport extends CloneableEditorSupport {
                                      null, null);
             throw e;
         }
-        super.saveDocument();
+        
+        Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+        Charset prev = charsetForSave.get();
+        try {
+            charsetForSave.set(c);
+            super.saveDocument();
+        } finally {
+            charsetForSave.set(prev);
+        }
     }
 
     /** Indicates whether the <code>Env</code> is read only. */

@@ -73,6 +73,7 @@ public class DataEditorSupportSaveAsTest extends NbTestCase {
     FileSystem fs;
     static {
         System.setProperty ("org.openide.util.Lookup", "org.openide.text.DataEditorSupportSaveAsTest$Lkp");
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
     
     public DataEditorSupportSaveAsTest(String s) {
