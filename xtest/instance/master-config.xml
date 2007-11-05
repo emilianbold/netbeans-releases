@@ -98,7 +98,7 @@ made subject to such option by the copyright holder.
         <module name="db/sqleditor" testtypes="unit" attributes="stable"/>
         <module name="extbrowser" testtypes="unit" attributes="stable"/>
         <module name="html" testtypes="unit" attributes="stable"/>
-        <module name="html/editor" testtypes="unit" attributes="stable"/>
+<!--        <module name="html/editor" testtypes="unit" attributes="stable"/> -->
         <module name="html/editor/lib" testtypes="unit" attributes="stable"/>
         <module name="html/lexer" testtypes="unit" attributes="stable"/>
         <module name="httpserver" testtypes="unit" attributes="stable"/>
