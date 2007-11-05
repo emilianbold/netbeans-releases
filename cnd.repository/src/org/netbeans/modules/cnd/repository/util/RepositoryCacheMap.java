@@ -183,7 +183,9 @@ public class RepositoryCacheMap<K,V>  {
 	    softAssert(!(keyToValueStorage.size() < valueToKeyStorage.size()), "valueToKeyStorage contains more elements than keyToValueStorage key=" + key); //NOI18N
 	    softAssert(!(keyToValueStorage.size() > valueToKeyStorage.size()), "keyToValueStorage contains more elements than valueToKeyStorage"); //NOI18N
 	    
-            if (keyToValueStorage.size() < capacity.intValue()) {
+	    // FIXUP: zero check is a workaround for #119805 NoSuchElementException on start IDE with opened projects
+	    // take this inot acct when rewriting this class according to #120673(Rewrite repository files cache synchronization)
+            if (capacity.intValue() == 0 || keyToValueStorage.size() < capacity.intValue()) {
                 RepositoryCacheValue<V> oldValue = keyToValueStorage.put(key, entry);
 		softAssert(oldValue == null, "Value replacement in RepositoryCacheMap key=" + key); //NOI18N
                 valueToKeyStorage.put(entry, key);
