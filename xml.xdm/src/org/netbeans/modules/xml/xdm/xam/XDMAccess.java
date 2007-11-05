@@ -386,7 +386,11 @@ public class XDMAccess extends DocumentModelAccess {
     }
     
     public Element getContainingElement(int position){
-        return (new NodeByPositionVisitor(xdmModel.getDocument())).getContainingElement(position);
+        try {
+            return (new NodeByPositionVisitor(xdmModel.getDocument())).getContainingElement(position);
+        } catch(Exception ex) {
+            return null;
+        }
     }
     
     public org.w3c.dom.Element duplicate(org.w3c.dom.Element element){
