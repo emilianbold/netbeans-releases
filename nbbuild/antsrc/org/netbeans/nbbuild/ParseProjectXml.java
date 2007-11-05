@@ -889,11 +889,10 @@ public final class ParseProjectXml extends Task {
         }
         String cluster = module.getClusterName();
         if (cluster != null) { // #68716
-            if (includedClusters != null && !includedClusters.isEmpty() && !includedClusters.contains(cluster)) {
-                throw new BuildException("Module " + cnb + " part of cluster " + cluster + " which is excluded from the target platform", getLocation());
-            }
-            if ((includedClusters == null || includedClusters.isEmpty()) && excludedClusters != null && excludedClusters.contains(cluster)) {
-                throw new BuildException("Module " + cnb + " part of cluster " + cluster + " which is excluded from the target platform", getLocation());
+            if ((includedClusters != null && !includedClusters.isEmpty() && !includedClusters.contains(cluster)) ||
+                    ((includedClusters == null || includedClusters.isEmpty()) && excludedClusters != null && excludedClusters.contains(cluster))) {
+                throw new BuildException("The module " + cnb + " cannot be compiled against because it is part of the cluster " + cluster +
+                                         " which has been excluded from the target platform in your suite configuration", getLocation());
             }
             if (excludedModules != null && excludedModules.contains(cnb)) { // again #68716
                 throw new BuildException("Module " + cnb + " excluded from the target platform", getLocation());
