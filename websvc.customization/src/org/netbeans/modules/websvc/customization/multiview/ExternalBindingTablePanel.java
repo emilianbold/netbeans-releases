@@ -118,10 +118,10 @@ public class ExternalBindingTablePanel extends DefaultTablePanel{
     
     public String getRelativePathToWsdl(){
         String relativePath = "";
-        FileObject srcRoot = (FileObject)node.getLookup().lookup(FileObject.class);
+        FileObject srcRoot = node.getLookup().lookup(FileObject.class);
         FileObject localWsdlFile = null;
         FileObject wsdlFolder = null;
-        Client client = (Client)node.getLookup().lookup(Client.class);
+        Client client = node.getLookup().lookup(Client.class);
         if(client != null){
             JAXWSClientSupport support = JAXWSClientSupport.getJaxWsClientSupport(srcRoot);
             wsdlFolder = support.getLocalWsdlFolderForClient(client.getName(),false);
@@ -131,7 +131,7 @@ public class ExternalBindingTablePanel extends DefaultTablePanel{
         }
         else{
             JAXWSSupport support = JAXWSSupport.getJAXWSSupport(srcRoot);
-            Service service = (Service)node.getLookup().lookup(Service.class);
+            Service service = node.getLookup().lookup(Service.class);
             wsdlFolder = support.getLocalWsdlFolderForService(service.getName(), false);
             localWsdlFile =
                     wsdlFolder.getFileObject(service.getLocalWsdlFile());
@@ -144,7 +144,7 @@ public class ExternalBindingTablePanel extends DefaultTablePanel{
             return "Unable to obtain relative path";
         }
         
-        return "../" + relativePath;
+        return "../wsdl/" + relativePath;
     }
     
     public Map<String, FileObject> getAddedBindings(){
