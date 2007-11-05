@@ -49,7 +49,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter;
-import static org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter.JoinedTokenSequence;
+import org.netbeans.modules.editor.structure.formatting.JoinedTokenSequence;
 
 /**
  * A lexer-based formatter for html files.

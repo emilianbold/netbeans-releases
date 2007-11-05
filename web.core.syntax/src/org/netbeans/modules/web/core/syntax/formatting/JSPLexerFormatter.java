@@ -61,7 +61,7 @@ import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter;
 import org.netbeans.modules.editor.indent.spi.Context;
-import static org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter.JoinedTokenSequence;
+import org.netbeans.modules.editor.structure.formatting.JoinedTokenSequence;
 
 /**
  * A lexer-based formatter for html files.

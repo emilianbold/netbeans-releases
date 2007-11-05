@@ -59,7 +59,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
-
 /**
  * The contract for the order of calling formatters based on this class
  * 
@@ -110,12 +109,7 @@ import org.netbeans.modules.editor.indent.spi.Context;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public abstract class TagBasedLexerFormatter {
-
-    public static final String TRANSFER_DATA_DOC_PROPERTY = "TagBasedFormatter.TransferData"; //NOI18N
-    
-    public static final String ORG_CARET_OFFSET_DOCPROPERTY = "TagBasedFormatter.org_caret_offset";
-    
+public abstract class TagBasedLexerFormatter {    
     private static final Logger logger = Logger.getLogger(TagBasedLexerFormatter.class.getName());
 
     protected abstract boolean isClosingTag(JoinedTokenSequence tokenSequence, int tagOffset);
@@ -278,7 +272,7 @@ public abstract class TagBasedLexerFormatter {
             
             // PASS 2: handle formatting order for languages on the same level of mime-hierarchy
             
-            for (int line = 0; line < transferData.numberOfLines; line ++){
+            for (int line = 0; line < transferData.getNumberOfLines(); line ++){
                 if (embeddingType[line] == EmbeddingType.CURRENT_LANG){
                     transferData.setProcessedByNativeFormatter(line);
                 } else if (embeddingType[line] == EmbeddingType.OUTER){
@@ -691,100 +685,16 @@ public abstract class TagBasedLexerFormatter {
         return IndentUtils.lineIndent(doc, lineStart);
     }
     
-    /**
-     *  This class is used to pass data to the formatters of embedded languages
-     */
-    public static class TransferData{
-        /**
-         * Lines that must not be touched
-         */
-        private boolean formattableLines[];
-        /**
-         * Indents before any formatter was called
-         */
-        private int originalIndents[];
-        
-        /**
-         * Indents after calling the current formatter.
-         * It must be filled with valid data for at least 
-         * the current formatting range and the previous line
-         */
-        private int transformedOffsets[];
-        
-        /**
-         * Indents after calling the current formatter.
-         * It must be filled with valid data for at least 
-         * the current formatting range and the previous line
-         */
-        private boolean alreadyProcessedByNativeFormatter[];
-        
-        /**
-         * Number of lines in the document
-         */
-        private int numberOfLines;
-        
-        public void init(BaseDocument doc) throws BadLocationException {
-            numberOfLines = TagBasedLexerFormatter.getNumberOfLines(doc);
-            formattableLines = new boolean[numberOfLines];
-            alreadyProcessedByNativeFormatter = new boolean[numberOfLines];
-            Arrays.fill(formattableLines, true);
-            originalIndents = new int[numberOfLines];
-            transformedOffsets = new int[numberOfLines];
-            
-            for (int i = 0; i < numberOfLines; i++) {
-                originalIndents[i] = getExistingIndent(doc, i);
-            }
-            
-            doc.putProperty(TRANSFER_DATA_DOC_PROPERTY, this);
-        }
-        
-        public static TransferData readFromDocument(BaseDocument doc){
-            return (TransferData) doc.getProperty(TRANSFER_DATA_DOC_PROPERTY);
-        }
-        
-        public int getNumberOfLines(){
-            return numberOfLines;
-        }
-        
-        public boolean isFormattable(int line){
-            return formattableLines[line];
-        }
-        
-        public void setNonFormattable(int line){
-            formattableLines[line] = false;
-        }
-
-        public int[] getTransformedOffsets() {
-            return transformedOffsets;
-        }
-       
-        public void setTransformedOffsets(int[] transformedOffsets) {
-            this.transformedOffsets = transformedOffsets;
-        }
-        
-        private int getOriginalIndent(int i) {
-            return originalIndents[i];
-        }
-        
-        public boolean wasProcessedByNativeFormatter(int line){
-            return alreadyProcessedByNativeFormatter[line];
-        }
-        
-        public void setProcessedByNativeFormatter(int line){
-            alreadyProcessedByNativeFormatter[line] = true;
-        }
-    }
-    
     public void enterPressed(Context context) {
         BaseDocument doc = (BaseDocument)context.document();   
         doc.atomicLock();
         
         try {
             if (isTopLevelLanguage(doc)) {
-                doc.putProperty(ORG_CARET_OFFSET_DOCPROPERTY, new Integer(context.caretOffset()));
+                doc.putProperty(TransferData.ORG_CARET_OFFSET_DOCPROPERTY, new Integer(context.caretOffset()));
             }
 
-            Integer dotPos = (Integer) doc.getProperty(ORG_CARET_OFFSET_DOCPROPERTY);
+            Integer dotPos = (Integer) doc.getProperty(TransferData.ORG_CARET_OFFSET_DOCPROPERTY);
             assert dotPos != null;
             int origDotPos = dotPos.intValue() - 1; // dotPos - "\n".length()
             
@@ -923,59 +833,6 @@ public abstract class TagBasedLexerFormatter {
         return true;
     }
 
-    public static class TextBounds {
-
-        private int absoluteStart; // start offset regardless of white spaces
-        private int absoluteEnd; // end --
-        private int startPos = -1;
-        private int endPos = -1;
-        private int startLine = -1;
-        private int endLine = -1;
-
-        public TextBounds(int absoluteStart, int absoluteEnd) {
-            this.absoluteStart = absoluteStart;
-            this.absoluteEnd = absoluteEnd;
-        }
-        
-        public TextBounds(int absoluteStart, int absoluteEnd, int startPos, int endPos, int startLine, int endLine) {
-            this.absoluteStart = absoluteStart;
-            this.absoluteEnd = absoluteEnd;
-            this.startPos = startPos;
-            this.endPos = endPos;
-            this.startLine = startLine;
-            this.endLine = endLine;
-        }        
-
-        public int getEndPos() {
-            return endPos;
-        }
-
-        public int getStartPos() {
-            return startPos;
-        }
-
-        public int getEndLine() {
-            return endLine;
-        }
-
-        public int getStartLine() {
-            return startLine;
-        }
-        
-        public int getAbsoluteEnd() {
-            return absoluteEnd;
-        } 
-
-        public int getAbsoluteStart() {
-            return absoluteStart;
-        }
-
-        @Override
-        public String toString() {
-            return "pos " + startPos + "-" + endPos + ", lines " + startLine + "-" + endLine; //NOI18N
-        }
-    }
-
     protected static class TagIndentationData {
 
         private final String tagName;
@@ -1001,82 +858,6 @@ public abstract class TagBasedLexerFormatter {
 
         public void setClosedOnLine(int closedOnLine) {
             this.closedOnLine = closedOnLine;
-        }
-    }
-
-// TODO replace this class with a generic one, provided by Lexer API, when implemented
-    public static class JoinedTokenSequence {
-
-        private TokenSequence[] tokenSequences;
-        private TextBounds[] tokenSequenceBounds;
-        private int currentTokenSequence = -1;
-
-        public JoinedTokenSequence(TokenSequence[] tokenSequences, TextBounds[] tokenSequenceBounds) {
-            this.tokenSequences = tokenSequences;
-            this.tokenSequenceBounds = tokenSequenceBounds;
-        }
-
-        public Token token() {
-            return currentTokenSequence().token();
-        }
-
-        public TokenSequence currentTokenSequence() {
-            return tokenSequences[currentTokenSequence];
-        }
-
-        public void moveStart() {
-            currentTokenSequence = 0;
-            currentTokenSequence().moveStart();
-        }
-
-        public boolean moveNext() {
-            boolean moreTokens = currentTokenSequence().moveNext();
-
-            if (!moreTokens) {
-                if (currentTokenSequence + 1 < tokenSequences.length) {
-                    currentTokenSequence++;
-                    moveNext();
-                } else {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        public boolean movePrevious() {
-            boolean moreTokens = currentTokenSequence().movePrevious();
-
-            if (!moreTokens) {
-                if (currentTokenSequence > 0) {
-                    currentTokenSequence--;
-                    movePrevious();
-                } else {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        public int move(int offset) {
-            for (int i = 0; i < tokenSequences.length; i++) {
-                if (tokenSequenceBounds[i].getAbsoluteStart() <= offset && tokenSequenceBounds[i].getAbsoluteEnd() > offset) {
-
-                    currentTokenSequence = i;
-                    return currentTokenSequence().move(offset);
-                }
-            }
-
-            return Integer.MIN_VALUE;
-        }
-
-        public int offset() {
-            return currentTokenSequence().offset();
-        }
-
-        private TokenSequence embedded() {
-            return currentTokenSequence().embedded();
         }
     }
 }
