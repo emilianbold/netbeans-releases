@@ -66,10 +66,12 @@ made subject to such option by the copyright holder.
       </file>
       <!--  JSP Segment --> 
       <file name="JSPF.jspf" url="templates/JSPF.template">
+        <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>  
         <attr name="position" intvalue="0"/>
       </file>
       <!--  XML segemnt --> 
       <file name="JSPFX.jspf" url="templates/JSPDocX.template">
+        <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>  
         <attr name="position" intvalue="0"/>
       </file>
       <!-- Tag File -->
@@ -90,9 +92,11 @@ made subject to such option by the copyright holder.
       <!--  Tag File Segments --> 
       <file name="TagFileF.tagf" url="templates/TagFileF.template">
         <attr name="position" intvalue="0"/>
+        <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
       </file>
       <file name="TagFileFX.tagf" url="templates/TagFileFX.template">
         <attr name="position" intvalue="0"/>
+        <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
       </file>
       <!-- Servlet --> 
       <file name="Servlet.java" url="templates/Servlet.template">
