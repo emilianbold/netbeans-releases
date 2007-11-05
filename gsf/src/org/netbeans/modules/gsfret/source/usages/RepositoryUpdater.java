@@ -134,6 +134,9 @@ import org.openide.util.Utilities;
  * @author Tor Norbye
  */
 public class RepositoryUpdater implements PropertyChangeListener, FileChangeListener {
+    // Flag for controlling last-minute workaround for issue #120231
+    private static final boolean CLOSE_INDICES = Boolean.getBoolean("gsf.closeindices");
+    
     private static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
     
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
@@ -787,6 +790,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             final ClassIndexManager cim = ClassIndexManager.getDefault();
                             scannedRoots.removeAll(oldRoots);
                             deps.keySet().remove(oldRoots);
+if (CLOSE_INDICES) {    // HACK - see #120231                        
                             for (URL oldRoot : oldRoots) {
                                 cim.removeRoot(oldRoot);
 //                                JavaFileFilterImplementation filter = filters.remove(oldRoot);
@@ -794,12 +798,15 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 //                                    filter.removeChangeListener(filterListener);
 //                                }
                             }
+}
                             scannedBinaries.removeAll (oldBinaries);
 //                            final CachingArchiveProvider cap = CachingArchiveProvider.getDefault();
+if (CLOSE_INDICES) {                            
                             for (URL oldRoot : oldBinaries) {
                                 cim.removeRoot(oldRoot);
 //                                cap.removeArchive(oldRoot);
                             }
+}
                             break;
                         case COMPILE:
                         {
