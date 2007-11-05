@@ -65,6 +65,8 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.db.explorer.JDBCDriver;
@@ -78,6 +80,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 
 /**
  * Manages the Design Time Data sources transferables
@@ -87,6 +91,9 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
     
     protected static String dataProviderClassName = "com.sun.data.provider.impl.CachedRowSetDataProvider";
     public static String rowSetClassName = "com.sun.sql.rowset.CachedRowSetXImpl";
+    private static final Logger LOGGER = 
+            Logger.getLogger(DatasourceTransferManager.class.getName());
+
     
     public DisplayItem getDisplayItem(Transferable transferable) {
         Object transferData = null;
@@ -197,6 +204,19 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
             if (!DataSourceResolver.getInstance().isDatasourceCreationSupported(currentProj)) {
                 cancel = true;
                 DataSourceResolver.getInstance().postUnsupportedDataSourceCreationDialog();
+            }
+
+            // Disallow drop of Oracle table when version of driver is less than 10.2
+            if ("Oracle".equals(databaseProductName)) { // NOI18N
+                try {
+                    if ((dbConnection.getJDBCConnection().getMetaData().getDriverMajorVersion() < 10) && (dbConnection.getJDBCConnection().getMetaData().getDriverMinorVersion() < 2)) {
+                        cancel = true;
+                        LOGGER.log(Level.WARNING, "Oracle driver version 10 or later supported.  Drop cancelled."); // NOI18N
+                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DatasourceBeanCreateInfoSet.class, "ORACLE_DRIVER_WARNING")); // NOI18N
+                    }
+                } catch (SQLException ex) {
+                    Exceptions.printStackTrace(ex);
+                } 
             }
             
             // ensure data source name is unique
