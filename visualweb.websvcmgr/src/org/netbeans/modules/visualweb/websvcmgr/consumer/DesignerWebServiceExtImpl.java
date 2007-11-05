@@ -239,7 +239,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
             
             Map<String, String> methodToDataProviderClassMap = new HashMap<String, String>();
             String className = port.getName() + "Client";
-            String serviceClassName = wsMetadataDesc.getPackageName() + "." + wsMetadataDesc.getName();
+            String serviceClassName = wsMetadataDesc.getModel().getJavaName();
             String javaName = port.getJavaName();
             
             File webserviceClient = new File(sourceDir, className + ".java"); // NOI18N
@@ -279,7 +279,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                 // Verify that the port getter method exists in the Service class, otherwise
                 // the code generation in WrapperClientWriter will fail
                 try {
-                    String portImplMethod = "get" + ManagerUtil.getProperPortName(port.getName());
+                    String portImplMethod = port.getPortGetter();
                     Class serviceClass = classLoader.loadClass(serviceClassName);
                     serviceClass.getMethod(portImplMethod);
                 }catch (Exception ex) {
