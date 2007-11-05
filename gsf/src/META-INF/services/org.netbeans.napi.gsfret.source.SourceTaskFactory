@@ -1,5 +1,6 @@
 org.netbeans.modules.gsfret.hints.GsfHintsFactory
 org.netbeans.modules.gsfret.hints.infrastructure.HintsTaskFactory
+org.netbeans.modules.gsfret.hints.infrastructure.SelectionHintsTaskFactory
 org.netbeans.modules.gsfret.hints.infrastructure.SuggestionsTaskFactory
 org.netbeans.modules.gsfret.navigation.ClassMemberNavigatorSourceFactory
 org.netbeans.modules.gsfret.editor.semantic.SemanticHighlighterFactory

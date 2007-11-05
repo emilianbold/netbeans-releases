@@ -50,6 +50,7 @@ import org.netbeans.modules.ruby.hints.spi.Description;
 import org.netbeans.modules.ruby.hints.spi.ErrorRule;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.modules.ruby.hints.spi.Rule;
+import org.netbeans.modules.ruby.hints.spi.SelectionRule;
 import org.netbeans.modules.ruby.hints.spi.UserConfigurableRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -68,6 +69,7 @@ public class RubyHintsProvider implements HintsProvider {
     private boolean cancelled;
     private Map<Integer,List<AstRule>> testHints;
     private Map<Integer,List<AstRule>> testSuggestions;
+    private List<SelectionRule> testSelectionHints;
     private Map<String,List<ErrorRule>> testErrors;
     
     public RubyHintsProvider() {
@@ -91,7 +93,7 @@ public class RubyHintsProvider implements HintsProvider {
         cancelled = false;
         
         Map<String,List<ErrorRule>> hints = testErrors;
-        if (testErrors == null) {
+        if (hints == null) {
             hints = RulesManager.getInstance().getErrors();
         }
 
@@ -118,6 +120,48 @@ public class RubyHintsProvider implements HintsProvider {
         
         return unhandled;
     }
+
+    public void computeSelectionHints(CompilationInfo info, List<ErrorDescription> result, int start, int end) {
+        try {
+            if (info.getDocument() == null) {
+                // Document probably closed
+                return;
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        cancelled = false;
+        
+        Node root = AstUtilities.getRoot(info);
+
+        if (root == null) {
+            return;
+        }
+        List<SelectionRule> hints = testSelectionHints;
+        if (hints == null) {
+            hints = RulesManager.getInstance().getSelectionHints();
+        }
+
+        if (hints.isEmpty()) {
+            return;
+        }
+        
+        if (isCancelled()) {
+            return;
+        }
+        
+        List<Description> descriptions = new ArrayList<Description>();
+        
+        applyRules(info, hints, start, end, descriptions);
+        
+        if (descriptions.size() > 0) {
+            for (Description desc : descriptions) {
+                ErrorDescription errorDesc = createDescription(desc, info, -1);
+                result.add(errorDesc);
+            }
+        }
+    }
     
     public void computeHints(CompilationInfo info, List<ErrorDescription> result) {
         try {
@@ -137,7 +181,7 @@ public class RubyHintsProvider implements HintsProvider {
             return;
         }
         Map<Integer,List<AstRule>> hints = testHints;
-        if (testHints == null) {
+        if (hints == null) {
             hints = RulesManager.getInstance().getHints(false, info);
         }
 
@@ -305,6 +349,24 @@ public class RubyHintsProvider implements HintsProvider {
         
         return false;
     }
+
+    private void applyRules(CompilationInfo info, List<SelectionRule> rules, int start, int end, 
+            List<Description> result) {
+
+        Map<String,Object> context = new HashMap<String,Object>();
+        
+        for (SelectionRule rule : rules) {
+            if (!rule.appliesTo(info)) {
+                continue;
+            }
+            
+            //if (!HintsSettings.isEnabled(rule)) {
+            //    continue;
+            //}
+
+            rule.run(info, start, end, result, context);
+        }
+    }
     
     private void scan(Node node, AstPath path, CompilationInfo info, Map<Integer,List<AstRule>> hints, int caretOffset, 
             List<Description> result) {
@@ -333,10 +395,12 @@ public class RubyHintsProvider implements HintsProvider {
     }
     
     /** For testing purposes only! */
-    public void setTestingHints(Map<Integer,List<AstRule>> testHints, Map<Integer,List<AstRule>> testSuggestions, Map<String,List<ErrorRule>> testErrors) {
+    public void setTestingHints(Map<Integer,List<AstRule>> testHints, Map<Integer,List<AstRule>> testSuggestions, Map<String,List<ErrorRule>> testErrors,
+            List<SelectionRule> testSelectionHints) {
         this.testHints = testHints;
         this.testSuggestions = testSuggestions;
         this.testErrors = testErrors;
+        this.testSelectionHints = testSelectionHints;
     }
     
     private static class FixWrapper implements Fix {

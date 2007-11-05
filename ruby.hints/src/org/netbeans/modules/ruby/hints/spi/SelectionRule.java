@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,49 +20,36 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.api.gsf;
+
+package org.netbeans.modules.ruby.hints.spi;
 
 import java.util.List;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import java.util.Map;
+import org.netbeans.api.gsf.CompilationInfo;
 
 /**
- * Interface implemented by plugins that wish to provide quickfixes and hints.
+ * Represents a rule to be run on text selection
  *
  * @author Tor Norbye
  */
-public interface HintsProvider {
+public interface SelectionRule extends Rule {
 
-    /**
-     * Compute hints applicable to the given compilation info and add to the given result list.
-     */
-    void computeHints(CompilationInfo info, List<ErrorDescription> hints);
-    
-    /**
-     * Compute any suggestions applicable to the given caret offset, and add to
-     * the given suggestion list.
-     */
-    void computeSuggestions(CompilationInfo info, List<ErrorDescription> suggestions, int caretOffset);
-
-    /**
-     * Compute any suggestions applicable to the given caret offset, and add to
-     * the given suggestion list.
-     */
-    void computeSelectionHints(CompilationInfo info, List<ErrorDescription> suggestions, int start, int end);
-    
-    /** 
-     * Process the errors for the given compilation info, and add errors and
-     * warning descriptions into the provided hint list. Return any errors
-     * that were not added as error descriptions (e.g. had no applicable error rule)
-     */
-    List<Error> computeErrors(CompilationInfo info, List<ErrorDescription> hints);
-
-    /**
-     * Cancel in-progress processing of hints.
-     */
-    void cancel();
+    public void run(CompilationInfo compilationInfo, int start, int end,
+             List<Description> result, Map<String,Object> context);
 }

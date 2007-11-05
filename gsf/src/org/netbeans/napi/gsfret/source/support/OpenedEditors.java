@@ -43,20 +43,28 @@ package org.netbeans.napi.gsfret.source.support;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.Registry;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.napi.gsfret.source.Source;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Parameters;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -67,7 +75,7 @@ import org.openide.loaders.DataObject;
  *
  * @author Jan Lahoda
  */
-class OpenedEditors implements ChangeListener, PropertyChangeListener {
+class OpenedEditors implements PropertyChangeListener {
 
     private List<JTextComponent> visibleEditors = new ArrayList<JTextComponent>();
     private Map<JTextComponent, FileObject> visibleEditors2Files = new HashMap<JTextComponent, FileObject>();
@@ -76,7 +84,11 @@ class OpenedEditors implements ChangeListener, PropertyChangeListener {
     private static OpenedEditors DEFAULT;
 
     private OpenedEditors() {
-        Registry.addChangeListener(this);
+        EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                stateChanged();
+            }
+        });
     }
 
     public static synchronized OpenedEditors getDefault() {
@@ -116,7 +128,7 @@ class OpenedEditors implements ChangeListener, PropertyChangeListener {
         return Collections.unmodifiableCollection(visibleEditors2Files.values());
     }
 
-    public synchronized void stateChanged(ChangeEvent e) {
+    public synchronized void stateChanged() {
         for (JTextComponent c : visibleEditors) {
             c.removePropertyChangeListener(this);
             visibleEditors2Files.remove(c);
@@ -124,9 +136,10 @@ class OpenedEditors implements ChangeListener, PropertyChangeListener {
 
         visibleEditors.clear();
 
-        JTextComponent editor = Registry.getMostActiveComponent();
+        JTextComponent editor = EditorRegistry.lastFocusedComponent();
 
-        if (editor instanceof JEditorPane && LanguageRegistry.getInstance().isSupported((((JEditorPane) editor).getContentType()))) {
+        FileObject fo = editor != null ? getFileObject(editor) : null;
+        if (editor instanceof JEditorPane && fo != null && Source.forFileObject(fo) != null) {
             visibleEditors.add(editor);
         }
 
@@ -150,7 +163,13 @@ class OpenedEditors implements ChangeListener, PropertyChangeListener {
     }
 
     static FileObject getFileObject(JTextComponent pane) {
-        DataObject file = (DataObject) pane.getDocument().getProperty(Document.StreamDescriptionProperty);
+        Object source = pane.getDocument().getProperty(Document.StreamDescriptionProperty);
+        
+        if (!(source instanceof DataObject)) {
+            return null;
+        }
+        
+        DataObject file = (DataObject) source;
         
         if (file != null) {
             return file.getPrimaryFile();
@@ -159,4 +178,64 @@ class OpenedEditors implements ChangeListener, PropertyChangeListener {
         return null;
     }
 
+    /**Checks if the given file is supported. See {@link #filterSupportedMIMETypes}
+     * for more details.
+     *
+     * @param file to check
+     * @param type the type to check for the {@link SupportedMimeTypes} annotation
+     * @return true if and only if the given file is supported (see {@link #filterSupportedMIMETypes})
+     * @throws NullPointerException if <code>file == null</code> or <code>type == null</code>
+     */
+    public static boolean isSupported(FileObject file, String... mimeTypes) throws NullPointerException {
+        Parameters.notNull("files", file);
+        
+        return !filterSupportedMIMETypes(Collections.singletonList(file), mimeTypes).isEmpty();
+    }
+    
+    /**Filter unsupported files from the <code>files</code> parameter. A supported file
+     * <code>f</code> is defined as follows:
+     * <ul>
+     *     <li><code>JavaSource.forFileObject(f) != null</code></li>
+     *     <li>If the <code>type</code> is annotated with the {@link SupportedMimeTypes} annotation,
+     *         the file is supported if <code>type.getAnnotation(SupportedMimeTypes.class).value()</code>
+     *         contains <code>FileUtil.getMIMEType(f)</code>.
+     *     </li>
+     *     <li>If the <code>type</code> is not annotated with the {@link SupportedMimeTypes} annotation,
+     *         the file is supported if <code>FileUtil.getMIMEType(f) == "text/x-java"</code>.
+     * </ul>
+     *
+     * @param files the list of files to filter
+     * @param type the type to check for the {@link SupportedMimeTypes} annotation
+     * @return list of files that are supported (see above).
+     * @throws NullPointerException if <code>files == null</code> or <code>type == null</code>
+     */
+    public static List<FileObject> filterSupportedMIMETypes(Collection<FileObject> files, String... mimeTypes) throws NullPointerException {
+        Parameters.notNull("files", files);
+        
+        // BEGIN TOR MODIFICATIONS
+        List<FileObject>   result    = new LinkedList<FileObject>();
+        for (FileObject f : files) {
+            Logger.getLogger(OpenedEditors.class.getName()).log(Level.FINER, "analyzing={0}", f);
+            
+            if (!LanguageRegistry.getInstance().isSupported(f.getMIMEType())) {
+                continue;
+            }
+            if (Source.forFileObject(f) == null)
+                continue;
+            
+            result.add(f);
+            continue;
+        }
+        // END TOR MODIFICATIONS
+        
+        return result;
+    }
+    
+//    static {
+//        SourceSupportAccessor.ACCESSOR = new SourceSupportAccessor() {
+//            public Collection<FileObject> getVisibleEditorsFiles() {
+//                return OpenedEditors.getDefault().getVisibleEditorsFiles();
+//            }
+//        };
+//    }
 }

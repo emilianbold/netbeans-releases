@@ -95,7 +95,7 @@ public class GsfCodeTemplateFilter implements CodeTemplateFilter, CancellableTas
         if (templates != null && template != null && template.getParametrizedText().indexOf("${selection") != -1) { // NOI18N
             return templates.contains(template.getAbbreviation()) || (template.getParametrizedText().indexOf("allowSurround") != -1); // NOI18N
         }
-
+    
         // Other templates are filtered for code completion listing etc.
         return true;
     }

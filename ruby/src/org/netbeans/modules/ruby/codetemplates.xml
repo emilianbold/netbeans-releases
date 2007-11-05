@@ -13,12 +13,12 @@ include_class '${0 default="package.class"}']]></code>
   ${selection line}${cursor}
 end]]></code>
     </codetemplate>
-    <codetemplate abbreviation="if" descriptionId="ct_if" uuid="6670835F-62C3-11D9-B8CF-000D93589AF6">
+    <codetemplate abbreviation="if" descriptionId="ct_if" contexts="ruby" uuid="6670835F-62C3-11D9-B8CF-000D93589AF6">
 <code><![CDATA[if ${condition}
   ${selection line}${cursor}
 end]]></code>
     </codetemplate>
-    <codetemplate abbreviation="ife" descriptionId="ct_ife" uuid="667082E6-62C3-11D9-B8CF-000D93589AF6">
+    <codetemplate abbreviation="ife" descriptionId="ct_ife" contexts="ruby" uuid="667082E6-62C3-11D9-B8CF-000D93589AF6">
 <code><![CDATA[if ${condition}
   ${selection line}${tabStop1 default=""}
 else
@@ -37,7 +37,7 @@ end]]></code>
 end
 ${cursor}]]></code>
   </codetemplate>
-  <codetemplate abbreviation="doc" descriptionId="ct_doc">
+  <codetemplate abbreviation="doc" descriptionId="ct_doc" contexts="ruby">
     <code>
 <![CDATA[
 =begin
@@ -276,7 +276,7 @@ end]]>
 <![CDATA[collect { |${1 unusedlocal defaults="e,el,elmt,element"}| ${cursor} }]]>
     </code>
   </codetemplate>
-  <codetemplate abbreviation="dop" descriptionId="ct_dop">
+  <codetemplate abbreviation="dop" descriptionId="ct_dop" contexts="ruby" >
     <code>
 <![CDATA[do
         ${selection line}${cursor}

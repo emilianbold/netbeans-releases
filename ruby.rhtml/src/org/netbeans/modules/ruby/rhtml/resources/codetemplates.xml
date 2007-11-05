@@ -18,7 +18,7 @@
 </table>]]></code></codetemplate>
     <codetemplate abbreviation="r" descriptionId="ct_r"><code><![CDATA[<% ${cursor} %>]]></code></codetemplate>
     <codetemplate abbreviation="re" descriptionId="ct_re"><code><![CDATA[<%= ${cursor} %>]]></code></codetemplate>
-    <codetemplate abbreviation="for" descriptionId="ct_for"><code><![CDATA[<% for ${0 default="f"} in ${1 default="@field"} %>
+    <codetemplate abbreviation="for" descriptionId="ct_for" contexts="erb"><code><![CDATA[<% for ${0 default="f"} in ${1 default="@field"} %>
     ${selection line}${cursor}
 <% end %>
 ]]></code></codetemplate>

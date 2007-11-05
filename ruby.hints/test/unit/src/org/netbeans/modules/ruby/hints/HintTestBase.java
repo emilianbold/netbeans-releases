@@ -28,7 +28,6 @@
 package org.netbeans.modules.ruby.hints;
 
 import java.util.Collections;
-import org.netbeans.api.gsf.Error;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -251,7 +250,7 @@ public abstract class HintTestBase extends RubyTestBase {
                     testHints.put(key, Collections.singletonList(errorRule));
                 }
             }
-            provider.setTestingHints(null, null, testHints);
+            provider.setTestingHints(null, null, testHints, null);
             provider.computeErrors(info, result);
             
         } else {
@@ -266,10 +265,10 @@ public abstract class HintTestBase extends RubyTestBase {
                 }
             }
             if (RulesManager.getInstance().getSeverity(ucr) == HintSeverity.CURRENT_LINE_WARNING) {
-                provider.setTestingHints(null, testHints, null);
+                provider.setTestingHints(null, testHints, null, null);
                 provider.computeSuggestions(info, result, caretOffset);
             } else {
-                provider.setTestingHints(testHints, null, null);
+                provider.setTestingHints(testHints, null, null, null);
                 provider.computeHints(info, result);
             }
         }

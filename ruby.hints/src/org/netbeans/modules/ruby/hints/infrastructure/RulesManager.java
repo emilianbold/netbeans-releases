@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby.hints.infrastructure;
 
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -70,6 +71,7 @@ import org.openide.loaders.DataObject;
 import org.netbeans.modules.ruby.hints.spi.ErrorRule;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Rule;
+import org.netbeans.modules.ruby.hints.spi.SelectionRule;
 import org.netbeans.modules.ruby.hints.spi.UserConfigurableRule;
 import org.openide.util.NbPreferences;
 
@@ -95,11 +97,13 @@ public class RulesManager {
     private static final String ERRORS = "errors"; // NOI18N
     private static final String HINTS = "hints"; // NOI18N
     private static final String SUGGESTIONS = "suggestions"; // NOI18N
+    private static final String SELECTION = "selection"; // NOI18N
 
     // Maps of registered rules
     private static Map<String,List<ErrorRule>> errors = new HashMap<String, List<ErrorRule>>();
     private static Map<Integer,List<AstRule>> hints = new HashMap<Integer,List<AstRule>>();
     private static Map<Integer,List<AstRule>> suggestions = new HashMap<Integer, List<AstRule>>();
+    private static List<SelectionRule> selectionHints = new ArrayList<SelectionRule>();
 
     // Tree models for the settings GUI
     private static TreeModel errorsTreeModel;
@@ -113,6 +117,7 @@ public class RulesManager {
         initErrors();
         initHints();
         initSuggestions();
+        initSelectionHints();
     }
 
     public static synchronized RulesManager getInstance() {
@@ -148,6 +153,10 @@ public class RulesManager {
 
     public Map<Integer,List<AstRule>> getHints() {
         return hints;
+    }
+
+    public List<SelectionRule> getSelectionHints() {
+        return selectionHints;
     }
 
     public Map<Integer,List<AstRule>> getHints(boolean onLine, CompilationInfo info) {
@@ -238,6 +247,15 @@ public class RulesManager {
         FileObject folder = fs.getRoot().getFileObject( RULES_FOLDER + SUGGESTIONS );
         List<Pair<Rule,FileObject>> rules = readRules(folder);
         categorizeAstRules(rules, suggestions, folder, rootNode);
+    }
+
+    private static void initSelectionHints() {
+        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
+        suggestionsTreeModel = new DefaultTreeModel( rootNode );
+        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+        FileObject folder = fs.getRoot().getFileObject( RULES_FOLDER + SELECTION );
+        List<Pair<Rule,FileObject>> rules = readRules(folder);
+        categorizeSelectionRules(rules, selectionHints, folder, rootNode);
     }
 
     /** Read rules from system filesystem */
@@ -341,6 +359,34 @@ public class RulesManager {
         }
     }
 
+    private static void categorizeSelectionRules( List<Pair<Rule,FileObject>> rules,
+                                             List<SelectionRule> dest,
+                                             FileObject rootFolder,
+                                             DefaultMutableTreeNode rootNode ) {
+        Map<FileObject,DefaultMutableTreeNode> dir2node = new HashMap<FileObject, DefaultMutableTreeNode>();
+        dir2node.put(rootFolder, rootNode);
+
+        for( Pair<Rule,FileObject> pair : rules ) {
+            Rule rule = pair.getA();
+            FileObject fo = pair.getB();
+
+            if ( rule instanceof SelectionRule ) {
+                addRule((SelectionRule)rule, dest );
+                FileObject parent = fo.getParent();
+                DefaultMutableTreeNode category = dir2node.get( parent );
+                if ( category == null ) {
+                    category = new DefaultMutableTreeNode( parent );
+                    rootNode.add( category );
+                    dir2node.put( parent, category );
+                }
+                category.add( new DefaultMutableTreeNode( rule, false ) );
+            }
+            else {
+                LOG.log( Level.WARNING, "The rule defined in " + fo.getPath() + "is not instance of SelectionRule" );
+            }
+        }
+    }
+    
     private static void addRule( AstRule rule, Map<Integer,List<AstRule>> dest ) {
 
         for( Integer kind : rule.getKinds() ) {
@@ -351,7 +397,6 @@ public class RulesManager {
             }
             l.add( rule );
         }
-
     }
 
     @SuppressWarnings("unchecked")
@@ -365,9 +410,13 @@ public class RulesManager {
             }
             l.add( rule );
         }
-
     }
 
+    @SuppressWarnings("unchecked")
+    private static void addRule(SelectionRule rule, List<SelectionRule> dest ) {
+        dest.add(rule);
+    }
+    
     private static Rule instantiateRule( FileObject fileObject ) {
         try {
             DataObject dobj = DataObject.find(fileObject);
