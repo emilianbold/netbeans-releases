@@ -176,12 +176,6 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         return result;
     }
 
-
-    @Override
-    public Action getPreferredAction() {
-        return SystemAction.get(GenerateAction.class);
-    }
-
     // From ActionFilterNode
     private Action[] actionCache;
     
