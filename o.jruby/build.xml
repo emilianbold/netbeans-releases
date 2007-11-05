@@ -70,5 +70,31 @@
         <delete dir="patched_source"/>
     </target>
 
-    
+    <target name="check-run-mlbuild" depends="build-init">
+        <property name="translated.src.dir" location="${nb_all}/translatedfiles/src/${module.name}/src"/>
+        <available file="${translated.src.dir}" type="dir" property="translated.src.dir.exist"/>
+        <condition property="run.ml.build" value="true">
+            <and>
+                <isset property="translated.src.dir.exist"/>
+                <isset property="locjar.locales"/>
+                <length string="${locjar.locales}" when="greater" length="0"/>
+            </and>
+        </condition>
+    </target>
+
+    <target name="pre-jar-ml" depends="build-init,check-run-mlbuild" if="run.ml.build">
+        <mkdir dir="${build.classes.dir.ml}"/>
+        <copy todir="${build.classes.dir.ml}">
+            <!-- #58298: strip comments to save some space -->
+            <fileset dir="${translated.src.dir}" includes="**/*.properties"/>
+            <filterchain>
+                <tokenfilter>
+                    <!-- #61965: preserve #NOI18N and similar comments -->
+                    <filetokenizer/>
+                    <replaceregex pattern="^#(?!(PART)?(NO)?I18N).*[\r\n]+" replace="" flags="gm"/>
+                </tokenfilter>
+            </filterchain>
+        </copy>
+    </target>
+
 </project>

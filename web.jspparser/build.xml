@@ -66,6 +66,12 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="netbeans-extra" depends="release,ext-jar"/>
+    
+    <target name="pre-jar-ml" depends="projectized.build-init,projectized.check-run-mlbuild" if="run.ml.build">
+        <locjar jarfile="${cluster}/modules/ext/jsp-parser-ext.jar"
+                basedir="${nb_all}/translatedfiles/src/${module.name}/extsrc"
+                compress="${build.package.compress}"/>
+    </target>
 
      <!-- location of glassfish instalation -->
     <property name="glassfish_location" location="/space/servers/glassfishV2B58"/>

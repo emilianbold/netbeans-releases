@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -42,4 +42,21 @@ made subject to such option by the copyright holder.
 -->
 <project basedir="." default="netbeans" name="ide/welcome">
     <import file="../../nbbuild/templates/projectized.xml"/>
+    
+    <target name="netbeans-extra-ml" depends="release-ml" if="locales"/>
+    
+    <target name="release-ml" depends="build-init,check-run-mlbuild" if="run.ml.build">
+        <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat"
+                 classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <repeat target="release-one-locale" name="locale" values="${locales}"/>
+    </target>
+    
+    <target name="release-one-locale" depends="build-init" if="locale">
+        <copy todir="${cluster}">
+            <fileset dir="${nb_all}/translatedfiles/src/ide/welcome/release">
+                <include name="**/*_${locale}.*"/>
+            </fileset>
+        </copy>
+    </target>
+    
 </project>

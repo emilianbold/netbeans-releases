@@ -49,10 +49,6 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
 
   <property name="locjar.warnMissingDir" value="true"/>
 
-  <!-- These are the locales we care about.  Not everything has to be -->
-  <!-- localized for each of these locales, though.		      -->
-  <property name="locjar.brands" value="nb"/>
-
   <target name="init" depends="default.init,basic-init,files-init,build-init" >
 
     <patternset id="ide/branding.files">
@@ -99,7 +95,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
   <!-- Need todo: Decide how to handle genlist, especially since it's changing. -->
   <!-- Note: jar has to be the last use of locjar so that inferring the        -->
   <!-- location of the localizing bundle works!					-->
-  <target name="netbeans" depends="init,release,jar,netbeans-ml">
+  <target name="netbeans" depends="init,release,jar">
     <genlist 
       outputfiledir="${cluster}" 
       module="modules/org-netbeans-modules-ide-branding.jar"
@@ -140,7 +136,18 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     <copy todir="${cluster}" file="release/THIRDPARTYLICENSE.txt"/>
 -->
   </target>
-
+  
+  <target name="basic-init" depends="projectized-common.basic-init">
+    <condition property="locjar.locales" value="${locales}">
+      <and>
+        <isset property="locales" />
+        <not>
+          <isset property="locjar.locales"/>
+        </not>
+      </and>
+    </condition>
+  </target>
+  
   <target name="check-run-mlbuild" depends="basic-init">
     <available file="${nb_all}/translatedfiles/src/ide/branding" type="dir" property="translated.src.dir.exist"/>
     <condition property="run.ml.build" value="true">
@@ -161,7 +168,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
   <target name="release-one-locale" if="locale">
       <copy todir="${netbeans.dest.dir}">
           <fileset dir="${nb_all}/translatedfiles/src/ide/branding/release">
-              <include name="*_${locale}.*"/>
+              <include name="**/*_${locale}.*"/>
               <exclude name="netbeans*.png"/>
               <exclude name="netbeans*.icns"/>
               <exclude name="shortcuts*.pdf"/>
@@ -199,28 +206,33 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     
     <locjar warnMissingDir="true"
       basedir="core/startup/src"
-      jarfile="${cluster}/core/core.jar"
-    />
+      jarfile="${cluster}/core/core.jar">
+      <branding name="nb"/>
+    </locjar>
 
     <locjar warnMissingDir="true"
       basedir="core/src"
-      jarfile="${cluster}/modules/org-netbeans-core.jar"
-    />
+      jarfile="${cluster}/modules/org-netbeans-core.jar">
+      <branding name="nb"/>
+    </locjar>
 
     <locjar warnMissingDir="true"
       basedir="core/windows/src"
-      jarfile="${cluster}/modules/org-netbeans-core-windows.jar"
-    />
+      jarfile="${cluster}/modules/org-netbeans-core-windows.jar">
+      <branding name="nb"/>
+    </locjar>
 
     <locjar warnMissingDir="true"
       basedir="autoupdate/libsrc"
-      jarfile="${cluster}/modules/ext/updater.jar"
-    />
+      jarfile="${cluster}/modules/ext/updater.jar">
+      <branding name="nb"/>
+    </locjar>
 
     <locjar warnMissingDir="true"
       basedir="autoupdate/ui/src"
-      jarfile="${cluster}/modules/org-netbeans-modules-autoupdate-ui.jar"
-    />
+      jarfile="${cluster}/modules/org-netbeans-modules-autoupdate-ui.jar">
+      <branding name="nb"/>
+    </locjar>
   </target>
   
   <target name="-jar-localized-module-jar" if="locjar.locales" unless="locjar.brands">
@@ -236,14 +248,8 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
           </fileset>
       </copy>
       <mkdir  dir="${cluster}/modules" />
-      <antcall target="-jar-localized-module-jar" inheritAll="false">
-          <!-- call LocalizedJar task for module jar, but avoid passing
-               locjar.brands property, which is not supposed to be used
-               for module jar -->
-          <propertyset negate="true">
-              <propertyref name="locjar.brands"/>
-          </propertyset>
-      </antcall>
+      <locjar basedir="build/classes-ml"
+              jarfile="${cluster}/modules/org-netbeans-modules-ide-branding.jar"/>      
       <mkdir dir="build/classes-ml/core/startup/src"/>
       <copy todir="build/classes-ml/core/startup/src">
           <fileset dir="${nbroot}/translatedfiles/src/ide/branding/core/startup/src">
@@ -251,8 +257,10 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
           </fileset>
       </copy>
       <locjar basedir="build/classes-ml/core/startup/src"
-              jarfile="${cluster}/core/core.jar"/>
-
+              jarfile="${cluster}/core/core.jar">
+        <branding name="nb"/>
+      </locjar>
+      
       <mkdir dir="build/classes-ml/core/src"/>
       <copy todir="build/classes-ml/core/src">
           <fileset dir="${nbroot}/translatedfiles/src/ide/branding/core/src">
@@ -260,8 +268,10 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
           </fileset>
       </copy>
       <locjar basedir="build/classes-ml/core/src"
-              jarfile="${cluster}/modules/org-netbeans-core.jar"/>
-
+              jarfile="${cluster}/modules/org-netbeans-core.jar">
+        <branding name="nb"/>
+      </locjar>
+      
       <mkdir dir="build/classes-ml/core/windows/src"/>
       <copy todir="build/classes-ml/core/windows/src">
           <fileset dir="${nbroot}/translatedfiles/src/ide/branding/core/windows/src">
@@ -269,8 +279,10 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
           </fileset>
       </copy>
       <locjar basedir="build/classes-ml/core/windows/src"
-              jarfile="${cluster}/modules/org-netbeans-core-windows.jar"/>
-
+              jarfile="${cluster}/modules/org-netbeans-core-windows.jar">
+        <branding name="nb"/>
+      </locjar>
+      
       <mkdir dir="build/classes-ml/autoupdate/libsrc"/>
       <copy todir="build/classes-ml/autoupdate/libsrc">
           <fileset dir="${nbroot}/translatedfiles/src/ide/branding/autoupdate/libsrc">
@@ -278,8 +290,10 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
           </fileset>
       </copy>
       <locjar basedir="build/classes-ml/autoupdate/libsrc"
-              jarfile="${cluster}/modules/ext/updater.jar"/>
-
+              jarfile="${cluster}/modules/ext/updater.jar">
+        <branding name="nb"/>
+      </locjar>
+      
       <mkdir dir="build/classes-ml/autoupdate/ui/src"/>
       <copy todir="build/classes-ml/autoupdate/ui/src">
           <fileset dir="${nbroot}/translatedfiles/src/ide/branding/autoupdate/ui/src">
@@ -287,8 +301,10 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
           </fileset>
       </copy>
       <locjar basedir="build/classes-ml/autoupdate/ui/src"
-              jarfile="${cluster}/modules/org-netbeans-modules-autoupdate-ui.jar"/>
-  </target>
+              jarfile="${cluster}/modules/org-netbeans-modules-autoupdate-ui.jar">
+        <branding name="nb"/>
+      </locjar>
+    </target>
   
     <target name="clean" depends="init" >
         <delete dir="build" />
