@@ -250,9 +250,9 @@ public class DescriptorListener implements PropertyChangeListener {
     }
     
     private void processEvent(PropertyChangeEvent evt) {
-        System.out.println("PROCESSED EVENT: " + evt.getPropertyName() + 
-                ", old = " + evt.getOldValue() + ", new = " + evt.getNewValue() + 
-                ", source = " + evt.getSource());
+//        System.out.println("PROCESSED EVENT: " + evt.getPropertyName() + 
+//                ", old = " + evt.getOldValue() + ", new = " + evt.getNewValue() + 
+//                ", source = " + evt.getSource());
 
         String xpath = makeXpath(evt.getPropertyName());
 
