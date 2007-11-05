@@ -310,26 +310,7 @@ public class ResultSetTableModelSupport {
             return rs.getObject(column);
         }
     }
-    
-    /** 
-     * Issue 49994 - Oracle dates need to display both date and time info
-     * 
-     * ColumnTypeDef for Oracle dates
-     */
-    private static final class OracleDateColumnTypeDef implements ColumnTypeDef {
-        public boolean isWritable() {
-            return true;
-        }
         
-        public Class getColumnClass() {
-            return Timestamp.class;
-        }
-        
-        public Object getColumnValue(ResultSet rs, int column) throws SQLException, IOException {
-            return rs.getTimestamp(column);
-        }
-    }
-    
     /**
      * Represents the value of a long varchar or clob column. Instances of this
      * class are placed in the table model for the result set.
@@ -497,12 +478,10 @@ public class ResultSetTableModelSupport {
             
             // Issue 49994: Oracle DATE type needs to be retrieved as full 
             // date and time
-            ColumnTypeDef ctd;
-            if ( isOracle(dbmd) && type == Types.DATE ) {
-                ctd = new OracleDateColumnTypeDef();
-            } else {
-                ctd = getColumnTypeDef(type);
+            if ( type == Types.DATE && isOracle(dbmd) ) {
+                type = Types.TIMESTAMP;
             }
+            ColumnTypeDef ctd = getColumnTypeDef(type);
             
             // TODO: does writable depend on the result set type (updateable?)
 
@@ -524,7 +503,7 @@ public class ResultSetTableModelSupport {
         return columns;
     }
     
-    private static boolean isOracle(DatabaseMetaData dbmd) throws SQLException {
+    private static boolean isOracle(DatabaseMetaData dbmd) {
         try {
             return "Oracle".equals(dbmd.getDatabaseProductName());
         } catch ( SQLException sqle ) {
