@@ -60,6 +60,8 @@ import org.netbeans.modules.web.core.syntax.deprecated.ELTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.JspDirectiveTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.JspMultiTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.JspTagTokenContext;
+import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
+import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.JspOpenInfo;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileObject;
@@ -152,8 +154,6 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     /** Special bracket finder is used when caret is in JSP context */
     private boolean useCustomBracketFinder = true;
     
-    private boolean isXmlSyntax = false;
-    
     private static final TagNameComparator TAG_NAME_COMPARATOR = new TagNameComparator();
     
     /** Creates new HTMLSyntaxSupport */
@@ -167,7 +167,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return sup;
     }
     
-    public JspSyntaxSupport(BaseDocument doc, boolean isXml) {
+    public JspSyntaxSupport(BaseDocument doc) {
         super(doc);
         fobj = null;
         if (doc != null){
@@ -175,11 +175,6 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             fobj = (dobj != null) ? NbEditorUtilities.getDataObject(doc).getPrimaryFile(): null;
         }
         
-        isXmlSyntax = isXml;
-    }
-    
-    public JspSyntaxSupport(BaseDocument doc) {
-        this(doc, false);
     }
     
     public String[] getImports(){
@@ -199,7 +194,15 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     }
     
     public boolean isXmlSyntax(){
-        return isXmlSyntax;
+        JspContextInfo jspCO = JspContextInfo.getContextInfo(fobj);
+        if(jspCO == null) {
+            return false;
+        }
+        JspOpenInfo jspOpenInfo = jspCO.getCachedOpenInfo(getDocument(), fobj, false);
+        if(jspOpenInfo == null) {
+            return false;
+        }
+        return jspOpenInfo.isXmlSyntax();
     }
     
     protected JspParserAPI.ParseResult getParseResult() {
@@ -691,7 +694,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         List items = new ArrayList();
         
         //Is xml syntax? => return nothing.
-        if (isXmlSyntax) return items;
+        if (isXmlSyntax()) return items;
         
         TagInfo[] directiveData;
         if(NbEditorUtilities.getMimeType(getDocument()).equals(JspUtils.TAG_MIME_TYPE))
@@ -711,7 +714,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         initCompletionData();
         List items = new ArrayList();
         //Is xml syntax? => return nothing.
-        if (isXmlSyntax) return items;
+        if (isXmlSyntax()) return items;
         
         TagInfo[] directiveData;
         if(NbEditorUtilities.getMimeType(getDocument()).equals(JspUtils.TAG_MIME_TYPE))
