@@ -1523,27 +1523,29 @@ public class Evaluator implements JavaParserVisitor {
         }
         
         // field from static context
-        Field field = ctx.typeContext.fieldByName(ctx.identifier);
-        try {
-            if (field != null) {
-                try {
-                    if (loggerValue.isLoggable(Level.FINE)) {
-                        loggerValue.fine("STARTED : "+ctx.typeContext+".getValue("+field+")");
-                    }
-                    return ctx.typeContext.getValue(field);
-                } finally {
-                    if (loggerValue.isLoggable(Level.FINE)) {
-                        loggerValue.fine("FINISHED : "+ctx.typeContext+".getValue("+field+")");
+        if (ctx.typeContext != null) {
+            Field field = ctx.typeContext.fieldByName(ctx.identifier);
+            try {
+                if (field != null) {
+                    try {
+                        if (loggerValue.isLoggable(Level.FINE)) {
+                            loggerValue.fine("STARTED : "+ctx.typeContext+".getValue("+field+")");
+                        }
+                        return ctx.typeContext.getValue(field);
+                    } finally {
+                        if (loggerValue.isLoggable(Level.FINE)) {
+                            loggerValue.fine("FINISHED : "+ctx.typeContext+".getValue("+field+")");
+                        }
                     }
                 }
+            } catch (IllegalArgumentException e) {
+                Assert.error(currentNode, "accessInstanceVariableFromStaticContext", ctx);
             }
-        } catch (IllegalArgumentException e) {
-            Assert.error(currentNode, "accessInstanceVariableFromStaticContext", ctx);
         }
         
         // local variable accessed from innerclass
         if (ctx.instanceContext != null) {
-            field = ctx.typeContext.fieldByName("val$" + ctx.identifier);
+            Field field = ctx.typeContext.fieldByName("val$" + ctx.identifier);
             if (field != null) {
                 try {
                     if (loggerValue.isLoggable(Level.FINE)) {
@@ -1570,7 +1572,7 @@ public class Evaluator implements JavaParserVisitor {
                     loggerValue.fine("FINISHED: "+ctx.instanceContext+".getValue("+helpField+") = "+or);
                 }
                 if (or != null) {
-                    field = or.referenceType().fieldByName(ctx.identifier);
+                    Field field = or.referenceType().fieldByName(ctx.identifier);
                     if (field != null) {
                         try {
                             if (loggerValue.isLoggable(Level.FINE)) {
@@ -1592,7 +1594,7 @@ public class Evaluator implements JavaParserVisitor {
             String typeName = (String) i.next();
             try {
                 ReferenceType type = resolveType(typeName);
-                field = type.fieldByName(ctx.identifier);
+                Field field = type.fieldByName(ctx.identifier);
                 if (field != null) {
                     try {
                         if (loggerValue.isLoggable(Level.FINE)) {
