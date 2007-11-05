@@ -135,12 +135,27 @@ public class Reformatter implements ReformatTask {
             endOffset = converter.getJavaSourcePosition(endOffset);
             assert endOffset >= 0 : "Converted endOffset is wrong: " + endOffset;
         }
+        int embeddingOffset = -1;
         if (!"text/x-java".equals(context.mimePath())) { //NOI18N
             TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
             if (ts != null) {
+                ts.move(startOffset);
+                if (ts.moveNext()) {
+                    if (ts.token().id() == WHITESPACE) {
+                        String t = ts.token().text().toString();
+                        if (ts.offset() < startOffset)
+                            t = t.substring(startOffset - ts.offset());
+                        if (t.indexOf('\n') < 0) //NOI18N
+                            embeddingOffset = ts.offset() + ts.token().length();
+                    } else {
+                        embeddingOffset = startOffset;
+                    }
+                }
                 ts.move(endOffset);
                 if (ts.moveNext() && ts.token().id() == WHITESPACE) {
                     String t = ts.token().text().toString();
+                    if (ts.offset() + t.length() > endOffset)
+                        t = t.substring(0, endOffset - ts.offset());
                     int i = t.lastIndexOf('\n'); //NOI18N
                     if (i >= 0)
                         endOffset -= (t.length() - i);
@@ -156,7 +171,7 @@ public class Reformatter implements ReformatTask {
             int start = diff.getStartOffset();
             int end = diff.getEndOffset();
             String text = diff.getText();
-            if (startOffset > end || endOffset < start)
+            if (startOffset > end || endOffset < start || embeddingOffset >= start)
                 continue;
             if (startOffset > start) {
                 if (text != null && text.length() > 0)
