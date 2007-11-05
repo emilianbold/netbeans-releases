@@ -446,7 +446,13 @@ public class ResultSetTableModelSupport {
     /**
      * Not private because of unit tests.
      */
-    static ColumnTypeDef getColumnTypeDef(int type) {
+    static ColumnTypeDef getColumnTypeDef(DatabaseMetaData dbmd, int type) {
+        // Issue 49994: Oracle DATE type needs to be retrieved as full
+        // date and time
+        if (type == Types.DATE && isOracle(dbmd)) {
+            type = Types.TIMESTAMP;
+        }
+        
         ColumnTypeDef result = (ColumnTypeDef)TYPE_TO_DEF.get(Integer.valueOf(type));
         if (result != null) {
             return result;
@@ -475,13 +481,7 @@ public class ResultSetTableModelSupport {
             }
             
             int type = rsmd.getColumnType(i);
-            
-            // Issue 49994: Oracle DATE type needs to be retrieved as full 
-            // date and time
-            if ( type == Types.DATE && isOracle(dbmd) ) {
-                type = Types.TIMESTAMP;
-            }
-            ColumnTypeDef ctd = getColumnTypeDef(type);
+            ColumnTypeDef ctd = getColumnTypeDef(dbmd, type);
             
             // TODO: does writable depend on the result set type (updateable?)
 
@@ -512,7 +512,7 @@ public class ResultSetTableModelSupport {
         }
     }
     
-    public static List<List<Object>> retrieveRows(ResultSet rs, ResultSetMetaData rsmd, FetchLimitHandler handler) throws SQLException, IOException {
+    public static List<List<Object>> retrieveRows(DatabaseMetaData dbmd, ResultSet rs, ResultSetMetaData rsmd, FetchLimitHandler handler) throws SQLException, IOException {
         List<List<Object>> rows = new ArrayList<List<Object>>();
         int columnCount = rsmd.getColumnCount();
         int fetchLimit = handler.getFetchLimit();
@@ -537,7 +537,7 @@ public class ResultSetTableModelSupport {
                 }
                 
                 int type = rsmd.getColumnType(i);
-                ColumnTypeDef ctd = getColumnTypeDef(type);
+                ColumnTypeDef ctd = getColumnTypeDef(dbmd, type);
                 Object value = ctd.getColumnValue(rs, i);
                 row.add(value != null ? value : NullValue.getDefault());
             }

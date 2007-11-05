@@ -85,7 +85,7 @@ public class ResultSetTableModel extends AbstractTableModel {
         if (columnDefs == null) { // thread interrupted
             return null;
         }
-        List rows = ResultSetTableModelSupport.retrieveRows(rs, rsmd, new FetchLimitHandlerImpl());
+        List rows = ResultSetTableModelSupport.retrieveRows(dbmd, rs, rsmd, new FetchLimitHandlerImpl());
         if (rows == null) { // thread interrupted
             return null;
         }
