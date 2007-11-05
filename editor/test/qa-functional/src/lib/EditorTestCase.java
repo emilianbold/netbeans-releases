@@ -59,6 +59,7 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.JemmyException;
@@ -244,7 +245,9 @@ public class EditorTestCase extends JellyTestCase {
         // end of fix of issue #51191
         
         Node node = new Node(prn,treeSubPackagePathToFile+treeSeparator+fileName);
-        node.performPopupAction("Open");
+        //node.performPopupAction("Open");
+        new OpenAction().performAPI(node);  //should be more stable then performing open action from popup
+
     }
     
     /**
