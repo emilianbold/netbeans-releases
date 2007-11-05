@@ -240,6 +240,7 @@ public class DataEditorSupportTest extends NbTestCase {
         doc.insertString(doc.getLength(), " Added text.", null);
         des.saveDocument();        
         assertEquals(des.getDataObject().getPrimaryFile(),FileEncodingQueryImpl.getDefault().getFile());
+        assertEquals(" Added text.", content);
     }
     
     /** File object that let us know what is happening and delegates to certain

@@ -45,6 +45,7 @@ package org.openide.text;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedOutputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -346,11 +347,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
         final Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
         final Reader r = new InputStreamReader (stream, c);
-        try {
-            kit.read(r, doc, 0);
-        } finally {
-            r.close();
-        }
+        kit.read(r, doc, 0);
     }
 
     /** can hold the right charset to be used during save, needed for communication
@@ -373,7 +370,13 @@ public class DataEditorSupport extends CloneableEditorSupport {
         if (c == null) {
             c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
         }
-        Writer w = new OutputStreamWriter (stream, c);
+        FilterOutputStream fos = new FilterOutputStream(stream) {
+            @Override
+            public void close() throws IOException {
+                flush();
+            }
+        };
+        Writer w = new OutputStreamWriter (fos, c);
         try {
             kit.write(w, doc, 0, doc.getLength());
         } finally {
