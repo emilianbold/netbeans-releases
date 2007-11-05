@@ -42,6 +42,7 @@ package org.netbeans.modules.xslt.core.context;
 
 
 import java.util.Collection;
+import java.util.EventObject;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.axi.AXIComponent;
@@ -114,7 +115,7 @@ public class MapperContextFactory {
     }
 
     public void reinitMapperContext(MapperContextImpl context,
-            FileObject xsltFo, Project project) 
+            FileObject xsltFo, Project project, EventObject evt) 
     {
         assert project != null;
      
@@ -124,14 +125,14 @@ public class MapperContextFactory {
                 : org.netbeans.modules.xslt.core.util.Util.getXslModel(xsltFo);
 
         if (xsltFo == null || tMapModel == null ) {
-            context.reinit(tMapModel, null, xslModel, null, null);
+            context.reinit(tMapModel, null, xslModel, null, null, evt);
             return;
         }
         
         Transform transformContextComponent = TMapUtil.getTransform(tMapModel, xsltFo);
         
         if (transformContextComponent == null) {
-            context.reinit(tMapModel, null, xslModel, null, null);
+            context.reinit(tMapModel, null, xslModel, null, null, evt);
             return;
         }
         
@@ -143,7 +144,8 @@ public class MapperContextFactory {
                 transformContextComponent, 
                 xslModel, 
                 sourceComponent, 
-                targetComponent);
+                targetComponent,
+                evt);
     }
 
 //    // TODO m

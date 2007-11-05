@@ -79,6 +79,26 @@ public class MapperContextChangeSupport {
         }
     }
     
+    /**
+     * Invoked when something changed. 
+     * In complex cases ChangeEvent could be passed as newObject. 
+     * In this case the oldObject is null.
+     * @param oldValue
+     * @param newValue
+     */
+    public void fireMapperContextChanged(Object oldValue, 
+            Object newValue) 
+    {
+        MapperContextChangeListener[] tmp = new MapperContextChangeListener[myListeners.size()];
+        synchronized (myListeners){
+            tmp = myListeners.toArray(tmp);
+        }
+
+        for (MapperContextChangeListener listener : tmp) {
+            listener.mapperContextChanged(oldValue, newValue);
+        }
+    }        
+    
     public void fireXslModelStateChanged(Model.State oldValue, 
             Model.State newValue) 
     {
@@ -88,6 +108,8 @@ public class MapperContextChangeSupport {
         }
 
         for (MapperContextChangeListener listener : tmp) {
+            listener.mapperContextChanged(oldValue, newValue);
+                    
             listener.xslModelStateChanged(oldValue, newValue);
         }
     }    
@@ -101,6 +123,8 @@ public class MapperContextChangeSupport {
         }
 
         for (MapperContextChangeListener listener : tmp) {
+            listener.mapperContextChanged(oldValue, newValue);
+                    
             listener.tMapModelStateChanged(oldValue, newValue);
         }
     }    
@@ -112,6 +136,8 @@ public class MapperContextChangeSupport {
         }
 
         for (MapperContextChangeListener listener : tmp) {
+            listener.mapperContextChanged(oldComponent, newComponent);
+                    
             listener.sourceTypeChanged(oldComponent, newComponent);
         }
     }  
@@ -123,6 +149,8 @@ public class MapperContextChangeSupport {
         }
 
         for (MapperContextChangeListener listener : tmp) {
+            listener.mapperContextChanged(oldComponent, newComponent);
+                    
             listener.targetTypeChanged(oldComponent, newComponent);
         }
     }  

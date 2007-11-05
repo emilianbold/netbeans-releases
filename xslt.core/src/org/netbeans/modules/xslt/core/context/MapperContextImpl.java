@@ -42,13 +42,16 @@ package org.netbeans.modules.xslt.core.context;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.EventObject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.axi.AXIComponent;
+import org.netbeans.modules.xml.axi.AXIModel;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.wsdl.model.Part;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ComponentEvent;
+import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xslt.tmap.util.Util;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.mapper.model.MapperContext;
@@ -57,12 +60,9 @@ import org.netbeans.modules.xslt.mapper.model.MapperContextChangeSupport;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.netbeans.modules.xslt.project.spi.ProjectsFilesChangeHandler;
 import org.netbeans.modules.xslt.project.spi.ProjectsFilesChangeListener;
-import org.netbeans.modules.xslt.tmap.model.api.Operation;
-import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
-import org.netbeans.modules.xslt.tmap.model.impl.TMapComponents;
 import org.netbeans.modules.xslt.tmap.model.validation.TransformmapValidator;
 import org.netbeans.modules.xslt.tmap.model.validation.TransformmapValidatorImpl;
 import org.openide.filesystems.FileAttributeEvent;
@@ -70,6 +70,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -78,22 +79,30 @@ import org.openide.filesystems.FileRenameEvent;
  */
 public class MapperContextImpl implements MapperContext {
 
+    private static final int CONTEXT_CHANGE_TASK_DELAY = 500;
+    private transient RequestProcessor.Task myPreviousChangeTask;
+
     private Transform myTransformContextComponent;
     private XslModel myXslModel;
     private AXIComponent mySourceComponent;
+//    private SchemaModel mySourceSchemaModel;
+    private AXIModel mySourceAxiModel;
+    
     private WSDLReference<Part> mySourcePart;
     private WSDLModel mySourceModel;
 
     private AXIComponent myTargetComponent;
+//    private SchemaModel myTargetSchemaModel;
+    private AXIModel myTargetAxiModel;
+    
     private WSDLReference<Part> myTargetPart;
     private WSDLModel myTargetModel;
 
     private MapperContextChangeSupport myChangeSupport = new MapperContextChangeSupport();
     private TMapModel myTMapModel;
 
-    private PropertyChangeListener myContextChangeListener = new ContextPropertyChangeListener();
-//    private ComponentListener myContextComponentListener =
-//                                    new ComponentChangeListenerImpl();
+    private ContextPropertyChangeListener myContextChangeListener = 
+            new ContextPropertyChangeListener();
     private FileChangeListener myFileChangeListener = new FileChangeListenerImpl();
 
     private ProjectsFilesChangeHandler myProjectsFilesChangeHandler;
@@ -120,10 +129,25 @@ public class MapperContextImpl implements MapperContext {
 
 
         this.mySourceComponent = sourceComponent;
+        mySourceAxiModel = mySourceComponent != null 
+                ? mySourceComponent.getModel() : null;
+//        this.mySourceSchemaModel = sourceModel != null 
+//                ? sourceModel.getSchemaModel() : null;
+
+        //        this.mySourceAxiDocument = sourceModel != null 
+//                ? sourceModel.getRoot() : null;
+
         mySourcePart = getSourcePart(myTransformContextComponent);
         mySourceModel = getWsdlModel(mySourcePart);
 
         this.myTargetComponent = targetComponent;
+        myTargetAxiModel = myTargetComponent != null 
+                ? myTargetComponent.getModel() : null;
+//        this.myTargetSchemaModel = targetModel != null 
+//                ? targetModel.getSchemaModel() : null;
+//        this.myTargetAxiDocument = targetModel != null 
+//                ? targetModel.getRoot() : null;
+                
         myTargetPart = getTargetPart(myTransformContextComponent);
         myTargetModel = getWsdlModel(myTargetPart);
 
@@ -140,14 +164,70 @@ public class MapperContextImpl implements MapperContext {
     }
 
 
-    public void reinit(TMapModel tMapModel, Transform transform, XslModel xslModel, AXIComponent sourceComponent, AXIComponent targetComponent) {
-        setXslModel(xslModel);
-        setTransformContextComponent(tMapModel, transform);
-        setSourceType(sourceComponent);
-        setTargetType(targetComponent);
+    public void reinit(TMapModel tMapModel, 
+            Transform transform, 
+            XslModel xslModel, 
+            AXIComponent sourceComponent, 
+            AXIComponent targetComponent,
+            EventObject evt) 
+    {
+//        XslModel oldXslModel = myXslModel;
+//        Transform oldTransform = myTransformContextComponent;
+//        TMapModel oldTMapModel = myTMapModel;
+//        AXIComponent oldSourceComponent = mySourceComponent;
+//        AXIComponent oldTargetComponent = myTargetComponent;
+        
+        setXslModel(xslModel, false);
+        setTransformContextComponent(tMapModel, transform, false);
+        setSourceType(sourceComponent, false);
+        setTargetType(targetComponent, false);
+        
+//        fireChanges(oldXslModel, oldTransform, oldTMapModel, 
+//                oldSourceComponent, oldTargetComponent);
+        fireChanges(evt);
     }
 
-    public void setTransformContextComponent(TMapModel tMapModel, Transform context) {
+    private void fireChanges(EventObject evt) {
+        myChangeSupport.fireMapperContextChanged(null, evt);
+    }
+    
+//    private void fireChanges(XslModel oldXslModel, 
+//            Transform oldTransform,
+//            TMapModel oldTMapModel,
+//            AXIComponent oldSourceComponent,
+//            AXIComponent oldTargetComponent) 
+//    {
+//        
+////        myChangeSupport.fireMapperContextChanged(oldSourceComponent, mySourceComponent);
+////        System.out.println("mappercontext changed ...");
+//        
+//        if (myXslModel == null || !myXslModel.equals(oldXslModel) ) {
+//            myChangeSupport.fireMapperContextChanged(oldXslModel, myXslModel);
+//            return;
+//        }
+//        
+//        if (myTransformContextComponent == null || !myTransformContextComponent.equals(oldTransform) ) {
+//            myChangeSupport.fireMapperContextChanged(oldTransform, myTransformContextComponent);
+//            return;
+//        }
+//
+//        if (myTMapModel == null || !myTMapModel.equals(oldTMapModel) ) {
+//            myChangeSupport.fireMapperContextChanged(oldTMapModel, myTMapModel);
+//            return;
+//        }
+//        
+//        if (mySourceComponent == null || !mySourceComponent.equals(oldSourceComponent) ) {
+//            myChangeSupport.fireMapperContextChanged(oldSourceComponent, mySourceComponent);
+//            return;
+//        }
+//
+//        if (myTargetComponent == null || !myTargetComponent.equals(oldTargetComponent) ) {
+//            myChangeSupport.fireMapperContextChanged(oldTargetComponent, myTargetComponent);
+//            return;
+//        }
+//    }
+    
+    private void setTransformContextComponent(TMapModel tMapModel, Transform context, boolean fireChanges) {
         TMapModel oldTMapModel = myTMapModel;
         myTMapModel = tMapModel;
         if ((myTMapModel != null && !myTMapModel.equals(oldTMapModel)) || (oldTMapModel != null && !oldTMapModel.equals(myTMapModel))) {
@@ -182,7 +262,7 @@ public class MapperContextImpl implements MapperContext {
         return myTMapModel;
     }
 
-    public void setXslModel(XslModel xslModel) {
+    private void setXslModel(XslModel xslModel, boolean fireChanges) {
         XslModel oldXslModel = myXslModel;
         this.myXslModel = xslModel;
 
@@ -206,19 +286,63 @@ public class MapperContextImpl implements MapperContext {
         return myTargetComponent;
     }
 
-    protected void setTargetType(AXIComponent axiComp) {
+    private void setTargetType(AXIComponent axiComp, boolean fireChanges) {
         AXIComponent oldValue = myTargetComponent;
+//        SchemaModel oldModel = myTargetSchemaModel;
+        AXIModel oldAxiModel = myTargetAxiModel;
+//        AXIDocument oldDocument = mySourceAxiDocument;
         this.myTargetComponent = axiComp;
 
-        if ((myTargetComponent != null && !myTargetComponent.equals(oldValue)) || (oldValue != null && !oldValue.equals(myTargetComponent))) {
-            if (oldValue != null) {
-                oldValue.removePropertyChangeListener(myContextChangeListener);
+
+        this.myTargetAxiModel = myTargetComponent != null 
+                ? myTargetComponent.getModel() : null;
+//        this.myTargetSchemaModel = myTargetAxiModel != null 
+//                ? myTargetAxiModel.getSchemaModel() : null;
+//        myTargetAxiDocument = targetModel != null ? targetModel.getRoot() : null;
+
+        
+//        if ((myTargetSchemaModel != null && !myTargetSchemaModel.equals(oldModel)) || (oldModel != null && !oldModel.equals(myTargetSchemaModel))) {
+//            if (oldModel != null) {
+//                oldModel.removePropertyChangeListener(myContextChangeListener);
+//            }
+//
+//            if (myTargetSchemaModel != null) {
+//                myTargetSchemaModel.addPropertyChangeListener(myContextChangeListener);
+//            }
+////            myChangeSupport.fireMapperContextChanged(oldModel, myTargetSchemaModel);
+//        }
+        
+        
+        if ((myTargetAxiModel != null && !myTargetAxiModel.equals(oldAxiModel)) 
+                || (oldAxiModel != null && !oldAxiModel.equals(myTargetAxiModel)) 
+                || (oldAxiModel == null && myTargetAxiModel == null)) 
+        {
+            if (oldAxiModel != null) {
+                oldAxiModel.removePropertyChangeListener(myContextChangeListener);
+                oldAxiModel.removeComponentListener(myContextChangeListener);
             }
 
-            if (myTargetComponent != null) {
-                myTargetComponent.addPropertyChangeListener(myContextChangeListener);
+            if (myTargetAxiModel != null) {
+                myTargetAxiModel.addPropertyChangeListener(myContextChangeListener);
+                myTargetAxiModel.addComponentListener(myContextChangeListener);
             }
-            myChangeSupport.fireTargetTypeChanged(oldValue, myTargetComponent);
+
+            if (fireChanges) {
+                myChangeSupport.fireMapperContextChanged(oldAxiModel, myTargetAxiModel);
+            }
+        }
+
+        if ((myTargetComponent != null && !myTargetComponent.equals(oldValue)) || (oldValue != null && !oldValue.equals(myTargetComponent))) {
+//            if (oldValue != null) {
+//                oldValue.removePropertyChangeListener(myContextChangeListener);
+//            }
+//
+//            if (myTargetComponent != null) {
+//                myTargetComponent.addPropertyChangeListener(myContextChangeListener);
+//            }
+            if (fireChanges) {
+                myChangeSupport.fireTargetTypeChanged(oldValue, myTargetComponent);
+            }
         }
     }
 
@@ -226,19 +350,61 @@ public class MapperContextImpl implements MapperContext {
         return mySourceComponent;
     }
 
-    protected void setSourceType(AXIComponent axiComp) {
+    private void setSourceType(AXIComponent axiComp, boolean fireChanges) {
         AXIComponent oldValue = mySourceComponent;
+//        SchemaModel oldModel = mySourceSchemaModel;
+        AXIModel oldAxiModel = mySourceAxiModel;
+        
         this.mySourceComponent = axiComp;
 
-        if ((mySourceComponent != null && !mySourceComponent.equals(oldValue)) || (oldValue != null && !oldValue.equals(mySourceComponent))) {
-            if (oldValue != null) {
-                oldValue.removePropertyChangeListener(myContextChangeListener);
+        mySourceAxiModel = mySourceComponent != null 
+                ? mySourceComponent.getModel() : null;
+//        this.mySourceSchemaModel = mySourceAxiModel != null 
+//                ? mySourceAxiModel.getSchemaModel() : null;
+
+//        if ((mySourceSchemaModel != null && !mySourceSchemaModel.equals(oldModel)) || (oldModel != null && !oldModel.equals(mySourceSchemaModel))) {
+//            if (oldModel != null) {
+//                oldModel.removePropertyChangeListener(myContextChangeListener);
+//            }
+//
+//            if (mySourceSchemaModel != null) {
+//                mySourceSchemaModel.addPropertyChangeListener(myContextChangeListener);
+//            }
+////            myChangeSupport.fireMapperContextChanged(oldModel, mySourceSchemaModel);
+//        }
+
+        
+        if ((mySourceAxiModel != null && !mySourceAxiModel.equals(oldAxiModel)) 
+                || (oldAxiModel != null && !oldAxiModel.equals(mySourceAxiModel)) 
+                || (oldAxiModel == null && mySourceAxiModel == null)) {
+            if (oldAxiModel != null) {
+                oldAxiModel.removePropertyChangeListener(myContextChangeListener);
+                oldAxiModel.removeComponentListener(myContextChangeListener);
             }
 
-            if (mySourceComponent != null) {
-                mySourceComponent.addPropertyChangeListener(myContextChangeListener);
+            if (mySourceAxiModel != null) {
+                mySourceAxiModel.addPropertyChangeListener(myContextChangeListener);
+                mySourceAxiModel.addComponentListener(myContextChangeListener);
             }
-            myChangeSupport.fireSourceTypeChanged(oldValue, mySourceComponent);
+
+            if (fireChanges) {
+                myChangeSupport.fireMapperContextChanged(oldAxiModel, mySourceAxiModel);
+            }
+        }
+        
+        
+        if ((mySourceComponent != null && !mySourceComponent.equals(oldValue)) || (oldValue != null && !oldValue.equals(mySourceComponent)) || (oldValue == null && mySourceComponent == null)) {
+//            if (oldValue != null) {
+//                oldValue.removePropertyChangeListener(myContextChangeListener);
+//            }
+//
+//            if (mySourceComponent != null) {
+//                mySourceComponent.addPropertyChangeListener(myContextChangeListener);
+//            }
+
+            if (fireChanges) {
+                myChangeSupport.fireSourceTypeChanged(oldValue, mySourceComponent);
+            }
         }
     }
 
@@ -322,13 +488,33 @@ public class MapperContextImpl implements MapperContext {
             }
         }
 
-        if (mySourceComponent != null) {
-            mySourceComponent.addPropertyChangeListener(myContextChangeListener);
+//        if (mySourceComponent != null) {
+////            mySourceComponent.addPropertyChangeListener(myContextChangeListener);
+//            mySoaxiModel = mySourceComponent.getModel();
+//        }
+        if (mySourceAxiModel != null) {
+            mySourceAxiModel.addPropertyChangeListener(myContextChangeListener);
+            mySourceAxiModel.addComponentListener(myContextChangeListener);
         }
-
-        if (myTargetComponent != null) {
-            myTargetComponent.addPropertyChangeListener(myContextChangeListener);
+//        if (mySourceSchemaModel != null) {
+//            mySourceSchemaModel.addPropertyChangeListener(myContextChangeListener);
+//        }
+        
+//        if (myTargetComponent != null) {
+////            myTargetComponent.addPropertyChangeListener(myContextChangeListener);
+//            AXIModel axiModel = myTargetComponent.getModel();
+//            if (axiModel != null) {
+//                myTargetAxiDocument = axiModel.getRoot();
+//                myTargetAxiDocument.addPropertyChangeListener(myContextChangeListener);
+//            }
+//        }
+        if (myTargetAxiModel != null) {
+            myTargetAxiModel.addPropertyChangeListener(myContextChangeListener);
+            myTargetAxiModel.addComponentListener(myContextChangeListener);
         }
+//        if (myTargetSchemaModel != null) {
+//            myTargetSchemaModel.addPropertyChangeListener(myContextChangeListener);
+//        }
 
         if (mySourceModel != null) {
             mySourceModel.addPropertyChangeListener(myContextChangeListener);
@@ -337,6 +523,8 @@ public class MapperContextImpl implements MapperContext {
         if (myTargetModel != null) {
             myTargetModel.addPropertyChangeListener(myContextChangeListener);
         }
+
+        
     }
 
     public void removeContextChangeListeners() {
@@ -355,133 +543,113 @@ public class MapperContextImpl implements MapperContext {
         if (myProjectsFilesChangeHandler != null) {
             myProjectsFilesChangeHandler.removeProjectsFilesChangeListener(myProjectsFilesChangeListener);
         }
+        
+//        if (mySourceComponent != null ) {
+//            mySourceComponent.removePropertyChangeListener(myContextChangeListener);
+//            AXIModel axiModel = mySourceComponent.getModel();
+//            if (axiModel != null) {
+//                mySourceAxiDocument = axiModel.getRoot();
+//                mySourceAxiDocument.addPropertyChangeListener(myContextChangeListener);
+//            }
+//        }
+        if (mySourceAxiModel != null) {
+            mySourceAxiModel.removePropertyChangeListener(myContextChangeListener);
+            mySourceAxiModel.removeComponentListener(myContextChangeListener);
+        }
+//        if (mySourceSchemaModel != null) {
+//            mySourceSchemaModel.removePropertyChangeListener(myContextChangeListener);
+//        }
+        
+        
+//        if (myTargetComponent != null ) {
+//            myTargetComponent.removePropertyChangeListener(myContextChangeListener);
+//            AXIModel axiModel = myTargetComponent.getModel();
+//            if (axiModel != null) {
+//                myTargetAxiDocument = axiModel.getRoot();
+//                myTargetAxiDocument.addPropertyChangeListener(myContextChangeListener);
+//            }
+//        }
+        if (myTargetAxiModel != null) {
+            myTargetAxiModel.removePropertyChangeListener(myContextChangeListener);
+            myTargetAxiModel.removeComponentListener(myContextChangeListener);
+        }
+//        if (myTargetSchemaModel != null) {
+//            myTargetSchemaModel.removePropertyChangeListener(myContextChangeListener);
+//        }
     }
 
     private void reinitContext() {
-        MapperContextFactory.getInstance().reinitMapperContext(this, myXslFo, Util.getProject(myTMapFo));
+        reinitContext(null);
+    }
+    
+    private void reinitContext(final EventObject evt) {
+        if (myPreviousChangeTask != null) {
+            myPreviousChangeTask.cancel();
+        }
+        if (myPreviousChangeTask != null && !myPreviousChangeTask.isFinished()) {
+            myPreviousChangeTask.waitFinished();
+            myPreviousChangeTask = null;
+        }
+
+        myPreviousChangeTask = RequestProcessor.getDefault().post(
+                new Runnable() {
+            public void run() {
+//                setActivatedNodes(curEditorPane.getCaret().getDot());
+                MapperContextFactory.getInstance().reinitMapperContext(
+                        MapperContextImpl.this, myXslFo, Util.getProject(myTMapFo),
+                        evt);
+            }
+        }, CONTEXT_CHANGE_TASK_DELAY);
+        
+//        MapperContextFactory.getInstance().reinitMapperContext(this, myXslFo, Util.getProject(myTMapFo));
     }
 
-    private class ContextPropertyChangeListener implements PropertyChangeListener {
+    private class ContextPropertyChangeListener 
+            implements PropertyChangeListener, ComponentListener        
+    {
 
         public void propertyChange(PropertyChangeEvent evt) {
-            String property = evt.getPropertyName();
-            Object sourceObj = evt.getSource();
-            Object oldValue = evt.getOldValue();
-            Object newValue = evt.getNewValue();
+//System.out.println("ContextPropertyChangeListener: source: "+evt.getSource()+"; propName: "+evt.getPropertyName());
+               reinitContext(evt);
+        }
 
-            if (Model.STATE_PROPERTY.equals(property)) {
-                if (oldValue instanceof Model.State && newValue instanceof Model.State) {
-                    if (sourceObj instanceof TMapModel) {
-                        myChangeSupport.fireTMapModelStateChanged((Model.State) evt.getOldValue(), (Model.State) evt.getNewValue());
-                        if (Model.State.VALID.equals(newValue)) {
-                            reinitContext();
-                        } else {
-                            setSourceType(null);
-                            setTargetType(null);
-                        }
-                    }
-                    if (sourceObj instanceof XslModel) {
-                        myChangeSupport.fireXslModelStateChanged((Model.State) evt.getOldValue(), (Model.State) evt.getNewValue());
-                    }
-                }
-            } else if (sourceObj instanceof TMapComponent) {
-                reinitContext();
-// TODO r | m
-//                if (newValue == null && oldValue instanceof TMapComponent) {
-//                    childrenRemoved(sourceObj, property, oldValue);
-//                } else if (newValue == null
-//                        && !(oldValue instanceof TMapComponent))
-//                {
-//                    attributeRemoved(sourceObj, property, oldValue);
-//                } else if (oldValue == null
-//                        && newValue instanceof TMapComponent)
-//                {
-//                    childrenAdded(sourceObj, property, oldValue);
-//                } else if (oldValue == null
-//                        && !(newValue instanceof TMapComponent))
-//                {
-//                    attributeAdded(sourceObj, property, oldValue);
-//                } else if (oldValue instanceof String
-//                        && newValue instanceof String)
-//                {
-//                    attributeChanged(sourceObj, property, oldValue, newValue);
-//                }
+        public void valueChanged(ComponentEvent arg0) {
+            reinitContext(arg0);
+        }
+
+        public void childrenAdded(ComponentEvent arg0) {
+            reinitContext(arg0);        }
+
+        public void childrenDeleted(ComponentEvent arg0) {
+            reinitContext(arg0);
+        }
+
+//        private void attributeAdded(Object sourceObj, String property, Object oldValue) {
+//System.out.println("attributeAdded: ContextPropertyChangeListener: source: "+sourceObj+"; propName: "+property);
+//              reinitContext();
+//            
+//        }
 //
+//        private void attributeChanged(Object sourceObj, String property, Object oldValue, Object newValue) {
+//System.out.println("attributeChanged: ContextPropertyChangeListener: source: "+sourceObj+"; propName: "+property);
+//              reinitContext();
 //
-//                System.out.println("sourceeeee: "+sourceObj+"; oldValue: "+
-//                        evt.getOldValue()+";newValue: "+evt.getNewValue());
-//                if (! (sourceObj instanceof TMapComponent)) {
-//                    return;
-//                }
-                //            } else if (mySourceComponent != null
-//                    && mySourceComponent.equals(sourceObj))
-//            {
-//                myChangeSupport.fireSourceTypeChanged(mySourceComponent, mySourceComponent);
-//            } else if (myTargetComponent != null
-//                    && myTargetComponent.equals(sourceObj))
-//            {
-//                myChangeSupport.fireTargetTypeChanged(myTargetComponent, myTargetComponent);
-            } else if (sourceObj instanceof Part) {
-                reinitContext();
-            } else if (sourceObj instanceof WSDLComponent && (newValue instanceof Part || oldValue instanceof Part)) {
-                reinitContext();
-            } else {
-//                System.out.println("unsupported  event occur: property : "+property
-//                        +"; source: "+sourceObj+"; oldValue: "+oldValue
-//                        +"; newValue: "+newValue);
-            }
-
-//            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        private void attributeAdded(Object sourceObj, String property, Object oldValue) {
-            if (myTransformContextComponent != null && myTransformContextComponent.equals(sourceObj)) {
-                reinitContext();
-            }
-        }
-
-        private void attributeChanged(Object sourceObj, String property, Object oldValue, Object newValue) {
-//            if (myTransformContextComponent != null
-//                    && myTransformContextComponent.equals(sourceObj))
-//            {
-//                if (Transform.FILE.equals(oldValue)) {
-            reinitContext();
-//                }
-//            }
-        }
-
-        private void attributeRemoved(Object sourceObj, String property, Object oldValue) {
-//            if (myTransformContextComponent != null
-//                    && myTransformContextComponent.equals(sourceObj))
-//            {
-//                if (Transform.FILE.equals(oldValue)) {
-            reinitContext();
-//                }
-//            }
-        }
-
-        private void childrenAdded(Object sourceObj, String property, Object oldValue) {
-            if (myTransformContextComponent == null && oldValue instanceof Operation) {
-                reinitContext();
-            } else if (myTransformContextComponent != null && myTransformContextComponent.equals(oldValue) && TMapComponents.PARAM.equals(((TMapComponent) oldValue).getComponentType())) {
-                // todo m add new param into source
-                setSourceType(myTargetComponent);
+//        }
+//
+//        private void attributeRemoved(Object sourceObj, String property, Object oldValue) {
+//System.out.println("attributeRemoved: ContextPropertyChangeListener: source: "+sourceObj+"; propName: "+property);
+//            reinitContext();
+//        }
+//
+//        private void childrenAdded(Object sourceObj, String property, Object oldValue) {
+//System.out.println("childrenAdded: ContextPropertyChangeListener: source: "+sourceObj+"; propName: "+property);
 //                reinitContext();
-            } else {
-                reinitContext();
-            }
-        }
-
-        private void childrenRemoved(Object sourceObj, String property, Object oldValue) {
-            if (myTransformContextComponent != null && oldValue instanceof Operation && oldValue.equals(myTransformContextComponent.getParent())) {
-                reinitContext();
-            } else if (myTransformContextComponent != null && myTransformContextComponent.equals(oldValue)) {
-                // todo m deleted params
-                setSourceType(myTargetComponent);
-            } else {
-                reinitContext();
-            }
-        }
+//        }
+//
+//        private void childrenRemoved(Object sourceObj, String property, Object oldValue) {
+//System.out.println("childrenRemoved: ContextPropertyChangeListener: source: "+sourceObj+"; propName: "+property);
+//                reinitContext();
+//        }
     }
 
 //    private class ComponentChangeListenerImpl implements ComponentListener {
@@ -611,7 +779,20 @@ public class MapperContextImpl implements MapperContext {
             if (result == null) {
                 result = validator.validate(myTMapModel, myXslFo);
             }
+            
+            if (result == null) {
+                AXIComponent typeIn = getSourceType();
+                result = validator.validate(typeIn, "source"); // NOI18N
+
+            }
+            
+            if (result == null) {
+                AXIComponent typeOut = getTargetType();
+                result = validator.validate(typeOut, "target"); // NOI18N
+            }
         }
+        
+            
         return result;
     }
 }

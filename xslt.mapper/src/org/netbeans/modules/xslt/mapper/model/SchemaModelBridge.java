@@ -41,11 +41,11 @@ public class SchemaModelBridge extends ModelBridge {
     public SchemaModelBridge(XsltMapper mapper) {
         super(mapper);
         if (mapper.getContext().getSourceType() != null) {
-            super.subscribe(mapper.getContext().getSourceType().getModel());
+//            super.subscribe(mapper.getContext().getSourceType().getModel());
         }
         
         if (mapper.getContext().getTargetType() != null) {
-            super.subscribe(mapper.getContext().getTargetType().getModel());
+//            super.subscribe(mapper.getContext().getTargetType().getModel());
         }
     }
 

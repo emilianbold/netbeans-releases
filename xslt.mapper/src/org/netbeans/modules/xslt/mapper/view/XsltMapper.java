@@ -60,11 +60,9 @@ import org.netbeans.modules.soa.mapper.common.basicmapper.canvas.IMapperCanvasVi
 import org.netbeans.modules.soa.mapper.common.basicmapper.literal.ILiteralUpdaterFactory;
 import org.netbeans.modules.soa.mapper.common.basicmapper.tree.IMapperTreeNode;
 import org.netbeans.modules.soa.mapper.common.basicmapper.tree.IMapperTreeView;
-import org.netbeans.modules.xml.axi.AXIComponent;
-import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xslt.mapper.methoid.LiteralUpdaterFactory;
 import org.netbeans.modules.xslt.mapper.model.MapperContext;
-import org.netbeans.modules.xslt.mapper.model.MapperContextChangeListener;
+import org.netbeans.modules.xslt.mapper.model.MapperContextChangeListenerAdapter;
 import org.netbeans.modules.xslt.mapper.model.SchemaModelBridge;
 import org.netbeans.modules.xslt.mapper.model.XsltModelBridge;
 import org.netbeans.modules.xslt.mapper.model.SourceTreeModel;
@@ -73,7 +71,6 @@ import org.netbeans.modules.xslt.mapper.model.nodes.Node;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
 import org.netbeans.modules.xslt.mapper.model.nodes.actions.DeleteAction;
 import org.netbeans.modules.xslt.mapper.model.targettree.TargetTreeModel;
-import org.netbeans.modules.xslt.model.XslModel;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -117,28 +114,9 @@ public class XsltMapper extends BasicMapper implements HelpCtx.Provider{
         super.setMapperRule(new XsltMapperRule(this));
         
         if (context != null) {
-            context.addMapperContextChangeListener(new MapperContextChangeListener() {
-                public void sourceTypeChanged(AXIComponent oldComponent, AXIComponent newComponent) {
+            context.addMapperContextChangeListener(new MapperContextChangeListenerAdapter() {
+                public void mapperContextChanged(Object oldValue, Object newValue) {
                     schemaModelBridge.updateDiagram();
-                    //                    System.out.println("mappperView sourceType changed ");
-                }
-                public void targetTypeChanged(AXIComponent oldComponent, AXIComponent newComponent) {
-                    schemaModelBridge.updateDiagram();
-                    //                    System.out.println("mappperView targetType changed ");
-                }
-                public void xslModelChanged(XslModel oldModel, XslModel newModel) {
-                    schemaModelBridge.updateDiagram();
-                    //                    System.out.println("mappperView xslModel changed ");
-                }
-
-                public void xslModelStateChanged(State oldValue, State newValue) {
-                    schemaModelBridge.updateDiagram();
-                    //                    System.out.println("mappperView xslModelStateChanged changed ");
-                }
-
-                public void tMapModelStateChanged(State oldValue, State newValue) {
-                    schemaModelBridge.updateDiagram();
-                    //                    System.out.println("mappperView tMapModelStateChanged changed ");
                 }
             });
         }
@@ -146,8 +124,6 @@ public class XsltMapper extends BasicMapper implements HelpCtx.Provider{
         this.setLiteralUpdaterFactory(new LiteralUpdaterFactory(this));
         
         xslModelBridge.updateDiagram();
-        
-        
     }
     
     public MapperContext getContext(){

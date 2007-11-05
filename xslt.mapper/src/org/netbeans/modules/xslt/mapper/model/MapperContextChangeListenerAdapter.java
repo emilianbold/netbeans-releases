@@ -41,7 +41,7 @@
 package org.netbeans.modules.xslt.mapper.model;
 
 import org.netbeans.modules.xml.axi.AXIComponent;
-import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xslt.model.XslModel;
 
 /**
@@ -49,19 +49,23 @@ import org.netbeans.modules.xslt.model.XslModel;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public interface MapperContextChangeListener {
-    
-   /**
-    * Invoked every time any mapper context parameters changed
-    * @param oldValue - old mapperContext property value
-    * @param newValue - new mapperContext property value
-    */
-   void mapperContextChanged(Object oldValue, Object newValue); 
-    
-   void sourceTypeChanged(AXIComponent oldComponent, AXIComponent newComponent);
-   void targetTypeChanged(AXIComponent oldComponent, AXIComponent newComponent);
-   void xslModelChanged(XslModel oldModel, XslModel newModel);
-   void xslModelStateChanged(Model.State oldValue, Model.State newValue);
-   void tMapModelStateChanged(Model.State oldValue, Model.State newValue);
-   
+public class MapperContextChangeListenerAdapter implements MapperContextChangeListener {
+
+    public void mapperContextChanged(Object oldValue, Object newValue) {
+    }
+
+    public void sourceTypeChanged(AXIComponent oldComponent, AXIComponent newComponent) {
+    }
+
+    public void targetTypeChanged(AXIComponent oldComponent, AXIComponent newComponent) {
+    }
+
+    public void xslModelChanged(XslModel oldModel, XslModel newModel) {
+    }
+
+    public void xslModelStateChanged(State oldValue, State newValue) {
+    }
+
+    public void tMapModelStateChanged(State oldValue, State newValue) {
+    }
 }
