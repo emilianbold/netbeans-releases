@@ -75,6 +75,7 @@ public final class DocumentSerializer {
 
     private Runnable loader = new Runnable () {
         public void run () {
+            DataObjectContext context = DocumentSerializer.this.context;
             undoRedoManager.discardAllEdits ();
             DocumentInterfaceImpl loadingDocumentInterface = new DocumentInterfaceImpl (context, undoRedoManager);
             documentInterfaces.add (new WeakReference<DocumentInterface> (loadingDocumentInterface));
@@ -91,12 +92,14 @@ public final class DocumentSerializer {
             IOSupport.resetCodeResolver(context.getDataObject(), loadingDocument); // HINT - if a new document is created which should update source code then do not call this method
             loadingDocumentInterface.enable ();
             synchronized (DocumentSerializer.this) {
+                if (DocumentSerializer.this.context == null) // document has been closed during loading, issue #120096
+                    return;
                 document = loadingDocument;
                 loaded = true;
                 loading = false;
                 DocumentSerializer.this.notifyAll ();
             }
-            fireDesignDocumentAwareness (loadingDocument);
+            fireDesignDocumentAwareness (DocumentSerializer.this.document);
         }
     };
 
@@ -205,7 +208,6 @@ public final class DocumentSerializer {
     }
 
     void notifyDataObjectClosed () {
-        // TODO - possible race condition - when a data object is closed while a related document is still loading, so the document could be set after that
         synchronized (this) {
             document = null;
             undoRedoManager = null;
