@@ -111,7 +111,8 @@ public abstract class MutableTextInput<I> {
      * <br/>
      * The following operations require read-locking:
      * <ul>
-     *   <li>Creation and using of token sequence {@link TokenHierarchy#tokenSequence()}.</li>
+     *   <li>Creation and using of token sequence {@link org.netbeans.api.lexer.TokenHierarchy#tokenSequence()}.</li>
+     *   <li>Creation of token sequence list {@link org.netbeans.api.lexer.TokenHierarchy#tokenSequenceList(LanguagePath,int,int)}.</li>
      * </ul>
      * 
      * @return true if the underlying input source is read-locked by the current thread
@@ -132,7 +133,9 @@ public abstract class MutableTextInput<I> {
      * <br/>
      * The following operations require write-locking:
      * <ul>
-     *   <li>Creation of custom embedding by {@link TokenSequence#createEmbedding(Language,int,int)}.</li>
+     *   <li>Text modification {@link org.netbeans.spi.lexer.TokenHierarchyControl#textModified(int,int,CharSequence,int)}</li>
+     *   <li>Creation of custom embedding by {@link org.netbeans.api.lexer.TokenSequence#createEmbedding(Language,int,int)}.</li>
+     *   <li>Removal of custom embedding by {@link org.netbeans.api.lexer.TokenSequence#removeEmbedding(Language)}.</li>
      * </ul>
      * 
      * @return true if the underlying input source is write-locked by the current thread

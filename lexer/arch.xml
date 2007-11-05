@@ -121,8 +121,8 @@ class with its static methods that provide its instance for the given input sour
     <br/>
     When holding a reference to the token's instance its offset can also be determined by
 <a href="@org-netbeans-modules-lexer@/org/netbeans/api/lexer/Token.html#offset(org.netbeans.api.lexer.TokenHierarchy)">Token.offset(TokenHierarchy tokenHierarchy)</a>.
-    The <code>tokenHierarchy</code> parameter is usually <code>null</code> which gets the offset for the "live" token hierarchy
-    (a snapshot token hierarchy might be used as the parameter too).
+    The <code>tokenHierarchy</code> parameter should be always <code>null</code> and it will be used
+    for the token hierarchy snapshot support in future releases.
     <br/>
     For flyweight tokens the 
 <a href="@org-netbeans-modules-lexer@/org/netbeans/api/lexer/Token.html#offset(org.netbeans.api.lexer.TokenHierarchy)">Token.offset(TokenHierarchy tokenHierarchy)</a>
@@ -224,20 +224,6 @@ class with its static methods that provide its instance for the given input sour
     <br/>
     In SPI the language embedding is represented by
 <a href="@org-netbeans-modules-lexer@/org/netbeans/spi/lexer/LanguageEmbedding.html">LanguageEmbedding</a>.
-</p>
-
-<h3>Token Hierarchy Snapshots</h3>
-<p>
-    Token hierarchy allows to create a snapshot of itself at any given time by using
-<a href="@org-netbeans-modules-lexer@/org/netbeans/api/lexer/TokenHierarchy.html#createSnapshot()">TokenHierarchy.createSnapshot()</a>.
-    <br/>
-    Subsequent modifications to the "live" token hierarchy will not affect tokens of the snapshot.
-    <br/>
-    Snapshot creation is cheap because initially the snapshot shares all the tokens
-    with the live hierarchy. With subsequent modifications the initial and ending
-    areas (where the tokens are shared between snapshot and live hierarchy)
-    are maintained by the snapshot. In the middle the snapshot retains the tokens
-    originally present in the live token hierarchy.
 </p>
 
 </answer>
@@ -348,50 +334,6 @@ skipped at the begining an end of the branch token).
     String mimePath = lp.mimePath();
     Object setting-value = some-settings.getSetting(mimePath, setting-name);
 </pre>
-
-
-<h3>
-Creating token hierarchy snapshot for token hierarchy over a mutable input
-</h3>
-Token hirerarchy snapshots allow to create a snapshot of the token hierarchy
-at the given time and guarantee that it will not be affected
-by subsequent input text modifications.
-<br/>
-Token snapshot is represented as a TokenHierarchy instance
-so the creation of token sequence etc. is the same
-like for regular token hierarchy.
-
-<pre>
-    private TokenHierarchy snapshot;
-    
-    document.readLock();
-    try {
-        TokenHierarchy hi = TokenHierarchy.get(document);
-        snapshot = hi.createSnapshot();
-        // Possible later modifications will not affect tokens of the snapshot
-    } finally {
-        document.readUnlock();
-    }
-
-    ...
-
-    document.readLock();
-    try {
-        TokenSequence ts = snapshot.tokenSequence();
-        ...
-    } finally {
-        document.readUnlock();
-    }
-</pre>
-
-<br/>
-Typical clients:
-<ul>
-    <li>Parser constructing a parse tree. The parser may retain
-        "last good snapshot" for the edited file - a snapshot when it was possible
-        to parse the document without errors.
-    </li>
-</ul>
 
 
 <h3>
@@ -776,7 +718,6 @@ and other things to be considered:
 <ul>
     <li>Dynamic language embedding binding through xml layer.</li>
     <li>CharPreprocessor servicing and tests.</li>
-    <li>TokenHierarchy snapshots correctness (will provide random unit tests; one unit test is currently failing).</li>
     <li>Token hierarchy for Reader.</li>
     <li>TokenFactory.createBranchToken() impl.</li>
     <li>Providing JavaCC and Antlr support.</li>

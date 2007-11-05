@@ -106,9 +106,6 @@ public final class TokenFactory<T extends TokenId> {
      *  exceed the number of characters read from the lexer input.
      * @return non-null regular token instance.
      *  <br/>
-     *  If there were any characters preprocessed by {@link CharPreprocessor}
-     *  then a special token instance will be created for it.
-     *  <br/>
      *  {@link #SKIP_TOKEN} will be returned
      *  if tokens for the given token id should be skipped
      *  because of token id filter.
@@ -135,9 +132,6 @@ public final class TokenFactory<T extends TokenId> {
      *  exceed the number of characters read from the lexer input.
      * @param partType whether this token is complete token or a part of a complete token.
      * @return non-null regular token instance.
-     *  <br/>
-     *  If there were any characters preprocessed by {@link CharPreprocessor}
-     *  then a special token instance will be created for it.
      *  <br/>
      *  {@link #SKIP_TOKEN} will be returned
      *  if tokens for the given token id should be skipped
@@ -170,9 +164,6 @@ public final class TokenFactory<T extends TokenId> {
      * @param id non-null token id.
      * @param text non-null text that the flyweight token should carry.
      * @return non-null flyweight token instance.
-     *  <br/>
-     *  If there were any characters preprocessed by {@link CharPreprocessor}
-     *  then a special non-flyweight token instance will be created for it.
      *  <br/>
      *  For performance reasons there is a limit for number of successive
      *  flyweight tokens. If this limit would be exceeded a single non-flyweight
@@ -227,9 +218,6 @@ public final class TokenFactory<T extends TokenId> {
      * @param partType whether this token is complete or just a part of complete token.
      *  See {@link TokenPropertyProvider} for examples how this parameter may be used.
      * @return non-null property token instance.
-     *  <br/>
-     *  If there were any characters preprocessed by {@link CharPreprocessor}
-     *  then a special token instance will be created for it.
      *  <br/>
      *  {@link #SKIP_TOKEN} will be returned
      *  if tokens for the given token id should be skipped

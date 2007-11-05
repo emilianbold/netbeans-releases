@@ -132,8 +132,6 @@ public abstract class Token<T extends TokenId> {
      *  The returned text is just a pointer to the primary source of the data
      *  e.g. a swing document. The character data are not duplicated in the tokens.
      *  </p>
-     *
-     * @see #preprocessedText()
      */
     public abstract CharSequence text();
     
