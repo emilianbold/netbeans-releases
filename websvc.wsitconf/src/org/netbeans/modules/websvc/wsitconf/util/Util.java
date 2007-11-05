@@ -430,7 +430,7 @@ public class Util {
         if (mp != null) {
             String sID = mp.getServerInstanceID();
             InstanceProperties ip = mp.getInstanceProperties();
-            if ("".equals(ip.getProperty("LOCATION"))) {
+            if ((ip == null) || ("".equals(ip.getProperty("LOCATION")))) {
                 return "";
             }
             storeLocation = getStoreLocation(sID, trust, client);
@@ -623,12 +623,7 @@ public class Util {
         
         boolean tomcat = isTomcat(project);
         boolean glassfish = isGlassfish(project);
-        
-        String serverKeyStorePath = getStoreLocation(project, false, false);
-        String serverTrustStorePath = getStoreLocation(project, true, false);
-        String clientKeyStorePath = getStoreLocation(project, false, true);
-        String clientTrustStorePath = getStoreLocation(project, true, true);
-        
+                
         if (tomcat) {
             if (project != null) {
                 FileObject tomcatLocation = getTomcatLocation(project);
@@ -707,6 +702,10 @@ public class Util {
         if (glassfish) {
             try {
                 if (!client && refreshScript) refreshBuildScript(project);
+                String serverKeyStorePath = getStoreLocation(project, false, false);
+                String serverTrustStorePath = getStoreLocation(project, true, false);
+                String clientKeyStorePath = getStoreLocation(project, false, true);
+                String clientTrustStorePath = getStoreLocation(project, true, true);
                 copyKey(SERVER_KEYSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, serverKeyStorePath,XWS_SECURITY_SERVER, dstPasswd, false);
                 copyKey(SERVER_KEYSTORE_BUNDLED, WSSIP, PASSWORD, PASSWORD, serverKeyStorePath,WSSIP, dstPasswd, false);
                 copyKey(SERVER_TRUSTSTORE_BUNDLED, "certificate-authority", PASSWORD, PASSWORD, serverTrustStorePath, "xwss-certificate-authority", dstPasswd, true);
