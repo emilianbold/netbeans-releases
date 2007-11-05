@@ -600,11 +600,15 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "BTN_Add")); // NOI18N
         addButton.setActionCommand("ADD");
-        addButton.setMaximumSize(new java.awt.Dimension(87, 25));
-        addButton.setPreferredSize(new java.awt.Dimension(87, 25));
+        addButton.setMargin(new java.awt.Insets(2, 10, 2, 10));
+        addButton.setMaximumSize(new java.awt.Dimension(133, 25));
+        addButton.setMinimumSize(new java.awt.Dimension(79, 25));
+        addButton.setPreferredSize(new java.awt.Dimension(79, 25));
 
         org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "BTN_Remove")); // NOI18N
         removeButton.setActionCommand("REMOVE");
+        removeButton.setMargin(new java.awt.Insets(2, 10, 2, 10));
+        removeButton.setMaximumSize(new java.awt.Dimension(133, 25));
 
         org.jdesktop.layout.GroupLayout templatesTreePanelLayout = new org.jdesktop.layout.GroupLayout(templatesTreePanel);
         templatesTreePanel.setLayout(templatesTreePanelLayout);
@@ -614,9 +618,9 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                 .add(templatesTreePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(templatesTreePanelLayout.createSequentialGroup()
                         .add(1, 1, 1)
-                        .add(addButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeButton))
+                        .add(removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, treeScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -627,7 +631,7 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(templatesTreePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(addButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(removeButton))
+                    .add(removeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -716,16 +720,19 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
 
         org.openide.awt.Mnemonics.setLocalizedText(addRowButton, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "BTN_Add_Row")); // NOI18N
         addRowButton.setActionCommand("ADD_ROW");
+        addRowButton.setMargin(new java.awt.Insets(2, 10, 2, 10));
 
         org.openide.awt.Mnemonics.setLocalizedText(modifyRowButton, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "BTN_Modify_Row")); // NOI18N
         modifyRowButton.setActionCommand("MODIFY_ROW");
+        modifyRowButton.setMargin(new java.awt.Insets(2, 10, 2, 10));
         modifyRowButton.setMaximumSize(new java.awt.Dimension(133, 25));
-        modifyRowButton.setPreferredSize(new java.awt.Dimension(133, 25));
+        modifyRowButton.setPreferredSize(new java.awt.Dimension(125, 25));
 
         org.openide.awt.Mnemonics.setLocalizedText(removeRowButton, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "BTN_Remove_Row")); // NOI18N
         removeRowButton.setActionCommand("REMOVE_ROW");
+        removeRowButton.setMargin(new java.awt.Insets(2, 10, 2, 10));
         removeRowButton.setMaximumSize(new java.awt.Dimension(133, 25));
-        removeRowButton.setPreferredSize(new java.awt.Dimension(133, 25));
+        removeRowButton.setPreferredSize(new java.awt.Dimension(125, 25));
 
         jLabel2.setLabelFor(templatesTable);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "LBL_Templates")); // NOI18N
@@ -750,11 +757,11 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                     .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, templatePropsPanelLayout.createSequentialGroup()
                         .addContainerGap()
-                        .add(addRowButton)
+                        .add(addRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(modifyRowButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(modifyRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeRowButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(removeRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         templatePropsPanelLayout.setVerticalGroup(
