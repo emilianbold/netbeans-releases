@@ -64,7 +64,7 @@ public final class TokenHierarchyEventInfo {
 
     private final TokenHierarchyEventType type;
     
-    private TokenChange<? extends TokenId> tokenChange;
+    private TokenChange<?> tokenChange;
 
     private final int modificationOffset;
 
@@ -82,7 +82,7 @@ public final class TokenHierarchyEventInfo {
     
     private int affectedEndOffset;
 
-    public TokenHierarchyEventInfo(TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation,
+    public TokenHierarchyEventInfo(TokenHierarchyOperation<?,?> tokenHierarchyOperation,
     TokenHierarchyEventType type, int modificationOffset, int removedLength, CharSequence removedText, int insertedLength) {
         // Initial checks
         if (modificationOffset < 0) {
@@ -106,7 +106,7 @@ public final class TokenHierarchyEventInfo {
         this.affectedEndOffset = modificationOffset + diffLengthOrZero;
     }
 
-    public TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation() {
+    public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return tokenHierarchyOperation;
     }
 
@@ -114,11 +114,11 @@ public final class TokenHierarchyEventInfo {
         return type;
     }
     
-    public TokenChange<? extends TokenId> tokenChange() {
+    public TokenChange<?> tokenChange() {
         return tokenChange;
     }
     
-    public void setTokenChangeInfo(TokenChangeInfo<? extends TokenId> info) {
+    public void setTokenChangeInfo(TokenChangeInfo<?> info) {
         this.tokenChange = LexerApiPackageAccessor.get().createTokenChange(info);
     }
     
@@ -173,7 +173,7 @@ public final class TokenHierarchyEventInfo {
         if (originalText == null) {
             if (removedLength != 0 && removedText == null) {
                 throw new IllegalStateException("Cannot obtain removed text for " // NOI18N
-                        + tokenHierarchyOperation.mutableInputSource()
+                        + tokenHierarchyOperation.inputSource()
                         + " which breaks token snapshots operation and" // NOI18N
                         + " token text retaining after token's removal." // NOI18N
                         + " Valid removedText in TokenHierarchyControl.textModified()" // NOI18N

@@ -172,11 +172,7 @@ public abstract class Token<T extends TokenId> {
      * or <code>-1</code> if this token is flyweight (and therefore does not store offset).
      * <br/>
      * <b>Note:</b> Use of {@link TokenSequence#offset()} is usually preferred over
-     * this method.
-     * <br/>
-     * For flyweight tokens the real offset of the token may only be determined
-     * by doing {@link TokenSequence#offset()} when positioned on the particular
-     * flyweight token.
+     * this method because it returns actual offset even for the flyweight tokens.
      * <br/>
      * If necessary the flyweight token may be replaced by regular token
      * by using {@link TokenSequence#offsetToken()}.
@@ -186,11 +182,8 @@ public abstract class Token<T extends TokenId> {
      * regardless of the level of the language embedding.
      * </p>
      *
-     * @param tokenHierarchy token hierarchy to which the offset computation
-     *  will be related. It may either be the live token hierarchy
-     *  (which is equivalent to passing <code>null</code>)
-     *  or a snapshot of the original token hierarchy. For other values
-     *  the result is generally undefined.
+     * @param tokenHierarchy <code>null</code> should be passed
+     *  (the parameter is reserved for future use when token hierarchy snapshots will be implemented).
      *
      * @return >=0 offset of the token in the input or <code>-1</code>
      *  if this token is flyweight.
@@ -224,36 +217,6 @@ public abstract class Token<T extends TokenId> {
     public abstract PartType partType();
 
     /**
-     * Check whether this token has preprocessed text
-     * (e.g. Unicode escapes in the token's text were translated).
-     *
-     * @return true if this token contains preprocessed text and its
-     *  {@link #preprocessedText()} returns a valid result.
-     */
-    public abstract boolean isPreprocessedText();
-
-    /**
-     * Get a text of this token as it was preprocessed by a character preprocessor
-     * (e.g. with Unicode escapes translated).
-     */
-    public abstract CharSequence preprocessedText();
-    
-    /**
-     * Get an description of the error that occurred during preprocessing
-     * of the token's characters.
-     */
-    public abstract String preprocessError();
-    
-    /**
-     * Get the index relative to the token's begining (in the original input text)
-     * of where the preprocessor error has occurred.
-     *
-     * @return >=0 index where the character preprocessing error has occurred.
-     *  Returns -1 if there was no preprocessing error.
-     */
-    public abstract int preprocessErrorIndex();
-    
-    /**
      * Quickly determine whether this token has any extra properties.
      */
     public abstract boolean hasProperties();
@@ -276,6 +239,7 @@ public abstract class Token<T extends TokenId> {
      * Make sure the default implementation of <code>hashCode()</code> is used
      * and the token can safely be used in maps.
      */
+    @Override
     public final int hashCode() {
         return super.hashCode();
     }
@@ -284,6 +248,7 @@ public abstract class Token<T extends TokenId> {
      * Make sure the default implementation of <code>equals()</code> is used
      * and the token can safely be used in maps.
      */
+    @Override
     public final boolean equals(Object o) {
         return super.equals(o);
     }

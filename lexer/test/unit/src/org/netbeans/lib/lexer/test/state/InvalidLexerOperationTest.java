@@ -81,7 +81,7 @@ public class InvalidLexerOperationTest extends TestCase {
         // Put the language now into the document so that lexing starts from scratch
         doc.putProperty(Language.class, StateTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
 
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, StateTokenId.A, "a", 0);
@@ -103,7 +103,7 @@ public class InvalidLexerOperationTest extends TestCase {
         InputAttributes attrs = new InputAttributes();
         TokenHierarchy<?> hi = TokenHierarchy.create(text, false, StateTokenId.language(),
                 null, attrs);
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, StateTokenId.A, "a", 0);
         assertTrue(ts.moveNext());
@@ -127,7 +127,7 @@ public class InvalidLexerOperationTest extends TestCase {
         // Put the language now into the document so that lexing starts from scratch
         doc.putProperty(Language.class, StateTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
 
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, StateTokenId.A, "a", 0);

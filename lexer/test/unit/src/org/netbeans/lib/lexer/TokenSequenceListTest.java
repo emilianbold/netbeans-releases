@@ -89,7 +89,7 @@ public class TokenSequenceListTest extends NbTestCase {
             embedded(TestHTMLTagTokenId.language());
         
         TokenHierarchy<?> tokenHierarchy = TokenHierarchy.get(doc);
-        List<TokenSequence<? extends TokenId>> tsList = tokenHierarchy.tokenSequenceList(lp, 35, 48);
+        List<TokenSequence<?>> tsList = tokenHierarchy.tokenSequenceList(lp, 35, 48);
 
         assertEquals(3, tsList.size());
         TokenSequence<?> ts = tsList.get(0);

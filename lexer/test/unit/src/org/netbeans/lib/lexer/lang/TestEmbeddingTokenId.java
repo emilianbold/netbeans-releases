@@ -103,7 +103,7 @@ public enum TestEmbeddingTokenId implements TokenId {
             }
             
             @Override
-            protected LanguageEmbedding<? extends TokenId> embedding(Token<TestEmbeddingTokenId> token,
+            protected LanguageEmbedding<?> embedding(Token<TestEmbeddingTokenId> token,
             LanguagePath languagePath, InputAttributes inputAttributes) {
                 switch (token.id()) {
                     case A:

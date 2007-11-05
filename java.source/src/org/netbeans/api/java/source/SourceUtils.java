@@ -118,7 +118,7 @@ public class SourceUtils {
      */
     public static TokenSequence<JavaTokenId> getJavaTokenSequence(final TokenHierarchy hierarchy, final int offset) {
         if (hierarchy != null) {
-            TokenSequence<? extends TokenId> ts = hierarchy.tokenSequence();
+            TokenSequence<?> ts = hierarchy.tokenSequence();
             while(ts != null && (offset == 0 || ts.moveNext())) {
                 ts.move(offset);
                 if (ts.language() == JavaTokenId.language())

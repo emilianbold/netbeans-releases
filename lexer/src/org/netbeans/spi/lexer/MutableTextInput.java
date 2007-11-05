@@ -43,7 +43,6 @@ package org.netbeans.spi.lexer;
 
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenId;
 
 /**
  * Mutable attributed character sequence allowing to listen for changes in its text.
@@ -73,7 +72,7 @@ public abstract class MutableTextInput<I> {
      *  and will be returned as null upon asking until this method will return
      *  non-null value.
      */
-    protected abstract Language<? extends TokenId> language();
+    protected abstract Language<?> language();
 
     /**
      * Get the character sequence provided and maintained by this input.
@@ -99,7 +98,50 @@ public abstract class MutableTextInput<I> {
      * @return non-null mutable input source.
      */
     protected abstract I inputSource();
+
+    /**
+     * Called by infrastructure to check if the underlying input source is currently
+     * read-locked by the current thread.
+     * <br/>
+     * This method is only called when turning on the logger for token hierarchy updates:
+     * <code>-J-Dorg.netbeans.lib.lexer.TokenHierarchyUpdate.level=FINE</code>
+     * <br/>
+     * It is expected that if write-lock means read-lock too i.e. if {@link #isWriteLocked()}
+     * returns true that this method will also return true automatically.
+     * <br/>
+     * The following operations require read-locking:
+     * <ul>
+     *   <li>Creation and using of token sequence {@link TokenHierarchy#tokenSequence()}.</li>
+     * </ul>
+     * 
+     * @return true if the underlying input source is read-locked by the current thread
+     * (or if unsure e.g. if there is a read-lock present but it's not possible
+     *  to determine whether it was this or other thread that performed the locking).
+     *  <br/>
+     *  Returning false means that the input source is surely unlocked which will be
+     *  reported as a serious error by the infrastructure.
+     */
+    protected abstract boolean isReadLocked();
     
+    /**
+     * Called by infrastructure to check if the underlying input source is currently
+     * write-locked by the current thread.
+     * <br/>
+     * This method is only called when turning on the logger for token hierarchy updates:
+     * <code>-J-Dorg.netbeans.lib.lexer.TokenHierarchyUpdate.level=FINE</code>
+     * <br/>
+     * The following operations require write-locking:
+     * <ul>
+     *   <li>Creation of custom embedding by {@link TokenSequence#createEmbedding(Language,int,int)}.</li>
+     * </ul>
+     * 
+     * @return true if the underlying input source is write-locked by the current thread
+     * (or if unsure).
+     *  Returning false means that the input source is surely unlocked which will be
+     *  reported as a serious error by the infrastructure.
+     */
+    protected abstract boolean isWriteLocked();
+
     /**
      * Get token hierarchy control for this mutable text input.
      * <br>

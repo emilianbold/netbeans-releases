@@ -110,10 +110,10 @@ public final class EmbeddingContainer<T extends TokenId> {
         // need to be processed to find the embedded token list for requested language.
         TokenList<?> rootTokenList = tokenList.root();
         synchronized (rootTokenList) {
-            EmbeddedTokenList<? extends TokenId> prevEtl;
+            EmbeddedTokenList<?> prevEtl;
             if (ec != null) {
                 ec.updateStatusImpl();
-                EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbeddedTokenList();
+                EmbeddedTokenList<?> etl = ec.firstEmbeddedTokenList();
                 prevEtl = null;
                 while (etl != null) {
                     if (embeddedLanguage == null || etl.languagePath().innerLanguage() == embeddedLanguage) {
@@ -200,6 +200,7 @@ public final class EmbeddingContainer<T extends TokenId> {
         if (tokenHierarchyOperation == null) {
             return false;
         }
+        tokenHierarchyOperation.ensureWriteLocked();
         TokenList<?> rootTokenList = tokenList.root();
         // Only create embedddings for valid operations so not e.g. for removed token list
         Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(index);
@@ -211,7 +212,7 @@ public final class EmbeddingContainer<T extends TokenId> {
                 @SuppressWarnings("unchecked")
                 EmbeddingContainer<T> ecUC = (EmbeddingContainer<T>)tokenOrEmbeddingContainer;
                 ec = ecUC;
-                EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbeddedTokenList();
+                EmbeddedTokenList<?> etl = ec.firstEmbeddedTokenList();
                 while (etl != null) {
                     if (embeddedLanguage == etl.languagePath().innerLanguage()) {
                         return false; // already exists
@@ -293,8 +294,7 @@ public final class EmbeddingContainer<T extends TokenId> {
         }
 
         // Fire the change
-        tokenHierarchyOperation.fireTokenHierarchyChanged(
-                    LexerApiPackageAccessor.get().createTokenChangeEvent(eventInfo));
+        tokenHierarchyOperation.fireTokenHierarchyChanged(eventInfo);
         return true;
     }
     
@@ -304,7 +304,8 @@ public final class EmbeddingContainer<T extends TokenId> {
         if (tokenHierarchyOperation == null) {
             return false;
         }
-        TokenList<? extends TokenId> rootTokenList = tokenList.root();
+        tokenHierarchyOperation.ensureWriteLocked();
+        TokenList<?> rootTokenList = tokenList.root();
         // Only create embedddings for valid operations so not e.g. for removed token list
         Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(index);
         EmbeddingContainer<T> ec;
@@ -366,8 +367,7 @@ public final class EmbeddingContainer<T extends TokenId> {
                         }
 
                         // Fire the change
-                        tokenHierarchyOperation.fireTokenHierarchyChanged(
-                                    LexerApiPackageAccessor.get().createTokenChangeEvent(eventInfo));
+                        tokenHierarchyOperation.fireTokenHierarchyChanged(eventInfo);
                         return true;
                     }
                     etl = etl.nextEmbeddedTokenList();
@@ -389,7 +389,7 @@ public final class EmbeddingContainer<T extends TokenId> {
      * Root token list of the hierarchy.
      * 
      */
-    private final TokenList<? extends TokenId> rootTokenList; // 20 bytes
+    private final TokenList<?> rootTokenList; // 20 bytes
     
     /**
      * The root embedding container to which this embedding container relates.
@@ -397,7 +397,7 @@ public final class EmbeddingContainer<T extends TokenId> {
      * It's used for getting of the start offset of the contained tokens
      * and for getting of their text.
      */
-    private AbstractToken<? extends TokenId> rootToken; // 24 bytes
+    private AbstractToken<?> rootToken; // 24 bytes
     
     /**
      * Cached start offset of the token for which this embedding container
@@ -408,7 +408,7 @@ public final class EmbeddingContainer<T extends TokenId> {
     /**
      * First embedded token list in the single-linked list.
      */
-    private EmbeddedTokenList<? extends TokenId> firstEmbeddedTokenList; // 32 bytes
+    private EmbeddedTokenList<?> firstEmbeddedTokenList; // 32 bytes
 
     /**
      * Difference between start offset of the first token in this token list
@@ -423,7 +423,7 @@ public final class EmbeddingContainer<T extends TokenId> {
      * It may be <code>EmbeddedTokenList.NO_DEFAULT_EMBEDDING</code>
      * for failed attempt to create a default embedding.
      */
-    private EmbeddedTokenList<? extends TokenId> defaultEmbeddedTokenList; // 40 bytes
+    private EmbeddedTokenList<?> defaultEmbeddedTokenList; // 40 bytes
     
     EmbeddingContainer(AbstractToken<T> token, TokenList<?> rootTokenList) {
         this.token = token;
@@ -516,11 +516,11 @@ public final class EmbeddingContainer<T extends TokenId> {
         updateStatusImpl();
     }
     
-    public TokenList<? extends TokenId> rootTokenList() {
+    public TokenList<?> rootTokenList() {
         return rootTokenList;
     }
     
-    public AbstractToken<? extends TokenId> rootToken() {
+    public AbstractToken<?> rootToken() {
         return rootToken;
     }
 
@@ -539,7 +539,7 @@ public final class EmbeddingContainer<T extends TokenId> {
         return rootToken.charAt(offsetShiftFromRootToken + tokenRelOffset);
     }
     
-    public EmbeddedTokenList<? extends TokenId> firstEmbeddedTokenList() {
+    public EmbeddedTokenList<?> firstEmbeddedTokenList() {
         return firstEmbeddedTokenList;
     }
     
@@ -587,7 +587,7 @@ public final class EmbeddingContainer<T extends TokenId> {
         return next;
     }
     
-    public EmbeddedTokenList<? extends TokenId> defaultEmbeddedTokenList() {
+    public EmbeddedTokenList<?> defaultEmbeddedTokenList() {
         return defaultEmbeddedTokenList;
     }
     
@@ -617,7 +617,7 @@ public final class EmbeddingContainer<T extends TokenId> {
     /**
      * Update and return root token corresponding to this embedding container.
      */
-    public AbstractToken<? extends TokenId> updateStatusImpl() {
+    public AbstractToken<?> updateStatusImpl() {
         if (rootToken == null)
             return null; // Removed from hierarchy
         int rootModCount;

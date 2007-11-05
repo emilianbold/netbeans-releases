@@ -250,11 +250,11 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
         tokenList.wrapToken(limitStartIndex + index, embeddingContainer);
     }
 
-    public TokenList<? extends TokenId> root() {
+    public TokenList<?> root() {
         return tokenList.root();
     }
 
-    public TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation() {
+    public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return tokenList.tokenHierarchyOperation();
     }
     

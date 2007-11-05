@@ -112,10 +112,10 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
     private Lookup.Result<LanguageProvider> lookupResult = null;
 
     private List<LanguageProvider> providers = Collections.<LanguageProvider>emptyList();
-    private HashMap<String, WeakReference<Language<? extends TokenId>>> langCache
-            = new HashMap<String, WeakReference<Language<? extends TokenId>>>();
-    private WeakHashMap<Token, LanguageEmbedding<? extends TokenId>> tokenLangCache
-            = new WeakHashMap<Token, LanguageEmbedding<? extends TokenId>>();
+    private HashMap<String, WeakReference<Language<?>>> langCache
+            = new HashMap<String, WeakReference<Language<?>>>();
+    private WeakHashMap<Token, LanguageEmbedding<?>> tokenLangCache
+            = new WeakHashMap<Token, LanguageEmbedding<?>>();
     
     private final String LOCK = new String("LanguageManager.LOCK");
     
@@ -130,11 +130,11 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
     //  LanguageProvider implementation
     // -------------------------------------------------------------------
     
-    public Language<? extends TokenId> findLanguage(String mimeType) {
+    public Language<?> findLanguage(String mimeType) {
         assert mimeType != null : "The mimeType parameter can't be null"; //NOI18N
         synchronized(LOCK) {
-            WeakReference<Language<? extends TokenId>> ref = langCache.get(mimeType);
-            Language<? extends TokenId> lang = ref == null ? null : ref.get();
+            WeakReference<Language<?>> ref = langCache.get(mimeType);
+            Language<?> lang = ref == null ? null : ref.get();
             
             if (lang == null) {
                 for(LanguageProvider p : providers) {
@@ -147,17 +147,17 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
                     lang = NO_LANG();
                 }
                 
-                langCache.put(mimeType, new WeakReference<Language<? extends TokenId>>(lang));
+                langCache.put(mimeType, new WeakReference<Language<?>>(lang));
             }
             
             return lang == NO_LANG() ? null : lang;
         }
     }
 
-    public LanguageEmbedding<? extends TokenId> findLanguageEmbedding(
-    Token<? extends TokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+    public LanguageEmbedding<?> findLanguageEmbedding(
+    Token<?> token, LanguagePath languagePath, InputAttributes inputAttributes) {
         synchronized(LOCK) {
-            LanguageEmbedding<? extends TokenId> lang = tokenLangCache.get(token);
+            LanguageEmbedding<?> lang = tokenLangCache.get(token);
             
             if (lang == null) {
                 for(LanguageProvider p : providers) {

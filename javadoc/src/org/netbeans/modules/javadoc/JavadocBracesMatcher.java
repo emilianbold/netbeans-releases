@@ -78,7 +78,7 @@ public final class JavadocBracesMatcher implements BracesMatcher, BracesMatcherF
         boolean backward = context.isSearchingBackward();
         
         TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
-        List<TokenSequence<? extends TokenId>> sequences = th.embeddedTokenSequences(caretOffset, backward);
+        List<TokenSequence<?>> sequences = th.embeddedTokenSequences(caretOffset, backward);
 
         for(int i = sequences.size() - 1; i >= 0; i--) {
             TokenSequence<? extends TokenId> seq = sequences.get(i);

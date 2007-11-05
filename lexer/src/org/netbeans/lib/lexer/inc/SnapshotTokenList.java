@@ -105,8 +105,8 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
     
     public SnapshotTokenList(TokenHierarchyOperation<?,T> snapshot) {
         this.snapshot = snapshot;
-        this.liveTokenList = (IncTokenList<T>)snapshot.
-                liveTokenHierarchyOperation().rootTokenList();
+//        this.liveTokenList = (IncTokenList<T>)snapshot.
+//                liveTokenHierarchyOperation().rootTokenList();
         token2offset = new CompactMap<AbstractToken<T>,Token2OffsetEntry<T>>();
     }
 
@@ -205,7 +205,7 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
         //    needs to be corrected if necessary.
         if (tokenList.getClass() == EmbeddedTokenList.class) {
             EmbeddedTokenList<TT> etl = (EmbeddedTokenList<TT>)tokenList;
-            AbstractToken<? extends TokenId> rootBranchToken = etl.rootToken();
+            AbstractToken<?> rootBranchToken = etl.rootToken();
             Token2OffsetEntry<T> entry = token2offset.get(rootBranchToken);
             if (entry != null) {
                 return entry.offset() + etl.childTokenOffsetShift(rawOffset);
@@ -298,11 +298,11 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
         return nonFlyToken;
     }
     
-    public TokenList<? extends TokenId> root() {
+    public TokenList<?> root() {
         return this;
     }
     
-    public TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation() {
+    public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return snapshot;
     }
     
@@ -540,7 +540,7 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
             // In fact the second entry would have to be of <T> because
             // the tokens (as keys) must be the same objects to be equal
             return (value2 instanceof Token2OffsetEntry
-                    && ((Token2OffsetEntry<? extends TokenId>)value2).offset() == offset());
+                    && ((Token2OffsetEntry<?>)value2).offset() == offset());
         }
         
         public int offset() {

@@ -52,7 +52,6 @@ import org.netbeans.lib.lexer.TokenIdImpl;
 import org.netbeans.lib.lexer.token.CustomTextToken;
 import org.netbeans.lib.lexer.token.DefaultToken;
 import org.netbeans.lib.lexer.token.ComplexToken;
-import org.netbeans.lib.lexer.token.PreprocessedTextToken;
 import org.netbeans.lib.lexer.token.ComplexToken;
 import org.netbeans.lib.lexer.token.PropertyToken;
 import org.netbeans.lib.lexer.token.TextToken;
@@ -120,7 +119,8 @@ public final class TokenFactory<T extends TokenId> {
             return skipToken();
         } else { // Do not skip the token
             if (operation.tokenRecognized(length, false)) { // Create preprocessed token
-                return new PreprocessedTextToken<T>(id, operation.tokenLength());
+//                return new PreprocessedTextToken<T>(id, operation.tokenLength());
+                return new DefaultToken<T>(id, operation.tokenLength());
             } else {
                 return new DefaultToken<T>(id, operation.tokenLength());
             }
@@ -153,7 +153,8 @@ public final class TokenFactory<T extends TokenId> {
             return skipToken();
         } else { // Do not skip the token
             if (operation.tokenRecognized(length, false)) { // Create preprocessed token
-                return new ComplexToken<T>(id, operation.tokenLength(), null, null, partType);
+//                return new ComplexToken<T>(id, operation.tokenLength(), null, partType, null);
+                return new PropertyToken<T>(id, operation.tokenLength(), null, partType);
             } else {
                 return new PropertyToken<T>(id, operation.tokenLength(), null, partType);
             }
@@ -205,7 +206,8 @@ public final class TokenFactory<T extends TokenId> {
             return skipToken();
         } else { // Do not skip the token
             if (operation.tokenRecognized(text.length(), false)) { // Create preprocessed token
-                return new PreprocessedTextToken<T>(id, operation.tokenLength());
+//                return new PreprocessedTextToken<T>(id, operation.tokenLength());
+                return new DefaultToken<T>(id, operation.tokenLength());
             } else if (operation.isFlyTokenAllowed()) {
                 LanguageOperation<T> langOp = operation.languageOperation();
                 return langOp.getFlyweightToken(id, text);
@@ -241,8 +243,10 @@ public final class TokenFactory<T extends TokenId> {
             return skipToken();
         } else { // Do not skip the token
             if (operation.tokenRecognized(length, false)) { // Create preprocessed token
-                return new ComplexToken<T>(id, operation.tokenLength(),
-                    propertyProvider, null, partType);
+//                return new ComplexToken<T>(id, operation.tokenLength(),
+//                    propertyProvider, null, partType);
+                return new PropertyToken<T>(id, operation.tokenLength(),
+                    propertyProvider, partType);
             } else {
                 return new PropertyToken<T>(id, operation.tokenLength(),
                     propertyProvider, partType);
@@ -261,7 +265,8 @@ public final class TokenFactory<T extends TokenId> {
             return skipToken();
         } else { // Do not skip the token
             if (operation.tokenRecognized(length, false)) { // Create preprocessed token
-                return new ComplexToken<T>(id, operation.tokenLength(), null, text, partType);
+                return new CustomTextToken<T>(id, operation.tokenLength(), text, partType);
+//                return new ComplexToken<T>(id, operation.tokenLength(), null, text, partType);
             } else {
                 return new CustomTextToken<T>(id, operation.tokenLength(), text, partType);
             }

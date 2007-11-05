@@ -98,14 +98,14 @@ public class BraceHighlighting implements BracesMatcher, BracesMatcherFactory {
         
         int caretOffset = context.getSearchOffset();
         boolean searchBack = context.isSearchingBackward();
-        List<TokenSequence<? extends TokenId>> sequences = th.embeddedTokenSequences(caretOffset, searchBack);
+        List<TokenSequence<?>> sequences = th.embeddedTokenSequences(caretOffset, searchBack);
 
         for(int i = sequences.size() - 1; i >= 0; i--) {
-            TokenSequence<? extends TokenId> ts = sequences.get(i);
+            TokenSequence<?> ts = sequences.get(i);
             if (ts.language().equals(language)) {
                 seq = ts;
                 if (i > 0) {
-                    TokenSequence<? extends TokenId> outerSeq = sequences.get(i - 1);
+                    TokenSequence<?> outerSeq = sequences.get(i - 1);
                     seqStart = outerSeq.offset();
                     seqEnd = outerSeq.offset() + outerSeq.token().length();
                 } else {
@@ -220,7 +220,7 @@ public class BraceHighlighting implements BracesMatcher, BracesMatcherFactory {
         return PAIRS.get(l);
     }
     
-    private static boolean moveTheSequence(TokenSequence<? extends TokenId> seq, boolean backward, int offsetLimit) {
+    private static boolean moveTheSequence(TokenSequence<?> seq, boolean backward, int offsetLimit) {
         if (backward) {
             if (seq.movePrevious()) {
                 int e = seq.offset() + seq.token().length();
@@ -260,7 +260,7 @@ public class BraceHighlighting implements BracesMatcher, BracesMatcherFactory {
     private final MatcherContext context;
     private final String topLevelMimeType;
     
-    private TokenSequence<? extends TokenId> seq;
+    private TokenSequence<?> seq;
     private int seqStart;
     private int seqEnd;
     private String originText;

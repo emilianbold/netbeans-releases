@@ -151,7 +151,7 @@ public class CompilationInfo {
         }
     }
     
-    public TokenHierarchy<Void> getTokenHierarchy() {
+    public TokenHierarchy<?> getTokenHierarchy() {
         if (this.jfo == null) {
             throw new IllegalStateException ();
         }

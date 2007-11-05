@@ -100,7 +100,7 @@ public enum RubyStringTokenId implements TokenId {STRING_TEXT("string"),
                 }
 
                 @Override
-                protected LanguageEmbedding<?extends TokenId> embedding(
+                protected LanguageEmbedding<?> embedding(
                     Token<RubyStringTokenId> token, LanguagePath languagePath,
                     InputAttributes inputAttributes) {
                     RubyStringTokenId id = token.id();
@@ -138,7 +138,7 @@ public enum RubyStringTokenId implements TokenId {STRING_TEXT("string"),
                 }
 
                 @Override
-                protected LanguageEmbedding<?extends TokenId> embedding(
+                protected LanguageEmbedding<?> embedding(
                     Token<RubyStringTokenId> token, LanguagePath languagePath,
                     InputAttributes inputAttributes) {
                     RubyStringTokenId id = token.id();

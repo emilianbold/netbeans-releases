@@ -71,7 +71,7 @@ public class FlyTokensTest extends TestCase {
         String text = "public public public public public public public ";
         int commentTextStartOffset = 5;
         TokenHierarchy<?> hi = TokenHierarchy.create(text,TestTokenId.language());
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         int firstNonFlyIndex = -1;
         int secondNonFlyIndex = -1;
         int tokenIndex = 0;

@@ -209,10 +209,10 @@ public class RhtmlKit extends HTMLKit {
                 char ch = doc.getText(dotPos-1, 1).charAt(0);
                 if (ch == '%') {
                     TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-                    TokenSequence<?extends TokenId> ts = th.tokenSequence();
+                    TokenSequence<?> ts = th.tokenSequence();
                     ts.move(dotPos);
                     if (ts.movePrevious()) {
-                        Token<? extends TokenId> token = ts.token();
+                        Token<?> token = ts.token();
                         if (token.id() == RhtmlTokenId.DELIMITER && ts.offset()+token.length() == dotPos && ts.moveNext()) {
                             token = ts.token();
                             if (token.id() == RhtmlTokenId.DELIMITER && ts.offset() == dotPos) {
@@ -235,11 +235,11 @@ public class RhtmlKit extends HTMLKit {
         // Bracket matching on <% %>
         if ((dotPos > 0) && (c == '%' || c == '>')) {
             TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-            TokenSequence<?extends TokenId> ts = th.tokenSequence();
+            TokenSequence<?> ts = th.tokenSequence();
             ts.move(dotPos);
             try {
                 if (ts.moveNext() || ts.movePrevious()) {
-                    Token<? extends TokenId> token = ts.token();
+                    Token<?> token = ts.token();
                     if (token.id() == RhtmlTokenId.HTML && doc.getText(dotPos-1, 1).charAt(0) == '<') {
                         // See if there's anything ahead
                         int first = Utilities.getFirstNonWhiteFwd(doc, dotPos, Utilities.getRowEnd(doc, dotPos));
@@ -287,7 +287,7 @@ public class RhtmlKit extends HTMLKit {
             String text = doc.getText(dotPos, 3);
             if (text.equals(" %>") || text.startsWith("%>") || text.equals("-%>") || text.equals("% -%")) { // NOI18N
                 TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-                TokenSequence<?extends TokenId> ts = th.tokenSequence();
+                TokenSequence<?> ts = th.tokenSequence();
                 ts.move(dotPos);
                 if (ts.moveNext()) {
                     // Go backwards and make sure we have nothing before the previous
@@ -305,7 +305,7 @@ public class RhtmlKit extends HTMLKit {
                                 return false;
                             } else if (id == RhtmlTokenId.RUBY || id == RhtmlTokenId.RUBY_EXPR) {
                                 if (!notJustSpace) {
-                                    TokenSequence<? extends TokenId> ets = ts.embedded();
+                                    TokenSequence<?> ets = ts.embedded();
                                     if (ets != null) {
                                         ets.moveStart();
                                         while (ets.moveNext()) {
@@ -515,16 +515,16 @@ public class RhtmlKit extends HTMLKit {
         doc.putProperty(org.netbeans.api.lexer.Language.class, RhtmlTokenId.language());
     }
     
-    private static Token<? extends TokenId> getToken(BaseDocument doc, int offset, boolean checkEmbedded) {
+    private static Token<?> getToken(BaseDocument doc, int offset, boolean checkEmbedded) {
         TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-        TokenSequence<?extends TokenId> ts = th.tokenSequence();
+        TokenSequence<?> ts = th.tokenSequence();
         ts.move(offset);
         if (!ts.moveNext() && !ts.movePrevious()) {
             return null;
         }
 
         if (checkEmbedded) {
-            TokenSequence<? extends TokenId> es = ts.embedded();
+            TokenSequence<?> es = ts.embedded();
             if (es != null) {
                 es.move(offset);
                 if (es.moveNext() || es.movePrevious()) {
@@ -564,7 +564,7 @@ public class RhtmlKit extends HTMLKit {
         private static boolean isLineCommented(BaseDocument doc, int textBegin) throws BadLocationException  {
             assert textBegin != -1;
             
-            Token<? extends TokenId> token = getToken(doc, textBegin, false);
+            Token<?> token = getToken(doc, textBegin, false);
             if (token != null) {
                 TokenId id = token.id();
                 if (id == RhtmlTokenId.DELIMITER) {
@@ -673,7 +673,7 @@ public class RhtmlKit extends HTMLKit {
                 
                 int textBegin = Utilities.getRowFirstNonWhite(doc, offset);
 
-                Token<? extends TokenId> token = getToken(doc, textBegin, false);
+                Token<?> token = getToken(doc, textBegin, false);
                 if (token != null) {
                     TokenId id = token.id();
                     if (id == RhtmlTokenId.DELIMITER) {
@@ -718,7 +718,7 @@ public class RhtmlKit extends HTMLKit {
                 // Get the first non-whitespace char on the current line
                 int textBegin = Utilities.getRowFirstNonWhite(doc, offset);
 
-                Token<? extends TokenId> token = getToken(doc, textBegin, false);
+                Token<?> token = getToken(doc, textBegin, false);
                 if (token != null) {
                     TokenId id = token.id();
                     if (id == RhtmlTokenId.DELIMITER) {

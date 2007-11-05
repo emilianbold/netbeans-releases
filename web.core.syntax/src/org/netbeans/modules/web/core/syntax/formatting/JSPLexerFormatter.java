@@ -224,7 +224,7 @@ public class JSPLexerFormatter extends TagBasedLexerFormatter {
     // indentation is delegated to the old infrastructure
     public void enterPressed(Context context) {
         TokenHierarchy<Document> hi = TokenHierarchy.get(context.document());
-        List<TokenSequence<? extends TokenId>> sequences = hi.embeddedTokenSequences(context.caretOffset(), true);
+        List<TokenSequence<?>> sequences = hi.embeddedTokenSequences(context.caretOffset(), true);
         if (!sequences.isEmpty()) {
             TokenSequence mostEmbedded = sequences.get(sequences.size() - 1);
             if(mostEmbedded.language() == JavaTokenId.language()) {

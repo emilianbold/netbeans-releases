@@ -89,7 +89,7 @@ public enum TestJoinSectionsTopTokenId implements TokenId {
         }
         
         @Override
-        public LanguageEmbedding<? extends TokenId> embedding(
+        public LanguageEmbedding<?> embedding(
         Token<TestJoinSectionsTopTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             // Test language embedding in the block comment
             switch (token.id()) {

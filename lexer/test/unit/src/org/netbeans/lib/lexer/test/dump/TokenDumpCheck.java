@@ -69,7 +69,7 @@ import org.netbeans.lib.lexer.test.LexerTestUtilities;
 public final class TokenDumpCheck {
     
     public static void checkTokenDump(NbTestCase test, String relFilePath,
-    Language<? extends TokenId> language) throws Exception {
+    Language<?> language) throws Exception {
         // Request lookaheads and states maintaining
         boolean origMaintainLAState = BatchTokenList.isMaintainLAState();
         BatchTokenList.setMaintainLAState(true);
@@ -180,11 +180,11 @@ public final class TokenDumpCheck {
                 testName = testNames.get(i);
                 tdc.setTestName(testName);
                 TokenHierarchy<?> langHi = TokenHierarchy.create(input, language);
-                TokenSequence<? extends TokenId> langTS = langHi.tokenSequence();
+                TokenSequence<?> langTS = langHi.tokenSequence();
                 tdc.compareLine(testName, -1);
                 while (langTS.moveNext()) {
                     // Debug the token
-                    Token<? extends TokenId> token = langTS.token();
+                    Token<?> token = langTS.token();
                     tokenDesc.append(token.id().name());
                     int spaceCount = 14 - token.id().name().length();
                     while (--spaceCount >= 0) {

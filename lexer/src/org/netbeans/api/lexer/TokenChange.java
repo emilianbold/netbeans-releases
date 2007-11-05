@@ -82,7 +82,7 @@ public final class TokenChange<T extends TokenId> {
      * @param index 0 &lt;= index &lt;= embeddedChangeCount() index of the embedded change.
      * @return non-null embedded token change.
      */
-    public TokenChange<? extends TokenId> embeddedChange(int index) {
+    public TokenChange<?> embeddedChange(int index) {
         return info.embeddedChanges()[index];
     }
 
@@ -123,7 +123,7 @@ public final class TokenChange<T extends TokenId> {
      * Get number of removed tokens contained in this token change.
      */
     public int removedTokenCount() {
-        TokenList<? extends TokenId> rtl = info.removedTokenList();
+        TokenList<?> rtl = info.removedTokenList();
         return (rtl != null) ? rtl.tokenCount() : 0;
     }
     

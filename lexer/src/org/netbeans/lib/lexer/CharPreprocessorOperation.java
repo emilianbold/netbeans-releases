@@ -43,7 +43,7 @@ package org.netbeans.lib.lexer;
 
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.lexer.token.AbstractToken;
-import org.netbeans.spi.lexer.CharPreprocessor;
+import org.netbeans.lib.lexer.CharPreprocessor;
 import org.netbeans.spi.lexer.LexerInput;
 
 
@@ -146,7 +146,7 @@ public final class CharPreprocessorOperation implements CharProvider {
         this.preprocessor = preprocessor;
         this.lexerInputOperation = lexerInputOperation;
         // Init the preprocessor to use this operation
-        LexerSpiPackageAccessor.get().init(preprocessor, this);
+//        LexerSpiPackageAccessor.get().init(preprocessor, this);
     }
     
     /**
@@ -224,7 +224,6 @@ public final class CharPreprocessorOperation implements CharProvider {
      * Given length here translated into the length in parent.
      */
     private int parentLength(int length) {
-        System.out.println("STATUS: length=" + length + ", " + this);
         if (length > prepStartIndex) {
             if (length <= prepEndIndex) {
                 length += rawLengthShifts[length - 1 - prepStartIndex];
@@ -251,7 +250,7 @@ public final class CharPreprocessorOperation implements CharProvider {
         // Check whether any characters need to be preprocessed first
         if (readIndex == lookaheadIndex) {
             // Most typical situation - preprocess char
-            LexerSpiPackageAccessor.get().preprocessChar(preprocessor);
+//            LexerSpiPackageAccessor.get().preprocessChar(preprocessor);
             readIndex++;
             // Expect only a single char to be put into lastOutputChar
             if (readIndex == lookaheadIndex) {

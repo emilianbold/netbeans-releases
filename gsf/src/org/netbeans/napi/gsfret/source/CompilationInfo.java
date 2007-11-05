@@ -141,7 +141,7 @@ public class CompilationInfo extends org.netbeans.api.gsf.CompilationInfo {
         }
     }
 
-    public TokenHierarchy<Void> getTokenHierarchy() {
+    public TokenHierarchy<?> getTokenHierarchy() {
         if (this.jfo == null) {
             throw new IllegalStateException ();
         }

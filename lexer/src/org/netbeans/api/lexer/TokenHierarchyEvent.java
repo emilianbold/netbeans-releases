@@ -77,7 +77,7 @@ public final class TokenHierarchyEvent extends java.util.EventObject {
      * Get the token change that occurred in the tokens
      * at the top-level of the token hierarchy.
      */
-    public TokenChange<? extends TokenId> tokenChange() {
+    public TokenChange<?> tokenChange() {
         return info.tokenChange();
     }
 
@@ -91,7 +91,7 @@ public final class TokenHierarchyEvent extends java.util.EventObject {
      *  Returns null otherwise.
      */
     public <T extends TokenId> TokenChange<T> tokenChange(Language<T> language) {
-        TokenChange<? extends TokenId> tc = tokenChange();
+        TokenChange<?> tc = tokenChange();
         @SuppressWarnings("unchecked")
         TokenChange<T> tcl = (tc != null && tc.language() == language) ? (TokenChange<T>)tc : null;
         return tcl;

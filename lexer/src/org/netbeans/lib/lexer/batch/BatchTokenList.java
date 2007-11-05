@@ -121,11 +121,11 @@ extends ArrayList<Object> implements TokenList<T> {
         lexerInputOperation = createLexerInputOperation();
     }
     
-    public TokenList<? extends TokenId> root() {
+    public TokenList<?> root() {
         return this; // this list should always be the root list of the token hierarchy
     }
     
-    public TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation() {
+    public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return tokenHierarchyOperation;
     }
     

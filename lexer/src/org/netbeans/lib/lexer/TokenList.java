@@ -193,13 +193,13 @@ public interface TokenList<T extends TokenId> {
     /**
      * Get the root token list of the token list hierarchy.
      */
-    TokenList<? extends TokenId> root();
+    TokenList<?> root();
     
     /**
      * Get token hierarchy operation for this token list or null
      * if this token list does not have any token hierarchy.
      */
-    TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation();
+    TokenHierarchyOperation<?,?> tokenHierarchyOperation();
     
     /**
      * Extra attributes related to the input being lexed.

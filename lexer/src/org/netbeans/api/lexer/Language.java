@@ -146,7 +146,7 @@ public final class Language<T extends TokenId> {
      * @return The <code>Language</code> registered
      *         for the given <code>mimeType</code>.
      */
-    public static Language<? extends TokenId> find(String mimeType) {
+    public static Language<?> find(String mimeType) {
         return LanguageManager.getInstance().findLanguage(mimeType);
     }
     

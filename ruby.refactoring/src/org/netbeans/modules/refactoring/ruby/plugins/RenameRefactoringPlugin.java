@@ -847,7 +847,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                 if (doc != null) {
                     //force open
                     TokenHierarchy<Document> th = TokenHierarchy.get(doc);
-                    TokenSequence<?extends TokenId> ts = th.tokenSequence();
+                    TokenSequence<?> ts = th.tokenSequence();
 
                     ts.move(0);
 
@@ -871,10 +871,10 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
             
         }
         
-        private void searchTokenSequence(TokenSequence<? extends TokenId> ts) {
+        private void searchTokenSequence(TokenSequence<?> ts) {
             if (ts.moveNext()) {
                 do {
-                    Token<?extends TokenId> token = ts.token();
+                    Token<?> token = ts.token();
                     TokenId id = token.id();
 
                     String primaryCategory = id.primaryCategory();
@@ -903,7 +903,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                             }
                         }
                     } else {
-                        TokenSequence<? extends TokenId> embedded = ts.embedded();
+                        TokenSequence<?> embedded = ts.embedded();
                         if (embedded != null) {
                             searchTokenSequence(embedded);
                         }                                    

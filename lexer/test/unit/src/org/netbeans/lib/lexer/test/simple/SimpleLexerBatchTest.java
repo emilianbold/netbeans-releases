@@ -73,7 +73,7 @@ public class SimpleLexerBatchTest extends TestCase {
         String text = "abc+ " + commentText + "def public publica publi static x";
         int commentTextStartOffset = 5;
         TokenHierarchy<?> hi = TokenHierarchy.create(text,TestTokenId.language());
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
         assertTrue(ts.moveNext());
@@ -116,7 +116,7 @@ public class SimpleLexerBatchTest extends TestCase {
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.BLOCK_COMMENT, commentText, commentTextStartOffset);
 
         // Test embedded token sequence
-        TokenSequence<? extends TokenId> embedded = ts.embedded();
+        TokenSequence<?> embedded = ts.embedded();
         assertNotNull("Null embedded sequence", embedded);
         assertTrue(embedded.moveNext());
         offset = commentTextStartOffset + 2; // skip "/*"
@@ -152,7 +152,7 @@ public class SimpleLexerBatchTest extends TestCase {
         assertTrue("Timeout tm = " + tm + "msec", tm < 100); // Should be fast
         
         tm = System.currentTimeMillis();
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         tm = System.currentTimeMillis() - tm;
         assertTrue("Timeout tm = " + tm + "msec", tm < 100); // Should be fast
         

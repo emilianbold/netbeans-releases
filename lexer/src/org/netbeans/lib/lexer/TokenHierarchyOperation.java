@@ -42,15 +42,13 @@
 package org.netbeans.lib.lexer;
 
 import java.io.Reader;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
@@ -65,10 +63,8 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.ArrayUtilities;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.lib.lexer.inc.OriginalText;
-import org.netbeans.lib.lexer.inc.SnapshotTokenList;
 import org.netbeans.lib.lexer.inc.TokenListChange;
 import org.netbeans.lib.lexer.token.AbstractToken;
 
@@ -82,6 +78,13 @@ import org.netbeans.lib.lexer.token.AbstractToken;
  */
 
 public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands for input
+    
+    static final Logger LOG = TokenHierarchyUpdate.LOG;
+    
+    /**
+     * Input source of this token hierarchy.
+     */
+    private final I inputSource;
     
     /**
      * The token hierarchy delegating to this operation.
@@ -101,31 +104,32 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      * The hierarchy can be made inactive to release the tokens
      * and the memory that they consume temporarily.
      * <br>
-     * By default the hierarchy is active so the tokens
-     * will be created lazily for it.
+     * By default the hierarchy is active for immutable inputs and unitialized
+     * for mutable inputs (will become active upon first ask for TH.tokenSequence()
+     * when MTI.language() will provide a valid language).
      */
-    private boolean active = true;
+    private Activity activity;
 
     /**
      * Primary token hierarchy for snapshot.
      */
-    private TokenHierarchyOperation<I,T> liveTokenHierarchyOperation;
+//    private TokenHierarchyOperation<I,T> liveTokenHierarchyOperation;
     
     /**
      * References to active snapshots.
      */
-    private List<SnapshotRef> snapshotRefs;
+//    private List<SnapshotRef> snapshotRefs;
 
     /**
      * Listener list solely for token change listeners.
      */
     private EventListenerList listenerList;
     
-    private boolean snapshotReleased;
+//    private boolean snapshotReleased;
     
     private Set<LanguagePath> languagePaths;
     
-    private Set<Language<? extends TokenId>> exploredLanguages;
+    private Set<Language<?>> exploredLanguages;
 
     /**
      * Mapping of language path to token list lists.
@@ -143,9 +147,13 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      */
     public TokenHierarchyOperation(Reader inputReader,
     Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
+        @SuppressWarnings("unchecked")
+        I input = (I)inputReader;
+        this.inputSource = input;
         this.rootTokenList = new CopyTextTokenList<T>(this, inputReader,
                 language, skipTokenIds, inputAttributes);
         init();
+        activity = Activity.ACTIVE;
     }
 
     /**
@@ -153,28 +161,26 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      */
     public TokenHierarchyOperation(CharSequence inputText, boolean copyInputText,
     Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
+        @SuppressWarnings("unchecked")
+        I input = (I)inputText;
+        this.inputSource = input;
         this.rootTokenList = copyInputText
                 ? new CopyTextTokenList<T>(this, inputText,
                         language, skipTokenIds, inputAttributes)
                 : new TextTokenList<T>(this, inputText,
                         language, skipTokenIds, inputAttributes);
         init();
+        activity = Activity.ACTIVE;
     }
 
     /**
      * Constructor for mutable input.
      */
-    public TokenHierarchyOperation(MutableTextInput<I> mutableTextInput,
-    Language<T> language) {
+    public TokenHierarchyOperation(MutableTextInput<I> mutableTextInput) {
+        this.inputSource = LexerSpiPackageAccessor.get().inputSource(mutableTextInput);
         this.mutableTextInput = mutableTextInput;
-        this.rootTokenList = new IncTokenList<T>(this, mutableTextInput);
         init();
-    }
-
-    public TokenHierarchyOperation(TokenHierarchyOperation<I,T> liveTokenHierarchy) {
-        this.liveTokenHierarchyOperation = liveTokenHierarchy;
-        this.rootTokenList = new SnapshotTokenList<T>(this);
-        init();
+        activity = Activity.NOT_INITED;
     }
 
     private void init() {
@@ -183,9 +189,6 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         // Create listener list even for non-mutable hierarchies as there may be
         // custom embeddings created that need to be notified
         listenerList = new EventListenerList();
-        if (isMutable()) {
-            snapshotRefs = new ArrayList<SnapshotRef>(1);
-        }
     }
     
     public TokenHierarchy<I> tokenHierarchy() {
@@ -197,7 +200,6 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
 
     public TokenList<T> validRootTokenList() {
-        checkSnapshotNotReleased();
         return rootTokenList();
     }
     
@@ -213,10 +215,8 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         return mutableTextInput;
     }
     
-    public I mutableInputSource() {
-        return isMutable()
-            ? LexerSpiPackageAccessor.get().inputSource(mutableTextInput)
-            : null;
+    public I inputSource() {
+        return inputSource;
     }
     
     public CharSequence text() {
@@ -228,15 +228,95 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     
     public void setActive(boolean active) {
         assert (isMutable());
-        if (this.active != active) {
-            this.active = active;
+        // Check whether the state has changed
+        Activity activity = active ? Activity.ACTIVE : Activity.INACTIVE;
+        if (this.activity != activity) {
+            boolean noFire = (this.activity == Activity.NOT_INITED);
+            this.activity = activity;
+            if (!noFire && listenerList.getListenerCount() > 0) { // Only if there are already listeners
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Firing ACTIVITY change to " + listenerList.getListenerCount() + " listeners"); // NOI18N
+                }
+                TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
+                        this,
+                        TokenHierarchyEventType.ACTIVITY,
+                        0, 0, "", 0
+                );
+                fireTokenHierarchyChanged(eventInfo);
+            }
         }
     }
     
     public boolean isActive() {
-        return active;
+        activateIfPossible();
+        return (activity == Activity.ACTIVE);
     }
     
+    private void activateIfPossible() {
+        if (rootTokenList == null && mutableTextInput != null &&
+                (activity == Activity.NOT_INITED || activity == Activity.NOT_INITED_FIRE)
+        ) {
+            @SuppressWarnings("unchecked")
+            Language<T> language = (Language<T>)LexerSpiPackageAccessor.get().language(mutableTextInput);
+            if (language != null) {
+                rootTokenList = new IncTokenList<T>(this, language);
+                setActive(true);
+            }
+        }
+    }
+    
+    public void ensureReadLocked() {
+        if (isMutable() && LOG.isLoggable(Level.FINE) &&
+                !LexerSpiPackageAccessor.get().isReadLocked(mutableTextInput)
+        ) { // Not read-locked
+            LOG.log(Level.INFO, "!!WARNING!! Missing READ-LOCK of input source "
+                    + LexerSpiPackageAccessor.get().inputSource(mutableTextInput),
+                    new Exception());
+        }
+    }
+    
+    public void ensureWriteLocked() {
+        if (isMutable() && LOG.isLoggable(Level.FINE) &&
+                !LexerSpiPackageAccessor.get().isWriteLocked(mutableTextInput)
+        ) { // Not write-locked
+            LOG.log(Level.INFO, "!!WARNING!! Missing WRITE-LOCK of input source "
+                    + LexerSpiPackageAccessor.get().inputSource(mutableTextInput),
+                    new Exception());
+        }
+    }
+    
+    public TokenSequence<T> tokenSequence() {
+        ensureReadLocked();
+        activateIfPossible();
+        if (rootTokenList != null) {
+            return LexerApiPackageAccessor.get().createTokenSequence(rootTokenList);
+        }
+        return null;
+    }
+    
+    public TokenSequence<T> tokenSequence(Language<?> language) {
+        ensureReadLocked();
+        activateIfPossible();
+        if (rootTokenList != null) {
+            return (rootTokenList.languagePath().topLanguage() == language)
+                    ? LexerApiPackageAccessor.get().createTokenSequence(rootTokenList)
+                    : null;
+        }
+        return null;
+    }
+    
+    public List<TokenSequence<?>> tokenSequenceList(
+    LanguagePath languagePath, int startOffset, int endOffset) {
+        if (languagePath == null)
+            throw new IllegalArgumentException("languagePath cannot be null"); // NOI18N
+        ensureReadLocked();
+        activateIfPossible();
+        if (rootTokenList != null) {
+            return new TokenSequenceList(this, languagePath, startOffset, endOffset);
+        }
+        return null;
+    }
+
     /**
      * Get the token list list for the given language path.
      * <br/>
@@ -279,9 +359,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
 
     public void rebuild() {
-        if (isSnapshot()) // Do nothing for snapshot
-            return;
-        if (active) {
+        if (activity == Activity.ACTIVE) {
             IncTokenList<T> incTokenList = (IncTokenList<T>)rootTokenList;
             incTokenList.incrementModCount();
             TokenListChange<T> change = new TokenListChange<T>(incTokenList);
@@ -295,24 +373,16 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             incTokenList.replaceTokens(change, incTokenList.tokenCountCurrent(), 0);
             incTokenList.restartLexing(); // Will relex tokens lazily
             
-            synchronized (snapshotRefs) {
-                for (int i = snapshotRefs.size() - 1; i >= 0; i--) {
-                    TokenHierarchyOperation<I,T> op = snapshotRefs.get(i).get();
-                    if (op != null) {
-                        ((SnapshotTokenList<T>)op.rootTokenList()).update(eventInfo, change);
-                    }
-                }
-            }
             eventInfo.setTokenChangeInfo(change.tokenChangeInfo());
             eventInfo.setMaxAffectedEndOffset(text.length());
             
             path2tokenListList = null; // Drop all token list lists
-            fireTokenHierarchyChanged(
-                LexerApiPackageAccessor.get().createTokenChangeEvent(eventInfo));
+            fireTokenHierarchyChanged(eventInfo);
         } // not active - no changes fired
     }
     
-    public void fireTokenHierarchyChanged(TokenHierarchyEvent evt) {
+    public void fireTokenHierarchyChanged(TokenHierarchyEventInfo eventInfo) {
+        TokenHierarchyEvent evt = LexerApiPackageAccessor.get().createTokenChangeEvent(eventInfo);
         Object[] listeners = listenerList.getListenerList();
         int listenersLength = listeners.length;
         for (int i = 1; i < listenersLength; i += 2) {
@@ -327,28 +397,29 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     public void removeTokenHierarchyListener(TokenHierarchyListener listener) {
         listenerList.remove(TokenHierarchyListener.class, listener);
     }
-
+    
     public void textModified(int offset, int removedLength, CharSequence removedText, int insertedLength) {
-        if (active) {
+        ensureWriteLocked();
+        if (activity == Activity.ACTIVE) {
             TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
                     this, TokenHierarchyEventType.MODIFICATION,
                     offset, removedLength, removedText, insertedLength);
             // First a top-level token list will be updated then the embedded ones.
             IncTokenList<T> incTokenList = (IncTokenList<T>)rootTokenList;
 
-            if (TokenHierarchyUpdate.LOG.isLoggable(Level.FINEST)) {
+            if (LOG.isLoggable(Level.FINEST)) {
                 // Display current state of the hierarchy by faking its text
                 // through original text
                 CharSequence text = incTokenList.text();
                 assert (text != null);
                 incTokenList.setText(eventInfo.originalText());
                 // Dump all contents
-                TokenHierarchyUpdate.LOG.finest(toString());
+                LOG.finest(toString());
                 // Return the original text
                 incTokenList.setText(text);
             }
             
-            if (TokenHierarchyUpdate.LOG.isLoggable(Level.FINE)) {
+            if (LOG.isLoggable(Level.FINE)) {
                 StringBuilder sb = new StringBuilder(150);
                 sb.append("<<<<<<<<<<<<<<<<<< LEXER CHANGE START ------------------\n"); // NOI18N
                 sb.append(eventInfo.modificationDescription(false));
@@ -357,38 +428,38 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
 
             new TokenHierarchyUpdate(eventInfo).update(incTokenList);
             
-            if (TokenHierarchyUpdate.LOG.isLoggable(Level.FINE)) {
-                TokenHierarchyUpdate.LOG.fine("AFFECTED: " + eventInfo.dumpAffected() + "\n"); // NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("AFFECTED: " + eventInfo.dumpAffected() + "\n"); // NOI18N
                 String extraMsg = "";
-                if (TokenHierarchyUpdate.LOG.isLoggable(Level.FINER)) {
+                if (LOG.isLoggable(Level.FINER)) {
                     // Check consistency of the whole token hierarchy
                     String error = checkConsistency();
                     if (error != null) {
                         String msg = "!!!CONSISTENCY-ERROR!!!: " + error + "\n";
-                        if (TokenHierarchyUpdate.LOG.isLoggable(Level.FINEST)) {
+                        if (LOG.isLoggable(Level.FINEST)) {
                             throw new IllegalStateException(msg);
                         } else {
-                            TokenHierarchyUpdate.LOG.finer(msg);
+                            LOG.finer(msg);
                         }
                     } else {
                         extraMsg = "(TokenHierarchy Check OK) ";
                     }
                 }
-                TokenHierarchyUpdate.LOG.fine(">>>>>>>>>>>>>>>>>> LEXER CHANGE END " + extraMsg + "------------------\n"); // NOI18N
+                LOG.fine(">>>>>>>>>>>>>>>>>> LEXER CHANGE END " + extraMsg + "------------------\n"); // NOI18N
             }
 
-            if (TokenHierarchyUpdate.LOG.isLoggable(Level.FINEST)) {
-                TokenHierarchyUpdate.LOG.finest("AFTER UPDATE:\n");
-                TokenHierarchyUpdate.LOG.finest(toString());
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.finest("AFTER UPDATE:\n");
+                LOG.finest(toString());
             }
 
-            fireTokenHierarchyChanged(LexerApiPackageAccessor.get().createTokenChangeEvent(eventInfo));
+            fireTokenHierarchyChanged(eventInfo);
         }
     }
 
     private Language<T> language() {
         TokenList<T> tl = rootTokenList();
-        Language<? extends TokenId> l;
+        Language<?> l;
         if (tl != null) {
             l = rootTokenList.languagePath().topLanguage();
         } else {
@@ -401,6 +472,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
     
     public Set<LanguagePath> languagePaths() {
+        activateIfPossible();
         Set<LanguagePath> lps;
         synchronized (this) {
             lps = languagePaths;
@@ -413,8 +485,8 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             lps = clps;
 
             @SuppressWarnings("unchecked")
-            Set<Language<? extends TokenId>> cel = (Set<Language<? extends TokenId>>)
-                    ((HashSet<Language<? extends TokenId>>)langOp.exploredLanguages()).clone();
+            Set<Language<?>> cel = (Set<Language<?>>)
+                    ((HashSet<Language<?>>)langOp.exploredLanguages()).clone();
             synchronized (this) {
                 languagePaths = lps;
                 exploredLanguages = cel;
@@ -434,120 +506,121 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         }
     }
             
-    public boolean isSnapshot() {
-        return (liveTokenHierarchyOperation != null);
-    }
-
-    public TokenHierarchy<I> snapshotOf() {
-        return (isSnapshot() ? liveTokenHierarchyOperation.tokenHierarchy() : null);
-    }
-
-    private void checkIsSnapshot() {
-        if (!isSnapshot()) {
-            throw new IllegalStateException("Not a snapshot");
-        }
-    }
-
-    private void checkSnapshotNotReleased() {
-        if (snapshotReleased) {
-            throw new IllegalStateException("Snapshot already released"); // NOI18N
-        }
-    }
-
-    public TokenHierarchy<I> createSnapshot() {
-        if (isMutable()) {
-            TokenHierarchyOperation<I,T> snapshot = new TokenHierarchyOperation<I,T>(this);
-            snapshotRefs.add(new SnapshotRef(snapshot));
-            return snapshot.tokenHierarchy();
-        }
-        return null;
-    }
-
-    public void snapshotRelease() {
-        checkIsSnapshot();
-        checkSnapshotNotReleased();
-
-        snapshotReleased = true;
-        if (liveTokenHierarchyOperation != null) { // only when "real" snapshot for mutable hierarchies
-            // Remove the reference from the snapshots array
-            liveTokenHierarchyOperation.removeSnapshot(this);
-        }
-    }
-
-    public boolean isSnapshotReleased() {
-        return snapshotReleased;
-    }
-
-    void removeSnapshot(SnapshotRef snapshotRef) {
-        synchronized (snapshotRefs) {
-            snapshotRefs.remove(snapshotRef);
-        }
-    }
-    
-    void removeSnapshot(TokenHierarchyOperation<I,T> snapshot) {
-        synchronized (snapshotRefs) {
-            for (int i = snapshotRefs.size() - 1; i >= 0; i--) {
-                Reference ref = (Reference)snapshotRefs.get(i);
-                if (ref.get() == snapshot) {
-                    snapshotRefs.remove(i);
-                    break;
-                }
-            }
-        }
-    }
-
-    private int snapshotCount() {
-        synchronized (snapshotRefs) {
-            return snapshotRefs.size();
-        }
-    }
-
-    public boolean canModifyToken(int index, AbstractToken token) {
-        synchronized (snapshotRefs) {
-            for (int i = snapshotCount() - 1; i >= 0; i--) {
-                TokenHierarchyOperation op = snapshotRefs.get(i).get();
-                
-                if (op != null && ((SnapshotTokenList) op.rootTokenList()).canModifyToken(index, token)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    public TokenHierarchyOperation<I,T> liveTokenHierarchyOperation() {
-        return liveTokenHierarchyOperation;
-    }
-
-    public <TT extends TokenId> int tokenOffset(AbstractToken<TT> token, TokenList<TT> tokenList, int rawOffset) {
-        if (this.rootTokenList.getClass() == SnapshotTokenList.class) {
-            if (tokenList != null) {
-                @SuppressWarnings("unchecked")
-                SnapshotTokenList<TT> tlUC = (SnapshotTokenList<TT>)this.rootTokenList;
-                return tlUC.tokenOffset(token, tokenList, rawOffset);
-            } else { // passed tokenList is null => token removed from EmbeddedTokenList
-                return rawOffset;
-            }
-        } else { // not a snapshot - regular situation
-            return (tokenList != null)
-                    ? tokenList.childTokenOffset(rawOffset)
-                    : rawOffset;
-        }
-    }
-
-    public int tokenShiftStartOffset() {
-        return isSnapshot() ? ((SnapshotTokenList)rootTokenList).tokenShiftStartOffset() : -1;
-    }
-
-    public int tokenShiftEndOffset() {
-        return isSnapshot() ? ((SnapshotTokenList)rootTokenList).tokenShiftEndOffset() : -1;
-    }
-    
+//    public boolean isSnapshot() {
+//        return (liveTokenHierarchyOperation != null);
+//    }
+//
+//    public TokenHierarchy<I> snapshotOf() {
+//        return (isSnapshot() ? liveTokenHierarchyOperation.tokenHierarchy() : null);
+//    }
+//
+//    private void checkIsSnapshot() {
+//        if (!isSnapshot()) {
+//            throw new IllegalStateException("Not a snapshot");
+//        }
+//    }
+//
+//    private void checkSnapshotNotReleased() {
+//        if (snapshotReleased) {
+//            throw new IllegalStateException("Snapshot already released"); // NOI18N
+//        }
+//    }
+//
+//    public TokenHierarchy<I> createSnapshot() {
+//        if (isMutable()) {
+//            TokenHierarchyOperation<I,T> snapshot = new TokenHierarchyOperation<I,T>(this);
+//            snapshotRefs.add(new SnapshotRef(snapshot));
+//            return snapshot.tokenHierarchy();
+//        }
+//        return null;
+//    }
+//
+//    public void snapshotRelease() {
+//        checkIsSnapshot();
+//        checkSnapshotNotReleased();
+//
+//        snapshotReleased = true;
+//        if (liveTokenHierarchyOperation != null) { // only when "real" snapshot for mutable hierarchies
+//            // Remove the reference from the snapshots array
+//            liveTokenHierarchyOperation.removeSnapshot(this);
+//        }
+//    }
+//
+//    public boolean isSnapshotReleased() {
+//        return snapshotReleased;
+//    }
+//
+//    void removeSnapshot(SnapshotRef snapshotRef) {
+//        synchronized (snapshotRefs) {
+//            snapshotRefs.remove(snapshotRef);
+//        }
+//    }
+//    
+//    void removeSnapshot(TokenHierarchyOperation<I,T> snapshot) {
+//        synchronized (snapshotRefs) {
+//            for (int i = snapshotRefs.size() - 1; i >= 0; i--) {
+//                Reference ref = (Reference)snapshotRefs.get(i);
+//                if (ref.get() == snapshot) {
+//                    snapshotRefs.remove(i);
+//                    break;
+//                }
+//            }
+//        }
+//    }
+//
+//    private int snapshotCount() {
+//        synchronized (snapshotRefs) {
+//            return snapshotRefs.size();
+//        }
+//    }
+//
+//    public boolean canModifyToken(int index, AbstractToken token) {
+//        synchronized (snapshotRefs) {
+//            for (int i = snapshotCount() - 1; i >= 0; i--) {
+//                TokenHierarchyOperation op = snapshotRefs.get(i).get();
+//                
+//                if (op != null && ((SnapshotTokenList) op.rootTokenList()).canModifyToken(index, token)) {
+//                    return false;
+//                }
+//            }
+//        }
+//        return true;
+//    }
+//
+//    public TokenHierarchyOperation<I,T> liveTokenHierarchyOperation() {
+//        return liveTokenHierarchyOperation;
+//    }
+//
+//    public <TT extends TokenId> int tokenOffset(AbstractToken<TT> token, TokenList<TT> tokenList, int rawOffset) {
+//        if (this.rootTokenList.getClass() == SnapshotTokenList.class) {
+//            if (tokenList != null) {
+//                @SuppressWarnings("unchecked")
+//                SnapshotTokenList<TT> tlUC = (SnapshotTokenList<TT>)this.rootTokenList;
+//                return tlUC.tokenOffset(token, tokenList, rawOffset);
+//            } else { // passed tokenList is null => token removed from EmbeddedTokenList
+//                return rawOffset;
+//            }
+//        } else { // not a snapshot - regular situation
+//            return (tokenList != null)
+//                    ? tokenList.childTokenOffset(rawOffset)
+//                    : rawOffset;
+//        }
+//    }
+//
+//    public int tokenShiftStartOffset() {
+//        return isSnapshot() ? ((SnapshotTokenList)rootTokenList).tokenShiftStartOffset() : -1;
+//    }
+//
+//    public int tokenShiftEndOffset() {
+//        return isSnapshot() ? ((SnapshotTokenList)rootTokenList).tokenShiftEndOffset() : -1;
+//    }
+//    
     @Override
     public String toString() {
+        activateIfPossible();
         StringBuilder sb = new StringBuilder("TOKEN HIERARCHY"); // NOI18N
-        if (mutableInputSource() != null) {
-            sb.append(" for " + mutableInputSource());
+        if (inputSource() != null) {
+            sb.append(" for " + inputSource());
         }
         sb.append(":\n"); // NOI18N
         LexerUtilsConstants.appendTokenList(sb, rootTokenList);
@@ -587,7 +660,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         return error;
     }
     
-    private String checkConsistencyTokenList(TokenList<? extends TokenId> tokenList,
+    private String checkConsistencyTokenList(TokenList<?> tokenList,
     int[] parentIndexes, int firstTokenOffset) {
         int tokenCountCurrent = tokenList.tokenCountCurrent();
         int[] indexes = ArrayUtilities.intArray(parentIndexes, parentIndexes.length + 1);
@@ -694,24 +767,34 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         for (int i = 0; i < indexes.length; i++) {
             LexerUtilsConstants.appendTokenInfo(sb, tokenList, i,
                     tokenHierarchy(), false, 0);
-            tokenList = EmbeddingContainer.embeddedTokenList(tokenList, indexes[i], languagePath.language(i));
+            EmbeddedTokenList<?> etl = EmbeddingContainer.embeddedTokenList(tokenList, indexes[i], languagePath.language(i));
+            tokenList = etl;
         }
         return sb.toString();
     }
     
-    private final class SnapshotRef extends WeakReference<TokenHierarchyOperation<I,T>> implements Runnable {
+//    private final class SnapshotRef extends WeakReference<TokenHierarchyOperation<I,T>> implements Runnable {
+//        
+//        SnapshotRef(TokenHierarchyOperation<I,T> snapshot) {
+//            super(snapshot, org.openide.util.Utilities.activeReferenceQueue());
+//        }
+//
+//        public void run() {
+//            if (liveTokenHierarchyOperation != null) {
+//                // Remove the reference from the snapshots array
+//                liveTokenHierarchyOperation.removeSnapshot(this);
+//            }
+//        }
+//
+//    }
+
+    static enum Activity {
         
-        SnapshotRef(TokenHierarchyOperation<I,T> snapshot) {
-            super(snapshot, org.openide.util.Utilities.activeReferenceQueue());
-        }
-
-        public void run() {
-            if (liveTokenHierarchyOperation != null) {
-                // Remove the reference from the snapshots array
-                liveTokenHierarchyOperation.removeSnapshot(this);
-            }
-        }
-
+        NOT_INITED, // Initial state for mutable inputs
+        NOT_INITED_FIRE, // Someone has asked for tokenSequence() etc. but MTI.language() not available yet -> fire listeners
+        INACTIVE, // Explicitly set to inactive
+        ACTIVE; // Default for immutable hierarchies; mutable THs once MTI.language() is non-null
+        
     }
 
 }

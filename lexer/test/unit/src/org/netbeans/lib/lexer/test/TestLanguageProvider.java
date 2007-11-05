@@ -118,14 +118,14 @@ public class TestLanguageProvider extends LanguageProvider {
             throw new IllegalStateException("No instance of created yet.");
     }
 
-    public Language<? extends TokenId> findLanguage(String mimeType) {
+    public Language<?> findLanguage(String mimeType) {
         synchronized (LOCK) {
             return mime2language.get(mimeType);
         }
     }
 
-    public LanguageEmbedding<? extends TokenId> findLanguageEmbedding(
-    Token<? extends TokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+    public LanguageEmbedding<?> findLanguageEmbedding(
+    Token<?> token, LanguagePath languagePath, InputAttributes inputAttributes) {
         Map<TokenId,LanguageEmbedding<?>> id2embedding = mime2embeddings.get(languagePath.mimePath());
         return (id2embedding != null) ? id2embedding.get(token.id()) : null;
     }

@@ -48,7 +48,6 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.CharPreprocessorOperation;
 import org.netbeans.lib.lexer.CharProvider;
 import org.netbeans.lib.lexer.LanguageOperation;
 import org.netbeans.lib.lexer.LexerApiPackageAccessor;
@@ -242,7 +241,7 @@ public abstract class LanguageHierarchy<T extends TokenId> {
      * @return language embedding instance or null if there is no language embedding
      *  for this token.
      */
-    protected LanguageEmbedding<? extends TokenId> embedding(Token<T> token,
+    protected LanguageEmbedding<?> embedding(Token<T> token,
     LanguagePath languagePath, InputAttributes inputAttributes) {
         return null; // No extra hardcoded embedding by default
     }
@@ -267,16 +266,6 @@ public abstract class LanguageHierarchy<T extends TokenId> {
      */
     protected EmbeddingPresence embeddingPresence(T id) {
         return EmbeddingPresence.CACHED_FIRST_QUERY;
-    }
-    
-    /**
-     * Create character preprocessor that translates certain character sequences
-     * into characters (for example Unicode escape sequences).
-     *
-     * @return valid preprocessor or null if there is no extra preprocessor.
-     */
-    protected CharPreprocessor createCharPreprocessor() {
-        return null; // no preprocessor by default
     }
     
     /**
@@ -371,11 +360,11 @@ public abstract class LanguageHierarchy<T extends TokenId> {
             return languageHierarchy.createTokenCategories();
         }
 
-        public String mimeType(LanguageHierarchy<? extends TokenId> languageHierarchy) {
+        public String mimeType(LanguageHierarchy<?> languageHierarchy) {
             return languageHierarchy.mimeType();
         }
 
-        public <T extends TokenId> LanguageEmbedding<? extends TokenId> embedding(LanguageHierarchy<T> languageHierarchy,
+        public <T extends TokenId> LanguageEmbedding<?> embedding(LanguageHierarchy<T> languageHierarchy,
         Token<T> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             return languageHierarchy.embedding(token, languagePath, inputAttributes);
         }
@@ -406,23 +395,11 @@ public abstract class LanguageHierarchy<T extends TokenId> {
             return languageHierarchy.isRetainTokenText(id);
         }
 
-        public CharPreprocessor createCharPreprocessor(LanguageHierarchy languageHierarchy) {
-            return languageHierarchy.createCharPreprocessor();
-        }
-
         public LexerInput createLexerInput(CharProvider charProvider) {
             return new LexerInput(charProvider);
         }
 
-        public void init(CharPreprocessor preprocessor, CharPreprocessorOperation operation) {
-            preprocessor.init(operation);
-        }
-
-        public void preprocessChar(CharPreprocessor preprocessor) {
-            preprocessor.preprocessChar();
-        }
-
-        public Language<? extends TokenId> language(MutableTextInput<?> mti) {
+        public Language<?> language(MutableTextInput<?> mti) {
             return mti.language();
         }
 
@@ -441,6 +418,14 @@ public abstract class LanguageHierarchy<T extends TokenId> {
 
         public <I> I inputSource(MutableTextInput<I> mti) {
             return mti.inputSource();
+        }
+        
+        public boolean isReadLocked(MutableTextInput<?> mti) {
+            return mti.isReadLocked();
+        }
+
+        public boolean isWriteLocked(MutableTextInput<?> mti) {
+            return mti.isWriteLocked();
         }
 
         public <T extends TokenId> TokenFactory<T> createTokenFactory(

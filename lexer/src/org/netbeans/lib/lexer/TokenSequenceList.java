@@ -59,7 +59,7 @@ import org.netbeans.api.lexer.TokenSequence;
  * @author Miloslav Metelka
  */
 
-public final class TokenSequenceList extends AbstractList<TokenSequence<? extends TokenId>> {
+public final class TokenSequenceList extends AbstractList<TokenSequence<?>> {
     
     private TokenHierarchyOperation<?,?> operation;
 

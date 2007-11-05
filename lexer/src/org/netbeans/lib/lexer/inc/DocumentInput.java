@@ -75,7 +75,7 @@ extends MutableTextInput<D> implements DocumentListener {
 
     private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
     
-    public static <D extends Document> DocumentInput<D> get(D doc) {
+    public static synchronized <D extends Document> DocumentInput<D> get(D doc) {
         @SuppressWarnings("unchecked")
         DocumentInput<D> di = (DocumentInput<D>)doc.getProperty(MutableTextInput.class);
         if (di == null) {
@@ -87,8 +87,6 @@ extends MutableTextInput<D> implements DocumentListener {
     
     private D doc;
     
-    private LanguageHierarchy languageHierarchy;
-    
     private CharSequence text;
     
     public DocumentInput(D doc) {
@@ -98,32 +96,43 @@ extends MutableTextInput<D> implements DocumentListener {
         DocumentUtilities.addDocumentListener(doc, this, DocumentListenerPriority.LEXER);
     }
     
-    public Language<? extends TokenId> language() {
-        Language<? extends TokenId> lang = (Language<? extends TokenId>)
-                doc.getProperty(Language.class);
-        
+    @Override
+    protected Language<?> language() {
+        Language<?> lang = (Language<?>)doc.getProperty(Language.class);
         if (lang == null) {
             String mimeType = (String) doc.getProperty(PROP_MIME_TYPE);
             if (mimeType != null) {
                 lang = LanguageManager.getInstance().findLanguage(mimeType);
             }
         }
-        
         return lang;
     }
     
-    public CharSequence text() {
+    @Override
+    protected CharSequence text() {
         return text;
     }
     
-    public InputAttributes inputAttributes() {
+    @Override
+    protected InputAttributes inputAttributes() {
         return (InputAttributes)doc.getProperty(InputAttributes.class);
     }
 
-    public D inputSource() {
+    @Override
+    protected D inputSource() {
         return doc;
     }
     
+    @Override
+    protected boolean isReadLocked() {
+        return DocumentUtilities.isReadLocked(doc);
+    }
+
+    @Override
+    protected boolean isWriteLocked() {
+        return DocumentUtilities.isWriteLocked(doc);
+    }
+
     public void changedUpdate(DocumentEvent e) {
     }
 
@@ -138,9 +147,6 @@ extends MutableTextInput<D> implements DocumentListener {
     private void modified(boolean insert, DocumentEvent e) {
         int offset = e.getOffset();
         int length = e.getLength();
-        if (LOG.isLoggable(Level.FINE) && !DocumentUtilities.isWriteLocked(doc)) {
-            LOG.log(Level.FINE, "Lexer update while document not write-locked", new Exception()); // NOI18N
-        }
         if (insert) {
             tokenHierarchyControl().textModified(offset, 0, null, length);
         } else {

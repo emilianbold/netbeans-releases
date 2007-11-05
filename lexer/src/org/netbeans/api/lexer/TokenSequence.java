@@ -109,7 +109,9 @@ import org.netbeans.lib.lexer.token.AbstractToken;
  * </p>
  *
  * <p>
- * This class should be used by a single thread only.
+ * This object should be used by a single thread only. For token hierarchies
+ * over mutable input sources the obtaining and using of the token sequence
+ * needs to be done under a read-lock of the input source.
  * </p>
  *
  * @author Miloslav Metelka
@@ -292,7 +294,7 @@ public final class TokenSequence<T extends TokenId> {
      * @return embedded sequence or null if no embedding exists for this token.
      * @throws IllegalStateException if {@link #token()} returns null.
      */
-    public TokenSequence<? extends TokenId> embedded() {
+    public TokenSequence<?> embedded() {
         checkTokenNotNull();
         return embeddedImpl(null);
     }
@@ -325,7 +327,7 @@ public final class TokenSequence<T extends TokenId> {
      * @throws IllegalStateException if {@link #token()} returns null.
      * @see #createEmbedding(Language, int, int, boolean)
      */
-    public boolean createEmbedding(Language<? extends TokenId> embeddedLanguage,
+    public boolean createEmbedding(Language<?> embeddedLanguage,
     int startSkipLength, int endSkipLength) {
         return createEmbedding(embeddedLanguage, startSkipLength, endSkipLength, false);
     }
@@ -360,7 +362,7 @@ public final class TokenSequence<T extends TokenId> {
      *  with the given language already exists for this token.
      * @throws IllegalStateException if {@link #token()} returns null.
      */
-    public boolean createEmbedding(Language<? extends TokenId> embeddedLanguage,
+    public boolean createEmbedding(Language<?> embeddedLanguage,
     int startSkipLength, int endSkipLength, boolean joinSections) {
         checkTokenNotNull();
         return EmbeddingContainer.createEmbedding(tokenList, tokenIndex,
@@ -373,7 +375,8 @@ public final class TokenSequence<T extends TokenId> {
      * If the underying text input is mutable then this method should only be called
      * within a write lock over the text input.
      */
-    public boolean removeEmbedding(Language<? extends TokenId> embeddedLanguage) {
+    public boolean removeEmbedding(Language<?> embeddedLanguage) {
+        checkTokenNotNull();
         return EmbeddingContainer.removeEmbedding(tokenList, tokenIndex, embeddedLanguage);
     }
 

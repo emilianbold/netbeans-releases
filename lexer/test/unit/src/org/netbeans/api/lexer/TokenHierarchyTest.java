@@ -173,22 +173,22 @@ public class TokenHierarchyTest extends NbTestCase {
         doc.putProperty(Language.class,TestTokenId.language());
         
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        List<TokenSequence<? extends TokenId>> ets1 = hi.embeddedTokenSequences(4, false);
+        List<TokenSequence<?>> ets1 = hi.embeddedTokenSequences(4, false);
         assertEquals("Wrong number of embedded TokenSequences", 2, ets1.size());
         assertEquals("Wrong offset from the most embedded TokenSequence", 3, ets1.get(1).offset());
         
-        List<TokenSequence<? extends TokenId>> ets2 = hi.embeddedTokenSequences(6, false);
+        List<TokenSequence<?>> ets2 = hi.embeddedTokenSequences(6, false);
         assertEquals("Wrong number of embedded TokenSequences", 1, ets2.size());
         assertEquals("Wrong offset from the most embedded TokenSequence", 0, ets2.get(0).offset());
         
-        List<TokenSequence<? extends TokenId>> ets3 = hi.embeddedTokenSequences(3, true);
+        List<TokenSequence<?>> ets3 = hi.embeddedTokenSequences(3, true);
         assertEquals("Wrong number of embedded TokenSequences", 1, ets3.size());
         assertEquals("Wrong offset from the most embedded TokenSequence", 0, ets3.get(0).offset());
 
-        List<TokenSequence<? extends TokenId>> ets4 = hi.embeddedTokenSequences(0, true);
+        List<TokenSequence<?>> ets4 = hi.embeddedTokenSequences(0, true);
         assertEquals("Wrong number of embedded TokenSequences", 0, ets4.size());
 
-        List<TokenSequence<? extends TokenId>> ets5 = hi.embeddedTokenSequences(doc.getLength(), false);
+        List<TokenSequence<?>> ets5 = hi.embeddedTokenSequences(doc.getLength(), false);
         assertEquals("Wrong number of embedded TokenSequences", 0, ets5.size());
     }
 

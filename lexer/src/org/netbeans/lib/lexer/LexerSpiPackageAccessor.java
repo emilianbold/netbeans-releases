@@ -48,7 +48,6 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.spi.lexer.CharPreprocessor;
 import org.netbeans.spi.lexer.EmbeddingPresence;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
@@ -97,9 +96,9 @@ public abstract class LexerSpiPackageAccessor {
     LexerInput input, TokenFactory<T> tokenFactory, Object state,
     LanguagePath languagePath, InputAttributes inputAttributes);
     
-    public abstract String mimeType(LanguageHierarchy<? extends TokenId> languageHierarchy);
+    public abstract String mimeType(LanguageHierarchy<?> languageHierarchy);
     
-    public abstract <T extends TokenId> LanguageEmbedding<? extends TokenId> embedding(
+    public abstract <T extends TokenId> LanguageEmbedding<?> embedding(
     LanguageHierarchy<T> languageHierarchy, Token<T> token,
     LanguagePath languagePath, InputAttributes inputAttributes);
     
@@ -107,17 +106,11 @@ public abstract class LexerSpiPackageAccessor {
     
     public abstract <T extends TokenId> TokenValidator<T> createTokenValidator(LanguageHierarchy<T> languageHierarchy, T id);
 
-    public abstract CharPreprocessor createCharPreprocessor(LanguageHierarchy<? extends TokenId> languageHierarchy);
-
     public abstract <T extends TokenId> boolean isRetainTokenText(LanguageHierarchy<T> languageHierarchy, T id);
 
     public abstract LexerInput createLexerInput(CharProvider charProvider);
     
-    public abstract void init(CharPreprocessor preprocessor, CharPreprocessorOperation operation);
-    
-    public abstract void preprocessChar(CharPreprocessor preprocessor);
-    
-    public abstract Language<? extends TokenId> language(MutableTextInput<?> mti);
+    public abstract Language<?> language(MutableTextInput<?> mti);
     
     public abstract <T extends TokenId> LanguageEmbedding<T> createLanguageEmbedding(
     Language<T> language, int startSkipLength, int endSkipLength, boolean joinSections);
@@ -127,6 +120,10 @@ public abstract class LexerSpiPackageAccessor {
     public abstract InputAttributes inputAttributes(MutableTextInput<?> mti);
     
     public abstract <I> I inputSource(MutableTextInput<I> mti);
+    
+    public abstract boolean isReadLocked(MutableTextInput<?> mti);
+    
+    public abstract boolean isWriteLocked(MutableTextInput<?> mti);
     
     public abstract <T extends TokenId> TokenFactory<T> createTokenFactory(LexerInputOperation<T> lexerInputOperation);
     

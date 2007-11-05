@@ -47,8 +47,6 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
-import org.netbeans.lib.lexer.TokenList;
-import org.netbeans.lib.lexer.TokenSequenceList;
 import org.netbeans.lib.lexer.inc.DocumentInput;
 
 /**
@@ -62,12 +60,6 @@ import org.netbeans.lib.lexer.inc.DocumentInput;
  * The hierarchy may either be flat or it can be a tree if the
  * corresponding language hierarchy contains language embeddings.
  *
- * <p/>
- * Token hierarchy may also act as a snapshot of another "live" token hierarchy.
- * <br/>
- * The snapshot may be created at any time by using {@link #createSnapshot()}
- * on the live token hierarchy.
- *
  * @author Miloslav Metelka
  * @version 1.00
  */
@@ -76,19 +68,22 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
     
     /**
      * Get or create mutable token hierarchy for the given swing document.
-     * <br>
+     * <br/>
+     * The document may define a top language by doing
+     * <code>doc.putProperty("mimeType", mimeType)</code>
+     * (a language defined for the given mime type will be searched and used)
+     * or by doing <code>putProperty(Language.class, language)</code>.
+     * Otherwise the returned hierarchy will be inactive and {@link #tokenSequence()}
+     * will return null.
+     * <br/>
      * All the operations with the obtained token hierarchy
      * must be done under document's read lock (or write lock).
      *
-     * @param doc swing text document for which the token hiearchy should be obtained.
-     * @return token hierarchy or <code>null</code> in case the token hierarchy
-     *  does not exist yet and the <code>Language.class</code>
-     *  document property was not yet initialized with the valid language
-     *  so the hierarchy cannot be created.
+     * @param doc non-null swing text document for which the token hiearchy should be obtained.
+     * @return non-null token hierarchy.
      */
     public static <D extends Document> TokenHierarchy<D> get(D doc) {
-        DocumentInput<D> di = DocumentInput.get(doc);
-        return di.tokenHierarchyControl().tokenHierarchy();
+        return DocumentInput.get(doc).tokenHierarchyControl().tokenHierarchy();
     }
     
     /**
@@ -97,8 +92,7 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      *
      * @see #create(CharSequence,boolean,Language,Set,InputAttributes)
      */
-    public static TokenHierarchy<Void> create(CharSequence inputText,
-    Language<? extends TokenId> language) {
+    public static <I extends CharSequence> TokenHierarchy<I> create(I inputText, Language<?> language) {
         return create(inputText, false, language, null, null);
     }
 
@@ -130,11 +124,11 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      *  for the particular language (such as version of the language to be used).
      * @return non-null token hierarchy.
      */
-    public static <T extends TokenId> TokenHierarchy<Void> create(
-    CharSequence inputText, boolean copyInputText,
+    public static <I extends CharSequence, T extends TokenId> TokenHierarchy<I> create(
+    I inputText, boolean copyInputText,
     Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
 
-        return new TokenHierarchyOperation<Void,T>(inputText, copyInputText,
+        return new TokenHierarchyOperation<I,T>(inputText, copyInputText,
                 language, skipTokenIds, inputAttributes).tokenHierarchy();
     }
 
@@ -160,11 +154,10 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      *  for the particular language (such as version of the language to be used).
      * @return non-null token hierarchy.
      */
-    public static <T extends TokenId> TokenHierarchy<Void> create(
-    Reader inputReader,
-    Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
+    public static <I extends Reader, T extends TokenId> TokenHierarchy<I> create(
+    I inputReader, Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
 
-        return new TokenHierarchyOperation<Void,T>(inputReader,
+        return new TokenHierarchyOperation<I,T>(inputReader,
                 language, skipTokenIds, inputAttributes).tokenHierarchy();
     }
     
@@ -178,34 +171,31 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
     /**
      * Get token sequence of the top level language of the token hierarchy.
      * <br/>
+     * For token hierarchies over mutable input sources the input source must be read-locked.
+     * <br/>
      * The token sequences for inner levels of the token hierarchy can be
      * obtained by calling {@link TokenSequence#embedded()}.
      *
-     * @return non-null token sequence of the top level of the token hierarchy.
+     * @return token sequence of the top level of the token hierarchy
+     *  or null if the token hierarchy is currently not active.
      */
-    public TokenSequence<? extends TokenId> tokenSequence() {
-        @SuppressWarnings("unchecked")
-        TokenSequence<? extends TokenId> ts = new TokenSequence<TokenId>(
-                (TokenList<TokenId>)operation.validRootTokenList());
-        return ts;
+    public TokenSequence<?> tokenSequence() {
+        return operation.tokenSequence();
     }
 
     /**
      * Get token sequence of the top level of the language hierarchy
      * only if it's of the given language.
      *
-     * @return non-null token sequence or null if the top level token sequence
-     *  satisfies the condition <code>(tokenSequence().language() == language)</code>.
+     * @return non-null token sequence or null if the hierarchy is active
+     *  and its top level token sequence satisfies the condition
+     *  <code>(tokenSequence().language() == language)</code>.
+     *  <br/>
      *  Null is returned otherwise.
-     *
      */
     public <T extends TokenId> TokenSequence<T> tokenSequence(Language<T> language) {
-        TokenList<? extends TokenId> tokenList = operation.validRootTokenList();
         @SuppressWarnings("unchecked")
-        TokenSequence<T> ts
-                = (tokenList.languagePath().topLanguage() == language)
-                    ? new TokenSequence<T>((TokenList<T>)tokenList)
-                    : null;
+        TokenSequence<T> ts = (TokenSequence<T>)operation.tokenSequence(language);
         return ts;
     }
     
@@ -230,11 +220,9 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      *  If the particular TS starts before this offset then it will be returned.
      * @return non-null list of <code>TokenSequence</code>s.
      */
-    public List<TokenSequence<? extends TokenId>> tokenSequenceList(
+    public List<TokenSequence<?>> tokenSequenceList(
     LanguagePath languagePath, int startOffset, int endOffset) {
-        if (languagePath == null)
-            throw new IllegalArgumentException("languagePath cannot be null"); // NOI18N
-        return new TokenSequenceList(operation, languagePath, startOffset, endOffset);
+        return operation.tokenSequenceList(languagePath, startOffset, endOffset);
     }
 
     /**
@@ -261,14 +249,14 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      * 
      * @since 1.20
      */
-    public List<TokenSequence<? extends TokenId>> embeddedTokenSequences(
+    public List<TokenSequence<?>> embeddedTokenSequences(
         int offset, boolean backwardBias
     ) {
-        TokenSequence<? extends TokenId> embedded = tokenSequence();
-        List<TokenSequence<? extends TokenId>> sequences = new ArrayList<TokenSequence<? extends TokenId>>();
+        TokenSequence<?> embedded = tokenSequence();
+        List<TokenSequence<?>> sequences = new ArrayList<TokenSequence<?>>();
 
         do {
-            TokenSequence<? extends TokenId> seq = embedded;
+            TokenSequence<?> seq = embedded;
             embedded = null;
 
             seq.move(offset);
@@ -314,21 +302,17 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
     }
     
     /**
-     * Get mutable input source providing text over which
+     * Get input source providing text over which
      * this token hierarchy was constructed.
      * <br/>
-     * For example it may be a swing text document instance
-     * {@link javax.swing.text.Document} in case the token hierarchy
-     * was constructed for its text.
-     * <br/>
-     * Snapshot will return the same input source
-     * as the original mutable token hierarchy.
+     * It may be {@link java.lang.CharSequence} or {@link java.io.Reader}
+     * or a mutable input source such as swing text document
+     * {@link javax.swing.text.Document}.
      *
-     * @return mutable input source or null in case this token hierarchy
-     *  was not created over mutable input source.
+     * @return non-null input source.
      */
-    public I mutableInputSource() {
-        return operation.mutableInputSource();
+    public I inputSource() {
+        return operation.inputSource();
     }
     
     /**
@@ -363,150 +347,6 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
         operation.removeTokenHierarchyListener(listener);
     }
     
-    /**
-     * Create a snapshot of the present mutable token hierarchy.
-     * <br/>
-     * Even with subsequent modifications to the "live" token hierarchy
-     * the tokens of the snapshot will retain the original ids, texts and offsets.
-     * <br/>
-     * The snapshot retains the original token instances that were present
-     * in the token hierarchy at time of its creation.
-     * 
-     * <p/>
-     * The snapshot creation is cheap. With subsequent modifications
-     * of the mutable input source the snapshot maintenance brings an overhead.
-     * Therefore the snapshot should be released as soon as it's no longer needed.
-     * Ideally the releasing should be performed by using {@link #snapshotRelease()}.
-     * Another way is to forget the reference to the snapshot token hierarchy
-     * but it depends on the garbage collector's releasing of the weak reference.
-     * <br/>
-     * As the snapshot shares information with the live hierarchy
-     * its content must also be accessed under a read lock
-     * in the same way like the live hierarchy.
-     * 
-     * <br/>
-     * If a particular token in the snapshot is mutable
-     * then <code>token.offset(snapshotHierarchy)</code> will give the offset
-     * of the token in a snapshot while <code>token.offset(null)</code>
-     * will return the offset of the token in the live hierarchy.
-     * 
-     * <p/>
-     * The snapshot attempts to share tokens with the live token hierarchy.
-     * <br/>
-     * Upon a first modification in the live token hierarchy (after the snapshot creation)
-     * an initial and ending areas of tokens shared between the snapshot
-     * and live hierarchy get created. The tokens that were in the live hierarchy prior
-     * to the modification (but which were removed from it because of the modification)
-     * are captured and used by the snapshot as the "middle" area. With subsequent
-     * modifications the initial and ending areas of shared tokens may be reduced
-     * (and the original tokens captured for the snapshot)
-     * if any of the tokens contained in them get modified.
-     * 
-     * <p/>
-     * The overhead of the subsequent token modifications
-     * for an existing snapshot in the present implementation are the following:<ul>
-     *  <li> Removed token's text must be maintained which creates an overhead
-     *    equal to the original token's text characters plus about 24 bytes.
-     *    <br/>
-     *    This is a single-time overhead per each removed token
-     *    referenced by at least one snapshot.
-     *  </li>
-     *  <li> Token's original offset must be maintained. The overhead
-     *    is about 32 bytes per token per snapshot.
-     *  </li>
-     * 
-     * @return non-null new token hierarchy which is a snapshot
-     *  of this token hierarchy. For non-mutable token hierarchies
-     *  this method returns null (original token hierarchy may be used
-     *  in the same way like the snapshot would be used).
-     */
-    public TokenHierarchy<I> createSnapshot() {
-        return operation.createSnapshot();
-    }
-
-    /**
-     * Check whether this token hierarchy is a snapshot.
-     *
-     * @return true if this is snapshot or false if not.
-     */
-    public boolean isSnapshot() {
-        return operation.isSnapshot();
-    }
-
-    /**
-     * Release snapshot - should only be called if this token hierarchy
-     * is a snapshot.
-     * @throws IllegalStateException if this token hierarchy was already released
-     *  or it's not a snapshot.
-     */
-    public void snapshotRelease() {
-        operation.snapshotRelease();
-    }
-
-    /**
-     * Check whether this snapshot is released.
-     *
-     * @return true if this snapshot is already released or false if not.
-     * @throws IllegalStateException if this token hierarchy is not a snapshot.
-     */
-    public boolean isSnapshotReleased() {
-        return operation.isSnapshotReleased();
-    }
-
-    /**
-     * If this token hierarchy is snapshot then return the token hierarchy
-     * for which this snapshot was constructed.
-     *
-     * @return live token hierarchy or null if this is not a snapshot.
-     */
-     public TokenHierarchy<I> snapshotOf() {
-         return operation.snapshotOf();
-     }
-     
-     /**
-      * Get start offset of the area where the tokens in the token hierarchy snapshot
-      * have explicitly shifted offsets.
-      * <br/>
-      * With subsequent modifications the area where the token offsets are shifted
-      * explicitly gets extended (modifications with lowest and highest offsets
-      * define the area boundaries).
-      * <br/>
-      * Below this offset the snapshot uses all the tokens from the live token hierarchy
-      * directly.
-      * <br/>
-      * Above this area (and below {@link #tokenShiftEndOffset()} the tokens
-      * are either removed from the live token hierarchy or still present in it
-      * but all of them have explicitly corrected offsets.
-      * <br/>
-      * The clients may get a token from the snapshot and check its offset
-      * to find out whether it's below token shift start offset.
-      * <br/>
-      * If so then the token is present in the live token hierarchy as well
-      * and it has the same offset there like in the snapshot.
-      *
-      * @see #tokenShiftEndOffset()
-      */
-     public int tokenShiftStartOffset() {
-         return operation.tokenShiftStartOffset();
-     }
-     
-     /**
-      * Get end offset of the area where the tokens in the token hierarchy snapshot
-      * have explicitly shifted offsets.
-      * <br/>
-      * The clients may get a token from the snapshot and check its offset
-      * to find out whether it's above token shift end offset.
-      * <br/>
-      * If so then the token is present in the live token hierarchy as well
-      * and its offset there can be determined by using
-      * <code>Token.offset(null)</code>.
-      *
-      * @see #tokenShiftStartOffset()
-      */
-     public int tokenShiftEndOffset() {
-         return operation.tokenShiftEndOffset();
-     }
-
     /**
      * Obtaining of token hierarchy operation is only intended to be done
      * by package accessor.

@@ -165,34 +165,17 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
             return -1;
         }
 
-        if (tokenHierarchy != null) {
-            return LexerApiPackageAccessor.get().tokenHierarchyOperation(
-                    tokenHierarchy).tokenOffset(this, tokenList, rawOffset);
-        } else {
-            return (tokenList != null)
+        return (tokenList != null)
                 ? tokenList.childTokenOffset(rawOffset)
                 : rawOffset;
-        }
-    }
-    
-    @Override
-    public boolean isPreprocessedText() {
-        return false;
-    }
-    
-    @Override
-    public CharSequence preprocessedText() {
-        return null;
-    }
-    
-    @Override
-    public String preprocessError() {
-        return null;
-    }
-
-    @Override
-    public int preprocessErrorIndex() {
-        return -1;
+//        if (tokenHierarchy != null) {
+//            return LexerApiPackageAccessor.get().tokenHierarchyOperation(
+//                    tokenHierarchy).tokenOffset(this, tokenList, rawOffset);
+//        } else {
+//            return (tokenList != null)
+//                ? tokenList.childTokenOffset(rawOffset)
+//                : rawOffset;
+//        }
     }
     
     @Override
@@ -249,9 +232,8 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
      * a text of the token to satisfy acting of the token instance
      * as <code>CharSequence</code>.
      *
-     * @param tokenHierarchy token hierarchy to which the dumped
-     *  token offsets are related. It may be null which means
-     *  that the live token hierarchy will be used.
+     * @param tokenHierarchy <code>null</code> should be passed
+     *  (the parameter is reserved for future use when token hierarchy snapshots will be implemented).
      * @return dump of the thorough token information.
      */
     public String dumpInfo(TokenHierarchy<?> tokenHierarchy) {

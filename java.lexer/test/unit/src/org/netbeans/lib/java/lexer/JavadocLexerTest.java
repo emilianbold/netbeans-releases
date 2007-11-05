@@ -66,7 +66,7 @@ public class JavadocLexerTest extends NbTestCase {
         String text = "@param aaa <code>aaa</code> xyz {@link org.Aaa#aaa()}";
         
         TokenHierarchy<?> hi = TokenHierarchy.create(text, JavadocTokenId.language());
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.TAG, "@param");
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.IDENT, "aaa");
@@ -93,7 +93,7 @@ public class JavadocLexerTest extends NbTestCase {
 //        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
 //        
 //        {
-//            TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+//            TokenSequence<?> ts = hi.tokenSequence();
 //            ts.moveStart();
 //            assertFalse(ts.moveNext());
 //        }

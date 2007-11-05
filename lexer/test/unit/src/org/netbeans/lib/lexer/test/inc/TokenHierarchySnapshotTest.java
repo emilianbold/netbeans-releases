@@ -76,7 +76,7 @@ public class TokenHierarchySnapshotTest extends TestCase {
         doc.putProperty(Language.class,TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         assertNotNull("Null token hierarchy for document", hi);
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         assertFalse(ts.moveNext());
         
         // Insert text into document
@@ -100,51 +100,51 @@ public class TokenHierarchySnapshotTest extends TestCase {
         // Create snapshot1 and check hierarchy
         String hi1text = doc.getText(0, doc.getLength());
         TokenHierarchy<?> hi1 = TokenHierarchy.create(hi1text,TestTokenId.language());
-        TokenHierarchy<?> snapshot1 = hi.createSnapshot();
-        assertEquals(snapshot1.snapshotOf(), hi);
-        assertFalse(snapshot1.isSnapshotReleased());
-
-        // Check that all the non-fly tokens are mutable
-        ts = snapshot1.tokenSequence();
-        assertEquals(0, ts.moveIndex(0));
-        assertTrue(ts.moveNext());
-        
-        LexerTestUtilities.assertTokenSequencesEqual(hi1.tokenSequence(), hi1,
-                snapshot1.tokenSequence(), snapshot1, false);
-
-        doc.insertString(4, "+", null);
-
-        // Check that the snapshot token sequence can be further operated.
-        assertEquals(0, ts.moveIndex(0));
-        assertTrue(ts.moveNext());
-        assertNotNull(ts.token());
-
-        // Check that the tokens except '+' are live
-        ts = snapshot1.tokenSequence();
-
-        LexerTestUtilities.assertTokenSequencesEqual(hi1.tokenSequence(), hi1,
-                snapshot1.tokenSequence(), snapshot1, true);
-
-        // Create snapshot2 and check hierarchy
-        String hi2text = doc.getText(0, doc.getLength());
-        TokenHierarchy<?> hi2 = TokenHierarchy.create(hi2text,TestTokenId.language());
-        TokenHierarchy<?> snapshot2 = hi.createSnapshot();
-        assertEquals(snapshot2.snapshotOf(), hi);
-
-        // Check that all the non-fly tokens are mutable
-        ts = snapshot2.tokenSequence();
-        assertEquals(0, ts.moveIndex(0));
-        assertTrue(ts.moveNext());
-
-        LexerTestUtilities.assertTokenSequencesEqual(hi2.tokenSequence(), hi2,
-                snapshot2.tokenSequence(), snapshot2, false);
-
-        doc.remove(8, 1);
-
-        LexerTestUtilities.assertTokenSequencesEqual(hi1.tokenSequence(), hi1,
-                snapshot1.tokenSequence(), snapshot1, false);
-        LexerTestUtilities.assertTokenSequencesEqual(hi2.tokenSequence(), hi2,
-                snapshot2.tokenSequence(), snapshot2, false);
+//        TokenHierarchy<?> snapshot1 = hi.createSnapshot();
+//        assertEquals(snapshot1.snapshotOf(), hi);
+//        assertFalse(snapshot1.isSnapshotReleased());
+//
+//        // Check that all the non-fly tokens are mutable
+//        ts = snapshot1.tokenSequence();
+//        assertEquals(0, ts.moveIndex(0));
+//        assertTrue(ts.moveNext());
+//        
+//        LexerTestUtilities.assertTokenSequencesEqual(hi1.tokenSequence(), hi1,
+//                snapshot1.tokenSequence(), snapshot1, false);
+//
+//        doc.insertString(4, "+", null);
+//
+//        // Check that the snapshot token sequence can be further operated.
+//        assertEquals(0, ts.moveIndex(0));
+//        assertTrue(ts.moveNext());
+//        assertNotNull(ts.token());
+//
+//        // Check that the tokens except '+' are live
+//        ts = snapshot1.tokenSequence();
+//
+//        LexerTestUtilities.assertTokenSequencesEqual(hi1.tokenSequence(), hi1,
+//                snapshot1.tokenSequence(), snapshot1, true);
+//
+//        // Create snapshot2 and check hierarchy
+//        String hi2text = doc.getText(0, doc.getLength());
+//        TokenHierarchy<?> hi2 = TokenHierarchy.create(hi2text,TestTokenId.language());
+//        TokenHierarchy<?> snapshot2 = hi.createSnapshot();
+//        assertEquals(snapshot2.snapshotOf(), hi);
+//
+//        // Check that all the non-fly tokens are mutable
+//        ts = snapshot2.tokenSequence();
+//        assertEquals(0, ts.moveIndex(0));
+//        assertTrue(ts.moveNext());
+//
+//        LexerTestUtilities.assertTokenSequencesEqual(hi2.tokenSequence(), hi2,
+//                snapshot2.tokenSequence(), snapshot2, false);
+//
+//        doc.remove(8, 1);
+//
+//        LexerTestUtilities.assertTokenSequencesEqual(hi1.tokenSequence(), hi1,
+//                snapshot1.tokenSequence(), snapshot1, false);
+//        LexerTestUtilities.assertTokenSequencesEqual(hi2.tokenSequence(), hi2,
+//                snapshot2.tokenSequence(), snapshot2, false);
     }
     
 }

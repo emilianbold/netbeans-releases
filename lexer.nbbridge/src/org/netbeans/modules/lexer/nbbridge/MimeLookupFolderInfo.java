@@ -82,8 +82,8 @@ public class MimeLookupFolderInfo implements Class2LayerFolder, InstanceProvider
     }
 
     public Object createInstance(List fileObjectList) {
-        HashMap<String, LanguageEmbedding<? extends TokenId>> map
-                = new HashMap<String, LanguageEmbedding<? extends TokenId>>();
+        HashMap<String, LanguageEmbedding<?>> map
+                = new HashMap<String, LanguageEmbedding<?>>();
         
         for(Object o : fileObjectList) {
             assert o instanceof FileObject : "fileObjectList should contain FileObjects and not " + o; //NOI18N
@@ -96,7 +96,7 @@ public class MimeLookupFolderInfo implements Class2LayerFolder, InstanceProvider
                 int endSkipLength = (Integer) info[2];
                 
                 if (isMimeTypeValid(mimeType)) {
-                    Language<? extends TokenId> language = LanguageManager.getInstance().findLanguage(mimeType);
+                    Language<?> language = LanguageManager.getInstance().findLanguage(mimeType);
                     if (language != null) {
                         map.put(f.getName(), LanguageEmbedding.create(language, startSkipLength, endSkipLength));
                     } else {

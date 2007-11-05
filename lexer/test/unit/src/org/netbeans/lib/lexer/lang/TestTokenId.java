@@ -141,7 +141,7 @@ public enum TestTokenId implements TokenId {
         }
         
         @Override
-        public LanguageEmbedding<? extends TokenId> embedding(
+        public LanguageEmbedding<?> embedding(
         Token<TestTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             // Test language embedding in the block comment
             switch (token.id()) {

@@ -139,11 +139,11 @@ public final class FilterSnapshotTokenList<T extends TokenId> implements TokenLi
         tokenList.wrapToken(index, embeddingContainer);
     }
 
-    public TokenList<? extends TokenId> root() {
+    public TokenList<?> root() {
         return tokenList.root();
     }
     
-    public TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation() {
+    public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return tokenList.tokenHierarchyOperation();
     }
     

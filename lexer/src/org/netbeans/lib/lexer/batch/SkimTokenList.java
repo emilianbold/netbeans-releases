@@ -143,11 +143,11 @@ public final class SkimTokenList<T extends TokenId> implements TokenList<T> {
         return tokenList.tokenCountCurrent();
     }
 
-    public TokenList<? extends TokenId> root() {
+    public TokenList<?> root() {
         return tokenList.root();
     }
 
-    public TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation() {
+    public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return tokenList.tokenHierarchyOperation();
     }
     

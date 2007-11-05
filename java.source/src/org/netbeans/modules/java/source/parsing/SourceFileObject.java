@@ -85,7 +85,7 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
     private final Kind kind;
     private URI uri;        //Cache for URI
     private String text;
-    private TokenHierarchy<Void> tokens;
+    private TokenHierarchy<?> tokens;
     private final JavaFileFilterImplementation filter;
     
     public static SourceFileObject create (final FileObject file, final FileObject root) {        
@@ -130,7 +130,7 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
         }
     }
     
-    public TokenHierarchy<Void> getTokenHierarchy() throws IOException {
+    public TokenHierarchy<?> getTokenHierarchy() throws IOException {
         if (tokens == null)
             getCharContentImpl(false);
         

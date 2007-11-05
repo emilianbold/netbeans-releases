@@ -47,7 +47,6 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
@@ -62,18 +61,20 @@ public class JavaLexerBatchTest extends TestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws java.lang.Exception {
         // Set-up testing environment
         LexerTestUtilities.setTesting(true);
     }
 
+    @Override
     protected void tearDown() throws java.lang.Exception {
     }
 
     public void testComments() {
         String text = "/*ml-comment*//**//***//**\n*javadoc-comment*//* a";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, JavaTokenId.language());
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.BLOCK_COMMENT, "/*ml-comment*/");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.BLOCK_COMMENT, "/**/");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.JAVADOC_COMMENT, "/***/");
@@ -85,7 +86,7 @@ public class JavaLexerBatchTest extends TestCase {
     public void testIdentifiers() {
         String text = "a ab aB2 2a x\nyZ\r\nz";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, JavaTokenId.language());
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "a");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "ab");
@@ -105,7 +106,7 @@ public class JavaLexerBatchTest extends TestCase {
     public void testCharLiterals() {
         String text = "'' 'a''' '\\'' '\\\\' '\\\\\\'' '\\n' 'a";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, JavaTokenId.language());
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.CHAR_LITERAL, "''");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.CHAR_LITERAL, "'a'");
@@ -126,7 +127,7 @@ public class JavaLexerBatchTest extends TestCase {
     public void testStringLiterals() {
         String text = "\"\" \"a\"\"\" \"\\\"\" \"\\\\\" \"\\\\\\\"\" \"\\n\" \"a";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, JavaTokenId.language());
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.STRING_LITERAL, "\"\"");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.STRING_LITERAL, "\"a\"");
@@ -148,7 +149,7 @@ public class JavaLexerBatchTest extends TestCase {
         String text = "0 00 09 1 12 0L 1l 12L 0x1 0xf 0XdE 0Xbcy" + 
                 " 09.5 1.5f 2.5d 6d 7e3 6.1E-7f 0xa.5dp+12d .3";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, JavaTokenId.language());
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.INT_LITERAL, "0");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.INT_LITERAL, "00");
@@ -194,7 +195,7 @@ public class JavaLexerBatchTest extends TestCase {
     public void testOperators() {
         String text = "^ ^= % %= * *= / /= = ==";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, JavaTokenId.language());
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.CARET, "^");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.CARETEQ, "^=");
@@ -225,7 +226,7 @@ public class JavaLexerBatchTest extends TestCase {
             "null true false";
 
         TokenHierarchy<?> hi = TokenHierarchy.create(text, JavaTokenId.language());
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.ABSTRACT, "abstract");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.ASSERT, "assert");
@@ -338,7 +339,7 @@ public class JavaLexerBatchTest extends TestCase {
         String text = "abstracta assertx b br car dou doubl finall im i ifa inti throwsx";
 
         TokenHierarchy<?> hi = TokenHierarchy.create(text, JavaTokenId.language());
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "abstracta");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "assertx");
@@ -370,7 +371,7 @@ public class JavaLexerBatchTest extends TestCase {
         String text = "ddx \"d\\t\\br\" /** @see X */";
         
         TokenHierarchy<?> hi = TokenHierarchy.create(text, JavaTokenId.language());
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "ddx");
         assertEquals(0, ts.offset());
@@ -379,7 +380,7 @@ public class JavaLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.STRING_LITERAL, "\"d\\t\\br\"");
         assertEquals(4, ts.offset());
         
-        TokenSequence<? extends TokenId> es = ts.embedded();
+        TokenSequence<?> es = ts.embedded();
         
         LexerTestUtilities.assertNextTokenEquals(es, JavaStringTokenId.TEXT, "d");
         assertEquals(5, es.offset());
@@ -397,7 +398,7 @@ public class JavaLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.JAVADOC_COMMENT, "/** @see X */");
         assertEquals(13, ts.offset());
         
-        TokenSequence<? extends TokenId> ds = ts.embedded();
+        TokenSequence<?> ds = ts.embedded();
         
         LexerTestUtilities.assertNextTokenEquals(ds, JavadocTokenId.OTHER_TEXT, " ");
         assertEquals(16, ds.offset());

@@ -90,7 +90,7 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
     }
 
     public int tokenOffset(int index) {
-        Token<? extends TokenId> token = existingToken(index);
+        Token<?> token = existingToken(index);
         if (token.isFlyweight()) {
             int offset = 0;
             while (--index >= 0) {
@@ -145,11 +145,11 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
         throw new IllegalStateException("Branching of removed tokens not supported"); // NOI18N
     }
     
-    public TokenList<? extends TokenId> root() {
+    public TokenList<?> root() {
         return this;
     }
     
-    public TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation() {
+    public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return null;
     }
     

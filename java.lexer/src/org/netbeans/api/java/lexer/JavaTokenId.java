@@ -246,7 +246,7 @@ public enum JavaTokenId implements TokenId {
         }
 
         @Override
-        protected LanguageEmbedding<? extends TokenId> embedding(
+        protected LanguageEmbedding<?> embedding(
         Token<JavaTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             // Test language embedding in the block comment
             switch (token.id()) {

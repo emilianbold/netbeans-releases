@@ -73,7 +73,7 @@ public class EmbeddedTokenListTest extends TestCase {
         d.insertString(0, "ident ident /** @see X */", null);
         
         TokenHierarchy<?> h = TokenHierarchy.get(d);
-        TokenSequence<? extends TokenId> ts = h.tokenSequence();
+        TokenSequence<?> ts = h.tokenSequence();
         
         LexerTestUtilities.assertNextTokenEquals(ts,TestTokenId.IDENTIFIER, "ident");
         assertEquals(0, ts.offset());
@@ -90,7 +90,7 @@ public class EmbeddedTokenListTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts,TestTokenId.JAVADOC_COMMENT, "/** @see X */");
         assertEquals(12, ts.offset());
         
-        TokenSequence<? extends TokenId> inner = ts.embedded();
+        TokenSequence<?> inner = ts.embedded();
         
         assertNotNull(inner);
         
@@ -118,7 +118,7 @@ public class EmbeddedTokenListTest extends TestCase {
         d.insertString(0, "ident ident /** @see X */", null);
         
         TokenHierarchy<?> h = TokenHierarchy.get(d);
-        TokenSequence<? extends TokenId> ts = h.tokenSequence();
+        TokenSequence<?> ts = h.tokenSequence();
         
         LexerTestUtilities.assertNextTokenEquals(ts,TestTokenId.IDENTIFIER, "ident");
         assertEquals(0, ts.offset());
@@ -135,7 +135,7 @@ public class EmbeddedTokenListTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts,TestTokenId.JAVADOC_COMMENT, "/** @see X */");
         assertEquals(12, ts.offset());
         
-        TokenSequence<? extends TokenId> inner = ts.embedded();
+        TokenSequence<?> inner = ts.embedded();
         
         assertNotNull(inner);
         
@@ -155,42 +155,42 @@ public class EmbeddedTokenListTest extends TestCase {
         assertEquals(22, inner.offset());
         
         
-        h = TokenHierarchy.get(d).createSnapshot();
-        ts = h.tokenSequence();
-        
-        LexerTestUtilities.assertNextTokenEquals(ts,TestTokenId.IDENTIFIER, "ident");
-        assertEquals(0, ts.offset());
-        
-        LexerTestUtilities.assertNextTokenEquals(ts,TestTokenId.WHITESPACE, " ");
-        assertEquals(5, ts.offset());
-        
-        LexerTestUtilities.assertNextTokenEquals(ts,TestTokenId.IDENTIFIER, "ident");
-        assertEquals(6, ts.offset());
-        
-        LexerTestUtilities.assertNextTokenEquals(ts,TestTokenId.WHITESPACE, " ");
-        assertEquals(11, ts.offset());
-        
-        LexerTestUtilities.assertNextTokenEquals(ts,TestTokenId.JAVADOC_COMMENT, "/** @see X */");
-        assertEquals(12, ts.offset());
-        
-        inner = ts.embedded();
-        
-        assertNotNull(inner);
-        
-        LexerTestUtilities.assertNextTokenEquals(inner,TestJavadocTokenId.OTHER_TEXT, " ");
-        assertEquals(15, inner.offset());
-        
-        LexerTestUtilities.assertNextTokenEquals(inner,TestJavadocTokenId.TAG, "@see");
-        assertEquals(16, inner.offset());
-        
-        LexerTestUtilities.assertNextTokenEquals(inner,TestJavadocTokenId.OTHER_TEXT, " ");
-        assertEquals(20, inner.offset());
-        
-        LexerTestUtilities.assertNextTokenEquals(inner,TestJavadocTokenId.IDENT, "X");
-        assertEquals(21, inner.offset());
-        
-        LexerTestUtilities.assertNextTokenEquals(inner,TestJavadocTokenId.OTHER_TEXT, " ");
-        assertEquals(22, inner.offset());
+//        h = TokenHierarchy.get(d).createSnapshot();
+//        ts = h.tokenSequence();
+//        
+//        LexerTestUtilities.assertNextTokenEquals(ts,TestTokenId.IDENTIFIER, "ident");
+//        assertEquals(0, ts.offset());
+//        
+//        LexerTestUtilities.assertNextTokenEquals(ts,TestTokenId.WHITESPACE, " ");
+//        assertEquals(5, ts.offset());
+//        
+//        LexerTestUtilities.assertNextTokenEquals(ts,TestTokenId.IDENTIFIER, "ident");
+//        assertEquals(6, ts.offset());
+//        
+//        LexerTestUtilities.assertNextTokenEquals(ts,TestTokenId.WHITESPACE, " ");
+//        assertEquals(11, ts.offset());
+//        
+//        LexerTestUtilities.assertNextTokenEquals(ts,TestTokenId.JAVADOC_COMMENT, "/** @see X */");
+//        assertEquals(12, ts.offset());
+//        
+//        inner = ts.embedded();
+//        
+//        assertNotNull(inner);
+//        
+//        LexerTestUtilities.assertNextTokenEquals(inner,TestJavadocTokenId.OTHER_TEXT, " ");
+//        assertEquals(15, inner.offset());
+//        
+//        LexerTestUtilities.assertNextTokenEquals(inner,TestJavadocTokenId.TAG, "@see");
+//        assertEquals(16, inner.offset());
+//        
+//        LexerTestUtilities.assertNextTokenEquals(inner,TestJavadocTokenId.OTHER_TEXT, " ");
+//        assertEquals(20, inner.offset());
+//        
+//        LexerTestUtilities.assertNextTokenEquals(inner,TestJavadocTokenId.IDENT, "X");
+//        assertEquals(21, inner.offset());
+//        
+//        LexerTestUtilities.assertNextTokenEquals(inner,TestJavadocTokenId.OTHER_TEXT, " ");
+//        assertEquals(22, inner.offset());
     }
     
     public void testEmbeddingPresence() throws Exception {
@@ -200,7 +200,7 @@ public class EmbeddedTokenListTest extends TestCase {
         
         TokenHierarchy<?> h = TokenHierarchy.get(d);
         TokenSequence<TestEmbeddingTokenId> ts = h.tokenSequence(TestEmbeddingTokenId.language());
-        TokenSequence<? extends TokenId> inner;
+        TokenSequence<?> inner;
         
         LexerTestUtilities.assertNextTokenEquals(ts,TestEmbeddingTokenId.TEXT, " ");
         inner = ts.embedded();

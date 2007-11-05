@@ -180,11 +180,11 @@ public class TestRandomModify {
             int length = random().nextInt(descriptor.removeTextMaxLength());
             removeText(length);
 
-        } else if ((r -= descriptor.createSnapshotRatio()) < 0) {
-            createSnapshot();
-            
-        } else if ((r -= descriptor.destroySnapshotRatio()) < 0) {
-            destroySnapshot();
+//        } else if ((r -= descriptor.createSnapshotRatio()) < 0) {
+//            createSnapshot();
+//            
+//        } else if ((r -= descriptor.destroySnapshotRatio()) < 0) {
+//            destroySnapshot();
         }
         return r;
     }
@@ -273,38 +273,38 @@ public class TestRandomModify {
     protected void removeTextNotify(int offset, int length) throws Exception {
     }
     
-    public void createSnapshot() throws Exception {
-        junit.framework.TestCase.fail();
-        TokenHierarchy hi = TokenHierarchy.get(doc);
-        TokenHierarchy snapshot = hi.createSnapshot();
-        Language<? extends TokenId> language = (Language<? extends TokenId>)
-                doc.getProperty(Language.class);
-        TokenHierarchy batchMirror = TokenHierarchy.create(doc.getText(0, doc.getLength()), language);
-        snapshots.add(new SnapshotDescription(snapshot, batchMirror));
-        if (isDebugOperation()) {
-            System.err.println(opIdString() + " CREATED SNAPSHOT. "
-                    + snapshots.size() + " snapshots.");
-        }
-        checkConsistency();
-    }
-    
-    public void destroySnapshot() throws Exception {
-        junit.framework.TestCase.fail();
-        if (snapshots.size() > 0) {
-            int index = random().nextInt(snapshots.size());
-            snapshots.remove(index);
-            if (isDebugOperation()) {
-                System.err.println(opIdString() + " DESTROYED SNAPSHOT. "
-                        + snapshots.size() + " snapshots.");
-            }
-            checkConsistency();
-
-        } else { // no snapshots
-            if (isDebugOperation()) {
-                System.err.println(opIdString() + " DESTROY SNAPSHOT cannot be done - no snapshots.");
-            }
-        }
-    }
+//    public void createSnapshot() throws Exception {
+//        junit.framework.TestCase.fail();
+//        TokenHierarchy hi = TokenHierarchy.get(doc);
+//        TokenHierarchy snapshot = hi.createSnapshot();
+//        Language<?> language = (Language<?>)
+//                doc.getProperty(Language.class);
+//        TokenHierarchy batchMirror = TokenHierarchy.create(doc.getText(0, doc.getLength()), language);
+//        snapshots.add(new SnapshotDescription(snapshot, batchMirror));
+//        if (isDebugOperation()) {
+//            System.err.println(opIdString() + " CREATED SNAPSHOT. "
+//                    + snapshots.size() + " snapshots.");
+//        }
+//        checkConsistency();
+//    }
+//    
+//    public void destroySnapshot() throws Exception {
+//        junit.framework.TestCase.fail();
+//        if (snapshots.size() > 0) {
+//            int index = random().nextInt(snapshots.size());
+//            snapshots.remove(index);
+//            if (isDebugOperation()) {
+//                System.err.println(opIdString() + " DESTROYED SNAPSHOT. "
+//                        + snapshots.size() + " snapshots.");
+//            }
+//            checkConsistency();
+//
+//        } else { // no snapshots
+//            if (isDebugOperation()) {
+//                System.err.println(opIdString() + " DESTROY SNAPSHOT cannot be done - no snapshots.");
+//            }
+//        }
+//    }
 
     public final int opId() {
         return opId;
@@ -330,11 +330,11 @@ public class TestRandomModify {
         doc.remove(0, doc.getLength());
     }
     
-    public final Language<? extends TokenId> language() {
-        return (Language<? extends TokenId>)doc.getProperty(Language.class);
+    public final Language<?> language() {
+        return (Language<?>)doc.getProperty(Language.class);
     }
     
-    public final void setLanguage(Language<? extends TokenId> language) {
+    public final void setLanguage(Language<?> language) {
         doc.putProperty(Language.class, language);
     }
     

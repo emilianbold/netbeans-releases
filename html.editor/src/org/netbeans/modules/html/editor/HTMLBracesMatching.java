@@ -98,7 +98,7 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
     //BracesMatcherFactory implementation
     public BracesMatcher createMatcher(MatcherContext context) {
         TokenHierarchy<Document> hierarchy = TokenHierarchy.get(context.getDocument());
-        List<TokenSequence<? extends TokenId>> ets = hierarchy.embeddedTokenSequences(context.getSearchOffset(), context.isSearchingBackward());
+        List<TokenSequence<?>> ets = hierarchy.embeddedTokenSequences(context.getSearchOffset(), context.isSearchingBackward());
         for(TokenSequence ts : ets) {
             Language language = ts.language();
             if(language == HTMLTokenId.language()) {

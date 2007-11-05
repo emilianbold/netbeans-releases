@@ -41,7 +41,6 @@
 
 package org.netbeans.lib.lexer;
 
-import org.netbeans.spi.lexer.CharPreprocessor;
 import org.netbeans.spi.lexer.LexerInput;
 
 /**

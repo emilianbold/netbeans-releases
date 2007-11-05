@@ -43,38 +43,23 @@ package org.netbeans.lib.lexer.token;
 
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.LexerUtilsConstants;
-import org.netbeans.lib.lexer.PreprocessedTextStorage;
-import org.netbeans.spi.lexer.CharPreprocessor;
 import org.netbeans.spi.lexer.TokenPropertyProvider;
 
 /**
- * Token that holds information about preprocessed characters
- * and also carries properties.
- *
- * <p>
- * Instances of this token are more costly than other token types
- * because in addition to regular information they store preprocessed
- * text of the token.
+ * Token that may hold custom text and also additional properties.
  *
  * @author Miloslav Metelka
  * @version 1.00
  */
 
-public final class ComplexToken<T extends TokenId> extends PreprocessedTextToken<T> {
+public final class ComplexToken<T extends TokenId> extends CustomTextToken<T> {
 
-    private final TokenPropertyProvider propertyProvider; // 36 bytes (32-super + 4)
-
-    private final CharSequence customText; // 40 bytes
+    private final TokenPropertyProvider propertyProvider; // 36 bytes
     
-    private final PartType partType; // 44 bytes
-
-    public ComplexToken(T id, int length,
-    TokenPropertyProvider propertyProvider, CharSequence customText, PartType partType) {
-        super(id, length);
+    public ComplexToken(T id, int length, CharSequence customText, PartType partType,
+    TokenPropertyProvider propertyProvider) {
+        super(id, length, customText, partType);
         this.propertyProvider = propertyProvider;
-        this.customText = customText;
-        this.partType = partType;
     }
 
     @Override
@@ -88,18 +73,8 @@ public final class ComplexToken<T extends TokenId> extends PreprocessedTextToken
     }
     
     @Override
-    public CharSequence text() {
-        return (customText != null) ? customText : super.text();
-    }
-    
-    @Override
-    public PartType partType() {
-        return partType;
-    }
-
-    @Override
     protected String dumpInfoTokenType() {
-        return "PPrT"; // NOI18N "PrepToken"
+        return "ComT"; // NOI18N "ComplexToken"
     }
     
 }

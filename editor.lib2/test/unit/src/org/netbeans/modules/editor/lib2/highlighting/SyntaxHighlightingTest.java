@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.editor.lib2.highlighting;
 
-import java.util.ConcurrentModificationException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
@@ -49,7 +48,6 @@ import javax.swing.text.SimpleAttributeSet;
 import junit.textui.TestRunner;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.lang.TestPlainTokenId;
@@ -132,13 +130,13 @@ public class SyntaxHighlightingTest extends NbTestCase {
         assertTrue("Wrong change end offset", 6 + addedText.length() <= listener.lastEndOffset);
     }
     
-    private void checkText(String text, Language<? extends TokenId> lang) {
+    private void checkText(String text, Language<?> lang) {
         System.out.println("Checking text: '" + text + "'\n");
         Document doc = createDocument(lang, text);
         SyntaxHighlighting layer = new SyntaxHighlighting(doc);
 
         HighlightsSequence hs = layer.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE);
-        TokenHierarchy<Void> tokens = TokenHierarchy.create(text, lang);
+        TokenHierarchy<?> tokens = TokenHierarchy.create(text, lang);
         assertHighlights(tokens.tokenSequence(), hs, true, "");
         assertFalse("Unexpected highlights at the end of the sequence", hs.moveNext());
         System.out.println("------------------------\n");
@@ -156,7 +154,7 @@ public class SyntaxHighlightingTest extends NbTestCase {
         }
     }
     
-    private void assertHighlights(TokenSequence<? extends TokenId> ts, HighlightsSequence hs, boolean moveHs, String indent) {
+    private void assertHighlights(TokenSequence<?> ts, HighlightsSequence hs, boolean moveHs, String indent) {
         while (ts.moveNext()) {
             boolean hasHighlight;
             if (moveHs) {
@@ -172,7 +170,7 @@ public class SyntaxHighlightingTest extends NbTestCase {
                 ts.token().text() + "', " + 
                 ts.token().id().name() + ">");
             
-            TokenSequence<? extends TokenId> embeddedSeq = ts.embedded();
+            TokenSequence<?> embeddedSeq = ts.embedded();
             if (embeddedSeq == null) {
                 System.out.println(indent + "Highlight: <" + hs.getStartOffset() + ", " + hs.getEndOffset() + ">");
                 assertEquals("Wrong starting offset", ts.offset(), hs.getStartOffset());
@@ -211,8 +209,8 @@ public class SyntaxHighlightingTest extends NbTestCase {
     }
     
     private int embeddedPrologLength(
-        TokenSequence<? extends TokenId> embeddingSeq, 
-        TokenSequence<? extends TokenId> embeddedSeq) 
+        TokenSequence<?> embeddingSeq, 
+        TokenSequence<?> embeddedSeq) 
     {
         embeddedSeq.moveStart();
         if (embeddedSeq.moveNext()) {
@@ -223,8 +221,8 @@ public class SyntaxHighlightingTest extends NbTestCase {
     }
     
     private int embeddedEpilogLength(
-        TokenSequence<? extends TokenId> embeddingSeq, 
-        TokenSequence<? extends TokenId> embeddedSeq) 
+        TokenSequence<?> embeddingSeq, 
+        TokenSequence<?> embeddedSeq) 
     {
         embeddedSeq.moveEnd();
         if (embeddedSeq.movePrevious()) {

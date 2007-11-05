@@ -104,7 +104,7 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
      */
     public static <T extends TokenId> void findLanguagePaths(
     Set<LanguagePath> existingLanguagePaths, Set<LanguagePath> newLanguagePaths,
-    Set<Language<? extends TokenId>> exploredLanguages, LanguagePath lp) {
+    Set<Language<?>> exploredLanguages, LanguagePath lp) {
         // Get the complete language path
         if (!existingLanguagePaths.contains(lp)) {
             newLanguagePaths.add(lp);
@@ -119,7 +119,7 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
                 DefaultToken<T> emptyToken = new DefaultToken<T>(id);
                 // Find embedding for non-flyweight token
                 LanguageHierarchy<T> languageHierarchy = LexerUtilsConstants.innerLanguageHierarchy(lp);
-                LanguageEmbedding<? extends TokenId> embedding = LexerUtilsConstants.findEmbedding(
+                LanguageEmbedding<?> embedding = LexerUtilsConstants.findEmbedding(
                         languageHierarchy, emptyToken, lp, null);
                 if (embedding != null) {
                     LanguagePath elp = LanguagePath.get(lp, embedding.language());
@@ -149,7 +149,7 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
     
     private Set<LanguagePath> languagePaths;
     
-    private Set<Language<? extends TokenId>> exploredLanguages;
+    private Set<Language<?>> exploredLanguages;
     
     private FlyItem<T>[] flyItems;
     
@@ -290,7 +290,7 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
         if (lps == null) {
             lps = new HashSet<LanguagePath>();
             Set<LanguagePath> existingLps = Collections.emptySet();
-            Set<Language<? extends TokenId>> exploredLangs = new HashSet<Language<? extends TokenId>>();
+            Set<Language<?>> exploredLangs = new HashSet<Language<?>>();
             findLanguagePaths(existingLps, lps, exploredLangs, LanguagePath.get(language));
             synchronized (this) {
                 languagePaths = lps;
@@ -300,7 +300,7 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
         return lps;
     }
     
-    public Set<Language<? extends TokenId>> exploredLanguages() {
+    public Set<Language<?>> exploredLanguages() {
         languagePaths(); // Init exploredLanguages
         return exploredLanguages;
     }

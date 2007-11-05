@@ -129,7 +129,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer {
         private int endOffset;
         private int realEndOffset;
         private AttributeSet attributeSet;
-        private List<TokenSequence<? extends TokenId>> tokenSequenceList;
+        private List<TokenSequence<?>> tokenSequenceList;
         private String mimeType;
 
         private Highlights(Document document, int startOffset, int endOffset) {
@@ -144,7 +144,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer {
             this.realEndOffset = startOffsetBoundary;
 
             TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get(document);
-            Language<? extends TokenId> language = Language.find(mimeType);
+            Language<?> language = Language.find(mimeType);
             if (language == null) {
                 LOG.log(Level.WARNING, "Language " + mimeType + " obtained from the document mimeType property cannot be found!"); //NOI18N
                 return;

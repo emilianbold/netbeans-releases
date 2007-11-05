@@ -75,7 +75,7 @@ public class StateLexerIncTest extends TestCase {
         doc.putProperty(InputAttributes.class, attrs);
         doc.putProperty(Language.class, StateTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         assertFalse(ts.moveNext());
         
         // Insert text into document

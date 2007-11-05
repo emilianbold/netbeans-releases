@@ -79,12 +79,12 @@ public class EmbeddingUpdateTest extends NbTestCase {
         doc.insertString(0, "a/*abc def*/", null);
         LexerTestUtilities.initLastTokenHierarchyEventListening(doc);
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "a", 0);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.BLOCK_COMMENT, "/*abc def*/", 1);
-        TokenSequence<? extends TokenId> ets = ts.embedded();
+        TokenSequence<?> ets = ts.embedded();
         assertNotNull(ets);
         assertFalse(ts.moveNext());
         assertTrue(ets.moveNext());
@@ -100,7 +100,7 @@ public class EmbeddingUpdateTest extends NbTestCase {
         
         TokenHierarchyEvent evt = LexerTestUtilities.getLastTokenHierarchyEvent(doc);
         assertNotNull(evt);
-        TokenChange<? extends TokenId> tc = evt.tokenChange();
+        TokenChange<?> tc = evt.tokenChange();
         assertNotNull(tc);
         assertEquals(1, tc.index());
         assertEquals(1, tc.offset());
@@ -108,7 +108,7 @@ public class EmbeddingUpdateTest extends NbTestCase {
         assertEquals(1, tc.removedTokenCount());
         assertEquals(TestTokenId.language(), tc.language());
         assertEquals(1, tc.embeddedChangeCount());
-        TokenChange<? extends TokenId> etc = tc.embeddedChange(0);
+        TokenChange<?> etc = tc.embeddedChange(0);
         assertEquals(0, etc.index());
         assertEquals(3, etc.offset());
         assertEquals(1, etc.addedTokenCount()); // 0 to allow for lazy lexing where this would be unknowns

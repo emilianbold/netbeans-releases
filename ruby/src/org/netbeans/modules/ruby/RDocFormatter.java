@@ -532,7 +532,7 @@ class RDocFormatter {
             ruby.append("\n"); // NOI18N
         }
         
-        Language<? extends TokenId> language = RubyTokenId.language();
+        Language<?> language = RubyTokenId.language();
         String mimeType = RubyMimeResolver.RUBY_MIME_TYPE;
         if (ruby.indexOf(" <%") != -1) { // NOI18N
             mimeType = "application/x-httpd-eruby"; // RHTML
@@ -573,7 +573,7 @@ class RDocFormatter {
 
     @SuppressWarnings("unchecked")
     private boolean appendSequence(StringBuilder sb, String text, 
-            Language<? extends TokenId> language, String mimeType, boolean addPre) {
+            Language<?> language, String mimeType, boolean addPre) {
         // XXX is this getting called twice?    
         MimePath mimePath = MimePath.parse(mimeType);
         Lookup lookup = MimeLookup.getLookup(mimePath);

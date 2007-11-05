@@ -64,14 +64,10 @@ public final class TokenHierarchyControl<I> {
     }
     
     private <T extends TokenId> void init() {
-        Language<? extends TokenId> language = input.language();
+        Language<?> language = input.language();
         if (language != null) {
-            this.operation = createOperation(language);
+            this.operation = new TokenHierarchyOperation<I,T>(input);
         }
-    }
-    
-    private <T extends TokenId> TokenHierarchyOperation<I,T> createOperation(Language<T> language) {
-        return new TokenHierarchyOperation<I,T>(input, language);
     }
     
     public synchronized TokenHierarchy<I> tokenHierarchy() {

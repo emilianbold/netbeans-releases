@@ -42,7 +42,6 @@
 package org.netbeans.modules.lexer.nbbridge;
 
 import java.util.Map;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 
 /**
@@ -51,14 +50,14 @@ import org.netbeans.spi.lexer.LanguageEmbedding;
  */
 public final class LanguagesEmbeddingMap {
     
-    private Map<String, LanguageEmbedding<? extends TokenId>> map;
+    private Map<String, LanguageEmbedding<?>> map;
     
     /** Creates a new instance of LanguagesEmbeddingMap */
-    public LanguagesEmbeddingMap(Map<String, LanguageEmbedding<? extends TokenId>> map) {
+    public LanguagesEmbeddingMap(Map<String, LanguageEmbedding<?>> map) {
         this.map = map;
     }
     
-    public synchronized LanguageEmbedding<? extends TokenId> getLanguageEmbeddingForTokenName(String tokenName) {
+    public synchronized LanguageEmbedding<?> getLanguageEmbeddingForTokenName(String tokenName) {
         return map.get(tokenName);
     }
 }

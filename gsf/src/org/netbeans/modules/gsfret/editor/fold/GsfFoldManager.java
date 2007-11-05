@@ -324,11 +324,11 @@ public class GsfFoldManager implements FoldManager {
 
         private boolean checkInitialFold(GsfFoldManager manager, CompilationInfo info, List<FoldInfo> folds) {
             try {
-                TokenHierarchy<Void> th = info.getTokenHierarchy();
-                TokenSequence<? extends TokenId> ts = th.tokenSequence();
+                TokenHierarchy<?> th = info.getTokenHierarchy();
+                TokenSequence<?> ts = th.tokenSequence();
                 
                 while (ts.moveNext()) {
-                    Token<? extends TokenId> token = ts.token();
+                    Token<?> token = ts.token();
                     
                     String category = token.id().primaryCategory();
                     if ("comment".equals(category)) { // NOI18N

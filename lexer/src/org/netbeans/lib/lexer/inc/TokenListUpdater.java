@@ -294,10 +294,7 @@ public final class TokenListUpdater {
         if (attemptValidation) {
             matchOffset = modTokenOffset + modToken.length();
             TokenValidator tokenValidator = languageOperation.tokenValidator(modToken.id());
-            if (tokenValidator != null
-                && (tokenList.getClass() != IncTokenList.class
-                    || tokenList.tokenHierarchyOperation().canModifyToken(index, modToken))
-            ) {
+            if (tokenValidator != null && (tokenList.getClass() != IncTokenList.class)) {
                     
 //                if (tokenValidator.validateToken(modToken, modOffset - modTokenOffset, modRelOffset,
 //                        removedLength, insertedLength)

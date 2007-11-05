@@ -53,10 +53,10 @@ import org.netbeans.lib.lexer.EmbeddingContainer;
 import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
-import org.netbeans.spi.lexer.MutableTextInput;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.token.TextToken;
 
@@ -83,8 +83,6 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     
     private final TokenHierarchyOperation<?,T> tokenHierarchyOperation;
 
-    private final MutableTextInput<?> mutableTextInput;
-    
     private final LanguagePath languagePath;
     
     private CharSequence text;
@@ -99,13 +97,10 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     private LAState laState;
     
     
-    public IncTokenList(TokenHierarchyOperation<?,T> tokenHierarchyOperation,
-    MutableTextInput<?> mutableTextInput) {
+    public IncTokenList(TokenHierarchyOperation<?,T> tokenHierarchyOperation, Language<?> language) {
         this.tokenHierarchyOperation = tokenHierarchyOperation;
-        this.mutableTextInput = mutableTextInput;
-        this.languagePath = LanguagePath.get(
-                LexerSpiPackageAccessor.get().language(mutableTextInput));
-        this.text = LexerSpiPackageAccessor.get().text(mutableTextInput);
+        this.languagePath = LanguagePath.get(language);
+        this.text = LexerSpiPackageAccessor.get().text(tokenHierarchyOperation.mutableTextInput());
         this.laState = LAState.empty();
         initLexing();
     }
@@ -190,7 +185,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     }
 
     public InputAttributes inputAttributes() {
-        return LexerSpiPackageAccessor.get().inputAttributes(mutableTextInput);
+        return LexerSpiPackageAccessor.get().inputAttributes(tokenHierarchyOperation.mutableTextInput());
     }
     
     protected int elementRawOffset(Object elem) {
@@ -235,11 +230,11 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         return size();
     }
 
-    public TokenList<? extends TokenId> root() {
+    public TokenList<?> root() {
         return this;
     }
 
-    public TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation() {
+    public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return tokenHierarchyOperation;
     }
     

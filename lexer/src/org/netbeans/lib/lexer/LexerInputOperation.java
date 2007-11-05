@@ -49,8 +49,6 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.GapList;
 import org.netbeans.lib.lexer.token.ComplexToken;
-import org.netbeans.lib.lexer.token.PreprocessedTextToken;
-import org.netbeans.spi.lexer.CharPreprocessor;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.lib.lexer.token.AbstractToken;
@@ -142,17 +140,17 @@ public abstract class LexerInputOperation<T extends TokenId> implements CharProv
         TokenFactory<T> tokenFactory = LexerSpiPackageAccessor.get().createTokenFactory(this);
         
         // Check whether character preprocessing is necessary
-        CharPreprocessor p = LexerSpiPackageAccessor.get().createCharPreprocessor(languageHierarchy);
-        if (p != null) {
-            preprocessingLevelCount++;
-            preprocessorOperation = new CharPreprocessorOperation(
-                    ((preprocessorOperation != null)
-                        ? (CharProvider)preprocessorOperation
-                        : this),
-                    p,
-                    this
-            );
-        }
+//        CharPreprocessor p = LexerSpiPackageAccessor.get().createCharPreprocessor(languageHierarchy);
+//        if (p != null) {
+//            preprocessingLevelCount++;
+//            preprocessorOperation = new CharPreprocessorOperation(
+//                    ((preprocessorOperation != null)
+//                        ? (CharProvider)preprocessorOperation
+//                        : this),
+//                    p,
+//                    this
+//            );
+//        }
         
         LexerInput lexerInput = LexerSpiPackageAccessor.get().createLexerInput(
                 (preprocessorOperation != null) ? preprocessorOperation : this);
@@ -340,30 +338,30 @@ public abstract class LexerInputOperation<T extends TokenId> implements CharProv
         preprocessErrorList.add(error);
     }
 
-    public final void initPreprocessedToken(AbstractToken<T> token) {
-        CharPreprocessorError error = null;
-        if (preprocessErrorList != null && preprocessErrorList.size() > 0) {
-            for (int i = preprocessErrorList.size() - 1; i >= 0; i--) {
-                error = preprocessErrorList.get(i);
-                if (error.index() < tokenLength) {
-                    preprocessErrorList.remove(i);
-                } else {// Above errors for this token
-                    // Relocate - subtract token length
-                    error.updateIndex(-tokenLength);
-                    error = null;
-                }
-            }
-        }
-        
-        PreprocessedTextStorage storage = preprocessorOperation.createPreprocessedTextStorage(
-                token.text(), extraPreprocessedChars);
-        
-        if (token.getClass() == ComplexToken.class) {
-            ((ComplexToken)token).initPrep(storage, error);
-        } else {
-            ((PreprocessedTextToken)token).initPrep(storage, error);
-        }
-    }
+//    public final void initPreprocessedToken(AbstractToken<T> token) {
+//        CharPreprocessorError error = null;
+//        if (preprocessErrorList != null && preprocessErrorList.size() > 0) {
+//            for (int i = preprocessErrorList.size() - 1; i >= 0; i--) {
+//                error = preprocessErrorList.get(i);
+//                if (error.index() < tokenLength) {
+//                    preprocessErrorList.remove(i);
+//                } else {// Above errors for this token
+//                    // Relocate - subtract token length
+//                    error.updateIndex(-tokenLength);
+//                    error = null;
+//                }
+//            }
+//        }
+//        
+//        PreprocessedTextStorage storage = preprocessorOperation.createPreprocessedTextStorage(
+//                token.text(), extraPreprocessedChars);
+//        
+//        if (token.getClass() == ComplexToken.class) {
+//            ((ComplexToken)token).initPrep(storage, error);
+//        } else {
+//            ((PreprocessedTextToken)token).initPrep(storage, error);
+//        }
+//    }
     
     public void collectExtraPreprocessedChars(CharProvider.ExtraPreprocessedChars epc,
     int prepStartIndex, int prepEndIndex, int topPrepEndIndex) {

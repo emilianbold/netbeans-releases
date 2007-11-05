@@ -75,7 +75,7 @@ public class SimpleLexerIncTest extends TestCase {
         doc.putProperty(Language.class,TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         assertNotNull("Null token hierarchy for document", hi);
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         assertFalse(ts.moveNext());
         
         // Insert text into document

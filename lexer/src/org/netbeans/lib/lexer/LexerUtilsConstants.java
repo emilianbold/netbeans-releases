@@ -194,10 +194,10 @@ public final class LexerUtilsConstants {
      * First the <code>LanguageHierarchy.embedding()</code> method is queried
      * and if no embedding is found then the <code>LanguageProvider.findLanguageEmbedding()</code>.
      */
-    public static <T extends TokenId> LanguageEmbedding<? extends TokenId>
+    public static <T extends TokenId> LanguageEmbedding<?>
     findEmbedding(LanguageHierarchy<T> languageHierarchy, Token<T> token,
     LanguagePath languagePath, InputAttributes inputAttributes) {
-        LanguageEmbedding<? extends TokenId> embedding =
+        LanguageEmbedding<?> embedding =
                 LexerSpiPackageAccessor.get().embedding(
                 languageHierarchy, token, languagePath, inputAttributes);
 
@@ -221,7 +221,7 @@ public final class LexerUtilsConstants {
         AbstractToken<T> token = (AbstractToken<T>)
             ((tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class)
                 ? ((EmbeddingContainer)tokenOrEmbeddingContainer).token()
-                : (AbstractToken<? extends TokenId>)tokenOrEmbeddingContainer);
+                : (AbstractToken<?>)tokenOrEmbeddingContainer);
         return token;
     }
 
@@ -366,7 +366,7 @@ public final class LexerUtilsConstants {
                 ec = null;
                 token = (Token<?>)tokenOrEmbeddingContainer;
             }
-            sb.append(((AbstractToken<? extends TokenId>)token).dumpInfo(tokenHierarchy));
+            sb.append(((AbstractToken<?>)token).dumpInfo(tokenHierarchy));
             appendLAState(sb, lookahead, state);
             sb.append(", ");
             appendIdentityHashCode(sb, token);
@@ -377,7 +377,7 @@ public final class LexerUtilsConstants {
                 // Append EC's IHC
                 sb.append("; EC-");
                 appendIdentityHashCode(sb, ec);
-                EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbeddedTokenList();
+                EmbeddedTokenList<?> etl = ec.firstEmbeddedTokenList();
                 int index = 0;
                 while (etl != null) {
                     sb.append('\n');
@@ -398,7 +398,7 @@ public final class LexerUtilsConstants {
         sb.append(System.identityHashCode(o));
     }
     
-    public static void appendLAState(StringBuilder sb, TokenList<? extends TokenId> tokenList, int index) {
+    public static void appendLAState(StringBuilder sb, TokenList<?> tokenList, int index) {
         appendLAState(sb, tokenList.lookahead(index), tokenList.state(index));
     }
 

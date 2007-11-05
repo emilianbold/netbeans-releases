@@ -120,11 +120,11 @@ public final class StandaloneTokenList<T extends TokenId> implements TokenList<T
         throw new IllegalStateException("Branching of standalone tokens not supported"); // NOI18N
     }
     
-    public TokenList<? extends TokenId> root() {
+    public TokenList<?> root() {
         return this;
     }
     
-    public TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation() {
+    public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return null;
     }
     

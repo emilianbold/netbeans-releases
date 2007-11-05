@@ -109,7 +109,7 @@ public class JavadocUtilities {
             return null;
         
         int elementStartOffset = (int) javac.getTrees().getSourcePositions().getStartPosition(javac.getCompilationUnit(), tree);
-        TokenSequence<? extends TokenId> s = javac.getTokenHierarchy().tokenSequence();
+        TokenSequence<?> s = javac.getTokenHierarchy().tokenSequence();
         s.move(elementStartOffset);
         while (s.movePrevious() && IGNORE_TOKES.contains(s.token().id()))
             ;
@@ -172,7 +172,7 @@ public class JavadocUtilities {
         
         int length = tag.text().length();
         length = length > 0? length: tag.name().length();
-        TokenSequence<? extends TokenId> s = javac.getTokenHierarchy().tokenSequence();
+        TokenSequence<?> s = javac.getTokenHierarchy().tokenSequence();
         return s.embedded(JavadocTokenId.language()).subSequence(offset /*+ 1 */, offset + length);
     }
     
@@ -206,7 +206,7 @@ public class JavadocUtilities {
             return null;
         
         int elementStartOffset = (int) javac.getTrees().getSourcePositions().getStartPosition(javac.getCompilationUnit(), tree);
-        TokenSequence<? extends TokenId> tseq = javac.getTokenHierarchy().tokenSequence();
+        TokenSequence<?> tseq = javac.getTokenHierarchy().tokenSequence();
         tseq.move(elementStartOffset);
         while (tseq.movePrevious() && IGNORE_TOKES.contains(tseq.token().id()))
             ;

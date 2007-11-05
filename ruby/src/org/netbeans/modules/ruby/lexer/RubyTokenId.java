@@ -168,7 +168,7 @@ public class RubyTokenId extends GsfTokenId {
                 }
 
                 @Override
-                protected LanguageEmbedding<?extends TokenId> embedding(Token<GsfTokenId> token,
+                protected LanguageEmbedding<?> embedding(Token<GsfTokenId> token,
                     LanguagePath languagePath, InputAttributes inputAttributes) {
                     GsfTokenId id = token.id();
 

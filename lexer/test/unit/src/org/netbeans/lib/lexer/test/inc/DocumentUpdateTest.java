@@ -73,7 +73,7 @@ public class DocumentUpdateTest extends NbTestCase {
         
         h.tokenSequence().tokenCount();
         
-        TokenSequence<? extends TokenId> s = h.tokenSequence();
+        TokenSequence<?> s = h.tokenSequence();
         
         assertTrue(s.moveNext());
         
@@ -93,7 +93,7 @@ public class DocumentUpdateTest extends NbTestCase {
         
         h.tokenSequence().tokenCount();
         
-        TokenSequence<? extends TokenId> s = h.tokenSequence();
+        TokenSequence<?> s = h.tokenSequence();
         
         assertTrue(s.moveNext());
         
@@ -113,7 +113,7 @@ public class DocumentUpdateTest extends NbTestCase {
         
         h.tokenSequence().tokenCount();
         
-        TokenSequence<? extends TokenId> s = h.tokenSequence();
+        TokenSequence<?> s = h.tokenSequence();
         
         assertTrue(s.moveNext());
         
@@ -129,7 +129,7 @@ public class DocumentUpdateTest extends NbTestCase {
         
         assertTrue(s.moveNext());
         
-        TokenSequence<? extends TokenId> e = s.embedded();
+        TokenSequence<?> e = s.embedded();
         
         assertNotNull(e);
         

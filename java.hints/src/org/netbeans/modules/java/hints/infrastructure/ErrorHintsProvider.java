@@ -177,7 +177,7 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
     }
     
     public static Token findUnresolvedElementToken(CompilationInfo info, int offset) throws IOException {
-        TokenHierarchy<Void> th = info.getTokenHierarchy();
+        TokenHierarchy<?> th = info.getTokenHierarchy();
         TokenSequence<JavaTokenId> ts = th.tokenSequence(JavaTokenId.language());
         
         if (ts == null) {

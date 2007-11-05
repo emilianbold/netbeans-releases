@@ -83,7 +83,7 @@ public class RDocFormatterTest extends RubyTestBase {
                     inDoc = false;
                     continue;
                 }
-                Token<? extends TokenId> token = LexUtilities.getToken(doc, start);
+                Token<?> token = LexUtilities.getToken(doc, start);
                 if (token.id() == RubyTokenId.LINE_COMMENT) {
                     started = true;
                     line = doc.getText(start, Utilities.getRowEnd(doc, start)-start);

@@ -132,16 +132,16 @@ public class CompletionProviderImpl implements CompletionProvider {
                 }
                 offset = offset - 2; //do Schlieman's magic
                 
-                List<TokenSequence<? extends TokenId>> sequences = tokenHierarchy.embeddedTokenSequences(offset, true);
+                List<TokenSequence<?>> sequences = tokenHierarchy.embeddedTokenSequences(offset, true);
                 if(sequences.isEmpty()) {
                     return 0; //no token sequence
                 }
-                TokenSequence tokenSequence = sequences.get(sequences.size() - 1); //get the most embedded
+                TokenSequence<?> tokenSequence = sequences.get(sequences.size() - 1); //get the most embedded
                 tokenSequence.move(offset);
                 if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
                     return 0;
                 }
-                Token token = tokenSequence.token ();
+                Token<?> token = tokenSequence.token ();
                 if (token.id().name().indexOf("identifier") > -1) { // NOI18N [PENDING]
                     return COMPLETION_QUERY_TYPE;
                 }

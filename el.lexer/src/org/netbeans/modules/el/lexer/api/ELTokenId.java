@@ -209,7 +209,7 @@ public enum ELTokenId implements TokenId {
         }
         
         @Override
-        public LanguageEmbedding<? extends TokenId> embedding(
+        public LanguageEmbedding<?> embedding(
                 Token<ELTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             return null; // No embedding
         }

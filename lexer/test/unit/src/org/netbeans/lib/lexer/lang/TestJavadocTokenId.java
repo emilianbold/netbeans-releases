@@ -105,7 +105,7 @@ public enum TestJavadocTokenId implements TokenId {
         }
 
         @Override
-        protected LanguageEmbedding<? extends TokenId> embedding(
+        protected LanguageEmbedding<?> embedding(
         Token<TestJavadocTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             switch (token.id()) {
                 case HTML_TAG:

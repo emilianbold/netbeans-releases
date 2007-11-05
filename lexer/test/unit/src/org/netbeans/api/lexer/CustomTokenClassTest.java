@@ -62,9 +62,9 @@ public class CustomTokenClassTest extends NbTestCase {
         }
     }
     
-    private static final class CustomToken extends Token {
+    private static final class CustomToken<T extends TokenId> extends Token<T> {
         
-        public TokenId id() {
+        public T id() {
             return null;
         }
 
@@ -80,28 +80,12 @@ public class CustomTokenClassTest extends NbTestCase {
             return 0;
         }
 
-        public int offset(TokenHierarchy tokenHierarchy) {
+        public int offset(TokenHierarchy<?> tokenHierarchy) {
             return 0;
         }
 
         public boolean isFlyweight() {
             return false;
-        }
-
-        public boolean isPreprocessedText() {
-            return false;
-        }
-
-        public CharSequence preprocessedText() {
-            return null;
-        }
-
-        public String preprocessError() {
-            return null;
-        }
-
-        public int preprocessErrorIndex() {
-            return 0;
         }
 
         public boolean hasProperties() {

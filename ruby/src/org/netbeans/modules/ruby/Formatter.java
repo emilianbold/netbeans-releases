@@ -191,7 +191,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             // Probably an RHTML file - gotta process it in sections since I can have lines
             // made up of both whitespace, ruby, html and delimiters and all ruby sections
             // can affect the token balance
-            TokenSequence<? extends TokenId> t = th.tokenSequence();
+            TokenSequence<?> t = th.tokenSequence();
             if (t == null) {
                 return 0;
             }
@@ -201,7 +201,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             }
             
             do {
-                Token<?extends TokenId> token = t.token();
+                Token<?> token = t.token();
                 TokenId id = token.id();
                 
                 if (id.primaryCategory().equals("ruby")) { // NOI18N

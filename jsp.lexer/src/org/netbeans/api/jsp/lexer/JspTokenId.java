@@ -131,7 +131,7 @@ public enum JspTokenId implements TokenId {
         }
         
         @Override
-        protected LanguageEmbedding<? extends TokenId> embedding(
+        protected LanguageEmbedding<?> embedding(
         Token<JspTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             switch(token.id()) {
                 case TEXT:

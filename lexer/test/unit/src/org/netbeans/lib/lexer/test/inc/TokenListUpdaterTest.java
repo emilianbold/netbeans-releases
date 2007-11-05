@@ -78,7 +78,7 @@ public class TokenListUpdaterTest extends TestCase {
         doc.putProperty(Language.class,TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         assertNotNull("Null token hierarchy for document", hi);
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
         assertTrue(ts.moveNext());
@@ -115,7 +115,7 @@ public class TokenListUpdaterTest extends TestCase {
 
         doc.putProperty(Language.class,TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "a", 0);
         assertTrue(ts.moveNext());
@@ -144,7 +144,7 @@ public class TokenListUpdaterTest extends TestCase {
 
         doc.putProperty(Language.class,TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "a", 0);
         
@@ -171,7 +171,7 @@ public class TokenListUpdaterTest extends TestCase {
 
         doc.putProperty(Language.class,TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "a", 0);
         
@@ -202,7 +202,7 @@ public class TokenListUpdaterTest extends TestCase {
 
         doc.putProperty(Language.class,TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "a", 0);
         assertTrue(ts.moveNext());
@@ -235,7 +235,7 @@ public class TokenListUpdaterTest extends TestCase {
 
         doc.putProperty(Language.class,TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "a", 0);
         
@@ -270,7 +270,7 @@ public class TokenListUpdaterTest extends TestCase {
         // Insert "-"
         doc.insertString(2, "-", null);
 
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "a", 0);
         assertTrue(ts.moveNext());

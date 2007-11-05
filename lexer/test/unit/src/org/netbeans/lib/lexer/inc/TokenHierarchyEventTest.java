@@ -78,7 +78,7 @@ public class TokenHierarchyEventTest extends NbTestCase {
         doc.putProperty(Language.class,TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         LexerTestUtilities.initLastTokenHierarchyEventListening(doc);
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
 
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
@@ -98,7 +98,7 @@ public class TokenHierarchyEventTest extends NbTestCase {
         // Check the fired event
         TokenHierarchyEvent evt = LexerTestUtilities.getLastTokenHierarchyEvent(doc);
         assertNotNull(evt);
-        TokenChange<? extends TokenId> tc = evt.tokenChange();
+        TokenChange<?> tc = evt.tokenChange();
         assertNotNull(tc);
         assertEquals(2, tc.index());
         assertEquals(4, tc.offset());

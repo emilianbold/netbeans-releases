@@ -89,7 +89,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
      * Embedding container carries info about the token into which this
      * token list is embedded.
      */
-    private EmbeddingContainer<? extends TokenId> embeddingContainer; // 36 bytes (32-super + 4)
+    private EmbeddingContainer<?> embeddingContainer; // 36 bytes (32-super + 4)
     
     /**
      * Language embedding for this embedded token list.
@@ -112,12 +112,12 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     /**
      * Next embedded token list forming a single-linked list.
      */
-    private EmbeddedTokenList<? extends TokenId> nextEmbeddedTokenList; // 52 bytes
+    private EmbeddedTokenList<?> nextEmbeddedTokenList; // 52 bytes
     
     
-    public EmbeddedTokenList(EmbeddingContainer<? extends TokenId> embeddingContainer,
+    public EmbeddedTokenList(EmbeddingContainer<?> embeddingContainer,
     LanguagePath languagePath, LanguageEmbedding<T> embedding,
-    EmbeddedTokenList<? extends TokenId> nextEmbedding) {
+    EmbeddedTokenList<?> nextEmbedding) {
         this.embeddingContainer = embeddingContainer;
         this.languagePath = languagePath;
         this.embedding = embedding;
@@ -172,11 +172,11 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         return (laState != LAState.initState());
     }
     
-    EmbeddedTokenList<? extends TokenId> nextEmbeddedTokenList() {
+    EmbeddedTokenList<?> nextEmbeddedTokenList() {
         return nextEmbeddedTokenList;
     }
     
-    void setNextEmbeddedTokenList(EmbeddedTokenList<? extends TokenId> nextEmbeddedTokenList) {
+    void setNextEmbeddedTokenList(EmbeddedTokenList<?> nextEmbeddedTokenList) {
         this.nextEmbeddedTokenList = nextEmbeddedTokenList;
     }
     
@@ -290,35 +290,35 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
                 - embedding.endSkipLength();
     }
     
-    public TokenList<? extends TokenId> root() {
+    public TokenList<?> root() {
         return embeddingContainer.rootTokenList();
     }
     
-    public TokenHierarchyOperation<?,? extends TokenId> tokenHierarchyOperation() {
+    public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return root().tokenHierarchyOperation();
     }
     
-    public AbstractToken<? extends TokenId> rootToken() {
+    public AbstractToken<?> rootToken() {
         return embeddingContainer.rootToken();
     }
 
     protected int elementRawOffset(Object elem) {
         return (elem.getClass() == EmbeddingContainer.class)
             ? ((EmbeddingContainer)elem).token().rawOffset()
-            : ((AbstractToken<? extends TokenId>)elem).rawOffset();
+            : ((AbstractToken<?>)elem).rawOffset();
     }
 
     protected void setElementRawOffset(Object elem, int rawOffset) {
         if (elem.getClass() == EmbeddingContainer.class)
             ((EmbeddingContainer)elem).token().setRawOffset(rawOffset);
         else
-            ((AbstractToken<? extends TokenId>)elem).setRawOffset(rawOffset);
+            ((AbstractToken<?>)elem).setRawOffset(rawOffset);
     }
     
     protected boolean isElementFlyweight(Object elem) {
         // token wrapper always contains non-flyweight token
         return (elem.getClass() != EmbeddingContainer.class)
-            && ((AbstractToken<? extends TokenId>)elem).isFlyweight();
+            && ((AbstractToken<?>)elem).isFlyweight();
     }
     
     protected int elementLength(Object elem) {
@@ -450,7 +450,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         return embeddingContainer;
     }
     
-    public void setEmbeddingContainer(EmbeddingContainer<? extends TokenId> embeddingContainer) {
+    public void setEmbeddingContainer(EmbeddingContainer<?> embeddingContainer) {
         this.embeddingContainer = embeddingContainer;
     }
     

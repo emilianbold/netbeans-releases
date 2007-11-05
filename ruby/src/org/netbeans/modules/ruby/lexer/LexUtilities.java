@@ -152,7 +152,7 @@ public class LexUtilities {
                 // It's a delimiter - move ahead and see if we find it
                 if (t.moveNext() && t.token() != null &&
                         "ruby".equals(t.token().id().primaryCategory())) { // NOI18N
-                    TokenSequence<? extends TokenId> ets = t.embedded();
+                    TokenSequence<?> ets = t.embedded();
                     if (ets != null) {
                         return (TokenSequence<? extends GsfTokenId>)ets;
                     }
@@ -170,7 +170,7 @@ public class LexUtilities {
         if (ts == null) {
             // Possibly an embedding scenario such as an RHTML file
             // First try with backward bias true
-            List<TokenSequence<?extends TokenId>> list = th.embeddedTokenSequences(offset, true);
+            List<TokenSequence<?>> list = th.embeddedTokenSequences(offset, true);
 
             for (TokenSequence t : list) {
                 if (t.language() == RubyTokenId.language()) {

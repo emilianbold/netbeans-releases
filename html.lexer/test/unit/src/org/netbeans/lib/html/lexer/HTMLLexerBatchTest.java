@@ -71,7 +71,7 @@ public class HTMLLexerBatchTest extends TestCase {
         String text = "<jsp:useBean name=\"pkg.myBean\"/><!--comment-->abc&gt;def<tag attr=\"value\"></tag>";
                 
         TokenHierarchy<?> hi = TokenHierarchy.create(text, HTMLTokenId.language());
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.TAG_OPEN_SYMBOL, "<");
         LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.TAG_OPEN, "jsp:useBean");
         LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.WS, " ");

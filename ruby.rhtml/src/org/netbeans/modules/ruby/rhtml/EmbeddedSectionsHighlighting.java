@@ -161,7 +161,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         private final int startOffset;
         private final int endOffset;
 
-        private TokenSequence<? extends TokenId> sequence = null;
+        private TokenSequence<?> sequence = null;
         private int sectionStart = -1;
         private int sectionEnd = -1;
         private boolean finished = false;

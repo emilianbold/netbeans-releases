@@ -59,10 +59,10 @@ import org.netbeans.lib.lexer.TokenList;
 
 public final class TokenChangeInfo<T extends TokenId> {
     
-    private static final TokenChange<? extends TokenId>[] EMPTY_EMBEDDED_CHANGES
-            = (TokenChange<? extends TokenId>[])new TokenChange[0];
+    private static final TokenChange<?>[] EMPTY_EMBEDDED_CHANGES
+            = (TokenChange<?>[])new TokenChange[0];
 
-    private TokenChange<? extends TokenId>[] embeddedChanges = EMPTY_EMBEDDED_CHANGES;
+    private TokenChange<?>[] embeddedChanges = EMPTY_EMBEDDED_CHANGES;
     
     private final TokenList<T> currentTokenList;
     
@@ -81,12 +81,12 @@ public final class TokenChangeInfo<T extends TokenId> {
         this.currentTokenList = currentTokenList;
     }
 
-    public TokenChange<? extends TokenId>[] embeddedChanges() {
+    public TokenChange<?>[] embeddedChanges() {
         return embeddedChanges;
     }
     
-    public void addEmbeddedChange(TokenChangeInfo<? extends TokenId> change) {
-        TokenChange<? extends TokenId>[] tmp = (TokenChange<? extends TokenId>[])
+    public void addEmbeddedChange(TokenChangeInfo<?> change) {
+        TokenChange<?>[] tmp = (TokenChange<?>[])
                 new TokenChange[embeddedChanges.length + 1];
         System.arraycopy(embeddedChanges, 0, tmp, 0, embeddedChanges.length);
         tmp[embeddedChanges.length] = LexerApiPackageAccessor.get().createTokenChange(change);

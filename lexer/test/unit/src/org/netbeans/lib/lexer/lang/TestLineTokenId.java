@@ -85,7 +85,7 @@ public enum TestLineTokenId implements TokenId {
         }
 
         @Override
-        protected LanguageEmbedding<? extends TokenId> embedding(
+        protected LanguageEmbedding<?> embedding(
         Token<TestLineTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             return null; // No embedding
         }

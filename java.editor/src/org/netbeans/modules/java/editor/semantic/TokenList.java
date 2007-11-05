@@ -246,12 +246,12 @@ public class TokenList {
         });
     }
     
-    private static List<TokenSequence<? extends TokenId>> embeddedTokenSequences(TokenHierarchy<Document> th, int offset) {
-        TokenSequence<? extends TokenId> embedded = th.tokenSequence();
-        List<TokenSequence<? extends TokenId>> sequences = new ArrayList<TokenSequence<? extends TokenId>>();
+    private static List<TokenSequence<?>> embeddedTokenSequences(TokenHierarchy<Document> th, int offset) {
+        TokenSequence<?> embedded = th.tokenSequence();
+        List<TokenSequence<?>> sequences = new ArrayList<TokenSequence<?>>();
 
         do {
-            TokenSequence<? extends TokenId> seq = embedded;
+            TokenSequence<?> seq = embedded;
             embedded = null;
 
             seq.move(offset);

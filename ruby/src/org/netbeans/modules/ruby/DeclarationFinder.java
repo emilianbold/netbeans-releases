@@ -178,9 +178,9 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
         return range;
     }
 
-    private OffsetRange getReferenceSpan(TokenSequence<?extends TokenId> ts,
+    private OffsetRange getReferenceSpan(TokenSequence<?> ts,
         TokenHierarchy<Document> th, int lexOffset) {
-        Token<?extends TokenId> token = ts.token();
+        Token<?> token = ts.token();
         TokenId id = token.id();
 
         // TODO: Tokens.SUPER, Tokens.THIS, Tokens.SELF ...
@@ -191,14 +191,14 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
         }
 
         // Look for embedded RDoc comments:
-        TokenSequence<?extends TokenId> embedded = ts.embedded();
+        TokenSequence<?> embedded = ts.embedded();
 
         if (embedded != null) {
             ts = embedded;
             embedded.move(lexOffset);
 
             if (embedded.moveNext()) {
-                Token<?extends TokenId> embeddedToken = embedded.token();
+                Token<?> embeddedToken = embedded.token();
 
                 if (embeddedToken.id() == RubyCommentTokenId.COMMENT_LINK) {
                     return new OffsetRange(embedded.offset(),
@@ -823,7 +823,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                         boolean started = false;
                         while (ts.moveNext() && ts.offset() < end) {
                             started = true;
-                            Token<?extends TokenId> token = ts.token();
+                            Token<?> token = ts.token();
                             TokenId id = token.id();
                             if (id == RubyTokenId.STRING_LITERAL || id == RubyTokenId.QUOTED_STRING_LITERAL) {
                                 sb.append(token.text().toString());
@@ -1265,7 +1265,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
     private DeclarationLocation findRDocMethod(CompilationInfo info, Document doc, int astOffset, int lexOffset, 
             Node root, AstPath path, Node closest, RubyIndex index) {
         TokenHierarchy<Document> th = TokenHierarchy.get(doc);
-        TokenSequence<?extends TokenId> ts = LexUtilities.getRubyTokenSequence((BaseDocument)doc, lexOffset);
+        TokenSequence<?> ts = LexUtilities.getRubyTokenSequence((BaseDocument)doc, lexOffset);
 
         if (ts == null) {
             return DeclarationLocation.NONE;
@@ -1277,9 +1277,9 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
             return DeclarationLocation.NONE;
         }
 
-        Token<?extends TokenId> token = ts.token();
+        Token<?> token = ts.token();
 
-        TokenSequence<?extends TokenId> embedded = ts.embedded();
+        TokenSequence<?> embedded = ts.embedded();
 
         if (embedded != null) {
             ts = embedded;

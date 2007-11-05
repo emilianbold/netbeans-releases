@@ -3144,7 +3144,7 @@ public class CodeCompleter implements Completable {
                         if (!Character.isWhitespace(text.charAt(i))) {
 
                             // Make sure that we're not in a string etc
-                            Token<? extends TokenId> token = LexUtilities.getToken(doc, selectionBegin);
+                            Token<?> token = LexUtilities.getToken(doc, selectionBegin);
                             if (token != null) {
                                 TokenId id = token.id();
                                 if (id != RubyTokenId.STRING_LITERAL && id != RubyTokenId.LINE_COMMENT &&

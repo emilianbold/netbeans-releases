@@ -125,7 +125,7 @@ public enum XMLTokenId implements TokenId {
         }
         
         @Override
-        public LanguageEmbedding<? extends TokenId> embedding(
+        public LanguageEmbedding<?> embedding(
         Token<XMLTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             return null; // No embedding
         }

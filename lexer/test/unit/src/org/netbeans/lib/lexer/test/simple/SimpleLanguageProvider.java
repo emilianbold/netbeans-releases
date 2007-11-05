@@ -81,7 +81,7 @@ public class SimpleLanguageProvider extends LanguageProvider {
         instance = this;
     }
 
-    public Language<? extends TokenId> findLanguage(String mimeType) {
+    public Language<?> findLanguage(String mimeType) {
         if (LanguageManagerTest.MIME_TYPE_KNOWN.equals(mimeType)) {
             return new LH().language();
         } else if (TestChangingTokenId.MIME_TYPE.equals(mimeType)) {
@@ -90,8 +90,8 @@ public class SimpleLanguageProvider extends LanguageProvider {
         return null;
     }
 
-    public LanguageEmbedding<? extends TokenId> findLanguageEmbedding(
-    Token<? extends TokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+    public LanguageEmbedding<?> findLanguageEmbedding(
+    Token<?> token, LanguagePath languagePath, InputAttributes inputAttributes) {
         if ("text/x-simple-plain".equals(languagePath.mimePath()) && token.id().name().equals("WORD")) {
             return LanguageEmbedding.create(TestCharTokenId.language(), 0, 0);
         } else {

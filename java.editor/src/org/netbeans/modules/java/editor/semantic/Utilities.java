@@ -89,7 +89,7 @@ public class Utilities {
     }
     
     private static Token<JavaTokenId> findTokenWithText(CompilationInfo info, String text, int start, int end) {
-        TokenHierarchy<Void> th = info.getTokenHierarchy();
+        TokenHierarchy<?> th = info.getTokenHierarchy();
         TokenSequence<JavaTokenId> ts = th.tokenSequence(JavaTokenId.language()).subSequence(start, end);
         
         while (ts.moveNext()) {
@@ -161,7 +161,7 @@ public class Utilities {
 
         String member = tree.getIdentifier().toString();
 
-        TokenHierarchy<Void> th = info.getTokenHierarchy();
+        TokenHierarchy<?> th = info.getTokenHierarchy();
         TokenSequence<JavaTokenId> ts = th.tokenSequence(JavaTokenId.language());
 
         if (ts.move(endPosition) == Integer.MAX_VALUE) {
@@ -385,7 +385,7 @@ public class Utilities {
         
         int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), leaf);
         
-        TokenHierarchy<Void> th = info.getTokenHierarchy();
+        TokenHierarchy<?> th = info.getTokenHierarchy();
         TokenSequence<JavaTokenId> ts = th.tokenSequence(JavaTokenId.language());
         
         if (ts.move(start) == Integer.MAX_VALUE) {

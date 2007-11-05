@@ -77,7 +77,7 @@ public class CustomEmbeddingTest extends NbTestCase {
         TokenHierarchy<?> hi = TokenHierarchy.create(text,TestTokenId.language());
         THListener listener = new THListener();
         hi.addTokenHierarchyListener(listener);
-        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        TokenSequence<?> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
         assertTrue(ts.moveNext());
@@ -89,7 +89,7 @@ public class CustomEmbeddingTest extends NbTestCase {
         // Check the fired event
         TokenHierarchyEvent evt = listener.fetchLastEvent();
         assertNotNull(evt);
-        TokenChange<? extends TokenId> tc = evt.tokenChange();
+        TokenChange<?> tc = evt.tokenChange();
         assertNotNull(tc);
         assertEquals(2, tc.index());
         assertEquals(15, tc.offset());
@@ -97,7 +97,7 @@ public class CustomEmbeddingTest extends NbTestCase {
         assertEquals(0, tc.removedTokenCount());
         assertEquals(TestTokenId.language(), tc.language());
         assertEquals(1, tc.embeddedChangeCount());
-        TokenChange<? extends TokenId> etc = tc.embeddedChange(0);
+        TokenChange<?> etc = tc.embeddedChange(0);
         assertEquals(0, etc.index());
         assertEquals(18, etc.offset());
         assertEquals(0, etc.addedTokenCount()); // 0 to allow for lazy lexing where this would be unknowns
@@ -106,7 +106,7 @@ public class CustomEmbeddingTest extends NbTestCase {
         assertEquals(0, etc.embeddedChangeCount());
         
         // Test the contents of the embedded sequence
-        TokenSequence<? extends TokenId> ets = ts.embedded();
+        TokenSequence<?> ets = ts.embedded();
         assertTrue(ets.moveNext());
         LexerTestUtilities.assertTokenEquals(ets,TestTokenId.IDENTIFIER, "line", 18);
         assertTrue(ets.moveNext());
@@ -169,11 +169,11 @@ public class CustomEmbeddingTest extends NbTestCase {
     }
     
     public void testEmbeddingCaching() throws Exception {
-        LanguageEmbedding<? extends TokenId> e = LanguageEmbedding.create(TestTokenId.language(), 2, 1);
+        LanguageEmbedding<?> e = LanguageEmbedding.create(TestTokenId.language(), 2, 1);
         assertSame(TestTokenId.language(), e.language());
         assertSame(2, e.startSkipLength());
         assertSame(1, e.endSkipLength());
-        LanguageEmbedding<? extends TokenId> e2 = LanguageEmbedding.create(TestTokenId.language(), 2, 1);
+        LanguageEmbedding<?> e2 = LanguageEmbedding.create(TestTokenId.language(), 2, 1);
         assertSame(e, e2);
     }
     

@@ -411,7 +411,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                 if (doc != null) {
                     //force open
                     TokenHierarchy<Document> th = TokenHierarchy.get(doc);
-                    TokenSequence<?extends TokenId> ts = th.tokenSequence();
+                    TokenSequence<?> ts = th.tokenSequence();
 
                     ts.move(0);
 
@@ -485,10 +485,10 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
             fireProgressListenerStep();
         }
 
-        private void searchTokenSequence(CompilationInfo info, TokenSequence<? extends TokenId> ts) {
+        private void searchTokenSequence(CompilationInfo info, TokenSequence<?> ts) {
             if (ts.moveNext()) {
                 do {
-                    Token<?extends TokenId> token = ts.token();
+                    Token<?> token = ts.token();
                     TokenId id = token.id();
 
                     String primaryCategory = id.primaryCategory();
@@ -520,7 +520,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                             }
                         }
                     } else {
-                        TokenSequence<? extends TokenId> embedded = ts.embedded();
+                        TokenSequence<?> embedded = ts.embedded();
                         if (embedded != null) {
                             searchTokenSequence(info, embedded);
                         }                                    

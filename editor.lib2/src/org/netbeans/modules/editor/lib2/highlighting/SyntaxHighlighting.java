@@ -130,7 +130,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
 
         if (LOG.isLoggable(Level.FINEST)) {
             StringBuilder sb = new StringBuilder();
-            TokenSequence<? extends TokenId> ts = hierarchy.tokenSequence();
+            TokenSequence<?> ts = hierarchy.tokenSequence();
             
             sb.append("\n"); //NOI18N
             sb.append("Tokens after change: <" + evt.affectedStartOffset() + ", " + evt.affectedEndOffset() + ">\n"); //NOI18N
@@ -148,13 +148,13 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
     //  Private implementation
     // ----------------------------------------------------------------------
 
-    private static void dumpSequence(TokenSequence<? extends TokenId> seq, StringBuilder sb) {
+    private static void dumpSequence(TokenSequence<?> seq, StringBuilder sb) {
         for(seq.moveStart(); seq.moveNext(); ) {
-            TokenSequence<? extends TokenId> emSeq = seq.embedded();
+            TokenSequence<?> emSeq = seq.embedded();
             if (emSeq != null) {
                 dumpSequence(emSeq, sb);
             } else {
-                Token<? extends TokenId> token = seq.token();
+                Token<?> token = seq.token();
                 sb.append("<"); //NOI18N
                 sb.append(String.format("%3s", seq.offset())).append(", "); //NOI18N
                 sb.append(String.format("%3s", seq.offset() + token.length())).append(", "); //NOI18N
@@ -174,7 +174,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         }
     }
     
-    private static String tokenText(Token<? extends TokenId> token) {
+    private static String tokenText(Token<?> token) {
         CharSequence text = token.text();
         StringBuilder sb = new StringBuilder(text.length());
         
@@ -240,7 +240,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         private final int startOffset;
         private final int endOffset;
         
-        private List<TokenSequence<? extends TokenId>> sequences;
+        private List<TokenSequence<?>> sequences;
         private int state = -1;
         
         public HSImpl(long version, TokenHierarchy<? extends Document> scanner, int startOffset, int endOffset) {
@@ -256,9 +256,9 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                 if (checkVersion()) {
                     if (sequences == null) {
                         // initialize
-                        TokenSequence<? extends TokenId> seq = scanner.tokenSequence();
+                        TokenSequence<?> seq = scanner.tokenSequence();
                         seq.move(startOffset);
-                        sequences = new ArrayList<TokenSequence<? extends TokenId>>();
+                        sequences = new ArrayList<TokenSequence<?>>();
                         sequences.add(seq);
                         state = S_NORMAL;
                     }
@@ -274,7 +274,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
 
                     case S_EMBEDDED_HEAD:
                         // The current token contains embedded language and we have processed it's head
-                        TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
+                        TokenSequence<?> seq = sequences.get(sequences.size() - 1);
                         seq.moveStart();
                         if (seq.moveNext()) {
                             state = S_NORMAL;
@@ -299,8 +299,8 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
 
                 if (state == S_NORMAL) {
                     // We have moved to the next normal token, so look what it is
-                    TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
-                    TokenSequence<? extends TokenId> embeddedSeq = seq.embedded();
+                    TokenSequence<?> seq = sequences.get(sequences.size() - 1);
+                    TokenSequence<?> embeddedSeq = seq.embedded();
                     while (embeddedSeq != null && embeddedSeq.moveNext()) {
                         sequences.add(sequences.size(), embeddedSeq);
                         if (embeddedSeq.offset() > seq.offset()) {
@@ -323,15 +323,15 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             synchronized (SyntaxHighlighting.this) {
                 switch (state) {
                     case S_NORMAL: {
-                        TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
+                        TokenSequence<?> seq = sequences.get(sequences.size() - 1);
                         return seq.offset();
                     }
                     case S_EMBEDDED_HEAD: {
-                        TokenSequence<? extends TokenId> embeddingSeq = sequences.get(sequences.size() - 2);
+                        TokenSequence<?> embeddingSeq = sequences.get(sequences.size() - 2);
                         return embeddingSeq.offset();
                     }
                     case S_EMBEDDED_TAIL: {
-                        TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
+                        TokenSequence<?> seq = sequences.get(sequences.size() - 1);
                         seq.moveEnd();
                         if (seq.movePrevious()) {
                             return seq.offset() + seq.token().length();
@@ -352,21 +352,21 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             synchronized (SyntaxHighlighting.this) {
                 switch (state) {
                     case S_NORMAL: {
-                        TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
+                        TokenSequence<?> seq = sequences.get(sequences.size() - 1);
                         return seq.offset() + seq.token().length();
                     }
                     case S_EMBEDDED_HEAD: {
-                        TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
+                        TokenSequence<?> seq = sequences.get(sequences.size() - 1);
                         seq.moveStart();
                         if (seq.moveNext()) {
                             return seq.offset();
                         } else {
-                            TokenSequence<? extends TokenId> embeddingSeq = sequences.get(sequences.size() - 2);
+                            TokenSequence<?> embeddingSeq = sequences.get(sequences.size() - 2);
                             return embeddingSeq.offset() + embeddingSeq.token().length();
                         }
                     }
                     case S_EMBEDDED_TAIL:
-                        TokenSequence<? extends TokenId> embeddingSeq = sequences.get(sequences.size() - 2);
+                        TokenSequence<?> embeddingSeq = sequences.get(sequences.size() - 2);
                         return embeddingSeq.offset() + embeddingSeq.token().length();
 
                     case S_DONE:
@@ -398,7 +398,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         }
         
         private AttributeSet findAttribs(int seqIdx) {
-            TokenSequence<? extends TokenId> seq = sequences.get(seqIdx);
+            TokenSequence<?> seq = sequences.get(seqIdx);
             TokenId tokenId = seq.token().id();
             String mimePath;
             
@@ -438,7 +438,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             return tokenAttribs;
         }
 
-        private AttributeSet findTokenAttribs(TokenId tokenId, String mimePath, Language<? extends TokenId> innerLanguage) {
+        private AttributeSet findTokenAttribs(TokenId tokenId, String mimePath, Language<?> innerLanguage) {
             FontColorSettings fcs = fcsCache.get(mimePath);
             
             if (fcs == null) {
@@ -523,13 +523,13 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         }
         
         private int moveTheSequence() {
-            TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
+            TokenSequence<?> seq = sequences.get(sequences.size() - 1);
             
             if (seq.moveNext() && seq.offset() < endOffset) {
                 return S_NORMAL;
             } else {
                 if (sequences.size() > 1) {
-                    TokenSequence<? extends TokenId> embeddingSeq = sequences.get(sequences.size() - 2);
+                    TokenSequence<?> embeddingSeq = sequences.get(sequences.size() - 2);
                     seq.moveEnd();
                     if (seq.movePrevious()) {
                         if ((seq.offset() + seq.token().length()) < (embeddingSeq.offset() + embeddingSeq.token().length())) {

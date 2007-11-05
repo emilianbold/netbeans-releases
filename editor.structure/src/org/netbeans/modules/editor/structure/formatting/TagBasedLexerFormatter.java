@@ -466,7 +466,7 @@ public abstract class TagBasedLexerFormatter {
         int originalOffset = tokenSequence.offset();
         int tagStartLine = Utilities.getLineOffset(doc, tagOffset);
         tokenSequence.move(tagOffset);
-        Token<? extends TokenId> token;
+        Token<?> token;
         int tokenOffset;
         boolean thereWasWS = false;
         int shift = doc.getShiftWidth(); // default;

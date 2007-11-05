@@ -60,7 +60,7 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
     private char originChar;
     private char matchingChar;
     private boolean backward;
-    private List<TokenSequence<? extends TokenId>> sequences;
+    private List<TokenSequence<?>> sequences;
     
     public JavaBracesMatcher() {
         this(null);
@@ -94,7 +94,7 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
 
             if (!sequences.isEmpty()) {
                 // Check special tokens
-                TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
+                TokenSequence<?> seq = sequences.get(sequences.size() - 1);
                 seq.move(originOffset);
                 if (seq.moveNext()) {
                     if (seq.token().id() == JavaTokenId.BLOCK_COMMENT ||
@@ -115,7 +115,7 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
 
         if (!sequences.isEmpty()) {
             // Check special tokens
-            TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
+            TokenSequence<?> seq = sequences.get(sequences.size() - 1);
             seq.move(originOffset);
             if (seq.moveNext()) {
                 if (seq.token().id() == JavaTokenId.STRING_LITERAL) {
@@ -136,7 +136,7 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
             // We are in plain java
             
             TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
-            List<TokenSequence<? extends TokenId>> list;
+            List<TokenSequence<?>> list;
             if (backward) {
                 list = th.tokenSequenceList(seq.languagePath(), 0, originOffset);
             } else {
@@ -148,7 +148,7 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
             int counter = 0;
             
             for(TokenSequenceIterator tsi = new TokenSequenceIterator(list, backward); tsi.hasMore(); ) {
-                TokenSequence<? extends TokenId> sq = tsi.getSequence();
+                TokenSequence<?> sq = tsi.getSequence();
                 
                 if (originId == sq.token().id()) {
                     counter++;
@@ -178,13 +178,13 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
         return null;
     }
     
-    public static List<TokenSequence<? extends TokenId>> getEmbeddedTokenSequences(
-        TokenHierarchy<?> th, int offset, boolean backwardBias, Language<? extends TokenId> language
+    public static List<TokenSequence<?>> getEmbeddedTokenSequences(
+        TokenHierarchy<?> th, int offset, boolean backwardBias, Language<?> language
     ) {
-        List<TokenSequence<? extends TokenId>> sequences = th.embeddedTokenSequences(offset, backwardBias);
+        List<TokenSequence<?>> sequences = th.embeddedTokenSequences(offset, backwardBias);
 
         for(int i = sequences.size() - 1; i >= 0; i--) {
-            TokenSequence<? extends TokenId> seq = sequences.get(i);
+            TokenSequence<?> seq = sequences.get(i);
             if (seq.language() == language) {
                 break;
             } else {
@@ -197,12 +197,12 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
     
     private static final class TokenSequenceIterator {
         
-        private final List<TokenSequence<? extends TokenId>> list;
+        private final List<TokenSequence<?>> list;
         private final boolean backward;
         
         private int index;
         
-        public TokenSequenceIterator(List<TokenSequence<? extends TokenId>> list, boolean backward) {
+        public TokenSequenceIterator(List<TokenSequence<?>> list, boolean backward) {
             this.list = list;
             this.backward = backward;
             this.index = -1;
@@ -212,7 +212,7 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
             return backward ? hasPrevious() : hasNext();
         }
 
-        public TokenSequence<? extends TokenId> getSequence() {
+        public TokenSequence<?> getSequence() {
             assert index >= 0 && index < list.size() : "No sequence available, call hasMore() first."; //NOI18N
             return list.get(index);
         }
@@ -226,7 +226,7 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
             }
             
             for( ; index >= 0; index--) {
-                TokenSequence<? extends TokenId> seq = list.get(index);
+                TokenSequence<?> seq = list.get(index);
                 if (anotherSeq) {
                     seq.moveEnd();
                 }
@@ -250,7 +250,7 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
             }
             
             for( ; index < list.size(); index++) {
-                TokenSequence<? extends TokenId> seq = list.get(index);
+                TokenSequence<?> seq = list.get(index);
                 if (anotherSeq) {
                     seq.moveStart();
                 }
