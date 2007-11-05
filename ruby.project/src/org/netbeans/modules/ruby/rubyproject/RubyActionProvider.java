@@ -90,7 +90,7 @@ import org.openide.util.Utilities;
  * Action provider of the Ruby project. This is the place where to do
  * strange things to Ruby actions. E.g. compile-single.
  */
-public class RubyActionProvider implements ActionProvider {
+public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
     
     /**
      * Standard command for running rdoc on a project.
@@ -156,10 +156,21 @@ public class RubyActionProvider implements ActionProvider {
     public String[] getSupportedActions() {
         return supportedActions;
     }
-    
+
     private void runRubyScript(FileObject fileObject, String target, 
             String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
+        ExecutionDescriptor desc = getScriptDescriptor(null, fileObject, target, displayName, context, debug, extraRecognizers);
+
+        RubyExecution service = new RubyExecution(desc,
+                project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING));
+        service.run();
+    }
+    
+    public ExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target, 
+            String displayName, final Lookup context, final boolean debug,
+            OutputRecognizer[] extraRecognizers) {
+    
         String options = project.evaluator().getProperty(RubyProjectProperties.RUN_JVM_ARGS);
 
         if (options != null && options.trim().length() == 0) {
@@ -201,27 +212,29 @@ public class RubyActionProvider implements ActionProvider {
         
         target = locate(target, srcPath, testPath);
         
-        String runDir = project.evaluator().getProperty(RubyProjectProperties.RUN_WORK_DIR);
-        File pwd = getSourceFolder();
-        if (runDir != null && runDir.length() > 0) {
-            File dir = new File(runDir);                
-            if (!dir.exists()) {
-                // Is it relative to the project directory?
-                dir = new File(FileUtil.toFile(project.getProjectDirectory()), runDir);
+        if (pwd == null) {
+            String runDir = project.evaluator().getProperty(RubyProjectProperties.RUN_WORK_DIR);
+            pwd = getSourceFolder();
+            if (runDir != null && runDir.length() > 0) {
+                File dir = new File(runDir);                
                 if (!dir.exists()) {
-                    // Could it be relative to one of the source folders?
-                    if (srcPath != null && srcPath.length > 0) {
-                        for (FileObject root : srcPath) {
-                            dir = new File(FileUtil.toFile(root), runDir);
-                            if (dir.exists()) {
-                                break;
+                    // Is it relative to the project directory?
+                    dir = new File(FileUtil.toFile(project.getProjectDirectory()), runDir);
+                    if (!dir.exists()) {
+                        // Could it be relative to one of the source folders?
+                        if (srcPath != null && srcPath.length > 0) {
+                            for (FileObject root : srcPath) {
+                                dir = new File(FileUtil.toFile(root), runDir);
+                                if (dir.exists()) {
+                                    break;
+                                }
                             }
                         }
                     }
                 }
-            }
-            if (dir.exists()) {
-                pwd = dir;
+                if (dir.exists()) {
+                    pwd = dir;
+                }
             }
         }
         
@@ -245,9 +258,7 @@ public class RubyActionProvider implements ActionProvider {
             }
         }
 
-        RubyExecution service = new RubyExecution(desc,
-                project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING));
-        service.run();
+        return desc;
     }
     
     private String locate(String target, final FileObject[] srcPath, final FileObject[] testPath) {

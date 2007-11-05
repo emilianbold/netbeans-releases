@@ -66,6 +66,7 @@ import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.rubyproject.GotoTest;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
+import org.netbeans.modules.ruby.rubyproject.ScriptDescProvider;
 import org.netbeans.modules.ruby.rubyproject.TestNotifier;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer;
@@ -87,7 +88,7 @@ import org.openide.util.Utilities;
  * Action provider of the Ruby project. This is the place where to do
  * strange things to Ruby actions. E.g. compile-single.
  */
-public class RailsActionProvider implements ActionProvider {
+public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     
     /**
      * Standard command for running rdoc on a project.
@@ -260,7 +261,7 @@ public class RailsActionProvider implements ActionProvider {
                 return;
             }
             
-            runRubyScript(FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, 
+            runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, 
                     isDebug, new OutputRecognizer[] { new TestNotifier(true, true) });
             
             return;
@@ -385,14 +386,14 @@ public class RailsActionProvider implements ActionProvider {
             //    // XXX What do we do here?
             } else if (fileName.endsWith("_test")) { // NOI18N
                 // Run test normally - don't pop up browser
-                runRubyScript(FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand,
+                runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand,
                         new OutputRecognizer[] { new TestNotifier(true, true) });
                 return;
             }
             
             if (path.length() == 0) {
                 // No corresponding URL - some other file we should just try to execute
-                runRubyScript(FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand, null);
+                runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand, null);
                 return;
             }
 
@@ -542,8 +543,17 @@ public class RailsActionProvider implements ActionProvider {
                 ).
                 run();
     }
+    
+    private void runRubyScript(FileObject fileObject, String target, String displayName, final Lookup context, final boolean debug,
+            OutputRecognizer[] extraRecognizers) {
+        ExecutionDescriptor desc = getScriptDescriptor(null, fileObject, target, displayName, context, debug, extraRecognizers);
+        RubyExecution service = new RubyExecution(desc,
+                project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
+        service.run();
+    }
 
-    private void runRubyScript(String target, String displayName, final Lookup context, final boolean debug,
+    public ExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target, 
+            String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
         String options = project.evaluator().getProperty(RailsProjectProperties.RUN_JVM_ARGS);
 
@@ -611,7 +621,9 @@ public class RailsActionProvider implements ActionProvider {
         }
 
         // For Rails, the execution directory should be the RAILS_ROOT directory
-        File pwd = FileUtil.toFile(project.getProjectDirectory());
+        if (pwd == null) {
+            pwd = FileUtil.toFile(project.getProjectDirectory());
+        }
 
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
         
@@ -632,10 +644,7 @@ public class RailsActionProvider implements ActionProvider {
             }
         }
 
-        RubyExecution service = new RubyExecution(desc,
-                project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
-        service.run();
-        
+        return desc;
     }
     
     

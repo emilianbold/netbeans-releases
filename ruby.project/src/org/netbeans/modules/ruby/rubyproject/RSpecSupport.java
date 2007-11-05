@@ -49,7 +49,9 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.rubyproject.execution.FileLocator;
+import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -181,8 +183,6 @@ public class RSpecSupport {
             return;
         }
 
-        ExecutionDescriptor desc;
-
         List<String> additionalArgs = new ArrayList<String>();
 
         // See if there's a spec.opts to be included
@@ -215,26 +215,40 @@ public class RSpecSupport {
 
         additionalArgs.add(FileUtil.toFile(specFile).getAbsolutePath());
 
+        ExecutionDescriptor desc = null;
         String charsetName = null;
-        String classPath = null;
-        
         if (project != null) {
             PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
             if (evaluator != null) {
                 charsetName = evaluator.getProperty(SharedRubyProjectProperties.SOURCE_ENCODING);
-                classPath = evaluator.getProperty(SharedRubyProjectProperties.JAVAC_CLASSPATH);
             }
+
+            ActionProvider provider = project.getLookup().lookup(ActionProvider.class);
+            if (provider instanceof ScriptDescProvider) { // Lookup ScriptDescProvider directly?
+                ScriptDescProvider descProvider = (ScriptDescProvider)provider;
+                OutputRecognizer[] extraRecognizers = new OutputRecognizer[] { new TestNotifier(true, true) };
+                String target = spec;
+                desc = descProvider.getScriptDescriptor(pwd, null/*specFile?*/, target, displayName, project.getLookup(), debug, extraRecognizers);
+                
+                // Override args
+                desc. additionalArgs(additionalArgs.toArray(
+                            new String[additionalArgs.size()])); // NOI18N
+            }
+        } else {
+            desc = new ExecutionDescriptor(displayName, pwd, spec);
+
+            desc. additionalArgs(additionalArgs.toArray(
+                        new String[additionalArgs.size()])); // NOI18N
+            desc.debug(debug);
+            desc.allowInput();
+            desc.fileLocator(fileLocator);
+            desc.addStandardRecognizers();
+            desc.addOutputRecognizer(new TestNotifier(true, true));
+
         }
         
-        desc = new ExecutionDescriptor(displayName, pwd, spec).additionalArgs(additionalArgs.toArray(
-                    new String[additionalArgs.size()])); // NOI18N
-
-        desc.debug(debug);
-        desc.allowInput();
-        desc.classPath(classPath); // Applies only to JRuby
-        desc.fileLocator(fileLocator);
-        desc.addStandardRecognizers();
-        desc.addOutputRecognizer(new TestNotifier(true, true));
-        new RubyExecution(desc, charsetName).run();
+        if (desc != null) {
+            new RubyExecution(desc, charsetName).run();
+        }
     }
 }
