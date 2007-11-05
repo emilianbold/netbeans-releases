@@ -42,6 +42,7 @@ package org.netbeans.modules.xslt.tmap.model.validation;
 
 import java.io.File;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.openide.filesystems.FileObject;
 
@@ -51,6 +52,8 @@ import org.openide.filesystems.FileObject;
  * @version 1.0
  */
 public interface TransformmapValidator {
+
+    public String validate(AXIComponent axiComp, String typeParam);
 
     String validate(File transformDescriptor);
     String validate(Project project);

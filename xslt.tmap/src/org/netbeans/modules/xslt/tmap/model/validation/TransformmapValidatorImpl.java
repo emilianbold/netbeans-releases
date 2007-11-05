@@ -42,6 +42,8 @@ package org.netbeans.modules.xslt.tmap.model.validation;
 
 import java.io.File;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.xml.axi.AXIComponent;
+import org.netbeans.modules.xslt.model.XslModel;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
@@ -333,6 +335,14 @@ public class TransformmapValidatorImpl implements TransformmapValidator {
             }
             return validate((TMapModel)obj1, (FileObject)obj2);
         }
+    }
+
+    public String validate(AXIComponent axiComp, String typeParam) {
+            if (axiComp == null || axiComp.getModel() == null || axiComp.getModel().getState() != XslModel.State.VALID) {
+                return NbBundle.getMessage(TransformmapValidatorImpl.class, 
+                        "MSG_Error_BadSchema",typeParam); // NOI18N
+            }
+        return null;
     }
     
 }
