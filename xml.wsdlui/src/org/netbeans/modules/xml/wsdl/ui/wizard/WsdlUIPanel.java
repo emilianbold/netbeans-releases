@@ -44,6 +44,7 @@ package org.netbeans.modules.xml.wsdl.ui.wizard;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -164,7 +165,6 @@ public class WsdlUIPanel extends javax.swing.JPanel {
         schemaTF.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "A11Y_schemaTF")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "LBL_browse")); // NOI18N
-        browseButton.setToolTipText(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "A11Y_browse")); // NOI18N
         browseButton.setEnabled(false);
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -177,7 +177,7 @@ public class WsdlUIPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 2, 0);
         add(browseButton, gridBagConstraints);
-        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "LBL_browse")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription("null");
 
         schemaLB.setLabelFor(schemaTF);
         org.openide.awt.Mnemonics.setLocalizedText(schemaLB, org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "LBL_schemaFiles")); // NOI18N
