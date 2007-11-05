@@ -21,15 +21,15 @@
   sent by any J2EE component: an application client, another enterprise 
   bean, or a web component. </p>
 <h3>Why Use Message-Driven Beans?</h3>
-<p>You might use message-driven beans instead of session beans or entity beans if you 
-  want to avoid tying up server resources. Session beans and entity beans also 
-  enable you to send and receive JMS messages, but they operate synchronously, 
-  not asynchronously, as do message-driven beans.</p>
+<p>Message-Driven Beans are the solution to build asynchronous enterprise
+applications where processing starts up when a message comes in. This
+approach enables a loose coupling between your enterprise
+application modules. A sender (aka producer) sends a message to a JMS
+managed object (topic or queue) to initiate a process.</p>
 <h3>Comparison to Session Beans and Entity Beans</h3>
 <p>Unlike session beans and entity beans, clients of message-driven beans do not access 
-  them through interfaces. A message-driven bean has only a bean class. </p>
-<p>In several respects, a message-driven bean resembles a stateless session bean: 
-</p>
+  them directly. A message-driven bean has only a bean class. </p>
+<p>In several respects, a message-driven bean resembles a stateless session bean:</p>
 <ul>
   
 <li>A message-driven bean's instances typically retain no data or conversational 
@@ -59,7 +59,8 @@
 <h3>Transactions</h3>
 <p> The container provides the message-driven bean instance with a <tt>MessageDrivenContext</tt>, 
   which gives the bean instance access to the context maintained for it by the 
-  container. Depending on whether the bean manages its own transactions or relies on the container's transaction management, the bean can access different 
+  container. Depending on whether the bean manages its own transactions or relies on the container's 
+  transaction management, the bean can access different 
   methods of <tt>MessageDrivenContext</tt> to handle transactions.</p>
 <ul>
   <li><b>Bean-managed transactions.</b> The bean sets up its own transactions. 
@@ -79,8 +80,9 @@
   </li>
   <li><b>Container-managed transactions.</b> The bean uses transactions started 
     by the EJB container. The <tt>onMessage</tt> method is invoked in the scope 
-    of a transaction determined by the transaction property specified in the bean's 
-    deployment descriptor editor. If the bean is using container-managed transactions, 
+    of a transaction determined by the transaction property specified using the
+    <tt>TransactionAttribute</tt> annotation in the bean's class or in its
+    deployment descriptor. If the bean is using container-managed transactions, 
     the IDE specifies <tt>Required</tt> for the transaction property. 
     <p>The bean can use the following <tt>MessageDrivenContext</tt> methods:</p>
     <ul>
