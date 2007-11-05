@@ -105,7 +105,6 @@ class DiffViewManager implements ChangeListener {
             leftContentPanel.getActionsScrollPane().getVerticalScrollBar().setValue(value);
             if (myScrollEvent) return;
             myScrollEvent = true;
-            rightScrollBar.setValue((int) (value / getScrollFactor()));
         } else {
             int value = rightScrollBar.getValue();
             rightContentPanel.getActionsScrollPane().getVerticalScrollBar().setValue(value);
@@ -391,7 +390,7 @@ class DiffViewManager implements ChangeListener {
         DiffContentPanel rightPane = master.getEditorPane2();
         DiffContentPanel leftPane = master.getEditorPane1();        
         
-        int [] map = scrollMap.getScrollMap(rightPane.getSize().height, master.getDiffSerial());
+        int [] map = scrollMap.getScrollMap(rightPane.getEditorPane().getSize().height, master.getDiffSerial());
         
         int rightOffet = rightPane.getScrollPane().getVerticalScrollBar().getValue();
         if (rightOffet >= map.length) return;
@@ -615,16 +614,15 @@ class DiffViewManager implements ChangeListener {
             DiffContentPanel rightPane = master.getEditorPane2();
 
             int rightViewportHeight = rightPane.getScrollPane().getViewport().getViewRect().height; 
-            int rightHeight = rightPane.getEditorPane().getSize().height;
 
-            int [] scrollMap = new int[rightHeight];
+            int [] scrollMap = new int[rightPanelHeightCached];
 
             EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(leftContentPanel.getEditorPane());
             if (editorUI == null) return scrollMap;
             int lineHeight = editorUI.getLineHeight();
 
             int lastOffset = 0;
-            for (int rightOffset = 0; rightOffset < rightHeight; rightOffset++) {
+            for (int rightOffset = 0; rightOffset < rightPanelHeightCached; rightOffset++) {
                 DifferencePosition dpos = findDifferenceToMatch(rightOffset, rightViewportHeight);
                 int leftOffset;
                 if (dpos == null) {
