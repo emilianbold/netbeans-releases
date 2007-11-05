@@ -1430,6 +1430,9 @@ public class DesignView extends JPanel implements
 
         public CopyAction() {
             super();
+
+            putValue(DeleteAction.ACCELERATOR_KEY, 
+                    KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK));
             
             putValue(NAME, NbBundle.getMessage(DesignView.class, 
                     "LBL_COPY_ACTION"));
@@ -1485,6 +1488,9 @@ public class DesignView extends JPanel implements
         public CutAction() {
             super();
             
+            putValue(DeleteAction.ACCELERATOR_KEY, 
+                    KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK));
+            
             putValue(NAME, NbBundle.getMessage(DesignView.class, 
                     "LBL_CUT_ACTION"));
             putValue(SHORT_DESCRIPTION, NbBundle.getMessage(
@@ -1537,6 +1543,9 @@ public class DesignView extends JPanel implements
 
         public PasteAction() {
             super();
+            
+            putValue(DeleteAction.ACCELERATOR_KEY, 
+                    KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK));
             
             putValue(NAME, NbBundle.getMessage(DesignView.class, 
                     "LBL_PASTE_ACTION"));
