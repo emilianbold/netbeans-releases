@@ -15,6 +15,7 @@
         <mkdir dir="build/generated/jaxbCache" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig"/>
         <mkdir dir="${build.classes.dir}" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig"/>
         <javac destdir="${build.classes.dir}" srcdir="build/generated/addons/jaxb" source="${javac.source}" target="${javac.target}" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig">
+            <sourcepath location="${src.dir}"/>
             <classpath path="${jaxbwiz.gensrc.classpath}"/>
         </javac>
     </target>

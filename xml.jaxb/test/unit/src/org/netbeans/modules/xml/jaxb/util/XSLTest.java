@@ -70,9 +70,13 @@ public class XSLTest extends NbTestCase {
     private static final String CONFIG_FILE1 = "/data/ConfigFile1.xml"; //NOI18N
     private static final String CONFIG_FILE2 = "/data/ConfigFile2.xml"; //NOI18N    
     private static final String CONFIG_FILE3 = "/data/ConfigFile3.xml"; //NOI18N        
+    private static final String CONFIG_EMPTY_CAT = 
+            "/data/ConfigFileEmptyCatalog.xml"; //NOI18N        
     private static final String BUILD_FILE1 = "/data/BuildFile1.xml";   //NOI18N
     private static final String BUILD_FILE2 = "/data/BuildFile2.xml"; //NOI18N 
     private static final String BUILD_FILE3 = "/data/BuildFile3.xml"; //NOI18N     
+    private static final String BUILD_EMPTY_CAT = 
+            "/data/BuildFileEmptyCatalog.xml"; //NOI18N     
     
     private static final String XSL_FILE = 
             "/org/netbeans/modules/xml/jaxb/resources/JAXBBuild.xsl"; //NOI18N
@@ -168,6 +172,14 @@ public class XSLTest extends NbTestCase {
     public void testXformConfig2BuildEmptySchema(){
         transformConfig2Build(CONFIG_FILE3, BUILD_FILE3);
         System.out.println("testXformConfig2BuildEmptySchema done.");
+    }
+
+    /**
+     * Test the XSL style sheet.
+     **/
+    public void testXformConfig2BuildEmptyCatalog(){
+        transformConfig2Build(CONFIG_EMPTY_CAT, BUILD_EMPTY_CAT);
+        System.out.println("testXformConfig2BuildEmptyCatalog done.");
     }
     
 }

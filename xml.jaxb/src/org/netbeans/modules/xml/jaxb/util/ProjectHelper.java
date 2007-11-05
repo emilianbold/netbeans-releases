@@ -135,7 +135,8 @@ public class ProjectHelper {
     //private static final String DEFAULT_PLATFORM = "default_platform"; //NOI18N
     private static final String RUN_JVM_ARGS_KEY = "run.jvmargs"; //NOI18N
     private static final String PROP_ENDORSED = "jaxbwiz.endorsed.dirs"; //NOI18N
-    private static final String PROP_XJC_CLASSPATH = "jaxbwiz.xjcdef.classpath" ;//NOI18N
+    private static final String PROP_XJC_DEF_CLASSPATH = "jaxbwiz.xjcdef.classpath" ;//NOI18N
+    private static final String PROP_XJC_RUN_CLASSPATH = "jaxbwiz.xjcrun.classpath" ;//NOI18N
     private static final String PROP_JAXB_GEN_SRC_CLASSPATH = "jaxbwiz.gensrc.classpath";//NOI18N
     private static final String PROP_VAL_JAXB_LIB_CLASSPATH = "${libs.jaxb21.classpath}";//NOI18N
     private static final String RUN_JVM_ARGS_VAL_PREFIX = "-Djava.endorsed.dirs"; //NOI18N    
@@ -795,10 +796,17 @@ public class ProjectHelper {
     }
 
     private static void addClasspathProperties(Project prj){
-        String xjcClasspath = getProjectProperty(prj, PROP_XJC_CLASSPATH);
+        String xjcClasspath = getProjectProperty(prj, PROP_XJC_DEF_CLASSPATH);
         boolean modified = false;
         if ((xjcClasspath == null) || ("".equals(xjcClasspath))){
-            saveProjectProperty(prj, PROP_XJC_CLASSPATH, 
+            saveProjectProperty(prj, PROP_XJC_DEF_CLASSPATH, 
+                    PROP_VAL_JAXB_LIB_CLASSPATH);
+            modified = true;
+        }
+
+        String xjcRunClasspath = getProjectProperty(prj, PROP_XJC_RUN_CLASSPATH);
+        if ((xjcRunClasspath == null) || ("".equals(xjcRunClasspath))){
+            saveProjectProperty(prj, PROP_XJC_RUN_CLASSPATH, 
                     PROP_VAL_JAXB_LIB_CLASSPATH);
             modified = true;
         }

@@ -13,6 +13,10 @@
         <mkdir dir="${build.classes.dir}" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig"/>
         <mkdir dir="build/generated/jaxbCache/schema1"/>
         <xjc destdir="build/generated/jaxbCache/schema1" catalog="src\META-INF\jaxb\XmlQosPmUtilSchema.bnd">
+            <classpath>
+                <pathelement location="${src.dir}"/>
+                <pathelement path="${jaxbwiz.xjcrun.classpath}"/>
+            </classpath>
             <arg value="-xmlschema"/>
             <schema file="src\META-INF\jaxb\XmlQosPmUtilSchema.xsd"/>
             <binding file="src\META-INF\jaxb\XmlQosPmUtilSchema.bnd"/>
@@ -24,7 +28,11 @@
             <fileset dir="build/generated/jaxbCache/schema1"/>
         </copy>
         <mkdir dir="build/generated/jaxbCache/schemaw"/>
-        <xjc destdir="build/generated/jaxbCache/schemaw">
+        <xjc destdir="build/generated/jaxbCache/schemaw" catalog="catalog.xml">
+            <classpath>
+                <pathelement location="${src.dir}"/>
+                <pathelement path="${jaxbwiz.xjcrun.classpath}"/>
+            </classpath>
             <arg value="-xmlschema"/>
             <schema file="src\META-INF\jaxb\XmlQosPmUtilSchema.xsd"/>
             <schema file="src\META-INF\jaxb\XmlVodafoneTroubleTicketSchema.xsd"/>
@@ -35,6 +43,7 @@
             <fileset dir="build/generated/jaxbCache/schemaw"/>
         </copy>
         <javac destdir="${build.classes.dir}" srcdir="build/generated/addons/jaxb" source="${javac.source}" target="${javac.target}" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig">
+            <sourcepath location="${src.dir}"/>
             <classpath path="${jaxbwiz.gensrc.classpath}"/>
         </javac>
     </target>

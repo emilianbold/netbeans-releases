@@ -70,6 +70,7 @@ made subject to such option by the copyright holder.
                 <mkdir dir="${{build.classes.dir}}"/>
                 <xsl:apply-templates select="s:schemas/s:schema"/>
                 <javac destdir="${{build.classes.dir}}" srcdir="build/generated/addons/jaxb" source="${{javac.source}}"  target="${{javac.target}}">
+                    <sourcepath location="${{src.dir}}"/>
                     <classpath path="${{jaxbwiz.gensrc.classpath}}"/>
                 </javac>
             </xsl:element>             
@@ -86,12 +87,31 @@ made subject to such option by the copyright holder.
             </xsl:if>
             <xsl:attribute name="destdir">build/generated/jaxbCache/<xsl:value-of select="./@name"/></xsl:attribute>            
 
-            <xsl:for-each select="s:catalog">
-                <xsl:if test="string-length(./@location) &gt; 0">
-                    <xsl:apply-templates select="."/>    
-                </xsl:if>
-            </xsl:for-each>            
-            
+            <xsl:choose>
+                <xsl:when test="count(s:catalog) &gt; 0">
+                    <xsl:for-each select="s:catalog">
+                        <xsl:choose>
+                            <xsl:when test="string-length(./@location) &gt; 0">
+                                <xsl:apply-templates select="."/>    
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="catalog"><xsl:text>catalog.xml</xsl:text></xsl:attribute>
+                            </xsl:otherwise>                    
+                        </xsl:choose>
+                    </xsl:for-each>                                
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:attribute name="catalog"><xsl:text>catalog.xml</xsl:text></xsl:attribute>                    
+                </xsl:otherwise>
+            </xsl:choose>
+            <xsl:element name="classpath">
+                <xsl:element name="pathelement">
+                    <xsl:attribute name="location">${src.dir}</xsl:attribute>
+                </xsl:element>
+                <xsl:element name="pathelement">
+                    <xsl:attribute name="path">${jaxbwiz.xjcrun.classpath}</xsl:attribute>
+                </xsl:element>
+            </xsl:element>
             <xsl:element name="arg">
                 <xsl:attribute name="value"><xsl:value-of select="./@type"/></xsl:attribute>
             </xsl:element>
