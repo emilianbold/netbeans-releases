@@ -134,7 +134,7 @@ public abstract class TagBasedLexerFormatter {
 
     protected abstract LanguagePath supportedLanguagePath();
     
-    private enum EmbeddingType {
+    public enum EmbeddingType {
         /**
          * The line belongs to the language being currently formatted
          */
