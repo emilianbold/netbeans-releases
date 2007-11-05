@@ -64,7 +64,7 @@ public class RepositoryListenerImpl implements RepositoryListener {
     private static final RepositoryListenerImpl instance = new RepositoryListenerImpl();
     
     /** Interval, in seconds, after which implicitely opened unit should be closed */
-    private static final int IMPLICIT_CLOSE_INTERVAL = Integer.getInteger("cnd.implicit.close.interval", 10); // NOI18N
+    private static final int IMPLICIT_CLOSE_INTERVAL = Integer.getInteger("cnd.implicit.close.interval", 20); // NOI18N
      
     private static final String TRACE_PROJECT_NAME = System.getProperty("cnd.repository.trace.project"); //NOI18N    
     private static final boolean TRACE_PROJECT = (TRACE_PROJECT_NAME != null && TRACE_PROJECT_NAME.length() > 0);
@@ -229,6 +229,6 @@ public class RepositoryListenerImpl implements RepositoryListener {
 	for (int i = 0; i < args.length; i++) {
 	    newArgs[i+1] = args[i];
 	}
-	System.err.printf("[%d] " + format, newArgs);
+	System.err.printf("RepositoryListener [%d] " + format, newArgs);
     }
 }

@@ -62,9 +62,13 @@ public class IntToStringCache {
     protected final long timestamp;
     
     public IntToStringCache() {
-	cache = new ArrayList<String>();
-        version = RepositoryTranslatorImpl.getVersion();
-        timestamp = System.currentTimeMillis();
+	this(System.currentTimeMillis());
+    }
+    
+    public IntToStringCache(long timestamp) {
+	this.cache = new ArrayList<String>();
+        this.version = RepositoryTranslatorImpl.getVersion();
+        this.timestamp = timestamp;
     }
     
     public IntToStringCache(DataInput stream) throws IOException {

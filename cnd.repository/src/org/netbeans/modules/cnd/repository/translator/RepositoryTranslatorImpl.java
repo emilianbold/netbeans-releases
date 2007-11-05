@@ -182,11 +182,14 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
         assert stream != null;
         
         IntToStringCache filesCache = new IntToStringCache(stream);
+	if( Stats.TRACE_REPOSITORY_TRANSLATOR ) trace("Read unit files cache for %s ts=%d\n", name, filesCache.getTimestamp()); // NOI18N
         if ((filesCache.getVersion() == version) && UnitsCache.validateReqUnits(name, antiLoop)) {
             unitNamesCache.insertUnitFileCache(name, filesCache);        
             return true;
         } else {
-            unitNamesCache.insertUnitFileCache(name, new IntToStringCache());
+	    filesCache = new IntToStringCache();
+	    if( Stats.TRACE_REPOSITORY_TRANSLATOR ) trace("Req. units validation failed for %s. Setting ts=%d\n", name, filesCache.getTimestamp()); // NOI18N
+            unitNamesCache.insertUnitFileCache(name, filesCache);
         }
 
         return false;
@@ -227,10 +230,13 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
         boolean indexLoaded = false;
         
         try {
-            fis = new FileInputStream(unitIndexFileName);
-            bis = new BufferedInputStream(fis);
-            dis = new DataInputStream(bis);
-            indexLoaded = readUnitFilesCache(unitName, dis, antiLoop);
+	    // don't produce exceptions when it's clear that the file just doesn't exist
+	    if( new File(unitIndexFileName).exists() ) { 
+		fis = new FileInputStream(unitIndexFileName);
+		bis = new BufferedInputStream(fis);
+		dis = new DataInputStream(bis);
+		indexLoaded = readUnitFilesCache(unitName, dis, antiLoop);
+	    }
         } catch (FileNotFoundException e) {
             if (Stats.TRACE_REPOSITORY_TRANSLATOR){
                 e.printStackTrace();
@@ -510,10 +516,12 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
                 if (tsL != null) {
                     long ts = tsL.longValue();
                     if (ts != rU.getTimestamp()) {
+			if( Stats.TRACE_REPOSITORY_TRANSLATOR ) trace("Req. unit validation FAILED for %s: ts(unit2timestamp)=%d, ts(unit2requnint)=%s \n", unitName, ts, rU.getTimestamp()); // NOI18N
                         result = false;
                         break;
                     }
                 } else {
+		    if( Stats.TRACE_REPOSITORY_TRANSLATOR ) trace("Req. unit validation FAILED for %s: ts=NULL\n", unitName); // NOI18N
                     result = false;
                     break;
                 }
@@ -537,6 +545,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             stream.writeInt(size);
             for (RequiredUnit unit: rUnits) {
                 unit.write(stream);
+		if( Stats.TRACE_REPOSITORY_TRANSLATOR ) trace("\t\treq.unit %s ts=%d\n", unit.getName(), unit.getTimestamp()); //NOI18N
             }
         }
 
@@ -551,6 +560,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             for (int i = 0; i < size; i++) {
                 RequiredUnit unit = new RequiredUnit(stream);
                 units.add(unit);
+		if( Stats.TRACE_REPOSITORY_TRANSLATOR ) trace("\t\tRead req. unit %s ts=%d\n", unit.getName(), unit.getTimestamp()); // NOI18N
             }
             return units;
         }
@@ -565,11 +575,14 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             
             int size = cache.size();
             stream.writeInt(size);
+	    
+	    if( Stats.TRACE_REPOSITORY_TRANSLATOR ) trace("Storing master index; size=%d\n", size); //NOI18N
             
             for (int i = 0; i < size; i++) {
                 String value = cache.get(i);
                 stream.writeUTF(value);
                 stream.writeLong(unit2timestamp.get(value).longValue());
+		if( Stats.TRACE_REPOSITORY_TRANSLATOR ) trace("\tUnit %s ts=%d\n", value, unit2timestamp.get(value)); //NOI18N
                 writeRequiredUnits(value, stream);
             }
         }
@@ -609,6 +622,8 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             
             int size = stream.readInt();
             
+	    if( Stats.TRACE_REPOSITORY_TRANSLATOR ) trace("Reading master index (%d) elements\n", size); // NOI18N
+	    
             for (int i = 0; i < size; i++) {
 		
                 String value = FilePathCache.getString(stream.readUTF());
@@ -618,12 +633,14 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
                 long ts = stream.readLong();
                 unit2timestamp.put(value, Long.valueOf(ts));
 		
+		if( Stats.TRACE_REPOSITORY_TRANSLATOR ) trace("\tRead %s ts=%d\n", value, ts); // NOI18N
+		
 		// req. units list from master index -> unit2requnint
 		// (with timestamps from master index)
                 unit2requnint.put(value, readRequiredUnits(stream));
 		
 		// new dummy int/string cache (with the current (???!) timestamp
-                fileNamesCaches.add(new IntToStringCache());
+                fileNamesCaches.add(new IntToStringCache(ts));
             }
         }
         
@@ -643,8 +660,9 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
                 int index = cache.indexOf(unitName);
                 if (index != -1) {
                     fileNames = fileNamesCaches.get(index);
-                    unit2timestamp.put(unitName, fileNames.getTimestamp());
-                    fileNamesCaches.set(index, new IntToStringCache());
+		    long ts = fileNames.getTimestamp();
+                    unit2timestamp.put(unitName, ts);
+                    fileNamesCaches.set(index, new IntToStringCache(ts));
                 }
                 return fileNames;
         }
@@ -688,5 +706,15 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation{
             unit2timestamp.put(unitName, fileCache.getTimestamp());            
         }
     }    
+    
+    private static void trace(String format, Object ... args) {
+	Object[] newArgs = new Object[args.length + 1];
+	newArgs[0] = Long.valueOf(System.currentTimeMillis());
+	for (int i = 0; i < args.length; i++) {
+	    newArgs[i+1] = args[i];
+	}
+	System.err.printf("RepositoryTranslator [%d] " + format, newArgs);
+    }
+    
 }
 
