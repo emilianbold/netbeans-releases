@@ -813,14 +813,22 @@ public class JspLexer implements Lexer<JspTokenId> {
                             if(input.readLength() == 2) {
                                 //just the '%>' symbol read
                                 lexerState = INIT;
+                                lexerStateJspScriptlet = INIT;
                                 return token(JspTokenId.SYMBOL2);
                             } else {
+                                //XXX Looks like following code never gets called
+                                //the preceeeding text begore %> is already returned in
+                                //ISI_SCRIPTLET state
+                                //
+                                //Possibly remove after 6.0
+                                
                                 //return the scriptlet content
                                 input.backup(2); // backup '%>' we will read JUST them again
                                 lexerState = ISI_SCRIPTLET;
                                 int lxs = lexerStateJspScriptlet;
                                 lexerStateJspScriptlet = INIT;
                                 return scriptletToken(JspTokenId.SCRIPTLET, lxs);
+                                //XXX<<<
                             }
                         default:
                             lexerState = ISI_SCRIPTLET;
