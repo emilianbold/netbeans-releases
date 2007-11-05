@@ -103,6 +103,7 @@ public class DomainEditor {
     private static String CONST_DRIVER_CLASS = "driverClass"; // NOI18N
     static private String CONST_NAME = "name"; // NOI18N
     static private String CONST_JVM_OPTIONS = "jvm-options"; // NOI18N
+    static private String CONST_DERBY_CONN_ATTRS = "connectionAttributes"; // NOI18N
 
     /**
      * Creates a new instance of DomainEditor
@@ -485,6 +486,7 @@ public class DomainEditor {
             pValues.put(CONST_DATABASE_NAME, (String)map.get(CONST_DATABASE_NAME));
             pValues.put(CONST_SID, (String)map.get(CONST_SID));
             pValues.put(CONST_DRIVER_CLASS, (String)map.get(CONST_DRIVER_CLASS));
+            pValues.put(CONST_DERBY_CONN_ATTRS, (String)map.get(CONST_DERBY_CONN_ATTRS));
             pValues.put("dsClassName", dsClassName);
             
             dSources.put(jndiName, pValues);
@@ -532,6 +534,7 @@ public class DomainEditor {
             pValues.put(CONST_DATABASE_NAME, (String)map.get(CONST_DATABASE_NAME));
             pValues.put(CONST_SID, (String)map.get(CONST_SID));
             pValues.put(CONST_DRIVER_CLASS, (String)map.get(CONST_DRIVER_CLASS));
+            pValues.put(CONST_DERBY_CONN_ATTRS, (String)map.get(CONST_DERBY_CONN_ATTRS));
             pValues.put("dsClassName", dsClassName);
             
             pools.put(name, pValues);

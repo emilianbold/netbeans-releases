@@ -1131,6 +1131,7 @@ public class ResourceUtils implements WizardConstants{
         String driverClass = ""; //NOI18N
         String informixServerName = ""; //NOI18N
         String informixHostName = ""; //NOI18N
+        String derbyConnAttr = ""; //NOI18N
         
         AttributeList attrList = (AttributeList)mejb.invoke(connPoolObj, __GetProperties, null, null);
         HashMap attrs = getObjMap(attrList);
@@ -1161,6 +1162,8 @@ public class ResourceUtils implements WizardConstants{
                 informixServerName = getStringVal(attrs.get(keyName));
             }else if(keyName.equalsIgnoreCase(__InformixHostName)) {
                 informixHostName = getStringVal(attrs.get(keyName));
+            }else if(keyName.equalsIgnoreCase(__DerbyConnAttr)){
+                derbyConnAttr = getStringVal(attrs.get(keyName));
             }
             
         }
@@ -1173,6 +1176,9 @@ public class ResourceUtils implements WizardConstants{
                         url = url + ":" + portNo; //NOI18N
                     }
                     url = url + "/" + dbName; //NOI8N
+                    if(derbyConnAttr != null && (! derbyConnAttr.equals(""))) { //NOI18N
+                        url = url + derbyConnAttr;
+                    }
                 }
             } else if (url.equals("")) { //NOI18N
                 String urlPrefix = DatabaseUtils.getUrlPrefix(dsClassName);
@@ -1358,6 +1364,7 @@ public class ResourceUtils implements WizardConstants{
         String sid     = getStringVal(poolValues.get(__SID));
         String urlValue     = getStringVal(poolValues.get(__Url));
         String driverClass     = getStringVal(poolValues.get(__DriverClass));
+        String derbyConnAttr   = getStringVal(poolValues.get(__DerbyConnAttr));
         
         if(driverClassName.indexOf("pointbase") != -1){
             url = getStringVal(poolValues.get(__DatabaseName));
@@ -1370,6 +1377,9 @@ public class ResourceUtils implements WizardConstants{
                         url = url + ":" + portNo; //NOI18N
                     }   
                     url = url + "/" + dbName; //NOI8N
+                    if(derbyConnAttr != null && (! derbyConnAttr.equals(""))) { //NOI18N
+                        url = url + derbyConnAttr;
+                    }
                 }
             } else {
                 String in_url = getStringVal(poolValues.get(__Url));
