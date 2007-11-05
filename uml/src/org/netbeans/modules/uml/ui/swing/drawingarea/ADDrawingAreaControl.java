@@ -1319,31 +1319,30 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
                 if (graph != null && window != null)
                 {
                     graph.setBoundsUpdatingEnabled(true);
-//                  graph.updateBounds();
-//                  window.setZoomLevel(m_nZoomLevelFromArchive, false);
-//                  if (m_CenterFromArchive != null)
-//                  {
-//                      TSConstPoint point = new TSConstPoint(m_CenterFromArchive.getX(), m_CenterFromArchive.getY());
-//                      getGraphWindow().centerPointInWindow(point, true);
-//                  }
-//                  else
-//                  {
-//                      window.centerGraph(true);
-//                  }
+                    graph.updateBounds();
+                    window.setZoomLevel(m_nZoomLevelFromArchive, false);
+                    if (m_CenterFromArchive != null)
+                    {
+                        TSConstPoint point = new TSConstPoint(m_CenterFromArchive.getX(), m_CenterFromArchive.getY());
+                        getGraphWindow().centerPointInWindow(point, true);
+                    } else
+                    {
+                        window.centerGraph(true);
+                    }
                     getGraphWindow().resetWorkBounds();
                     getGraphWindow().updateScrollBarValues();
 
-                    if(fitToZoom == true)
-                    {
-                        SwingUtilities.invokeLater(new Runnable()
-                        {
-
-                            public void run()
-                            {
-                                getGraphWindow().fitInWindow(true);
-                            }
-                        });
-                    }
+//                    if(fitToZoom == true)
+//                    {
+//                        SwingUtilities.invokeLater(new Runnable()
+//                        {
+//
+//                            public void run()
+//                            {
+//                                getGraphWindow().fitInWindow(true);
+//                            }
+//                        });
+//                    }
                 }
                 getResources().setLayoutStyle(getLayoutStyle());
                 setPopulating(false);
