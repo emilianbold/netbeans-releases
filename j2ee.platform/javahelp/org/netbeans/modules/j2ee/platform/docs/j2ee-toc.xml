@@ -35,7 +35,6 @@
             <tocitem text="Starting and Stopping a Server" target="server_start" />
 
 
-            <tocitem text="Sun Java System Application Server Platform Edition" />
             <tocitem text="JBoss Application Server" >
                 <tocitem text="About the JBoss Application Server" target="about_jboss" />
                 <tocitem text="Working with the JBoss Application Server" target="jboss_process" />
