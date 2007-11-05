@@ -76,6 +76,9 @@ public final class DocumentSerializer {
     private Runnable loader = new Runnable () {
         public void run () {
             DataObjectContext context = DocumentSerializer.this.context;
+            if (context == null)
+                return;
+
             undoRedoManager.discardAllEdits ();
             DocumentInterfaceImpl loadingDocumentInterface = new DocumentInterfaceImpl (context, undoRedoManager);
             documentInterfaces.add (new WeakReference<DocumentInterface> (loadingDocumentInterface));
@@ -99,6 +102,8 @@ public final class DocumentSerializer {
                 loading = false;
                 DocumentSerializer.this.notifyAll ();
             }
+
+            // TODO - possible race condition with notifyDataObjectClosed method
             fireDesignDocumentAwareness (DocumentSerializer.this.document);
         }
     };
@@ -207,6 +212,7 @@ public final class DocumentSerializer {
         return DocumentLoad.loadProjectType (context);
     }
 
+    // TODO - possible race condition - when a data object is closed while a related document is still loading, so the document could be set after that
     void notifyDataObjectClosed () {
         synchronized (this) {
             document = null;
