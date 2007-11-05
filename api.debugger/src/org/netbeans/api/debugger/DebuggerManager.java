@@ -1053,6 +1053,7 @@ public final class DebuggerManager {
             if (watchesInitialized) return ;
             watchesInitialized = true;
         }
+        initDebuggerManagerListeners();
         // The rest must not be synchronized, since initWatches() does call createWatch()
         PropertyChangeEvent ev = new PropertyChangeEvent (
             this, PROP_WATCHES_INIT, null, null
