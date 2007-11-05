@@ -100,8 +100,8 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
             suite.addTest(new JSPDebuggingOverallTest("testSetTomcatPort"));
         }
         suite.addTest(new JSPDebuggingOverallTest("testRunProject"));
-        suite.addTest(new JSPDebuggingOverallTest("testDebugProject"));
         suite.addTest(new JSPDebuggingOverallTest("testSetBreakpoint"));
+        suite.addTest(new JSPDebuggingOverallTest("testDebugProject"));
         suite.addTest(new JSPDebuggingOverallTest("testDebugReload"));
         suite.addTest(new JSPDebuggingOverallTest("testAttachDebugger"));
         suite.addTest(new JSPDebuggingOverallTest("testDebugAfterBreakpoint"));
@@ -113,6 +113,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
     }
     
     /** Print test name and initialize status bar tracer. */
+    @Override
     public void setUp() {
         System.out.println("########  "+getName()+"  #######");
         stt = MainWindowOperator.getDefault().getStatusTextTracer();
@@ -123,6 +124,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
     }
     
     /** Stops status bar tracer. */
+    @Override
     public void tearDown() {
         stt.stop();
     }
@@ -179,17 +181,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         new Action(null, runProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "run");
     }
-    
-    /** Debug project.
-     * - on project node call Debug Project popup
-     * - wait until page appears in browser
-     */
-    public void testDebugProject() {
-        Node rootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME);
-        new DebugProjectAction().perform(rootNode);
-        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
-    }
-    
+
     /** Set breakpoint.
      * - open index.jsp
      * - select <h1> in editor
@@ -201,9 +193,19 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N
         Utils.setBreakpoint(eo, "<h1>"); // NOI18N
     }
-    
+
+    /** Debug project.
+     * - on project node call Debug Project popup
+     * - wait until debug task is finished
+     */
+    public void testDebugProject() {
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME);
+        new DebugProjectAction().perform(rootNode);
+        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
+    }
+
     /** Reload browser while debugging.
-     * - reload page in browser
+     * - reload page
      * - wait until debugger stops at previously set breakpoint
      * - continue debugging
      * - finish debugger
@@ -233,7 +235,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         // "JPDA Debugger"
         String jpdaDebuggerLabel = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Connector_name");
         ado.selectDebugger(jpdaDebuggerLabel);
-        ado.selectConnector(ado.ITEM_SOCKET_ATTACH);
+        ado.selectConnector(AttachDialogOperator.ITEM_SOCKET_ATTACH);
         ado.setPort(Utils.getSocketPort());
         ado.ok();
         // "User program running"
