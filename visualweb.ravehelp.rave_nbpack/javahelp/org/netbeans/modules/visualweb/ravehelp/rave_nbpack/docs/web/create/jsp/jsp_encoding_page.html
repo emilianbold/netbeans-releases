@@ -64,19 +64,17 @@ the <a href="../../csh/graphic_editor/dd_multiview_pages_jspPropertyGroupsNode.h
 Use the JSP Property Groups section to add, remove, and 
 view a web application's JSP property groups. A JSP property group is a set of properties 
 defined for a group of JSP files within a web application. One of the properties you can
-set here is the page encoding value for a group of JSP files.</li>
-<table cellpadding="3" cellspacing="0" border="0">
-   <tr valign="top">
-      <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
-      
-      <td>Only if the other two are absent is the <tt>contentType</tt> attribute of a JSP file's
-	       <tt>page</tt> directive used as the page encoding.
+set here is the page encoding value for a group of JSP files.
+<ul class="note">
+  <li>Only if the other two are absent is the <tt>contentType</tt> attribute of a JSP file's
+  <tt>page</tt> directive used as the page encoding.
 If none of these are provided, utf-8 is used as the page encoding.
 A translation-time error results if you define the page encoding with one value in the JSP 
-property group and then give it a different value in an invidual JSP file's <tt>pageEncoding</tt> directive.</td>
-   </tr>
-</table>
-
+property group and then give it a different value in an invidual JSP file's <tt>pageEncoding</tt> directive.</li>
+</ul>
+   </li>
+</ul>
+</li>
 </ol>
 
 <b>To set the page character encoding for a file in JSP document syntax:</b>
@@ -90,20 +88,16 @@ choose Properties. Note that the Encoding property is set to the encoding for th
  For JSP documents, you can change the page character encoding in one place only:
  <ul><li>The <tt>encoding</tt> attribute of an XML declaration at the beginning
  of the file. The XML declaration is also known as the XML prolog.</li></ul>
-<table cellpadding="3" cellspacing="0" border="0">
-   <tr valign="top">
-      <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
-      
-      <td>
+<ul class="note">
+      <li>
       The page encoding for JSP documents may also be <i>described 
       </i> in an individual JSP document's page directive or in a JSP property 
       group, as long as the values described there match the value derived from 
       the XML prolog. It is a translation-time error to specify different encodings 
       in the XML prolog and in the declarations in a JSP document or JSP property 
       group. If the XML prolog does not specify an encoding, the UTF-8 encoding 
-      is derived instead.</td>
-   </tr>
-</table>
+      is derived instead.</li>
+</ul>
 </li>
 <li>Double-click the JSP file so that it opens in the Source Editor. The 
 default XML declaration of a JSP document created in the IDE includes an
@@ -114,29 +108,29 @@ default XML declaration of a JSP document created in the IDE includes an
 <dl>
     
 <dt><a name="seealso">See Also</a> </dt> 
-  <tr>
-<td width="23"></td>
-<td><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
          <param name="content" value="http://java.sun.com/j2se/1.5.0/docs/guide/intl/encoding.doc.html">
          <param name="text" value="<html><u>Supported Encodings</u></html>">
          <param name="textFontSize" value="medium">
          <param name="textColor" value="blue">
-</object><br>
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+</object>
+</dd>
+<dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
          <param name="content" value="http://java.sun.com/j2ee/1.4/docs/tutorial/doc/WebI18N5.html">
 	 <param name="text" value="<html><u>Character Sets and Encodings</u></html>">
          <param name="textFontSize" value="medium">
          <param name="textColor" value="blue">
-</object><br>
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+</object>
+</dd>
+<dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
          <param name="content" value="http://java.sun.com/developer/technicalArticles//Intl/MultilingualJSP/">
          <param name="text" value="<html><u>Developing Multilingual Web Applications Using JavaServer Pages Technology</u></html>">
          <param name="textFontSize" value="medium">
          <param name="textColor" value="blue">
 </object>
-</td>
-</tr>
+</dd>
 </dl>
-<hr>
+
+    <hr>
 <small><a href="../../../credits.html">Legal Notices</a></small> </body>
 </html>
