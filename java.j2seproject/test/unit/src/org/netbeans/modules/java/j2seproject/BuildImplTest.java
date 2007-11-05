@@ -674,6 +674,35 @@ public final class BuildImplTest extends NbTestCase {
         assertNull("dist folder must be removed", fo.getFileObject("dist"));
     }
 
+    /* XXX: impossible to test currently, because J2SEActionProvider.invokeAction must be called, but that is nonblocking.
+    public void testFirstBuildAfterBrokenCleanBuild() throws Exception {
+        // #120843. Should really in J2SEActionProviderTest but needs infrastructure of running builds.
+        MockLookup.setInstances(new IOP(), new IFL(), new J2SEActionProviderTest.SimplePlatformProvider()); // may need to be in setUp
+        AntProjectHelper aph = setupProject(0, false);
+        EditableProperties ep = aph.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        ep.put(J2SEProjectProperties.DO_DEPEND, "false");
+        ep.put(J2SEProjectProperties.DO_JAR, "false");
+        aph.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+        ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(aph.getProjectDirectory()));
+        FileObject root = aph.getProjectDirectory();
+        FileObject buildXml = root.getFileObject("build.xml");
+        Properties p = getProperties();
+        FileObject a = TestFileUtils.writeFile(root, "src/A.java", "class A {}");
+        FileObject b = TestFileUtils.writeFile(root, "src/B.java", "class B {A v;}broken");
+        J2SEActionProvider actionProvider = ProjectManager.getDefault().findProject(root).getLookup().lookup(J2SEActionProvider.class);
+        assertEquals("[compile]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, Lookup.EMPTY, p)));
+        assertEquals(null, p.get("includes"));
+        assertBuildFailure(ActionUtils.runTarget(buildXml, new String[] {"compile"}, p));
+        assertNull(root.getFileObject("build/classes/A.class"));
+        assertNull(root.getFileObject("build/classes/B.class"));
+        TestFileUtils.writeFile(root, "src/B.java", "class B {A v;}");
+        TestFileUtils.touch(b, null);
+        p = getProperties();
+        assertEquals("[compile]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, Lookup.EMPTY, p)));
+        assertEquals(null, p.get("includes"));
+        assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile"}, p));
+    }
+     */
 
     private Attributes getJarManifest(FileObject fo) throws Exception {
         File f = FileUtil.toFile(fo);

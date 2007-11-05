@@ -88,6 +88,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -99,6 +100,8 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 /** Action provider of the J2SE project. This is the place where to do
  * strange things to J2SE actions. E.g. compile-single.
@@ -313,7 +316,16 @@ class J2SEActionProvider implements ActionProvider {
                         DialogDisplayer.getDefault().notify(nd);
                     }
                     else {
-                        ActionUtils.runTarget(buildFo, targetNames, p);
+                        ActionUtils.runTarget(buildFo, targetNames, p).addTaskListener(new TaskListener() {
+                            public void taskFinished(Task task) {
+                                if (((ExecutorTask) task).result() != 0) {
+                                    synchronized (J2SEActionProvider.this) {
+                                        // #120843: if a build fails, disable dirty-list optimization.
+                                        dirty = null;
+                                    }
+                                }
+                            }
+                        });
                     }
                 }
                 catch (IOException e) {
