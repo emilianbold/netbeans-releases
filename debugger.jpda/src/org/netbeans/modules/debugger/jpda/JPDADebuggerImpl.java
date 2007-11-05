@@ -390,7 +390,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 break;
             }
         }
+        // Just reset the time stamp so that new line numbers are taken.
         EditorContextBridge.getContext().disposeTimeStamp(this);
+        EditorContextBridge.getContext().createTimeStamp(this);
         bel.fixBreakpointImpls ();
     }
     
