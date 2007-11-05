@@ -542,8 +542,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     public final void scheduleCompilation (final FileObject fo, final FileObject root) throws IOException {
         URL foURL = fo.getURL();
         URL rootURL = root.getURL();
-        assert "file".equals(foURL.getProtocol()) && "file".equals(rootURL.getProtocol());
-        scheduleCompilation (foURL,rootURL,fo.isFolder());
+        if (!cpImpl.isLibrary(rootURL)) {
+            assert "file".equals(foURL.getProtocol()) && "file".equals(rootURL.getProtocol());
+            scheduleCompilation (foURL,rootURL,fo.isFolder());
+        }        
     }      
     
     private final void scheduleCompilation (final FileObject fo, final URL root) throws IOException {
@@ -2908,6 +2910,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 dirtyFiles.add (uri);
             }
             final String sourceName = fileManager.inferBinaryName(StandardLocation.SOURCE_PATH, source);
+            assert sourceName != null : "Cannot infer file: " + uri.toString();     //NOI18N
             final StringBuilder classNameBuilder = new StringBuilder ();
             ClassFileUtil.encodeClassName(classSym, classNameBuilder, '.');  //NOI18N
             final String binaryName = classNameBuilder.toString();

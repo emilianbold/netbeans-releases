@@ -202,6 +202,12 @@ public class GlobalSourcePath {
         return false;
     }
     
+    public boolean isLibrary (final URL root) {
+        assert root != null;
+        Set<URL> libs = getLibsSources();
+        return libs.contains(root);
+    }
+    
     public ClassPathImplementation getSourcePath () {
         return this.sourcePath;
     }
