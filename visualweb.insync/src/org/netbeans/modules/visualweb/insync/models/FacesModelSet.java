@@ -73,6 +73,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -83,6 +84,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -411,12 +413,17 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
                 try {
                     if (projectBuiltQueryStatus != null && projectBuiltQueryStatus.isBuilt()) {
                         classPathChanged();
+                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(FacesModelSet.class, "MSG_RefreshingModels")); // NOI18N
                         SwingUtilities.invokeLater(new Runnable() {
                            public void run() {
-                               // Now refresh all models
-                               for (Iterator i = getModelsMap().values().iterator(); i.hasNext(); ) {
-                                   ((FacesModel)i.next()).refreshUnits();
-                               }                               
+                               try {
+                                   // Now refresh all models
+                                   for (Iterator i = getModelsMap().values().iterator(); i.hasNext(); ) {
+                                       ((FacesModel)i.next()).refreshUnits();
+                                   }    
+                               } finally {
+                                   StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(FacesModelSet.class, "MSG_RefreshingModelsDone")); // NOI18N
+                               }
                            }
                         });
                     }
