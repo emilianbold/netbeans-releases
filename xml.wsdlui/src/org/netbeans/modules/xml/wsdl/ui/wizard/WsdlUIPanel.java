@@ -200,7 +200,8 @@ public class WsdlUIPanel extends javax.swing.JPanel {
         namespaceLB.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "LBL_targetNamespace")); // NOI18N
         namespaceLB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsdlUIPanel.class, "HINT_targetNamespace")); // NOI18N
 
-        nsTF.setToolTipText("null");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/wsdl/ui/wizard/Bundle"); // NOI18N
+        nsTF.setToolTipText(bundle.getString("HINT_targetNamespace")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
