@@ -285,16 +285,17 @@ jmaki.widgets.dojo.rest.__CONTAINER_PATH_NAME__table.Widget = function(wargs) {
      }
     
     this.onSelect = function(e) {
-
         var _s = [];
+        var _data = [];
 	var d = table.store.get();
 	for (var i = 0; i < d.length; i++) {
             if (d[i].isSelected) {
-	        _s.push(d[i].src.id);
+	        _s.push(d[i].src.Id);
+                _data.push(d[i].src);
             }
 	}     
         // later we may want to support multiple selections
-        jmaki.publish(topic + "/onSelect", { widgetId : wargs.uuid, type : 'onSelect', targetId : _s[0] });
+        jmaki.publish(topic + "/onSelect", { widgetId : wargs.uuid, type : 'onSelect', targetId : _s[0], src : _data[0] });
 
     }
 
