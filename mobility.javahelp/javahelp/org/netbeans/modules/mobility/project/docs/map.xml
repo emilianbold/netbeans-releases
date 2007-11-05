@@ -38,6 +38,19 @@
 	<mapID target="org.netbeans.modules.mobility.project.ui.J2MEPhysicalViewProvider$J2MEProjectRootNode" url="ui/node_project.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.NewConfigurationPanel" url="ui/dialog_addconfiguration.html"/>
        	<mapID target="org.netbeans.modules.mobility.project.CfgSelectionPanel" url="ui/dialog_projectconfigs.html"/>
+        <mapID target="org.netbeans.modules.vmd.game.dialog.RenameSequenceDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.dialog.RenameTiledLayerDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.dialog.RenameSpriteDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.dialog.NewSimpleTiledLayerDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.dialog.DuplicateTiledLayerDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.dialog.NewSceneDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.dialog.RenameAnimatedTileDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.dialog.NewSequenceDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.nbdialog.SelectImageForLayerDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog.java" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.nbdialog.SpriteDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.dialog.NewAnimatedTileDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.dialog.RenameSceneDialog" url="games/games_about.html"/>
 	<mapID target="me.gloss_cldc" url="glossary/gloss_cldc.html"/>
 	<mapID target="me.gloss_attributes" url="glossary/gloss_attributes.html"/>
 	<mapID target="me.gloss_configuration" url="glossary/gloss_configuration.html"/>
