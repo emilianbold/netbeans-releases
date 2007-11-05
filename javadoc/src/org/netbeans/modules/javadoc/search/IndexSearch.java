@@ -529,6 +529,9 @@ public final class IndexSearch
         DocIndexItem  dii = (DocIndexItem)resultsList.getModel().getElementAt( resultsList.getMinSelectionIndex() );
 
         try {
+            if (dii.getURL() == null) {
+                return;
+            }
             Object[] e = SrcFinder.findSource( dii.getPackage(), dii.getURL() );
 
             if ( e != null ) {
