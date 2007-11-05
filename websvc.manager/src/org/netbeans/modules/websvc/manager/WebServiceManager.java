@@ -470,8 +470,7 @@ public final class WebServiceManager {
             }
             
             FileObject userdir = FileUtil.createFolder(new File(WEBSVC_HOME));
-            FileObject userdirWsdl = FileUtil.copyFile(wsdlFO, userdir, wsdlFO.getName());
-            File result = FileUtil.toFile(userdirWsdl);
+            File result = FileUtil.toFile(wsdlFO);
             success = true;
             return result;
         }catch (URISyntaxException ex) {

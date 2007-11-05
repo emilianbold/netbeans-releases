@@ -662,7 +662,7 @@ public class ReflectionHelper {
                 
                 Object serviceObject = constructor.newInstance(jarWsdlUrl, name);
 
-                String portGetter = "get" + ManagerUtil.getProperPortName(port.getName()); // NOI18N
+                String portGetter = port.getPortGetter();
                 Method getPort = serviceObject.getClass().getMethod(portGetter);
                 
                 classInstance = getPort.invoke(serviceObject);
