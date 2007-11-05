@@ -76,8 +76,6 @@ public class AboutAction extends CallableSystemAction {
         try {
             dlg = DialogDisplayer.getDefault().createDialog(descriptor);
             dlg.setResizable(false);
-            dlg.setMinimumSize(new Dimension(514, 563));
-            dlg.setMaximumSize(new Dimension(514, 563));
             dlg.setVisible(true);
         } finally {
             if (dlg != null) {
