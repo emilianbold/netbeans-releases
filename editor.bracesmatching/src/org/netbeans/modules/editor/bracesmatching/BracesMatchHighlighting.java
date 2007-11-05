@@ -50,6 +50,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.SimpleAttributeSet;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
@@ -89,9 +90,9 @@ public class BracesMatchHighlighting extends AbstractHighlightsContainer
 
     public BracesMatchHighlighting(JTextComponent component, Document document) {
         this.document = document;
-        
-        String mimeType = (String) document.getProperty("mimeType"); //NOI18N
-        MimePath mimePath = MimePath.parse(mimeType);
+
+        String mimeType = getMimeType(component);
+        MimePath mimePath = mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType);
 
         // Load the colorings
         FontColorSettings fcs = MimeLookup.getLookup(mimePath).lookup(FontColorSettings.class);
@@ -207,18 +208,30 @@ public class BracesMatchHighlighting extends AbstractHighlightsContainer
     // ------------------------------------------------
     
     private void refresh() {
-        Caret caret = this.caret;
-        if (caret == null) {
+        Caret c = this.caret;
+        if (c == null) {
             bag.clear();
         } else {
             MasterMatcher.get(component).highlight(
                 document,
-                caret.getDot(), 
+                c.getDot(), 
                 bag, 
                 bracesMatchColoring, 
                 bracesMismatchColoring
             );
         }
+    }
+    
+    private static String getMimeType(JTextComponent component) {
+        Document doc = component.getDocument();
+        String mimeType = (String) doc.getProperty("mimeType"); //NOI18N
+        if (mimeType == null) {
+            EditorKit kit = component.getUI().getEditorKit(component);
+            if (kit != null) {
+                mimeType = kit.getContentType();
+            }
+        }
+        return mimeType;
     }
     
     public static final class Factory implements HighlightsLayerFactory {

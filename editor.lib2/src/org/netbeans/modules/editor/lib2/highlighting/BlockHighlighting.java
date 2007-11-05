@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.SimpleAttributeSet;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -138,7 +139,7 @@ public class BlockHighlighting extends AbstractHighlightsContainer implements Hi
     }
     
     private AttributeSet getAttribs(String coloringName, boolean extendsEol, boolean extendsEmptyLine) {
-        FontColorSettings fcs = MimeLookup.getLookup(getMimeType()).lookup(FontColorSettings.class);
+        FontColorSettings fcs = MimeLookup.getLookup(getMimeType(component)).lookup(FontColorSettings.class);
         AttributeSet attribs = fcs.getFontColors(coloringName);
         
         if (attribs == null) {
@@ -155,7 +156,15 @@ public class BlockHighlighting extends AbstractHighlightsContainer implements Hi
         return attribs;
     }
     
-    private String getMimeType() {
-        return component.getUI().getEditorKit(component).getContentType();
+    /* package */ static String getMimeType(JTextComponent component) {
+        Document doc = component.getDocument();
+        String mimeType = (String) doc.getProperty("mimeType"); //NOI18N
+        if (mimeType == null) {
+            EditorKit kit = component.getUI().getEditorKit(component);
+            if (kit != null) {
+                mimeType = kit.getContentType();
+            }
+        }
+        return mimeType;
     }
 }

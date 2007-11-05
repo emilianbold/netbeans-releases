@@ -50,7 +50,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.SimpleAttributeSet;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -83,8 +82,7 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
     /** Creates a new instance of TextSearchHighlighting */
     public TextSearchHighlighting(JTextComponent component) {
         // Determine the mime type
-        EditorKit kit = component.getUI().getEditorKit(component);
-        String mimeType = kit == null ? null : kit.getContentType();
+        String mimeType = BlockHighlighting.getMimeType(component);
         this.mimePath = mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType);
         
         this.component = component;

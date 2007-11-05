@@ -51,7 +51,6 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
-import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
@@ -89,8 +88,7 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
     /** Creates a new instance of CaretSelectionLayer */
     protected CaretBasedBlockHighlighting(JTextComponent component, String coloringName, boolean extendsEOL, boolean extendsEmptyLine) {
         // Determine the mime type
-        EditorKit kit = component.getUI().getEditorKit(component);
-        String mimeType = kit == null ? null : kit.getContentType();
+        String mimeType = BlockHighlighting.getMimeType(component);
         this.mimePath = mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType);
 
         this.coloringName = coloringName;
