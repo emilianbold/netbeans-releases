@@ -75,23 +75,39 @@ public class GrailsSources implements Sources {
         
         if (Sources.TYPE_GENERIC.equals(type)) {
             result.add(new Group(projectDir, projectDir.getName(), null, null, SourceCategory.NONE));
-        } else if ("conf".equals(type)) {
+        } else if ("grails-app/conf".equals(type)) {
             result.add(new Group(projectDir.getFileObject("grails-app/conf"), "Configuration", null, null, SourceCategory.CONFIGURATION));
-        } else if ("controllers".equals(type)) {
+        } else if ("grails-app/controllers".equals(type)) {
             result.add(new Group(projectDir.getFileObject("grails-app/controllers"), "Controllers", null, null, SourceCategory.CONTROLLERS));
-        } else if ("domain".equals(type)) {
+        } else if ("grails-app/domain".equals(type)) {
             result.add(new Group(projectDir.getFileObject("grails-app/domain"), "Domain classes", null, null, SourceCategory.DOMAIN));
-        } else if ("i18n".equals(type)) {
+        } else if ("grails-app/i18n".equals(type)) {
             result.add(new Group(projectDir.getFileObject("grails-app/i18n"), "Message bundles", null, null, SourceCategory.MESSAGES));
-        } else if ("services".equals(type)) {
+        } else if ("grails-app/services".equals(type)) {
             result.add(new Group(projectDir.getFileObject("grails-app/services"), "Services", null, null, SourceCategory.SERVICES));
-        } else if ("taglib".equals(type)) {
+        } else if ("grails-app/taglib".equals(type)) {
             result.add(new Group(projectDir.getFileObject("grails-app/taglib"), "Tag libraries", null, null, SourceCategory.TAGLIB));
-        } else if ("util".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("grails-app/util"), "Utility classes", null, null, SourceCategory.UTIL));
-        } else if ("views".equals(type)) {
+        } else if ("grails-app/utils".equals(type)) {
+            result.add(new Group(projectDir.getFileObject("grails-app/utils"), "Utility classes", null, null, SourceCategory.UTIL));
+        } else if ("grails-app/views".equals(type)) {
             result.add(new Group(projectDir.getFileObject("grails-app/views"), "Views and layouts", null, null, SourceCategory.VIEWS));
+        } else if ("web-app".equals(type)) {
+            result.add(new Group(projectDir.getFileObject("web-app"), "Web Application", null, null, SourceCategory.VIEWS));
+        } else if ("lib".equals(type)) {
+            result.add(new Group(projectDir.getFileObject("lib"), "Libraries", null, null, SourceCategory.VIEWS));
+        } else if ("test".equals(type)) {
+            result.add(new Group(projectDir.getFileObject("test"), "Tests", null, null, SourceCategory.VIEWS));
+        } else if ("src".equals(type)) {
+            result.add(new Group(projectDir.getFileObject("src"), "Source Packages", null, null, SourceCategory.VIEWS));
+        } else if ("scripts".equals(type)) {
+            result.add(new Group(projectDir.getFileObject("scripts"), "Scripts", null, null, SourceCategory.VIEWS));
+        } else {
+            FileObject fileObject = projectDir.getFileObject(type);
+            if (fileObject != null) {
+                result.add(new Group(fileObject, fileObject.getName(), null, null, SourceCategory.NONE));
+            }
         }
+        
         return result.toArray(new SourceGroup[result.size()]);
     }
     

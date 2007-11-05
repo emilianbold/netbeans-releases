@@ -86,18 +86,27 @@ public class SourceNodeFactory implements NodeFactory {
         }
 
         public List<SourceGroupKey> keys() {
-            if (this.project.getProjectDirectory() == null || !this.project.getProjectDirectory().isValid()) {
+            FileObject projectDir = project.getProjectDirectory();
+            if (projectDir == null || !projectDir.isValid()) {
                 return Collections.<SourceGroupKey>emptyList();
             }
             Sources sources = getSources();
             
             List<SourceGroupKey> result =  new ArrayList<SourceGroupKey>();
 
-            FileObject grailsAppFO = project.getProjectDirectory().getFileObject("grails-app");
-            for (FileObject fileObject : grailsAppFO.getChildren()) {
-                SourceGroup[] groups = sources.getSourceGroups(fileObject.getName());
-                for(SourceGroup sourceGroup : groups) {
-                    result.add(new SourceGroupKey(sourceGroup));
+            for (FileObject fileObject : projectDir.getChildren()) {
+                if ("grails-app".equals(fileObject.getName())) { // NO18N
+                    for (FileObject grailsAppChild : fileObject.getChildren()) {
+                        SourceGroup[] groups = sources.getSourceGroups("grails-app/" + grailsAppChild.getName());
+                        for(SourceGroup sourceGroup : groups) {
+                            result.add(new SourceGroupKey(sourceGroup));
+                        }
+                    }
+                } else if (fileObject.isFolder()) {
+                    SourceGroup[] groups = sources.getSourceGroups(fileObject.getName());
+                    for(SourceGroup sourceGroup : groups) {
+                        result.add(new SourceGroupKey(sourceGroup));
+                    }
                 }
             }
 
