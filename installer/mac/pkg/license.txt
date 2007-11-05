@@ -1,4 +1,4 @@
-NETBEANS IDE 6.0 BETA 2 
+NETBEANS IDE 6.0
 
 Please review the complete list of open-source licenses
 governing software  included in the Product. They can be
@@ -6,7 +6,7 @@ found in the THIRDPARTYLICENSE.txt file. Please review the
 list of libraries and licenses provided for use. This
 license file contains five distinct licenses.
 
-Unless specified below, the use of NetBeans IDE 6.0 Beta 2
+Unless specified below, the use of NetBeans IDE 6.0 
 and components from the GlassFish runtime are governed by
 the terms of either the GNU General Public License Version 2 
 with Classpath Exception or the Common Development and
@@ -413,7 +413,7 @@ Public License instead of this License.
 
 "CLASSPATH" EXCEPTION TO THE GPL VERSION 2
 
-Certain source files distributed by Sun Microsystems, Inc.å 
+Certain source files distributed by Sun Microsystems, Inc. 
 are subject to  the following clarification and special
 exception to the GPL Version 2, but only where Sun has
 expressly included in the particular source file's header
@@ -422,22 +422,22 @@ to the "Classpath" exception as provided by Sun in the
 License file that accompanied this code." 
 
    Linking this library statically or dynamically with other
-modules is making a combined work based on this library.å 
+modules is making a combined work based on this library. 
 Thus, the terms and conditions of the GNU General Public
 License Version 2 cover the whole combination. 
 
-å å  As a special exception, the copyright holders of this
+  As a special exception, the copyright holders of this
 library give you  permission to link this library with
 independent modules to produce an  executable, regardless of
 the license terms of these independent modules,  and to copy
 and distribute the resulting executable under terms of your 
 choice, provided that you also meet, for each linked
 independent module,  the terms and conditions of the license
-of that module.å  An independent  module is a module which is
-not derived from or based on this library.å  If  you modify
+of that module.  An independent  module is a module which is
+not derived from or based on this library.  If  you modify
 this library, you may extend this exception to your version
-of  the library, but you are not obligated to do so.å  If you
-do not wish to do  so, delete this exception statement from
+of  the library, but you are not obligated to do so.  If you
+do not wish to do so, delete this exception statement from
 your version.
 
 ***********************************************************
@@ -773,7 +773,7 @@ NOT APPLY TO YOU.
 The Covered Software is a "commercial item," as that term is
 defined in 48 C.F.R. 2.101 (Oct. 1995), consisting of
 "commercial computer software" (as that term is defined at
-48 C.F.R. å? 252.227-7014(a)(1)) and "commercial computer
+48 C.F.R. Â¤ 252.227-7014(a)(1)) and "commercial computer
 software documentation" as such terms are used in 48 C.F.R.
 12.212 (Sept. 1995). Consistent with 48 C.F.R. 12.212 and 48
 C.F.R. 227.7202-1 through 227.7202-4 (June 1995), all U.S.
@@ -824,7 +824,7 @@ be deemed to constitute any admission of liability.
 LICENSE #3: 
 
 
-JGO 5.1 IN SOA PACK FOR NETBEANS IDE 6.0 BETA 2
+JGO 5.1 IN SOA PACK FOR NETBEANS IDE 6.0
 
 Sun Microsystems, Inc. ("Sun") ENTITLEMENT for SOFTWARE
 
@@ -1143,7 +1143,7 @@ Santa Clara, California 95054 if you have questions.
 
 LICENSE #4
 
-TOM SAWYER 6.0 IN UML PACK FOR NETBEANS IDE 6.0 BETA 2
+TOM SAWYER 6.0 IN UML PACK FOR NETBEANS IDE 6.0
 
 Sun Microsystems, Inc. ("Sun") ENTITLEMENT for SOFTWARE
 
@@ -1463,7 +1463,6 @@ Santa Clara, California 95054 if you have questions.
 LICENSE #5: 
 
 SUN JAVA WIRELESS TOOLKIT 2.5.2 FOR CLDC IN NETBEANS IDE 6.0
-BETA 2
 
 Sun Microsystems, Inc. ("Sun") ENTITLEMENT for SOFTWARE
 
