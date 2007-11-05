@@ -53,6 +53,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.ActionsManagerListener;
@@ -70,6 +72,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ExpressionPool.Expression;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.JPDAStepImpl;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -240,6 +243,8 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         } catch (AbsentInformationException aiex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
         }
+        Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
+                fine("doAction("+url+", "+clazz+", "+methodLine+", "+methodName+") locations = "+locations);
         if (locations.isEmpty()) {
             String message = NbBundle.getMessage(RunIntoMethodActionProvider.class,
                                                  "MSG_RunIntoMeth_absentInfo",
@@ -296,10 +301,16 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         step.setHidden(true);
         step.addPropertyChangeListener(JPDAStep.PROP_STATE_EXEC, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
+                if (Logger.getLogger(RunIntoMethodActionProvider.class.getName()).isLoggable(Level.FINE)) {
+                    Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
+                        fine("traceLineForMethod("+method+") step is at "+debugger.getCurrentThread().getClassName()+":"+debugger.getCurrentThread().getMethodName());
+                }
                 //System.err.println("RunIntoMethodActionProvider: Step fired, at "+
                 //                   debugger.getCurrentThread().getMethodName()+"()");
                 JPDAThread t = debugger.getCurrentThread();
                 int currentDepth = t.getStackDepth();
+                Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
+                        fine("  depth = "+currentDepth+", target = "+depth);
                 if (currentDepth == depth) { // We're in the outer expression
                     try {
                         if (t.getCallStack()[0].getLineNumber("Java") != methodLine) {
@@ -317,6 +328,9 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                 } else {
                     if (t.getMethodName().equals(method)) {
                         // We've found it :-)
+                        step.setHidden(false);
+                    } else if (t.getMethodName().equals("<init>") && (t.getClassName().endsWith("."+method) || t.getClassName().equals(method))) {
+                        // The method can be a constructor
                         step.setHidden(false);
                     } else {
                         step.setDepth(JPDAStep.STEP_OUT);
