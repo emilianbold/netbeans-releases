@@ -42,7 +42,11 @@
 package org.netbeans.modules.db.sql.execute;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
+import java.sql.DatabaseMetaData;
 import java.sql.Types;
 import org.netbeans.junit.NbTestCase;
 
@@ -92,6 +96,11 @@ public class ResultSetTableModelSupportTest extends NbTestCase {
                 }
             }
         }
-        assertNotNull(ResultSetTableModelSupport.getColumnTypeDef(type));
+        DatabaseMetaData dmd = (DatabaseMetaData)Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[] { DatabaseMetaData.class}, new InvocationHandler() {
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                return null;
+            }
+        });
+        assertNotNull(ResultSetTableModelSupport.getColumnTypeDef(dmd, type));
     }
 }
