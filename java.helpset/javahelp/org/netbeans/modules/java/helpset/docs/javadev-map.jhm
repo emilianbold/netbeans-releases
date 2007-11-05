@@ -383,6 +383,8 @@
 <!--<mapID target="org.netbeans.modules.form.ConnectionWizard3" url="pending.html" />-->
 <!--<mapID target="org.netbeans.modules.form.FormCustomEditor.tabbedPane" url="pending.html" />-->
 
+<!--Space Around Component dialog-->
+<mapID target="org.netbeans.modules.form.actions.CustomizeEmptySpaceAction" url="pending.html" />
 
 <!-- Ant CSH :-->
 <!-- Add task dialog box :-->
