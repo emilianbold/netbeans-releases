@@ -43,6 +43,14 @@ DELIMITER       "<%=", st=7
 RUBY_EXPR       " @field -", la=2, st=7
 DELIMITER       "%>", st=0
 HTML            "\n", la=3, st=0
+DELIMITER       "<%-", st=3
+RUBY            " :foo ", la=2, st=3
+DELIMITER       "%>", st=0
+HTML            "\n", la=3, st=0
+DELIMITER       "<%-", st=3
+RUBY            " :bar -", la=2, st=3
+DELIMITER       "%>", st=0
+HTML            "\n", la=3, st=0
 DELIMITER       "<%", la=1, st=3
 RUBY            " #comment ", la=2, st=3
 DELIMITER       "%>", st=0

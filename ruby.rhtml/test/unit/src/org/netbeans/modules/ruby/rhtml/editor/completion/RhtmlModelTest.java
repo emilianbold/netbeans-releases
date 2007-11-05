@@ -134,4 +134,7 @@ public class RhtmlModelTest extends RubyTestBase {
     public void testEruby112877() throws Exception {
         checkEruby(this, "testfiles/other-112877");
     }
+    public void testDashes121229() throws Exception {
+        checkEruby(this, "testfiles/dashes");
+    }
 }

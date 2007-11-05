@@ -165,11 +165,22 @@ public final class RhtmlLexer implements Lexer<RhtmlTokenId> {
                                 state = INIT;
                                 return token(RhtmlTokenId.HTML); //return CL token
                             }
+                        case '-':
+                            if(input.readLength() == 3) {
+                                // just read <%-
+                                state = ISI_SCRIPTLET;
+                                return token(RhtmlTokenId.DELIMITER);
+                            } else {
+                                // RHTML symbol, but we also have content language in the buffer
+                                input.backup(3); //backup <%-
+                                state = INIT;
+                                return token(RhtmlTokenId.HTML); //return CL token
+                            }
                         default:  // RHTML scriptlet delimiter '<%'
                             if(input.readLength() == 3) {
                                 // just <% + something != [=,#] read
                                 state = ISI_SCRIPTLET;
-                                input.backup(1); //backup the third character, it is a part of the java scriptlet
+                                input.backup(1); //backup the third character, it is a part of the Ruby scriptlet
                                 return token(RhtmlTokenId.DELIMITER);
                             } else {
                                 // RHTML symbol, but we also have content language in the buffer

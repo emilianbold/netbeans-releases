@@ -16,6 +16,8 @@
 <%= end %>
 <% for -%>
 <%= @field -%>
+<%- :foo %>
+<%- :bar -%>
 <% #comment %>
 .e.o.f.
 

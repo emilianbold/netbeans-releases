@@ -1,0 +1,10 @@
+_buf = ''; if true 
+ end 
+ _buf << '<p>
+  Text before ERb.
+';   some_code 
+ _buf << '  Text after ERb
+</p>
+
+';
+_buf.to_s
