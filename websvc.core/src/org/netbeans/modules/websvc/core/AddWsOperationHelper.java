@@ -58,6 +58,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -184,6 +187,7 @@ public class AddWsOperationHelper {
         final JavaSource targetSource = JavaSource.forFileObject(implClassFo);
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(AddWsOperationHelper.class, "MSG_AddingNewOperation", methodModel.getName()));
         handle.start(100);
+        final String[] seiClass = new String[1];
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -192,45 +196,62 @@ public class AddWsOperationHelper {
                     TreeMaker make = workingCopy.getTreeMaker();
                     GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                     if (genUtils!=null) {
-                        handle.progress(20);
+
+                        boolean increaseProgress = true;
+                        
+                        if (createAnnotations) {
+                            if (seiClass[0] == null) {
+                                seiClass[0] = getEndpointInterface(genUtils, workingCopy);
+                            } else {
+                                seiClass[0] = null;
+                                increaseProgress = false;
+                            }                           
+                        }
+                        
+                        if (increaseProgress) handle.progress(20);
+                        
                         ClassTree javaClass = genUtils.getClassTree();
                         TypeElement webMethodAn = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
                         TypeElement webParamAn = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
                         
                         AssignmentTree opName = make.Assignment(make.Identifier("operationName"), make.Literal(method.getName().toString())); //NOI18N
                         
-                        AnnotationTree webMethodAnnotation = make.Annotation(
-                                make.QualIdent(webMethodAn),
-                                Collections.<ExpressionTree>singletonList(opName)
-                                );
                         // Public modifier
                         ModifiersTree modifiersTree = make.Modifiers(
                                 Collections.<Modifier>singleton(Modifier.PUBLIC),
                                 Collections.<AnnotationTree>emptyList()
-                                );
-                        // add @WebMethod annotation
-                        if(createAnnotations)
-                            modifiersTree = make.addModifiersAnnotation(modifiersTree, webMethodAnnotation);
+                                );                        
                         
-                        handle.progress(40);
-                        // add @Oneway annotation
-                        if (Kind.PRIMITIVE_TYPE == method.getReturnType().getKind()) {
-                            PrimitiveTypeTree primitiveType = (PrimitiveTypeTree)method.getReturnType();
-                            if (TypeKind.VOID == primitiveType.getPrimitiveTypeKind()) {
-                                TypeElement oneWayAn = workingCopy.getElements().getTypeElement("javax.jws.Oneway"); //NOI18N
-                                AnnotationTree oneWayAnnotation = make.Annotation(
-                                        make.QualIdent(oneWayAn),
-                                        Collections.<ExpressionTree>emptyList()
-                                        );
-                                if(createAnnotations)
-                                    modifiersTree = make.addModifiersAnnotation(modifiersTree, oneWayAnnotation);
+                        // add @WebMethod annotation
+                        if(createAnnotations && seiClass[0] == null) {
+                            AnnotationTree webMethodAnnotation = make.Annotation(
+                                    make.QualIdent(webMethodAn),
+                                    Collections.<ExpressionTree>singletonList(opName)
+                                    );
+                            modifiersTree = make.addModifiersAnnotation(modifiersTree, webMethodAnnotation);
+
+                            // add @Oneway annotation
+                            if (Kind.PRIMITIVE_TYPE == method.getReturnType().getKind()) {
+                                PrimitiveTypeTree primitiveType = (PrimitiveTypeTree)method.getReturnType();
+                                if (TypeKind.VOID == primitiveType.getPrimitiveTypeKind()) {
+                                    TypeElement oneWayAn = workingCopy.getElements().getTypeElement("javax.jws.Oneway"); //NOI18N
+                                    AnnotationTree oneWayAnnotation = make.Annotation(
+                                            make.QualIdent(oneWayAn),
+                                            Collections.<ExpressionTree>emptyList()
+                                            );
+
+                                        modifiersTree = make.addModifiersAnnotation(modifiersTree, oneWayAnnotation);
+                                }
                             }
                         }
+                        
+                        if (increaseProgress) handle.progress(40);
                         
                         // add @WebParam annotations
                         List<? extends VariableTree> parameters = method.getParameters();
                         List<VariableTree> newParameters = new ArrayList<VariableTree>();
-                        if(createAnnotations) {
+                        
+                        if(createAnnotations && seiClass[0] == null) {
                             for (VariableTree param:parameters) {
                                 AnnotationTree paramAnnotation = make.Annotation(
                                         make.QualIdent(webParamAn),
@@ -242,8 +263,8 @@ public class AddWsOperationHelper {
                         } else {
                             newParameters.addAll(parameters);
                         }
-                        
-                        handle.progress(70);
+                                               
+                        if (increaseProgress) handle.progress(70);
                         // create new (annotated) method
                         MethodTree  annotatedMethod = genUtils.getTypeElement().getKind() == ElementKind.CLASS ?
                             make.Method(
@@ -267,7 +288,7 @@ public class AddWsOperationHelper {
                         Comment comment = Comment.create(Style.JAVADOC, 0,0,0,NbBundle.getMessage(AddWsOperationHelper.class, "TXT_WSOperation"));
                         make.addComment(annotatedMethod, comment, true);
                         
-                        handle.progress(90);
+                        if (increaseProgress) handle.progress(90);
                         ClassTree modifiedClass = make.addClassMember(javaClass,annotatedMethod);
                         workingCopy.rewrite(javaClass, modifiedClass);
                     }
@@ -280,12 +301,18 @@ public class AddWsOperationHelper {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     try {
-                        targetSource.runModificationTask(modificationTask).commit();    
-                        DataObject dataObject = DataObject.find(implClassFo);
-                        if (dataObject!=null) {
-                            SaveCookie cookie = dataObject.getCookie(SaveCookie.class);
-                            if (cookie!=null) cookie.save();
+                        targetSource.runModificationTask(modificationTask).commit();
+                        // add method to SEI class
+                        if (seiClass[0] != null) {
+                            ClassPath sourceCP = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);
+                            FileObject seiFo = sourceCP.findResource(seiClass[0].replace('.', '/')+".java"); //NOI18N
+                            if (seiFo != null) {
+                                JavaSource seiSource = JavaSource.forFileObject(seiFo);
+                                seiSource.runModificationTask(modificationTask).commit();
+                                saveFile(seiFo);
+                            }
                         }
+                        saveFile(implClassFo);
                     } catch (IOException ex) {
                         ErrorManager.getDefault().notify(ex);
                     } finally {
@@ -295,12 +322,18 @@ public class AddWsOperationHelper {
             });
         } else {
             try {
-                targetSource.runModificationTask(modificationTask).commit();    
-                DataObject dataObject = DataObject.find(implClassFo);
-                if (dataObject!=null) {
-                    SaveCookie cookie = dataObject.getCookie(SaveCookie.class);
-                    if (cookie!=null) cookie.save();
+                targetSource.runModificationTask(modificationTask).commit();
+                // add method to SEI class
+                if (seiClass[0] != null) {
+                    ClassPath sourceCP = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);
+                    FileObject seiFo = sourceCP.findResource(seiClass[0].replace('.', '/')+".java"); //NOI18N
+                    if (seiFo != null) {
+                        JavaSource seiSource = JavaSource.forFileObject(seiFo);
+                        seiSource.runModificationTask(modificationTask).commit();
+                        saveFile(seiFo);
+                    }
                 }
+                saveFile(implClassFo);
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             } finally {
@@ -308,6 +341,39 @@ public class AddWsOperationHelper {
             }            
         }
 
+    }
+
+    private String getEndpointInterface(GenerationUtils genUtils, CompilationController controller) {
+        TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
+        TypeElement classEl = genUtils.getTypeElement();
+        if (wsElement != null) {
+            List<? extends AnnotationMirror> annotations = classEl.getAnnotationMirrors();
+            for (AnnotationMirror anMirror : annotations) {
+                if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
+                    Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
+                    for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry: expressions.entrySet()) {
+                        if (entry.getKey().getSimpleName().contentEquals("endpointInterface")) { //NOI18N
+                            String value = (String) expressions.get(entry.getKey()).getValue();
+                            if (value != null) {
+                                TypeElement seiEl = controller.getElements().getTypeElement(value);
+                                if (seiEl != null) {
+                                    return seiEl.getQualifiedName().toString();
+                                }
+                            }
+                        }
+                    }
+                } // end if
+            }
+        }
+        return null;
+    }
+    
+    private void saveFile(FileObject file) throws IOException {
+        DataObject dataObject = DataObject.find(file);
+        if (dataObject!=null) {
+            SaveCookie cookie = dataObject.getCookie(SaveCookie.class);
+            if (cookie!=null) cookie.save();
+        }        
     }
     
     private String getMethodBody(Tree returnType) {
