@@ -1919,7 +1919,7 @@ public class Reformatter implements ReformatTask {
                                     : after == 2 //after javadoc comment
                                     ? getNewlines(1) + getIndent()
                                     : null;
-                            if (spaces.indexOf('\n') >= 0) //NOI18N
+                            if (spaces != null && spaces.indexOf('\n') >= 0) //NOI18N
                                 afterNewline = true;
                             if (spaces != null && spaces.length() > 0)
                                 diffs.addFirst(new Diff(tokens.offset(), tokens.offset(), spaces));
@@ -1957,7 +1957,7 @@ public class Reformatter implements ReformatTask {
                                     : after == 2 //after javadoc comment
                                     ? getNewlines(1) + getIndent()
                                     : null;
-                            if (spaces.indexOf('\n') >= 0) //NOI18N
+                            if (spaces != null && spaces.indexOf('\n') >= 0) //NOI18N
                                 afterNewline = true;
                             if (spaces != null && spaces.length() > 0)
                                 diffs.addFirst(new Diff(tokens.offset(), tokens.offset(), spaces));
@@ -2002,7 +2002,7 @@ public class Reformatter implements ReformatTask {
                                     : after == 2 //after javadoc comment
                                     ? getNewlines(1) + getIndent()
                                     : null;
-                            if (spaces.indexOf('\n') >= 0) //NOI18N
+                            if (spaces != null && spaces.indexOf('\n') >= 0) //NOI18N
                                 afterNewline = true;
                             if (spaces != null && spaces.length() > 0)
                                 diffs.addFirst(new Diff(tokens.offset(), tokens.offset(), spaces));
