@@ -195,17 +195,17 @@ popup Javadoc, etc. should work if source associations have been correctly
 configured in step #5.
 
 6. In case S1 was an application module with configured branding, you might wish
-to use S1's launchers in S2 rather than making a new app for S2. Or, in place of
+to use S1's branding in S2 rather than making a new app for S2. Or, in place of
 a suite S2 you might have a standalone module M2. In either case, you can use
-S1's launchers by making sure that the 'bin/' and 'etc/' directories get copied
-into the P2 platform (i.e. do not specifically exclude them in step #2); and
-configure nbproject/project.properties in S2 (or standalone module M2):
+S1's branding by configuring nbproject/project.properties in S2 (or standalone
+module M2):
 
-    run.app.exe=bin\\s1.exe
-    run.app.sh=bin/s1
+    branding.token=s1
+    branding.dir=none
 
-where 's1' was the branding name you chose for S1. This will permit Run, Reload,
-etc. on S2 and its modules like M2a, or standalone module M2, to work correctly.
+where 's1' was the branding token you chose for S1. This will permit Run,
+Reload, etc. on S2 and its modules like M2a, or standalone module M2, to work
+correctly.
 
 netbeans.org MODULES: CONFIGURATION FILES
 -----------------------------------------
