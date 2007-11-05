@@ -656,6 +656,7 @@ public class J2EEUtils {
      * @param entity entity to make observable.
      */
     public static void makeEntityObservable(FileObject fileInProject, String[] entityInfo, MetadataModel<EntityMappingsMetadata> mappings) {
+        if (entityInfo == null) return;
         ClassPath cp = ClassPath.getClassPath(fileInProject, ClassPath.SOURCE);
         String resName = entityInfo[1].replace('.', '/') + ".java"; // NOI18N
         FileObject entity = cp.findResource(resName);
@@ -860,6 +861,7 @@ public class J2EEUtils {
         String resourceName = entityClass.replace('.', '/') + ".java"; // NOI18N
         FileObject entity = cp.findResource(resourceName);
         final List<String> types = new LinkedList<String>();
+        if (entity == null) return types;
         JavaSource source = JavaSource.forFileObject(entity);
         try {
             source.runUserActionTask(new CancellableTask<CompilationController>() {

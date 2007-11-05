@@ -492,9 +492,13 @@ public class MasterDetailGenerator {
             if (detailInitial == masterInitial) {
                 masterInitial = Character.toUpperCase(masterInitial);
             }
-            map.put("_joinCollection_", joinCollectionProperty); // NOI18N
-            map.put("_joinCollectionCapital_", Character.toUpperCase(joinCollectionProperty.charAt(0)) + joinCollectionProperty.substring(1)); // NOI18N
-            map.put("_joinCapital_", Character.toUpperCase(joinProperty.charAt(0)) + joinProperty.substring(1)); // NOI18N
+            if (joinCollectionProperty != null) {
+                map.put("_joinCollection_", joinCollectionProperty); // NOI18N
+                map.put("_joinCollectionCapital_", Character.toUpperCase(joinCollectionProperty.charAt(0)) + joinCollectionProperty.substring(1)); // NOI18N
+            }
+            if (joinProperty != null) {
+                map.put("_joinCapital_", Character.toUpperCase(joinProperty.charAt(0)) + joinProperty.substring(1)); // NOI18N
+            }
         }
         map.put("_masterEntityInitial_", Character.toString(masterInitial)); // NOI18N
         return map;

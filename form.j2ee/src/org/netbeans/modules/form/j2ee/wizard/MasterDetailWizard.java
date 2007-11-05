@@ -353,6 +353,15 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
 
             String[][] entity = instantiatePersitence(javaFile.getParent(), connection, masterTableName, detailFKTable);
 
+            if (entity[0] == null) {
+                System.err.println("WARNING: Cannot find entity: " + masterTableName); // NOI18N
+                entity[0] = new String[] {"Object", Object.class.getName()}; // NOI18N
+            }
+            if ((detailFKTable != null) && (entity[1] == null)) {
+                System.err.println("WARNING: Cannot find entity: " + detailFKTable); // NOI18N
+                entity[1] = new String[] {"Object", Object.class.getName()}; // NOI18N
+            }
+
             String masterClass = entity[0][1];
             String masterEntity = entity[0][0];
             String detailClass = null;
@@ -469,14 +478,16 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             result[0] = J2EEUtils.findEntity(mappings, tableName);
             if (detailTable != null)  {
                 result[1] = J2EEUtils.findEntity(mappings, detailTable);
-                joinInfo = findOneToManyRelationProperties(mappings, result[0][0], result[1][0], joinColumn);
-                if ((joinInfo == null) || joinInfo[1] == null) {
-                    // Determine whether there already exist field mapped to PK column
-                    boolean anotherDetailFieldExists = !J2EEUtils.propertiesForColumns(mappings, result[1][0], Collections.singletonList(joinColumn)).isEmpty();
-
-                    // Issue 102630 - missing relationship between entities
-                    addRelationship(result[0], result[1], joinColumn, referencedColumn, (joinInfo == null) ? null : joinInfo[0], anotherDetailFieldExists, folder);
+                if ((result[0] != null) && (result[1] != null)) {
                     joinInfo = findOneToManyRelationProperties(mappings, result[0][0], result[1][0], joinColumn);
+                    if ((joinInfo == null) || joinInfo[1] == null) {
+                        // Determine whether there already exist field mapped to PK column
+                        boolean anotherDetailFieldExists = !J2EEUtils.propertiesForColumns(mappings, result[1][0], Collections.singletonList(joinColumn)).isEmpty();
+
+                        // Issue 102630 - missing relationship between entities
+                        addRelationship(result[0], result[1], joinColumn, referencedColumn, (joinInfo == null) ? null : joinInfo[0], anotherDetailFieldExists, folder);
+                        joinInfo = findOneToManyRelationProperties(mappings, result[0][0], result[1][0], joinColumn);
+                    }
                 }
             }
             
