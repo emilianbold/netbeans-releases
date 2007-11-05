@@ -125,16 +125,17 @@ abstract class WSITRefactoringPlugin<T extends AbstractRefactoring> extends Prog
                             for (TreePathHandle tph : treePathHandle) {
                                 Element el = tph.resolveElement(info);
                                 if (el == null) return;
-                                ElementHandle elh = ElementHandle.create(el);
-                                FileObject file = SourceUtils.getFile(elh, info.getClasspathInfo());
-
-                                if (file == null) {
-                                    ErrorManager.getDefault().log(
-                                            ErrorManager.INFORMATIONAL, "WSIT: Null instance returned from SourceUtils.getFile; element not found " + el);
-                                }
                                 
-                                switch (elh.getKind()) {
+                                switch (el.getKind()) {
                                 case METHOD: {
+                                    ElementHandle elh = ElementHandle.create(el);
+                                    FileObject file = SourceUtils.getFile(elh, info.getClasspathInfo());
+
+                                    if (file == null) {
+                                        ErrorManager.getDefault().log(
+                                                ErrorManager.INFORMATIONAL, "WSIT: Null instance returned from SourceUtils.getFile; element not found " + el);
+                                        return;
+                                    }
                                     fireProgressListenerStep();
                                     Element javaClass = el.getEnclosingElement();
                                     if (isWebSvcFromWsdl(javaClass)) return;
@@ -159,6 +160,14 @@ abstract class WSITRefactoringPlugin<T extends AbstractRefactoring> extends Prog
                                 case INTERFACE:
                                 case ANNOTATION_TYPE:
                                 case ENUM: {
+                                    ElementHandle elh = ElementHandle.create(el);
+                                    FileObject file = SourceUtils.getFile(elh, info.getClasspathInfo());
+
+                                    if (file == null) {
+                                        ErrorManager.getDefault().log(
+                                                ErrorManager.INFORMATIONAL, "WSIT: Null instance returned from SourceUtils.getFile; element not found " + el);
+                                        return;
+                                    }
                                     fireProgressListenerStep();
                                     if (isWebSvcFromWsdl(el)) return;
                                     fireProgressListenerStep();
