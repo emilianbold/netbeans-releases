@@ -143,11 +143,17 @@ public class SendEmailAction extends NodeAction {
                 if (serviceLocator != null) {
                     serviceLocatorStrategy = ServiceLocatorStrategy.create(enterpriseProject, srcFile, serviceLocator);
                 }
+                
+                String jndiName = null;
+                if (!Utils.isJavaEE5orHigher(enterpriseProject) || !InjectionTargetQuery.isInjectionTarget(srcFile, beanClass.getQualifiedName())) {
+                    jndiName = generateJNDILookup(sendEmailPanel.getJndiName(), erc, srcFile, beanClass.getQualifiedName());
+                }
+                
                 generateMethods(
                         enterpriseProject, 
                         srcFile, 
                         beanClass.getQualifiedName(), 
-                        Utils.isJavaEE5orHigher(enterpriseProject) ? null : generateJNDILookup(sendEmailPanel.getJndiName(), erc, srcFile, beanClass.getQualifiedName()), 
+                        jndiName, 
                         sendEmailPanel.getJndiName(), 
                         serviceLocatorStrategy
                         );
@@ -185,11 +191,10 @@ public class SendEmailAction extends NodeAction {
         return erc.addResourceRef(resourceReference, fileObject, className);
     }
     
-    // jndiName is ignored for Java EE 5, simpleName is used
     private void generateMethods(Project project, FileObject fileObject, String className, 
             String jndiName, String simpleName, ServiceLocatorStrategy slStrategy) throws IOException{
         String memberName = _RetoucheUtil.uniqueMemberName(fileObject, className, simpleName, "mailResource"); //NOI18N
-        if (Utils.isJavaEE5orHigher(project) && InjectionTargetQuery.isInjectionTarget(fileObject, className)) {
+        if (jndiName == null) {
             generateInjectedField(fileObject, className, simpleName, memberName);
             generateSendMailMethod(fileObject, className, memberName, null);
         } else {
