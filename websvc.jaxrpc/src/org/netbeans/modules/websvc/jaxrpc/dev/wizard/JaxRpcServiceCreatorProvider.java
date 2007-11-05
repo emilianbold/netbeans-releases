@@ -56,21 +56,17 @@ public class JaxRpcServiceCreatorProvider implements ServiceCreatorProvider {
     
     /** Creates a new instance of JaxRpcServiceCreatorProvider */
     public JaxRpcServiceCreatorProvider() {
-        System.out.println("JaxRpcServiceCreatorProvider()");
     }
     
     public ServiceCreator getServiceCreator(Project project, WizardDescriptor wiz) {
         ProjectInfo projectInfo = new ProjectInfo(project);
         int projectType = projectInfo.getProjectType();
-        
-        System.out.println("projectInfo = " + projectInfo);
      
         if (!Util.isJavaEE5orHigher(project) &&
                    (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)) {
                if ((!projectInfo.isJsr109Supported() && projectType == ProjectInfo.WEB_PROJECT_TYPE && !projectInfo.isJsr109oldSupported())) {
                    return null;
                } else {
-                   System.out.println("returning JaxRpcServiceCreator");
                    return new JaxRpcServiceCreator(project, projectInfo, wiz);
                }
         }
