@@ -232,7 +232,7 @@ introduced by support for multiple source roots. -jglick
                     </and>
                 </condition>
                 <property name="source.encoding" value="${{file.encoding}}"/>
-                <condition property="javadoc.encoding.used" value="${{javadoc.encoding}}">
+                <condition property="javadoc.encoding.used" value="${{javadoc.encodingww}}">
                     <and>
                         <isset property="javadoc.encoding"/>
                         <not>
@@ -883,6 +883,8 @@ introduced by support for multiple source roots. -jglick
                     <arg value="-d"/>
                     <arg file="${{basedir}}/${{build.generated.dir}}/src"/>
                     <arg value="-die1"/>
+                    <arg value="-compilerSourceVM ${{javac.source}}"/>
+                    <arg value="-compilerTargetVM ${{javac.target}}"/>
                     <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspcompilation.classpath}}"/>
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
@@ -910,6 +912,8 @@ introduced by support for multiple source roots. -jglick
                     <arg value="-die1"/>
                     <arg value="-jspc.files"/>
                     <arg path="${{jsp.includes}}"/>
+                    <arg value="-compilerSourceVM ${{javac.source}}"/>
+                    <arg value="-compilerTargetVM ${{javac.target}}"/>
                     <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspcompilation.classpath}}"/>
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
