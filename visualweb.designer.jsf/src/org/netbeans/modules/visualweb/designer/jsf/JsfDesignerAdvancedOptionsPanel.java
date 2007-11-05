@@ -285,6 +285,12 @@ public class JsfDesignerAdvancedOptionsPanel extends javax.swing.JPanel {
                 .add(promptForName)
                 .addContainerGap())
         );
+
+        showGrid.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.showGrid.desc")); // NOI18N
+        snapToGrid.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.snapToGrid.desc")); // NOI18N
+        rowsetInSession.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.rowsetInSession.desc")); // NOI18N
+        checkRowsetDuplicate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.checkRowsetDuplicate.desc")); // NOI18N
+        promptForName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.promptForName.desc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
