@@ -71,6 +71,7 @@ import org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -99,19 +100,11 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
     }
 
     public FileObject getLocation() {
-        FileObject root = getLocationSourceRoot();
-        if (root == null) {
-            return null;
-        }
-        FileObject metaInf = root.getFileObject("META-INF"); // NOI18N
-        if (metaInf == null || !metaInf.isFolder()) {
-            return null;
-        }
-        return metaInf;
+        return getMetaInfFolder();
     }
 
     public FileObject createLocation() throws IOException {
-        FileObject root = getLocationSourceRoot();
+        FileObject root = getFirstSourceRoot();
         if (root == null) {
             throw new IOException("There are no source roots in the project or the first source root does not exist."); // NOI18N
         }
@@ -148,18 +141,25 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
         return scopesHelper.getPersistenceScopes();
     }
 
-    private File getFirstSourceRoot() {
-        URL[] urls = project.getSourceRoots().getRootURLs();
-        if (urls.length == 0) {
-            return null;
+    private FileObject getFirstSourceRoot() {
+        for (URL url : project.getSourceRoots().getRootURLs()) {
+            FileObject fo = URLMapper.findFileObject(url);
+            if (fo != null) {
+                return fo;
+            }
         }
-        return new File(URI.create(urls[0].toExternalForm()));
+        return null;
     }
 
-    private FileObject getLocationSourceRoot() {
-        File sourceRoot = getFirstSourceRoot();
-        if (sourceRoot != null) {
-            return FileUtil.toFileObject(sourceRoot);
+    private FileObject getMetaInfFolder() {
+        for (URL url : project.getSourceRoots().getRootURLs()) {
+            FileObject fo = URLMapper.findFileObject(url);
+            if (fo != null) {
+                FileObject metaInf = fo.getFileObject("META-INF"); // NOI18N
+                if (metaInf != null && metaInf.isFolder()) {
+                    return metaInf;
+                }
+            }
         }
         return null;
     }
@@ -171,7 +171,7 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
         }
         return null;
     }
-    
+
     private EntityClassScope getEntityClassScope() {
         return entityClassScope;
     }
@@ -200,10 +200,23 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
     }
 
     private void sourcesChanged() {
+        File persistenceXmlFile = null;
+        FileObject metaInf = getMetaInfFolder();
+        if (metaInf != null) {
+            // if there is a META-INF folder, expect persistence.xml to be created there
+            File metaInfFile = FileUtil.toFile(metaInf);
+            if (metaInfFile != null) {
+                 persistenceXmlFile = new File(metaInfFile, "persistence.xml"); //NOI18N
+            }
+        } else {
+            FileObject firstSourceRoot = getFirstSourceRoot();
+            if (firstSourceRoot != null) {
+                File sourceRootFile = FileUtil.toFile(firstSourceRoot);
+                persistenceXmlFile = new File(sourceRootFile, "META-INF/persistence.xml"); // NOI18N
+            }
+        }
         synchronized (this) {
-            File sourceRootFile = getFirstSourceRoot();
-            if (sourceRootFile != null) {
-                File persistenceXmlFile = new File(sourceRootFile, "META-INF/persistence.xml"); //NOI18N
+            if (persistenceXmlFile != null) {
                 scopesHelper.changePersistenceScope(persistenceScope, persistenceXmlFile);
                 modelHelper.changePersistenceXml(persistenceXmlFile);
             } else {
