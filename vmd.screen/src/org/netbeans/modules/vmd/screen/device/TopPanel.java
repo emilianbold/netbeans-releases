@@ -236,6 +236,7 @@ public class TopPanel extends JPanel {
         }));
     }
     
+    @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D gr = (Graphics2D) g;

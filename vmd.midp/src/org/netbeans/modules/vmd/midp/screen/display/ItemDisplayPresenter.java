@@ -37,19 +37,21 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */package org.netbeans.modules.vmd.midp.screen.display;
+ */
+package org.netbeans.modules.vmd.midp.screen.display;
 
-import org.netbeans.modules.vmd.midp.screen.display.ScreenMoveArrayAcceptSuggestion;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.openide.util.Utilities;
+import org.openide.util.Exceptions;
 
 import javax.swing.*;
 import java.awt.*;
@@ -58,8 +60,6 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport;
-import org.openide.util.Exceptions;
 
 /**
  * @author David Kaspar
@@ -69,7 +69,6 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
     private JPanel panel;
     private JLabel label;
     private JComponent contentComponent;
-    private Transferable transferable;
     
     public ItemDisplayPresenter() {
         panel = new JPanel() {

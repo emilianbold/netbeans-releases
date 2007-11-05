@@ -70,8 +70,9 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
     private static final int CELL_INSETS = 2;
     private static final int DOUBLE_CELL_INSETS = CELL_INSETS * 2;
     private static final Stroke BORDER_STROKE = new BasicStroke(1, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND, 0f, new float[]{3f, 3f}, 0f);
-    private JPanel panel;
-    private static JLabel label;
+    private static JLabel fontLabel = new JLabel();
+
+    private JPanel tablePanel;
     private boolean hasModel;
     private boolean modelIsUserCode;
     private boolean drawBorders = true;
@@ -79,8 +80,7 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
     private String[][] values;
 
     public TableItemDisplayPresenter() {
-        label = new JLabel();
-        panel = new JPanel() {
+        tablePanel = new JPanel() {
 
             @Override
             public void paint(Graphics g) {
@@ -88,14 +88,14 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
                 paintTable(g);
             }
         };
-        panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(200, 40)); // TODO compute it from fontSize
-        setContentComponent(panel);
+        tablePanel.setOpaque(false);
+        tablePanel.setPreferredSize(new Dimension(200, 40)); // TODO compute it from fontSize
+        setContentComponent(tablePanel);
     }
 
     private void paintTable(Graphics g) {
-        Font headersFont = label.getFont().deriveFont(Font.BOLD);
-        Font valuesFont = label.getFont();
+        Font headersFont = fontLabel.getFont().deriveFont(Font.BOLD);
+        Font valuesFont = fontLabel.getFont();
         int cummulativeY = 0;
 
         if (modelIsUserCode) {
@@ -109,7 +109,7 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
             g.drawString(NbBundle.getMessage(TableItemDisplayPresenter.class, "DISP_empty_table_model"), CELL_INSETS, cummulativeY); // NOI18N
         } else {
             Graphics2D g2D = (Graphics2D) g;
-            Dimension oldSize = panel.getSize();
+            Dimension oldSize = tablePanel.getSize();
             final int width = oldSize.width;
             final int height = oldSize.height;
 
@@ -228,13 +228,13 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
             hasModel = false;
         }
 
-        panel.setPreferredSize(calculatePrefferedSize());
-        panel.repaint();
+        tablePanel.setPreferredSize(calculatePrefferedSize());
+        tablePanel.repaint();
     }
 
     // TODO compute 14 from fontSize
     private Dimension calculatePrefferedSize() {
-        final Dimension oldSize = panel.getPreferredSize();
+        final Dimension oldSize = tablePanel.getPreferredSize();
         if (!hasModel || values == null) {
             return oldSize;
         }
@@ -267,7 +267,7 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
 
         final int[] colWidths = new int[tableCols];
         for (int i = 0; i < tableCols; i++) {
-            colWidths[i] = panel.getSize().width / tableCols;
+            colWidths[i] = tablePanel.getSize().width / tableCols;
         }
 
         return colWidths;
@@ -287,7 +287,7 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
         } else {
             tableModelDescriptor = new ResourcePropertyEditor(SimpleTableModelCD.PROP_VALUES, tableModel);
         }
-        descriptors.add(new ScreenPropertyDescriptor(getComponent(), panel, tableModelDescriptor));
+        descriptors.add(new ScreenPropertyDescriptor(getComponent(), tablePanel, tableModelDescriptor));
         return descriptors;
     }
 }
