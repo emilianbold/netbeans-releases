@@ -46,8 +46,8 @@ made subject to such option by the copyright holder.
     <target name="release" depends="init">
         <mkdir dir="${cluster}/external/proguard"/>
         <copy file="external/notice.txt" todir="${cluster}/external/proguard"/>
-        <copy file="external/proguard4.0.1-license.txt" todir="${cluster}/external/proguard"/>
-        <copy file="external/proguard4.0.1-license-exception.txt" todir="${cluster}/external/proguard"/>
-        <copy file="external/proguard4.0.1.jar" todir="${cluster}/external/proguard"/>
+        <copy file="external/proguard3.7-license.txt" todir="${cluster}/external/proguard"/>
+        <copy file="external/proguard3.7-license-exception.txt" todir="${cluster}/external/proguard"/>
+        <copy file="external/proguard3.7.jar" todir="${cluster}/external/proguard"/>
     </target>
 </project>
