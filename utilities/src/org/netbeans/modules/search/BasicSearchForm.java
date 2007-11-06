@@ -676,7 +676,9 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         int firstEnabled = -1;
         for (Map.Entry<SearchScope, Boolean> entry : orderSearchScopes()) {
             SearchScope searchScope = entry.getKey();
-            String searchScopeInfo = searchScope.getAdditionalInfo();
+            boolean enabled = entry.getValue();
+            String searchScopeInfo = enabled ? searchScope.getAdditionalInfo()
+                                             : null;
             AbstractButton button = (searchScopeInfo == null)
                                     ? new JRadioButton()
                                     : new ButtonWithExtraInfo(searchScopeInfo);
@@ -685,7 +687,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             button.putClientProperty("searchScope", searchScope);
             button.addItemListener(buttonStateListener);
 
-            boolean enabled = entry.getValue();
             button.setEnabled(enabled);
             if (enabled) {
                 if (searchScope == preferredSearchScope) {
