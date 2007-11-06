@@ -133,7 +133,14 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
                 // related to the language.
                 LanguageRegistry.getInstance().initializeLanguageForEditor(language);
 
-                lookup = Lookups.fixed(new Integer[]{Integer.valueOf(EDITOR_KIT_ID), Integer.valueOf(INDENT_ID), Integer.valueOf(FORMAT_ID)}, new InstanceContent.Convertor<Integer, Object>() {
+                Integer[] supportedOps = null;
+                if (((DefaultLanguage)language).hasFormatter()) {
+                    supportedOps = new Integer[]{Integer.valueOf(EDITOR_KIT_ID), Integer.valueOf(INDENT_ID), Integer.valueOf(FORMAT_ID) };
+                } else {
+                    supportedOps = new Integer[]{Integer.valueOf(EDITOR_KIT_ID), Integer.valueOf(INDENT_ID) };
+                }
+                
+                lookup = Lookups.fixed(supportedOps, new InstanceContent.Convertor<Integer, Object>() {
 
                     public Object convert(Integer i) {
                         switch (i.intValue()) {

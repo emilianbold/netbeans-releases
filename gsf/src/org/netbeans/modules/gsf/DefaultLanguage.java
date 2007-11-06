@@ -410,4 +410,8 @@ public class DefaultLanguage implements Language {
     public boolean hasStructureScanner() {
         return this.structureFile != null;
     }
+    
+    public boolean hasFormatter() {
+        return this.formatterFile != null;
+    }
 }
