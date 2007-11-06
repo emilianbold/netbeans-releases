@@ -541,6 +541,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             }
 
             // set locale in faces-config.xml
+            /* Not ready yet, comment out for issue#118937, Tutorial: Currency converter fails
             final FileObject facesConfig = FileUtil.toFileObject(fileConfig);
             if (facesConfig != null) {
                 ProjectManager.mutex().postReadRequest(new Runnable() {
@@ -575,6 +576,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     }
                 }); 
             }
+            */
         }
     }
 
