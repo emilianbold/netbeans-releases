@@ -232,7 +232,7 @@ introduced by support for multiple source roots. -jglick
                     </and>
                 </condition>
                 <property name="source.encoding" value="${{file.encoding}}"/>
-                <condition property="javadoc.encoding.used" value="${{javadoc.encodingww}}">
+                <condition property="javadoc.encoding.used" value="${{javadoc.encoding}}">
                     <and>
                         <isset property="javadoc.encoding"/>
                         <not>
