@@ -230,6 +230,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 continueAfterFirstStop = false; // step into project
             }
             gdb.break_insert(GDB_TMP_BREAKPOINT, "main"); // NOI18N
+            if (Utilities.isWindows()) {
+                // WinAPI apps don't have a "main" function. Use "WinMain" if Windows.
+                gdb.break_insert(GDB_TMP_BREAKPOINT, "WinMain"); // NOI18N
+            }
             try {
                 gdb.exec_run(pae.getProfile().getArgsFlat());
             } catch (Exception ex) {
@@ -1453,7 +1457,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             String fullname = map.get("fullname"); // NOI18N
             String file = map.get("file"); // NOI18N
             String line = map.get("line"); // NOI18N
-            if (number != null && number.equals("1")) { // NOI18N
+            String func = map.get("func"); // NOI18N
+            if (number != null && ((number.equals("1")) || 
+                   (number.equals("2") && func != null && func.equals("WinMain") && Utilities.isWindows()))) {
                 firstBPfullname = fullname;
                 firstBPfile = file;
                 firstBPline = line;
