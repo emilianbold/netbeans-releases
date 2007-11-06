@@ -417,7 +417,7 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
             "\n" +
             "public class Traktor {\n" +
             "\n" +
-            "    void zetor(String par0, String par1, String par2) {\n" +
+            "    void zetor(String par0,String par3, String par1, String par2) {\n" +
             "    }\n" +
             "\n" +
             "    public void zetorBrno() {\n" +
