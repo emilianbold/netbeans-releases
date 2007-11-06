@@ -85,13 +85,10 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
-import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -1499,24 +1496,19 @@ public class UnitTab extends javax.swing.JPanel {
         }
         
         public void performerImpl () {
-            if (getLocalDownloadSupport ().selectNbmFiles ()) {
-                final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());
+            final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());
+            if (getLocalDownloadSupport ().chooseNbmFiles ()) {
                 
                 final Runnable addUpdates = new Runnable (){
                     public void run () {
                         final LocallyDownloadedTableModel downloadedTableModel = ((LocallyDownloadedTableModel) model);
                         List<UpdateUnit> empty = Collections.emptyList();
                         downloadedTableModel.setUnits(empty);
-                        final Collection<UpdateUnit> installed = downloadedTableModel.getLocalDownloadSupport ().getInstalledUpdateUnits ();
-                        downloadedTableModel.removeInstalledUnits ();
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run () {
                                 fireUpdataUnitChange();
                                 UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());                                
                                 refreshState ();
-                                if (! installed.isEmpty ())  {
-                                    showMessage (installed);
-                                }
                                 setWaitingState (false);
                             }
                         });
@@ -1528,31 +1520,6 @@ public class UnitTab extends javax.swing.JPanel {
             }
         }
         
-        void showMessage (Collection<UpdateUnit> installed) {
-            if (!installed.isEmpty ())  {
-                StringBuilder pluginNames = new StringBuilder ();
-                for (UpdateUnit updateUnit : installed) {
-                    if (pluginNames.length () > 0) {
-                        pluginNames.append (',').append (' ');//NOI18N
-                    }
-                    UpdateElement element = updateUnit.getInstalled ();
-                    if (element != null) {
-                        pluginNames.append (element.getDisplayName ());
-                    } else if (! updateUnit.getAvailableUpdates ().isEmpty ()) {
-                        pluginNames.append (updateUnit.getAvailableUpdates ().get (0).getDisplayName ());
-                    } else {
-                        pluginNames.append (updateUnit.getCodeName ());
-                    }
-                }
-                if (installed.size () == 1) {
-                    pluginNames = new StringBuilder (NbBundle.getMessage (UnitTab.class, "NotificationOneAlreadyInstalled",pluginNames.toString ()));//NOI18N
-                } else {
-                    pluginNames = new StringBuilder (NbBundle.getMessage (UnitTab.class, "NotificationMoreAlreadyInstalled",pluginNames.toString ()));//NOI18N
-                }
-                DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message (pluginNames.toString (),NotifyDescriptor.INFORMATION_MESSAGE));
-            }
-        }
-        
     }
     
     private class RemoveLocallyDownloadedAction extends RowTabAction {
@@ -1560,10 +1527,6 @@ public class UnitTab extends javax.swing.JPanel {
             super ("UnitTab_RemoveLocallyDownloadedAction",  null);
             String tooltip = NbBundle.getMessage (UnitTab.class, "UnitTab_Tooltip_RemoveAction_LOCAL");//NOI18N
             putValue (TOOL_TIP_TEXT_KEY, tooltip);
-            //String picture = "remove.png";//NOI18N
-            //StringBuilder sb = new StringBuilder ("/org/netbeans/modules/autoupdate/ui/resources/");//NOI18N
-            //sb.append (picture);
-            //putValue (SMALL_ICON, new javax.swing.ImageIcon (getClass ().getResource (sb.toString ())));
         }
         
         protected boolean isEnabled (Unit uu) {

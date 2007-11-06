@@ -42,7 +42,9 @@
 package org.netbeans.modules.autoupdate.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.table.JTableHeader;
 import org.netbeans.api.autoupdate.InstallSupport;
@@ -63,20 +65,20 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     /** Creates a new instance of InstalledTableModel */
     public LocallyDownloadedTableModel (LocalDownloadSupport localDownloadSupport) {        
         this.localDownloadSupport = localDownloadSupport;
-        getLocalDownloadSupport ().removeAll (getLocalDownloadSupport ().getInstalledUpdateUnits ());
     }
     
     public final void setUnits(final List<UpdateUnit> unused) {
-        List<UpdateUnit> units = getLocalDownloadSupport().getUpdateUnits();
+        getLocalDownloadSupport ().removeInstalledUnit ();
+        Collection<UpdateUnit> units = getLocalDownloadSupport().getUpdateUnits();
         //do not compute if not necessary
-        if (cachedUnits == null || !units.containsAll(cachedUnits) || !cachedUnits.containsAll(units)) {
-            setData(makeCategories(units));
+        if (cachedUnits == null || !units.containsAll (cachedUnits) || !cachedUnits.containsAll (units)) {
+            setData(makeCategories (new LinkedList<UpdateUnit> (units)));
             cachedUnits = new ArrayList<UpdateUnit>(units);
         }
     }
     
     void removeInstalledUnits () {
-        getLocalDownloadSupport ().removeAll (getLocalDownloadSupport ().getInstalledUpdateUnits ());
+        getLocalDownloadSupport ().removeInstalledUnit ();
         cachedUnits = null;
         setUnits (null);
     }
@@ -108,6 +110,11 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
             u.setMarked(!beforeMarked);
             if (u.isMarked() != beforeMarked) {
                 fireButtonsChange();
+                if (u.isMarked ()) {
+                   getLocalDownloadSupport ().checkUnit (u.updateUnit);
+                } else {
+                   getLocalDownloadSupport ().uncheckUnit (u.updateUnit); 
+                }
             } else {
                 assert false : u.getDisplayName();
             }
@@ -222,6 +229,15 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
         return isInstall || isSize ? false : true;
     }
 
+    @Override
+    protected Comparator<Unit> getDefaultComparator () {
+        return new Comparator<Unit> ()  {
+            public int compare (Unit o1, Unit o2) {
+                return Unit.compareDisplayNames(o1, o2);
+            }           
+        };
+    }
+    
     protected Comparator<Unit> getComparator(final Object columnIdentifier, final boolean sortAscending) {
         return new Comparator<Unit>(){
             public int compare(Unit o1, Unit o2) {

@@ -177,7 +177,8 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     public void initialize () {
         try {
             units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
-            getLocalDownloadSupport().getUpdateUnits();
+            // postpone later
+            // getLocalDownloadSupport().getUpdateUnits();
             SwingUtilities.invokeAndWait (new Runnable () {
                 public void run () {
                     refreshUnits ();
