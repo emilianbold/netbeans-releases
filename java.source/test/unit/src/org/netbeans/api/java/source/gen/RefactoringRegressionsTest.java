@@ -393,6 +393,66 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    /**
+     * http://java.netbeans.org/issues/show_bug.cgi?id=121181
+     */
+    public void test121181() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package aloisovo;\n" +
+            "\n" +
+            "public class Traktor {\n" +
+            "\n" +
+            "    void zetor(String par0, String par1, String par2) {\n" +
+            "    }\n" +
+            "\n" +
+            "    public void zetorBrno() {\n" +
+            "        zetor(\"Crystal\", null, null);\n" +
+            "    }\n" +
+            "}\n");
+        String golden =
+            "package aloisovo;\n" +
+            "\n" +
+            "public class Traktor {\n" +
+            "\n" +
+            "    void zetor(String par0, String par1, String par2) {\n" +
+            "    }\n" +
+            "\n" +
+            "    public void zetorBrno() {\n" +
+            "        zetor(\"Crystal\", null, null);\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);     
+                VariableTree var = make.Variable(
+                            make.Modifiers(Collections.<Modifier>emptySet()),
+                            "par3", 
+                            make.Identifier("String"),
+                            null
+                        );
+                MethodTree copy = make.insertMethodParameter(method, 1, var);
+                workingCopy.rewrite(method, copy);
+                
+                method = (MethodTree) clazz.getMembers().get(2);
+                ExpressionStatementTree est = (ExpressionStatementTree) method.getBody().getStatements().get(0);
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                MethodInvocationTree copyT = make.insertMethodInvocationArgument(mit, 1, make.Literal(null));
+                workingCopy.rewrite(mit, copyT);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }
