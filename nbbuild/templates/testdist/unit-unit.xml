@@ -62,7 +62,9 @@ made subject to such option by the copyright holder.
                 <path path="${extra.test.libs.dir}"/>
                <path path="${test.unit.run.cp}"/>
        </path> 
-       
+       <taskdef name="validatepath" classpath="../../../nbbuild/nbantext.jar" classname="org.netbeans.nbbuild.ValidatePath"/>
+
+       <validatepath pathref="test.cp" failedproperty="wrong.classpath"/>
     </target>
     
     <target name="init-data" if="exists.test.data">
@@ -77,7 +79,7 @@ made subject to such option by the copyright holder.
      <target name="run-test" depends="init-unit,init-platform-properties,init-data,do-test,fail-test" description="Run unit tests">   
          
      </target>
-     <target name="do-test">
+     <target name="do-test" unless="wrong.classpath">
         <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}" tempdir="${test.unit.results.dir}">
             <batchtest todir="${test.unit.results.dir}">
                 <fileset dir="${test.unit.classes.dir}">

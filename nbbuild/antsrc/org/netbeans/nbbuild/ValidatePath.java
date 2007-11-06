@@ -50,7 +50,7 @@ import org.apache.tools.ant.types.*;
  * The task is used for validation runtime class in binary tests distribution.
  */
 public class ValidatePath extends Task {
-    
+    private String failedProperty;
     private Path path;
     public void setPath(Path p) {
         if (path == null) {
@@ -68,12 +68,22 @@ public class ValidatePath extends Task {
     public void setPathRef(Reference r) {
         createPath().setRefid(r);
     }
+
+    public void setFailedProperty(String fp) {
+        failedProperty = fp;
+    }
     
     public void execute() throws BuildException {
      String paths[] = path.list();
      for (int i = 0 ; i < paths.length ; i++) {
          if (!new File(paths[i]).exists()) {
-             throw new BuildException("File " + paths[i] + " doesn't exists.");
+             String msg = "File " + paths[i] + " doesn't exists.";
+             if (failedProperty == null) {
+                 throw new BuildException(msg);
+             } else {
+                 getProject().log(msg, Project.MSG_WARN);
+             }
+             getProject().setProperty(failedProperty, "true");
          }
      }
     }
