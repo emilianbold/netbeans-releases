@@ -452,24 +452,34 @@ class InstallPanelVisual extends javax.swing.JPanel {
         }
         return false;
     }
-    
+
     private boolean isHomeValid() {
         String homeDir = jTextFieldHomeDir.getText();
         if (homeDir.length() == 0) {
             errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_SpecifyHomeDir");
             return false;
-        } 
+        }
         if (!new File(homeDir, "bin/bootstrap.jar").exists()) { // NOI18N
             errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_InvalidHomeDir");
             return false;
         }
+
+        // check the lib directory
+        File libDir = TomcatVersion.TOMCAT_60.equals(tomcatVersion)
+            ? new File(homeDir, "lib") // NOI18N
+            : new File(homeDir, "common" + File.separator + "lib"); // NOI18N
+        if (!(libDir.exists() && libDir.isDirectory())) {
+            errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_InvalidHomeDir");
+            return false;
+        }
+
         if ((!jCheckBoxShared.isEnabled() || !jCheckBoxShared.isSelected()) && !isServerXmlValid(new File(homeDir, SERVER_XML))) {
             errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_CorruptedHomeServerXml");
             return false;
         }
         return true;
     }
-    
+
     /** Is it Tomcat with the JWSDP installed? Does it contain the jwsdp-shared folder? */
     private boolean isJWSDP() {
         if (isHomeValid()) {
