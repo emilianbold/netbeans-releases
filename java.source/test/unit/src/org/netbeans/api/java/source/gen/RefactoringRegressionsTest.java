@@ -421,7 +421,7 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "\n" +
             "    public void zetorBrno() {\n" +
-            "        zetor(\"Crystal\", null, null);\n" +
+            "        zetor(\"Crystal\", null, null,null);\n" +
             "    }\n" +
             "}\n";
         JavaSource src = getJavaSource(testFile);
@@ -475,6 +475,7 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
             "public class Traktor {\n" +
             "\n" +
             "    public void zetorBrno() {\n" +
+            "        String par3;\n" +
             "        return null;\n" +
             "    }\n" +
             "}\n";
