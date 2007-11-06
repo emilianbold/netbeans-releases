@@ -767,13 +767,9 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         for (int i = 0; i < indexes.length; i++) {
             LexerUtilsConstants.appendTokenInfo(sb, tokenList, i,
                     tokenHierarchy(), false, 0);
-            // Get rid of javac bug for incremental compilation on 1.5 
-            @SuppressWarnings("unchecked")
-            TokenList<T> tl = (TokenList<T>)tokenList;
-            @SuppressWarnings("unchecked")
-            Language<T> language = (Language<T>)languagePath.language(i);
-            EmbeddedTokenList<?> etl = EmbeddingContainer.embeddedTokenList(tl, indexes[i], language);
-            tokenList = etl;
+            // Assign language to variable to get rid of javac bug for incremental compilation on 1.5 
+            Language<?> language = languagePath.language(i);
+            tokenList = EmbeddingContainer.embeddedTokenList(tokenList, indexes[i], language);
         }
         return sb.toString();
     }
