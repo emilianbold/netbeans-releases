@@ -435,20 +435,24 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             if (INCLUDE_NONLIBPLUGINS) {
                 lib = f;
             }
-            if (lib.exists()) {
-                // TODO - preindex via version lookup somehow?
-                try {
-                    URL url = lib.toURI().toURL();
-                    urls.add(url);
-                    // TODO - find versions for the plugins?
-                    //Map<String, File> nameMap = gemFiles.get(name);
-                    //if (nameMap != null) {
-                    //    String version = nameMap.keySet().iterator().next();
-                    //    RubyInstallation.getInstance().setGemRoot(url, name+ "-" + version);
-                    //}
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
+            if (!lib.exists()) {
+                lib = new File(f, "app");
+                if (!lib.exists()) {
+                    continue;
                 }
+            }
+            // TODO - preindex via version lookup somehow?
+            try {
+                URL url = lib.toURI().toURL();
+                urls.add(url);
+                // TODO - find versions for the plugins?
+                //Map<String, File> nameMap = gemFiles.get(name);
+                //if (nameMap != null) {
+                //    String version = nameMap.keySet().iterator().next();
+                //    RubyInstallation.getInstance().setGemRoot(url, name+ "-" + version);
+                //}
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         
