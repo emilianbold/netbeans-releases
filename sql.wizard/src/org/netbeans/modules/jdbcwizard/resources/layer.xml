@@ -53,5 +53,15 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="SOA_SQL"/>
             </file>
         </folder>
+        <folder name="SOA_BPEL">
+            <file name="untitled.wsdl" url="untitled.wsdl">
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.jdbcwizard.wizards.JDBCCollaborationWizard.newTemplateIterator"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/jdbcwizard/resources/template.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jdbcwizard.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/jdbcwizard/resources/SourceTable.png"/>
+                <attr name="templateCategory" stringvalue="SOA_BPEL"/>
+            </file>
+        </folder>
     </folder>
 </filesystem>
