@@ -46,6 +46,7 @@ made subject to such option by the copyright holder.
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="jmunit4cldc10.xml" url="jmunit4cldc10.xml"/>
+            <file name="jmunit4cldc11.xml" url="jmunit4cldc11.xml"/>
         </folder>
     </folder>
     <folder name="Templates">
