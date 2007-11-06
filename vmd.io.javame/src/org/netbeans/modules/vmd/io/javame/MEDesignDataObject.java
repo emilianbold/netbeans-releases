@@ -67,15 +67,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class MEDesignDataObject extends J2MEDataObject implements DataObjectInterface, FileChangeListener {
 
 //    private FileObject javaFile;
-    private FileObject designFile;
+//    private FileObject designFile;
     private MEDesignEditorSupport editorSupport;
     private AtomicBoolean dirty = new AtomicBoolean (false);
 
     public MEDesignDataObject (FileObject javaFile, FileObject designFile, MultiFileLoader loader) throws DataObjectExistsException {
         super (javaFile, loader);
         ((MEDesignDataLoader) loader).createSecondaryEntry (this, designFile);
+        //System.out.print(designFile.toString());
 //        this.javaFile = javaFile;
-        this.designFile = designFile;
+        //this.designFile = designFile;
 
         editorSupport = new MEDesignEditorSupport (this);
 
@@ -103,9 +104,9 @@ public final class MEDesignDataObject extends J2MEDataObject implements DataObje
 //    }
 
     public FileObject getDesignFile () {
-        return designFile;
+        return FileUtil.findBrother(getPrimaryFile(), "vmd"); //NOI18N
     }
-
+    
     public void discardAllEditorSupportEdits () {
         editorSupport.discardAllEdits ();
     }
@@ -167,7 +168,7 @@ public final class MEDesignDataObject extends J2MEDataObject implements DataObje
             public void run () {
                 dirty.set (false);
                 NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation (
-                        NbBundle.getMessage (MEDesignDataObject.class, "MSG_ConfirmReload", designFile.getPath ()), // NOI18N
+                        NbBundle.getMessage (MEDesignDataObject.class, "MSG_ConfirmReload", getDesignFile().getPath ()), // NOI18N
                         NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
                 if (DialogDisplayer.getDefault ().notify (confirmation) != NotifyDescriptor.YES_OPTION)
                     return;
