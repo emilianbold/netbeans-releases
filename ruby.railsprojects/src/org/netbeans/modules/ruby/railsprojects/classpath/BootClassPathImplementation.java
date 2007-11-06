@@ -69,7 +69,8 @@ import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 final class BootClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
-
+    // Flag for controlling last-minute workaround for issue #120231
+    private static final boolean INCLUDE_NONLIBPLUGINS = Boolean.getBoolean("ruby.include_nonlib_plugins");
     
     private static final Pattern GEM_EXCLUDE_FILTER;
     private static final Pattern GEM_INCLUDE_FILTER;
@@ -431,6 +432,13 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 
         for (File f : plugins.listFiles()) {
             File lib = new File(f, "lib");
+            if (!lib.exists()) {
+                if (INCLUDE_NONLIBPLUGINS) {
+                    lib = f;
+                } else {
+                    continue;
+                }
+            }
             if (lib.exists()) {
                 // TODO - preindex via version lookup somehow?
                 try {
