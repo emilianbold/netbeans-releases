@@ -72,9 +72,9 @@ made subject to such option by the copyright holder.
     <information>
         <title>$${APPLICATION.TITLE}</title>
         <vendor>$${APPLICATION.VENDOR}</vendor>
+        <homepage href="$${APPLICATION.HOMEPAGE}"/>
         <description>$${APPLICATION.DESC}</description>
         <description kind="short">$${APPLICATION.DESC.SHORT}</description>
-        <homepage href="$${APPLICATION.HOMEPAGE}"/>
 <!--$${JNLP.ICONS}-->
 <!--$${JNLP.OFFLINE.ALLOWED}-->
     </information>
