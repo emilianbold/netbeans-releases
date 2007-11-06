@@ -371,9 +371,21 @@ public class Reformatter implements ReformatTask {
                 }
                 blankLines(cs.getBlankLinesAfterImports());
             }
+            boolean semiRead = false;
             for (Tree typeDecl : node.getTypeDecls()) {
+                if (semiRead && typeDecl.getKind() == Tree.Kind.EMPTY_STATEMENT)
+                    continue;
                 blankLines(cs.getBlankLinesBeforeClass());
                 scan(typeDecl, p);
+                int index = tokens.index();
+                int c = col;
+                Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+                if (accept(SEMICOLON) == SEMICOLON) {
+                    semiRead = true;
+                } else {
+                    rollback(index, col, d);
+                    semiRead = false;
+                }
                 blankLines(cs.getBlankLinesAfterClass());
             }
             return true;
@@ -489,6 +501,7 @@ public class Reformatter implements ReformatTask {
                 blankLines(cs.getBlankLinesAfterClassHeader());
                 JavaTokenId id = null;
                 boolean first = true;
+                boolean semiRead = false;
                 for (Tree member : node.getMembers()) {
                     if (!isSynthetic(getCurrentPath().getCompilationUnit(), member)) {
                         switch(member.getKind()) {
@@ -514,7 +527,14 @@ public class Reformatter implements ReformatTask {
                                 }
                                 break;
                             case METHOD:
+                                if (!first)
+                                   blankLines(cs.getBlankLinesBeforeMethods());
+                                scan(member, p);
+                                blankLines(cs.getBlankLinesAfterMethods());
+                                break;
                             case BLOCK:
+                                if (semiRead && !((BlockTree)member).isStatic() && ((BlockTree)member).getStatements().isEmpty())
+                                    continue;
                                 if (!first)
                                    blankLines(cs.getBlankLinesBeforeMethods());
                                 scan(member, p);
@@ -524,6 +544,15 @@ public class Reformatter implements ReformatTask {
                                 if (!first)
                                     blankLines(cs.getBlankLinesBeforeClass());
                                 scan(member, p);
+                                int index = tokens.index();
+                                int c = col;
+                                Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+                                if (accept(SEMICOLON) == SEMICOLON) {
+                                    semiRead = true;
+                                } else {
+                                    rollback(index, col, d);
+                                    semiRead = false;
+                                }
                                 blankLines(cs.getBlankLinesAfterClass());
                                 break;
                         }
