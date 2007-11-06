@@ -135,11 +135,11 @@ public class HintsTestBase extends NbTestCase {
                 }
             },
             new LanguageProvider() {
-                public Language<? extends TokenId> findLanguage(String mimePath) {
+                public Language<?> findLanguage(String mimePath) {
                     return JavaTokenId.language();
                 }
                 
-                public LanguageEmbedding<?> findLanguageEmbedding(Token<? extends TokenId> token,
+                public LanguageEmbedding<?> findLanguageEmbedding(Token<?> token,
                         LanguagePath languagePath,
                         InputAttributes inputAttributes) {
                     return null;
