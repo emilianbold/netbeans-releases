@@ -64,7 +64,6 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.JPDAStep;
@@ -72,7 +71,6 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ExpressionPool.Expression;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.JPDAStepImpl;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -95,7 +93,6 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
 
     private JPDADebuggerImpl debugger;
     private Session session;
-    private LineBreakpoint breakpoint;
     private ActionsManager lastActionsManager;
     private SourcePath sourcePath;
     
@@ -145,12 +142,6 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
             (EditorContextBridge.getContext().getCurrentLineNumber () >= 0) && 
             (EditorContextBridge.getContext().getCurrentURL ().endsWith (".java"))
         );
-        if ( (debugger.getState () != debugger.STATE_RUNNING) &&
-             (breakpoint != null)
-        ) {
-            DebuggerManager.getDebuggerManager ().removeBreakpoint (breakpoint);
-            breakpoint = null;
-        }
         if (debugger.getState () == debugger.STATE_DISCONNECTED) 
             destroy ();
     }
@@ -160,10 +151,6 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
     }
      
     public void doAction (Object action) {
-        if (breakpoint != null) {
-            DebuggerManager.getDebuggerManager ().removeBreakpoint (breakpoint);
-            breakpoint = null;
-        }
         final String[] methodPtr = new String[1];
         final String[] urlPtr = new String[1];
         final String[] classNamePtr = new String[1];
@@ -208,7 +195,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         } else {
             final ClassLoadUnloadBreakpoint cbrkp = ClassLoadUnloadBreakpoint.create(className, false, ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
             cbrkp.setHidden(true);
-            cbrkp.setSuspend(LineBreakpoint.SUSPEND_NONE);
+            cbrkp.setSuspend(ClassLoadUnloadBreakpoint.SUSPEND_NONE);
             cbrkp.addJPDABreakpointListener(new JPDABreakpointListener() {
 
                 public void breakpointReached(JPDABreakpointEvent event) {
@@ -283,6 +270,8 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
             debugger.getOperator().register(brReq, new Executor() {
 
                 public boolean exec(Event event) {
+                    Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
+                        fine("Calling location reached, tracing for "+methodName+"()");
                     vm.eventRequestManager().deleteEventRequest(brReq);
                     debugger.getOperator().unregister(brReq);
                     traceLineForMethod(methodName, line);
