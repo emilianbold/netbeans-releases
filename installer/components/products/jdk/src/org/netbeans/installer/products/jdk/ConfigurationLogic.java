@@ -217,6 +217,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 " > " + logFile.getAbsolutePath() + " 2>&1"  :
                 EMPTY_STRING;
             
+            SystemUtils.correctFilesPermissions(installer);
+            
             String [] commands = new String [] {
                 "/bin/sh", "-c",
                 installer.getAbsolutePath() +
