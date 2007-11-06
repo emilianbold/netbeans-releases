@@ -183,6 +183,12 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
         Token<?> token = ts.token();
         TokenId id = token.id();
 
+        if (id == GsfTokenId.IDENTIFIER) {
+            if (token.length() == 1 && id == RubyTokenId.IDENTIFIER && token.text().toString().equals(",")) {
+                return OffsetRange.NONE;
+            }
+        }
+
         // TODO: Tokens.SUPER, Tokens.THIS, Tokens.SELF ...
         if ((id == GsfTokenId.IDENTIFIER) || (id == GsfTokenId.CLASS_VAR) ||
                 (id == GsfTokenId.GLOBAL_VAR) || (id == GsfTokenId.CONSTANT) ||
