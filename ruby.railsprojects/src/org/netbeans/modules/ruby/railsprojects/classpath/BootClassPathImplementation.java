@@ -432,12 +432,8 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 
         for (File f : plugins.listFiles()) {
             File lib = new File(f, "lib");
-            if (!lib.exists()) {
-                if (INCLUDE_NONLIBPLUGINS) {
-                    lib = f;
-                } else {
-                    continue;
-                }
+            if (INCLUDE_NONLIBPLUGINS) {
+                lib = f;
             }
             if (lib.exists()) {
                 // TODO - preindex via version lookup somehow?
