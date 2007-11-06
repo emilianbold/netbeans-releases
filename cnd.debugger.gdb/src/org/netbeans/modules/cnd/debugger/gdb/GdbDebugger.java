@@ -1458,8 +1458,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             String file = map.get("file"); // NOI18N
             String line = map.get("line"); // NOI18N
             String func = map.get("func"); // NOI18N
-            if (number != null && ((number.equals("1")) || 
-                   (number.equals("2") && func != null && func.equals("WinMain") && Utilities.isWindows()))) {
+            if (number != null && ((number.equals("1")) || // NOI18N
+                   (number.equals("2") && func != null && func.equals("WinMain") && Utilities.isWindows()))) { // NOI18N
                 firstBPfullname = fullname;
                 firstBPfile = file;
                 firstBPline = line;
