@@ -401,6 +401,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             EventRequestManager erm = vm.eventRequestManager();
             EventRequest eventRequest = event.request();
             erm.deleteEventRequest(eventRequest);
+            debuggerImpl.getOperator().unregister(eventRequest);
             if (eventRequest instanceof StepRequest) {
                 SingleThreadedStepWatch.stepRequestDeleted((StepRequest) eventRequest);
             }
@@ -541,7 +542,19 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 StepRequest.STEP_LINE,
                 depth
             );
-            stepRequest.addCountFilter(1);
+            if (logger.isLoggable(Level.FINE)) {
+                try {
+                    logger.fine("Can not stop at "+tr.frame(0)+", smart-stepping. Submitting step = "+stepRequest+"; depth = "+depth);
+                } catch (IncompatibleThreadStateException ex) {
+                    logger.throwing(getClass().getName(), "shouldNotStopHere", ex);
+                }
+            }
+            String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
+            for (int i = 0; i < exclusionPatterns.length; i++) {
+                stepRequest.addClassExclusionFilter(exclusionPatterns [i]);
+                logger.finer("   add pattern: "+exclusionPatterns[i]);
+            }
+            
             debuggerImpl.getOperator ().register (stepRequest, this);
             stepRequest.setSuspendPolicy (debugger.getSuspend ());
             try {
