@@ -175,6 +175,7 @@ public class HgCommand {
     private final static String HG_CREATE_NEW_BRANCH_ERR = "abort: push creates new remote branches!"; // NOI18N
     private final static String HG_HEADS_CREATED_ERR = "(+1 heads)"; // NOI18N
     private final static String HG_NO_HG_CMD_FOUND_ERR = "hg: not found";
+    private final static String HG_ARG_LIST_TOO_LONG_ERR = "Arg list too long";
             
     private final static String HG_HEADS_CMD = "heads"; // NOI18N
     
@@ -1859,9 +1860,14 @@ public class HgCommand {
             // calling func and raise exceptions there if needed
             Mercurial.LOG.log(Level.SEVERE, "execEnv():  execEnv(): IOException " + e); // NOI18N
              
-            // Handle low level failure when you cannot find Mercurial: "hg: not found"
-            if (isErrorNoHg(e.getMessage()) || isErrorCannotRun(e.getMessage())){
-                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(NbBundle.getMessage(HgCommand.class, "MSG_NO_HG_CMD_ERR"));              
+            // Handle low level Mercurial failures
+            if (isErrorArgsTooLong(e.getMessage())){
+                assert(command.size()> 2);
+                throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_ARG_LIST_TOO_LONG_ERR", 
+                            command.get(1), command.size() -2 ));
+            }else if (isErrorNoHg(e.getMessage()) || isErrorCannotRun(e.getMessage())){
+                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(HgCommand.class, "MSG_NO_HG_CMD_ERR"));              
                 DialogDisplayer.getDefault().notifyLater(msg);
                 throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_NO_HG_CMD_ERR"));
             }else{
@@ -1941,6 +1947,9 @@ public class HgCommand {
     
     private static boolean isErrorNoHg(String msg) {
         return msg.indexOf(HG_NO_HG_CMD_FOUND_ERR) > -1; // NOI18N
+    }
+    private static boolean isErrorArgsTooLong(String msg) {
+        return msg.indexOf(HG_ARG_LIST_TOO_LONG_ERR) > -1; // NOI18N
     }
     
     private static boolean isErrorCannotRun(String msg) {
