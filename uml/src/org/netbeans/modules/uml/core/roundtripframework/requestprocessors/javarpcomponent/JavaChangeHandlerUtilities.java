@@ -45,6 +45,7 @@ package org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javar
 
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameterableElement;
 import org.netbeans.modules.uml.core.support.Debug;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import org.netbeans.modules.uml.common.generics.ETPairT;
@@ -3916,6 +3917,14 @@ public class JavaChangeHandlerUtilities
                     IClassifier pBaseClass,
                     IClassifier pDerivedClass)
     {
+	return buildExistingRedefinitions2(pBaseClass, pDerivedClass, null);
+    }
+
+    public ETPairT < ETList < IClassifier >, ETList < IOperation >> buildExistingRedefinitions2(
+                    IClassifier pBaseClass,
+                    IClassifier pDerivedClass,
+		    HashSet<IClassifier> analyzedSet)
+    {
         ETList < IClassifier > ppDerivedClasses = new ETArrayList < IClassifier > ();
         ETList < IOperation > ppExistingRedefs = new ETArrayList < IOperation >();
 
@@ -3932,6 +3941,15 @@ public class JavaChangeHandlerUtilities
                     IClassifier pItem = ppDerivedClasses.get(idx);
                     if (pItem != null)
                     {
+			if (analyzedSet != null) 
+			{
+			    if (analyzedSet.contains(pItem)) 
+			    {
+				continue;
+			    }
+			    analyzedSet.add(pItem);
+			}
+
                         ETList < IOperation > newPairs =
                             discoverRedefinitions(pBaseClass, pItem);
                         

@@ -5109,9 +5109,11 @@ public class UMLParsingIntegrator
     
     private void analyzeOperationRedefinition()
     {
-        JavaChangeHandlerUtilities util = new JavaChangeHandlerUtilities();
+        JavaChangeHandlerUtilities util = new JavaChangeHandlerUtilities();	
         IClassifier sub = null;
         IClassifier sup = null;
+	HashMap<IClassifier, HashSet<IClassifier>> analyzedPairs 
+	    = new HashMap<IClassifier, HashSet<IClassifier>>();
         
         for (Iterator it = redef.iterator(); it.hasNext();)
         {
@@ -5120,14 +5122,26 @@ public class UMLParsingIntegrator
             {
                 sub = (IClassifier)((IDependency)obj).getClient();
                 sup = (IClassifier)((IDependency)obj).getSupplier();   
-                util.buildExistingRedefinitions2(sup, sub);  
             }
             else if (obj instanceof IGeneralization)
             {
                 sub = (IClassifier)((IGeneralization)obj).getSpecific();
                 sup = (IClassifier)((IGeneralization)obj).getGeneral();
-                util.buildExistingRedefinitions2(sup, sub);  
-            }        
+            }   
+	    else 
+	    {
+		continue;
+	    }
+	    if (sup != null) 
+	    {
+		HashSet<IClassifier> analyzedSet = analyzedPairs.get(sup);
+		if (analyzedSet == null) 
+		{
+		    analyzedSet = new HashSet<IClassifier>();
+		    analyzedPairs.put(sup, analyzedSet);
+		}		
+		util.buildExistingRedefinitions2(sup, sub, analyzedSet);      
+	    }
         }
     }
     
