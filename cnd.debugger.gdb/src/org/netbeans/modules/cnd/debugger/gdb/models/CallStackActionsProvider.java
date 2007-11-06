@@ -139,8 +139,13 @@ public class CallStackActionsProvider implements NodeActionsProvider {
 	if (k < 2 || frame == currentCallStackFrame) {
 	    return;
 	}
+        if (!debugger.isValidStackFrame(frame)) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                       "ERR_InvalidCallStackFrame"))); // NOI18N
+            return;
+        }
 	for (i = 1; i < k; i++) {
-            CallStackFrame sf = stack.get(i);
+            CallStackFrame sf = stack.get(i - 1);
             if (!debugger.isValidStackFrame(sf)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                            "ERR_InvalidCallStackFrame"))); // NOI18N
