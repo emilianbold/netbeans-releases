@@ -77,9 +77,9 @@ public class AcceptanceTestCase extends JellyTestCase {
         "createNewSchema",
                 "createSchemaComponents",
                 "customizeSchema",
-               // "checkSourceCRC",
-               // "refactorComplexType",
-               // "applyDesignPattern"
+                "checkSourceCRC",
+                "refactorComplexType",
+                "applyDesignPattern"
     };
     
     static final String TEST_SCHEMA_NAME = "testSchema";
