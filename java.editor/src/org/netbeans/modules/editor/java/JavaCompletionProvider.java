@@ -3393,6 +3393,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                 switch(tree.getKind()) {
                     case VARIABLE:
                         TypeMirror type = controller.getTrees().getTypeMirror(new TreePath(path, ((VariableTree)tree).getType()));
+                        if (type == null)
+                            return null;
                         while(dim-- > 0) {
                             if (type.getKind() == TypeKind.ARRAY)
                                 type = ((ArrayType)type).getComponentType();
@@ -3402,6 +3404,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                         return Collections.singleton(type);
                     case ASSIGNMENT:
                         type = controller.getTrees().getTypeMirror(new TreePath(path, ((AssignmentTree)tree).getVariable()));
+                        if (type == null)
+                            return null;
                         TreePath parentPath = path.getParentPath();
                         if (parentPath != null && parentPath.getLeaf().getKind() == Tree.Kind.ANNOTATION && type.getKind() == TypeKind.EXECUTABLE) {
                             type = ((ExecutableType)type).getReturnType();
