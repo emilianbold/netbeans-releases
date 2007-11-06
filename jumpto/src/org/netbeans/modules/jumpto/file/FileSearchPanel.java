@@ -173,7 +173,9 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
                          RegexpFileFilter.onlyContainsWildcards(fileNameTextField.getText().trim())) {
                         setListPanelContent(null, false);
                     }
-                    else if (!stillSearching) {
+                    else if (stillSearching) {
+                        setListPanelContent( NbBundle.getMessage(FileSearchPanel.class, "TXT_SearchingOtherProjects"), true ); // NOI18N
+                    } else {
                         setListPanelContent( NbBundle.getMessage(FileSearchPanel.class, "TXT_NoTypesFound"), false ); // NOI18N
                     }
                 }
