@@ -75,6 +75,11 @@ class ButtonWithExtraInfo extends JRadioButton {
             lblInfo = new JLabel(extraInfo);
             lblStart = new JLabel("(");                                 //NOI18N
             lblEnd = new JLabel(")");                                   //NOI18N
+
+            final boolean enabled = isEnabled();
+            lblInfo.setEnabled(enabled);
+            lblStart.setEnabled(enabled);
+            lblEnd.setEnabled(enabled);
         }
     }
 
