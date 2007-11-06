@@ -68,7 +68,10 @@ import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.modules.gsf.GsfHtmlFormatter;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsfret.editor.completion.GsfCompletionProvider;
+import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -94,6 +97,14 @@ public class GoToSupport {
     }
     
     private static String perform(final Document doc, final int offset, final boolean tooltip) {
+        if (SourceUtils.isScanInProgress()) {
+            if (!tooltip) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GsfCompletionProvider.class, "scanning-in-progress")); //NOI18N
+                Toolkit.getDefaultToolkit().beep();
+            }
+            return null;
+        }
+        
         if (tooltip && PopupUtil.isPopupShowing()) {
             return null;
         }
