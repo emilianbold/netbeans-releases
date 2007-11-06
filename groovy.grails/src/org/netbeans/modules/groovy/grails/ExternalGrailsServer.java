@@ -60,8 +60,16 @@ public class ExternalGrailsServer implements GrailsServer{
     
     public boolean serverConfigured () {
         Settings settings = Settings.getInstance();
+        
+        if(settings == null)
+            return false;
 
-        return checkForGrailsExecutable(new File(settings.getGrailsBase()));
+        String grailsBase = settings.getGrailsBase();
+        
+        if(grailsBase == null)
+            return false;
+                
+        return checkForGrailsExecutable(new File(grailsBase));
         }
     
     
