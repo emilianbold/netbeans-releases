@@ -47,7 +47,8 @@ made subject to such option by the copyright holder.
     <target name="unit" description="Run all unit tests">
         <subant antfile="xtest-all-unit.xml"  buildpath="unit">
             <property name="test.required.modules" value="${test.required.modules}"/>
-        </subant>    
+        </subant>
+	<ant antfile="xtest-all-unit.xml" target="junit-format"/>
     </target>
     <target name="qa-functional" description="Run all qa-functional tests">
         <subant antfile="xtest-all-qa-functional.xml" buildpath="qa-functional"/>
