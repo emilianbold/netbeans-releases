@@ -62,7 +62,7 @@ import org.openide.windows.TopComponent;
 import org.openidex.search.FileObjectFilter;
 import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchInfoFactory;
-import static org.openide.windows.TopComponent.Registry.PROP_CURRENT_NODES;
+import static org.openide.windows.TopComponent.Registry.PROP_ACTIVATED_NODES;
 
 /**
  * Defines search scope across selected nodes.
@@ -167,7 +167,7 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
     }
 
     public synchronized void propertyChange(PropertyChangeEvent e) {
-        if (PROP_CURRENT_NODES.equals(e.getPropertyName())) {
+        if (PROP_ACTIVATED_NODES.equals(e.getPropertyName())) {
             updateIsApplicable();
         }
     }
