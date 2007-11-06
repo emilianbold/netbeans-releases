@@ -436,10 +436,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 lib = f;
             }
             if (!lib.exists()) {
-                lib = new File(f, "app");
-                if (!lib.exists()) {
-                    continue;
-                }
+                continue;
             }
             // TODO - preindex via version lookup somehow?
             try {
