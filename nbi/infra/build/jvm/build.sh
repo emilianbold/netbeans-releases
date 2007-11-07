@@ -57,6 +57,6 @@ ant ${OPTIONS}  -f ${DIRNAME}/build.xml\
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
-     echo "ERROR: $ERROR_CODE - NBI installers build failed"
+     echo "ERROR: $ERROR_CODE - Bundle JVM creation build failed"
      exit $ERROR_CODE;
 fi
