@@ -74,8 +74,7 @@ public final class MEDesignDataObject extends J2MEDataObject implements DataObje
     public MEDesignDataObject (FileObject javaFile, FileObject designFile, MultiFileLoader loader) throws DataObjectExistsException {
         super (javaFile, loader);
         ((MEDesignDataLoader) loader).createSecondaryEntry (this, designFile);
-        //System.out.print(designFile.toString());
-//        this.javaFile = javaFile;
+        //this.javaFile = javaFile;
         //this.designFile = designFile;
 
         editorSupport = new MEDesignEditorSupport (this);
