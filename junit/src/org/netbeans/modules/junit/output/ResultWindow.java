@@ -161,18 +161,21 @@ public final class ResultWindow extends TopComponent {
     
     /**
      */
+    @Override
     protected String preferredID() {
         return ID;
     }
     
     /**
      */
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(getClass());
     }
     
     /**
      */
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
