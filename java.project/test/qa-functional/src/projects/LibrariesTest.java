@@ -179,7 +179,7 @@ public class LibrariesTest extends JellyTestCase {
         librariesUrls.put("jaxws20", set);
         set = new TreeSet<String>();
         set.add("jar:nbinst:///docs/org-netbeans-libs-javacapi.zip!/");
-        set.add("jar:nbinst:///modules/ext/javac-api.jar!/");
+        set.add("jar:nbinst:///modules/ext/javac-api-nb-7.0-b07.jar!/");
         librariesUrls.put("javac-api", set);
         set = new TreeSet<String>();
         set.add("jar:nbinst:///docs/javaee5-doc-api.zip!/");

@@ -18,8 +18,8 @@
                 <package>javax.tools</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/javac-api.jar</runtime-relative-path>
-                <binary-origin>external/javac-api.jar</binary-origin>
+                <runtime-relative-path>ext/javac-api-nb-7.0-b07.jar</runtime-relative-path>
+                <binary-origin>external/javac-api-nb-7.0-b07.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

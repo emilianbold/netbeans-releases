@@ -149,7 +149,7 @@ public class BytecodeTest extends NbTestCase {
             ||  "ini4j.jar".equals(f.getName())
             ||  "svnClientAdapter.jar".equals(f.getName())
             ||  "lucene-core-2.1.0.jar".equals(f.getName())
-            ||  "javac-impl.jar".equals(f.getName())
+            ||  "javac-impl-nb-7.0-b07.jar".equals(f.getName())
             ||  "java-parser.jar".equals(f.getName())) 
                 continue;
             
@@ -370,7 +370,7 @@ public class BytecodeTest extends NbTestCase {
             if (f.getName().endsWith("servlet-2.2.jar") 
                     || f.getName().endsWith("servlet2.5-jsp2.1-api.jar")
                     || f.getName().endsWith("javaee.jar")
-                    || f.getName().endsWith("javac-impl.jar")
+                    || f.getName().endsWith("javac-impl-nb-7.0-b07.jar")
                     || f.getName().endsWith("jaxb-impl.jar")
                     || f.getName().endsWith("jaxb-xjc.jar")
                     || f.getName().endsWith("saaj-impl.jar")

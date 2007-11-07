@@ -64,10 +64,10 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
             String binaryRootS = binaryRoot.toExternalForm();
             URL result = null;
             if (binaryRootS.startsWith("jar:file:")) { // NOI18N
-                if (binaryRootS.endsWith("/java/source/javacapi/external/javac-api.jar!/")) { // NOI18N
-                    result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/java/source/javacapi/external/javac-api.jar!/".length()) + "/retouche/Jsr199/src"); // NOI18N
-                } else if (binaryRootS.endsWith("/java/source/javacimpl/external/javac-impl.jar!/")) { // NOI18N
-                    result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/java/source/javacimpl/external/javac-impl.jar!/".length()) + "/retouche/Jsr199/src"); // NOI18N
+                if (binaryRootS.endsWith("/java/source/javacapi/external/javac-api-nb-7.0-b07.jar!/")) { // NOI18N
+                    result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/java/source/javacapi/external/javac-api-nb-7.0-b07.jar!/".length()) + "/retouche/Jsr199/src"); // NOI18N
+                } else if (binaryRootS.endsWith("/java/source/javacimpl/external/javac-impl-nb-7.0-b07.jar!/")) { // NOI18N
+                    result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/java/source/javacimpl/external/javac-impl-nb-7.0-b07.jar!/".length()) + "/retouche/Jsr199/src"); // NOI18N
                 }
                 final FileObject resultFO = result != null ? URLMapper.findFileObject(result) : null;
                 if (resultFO != null) {

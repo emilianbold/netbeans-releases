@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/libs/javacapi/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/javac-api.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/javac-api-nb-7.0-b07.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
