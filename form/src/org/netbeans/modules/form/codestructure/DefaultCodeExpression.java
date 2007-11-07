@@ -92,7 +92,7 @@ final class DefaultCodeExpression implements CodeExpression {
             return;
 
         CodeExpression registerParent = null;
-        List registerParams = null;
+        List<CodeExpression> registerParams = null;
 
         if (oldOrigin != null) {
             if (newOrigin != null) { // changing one origin to another
@@ -132,7 +132,7 @@ final class DefaultCodeExpression implements CodeExpression {
                     }
                     if (j == oldParams.length) {
                         if (registerParams == null)
-                            registerParams = new ArrayList();
+                            registerParams = new ArrayList<CodeExpression>();
                         registerParams.add(newPar);
                     }
                 }
@@ -154,8 +154,7 @@ final class DefaultCodeExpression implements CodeExpression {
 
                 if (registerParams != null)
                     for (int i=0, n=registerParams.size(); i < n; i++) {
-                        CodeExpression param = (CodeExpression)
-                                               registerParams.get(i);
+                        CodeExpression param = registerParams.get(i);
                         param.addUsingObject(this,
                                              UsedCodeObject.USING,
                                              CodeExpression.class);

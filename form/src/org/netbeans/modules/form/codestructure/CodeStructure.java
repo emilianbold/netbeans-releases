@@ -64,9 +64,9 @@ public class CodeStructure {
 
     private static UsingCodeObject globalUsingObject;
 
-    private Map namesToVariables = new HashMap(50);
-    private Map expressionsToVariables = new HashMap(50);
-    private Set externalVariables = null;    
+    private Map<String,Variable> namesToVariables = new HashMap<String,Variable>(50);
+    private Map<Object/*?*/,Variable> expressionsToVariables = new HashMap<Object,Variable>(50);
+    private Set<String> externalVariables = null;    
 
     private int defaultVariableType = -1;
 
@@ -75,8 +75,8 @@ public class CodeStructure {
     private int oldestMark = 0;
     private int lastUndone = -1;
     private int undoRedoHardLimit = 10000;
-    private Map undoMap;
-    private Map redoMap;    
+    private Map<Integer,CodeStructureChange> undoMap;
+    private Map<Integer,CodeStructureChange> redoMap;    
     
     private FormJavaSource javaSource;
 	    
@@ -170,13 +170,13 @@ public class CodeStructure {
     public static CodeExpression[] filterExpressions(Iterator it,
                                                      Object originMetaObject)
     {
-        List list = new ArrayList();
+        List<CodeExpression> list = new ArrayList<CodeExpression>();
         while (it.hasNext()) {
             CodeExpression exp = (CodeExpression) it.next();
             if (originMetaObject.equals(exp.getOrigin().getMetaObject()))
                 list.add(exp);
         }
-        return (CodeExpression[]) list.toArray(new CodeExpression[list.size()]);
+        return list.toArray(new CodeExpression[list.size()]);
     }
 
     // --------
@@ -224,13 +224,13 @@ public class CodeStructure {
     public static CodeStatement[] filterStatements(Iterator it,
                                                    Object metaObject)
     {
-        List list = new ArrayList();
+        List<CodeStatement> list = new ArrayList<CodeStatement>();
         while (it.hasNext()) {
             CodeStatement statement = (CodeStatement) it.next();
             if (metaObject.equals(statement.getMetaObject()))
                 list.add(statement);
         }
-        return (CodeStatement[]) list.toArray(new CodeStatement[list.size()]);
+        return list.toArray(new CodeStatement[list.size()]);
     }
 
     // --------
@@ -425,7 +425,7 @@ public class CodeStructure {
 
     /** Renames variable of name oldName to newName. */
     public boolean renameVariable(String oldName, String newName) {
-        Variable var = (Variable) namesToVariables.get(oldName);
+        Variable var = namesToVariables.get(oldName);
         if (var == null || newName == null
                 || newName.equals(var.getName())
                 || namesToVariables.get(newName) != null)
@@ -447,7 +447,7 @@ public class CodeStructure {
 
     /** Releases variable of given name. */
     public CodeVariable releaseVariable(String name) {
-        Variable var = (Variable) namesToVariables.remove(name);	
+        Variable var = namesToVariables.remove(name);	
         if (var == null)
             return null; // there is no such variable
 
@@ -567,7 +567,7 @@ public class CodeStructure {
         if (register) {
             createVariable(CodeVariable.LOCAL, type, name);    
             if(externalVariables == null) {
-                externalVariables = new HashSet();
+                externalVariables = new HashSet<String>();
             }	
             externalVariables.add(name);
         }
@@ -607,7 +607,7 @@ public class CodeStructure {
                       + variable.getName());
         }
 
-        Variable prevVar = (Variable) expressionsToVariables.get(expression);
+        Variable prevVar = expressionsToVariables.get(expression);
         if (prevVar != null && prevVar != variable)
             removeExpressionFromVariable(expression);
 
@@ -630,7 +630,7 @@ public class CodeStructure {
         if (expression == null)
             return;
 
-        Variable var = (Variable) expressionsToVariables.remove(expression);
+        Variable var = expressionsToVariables.remove(expression);
         if (var == null)
             return;
 
@@ -651,12 +651,12 @@ public class CodeStructure {
 
     /** Returns variable of given name. */
     public CodeVariable getVariable(String name) {
-        return (Variable) namesToVariables.get(name);
+        return namesToVariables.get(name);
     }
 
     /** Returns variable of an expression. */
     public CodeVariable getVariable(CodeExpression expression) {
-        return (Variable) expressionsToVariables.get(expression);
+        return expressionsToVariables.get(expression);
     }
 
     /** Returns an iterator of variables of given criterions. */
@@ -725,8 +725,8 @@ public class CodeStructure {
     public void setUndoRedoRecording(boolean record) {
         undoRedoRecording = record;
         if (record && undoMap == null) {
-            undoMap = new HashMap(500);
-            redoMap = new HashMap(100);
+            undoMap = new HashMap<Integer,CodeStructureChange>(500);
+            redoMap = new HashMap<Integer,CodeStructureChange>(100);
         }
     }
 
@@ -796,9 +796,8 @@ public class CodeStructure {
         undoRedoRecording = false;
 
         while (currentMark > lastMark) {
-            Object key = new Integer(--currentMark);
-            CodeStructureChange change = (CodeStructureChange)
-                                         undoMap.remove(key);
+            Integer key = new Integer(--currentMark);
+            CodeStructureChange change = undoMap.remove(key);
             if (change != null) {
                 change.undo();
                 redoMap.put(key, change);
@@ -827,9 +826,8 @@ public class CodeStructure {
         undoRedoRecording = false;
 
         while (lastUndone < toMark) {
-            Object key = new Integer(lastUndone++);
-            CodeStructureChange change = (CodeStructureChange)
-                                         redoMap.remove(key);
+            Integer key = new Integer(lastUndone++);
+            CodeStructureChange change = redoMap.remove(key);
             if (change != null) {
                 change.redo();
                 undoMap.put(key, change);
@@ -852,7 +850,7 @@ public class CodeStructure {
         private Class declaredType;
         private String declaredTypeParameters;
         private String name;
-        private Map expressionsMap;
+        private Map<CodeExpression,CodeStatement> expressionsMap;
         private CodeStatement declarationStatement;
 
         Variable(int type, Class declaredType, String declaredTypeParameters, String name) {
@@ -895,8 +893,7 @@ public class CodeStructure {
         }
 
         public CodeStatement getAssignment(CodeExpression expression) {
-            return expressionsMap != null ?
-                   (CodeStatement) expressionsMap.get(expression) : null;
+            return expressionsMap != null ? expressionsMap.get(expression) : null;
         }
 
         // -------
@@ -905,13 +902,13 @@ public class CodeStructure {
                                CodeStatement statement)
         {
             if (expressionsMap == null)
-                expressionsMap = new HashMap();
+                expressionsMap = new HashMap<CodeExpression,CodeStatement>();
             expressionsMap.put(expression, statement);
         }
 
         CodeStatement removeCodeExpression(CodeExpression expression) {
             if (expressionsMap != null)
-                return (CodeStatement) expressionsMap.remove(expression);
+                return expressionsMap.remove(expression);
             return null;
         }
     }
@@ -992,7 +989,7 @@ public class CodeStructure {
                     namesToVariables.put(oldName, variable);
                     break;
                 case VARIABLE_RELEASE:
-                    Iterator it = variable.expressionsMap.values().iterator();
+                    Iterator<CodeStatement> it = variable.expressionsMap.values().iterator();
                     while (it.hasNext())
                         expressionsToVariables.put(it.next(), variable);
                     namesToVariables.put(variable.name, variable);
