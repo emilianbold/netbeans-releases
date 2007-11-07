@@ -116,7 +116,10 @@ public abstract class J2eeModuleProvider {
      * try to ping or start the server.
      */
     public final ServerDebugInfo getServerDebugInfo () {
-        ServerInstance si = ServerRegistry.getInstance ().getServerInstance (getServerInstanceID ());
+        ServerInstance si = ServerRegistry.getInstance ().getServerInstance (getServerInstanceID());
+        if (si == null) {
+            return null;
+        }
         StartServer ss = si.getStartServer();
         if (ss == null) {
             return null;
@@ -124,28 +127,25 @@ public abstract class J2eeModuleProvider {
         // AS8.1 needs to have server running to get accurate debug info, and also need a non-null target 
         // But getting targets from AS8.1 require start server which would hang UI, so avoid start server
         // Note: for debug info after deploy, server should already start.
-        if (! si.isRunningLastCheck() && ss.needsStartForTargetList()) {
+        if (!si.isRunningLastCheck() && ss.needsStartForTargetList()) {
             if (ss.isAlsoTargetServer(null)) {
                 return ss.getDebugInfo(null);
             } else {
                 return null;
             }
         }
-        
+
         Target target = null;
-        if (si != null) {
-            ServerTarget[] sts = si.getTargets();
-            for (int i=0; i<sts.length; i++) {
-                if (si.getStartServer().isAlsoTargetServer(sts[i].getTarget())) {
-                    target = sts[i].getTarget();
-                }
+        ServerTarget[] sts = si.getTargets();
+        for (int i = 0; i < sts.length; i++) {
+            if (si.getStartServer().isAlsoTargetServer(sts[i].getTarget())) {
+                target = sts[i].getTarget();
             }
-            if (target == null && sts.length > 0) {
-                target = sts[0].getTarget();
-            }
-            return si.getStartServer().getDebugInfo(target);
         }
-        return null;
+        if (target == null && sts.length > 0) {
+            target = sts[0].getTarget();
+        }
+        return si.getStartServer().getDebugInfo(target);
     }
     
     /**
