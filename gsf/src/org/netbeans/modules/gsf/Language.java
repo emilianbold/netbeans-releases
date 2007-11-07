@@ -84,6 +84,10 @@ public interface Language {
      * own. For example, if you still want GSF "Go To Declaration" functionality,
      * you need to register the GsfHyperlinkProvider.
      * The ruby/rhtml/ module provides an example of this.
+     * <p>
+     * NOTE: Code folding doesn't work until you enable code folding for your
+     * editor kit; see GsfEditorKitFactory's reference to CODE_FOLDING_ENABLE for
+     * an example.
      */
     boolean useCustomEditorKit();
 
