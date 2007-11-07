@@ -82,7 +82,7 @@ public final class LocalHistoryOptionsController extends OptionsPanelController 
 
     public boolean isChanged() {       
         String ttl = Long.toString(LocalHistorySettings.getInstance().getTTL());        
-        return ttl.equals(panel.daysTextField.getText());
+        return !ttl.equals(panel.daysTextField.getText());
     }
 
     public JComponent getComponent(Lookup masterLookup) {
