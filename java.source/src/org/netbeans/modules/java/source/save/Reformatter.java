@@ -559,6 +559,8 @@ public class Reformatter implements ReformatTask {
                         first = false;
                     }
                 }
+                if (lastBlankLinesTokenIndex < 0)
+                    newline();
             }
             indent = halfIndent;
             Diff diff = diffs.isEmpty() ? null : diffs.getFirst();
@@ -1595,6 +1597,11 @@ public class Reformatter implements ReformatTask {
                     afterNewline = false;
                     spaces(cs.spaceWithinBraces() ? 1 : 0, true);
                     wrapList(cs.wrapArrayInit(), cs.alignMultilineArrayInit(), inits);
+                    int index = tokens.index();
+                    int c = col;
+                    Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+                    if (accept(COMMA) == null)
+                        rollback(index, c, d);
                     indent -= indentSize;
                     if (afterNewline)
                         newline();
