@@ -50,6 +50,7 @@ public class CardLayoutBeanInfo extends BISupport {
         super("cardLayout", java.awt.CardLayout.class); // NOI18N
     }
 
+    @Override
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {
         PropertyDescriptor[] pds = new PropertyDescriptor[] {
             createRW(CardLayout.class, "hgap"), // NOI18N

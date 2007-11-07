@@ -54,6 +54,7 @@ abstract class MenuItemBeanInfo extends MenuComponentBeanInfo {
     }
 
     /** @return Propertydescriptors */
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         PropertyDescriptor[] inh = super.getPropertyDescriptors();
         PropertyDescriptor[] desc = new PropertyDescriptor[inh.length + 3];

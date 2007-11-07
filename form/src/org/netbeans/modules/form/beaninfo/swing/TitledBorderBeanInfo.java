@@ -50,6 +50,7 @@ public class TitledBorderBeanInfo extends BISupport {
         super("titledBorder", javax.swing.border.TitledBorder.class); // NOI18N
     }
 
+    @Override
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {
         PropertyDescriptor[] pds = new PropertyDescriptor[] {
             createRW(TitledBorder.class, "border"), // NOI18N

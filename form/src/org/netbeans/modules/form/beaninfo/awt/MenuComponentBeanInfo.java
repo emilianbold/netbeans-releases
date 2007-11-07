@@ -54,6 +54,7 @@ abstract class MenuComponentBeanInfo extends SimpleBeanInfo {
     }
 
     /** @return Propertydescriptors */
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
             return new PropertyDescriptor[] {

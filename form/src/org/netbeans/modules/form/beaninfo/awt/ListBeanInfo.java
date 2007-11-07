@@ -56,6 +56,7 @@ public class ListBeanInfo extends ComponentBeanInfo.Support {
     }
 
     /** @return Propertydescriptors */
+    @Override
     protected PropertyDescriptor[] createPDs() throws IntrospectionException {
         return new PropertyDescriptor[] {
             new PropertyDescriptor("multipleMode", List.class), // NOI18N

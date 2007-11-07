@@ -50,6 +50,7 @@ public class MatteBorderBeanInfo extends BISupport {
         super("matteBorder", javax.swing.border.MatteBorder.class); // NOI18N
     }
 
+    @Override
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {
         return new PropertyDescriptor[] {
             createRO(MatteBorder.class, "borderInsets"), // NOI18N

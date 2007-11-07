@@ -57,6 +57,7 @@ public class ComponentBeanInfo extends SimpleBeanInfo {
     }
 
     /** @return Propertydescriptors */
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
             return new PropertyDescriptor[] {
@@ -82,6 +83,7 @@ public class ComponentBeanInfo extends SimpleBeanInfo {
             this.beanClass = beanClass;
         }
 
+        @Override
         public BeanDescriptor getBeanDescriptor() {
             return new BeanDescriptor(beanClass);
         }
@@ -89,16 +91,19 @@ public class ComponentBeanInfo extends SimpleBeanInfo {
         /**
         * Return the icon
         */
+        @Override
         public Image getIcon(int type) {
             if (iconName == null) return null;
             return Utilities.loadImage("org/netbeans/modules/form/beaninfo/awt/" + iconName + ".gif"); // NOI18N
         }
 
+        @Override
         public BeanInfo[] getAdditionalBeanInfo() {
             return new BeanInfo[] { new ComponentBeanInfo() };
         }
 
         /** @return Propertydescriptors */
+        @Override
         public PropertyDescriptor[] getPropertyDescriptors() {
             try {
                 return createPDs();

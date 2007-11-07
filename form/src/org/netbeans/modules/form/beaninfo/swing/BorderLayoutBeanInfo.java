@@ -50,6 +50,7 @@ public class BorderLayoutBeanInfo extends BISupport {
         super("borderLayout", java.awt.BorderLayout.class); // NOI18N
     }
 
+    @Override
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {
         return new PropertyDescriptor[] {
             createRW(BorderLayout.class, "hgap"), // NOI18N

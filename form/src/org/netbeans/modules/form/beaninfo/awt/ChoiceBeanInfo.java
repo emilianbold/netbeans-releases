@@ -55,6 +55,7 @@ public class ChoiceBeanInfo extends ComponentBeanInfo.Support {
     }
 
     /** @return Propertydescriptors */
+    @Override
     protected PropertyDescriptor[] createPDs() throws IntrospectionException {
         return new PropertyDescriptor[] {
             new PropertyDescriptor("selectedObjects", Choice.class, "getSelectedObjects", null), // NOI18N

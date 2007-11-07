@@ -54,12 +54,14 @@ public class TextAreaBeanInfo extends ComponentBeanInfo.Support {
         super("textarea", java.awt.TextArea.class); // NOI18N
     }
 
+    @Override
     public BeanInfo[] getAdditionalBeanInfo() {
         return new BeanInfo[] { new TextComponentBeanInfo(), new ComponentBeanInfo() };
     }
 
 
     /** @return Propertydescriptors */
+    @Override
     public PropertyDescriptor[] createPDs() throws IntrospectionException {
         return new PropertyDescriptor[] {
             new PropertyDescriptor("rows", TextArea.class), // NOI18N

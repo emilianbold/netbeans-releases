@@ -50,6 +50,7 @@ public class FlowLayoutBeanInfo extends BISupport {
         super("flowLayout", java.awt.FlowLayout.class); // NOI18N
     }
 
+    @Override
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {
         PropertyDescriptor[] pds = new PropertyDescriptor[] {
             createRW(FlowLayout.class, "alignment"), // NOI18N

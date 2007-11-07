@@ -58,6 +58,7 @@ public class ScrollbarBeanInfo extends ComponentBeanInfo.Support {
     }
 
     /** @return Propertydescriptors */
+    @Override
     protected PropertyDescriptor[] createPDs() throws IntrospectionException {
         PropertyDescriptor[] pds = new PropertyDescriptor[] {
             new PropertyDescriptor("unitIncrement", Scrollbar.class), // NOI18N
@@ -77,6 +78,7 @@ public class ScrollbarBeanInfo extends ComponentBeanInfo.Support {
         String[] tags;
         
         /** @return tags */
+        @Override
         public synchronized String[] getTags() {
             if (tags == null) {
                 ResourceBundle rb = NbBundle.getBundle(ScrollbarBeanInfo.class);
@@ -88,6 +90,7 @@ public class ScrollbarBeanInfo extends ComponentBeanInfo.Support {
             return tags;
         }
 
+        @Override
         public void setAsText(String s) {
             Integer i;
             getTags();
@@ -96,12 +99,14 @@ public class ScrollbarBeanInfo extends ComponentBeanInfo.Support {
             setValue(i);
         }
 
+        @Override
         public String getAsText() {
             int i = ((Integer) getValue()).intValue();
             getTags();
             return i == Scrollbar.VERTICAL ? tags[1] : tags[0];
         }
 
+        @Override
         public String getJavaInitializationString() {
             int i = ((Integer) getValue()).intValue();
             return i == Scrollbar.VERTICAL ? "java.awt.Scrollbar.VERTICAL" : "java.awt.Scrollbar.HORIZONTAL"; // NOI18N

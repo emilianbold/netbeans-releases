@@ -50,6 +50,7 @@ public class BevelBorderBeanInfo extends BISupport {
         super("bevelBorder", javax.swing.border.BevelBorder.class); // NOI18N
     }
 
+    @Override
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {
         PropertyDescriptor[] pds = new PropertyDescriptor[] {
             createRO(BevelBorder.class, "bevelType"), // NOI18N

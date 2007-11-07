@@ -50,6 +50,7 @@ public class CompoundBorderBeanInfo extends BISupport {
         super("compoundBorder", javax.swing.border.CompoundBorder.class); // NOI18N
     }
 
+    @Override
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {
         return new PropertyDescriptor[] {
             createRO(CompoundBorder.class, "outsideBorder"), // NOI18N

@@ -50,6 +50,7 @@ public class GridLayoutBeanInfo extends BISupport {
         super("gridLayout", java.awt.GridLayout.class); // NOI18N
     }
 
+    @Override
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {
         return new PropertyDescriptor[] {
             createRW(GridLayout.class, "hgap"), // NOI18N

@@ -50,10 +50,12 @@ import java.beans.*;
 
 public class JDesktopPaneBeanInfo extends SimpleBeanInfo {
 
+    @Override
     public BeanDescriptor getBeanDescriptor() {
         return new BeanDescriptor(javax.swing.JDesktopPane.class);
     }
 
+    @Override
     public java.awt.Image getIcon(int type) {
         if (type == ICON_COLOR_32x32 || type == ICON_MONO_32x32)
             return org.openide.util.Utilities.loadImage(

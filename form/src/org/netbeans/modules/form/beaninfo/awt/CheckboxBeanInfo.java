@@ -55,6 +55,7 @@ public class CheckboxBeanInfo extends ComponentBeanInfo.Support {
     }
 
     /** @return Propertydescriptors */
+    @Override
     protected PropertyDescriptor[] createPDs() throws IntrospectionException {
         return new PropertyDescriptor[] {
             new PropertyDescriptor("state", Checkbox.class), // NOI18N

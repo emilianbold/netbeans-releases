@@ -54,11 +54,13 @@ public class TextFieldBeanInfo extends ComponentBeanInfo.Support {
         super("textfield", java.awt.TextField.class); // NOI18N
     }
 
+    @Override
     public BeanInfo[] getAdditionalBeanInfo() {
         return new BeanInfo[] { new TextComponentBeanInfo(), new ComponentBeanInfo() };
     }
 
     /** @return Propertydescriptors */
+    @Override
     public PropertyDescriptor[] createPDs() throws IntrospectionException {
         return new PropertyDescriptor[] {
             new PropertyDescriptor("columns", TextField.class), // NOI18N

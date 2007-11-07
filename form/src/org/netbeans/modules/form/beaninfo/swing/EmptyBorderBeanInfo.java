@@ -50,6 +50,7 @@ public class EmptyBorderBeanInfo extends BISupport {
         super("emptyBorder", javax.swing.border.EmptyBorder.class); // NOI18N
     }
 
+    @Override
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {
         return new PropertyDescriptor[] {
             createRO(EmptyBorder.class, "borderInsets"), // NOI18N

@@ -55,6 +55,7 @@ class TextComponentBeanInfo extends ComponentBeanInfo.Support {
     }
 
     /** @return Propertydescriptors */
+    @Override
     public PropertyDescriptor[] createPDs() throws IntrospectionException {
         return new PropertyDescriptor[] {
             new PropertyDescriptor("selectionStart", java.awt.TextComponent.class), // NOI18N

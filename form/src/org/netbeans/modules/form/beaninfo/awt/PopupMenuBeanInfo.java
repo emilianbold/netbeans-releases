@@ -51,10 +51,12 @@ import org.openide.util.Utilities;
 */
 public class PopupMenuBeanInfo extends MenuItemBeanInfo {
 
+    @Override
     public BeanDescriptor getBeanDescriptor() {
         return new BeanDescriptor(java.awt.PopupMenu.class);
     }
 
+    @Override
     public Image getIcon(int type) {
         return Utilities.loadImage("org/netbeans/modules/form/beaninfo/awt/popupmenu.gif"); // NOI18N
     }

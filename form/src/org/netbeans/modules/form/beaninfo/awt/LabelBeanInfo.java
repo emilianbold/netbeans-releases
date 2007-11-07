@@ -58,6 +58,7 @@ public class LabelBeanInfo extends ComponentBeanInfo.Support {
     }
 
     /** @return Propertydescriptors */
+    @Override
     protected PropertyDescriptor[] createPDs() throws IntrospectionException {
         PropertyDescriptor[] pds = new PropertyDescriptor[] {
             new PropertyDescriptor("alignment", Label.class), // NOI18N
@@ -71,6 +72,7 @@ public class LabelBeanInfo extends ComponentBeanInfo.Support {
         String[] tags;
 
         /** @return tags */
+        @Override
         public synchronized String[] getTags() {
             if (tags == null) {
                 tags = new String[] {
@@ -82,6 +84,7 @@ public class LabelBeanInfo extends ComponentBeanInfo.Support {
             return tags;
         }
 
+        @Override
         public void setAsText(String s) {
             Integer i;
             getTags();
@@ -91,12 +94,14 @@ public class LabelBeanInfo extends ComponentBeanInfo.Support {
             setValue(i);
         }
 
+        @Override
         public String getAsText() {
             int i = ((Integer) getValue()).intValue();
             getTags();
             return tags[i == java.awt.Label.CENTER ? 1 : (i == java.awt.Label.LEFT ? 0 : 2)];
         }
 
+        @Override
         public String getJavaInitializationString () {
             int i = ((Integer) getValue()).intValue();
             switch (i) {

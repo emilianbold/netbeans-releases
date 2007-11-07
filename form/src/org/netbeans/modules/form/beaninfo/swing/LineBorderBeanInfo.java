@@ -50,6 +50,7 @@ public class LineBorderBeanInfo extends BISupport {
         super("lineBorder", javax.swing.border.LineBorder.class); // NOI18N
     }
 
+    @Override
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {
         return new PropertyDescriptor[] {
             createRO(LineBorder.class, "lineColor"), // NOI18N

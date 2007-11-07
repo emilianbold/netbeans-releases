@@ -51,10 +51,12 @@ import org.openide.util.Utilities;
 */
 public class MenuBarBeanInfo extends MenuComponentBeanInfo {
 
+    @Override
     public BeanDescriptor getBeanDescriptor() {
         return new BeanDescriptor(java.awt.MenuBar.class);
     }
 
+    @Override
     public Image getIcon(int type) {
         return Utilities.loadImage("org/netbeans/modules/form/beaninfo/awt/menubar.gif"); // NOI18N
     }

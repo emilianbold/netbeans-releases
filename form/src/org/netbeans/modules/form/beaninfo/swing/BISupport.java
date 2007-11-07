@@ -63,10 +63,12 @@ abstract class BISupport extends SimpleBeanInfo {
         this.beanClass = beanClass;
     }
 
+    @Override
     public BeanDescriptor getBeanDescriptor() {
         return new BeanDescriptor(beanClass);
     }
 
+    @Override
     public synchronized PropertyDescriptor[] getPropertyDescriptors() {
         if (pds == null) {
             try {
@@ -79,6 +81,7 @@ abstract class BISupport extends SimpleBeanInfo {
     }
 
     
+    @Override
     public Image getIcon(int type) {
         if (type == ICON_COLOR_32x32 || type == ICON_MONO_32x32)
             return Utilities.loadImage("org/netbeans/modules/form/beaninfo/swing/" + icon + "32.gif"); // NOI18N
@@ -138,11 +141,13 @@ abstract class BISupport extends SimpleBeanInfo {
             this.tagKeys = tagKeys;
         }
         
+        @Override
         public String[] getTags() {
             if (tags == null) createTags();
             return tags;
         }
 
+        @Override
         public String getAsText() {
             Object valObj = getValue();
             if (valObj instanceof Integer) {
@@ -156,6 +161,7 @@ abstract class BISupport extends SimpleBeanInfo {
             return null;
         }
 
+        @Override
         public void setAsText(String str) {
             if (tags == null) createTags();
 
@@ -172,6 +178,7 @@ abstract class BISupport extends SimpleBeanInfo {
                 setValue(new Integer(value));
         }
 
+        @Override
         public String getJavaInitializationString() {
             Object valObj = getValue();
             if (valObj instanceof Integer) {

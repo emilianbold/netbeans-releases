@@ -51,6 +51,7 @@ public class EtchedBorderBeanInfo extends BISupport {
         super("etchedBorder", javax.swing.border.EtchedBorder.class); // NOI18N
     }
 
+    @Override
     protected PropertyDescriptor[] createPropertyDescriptors() throws IntrospectionException {
         PropertyDescriptor[] pds = new PropertyDescriptor[] {
             createRO(EtchedBorder.class, "etchType"), // NOI18N
