@@ -233,7 +233,7 @@ public class LayoutSupportRegistry {
         for (Iterator it=map.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry en = (Map.Entry) it.next();
             String className = (String) en.getKey();
-            Class keyClass = loadClass(className);
+            Class<?> keyClass = loadClass(className);
             if (keyClass != null && keyClass.isAssignableFrom(subClass))
                 return (String) en.getValue();
         }

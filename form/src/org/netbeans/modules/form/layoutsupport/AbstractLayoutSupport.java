@@ -491,7 +491,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
         if (isDedicated())
             return false;
 
-        Class layoutClass = getSupportedClass();
+        Class<?> layoutClass = getSupportedClass();
         LayoutManager lm = defaultContainerDelegate.getLayout();
 
         if (layoutClass == null)
@@ -1180,7 +1180,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * layout. (The list contains instances of LayoutConstraints).
      * @return list of internally stored layout constraints of components
      */
-    protected final java.util.List getConstraintsList() {
+    protected final java.util.List<LayoutConstraints> getConstraintsList() {
         return componentConstraints;
     }
 

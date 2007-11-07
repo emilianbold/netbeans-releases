@@ -75,13 +75,13 @@ class MetaLayout extends RADComponent {
     }
 
     @Override
-    protected void createPropertySets(java.util.List propSets) {
+    protected void createPropertySets(java.util.List<Node.PropertySet> propSets) {
         super.createPropertySets(propSets);
 
         // RADComponent provides also Code Generation properties for which
         // we have no use here (yet) - so we remove them now
         for (int i=0, n=propSets.size(); i < n; i++) {
-            Node.PropertySet propSet = (Node.PropertySet)propSets.get(i);
+            Node.PropertySet propSet = propSets.get(i);
             if (!"properties".equals(propSet.getName()) // NOI18N
                     && !"properties2".equals(propSet.getName())) { // NOI18N
                 propSets.remove(i);

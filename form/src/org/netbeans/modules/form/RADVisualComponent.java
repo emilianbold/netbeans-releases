@@ -208,7 +208,8 @@ public class RADVisualComponent extends RADComponent {
     // ---------------
     // Properties
 
-    protected void createPropertySets(List propSets) {
+    @Override
+    protected void createPropertySets(List<Node.PropertySet> propSets) {
         super.createPropertySets(propSets);
 
         if (constraintsProperties == null)
