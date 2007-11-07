@@ -30,7 +30,7 @@ TOKEN:key: ( [^"\n" "\r" " " "\t" ":"]* ":"):<AFTER_KEY>
 <AFTER_KEY>:TOKEN:whitespace:( [" " "\t"]* ["\n" "\r"]):<DEFAULT>
 <AFTER_KEY>:TOKEN:comment:( [" " "\t"]* "#" [^"\n" "\r"]*):<DEFAULT>
 
-IMPORT:php: {
+IMPORT:ruby: {
     mimeType:"text/x-ruby";
     start:( "<%" ("=")? );
     end:( "%>" );
