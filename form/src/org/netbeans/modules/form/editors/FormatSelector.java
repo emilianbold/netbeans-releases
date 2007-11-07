@@ -891,18 +891,18 @@ public class FormatSelector {
          */
         public String getFormat() {
             if (format != null) return format;
-            String format = null;
+            String fmt = null;
             if (formatter instanceof MaskFormatter) {
-                format = ((MaskFormatter)formatter).getMask();
+                fmt = ((MaskFormatter)formatter).getMask();
             } else if (formatter instanceof InternationalFormatter) {
                 Format f = ((InternationalFormatter)formatter).getFormat();
                 if (f instanceof DecimalFormat) {
-                    format = ((DecimalFormat)f).toPattern();
+                    fmt = ((DecimalFormat)f).toPattern();
                 } else if (f instanceof SimpleDateFormat) {
-                    format = ((SimpleDateFormat)f).toPattern();
+                    fmt = ((SimpleDateFormat)f).toPattern();
                 }
             }
-            return format;
+            return fmt;
         }
 
         /**
