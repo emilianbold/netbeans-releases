@@ -358,8 +358,9 @@ class ImportImageWizard extends WizardDescriptor {
         }
 
         public void storeSettings(Object settings) {
-            if (cpfChooser != null)
-                ((ImportImageWizard)wizard).targetFolder = cpfChooser.getSelectedFile();
+            if (cpfChooser != null) {
+                wizard.targetFolder = cpfChooser.getSelectedFile();
+            }
         }
 
         public boolean isValid() {
