@@ -308,7 +308,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         
         private NbiTextPane textPane;
         private NbiTextPane textScrollPane;
-        //private NbiScrollPane scrollPane;
+        private NbiScrollPane scrollPane;
         private NbiButton customizeButton;
         private NbiLabel installationSizeLabel;
         
@@ -522,9 +522,10 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             textScrollPane.setBackground(Color.WHITE);
             
             // scrollPane ////////////////////////////////////////////////////
-            //scrollPane = new NbiScrollPane(textScrollPane);
-            //scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-            //scrollPane.setBorder(new EmptyBorder(new Insets(0, 0, 0, 0)));
+            scrollPane = new NbiScrollPane(textScrollPane);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);                        
+            scrollPane.setViewportBorder(new EmptyBorder(new Insets(0, 0, 0, 0)));     
+            scrollPane.setBorder(new EmptyBorder(new Insets(0, 0, 0, 0)));
             
             // customizeButton //////////////////////////////////////////////////////
             customizeButton = new NbiButton();
@@ -563,25 +564,26 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     GridBagConstraints.VERTICAL,          // fill
                     new Insets(0, 0, 0, 0),           // padding
                     0, 0));                           // padx, pady - ???
+            //textPane.setBorder(new LineBorder(Color.GREEN));
             add(textPane, new GridBagConstraints(
                     1, dy++,                             // x, y
                     3, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,        // anchor
                     GridBagConstraints.HORIZONTAL,          // fill
-                    new Insets(11, 11, 0, 11),        // padding
+                    new Insets(11, 11, 11, 11),        // padding
                     0, 0));                           // padx, pady - ???
             NbiTextPane separatorPane =  new NbiTextPane();
             BundleType type = BundleType.getType(
                     System.getProperty(WELCOME_PAGE_TYPE_PROPERTY));
             if(!type.equals(BundleType.JAVAEE) && !type.equals(BundleType.JAVAEE_JDK)) {
-                add(/*scrollPane*/textScrollPane, new GridBagConstraints(
+                add(scrollPane, new GridBagConstraints(
                         1, dy++,                           // x, y
                         3, 1,                              // width, height
                         1.0, 10.0,                         // weight-x, weight-y
                         GridBagConstraints.LINE_START,     // anchor
                         GridBagConstraints.BOTH,           // fill
-                        new Insets(0, 11, 11, 11),         // padding
+                        new Insets(0, 11, 11, 11),            // padding
                         0, 0));                            // padx, pady - ???
             }else {
                 for (RegistryNode node: registryNodes) {
@@ -623,7 +625,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                                 
                                 //chBox.setPreferredSize(new Dimension(chBox.getPreferredSize().width,
                                 //        chBox.getPreferredSize().height-2));
-                                chBox.setBorder(new EmptyBorder(0,0,0,0));
+                                chBox.setBorder(new EmptyBorder(0,0,0,0));                               
                                 add(chBox,new GridBagConstraints(
                                         1, dy++,                             // x, y
                                         3, 1,                             // width, height
