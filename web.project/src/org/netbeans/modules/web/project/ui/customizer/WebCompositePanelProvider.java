@@ -50,6 +50,7 @@ import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -89,43 +90,43 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
                     SOURCES,
                     bundle.getString("LBL_Config_Sources"), //NOI18N
                     null,
-                    null);
+                    (Category[])null);
         } else if (FRAMEWORKS.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     FRAMEWORKS,
                     bundle.getString( "LBL_Config_Frameworks" ), // NOI18N
                     null,
-                    null );
+                    (Category[])null );
         } else if (LIBRARIES.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     LIBRARIES,
                     bundle.getString( "LBL_Config_Libraries" ), // NOI18N
                     null,
-                    null );
+                    (Category[])null );
         } else if (BUILD.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     BUILD,
                     bundle.getString( "LBL_Config_Build" ), // NOI18N
                     null,
-                    null);
+                    (Category[])null);
         } else if (WAR.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     WAR,
                     bundle.getString( "LBL_Config_War" ), // NOI18N
                     null,
-                    null );
+                    (Category[])null );
         } else if (JAVADOC.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     JAVADOC,
                     bundle.getString( "LBL_Config_Javadoc" ), // NOI18N
                     null,
-                    null );
+                    (Category[])null );
         } else if (RUN.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     RUN,
                     bundle.getString( "LBL_Config_Run" ), // NOI18N
                     null,
-                    null );
+                    (Category[])null );
         } else if (WEBSERVICESCATEGORY.equals(name) && showWebServicesCategory(
                 (WebProjectProperties)context.lookup(WebProjectProperties.class))) {
             ProjectCustomizer.Category services = ProjectCustomizer.Category.create(WEBSERVICES,

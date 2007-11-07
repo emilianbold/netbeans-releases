@@ -219,6 +219,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return docBase;
     }
 
+    @Deprecated
     public FileObject[] getJavaSources() {
         return project.getSourceRoots().getRoots();
     }

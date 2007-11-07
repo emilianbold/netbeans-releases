@@ -189,13 +189,13 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         private Map groupsListeners;
         private final Project project;
         // icon badging <<<
-        private String iconbase = "org/openide/loaders/defaultFolder";
+        private String iconbase = "org/openide/loaders/defaultFolder.gif";
 
         public ConfFilesNode(Project prj) {
             super(ConfFilesChildren.forProject(prj), createLookup(prj));
             this.project = prj;
             setName("configurationFiles"); // NOI18N
-            setIconBase(iconbase);
+            setIconBaseWithExtension(iconbase);
 
             FileObject projectDir = prj.getProjectDirectory();
             try {
