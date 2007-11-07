@@ -133,44 +133,45 @@ public class ModelSupport implements PropertyChangeListener {
     }
     
     public void init(ModelImpl model) {
-        
-        Collection<? extends CsmProgressListener> listeners = Lookup.getDefault().lookupAll(CsmProgressListener.class);
-        for (CsmProgressListener csmProgressListener : listeners) {
-            model.addProgressListener(csmProgressListener);
-        }
-        
-        //CodeModelRequestProcessor.instance().post(ProjectListenerThread.instance(), "Project Listener");
-        this.model = model;
-        
-        openedProjects = new HashSet<Project>();
-        if (TRACE_STARTUP) System.out.println("Model support: Inited"); // NOI18N
 
-        if (TopComponent.getRegistry().getOpened().size() > 0){
-            if (TRACE_STARTUP) System.out.println("Model support: Open projects in Init"); // NOI18N
-            postponeParse = false;
-            OpenProjects.getDefault().addPropertyChangeListener(this);
-            openProjects();
-        } else {
-            if (TRACE_STARTUP) System.out.println("Model support: Postpone open projects"); // NOI18N
-            postponeParse = true;
-            WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
-                public void run() {
-                    if (TRACE_STARTUP) System.out.println("Model support: invoked after ready UI"); // NOI18N
-                    postponeParse = false;
-                    Runnable task = new Runnable() {
-                        public void run() {
-                            OpenProjects.getDefault().addPropertyChangeListener(ModelSupport.this);
-                            openProjects();
-                        }
-                    };
-                    if (SwingUtilities.isEventDispatchThread()) {
-                        RequestProcessor.getDefault().post(task);
-                    } else {
-                        task.run();
-                    }
-                }
-            });
-        }
+        this.model = model;
+	
+	if (! ModelImpl.isStandalone()) {
+	    Collection<? extends CsmProgressListener> listeners = Lookup.getDefault().lookupAll(CsmProgressListener.class);
+	    for (CsmProgressListener csmProgressListener : listeners) {
+		model.addProgressListener(csmProgressListener);
+	    }
+	    
+	    openedProjects = new HashSet<Project>();
+	    if (TRACE_STARTUP) System.out.println("Model support: Inited"); // NOI18N
+
+	    if (TopComponent.getRegistry().getOpened().size() > 0){
+		if (TRACE_STARTUP) System.out.println("Model support: Open projects in Init"); // NOI18N
+		postponeParse = false;
+		OpenProjects.getDefault().addPropertyChangeListener(this);
+		openProjects();
+	    } else {
+		if (TRACE_STARTUP) System.out.println("Model support: Postpone open projects"); // NOI18N
+		postponeParse = true;
+		WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+		    public void run() {
+			if (TRACE_STARTUP) System.out.println("Model support: invoked after ready UI"); // NOI18N
+			postponeParse = false;
+			Runnable task = new Runnable() {
+			    public void run() {
+				OpenProjects.getDefault().addPropertyChangeListener(ModelSupport.this);
+				openProjects();
+			    }
+			};
+			if (SwingUtilities.isEventDispatchThread()) {
+			    RequestProcessor.getDefault().post(task);
+			} else {
+			    task.run();
+			}
+		    }
+		});
+	    }
+	}
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
@@ -389,7 +390,7 @@ public class ModelSupport implements PropertyChangeListener {
         if (items.size()>0){
             try {
                 final ProjectBase project = getProject(items.get(0), true);
-                if( project != null ) {
+                if( project != null && project.isValid()) {
                     if (project instanceof ProjectImpl) {
                         LibraryManager.getInstance().onProjectClose(project.getUID());
                     }

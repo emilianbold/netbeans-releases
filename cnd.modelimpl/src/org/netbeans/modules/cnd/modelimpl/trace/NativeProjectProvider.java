@@ -85,6 +85,12 @@ public final class NativeProjectProvider {
         return project;
     }
     
+    public static void fireAllFilesChanged(NativeProject nativeProject) {
+	if( nativeProject instanceof NativeProjectImpl) {
+	    ((NativeProjectImpl) nativeProject).fireAllFilesChanged();
+	}
+    }
+    
     private static final class NativeProjectImpl implements NativeProject {
 	
 	private final List<String> sysIncludes;
@@ -97,6 +103,9 @@ public final class NativeProjectProvider {
 	
         private final String projectRoot;
 	private boolean pathsRelCurFile;
+	
+	private List<NativeProjectItemsListener> listeners = new ArrayList<NativeProjectItemsListener>();
+	private Object listenersLock = new Object();
 
 	public NativeProjectImpl(String projectRoot,
 		List<String> sysIncludes, List<String> usrIncludes, 
@@ -160,12 +169,28 @@ public final class NativeProjectProvider {
         }
 
         public void addProjectItemsListener(NativeProjectItemsListener listener) {
-            // not supported yet
+            synchronized( listenersLock ) {
+		listeners.add(listener);
+	    }
         }
 
         public void removeProjectItemsListener(NativeProjectItemsListener listener) {
-            // not supported yet
+            synchronized( listenersLock ) {
+		listeners.remove(listener);
+	    }
         }
+	
+	private void fireAllFilesChanged() {
+	    List<NativeProjectItemsListener> listenersCopy;
+	    synchronized( listenersLock ) {
+		listenersCopy = new ArrayList<NativeProjectItemsListener>(listeners);
+	    }
+	    List<NativeFileItem> items = new ArrayList<NativeFileItem>(sources);
+	    items.addAll(headers);
+	    for( NativeProjectItemsListener listener : listenersCopy ) {
+		listener.filesPropertiesChanged(items);
+	    }
+	}
 
         public NativeFileItem findFileItem(File file) {
             NativeFileItem item = findItem(file, sources);
