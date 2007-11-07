@@ -185,7 +185,7 @@ public final class LocalFileSystemEx extends LocalFileSystem {
         }
 
         public void renameAttributes(String oldName, String newName) {
-            a.readAttribute( oldName, newName );
+            a.renameAttributes(oldName, newName);
         }
 
         public void deleteAttributes(String name) {
