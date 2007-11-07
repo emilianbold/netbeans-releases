@@ -45,8 +45,8 @@ import org.openide.nodes.Node;
 
 public interface JsfDataObjectMarker {
 
-    public Node.Cookie getCookie(Class clazz);
-
+    public <T extends Node.Cookie> T getCookie(Class<T> clazz);
+    
     public abstract FileObject getPrimaryFile ();
 
 }
