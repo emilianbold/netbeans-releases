@@ -1,0 +1,3 @@
+# mobility/deployment/deviceanywhere
+read global
+mobility/deployment/deviceanywhere/antsrc/**/messages*.properties
