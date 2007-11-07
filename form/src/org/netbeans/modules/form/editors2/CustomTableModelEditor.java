@@ -504,6 +504,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
         rowsField.setText(String.valueOf(model.getRowCount()));
         columnsField.setText(String.valueOf(model.getColumnCount()));
         rowsField.addFocusListener(new FocusAdapter() {
+            @Override
             public void focusLost(FocusEvent evt) {
                 updateRows(rowsField.getText());
             }
@@ -514,6 +515,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
             }
         });
         columnsField.addFocusListener(new FocusAdapter() {
+            @Override
             public void focusLost(FocusEvent evt) {
                 updateColumns(columnsField.getText());
             }
@@ -987,6 +989,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
             initEditors();
         }
         
+        @Override
         protected boolean processKeyBinding(KeyStroke ks, KeyEvent e,
                                             int condition, boolean pressed)
         {
@@ -998,6 +1001,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
             else return super.processKeyBinding(ks, e, condition, pressed);
         }
 
+        @Override
         protected void processKeyEvent(KeyEvent e) {
             if (e.getID() == KeyEvent.KEY_PRESSED) {
                 if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
@@ -1020,6 +1024,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
             super.processKeyEvent(e);
         }
 
+        @Override
         public Component prepareEditor(TableCellEditor editor, int row, int column) {
             edComp = super.prepareEditor(editor, row, column);
             return edComp;

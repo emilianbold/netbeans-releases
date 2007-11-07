@@ -61,6 +61,7 @@ public class IconEditor extends ResourceWrapperEditor implements NamedPropertyEd
         super(new org.netbeans.modules.form.editors.IconEditor());
     }
 
+    @Override
     public PropertyEditor getDelegatedPropertyEditor() {
         // hack for saving: for compatibility we want this editor to be used
         // for saving (its class name to be written to .form file);
@@ -68,6 +69,7 @@ public class IconEditor extends ResourceWrapperEditor implements NamedPropertyEd
         return this;
     }
 
+    @Override
     protected void setValueToDelegate(Object value) {
         if (value instanceof ResourceValue) {
             ResourceValue resVal = (ResourceValue) value;
@@ -80,6 +82,7 @@ public class IconEditor extends ResourceWrapperEditor implements NamedPropertyEd
         else delegateEditor.setValue(value);
     }
 
+    @Override
     protected void setValueToResourcePanel() {
         Object value = delegateEditor.getValue();
         if (value instanceof NbImageIcon || value == null) {

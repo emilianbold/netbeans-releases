@@ -74,6 +74,7 @@ public class SpinnerModelEditor extends PropertyEditorSupport
      * 
      * @return <code>true</code>.
      */
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
@@ -83,6 +84,7 @@ public class SpinnerModelEditor extends PropertyEditorSupport
      * 
      * @return custom editor.
      */
+    @Override
     public Component getCustomEditor() {
         fireChanges = false;
         if (!initialized) {
@@ -1422,6 +1424,7 @@ public class SpinnerModelEditor extends PropertyEditorSupport
      * 
      * @return initialization string. 
      */
+    @Override
     public String getJavaInitializationString() {
         Object value = getValue();
         if (!(value instanceof FormSpinnerModel)) {

@@ -73,6 +73,7 @@ public class StringEditor extends ResourceWrapperEditor implements NamedProperty
         return NbBundle.getMessage(StringEditor.class, "StringEditor_DisplayName"); // NOI18N
     }
 
+    @Override
     public String getJavaInitializationString() {
         String javaStr = super.getJavaInitializationString();
         if (getValue() instanceof String
@@ -86,6 +87,7 @@ public class StringEditor extends ResourceWrapperEditor implements NamedProperty
         return javaStr;
     }
 
+    @Override
     public Component getCustomEditor() {
         Component customEd = super.getCustomEditor();
         if (noI18nCheckbox != null) {
@@ -94,6 +96,7 @@ public class StringEditor extends ResourceWrapperEditor implements NamedProperty
         return customEd;
     }
 
+    @Override
     protected Component createCustomEditorGUI(Component resourcePanelGUI) {
         if (resourcePanelGUI == null && ResourceSupport.isResourceableProperty(property)) {
             // not usable for full resourcing, only for internationalization
@@ -119,6 +122,7 @@ public class StringEditor extends ResourceWrapperEditor implements NamedProperty
     }
 
     // called when OK button is pressed in the custom editor dialog
+    @Override
     public void vetoableChange(PropertyChangeEvent ev) throws PropertyVetoException {
         super.vetoableChange(ev);
         if (PropertyEnv.PROP_STATE.equals(ev.getPropertyName())

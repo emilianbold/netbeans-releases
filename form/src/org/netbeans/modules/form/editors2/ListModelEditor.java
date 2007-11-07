@@ -43,7 +43,6 @@ package org.netbeans.modules.form.editors2;
 
 import javax.swing.*;
 import org.netbeans.modules.form.editors.StringArrayEditor;
-import org.openide.util.NbBundle;
 
 /** A simple property editor for ListModel.
  *
@@ -54,6 +53,7 @@ public class ListModelEditor extends StringArrayEditor {
 
     private ListModel listModel = null;
 
+    @Override
     public void setValue(Object val) {
         if (val instanceof ListModel) {
             listModel = (ListModel) val;
@@ -69,19 +69,23 @@ public class ListModelEditor extends StringArrayEditor {
         }
     }
 
+    @Override
     public Object getValue() {
         return listModel;
     }
 
+    @Override
     public void setStringArray(String[] value) {
         listModel = getModelForData(value);
         super.setValue(value);
     }
 
+    @Override
     public String[] getStringArray () {
         return (String[])super.getValue ();
     }
 
+    @Override
     public String getJavaInitializationString() {
         if (getStrings(true).equals(""))
             return null;
