@@ -92,7 +92,7 @@ public final class Modifications {
         }
     }
     
-    private void commit(final FileObject fileObject, final List<Difference> differences, Writer outWriter) throws IOException {
+    protected void commit(final FileObject fileObject, final List<Difference> differences, Writer outWriter) throws IOException {
         DataObject dataObj = DataObject.find(fileObject);
         EditorCookie editorCookie = dataObj != null ? (EditorCookie) dataObj.getCookie(EditorCookie.class) : null;
         // if editor cookie was found and user does not provided his own
