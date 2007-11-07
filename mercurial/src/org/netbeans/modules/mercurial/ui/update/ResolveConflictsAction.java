@@ -81,12 +81,8 @@ public class ResolveConflictsAction extends AbstractAction {
     }
 
     public boolean isEnabled() {
-        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();        
-        
-        if(cache.listFiles(context, FileInformation.STATUS_VERSIONED_CONFLICT).length != 0)
-            return true;
-
-        return false;
+        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();                
+        return cache.containsFileOfStatus(context, FileInformation.STATUS_VERSIONED_CONFLICT);
     }
 
     static void resolveConflicts(File[] files) {

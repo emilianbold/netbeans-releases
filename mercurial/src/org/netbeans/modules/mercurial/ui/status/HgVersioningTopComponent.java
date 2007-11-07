@@ -241,8 +241,8 @@ public class HgVersioningTopComponent extends TopComponent {
             setEnabled(true);
             setCursor(Cursor.getDefaultCursor());
             context = ctx;
-            //syncPanel.setContext(ctx);
-            setBranchTitle("current"); // TODO: setContext() get Branch title - hg branch  // NOI18N
+            syncPanel.setContext(ctx);
+            setBranchTitle(NbBundle.getMessage(HgVersioningTopComponent.class, "CTL_VersioningView_UnnamedBranchTitle")); // NOI18N
             refreshContent();
         }
         setToolTipText(getContextFilesList(ctx, NbBundle.getMessage(HgVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title"))); // NOI18N            

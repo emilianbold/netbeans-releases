@@ -41,6 +41,9 @@
 package org.netbeans.modules.mercurial.util;
 
 import java.io.File;
+import java.util.Set;
+import java.util.logging.Level;
+import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 /**
@@ -50,70 +53,65 @@ import org.netbeans.modules.versioning.spi.VCSContext;
  */
 public class HgRepositoryContextCache {
     private static boolean hasHistory;
-    private static boolean hasHeads;
     private static String pushDefault;
     private static String pullDefault;
     private static File root;
     
     private static VCSContext rootCtx;
-    private static VCSContext historyCtx;
-    private static VCSContext headsCtx;
-    private static VCSContext pushCtx;
-    private static VCSContext pullCtx;
+    private static Set<File> historyCtxRootFiles;
+    private static Set<File> pushCtxRootFiles;
+    private static Set<File> pullCtxRootFiles;
 
     public static boolean hasHistory(VCSContext ctx) {
-        if(ctx == historyCtx && ctx != null && hasHistory){
+        Set<File> files;
+        if(ctx == null) return false;
+        files = ctx.getRootFiles();
+        
+        if(files.equals(historyCtxRootFiles)){
             return hasHistory;
         }else{
             root = getRoot(ctx);
             hasHistory = HgCommand.hasHistory(root);
-            historyCtx = ctx;
+            historyCtxRootFiles = ctx.getRootFiles();
             return hasHistory;
         }
-    }
-    
-    public static void resetHasHeads() {
-        headsCtx = null;
-    }
-
-    public static boolean hasHeads(VCSContext ctx) {
         
-        if(ctx == headsCtx && ctx != null){
-            return hasHeads;
-        }else{
-            root = getRoot(ctx);
-            hasHeads = HgCommand.isMergeRequired(root);
-            headsCtx = ctx;
-            return hasHeads;
-        }
     }
-    
+        
     public static void resetPullDefault() {
-        pullCtx = null;
+        pullCtxRootFiles = null;
     }
 
     public static String getPullDefault(VCSContext ctx) {
-        if(ctx == pullCtx && ctx != null){
+        Set<File> files;
+        if(ctx == null) return null;
+        files = ctx.getRootFiles();
+        
+        if(files.equals(pullCtxRootFiles)){
             return pullDefault;
         }else{
             root = getRoot(ctx);
             pullDefault = HgCommand.getPullDefault(root);
-            pullCtx = ctx;
+            pullCtxRootFiles = ctx.getRootFiles();
             return pullDefault;
         }
     }
     
     public static void resetPushDefault() {
-        pushCtx = null;
+        pushCtxRootFiles = null;
     }
 
     public static String getPushDefault(VCSContext ctx) {
-        if(ctx == pushCtx && ctx != null){
+        Set<File> files;
+        if(ctx == null) return null;
+        files = ctx.getRootFiles();
+        
+        if(files.equals(pushCtxRootFiles)){
             return pushDefault;
         }else{
             root = getRoot(ctx);
             pushDefault = HgCommand.getPushDefault(root);
-            pushCtx = ctx;
+            pushCtxRootFiles = ctx.getRootFiles();
             return pushDefault;
         }
     }

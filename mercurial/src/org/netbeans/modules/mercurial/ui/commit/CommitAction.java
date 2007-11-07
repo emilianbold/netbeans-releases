@@ -97,8 +97,7 @@ public class CommitAction extends AbstractAction {
 
     public boolean isEnabled () {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-        File[] files = cache.listFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
-        return files.length > 0;
+        return cache.containsFileOfStatus(context, FileInformation.STATUS_LOCAL_CHANGE);
     }
 
     public void actionPerformed(ActionEvent e) {

@@ -82,7 +82,20 @@ public class PushAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent e) {
+        // If the repository has no default pull path then inform user
+        if(HgRepositoryContextCache.getPushDefault(context) == null && 
+                HgRepositoryContextCache.getPullDefault(context) == null){
+            JOptionPane.showMessageDialog(null,
+                NbBundle.getMessage(PushAction.class,"MSG_NO_DEFAULT_PUSH_SET"),
+                NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE"),
+                JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
         push(context);
+    }
+    public boolean isEnabled() {
+        return true; // #121293: Speed up menu display, warn user if not set when Push selected
     }
     
     public static void push(VCSContext ctx){
@@ -198,7 +211,7 @@ public class PushAction extends AbstractAction {
                                         NbBundle.getMessage(PushAction.class,
                                         "MSG_PUSH_UPDATE_DONE_NONAME", pushPath)); // NOI18N
                         }
-                        boolean bOutStandingUncommittedMerges = HgCommand.isErrorOutStandingUncommittedMerges(list.get(list.size() -1));
+                        boolean bOutStandingUncommittedMerges = HgCommand.isMergeAbortUncommittedMsg(list.get(list.size() -1));
                         if (bOutStandingUncommittedMerges) {
                             bConfirmMerge = HgUtils.confirmDialog(PushAction.class, "MSG_PUSH_MERGE_CONFIRM_TITLE", "MSG_PUSH_MERGE_UNCOMMITTED_CONFIRM_QUERY");
                         }
@@ -238,14 +251,4 @@ public class PushAction extends AbstractAction {
         }
     }
     
-    public boolean isEnabled() {
-        // If the repository has a default push or pull path then enable action
-        if (HgRepositoryContextCache.getPushDefault(context) != null) {
-            return true;
-        } else if (HgRepositoryContextCache.getPullDefault(context) != null) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 }

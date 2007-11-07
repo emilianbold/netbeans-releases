@@ -262,7 +262,10 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
                     syncTable.setTableModel(new SyncFileNode[0]);
                     File root = HgUtils.getRootFile(HgUtils.getCurrentContext(null));
                     if (root != null) {
-                        setRepositoryBranchInfo(root);
+                        String[] info = getRepositoryBranchInfo(root);
+                        String rev = info != null ? info[1] : null;
+                        String changeset = info != null ? info[2] : null;
+                        setRepositoryBranchInfo(rev, changeset);
                         refreshUpdateTargets(root);                
                     }
                  }
@@ -288,6 +291,15 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             if (files == null || files.length == 0) return;
 
             File root = mercurial.getTopmostManagedParent(files[0]);
+            String[] info = getRepositoryBranchInfo(root);
+            String branchName = info != null ? info[0] : null;
+            String rev = info != null ? info[1] : null;
+            String changeset = info != null ? info[2] : null;
+            if (branchName != null && !branchName.equals("")) {
+                branchTitle = NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_BranchTitle", branchName); // NOI18N
+            } else {
+                branchTitle = NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_UnnamedBranchTitle"); // NOI18N
+            }
             if (nodes.length > 0) {
                 boolean stickyCommon = false;
                 for (int i = 1; i < nodes.length; i++) {
@@ -295,39 +307,21 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
                         // TODO set model that displays that fact to user
                         return;
                     }
-                }
-                
-                // For now hide branch: tableColumns = new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_BRANCH,SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH };
+                }                
                 tableColumns = new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH };
-
-                String title = null;
-                try{
-                    
-                    String branchName = HgCommand.getBranchName(root);
-                    if (branchName != null){
-                        title = NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_BranchTitle", branchName); // NOI18N
-                    }else{
-                        title = NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_UnnamedBranchTitle"); // NOI18N
-                    }                    
-                }catch (HgException ex){
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
-                }
-                branchTitle = title;
             } else {
                 tableColumns = null;
-                branchTitle = null;
             }
-            setRepositoryBranchInfo(root);
+            setRepositoryBranchInfo(rev, changeset);                
             refreshUpdateTargets(root);                
             
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     if (nodes.length > 0) {
                         syncTable.setColumns(tableColumns);
-                        parentTopComponent.setBranchTitle(branchTitle);
                         setVersioningComponent(syncTable.getComponent());
                     } else {
+                        parentTopComponent.setBranchTitle(branchTitle);
                         setVersioningComponent(noContentComponent);
                     }
                     syncTable.setTableModel(nodes);
@@ -345,27 +339,30 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
     
 
-    private void setRepositoryBranchInfo(File root){
+    private void setRepositoryBranchInfo(String rev, String changeset){
         String branchInfo = null;
-        try     {
-            int rev = HgCommand.getBranchRev(root);
-            
-            if (rev > -1) {
-                branchInfo = org.openide.util.NbBundle.getMessage(VersioningPanel.class,
-                        "CTL_VersioningView_BranchInfo", // NOI18N
-                        rev,
-                        HgCommand.getBranchShortChangesetHash(root));
-            } else {
-                branchInfo = org.openide.util.NbBundle.getMessage(VersioningPanel.class,
-                        "CTL_VersioningView_BranchInfoNotCommitted"); // NOI18N
-            }
-        } catch (HgException ex) {
-            Exceptions.printStackTrace(ex);
+        if (rev != null && !rev.equals("-1")) {
+            branchInfo = org.openide.util.NbBundle.getMessage(VersioningPanel.class,
+                    "CTL_VersioningView_BranchInfo", // NOI18N
+                    rev, changeset);
+        } else {
+            branchInfo = org.openide.util.NbBundle.getMessage(VersioningPanel.class,
+                    "CTL_VersioningView_BranchInfoNotCommitted"); // NOI18N
         }
         String repositoryStatus = NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_StatusTitle", branchInfo); // NOI18N
         if( !repositoryStatus.equals(statusLabel.getText())){
             statusLabel.setText(repositoryStatus);
         }
+    }
+
+    private String[] getRepositoryBranchInfo(File root){
+        String infoStr = null;
+        try {
+            infoStr = HgCommand.getBranchInfo(root);
+        } catch (HgException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return infoStr == null ? null: infoStr.split(":");
     }
     
     private SyncFileNode [] getNodes(VCSContext context, int includeStatus) {

@@ -93,6 +93,14 @@ public class PullAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
+        // If the repository has no default pull path then inform user
+        if(HgRepositoryContextCache.getPullDefault(context) == null){
+            JOptionPane.showMessageDialog(null,
+                NbBundle.getMessage(PullAction.class,"MSG_NO_DEFAULT_PULL_SET"),
+                NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE"),
+                JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
         pull(context);
     }
 
@@ -173,8 +181,8 @@ public class PullAction extends AbstractAction {
         final String fromPrjName = HgProjectUtils.getProjectName(new File(pullPath));
         Project proj = HgUtils.getProject(ctx);
         final String toPrjName = HgProjectUtils.getProjectName(proj);
-        
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
+
+       RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() { performPull(fromPrjName != null ? PullType.LOCAL : PullType.OTHER, ctx, root, pullPath, fromPrjName, toPrjName); } };
 
@@ -182,8 +190,7 @@ public class PullAction extends AbstractAction {
     }
 
     public boolean isEnabled() {
-        // If the repository has a default pull path then enable action
-        return HgRepositoryContextCache.getPullDefault(context) == null ? false: true;
+        return true; // #121293: Speed up menu display, warn user if not set when Pull selected
     }
 
     static void performPull(PullType type, VCSContext ctx, File root, String pullPath, String fromPrjName, String toPrjName) {
@@ -253,7 +260,7 @@ public class PullAction extends AbstractAction {
                     bConfirmMerge = HgUtils.confirmDialog(
                         PullAction.class, "MSG_PULL_MERGE_CONFIRM_TITLE", "MSG_PULL_MERGE_CONFIRM_QUERY"); // NOI18N
                 } else {
-                    boolean bOutStandingUncommittedMerges = HgCommand.isErrorOutStandingUncommittedMerges(list.get(list.size() - 1));
+                    boolean bOutStandingUncommittedMerges = HgCommand.isMergeAbortUncommittedMsg(list.get(list.size() - 1));
                     if(bOutStandingUncommittedMerges){
                         bConfirmMerge = HgUtils.confirmDialog(
                             PullAction.class, "MSG_PULL_MERGE_CONFIRM_TITLE", "MSG_PULL_MERGE_UNCOMMITTED_CONFIRM_QUERY"); // NOI18N

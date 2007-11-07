@@ -48,6 +48,8 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 
 import org.netbeans.modules.mercurial.FileInformation;
+import org.netbeans.modules.mercurial.FileStatusCache;
+import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -73,7 +75,8 @@ public class DiffAction extends AbstractAction {
     }
     
     public boolean isEnabled() {
-        return HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE).length > 0;
+        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+        return cache.containsFileOfStatus(context, FileInformation.STATUS_LOCAL_CHANGE);
     } 
 
     public static void diff(VCSContext ctx, int type, String contextName) {

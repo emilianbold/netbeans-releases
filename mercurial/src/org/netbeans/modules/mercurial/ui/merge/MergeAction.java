@@ -54,7 +54,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.mercurial.HgProgressSupport;
-import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -72,12 +71,11 @@ public class MergeAction extends AbstractAction {
     public MergeAction(String name, VCSContext context) {
         this.context = context;
         putValue(Action.NAME, name);
-        
-        System.out.println("Merge: " + context); // NOI18N
     }
 
     public boolean isEnabled() {        
-        return HgRepositoryContextCache.hasHeads(context);
+        return true; // #121293: Speed up menu display, warn user if nothing to merge when Merge selected
+        //return HgRepositoryContextCache.hasHeads(context);
     }
 
     public void actionPerformed(ActionEvent ev) {
@@ -85,6 +83,14 @@ public class MergeAction extends AbstractAction {
         if (root == null) {
             return;
         }
+        if(!HgCommand.isMergeRequired(root)){
+            JOptionPane.showMessageDialog(null,
+                NbBundle.getMessage(MergeAction.class,"MSG_NOTHING_TO_MERGE"),
+                NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE"),
+                JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
         String repository = root.getAbsolutePath();
         try{
             List<String> headList = HgCommand.getHeadRevisions(root);
@@ -127,14 +133,24 @@ public class MergeAction extends AbstractAction {
         Boolean bMergeFailed = false;
         
         if (listMerge != null && !listMerge.isEmpty()) {
-            HgUtils.outputMercurialTab(listMerge);
+            HgUtils.outputMercurialTab(listMerge);          
             for (String line : listMerge) {
-                if (HgCommand.isMergeAbortMultipleHeadsMsg(line) || 
-                        HgCommand.isMergeAbortUncommittedMsg(line)){ 
-                        bMergeFailed = true;
-                        HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class, 
-                        "MSG_MERGE_FAILED")); // NOI18N
-                        break;
+                if (HgCommand.isMergeAbortUncommittedMsg(line)){ 
+                    bMergeFailed = true;
+                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class,
+                            "MSG_MERGE_FAILED")); // NOI18N
+                    JOptionPane.showMessageDialog(null,
+                        NbBundle.getMessage(MergeAction.class,"MSG_MERGE_UNCOMMITTED"),
+                        NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE"),
+                        JOptionPane.WARNING_MESSAGE);
+                    break;
+                }            
+
+                if (HgCommand.isMergeAbortMultipleHeadsMsg(line)){ 
+                    bMergeFailed = true;
+                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class,
+                            "MSG_MERGE_FAILED")); // NOI18N
+                    break;
                 }
                 if (HgCommand.isMergeConflictMsg(line)) {
                     bConflicts = true;
@@ -143,7 +159,7 @@ public class MergeAction extends AbstractAction {
                     HgCommand.createConflictFile(filepath);
                 }
             }
-         
+                  
             if (bConflicts) {
                 HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class, 
                         "MSG_MERGE_DONE_CONFLICTS")); // NOI18N

@@ -316,8 +316,6 @@ public class MercurialAnnotator extends VCSAnnotator {
         boolean onlyFolders = onlyFolders(files);
         boolean onlyProjects = onlyProjects(nodes);
 
-        HgRepositoryContextCache.resetHasHeads();
-
         List<Action> actions = new ArrayList<Action>(INITIAL_ACTION_ARRAY_LENGTH);
         if (goodVersion && destination == VCSAnnotator.ActionDestination.MainMenu) {
             actions.add(new CreateAction(loc.getString("CTL_MenuItem_Create"), ctx)); // NOI18N

@@ -100,13 +100,13 @@ public class HgCommand {
     private static final String HG_BRANCH_REV_CMD = "tip"; // NOI18N
     private static final String HG_BRANCH_REV_TEMPLATE_CMD = "--template={rev}\\n"; // NOI18N
     private static final String HG_BRANCH_SHORT_CS_TEMPLATE_CMD = "--template={node|short}\\n"; // NOI18N
+    private static final String HG_BRANCH_INFO_TEMPLATE_CMD = "--template={branches}:{rev}:{node|short}\\n"; // NOI18N
     
     private static final String HG_CREATE_CMD = "init"; // NOI18N
     private static final String HG_CLONE_CMD = "clone"; // NOI18N
     
     private static final String HG_UPDATE_ALL_CMD = "update"; // NOI18N
     private static final String HG_UPDATE_FORCE_ALL_CMD = "-C"; // NOI18N
-    private static final String HG_UPDATE_REVISION_CMD = "-R"; // NOI18N
     
     private static final String HG_REMOVE_CMD = "remove"; // NOI18N
     private static final String HG_REMOVE_FLAG_FORCE_CMD = "--force"; // NOI18N
@@ -184,11 +184,9 @@ public class HgCommand {
     private static final String HG_REPOSITORY = "repository"; // NOI18N
     private static final String HG_NOT_FOUND_ERR = "not found!"; // NOI18N
     private static final String HG_UPDATE_SPAN_BRANCHES_ERR = "abort: update spans branches"; // NOI18N
-    private static final String HG_OUTSTANDING_UNCOMMITTED_MERGES_ERR = "abort: outstanding uncommitted merges"; // NOI18N
     private static final String HG_ALREADY_TRACKED_ERR = " already tracked!"; // NOI18N
     private static final String HG_NOT_TRACKED_ERR = " no tracked!"; // NOI18N
     private static final String HG_CANNOT_READ_COMMIT_MESSAGE_ERR = "abort: can't read commit message"; // NOI18N
-    private static final String HG_UNABLE_EXECUTE_COMMAND_ERR = "unable to execute hg command"; // NOI18N
     private static final String HG_CANNOT_RUN_ERR = "Cannot run program"; // NOI18N
     private static final String HG_ABORT_ERR = "abort: "; // NOI18N
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
@@ -237,11 +235,6 @@ public class HgCommand {
         env.add(HG_MERGE_ENV);
         
         List<String> list = execEnv(command, env);
-        if (!list.isEmpty()) {
-            if (isErrorOutStandingUncommittedMerges(list.get(0))) {
-                throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_MERGE_COMMIT_TEXT"));
-             }
-        } 
         return list;
     }
 
@@ -275,7 +268,7 @@ public class HgCommand {
             if (!list.isEmpty()) {
                 if  (isErrorUpdateSpansBranches(list.get(0))) {
                     throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_UPDATE_MERGE_TEXT"));
-                } else if (isErrorOutStandingUncommittedMerges(list.get(0))) {
+                } else if (isMergeAbortUncommittedMsg(list.get(0))) {
                     throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_UPDATE_COMMIT_TEXT"));
                 }
             }
@@ -1272,6 +1265,31 @@ public class HgCommand {
             return null;
         }
     }
+    /**
+     * Returns the mercurial branch info for a repository
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @return String of form :<branch>:<rev>:<shortchangeset>:
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static String getBranchInfo(File repository) throws HgException {
+        if (repository == null) return null;
+        
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_BRANCH_REV_CMD);
+        command.add(HG_BRANCH_INFO_TEMPLATE_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+
+        List<String> list = exec(command);
+        if (!list.isEmpty()){
+            return list.get(0);
+        }else{
+            return null;
+        }
+    }
 
     /**
      * Returns the revision number for the heads in a repository
@@ -1960,10 +1978,6 @@ public class HgCommand {
         return msg.indexOf(HG_UPDATE_SPAN_BRANCHES_ERR) > -1; // NOI18N
     }
 
-    public static boolean isErrorOutStandingUncommittedMerges(String msg) {
-        return msg.indexOf(HG_OUTSTANDING_UNCOMMITTED_MERGES_ERR) > -1; // NOI18N
-    }
-    
     private static boolean isErrorAlreadyTracked(String msg) {
         return msg.indexOf(HG_ALREADY_TRACKED_ERR) > -1; // NOI18N
     }

@@ -134,6 +134,56 @@ public class FileStatusCache {
     }
     
     /**
+     * Check if this context has at least one file with the passed in status
+     *
+     * @param context context to examine
+     * @param includeStatus file status to check for
+     * @return boolean true if this context contains at least one file with the includeStatus, false otherwise
+     */
+    public boolean containsFileOfStatus(VCSContext context, int includeStatus){
+        Map allFiles = cacheProvider.getAllModifiedValues();
+        if(allFiles == null){
+            Mercurial.LOG.log(Level.FINE, "containsFileOfStatus(): allFiles == null"); // NOI18N
+            return false;
+        }
+
+        Set<File> roots = context.getRootFiles();
+        Set<File> exclusions = context.getExclusions();
+        Set<File> setAllFiles = allFiles.keySet();
+        boolean bExclusions = exclusions != null && exclusions.size() > 0;
+        boolean bContainsFile = false;
+        
+        for (File file: setAllFiles) {
+            FileInformation info = (FileInformation) allFiles.get(file);
+            if ((info.getStatus() & includeStatus) == 0) continue;
+            for (File root : roots) {
+                if (VersioningSupport.isFlat(root)) {
+                    if (file.equals(root) || file.getParentFile().equals(root)) {
+                        bContainsFile = true;
+                        break;
+                    }
+                } else {
+                    if (Utils.isAncestorOrEqual(root, file)) {
+                        bContainsFile = true;
+                        break;
+                    }
+                }
+            }
+            // Check it is not an excluded file
+            if (bContainsFile && bExclusions) {
+                for (File excluded: exclusions){                    
+                    if (!Utils.isAncestorOrEqual(excluded, file)) {
+                        return true;
+                    }
+                }
+            } else if (bContainsFile) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Lists <b>interesting files</b> that are known to be inside given folders.
      * These are locally and remotely modified and ignored files.
      *
