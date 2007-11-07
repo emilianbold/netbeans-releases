@@ -304,7 +304,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
             throw ioex;
         }
 
-        java.util.List columns = new ArrayList(columnCount);
+        java.util.List<NbTableModel.ColumnItem> columns = new ArrayList<NbTableModel.ColumnItem>(columnCount);
 
         // go through the column data nodes and read the columns
         org.w3c.dom.NodeList columnNodes = element.getChildNodes();
@@ -347,7 +347,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
                 throw ioex;
             }
 
-            java.util.List columnData = new ArrayList(rowCount);
+            java.util.List<Object> columnData = new ArrayList<Object>(rowCount);
 
             // read the column data
             org.w3c.dom.NodeList dataNodes = cNode.getChildNodes();
@@ -491,7 +491,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
         /** generated Serialized Version UID */
         static final long serialVersionUID = -6843008677521167210L;
 
-        java.util.List columns;
+        java.util.List<ColumnItem> columns;
         int rowCount;
 
         transient boolean alwaysEditable = false;
@@ -506,7 +506,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
 
         public NbTableModel(String[] titles, Class[] types, boolean[] editable, int rowCount) {
             this.rowCount = rowCount;
-            columns = new ArrayList(titles.length);
+            columns = new ArrayList<ColumnItem>(titles.length);
             for (int i=0; i < titles.length; i++)
                 columns.add(new ColumnItem(titles[i],types[i],editable[i],rowCount));
         }
@@ -515,20 +515,20 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
             ResourceBundle bundle = getBundle();
             if (createFrom == null) {
                 rowCount = 4; // 4 rows and 4 columns by default
-                columns = new ArrayList(20);
+                columns = new ArrayList<ColumnItem>(20);
                 for (int i=0; i < 4; i++)
                     columns.add(new ColumnItem(bundle.getString("CTL_Title")+" "+Integer.toString(i+1),
                                                Object.class, true, rowCount));
             } else {
                 rowCount = createFrom.getRowCount();
                 int colCount = createFrom.getColumnCount();
-                columns = new ArrayList(colCount);
+                columns = new ArrayList<ColumnItem>(colCount);
 
                 if (createFrom instanceof NbTableModel) {
                     NbTableModel model = (NbTableModel) createFrom;
 
                     for (int i=0; i < colCount; i++) {
-                        ColumnItem ci = (ColumnItem) model.columns.get(i);
+                        ColumnItem ci = model.columns.get(i);
                         columns.add(new ColumnItem(ci));
                     }
                 } else {
@@ -544,30 +544,32 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
             }
         }
 
-        NbTableModel(java.util.List columns, int rowCount) {
+        NbTableModel(java.util.List<ColumnItem> columns, int rowCount) {
             this.columns = columns;
             this.rowCount = rowCount;
         }
 
         // from AbstractTableModel
+        @Override
         public Class getColumnClass(int i) {
-            ColumnItem ci = (ColumnItem) columns.get(i);
+            ColumnItem ci = columns.get(i);
             return ci.type;
         }
 
         public void setColumnClass(int i, Class type) {
-            ColumnItem ci = (ColumnItem) columns.get(i);
+            ColumnItem ci = columns.get(i);
             ci.type = type;
         }
 
         // from AbstractTableModel
+        @Override
         public String getColumnName(int i) {
-            ColumnItem ci = (ColumnItem) columns.get(i);
+            ColumnItem ci = columns.get(i);
             return ci.title;
         }
 
         public void setColumnName(int i, String title) {
-            ColumnItem ci = (ColumnItem) columns.get(i);
+            ColumnItem ci = columns.get(i);
             ci.title = title;
         }
 
@@ -583,46 +585,48 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
 
         public boolean isColumnEditable(int i) {
             // this method returns design time settings - doesn't reflect alwaysEditable
-            ColumnItem ci = (ColumnItem) columns.get(i);
+            ColumnItem ci = columns.get(i);
             return ci.editable;
         }
 
         // from AbstractTableModel
+        @Override
         public boolean isCellEditable(int i, int j) {
             // this is used by a real table - alwaysEditable true means that table
             // is fully editable (no matter the design settings)
             if (alwaysEditable) return true;
-            ColumnItem ci = (ColumnItem) columns.get(j);
+            ColumnItem ci = columns.get(j);
             return ci.editable;
         }
 
         public void setColumnEditable(int i, boolean editable) {
-            ColumnItem ci = (ColumnItem) columns.get(i);
+            ColumnItem ci = columns.get(i);
             ci.editable = editable;
         }
 
         // from TableModel
         public Object getValueAt(int row, int column) {
-            ColumnItem ci = (ColumnItem) columns.get(column);
+            ColumnItem ci = columns.get(column);
             return ci.rows.get(row);
         }
 
         // from AbstractTableModel
+        @Override
         public void setValueAt(Object obj, int row, int column) {
-            ColumnItem ci = (ColumnItem) columns.get(column);
+            ColumnItem ci = columns.get(column);
             ci.rows.set(row, obj);
             fireTableCellUpdated(row, column);
         }
 
         private ColumnItem getColumnItem(int i) {
-            return (ColumnItem) columns.get(i);
+            return columns.get(i);
         }
 
         void setRowCount(int newRowCount) {
             if (newRowCount == rowCount) return;
 
             for (int i=0, n=columns.size(); i < n; i++) {
-                java.util.List rows = ((ColumnItem)columns.get(i)).rows;
+                java.util.List<Object> rows = columns.get(i).rows;
                 if (newRowCount > rowCount) {
                     for (int nr = newRowCount-rowCount; nr > 0; nr--)
                         rows.add(null);
@@ -646,7 +650,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
         public void addRow(int index) {
             if (index >= 0 && index <= rowCount) {
                 for (int i=0, n=columns.size(); i < n; i++)
-                    ((ColumnItem)columns.get(i)).rows.add(index, null);
+                    columns.get(i).rows.add(index, null);
 
                 rowCount++;
                 fireTableRowsInserted(index, index);
@@ -657,7 +661,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
         public void removeRow(int index) {
             if (index >= 0 && index < rowCount) {
                 for (int i=0, n=columns.size(); i < n; i++)
-                    ((ColumnItem)columns.get(i)).rows.remove(index);
+                    columns.get(i).rows.remove(index);
 
                 rowCount--;
                 fireTableRowsDeleted(index, index);
@@ -671,7 +675,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
                     && fromIndex != toIndex) {
 
                 for (int i=0, n=columns.size(); i < n; i++) {
-                    java.util.List rows = ((ColumnItem)columns.get(i)).rows;
+                    java.util.List<Object> rows = columns.get(i).rows;
                     Object obj = rows.get(toIndex);
                     rows.set(toIndex, rows.get(fromIndex));
                     rows.set(fromIndex, obj);
@@ -704,7 +708,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
                                                   Object.class, true, rowCount));
                 // rename default titles
                 for (int i=index+1, n=columns.size(); i < n; i++) {
-                    ColumnItem ci = (ColumnItem) columns.get(i);
+                    ColumnItem ci = columns.get(i);
                     renameDefaultColumnTitle(ci, i, i+1);
                 }
                 fireTableStructureChanged();
@@ -718,7 +722,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
 
                 // rename default titles
                 for (int i=index, n=columns.size(); i < n; i++) {
-                    ColumnItem ci = (ColumnItem) columns.get(i);
+                    ColumnItem ci = columns.get(i);
                     renameDefaultColumnTitle(ci, i+2, i+1);
                 }
                 fireTableStructureChanged();
@@ -730,8 +734,8 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
                     && toIndex >= 0 && toIndex < columns.size()
                     && fromIndex != toIndex) {
 
-                ColumnItem ciFrom = (ColumnItem) columns.get(fromIndex);
-                ColumnItem ciTo = (ColumnItem) columns.get(toIndex);
+                ColumnItem ciFrom = columns.get(fromIndex);
+                ColumnItem ciTo = columns.get(toIndex);
 
                 // also rename default titles
                 renameDefaultColumnTitle(ciFrom, fromIndex+1, toIndex+1);
@@ -760,20 +764,20 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
             String[] titles = new String[colCount];
             boolean[] editable = new boolean[colCount];
             for (int i=0; i < colCount; i++) {
-                ColumnItem ci = (ColumnItem) columns.get(i);
+                ColumnItem ci = columns.get(i);
                 titles[i] = ci.title;
                 editable[i] = ci.editable;
             }
             oo.writeObject(titles);
             oo.writeObject(editable);
             for (int i=0; i < colCount; i++) {
-                ColumnItem ci = (ColumnItem) columns.get(i);
+                ColumnItem ci = columns.get(i);
                 oo.writeObject(ci.type.getName());
             }
 
             for (int i=0; i < rowCount; i++)
                 for (int j=0; j < colCount; j++) {
-                    ColumnItem ci = (ColumnItem) columns.get(j);
+                    ColumnItem ci = columns.get(j);
                     if (ci.rows.get(i) instanceof Serializable)
                         oo.writeObject(ci.rows.get(i));
                     else
@@ -786,7 +790,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
             rowCount = oi.readInt();
             int colCount = oi.readInt();
 
-            columns = new ArrayList(colCount);
+            columns = new ArrayList<ColumnItem>(colCount);
 
             String[] titles = (String[]) oi.readObject();
             boolean[] editable = (boolean[]) oi.readObject();
@@ -797,7 +801,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
 
             for (int i=0; i < rowCount; i++)
                 for (int j=0; j < colCount; j++) {
-                    ColumnItem ci = (ColumnItem) columns.get(j);
+                    ColumnItem ci = columns.get(j);
                     ci.rows.set(i, oi.readObject());
                 }
         }
@@ -807,18 +811,18 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
             String title;
             Class type;
             boolean editable;
-            java.util.List rows; // values in the column
+            java.util.List<Object> rows; // values in the column
 
             ColumnItem(String title, Class type, boolean editable, int rowCount) {
                 this.title = title;
                 this.type = type;
                 this.editable = editable;
-                rows = new ArrayList(rowCount);
+                rows = new ArrayList<Object>(rowCount);
                 for (int i=0; i < rowCount; i++)
                     rows.add(null);
             }
 
-            ColumnItem(String title, Class type, boolean editable, java.util.List data) {
+            ColumnItem(String title, Class type, boolean editable, java.util.List<Object> data) {
                 this.title = title;
                 this.type = type;
                 this.editable = editable;
@@ -830,7 +834,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
                 this.type = ci.type;
                 this.editable = ci.editable;
                 int rowCount = ci.rows.size();
-                rows = new ArrayList(rowCount);
+                rows = new ArrayList<Object>(rowCount);
 
                 for (int i=0; i < rowCount; i++)
                     rows.add(ci.rows.get(i));

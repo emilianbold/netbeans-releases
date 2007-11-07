@@ -49,6 +49,7 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 import java.beans.*;
 import java.awt.*;
 import java.util.HashMap;
+import java.util.Map;
 import javax.swing.*;
 import java.util.ResourceBundle;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -62,8 +63,8 @@ public class CursorEditor extends PropertyEditorSupport  implements
                                                          ExPropertyEditor, XMLPropertyEditor, 
                                                          org.netbeans.modules.form.NamedPropertyEditor {
 
-    private static HashMap CURSOR_TYPES = new HashMap();
-    private static HashMap CURSOR_CONSTANTS = new HashMap();
+    private static Map<String,Integer> CURSOR_TYPES = new HashMap<String,Integer>();
+    private static Map<Integer,String> CURSOR_CONSTANTS = new HashMap<Integer,String>();
     static {
         CURSOR_TYPES.put(new Cursor(Cursor.CROSSHAIR_CURSOR).getName(), new Integer(Cursor.CROSSHAIR_CURSOR));
         CURSOR_TYPES.put(new Cursor(Cursor.DEFAULT_CURSOR).getName(), new Integer(Cursor.DEFAULT_CURSOR));
@@ -110,10 +111,12 @@ public class CursorEditor extends PropertyEditorSupport  implements
         env.getFeatureDescriptor().setValue("canEditAsText", Boolean.TRUE); // NOI18N
     }
 
+    @Override
     public Object getValue() {
         return current;
     }
 
+    @Override
     public void setValue(Object value) {
         if (value == null) return;
         if (value instanceof Cursor) {
@@ -124,6 +127,7 @@ public class CursorEditor extends PropertyEditorSupport  implements
         }
     }
 
+    @Override
     public String getAsText() {
         if (current == null)
             return "null"; // NOI18N
@@ -131,6 +135,7 @@ public class CursorEditor extends PropertyEditorSupport  implements
             return current.getName();
     }
 
+    @Override
     public void setAsText(String string) {
         Object o = CURSOR_TYPES.get(string);
         if (o != null) {
@@ -139,6 +144,7 @@ public class CursorEditor extends PropertyEditorSupport  implements
         }
     }
 
+    @Override
     public String[] getTags() {
         String [] tags = new String[CURSOR_TYPES.size()];
         int i=0;
@@ -147,17 +153,20 @@ public class CursorEditor extends PropertyEditorSupport  implements
         return tags;
     }
 
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
 
+    @Override
     public Component getCustomEditor() {
         return new CursorPanel();
     }
 
+    @Override
     public String getJavaInitializationString() {
         if (current == null) return null; // no code to generate
-        String cursorName =(String) CURSOR_CONSTANTS.get(new Integer(current.getType()));
+        String cursorName = CURSOR_CONSTANTS.get(new Integer(current.getType()));
         if (cursorName != null)
             return "new java.awt.Cursor("+cursorName+")"; // NOI18N
         return "new java.awt.Cursor("+current.getType()+")"; // NOI18N
@@ -169,7 +178,7 @@ public class CursorEditor extends PropertyEditorSupport  implements
         CursorPanel() {
             setLayout(new java.awt.GridBagLayout());
             java.awt.GridBagConstraints gridBagConstraints1;
-            list = new JList(new java.util.Vector(CURSOR_TYPES.keySet()));
+            list = new JList(new java.util.Vector<String>(CURSOR_TYPES.keySet()));
             list.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
             if (current != null) {
                 list.setSelectedValue(current.getName(), true);
@@ -213,7 +222,7 @@ public class CursorEditor extends PropertyEditorSupport  implements
                 if (list.getSelectedValue() == null) {
                     cursor = null;
                 } else {
-                    int type =((Integer) CURSOR_TYPES.get(list.getSelectedValue())).intValue();
+                    int type = CURSOR_TYPES.get(list.getSelectedValue());
                     cursor = new Cursor(type);
                 }
                 setValue(cursor);

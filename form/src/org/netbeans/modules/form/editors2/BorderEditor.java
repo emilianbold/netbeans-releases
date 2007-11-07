@@ -51,7 +51,6 @@ import javax.swing.border.*;
 
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
-import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.nodes.*;
 import org.openide.explorer.view.ListView;
 import org.openide.explorer.propertysheet.PropertySheetView;
@@ -60,7 +59,6 @@ import org.openide.explorer.*;
 
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.palette.*;
-import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Node.PropertySet;
 
 /**
@@ -117,10 +115,12 @@ public final class BorderEditor extends PropertyEditorSupport
     // ------------------
     // main methods
 
+    @Override
     public Object getValue() {
         return current;
     }
 
+    @Override
     public void setValue(Object value) {
         if (current == value)
             return;
@@ -144,17 +144,21 @@ public final class BorderEditor extends PropertyEditorSupport
         }
     }
 
+    @Override
     public String getAsText() {
         return null;
     }
 
+    @Override
     public void setAsText(String string) {
     }
 
+    @Override
     public boolean isPaintable() {
         return true;
     }
 
+    @Override
     public void paintValue(Graphics g, Rectangle rectangle) {
 
         String valueText;
@@ -174,6 +178,7 @@ public final class BorderEditor extends PropertyEditorSupport
                        rectangle.y + (rectangle.height - fm.getHeight()) / 2 + fm.getAscent());
     }
 
+    @Override
     public String getJavaInitializationString() {
         Object value = getValue();
         if (value == null)
@@ -185,10 +190,12 @@ public final class BorderEditor extends PropertyEditorSupport
         return null;
     }
 
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
 
+    @Override
     public Component getCustomEditor() {
         if (bPanel == null)
             bPanel = new BorderPanel();
@@ -279,6 +286,7 @@ public final class BorderEditor extends PropertyEditorSupport
                 bundle.getString("ACSD_BorderCustomEditor")); // NOI18N
         }
 
+        @Override
         public void addNotify() {
             super.addNotify();       
             EventQueue.invokeLater(new Runnable(){
@@ -292,7 +300,7 @@ public final class BorderEditor extends PropertyEditorSupport
         }
         
         void setValue(Object border) {
-            ArrayList bordersList = new ArrayList(10);
+            ArrayList<Node> bordersList = new ArrayList<Node>(10);
             selectNode = null;
 
             PaletteItem[] items = PaletteUtils.getAllItems();
@@ -347,10 +355,10 @@ public final class BorderEditor extends PropertyEditorSupport
 
             Node[] bordersArray = new Node[bordersList.size()];
             bordersList.toArray(bordersArray);
-            Arrays.sort(bordersArray, new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    return ((Node)o1).getDisplayName().compareTo(
-                             ((Node)o2).getDisplayName());
+            Arrays.sort(bordersArray, new Comparator<Node>() {
+                public int compare(Node n1, Node n2) {
+                    return n1.getDisplayName().compareTo(
+                             n2.getDisplayName());
                 }
             });
             root.getChildren().add(bordersArray);
@@ -389,6 +397,7 @@ public final class BorderEditor extends PropertyEditorSupport
             }
         }
 
+        @Override
         public Dimension getPreferredSize() {
             return new Dimension(360, 440);
         }
@@ -408,6 +417,7 @@ public final class BorderEditor extends PropertyEditorSupport
             nodeBorder = bds;
         }
 
+        @Override
         public PropertySet[] getPropertySets () {
             if (properties == null) {
                 Node.Property[] props = nodeBorder.getProperties();
@@ -491,7 +501,7 @@ public final class BorderEditor extends PropertyEditorSupport
 
             // we must preserve backward compatibility of storing standard
             // swing borders (for which BorderInfo classes were used sooner)
-            Class borderClass = borderSupport.getBorderClass();
+            Class<?> borderClass = borderSupport.getBorderClass();
 
             if (borderClass.isAssignableFrom(TitledBorder.class))
                 storedNode = storeTitledBorder(doc);
@@ -1341,7 +1351,7 @@ public final class BorderEditor extends PropertyEditorSupport
 	    // supports also null value - see storeNullBorder()
 	    return true;
         }
-	Class borderClass = borderSupport.getBorderClass();
+	Class<?> borderClass = borderSupport.getBorderClass();
 	return borderClass.isAssignableFrom(TitledBorder.class)
             || borderClass.isAssignableFrom(EtchedBorder.class)
             || borderClass.isAssignableFrom(LineBorder.class)

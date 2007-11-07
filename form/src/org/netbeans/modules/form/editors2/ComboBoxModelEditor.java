@@ -43,7 +43,6 @@ package org.netbeans.modules.form.editors2;
 
 import javax.swing.*;
 import org.netbeans.modules.form.editors.StringArrayEditor;
-import org.openide.util.NbBundle;
 
 /** A simple property editor for ComboBoxModel.
  *
@@ -54,6 +53,7 @@ public class ComboBoxModelEditor extends StringArrayEditor {
 
     private ComboBoxModel comboModel = null;
 
+    @Override
     public void setValue(Object val) {
         if (val instanceof ComboBoxModel) {
             comboModel = (ComboBoxModel) val;
@@ -69,21 +69,25 @@ public class ComboBoxModelEditor extends StringArrayEditor {
         }
     }
 
+    @Override
     public Object getValue() {
         return comboModel;
     }
 
+    @Override
     public void setStringArray(String[] value) {
         comboModel = getModelForData(value);
         super.setValue(value);
     }
 
+    @Override
     public String[] getStringArray () {
         return (String[])super.getValue ();
     }
 
+    @Override
     public String getJavaInitializationString() {
-        if (getStrings(true).equals(""))
+        if (getStrings(true).equals("")) // NOI18N
             return null;
         StringBuffer buf = new StringBuffer(
                 "new javax.swing.DefaultComboBoxModel(new String[] { "); // NOI18N
