@@ -144,6 +144,23 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
+    <!-- editors -->
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-java">
+                <folder name="Popup">
+                    <folder name="goto">
+                        <attr name="position" intvalue="500"/>
+                        <file name="org-netbeans-modules-gototest-GotoOppositeAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/UnitTests/org-netbeans-modules-gototest-GotoOppositeAction.instance"/>
+                            <attr name="position" intvalue="220"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
     <!-- actions -->
     <folder name="Actions">
         <folder name="JUnitTests">
