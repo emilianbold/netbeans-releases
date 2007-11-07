@@ -41,9 +41,15 @@
 
 package org.openide.filesystems;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.ref.WeakReference;
+import java.util.Date;
+import java.util.Enumeration;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -65,7 +71,7 @@ public class MIMESupportTest extends NbTestCase {
         
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         lookup = (MIMESupportTest.TestLookup)Lookup.getDefault();
         lookup.init();
     }
@@ -100,6 +106,77 @@ public class MIMESupportTest extends NbTestCase {
         assertEquals(testR.getMime(),fo.getMIMEType());
     }
 
+    public void testUnreadableFiles() throws Exception {
+        MIMESupportTest.TestResolver testR = new MIMESupportTest.TestResolver("a/a");
+        assertTrue(Lookup.getDefault().lookupAll(MIMEResolver.class).isEmpty());
+        lookup.setLookups(testR);
+        assertTrue(Lookup.getDefault().lookupAll(MIMEResolver.class).contains(testR));        
+        AbstractFileSystem afs = new AbstractFileSystem() {
+            @Override
+            public String getDisplayName() {
+                return "";
+            }
+            @Override
+            public boolean isReadOnly() {
+                return false;
+            }
+            @Override
+            protected boolean canRead(String name) {
+                return !name.equals("f");
+            }
+        };
+        afs.list = new AbstractFileSystem.List() {
+            public String[] children(String f) {
+                if (f.equals(""))testUn {
+                    return new String[] {"f"};
+                } else {
+                    return null;
+                }
+            }
+        };
+        afs.info = new AbstractFileSystem.Info() {
+            public Date lastModified(String name) {
+                return null;
+            }
+            public boolean folder(String name) {
+                return name.equals("");
+            }
+            public boolean readOnly(String name) {
+                return false;
+            }
+            public String mimeType(String name) {
+                return null;
+            }
+            public long size(String name) {
+                return 0;
+            }
+            public InputStream inputStream(String name) throws FileNotFoundException {
+                throw new FileNotFoundException();
+            }
+            public OutputStream outputStream(String name) throws IOException {
+                throw new IOException();
+            }
+            public void lock(String name) throws IOException {}
+            public void unlock(String name) {}
+            public void markUnimportant(String name) {}
+        };
+        afs.attr = new AbstractFileSystem.Attr() {
+            public Object readAttribute(String name, String attrName) {
+                return null;
+            }
+            public void writeAttribute(String name, String attrName, Object value) throws IOException {}
+            public Enumeration<String> attributes(String name) {
+                return Enumerations.empty();
+            }
+            public void renameAttributes(String oldName, String newName) {}
+            public void deleteAttributes(String name) {}
+        };
+        FileObject fo = afs.findResource("f");
+        assertNotNull(fo);
+        assertFalse(fo.canRead());
+        assertEquals("unreadable", fo.getMIMEType());
+    }
+
     private class TestResolver extends MIMEResolver {
         private String mime;
         private TestResolver(String mime) {            
@@ -107,7 +184,11 @@ public class MIMESupportTest extends NbTestCase {
         }
         
         public String findMIMEType(FileObject fo) {
-            return mime;
+            if (fo.canRead()) {
+                return mime;
+            } else {
+                return "unreadable";
+            }
         }        
         
         private String getMime() {

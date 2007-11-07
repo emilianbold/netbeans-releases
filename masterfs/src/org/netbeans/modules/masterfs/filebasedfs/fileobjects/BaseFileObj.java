@@ -123,6 +123,16 @@ public abstract class BaseFileObj extends FileObject {
         return retVal;
     }
 
+    public boolean canRead() {
+        final File file = getFileName().getFile();        
+        return file.canRead();
+    }
+
+    public boolean canWrite() {
+        final File file = getFileName().getFile();        
+        return file.canWrite();
+    }
+
     public final boolean isData() {
         return !isFolder();
     }

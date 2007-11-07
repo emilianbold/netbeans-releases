@@ -378,6 +378,16 @@ final class MIMESupport extends Object {
             return fileObj.isReadOnly();
         }
 
+        @Override
+        public boolean canRead() {
+            return fileObj.canRead();
+        }
+
+        @Override
+        public boolean canWrite() {
+            return fileObj.canWrite();
+        }
+
         public String getExt() {
             return fileObj.getExt();
         }
