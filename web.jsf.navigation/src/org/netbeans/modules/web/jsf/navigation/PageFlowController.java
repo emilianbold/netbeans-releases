@@ -555,8 +555,9 @@ public class PageFlowController {
      *  This method
      * does not actually add the pages to the scene.  It just creates the
      * component.  You will need to call scene.createNode(page) if you want.
-     * @param node the node representing the page. If no dataObject backing the
-     *             page, call createPage(String)
+     * @param node the node or dataobject node delegate of a given fileobject.
+     *             Use dataObject.find(fileObject).getNodeDelegate for the given
+     *             page. If no dataObject backing the page, call createPage(String)
      * @return page the Page that was created.
      */
     public Page createPageFlowNode(Node node) {
@@ -592,7 +593,7 @@ public class PageFlowController {
     public java.util.Stack<String> PageFlowDestroyStack = new java.util.Stack<String>();
     private int PageFlowDestroyCount = 0;
 
-    public void destroyPageFlowNode(Page pageNode) {
+    private void destroyPageFlowNode(Page pageNode) {
         if (pageNode != null) {
             pageNode.destroy2();
             Calendar rightNow = Calendar.getInstance();

@@ -47,8 +47,11 @@ import org.netbeans.junit.*;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.*;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObject;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 
@@ -180,7 +183,54 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         assertTrue(result);
 
     }
+    
 
+    /**
+     * Test of createPageFlowNode method, of class PageFlowController.
+     */
+    public void testCreatePageFlowNode() throws IOException, DataObjectNotFoundException {
+        System.out.println("createPageFlowNode");
+        
+        controller.unregisterListeners(); /* So it doesn't try to add the page on it's own. */
+        
+        String pageName = "newPage";
+        FileObject webFolder = controller.getWebFolder();
+        FileObject pageFO = webFolder.createData(pageName, JSP_EXT);
+        
+        Node node = DataObject.find(pageFO).getNodeDelegate();
+        Page result = controller.createPageFlowNode(node);
+        assertNotNull(result); 
+        assertEquals(result.getNode(), node );
+    }
+
+    
+     /**
+     * Test of createPageFlowNode method, of class PageFlowController.
+     */
+    public void testCreatePageFlowNodeNull() throws IOException, DataObjectNotFoundException {
+        System.out.println("createPageFlowNode with null value");
+        
+        boolean npeCaught = false;
+        try {
+            Page result = controller.createPageFlowNode(null);
+        } catch ( NullPointerException npe ){
+            npeCaught = true;
+        }
+        assertTrue(npeCaught);
+    }
+    
+
+//    /**
+//     * Test of destroyPageFlowNode method, of class PageFlowController.
+//     */
+//    public void testDestroyPageFlowNode() {
+//        System.out.println("destroyPageFlowNode");
+//        Page pageNode = null;
+//        controller.destroyPageFlowNode(pageNode);
+//        // TODO review the generated test code and remove the default call to fail.
+//        fail("The test case is a prototype.");
+//    }
+    
     /**
      * Test of createPage method, of class PageFlowController.
      */
@@ -350,7 +400,7 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         
         
         FileObject webFolder = controller.getWebFolder();
-        FileObject testFolder = webFolder.createFolder("tesFolder");
+        FileObject testFolder = webFolder.createFolder("testFolder");
         boolean result1 = controller.isKnownFolder(webFolder);
         assertTrue( result1);
         boolean result2 = controller.isKnownFolder(testFolder);
@@ -373,48 +423,45 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
 
 
     
-//    /**
-//     * Test of createEdge method, of class PageFlowController.
-//     */
-//    public void testCreateEdge() {
-//       
-//        
-//        System.out.println("createEdge");
-//        NavigationCaseEdge caseNode = null;
-//        PageFlowController instance = null;
-//        instance.createEdge(caseNode);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of createPageFlowNode method, of class PageFlowController.
-//     */
-//    public void testCreatePageFlowNode() {
-//        System.out.println("createPageFlowNode");
-//        Node node = null;
-//        PageFlowController instance = null;
-//        Page expResult = null;
-//        Page result = instance.createPageFlowNode(node);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
+    /**
+     * Test of createEdge method, of class PageFlowController.
+     */
+    public void testCreateEdge() {
+        System.out.println("createEdge");
+       
+        controller.unregisterListeners();
+        
+        String page1 = "page1.jsp";
+        String page2 = "page2.jsp";
+        Page source = controller.createPage(page1);
+        Page target = controller.createPage(page2);
+        
+        view.createNode(source, null, null);
+        view.createNode(target, null, null);
+        
+        NavigationCase navCase = controller.createLink(source, target, null);
+        NavigationCaseEdge newCaseEdge = new NavigationCaseEdge(view.getPageFlowController(), navCase);
+        controller.createEdge(newCaseEdge);
+        assertTrue(scene.getEdges().contains(newCaseEdge));
+    }
+    
+        /**
+     * Test of createEdge method, of class PageFlowController.
+     */
+    public void testCreateEdgeNotNull() {
+        System.out.println("createEdge with null value");
+        boolean npeCaught = false;
+        try {
+        controller.createEdge(null);
+        } catch (NullPointerException npe){
+            npeCaught = true;
+        }
+        assertTrue(npeCaught);
+    }
 
 //
-//    /**
-//     * Test of destroyPageFlowNode method, of class PageFlowController.
-//     */
-//    public void testDestroyPageFlowNode() {
-//        System.out.println("destroyPageFlowNode");
-//        Page pageNode = null;
-//        PageFlowController instance = null;
-//        instance.destroyPageFlowNode(pageNode);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
+
+
 //    /**
 //     * Test of removePageName2Page method, of class PageFlowController.
 //     */
