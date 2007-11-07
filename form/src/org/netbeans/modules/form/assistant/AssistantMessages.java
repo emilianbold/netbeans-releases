@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
 public class AssistantMessages {
     private static AssistantMessages defaultInstance = new AssistantMessages();
     private boolean initialized = false;
-    private Map/*<String, String[]>*/ contextToMessages;
+    private Map<String, String[]> contextToMessages;
 
     private AssistantMessages() {
     }
@@ -65,7 +65,7 @@ public class AssistantMessages {
         if (!initialized) {
             initialize();
         }
-        String[] messages = (String[])contextToMessages.get(context);
+        String[] messages = contextToMessages.get(context);
         return messages;
     }
 
@@ -77,28 +77,28 @@ public class AssistantMessages {
     }
 
     private void initialize() {
-        Map contextToSet = new HashMap();
+        Map<String,Set<String>> contextToSet = new HashMap<String,Set<String>>();
         ResourceBundle bundle = NbBundle.getBundle(AssistantMessages.class);
         Enumeration enumeration = bundle.getKeys();
         while (enumeration.hasMoreElements()) {
             String bundleKey = (String)enumeration.nextElement();
             String context = getContext(bundleKey);
-            Set messages = (Set)contextToSet.get(context);
+            Set<String> messages = contextToSet.get(context);
             if (messages == null) {
-                messages = new HashSet();
+                messages = new HashSet<String>();
                 contextToSet.put(context, messages);
             }
             messages.add(bundle.getString(bundleKey));
         }
 
         // Transform sets into arrays
-        contextToMessages = new HashMap();
-        Iterator iter = contextToSet.entrySet().iterator();
+        contextToMessages = new HashMap<String, String[]>();
+        Iterator<Map.Entry<String,Set<String>>> iter = contextToSet.entrySet().iterator();
         while (iter.hasNext()) {
-            Map.Entry entry = (Map.Entry)iter.next();
-            String key = (String)entry.getKey();
-            Set value = (Set)entry.getValue();
-            String[] messages = (String[])value.toArray(new String[value.size()]);
+            Map.Entry<String,Set<String>> entry = iter.next();
+            String key = entry.getKey();
+            Set<String> value = entry.getValue();
+            String[] messages = value.toArray(new String[value.size()]);
             contextToMessages.put(key, messages);
         }
         
