@@ -46,7 +46,7 @@ import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
 
 /**
- * Fails if any path element is misssing. Atributes :<br>
+ * Fails if any path element is misssing. Attributes:<br>
  *  path - input paths for validation<br>
  * The task is used for validation runtime class in binary tests distribution.
  */
@@ -88,7 +88,8 @@ public class ValidatePath extends Task {
                 } else {
                     log(msg, Project.MSG_WARN);
                 }
-                getProject().setProperty(failedProperty, "true");
+                getProject().setNewProperty(failedProperty, "true");
+                break;
             }
         }
     }
