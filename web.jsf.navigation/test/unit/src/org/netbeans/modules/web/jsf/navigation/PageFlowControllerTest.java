@@ -335,21 +335,45 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
          }
          assertTrue(npeFound);
     }
-//
-//    /**
-//     * Test of isKnownFolder method, of class PageFlowController.
-//     */
-//    public void testIsKnownFolder() {
-//        System.out.println("isKnownFolder");
-//        FileObject folder = null;
-//        PageFlowController instance = null;
-//        boolean expResult = false;
-//        boolean result = instance.isKnownFolder(folder);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
+     
+//     /**
+//      * Test if getting the webFolder works properly
+//      */
+//     public void testGetWebFolder() {
+//         System.out.println("CONTROLLER: getWebFolder() ->" + controller.getWebFolder());
+//         System.out.println("PageFlowView: getWebFolder() ->" + PageFlowView.getWebFolder(tu.getJsfDO().getPrimaryFile()));
+//         assertEquals(controller.getWebFolder(),PageFlowView.getWebFolder(tu.getJsfDO().getPrimaryFile()));
+//     }
+     
+     
+    /**
+     * Test of isKnownFolder method, of class PageFlowController.
+     */
+    public void testIsKnownFolder() throws IOException {
+        System.out.println("isKnownFolder");
+        
+        
+        FileObject webFolder = controller.getWebFolder();
+        FileObject testFolder = webFolder.createFolder("tesFolder");
+        boolean result1 = controller.isKnownFolder(webFolder);
+        assertTrue( result1);
+        boolean result2 = controller.isKnownFolder(testFolder);
+        assertTrue(result2);
+    }
+
+    /**
+     * Test of isKnownFolder method, of class PageFlowController.
+     */
+    public void testIsKnownFolderWeBINF() {
+        System.out.println("isKnownFolder");
+        
+        
+        FileObject webFolder = PageFlowView.getWebFolder(tu.getJsfDO().getPrimaryFile());
+        FileObject webINFFolder = webFolder.getFileObject("WEB-INF");
+        boolean result = controller.isKnownFolder(webINFFolder);
+        assertFalse(result);
+    }
+
 //    /**
 //     * Test of setupGraph method, of class PageFlowController.
 //     */

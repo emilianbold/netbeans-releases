@@ -109,6 +109,7 @@ public class PageFlowTestUtility {
 
     public void tearDown() throws Exception {
         destroyProject();
+        
     }
 
     private void destroyProject() throws IOException {
@@ -208,7 +209,7 @@ public class PageFlowTestUtility {
         EditorKit kit = JSFConfigEditorSupport.getEditorKit("text/x-jsf+xml");
         assert (kit instanceof XMLKit);
         editorSupport.edit();
-        JEditorPane[] panes = editorSupport.getOpenedPanes();
+       
         JSFConfigModel model = ConfigurationUtils.getConfigModel(getJsfDO().getPrimaryFile(), true);
         assertNotNull(model);
         FacesConfig myFacesConfig = model.getRootComponent();
