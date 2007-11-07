@@ -106,7 +106,7 @@ public class PanelConfigureProjectVisual extends JPanel {
     }
     
     void read (WizardDescriptor d) {
-        NewJ2SEProjectWizardIterator.WizardType lastType = (NewJ2SEProjectWizardIterator.WizardType) d.getProperty("wizard-type");  //NOI18N        
+        Object lastType =  d.getProperty("wizard-type");  //NOI18N        
         if (lastType == null || lastType != type) {
             //bugfix #46387 The type of project changed, reset values to defaults
             d.putProperty ("name", null);
