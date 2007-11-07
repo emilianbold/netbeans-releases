@@ -15,3 +15,17 @@
 installer/components/**/Bundle*.properties
 installer/engine/src/**/Bundle*.properties
 installer/engine/src/data/engine.properties
+
+#i18n files for native mac installer
+installer/mac/glassfish/pkg/Welcome.html
+installer/mac/glassfish/pkg/License.html
+installer/mac/glassfish/pkg/Description.plist
+installer/mac/pkg/Welcome.html
+installer/mac/pkg/License.html
+installer/mac/pkg/Description.plist
+installer/mac/openesb/pkg/License.html
+installer/mac/openesb/pkg/Welcome.html
+installer/mac/openesb/pkg/Description.plist
+installer/mac/tomcat/pkg/Welcome.html
+installer/mac/tomcat/pkg/License.html
+installer/mac/tomcat/pkg/Description.plist
