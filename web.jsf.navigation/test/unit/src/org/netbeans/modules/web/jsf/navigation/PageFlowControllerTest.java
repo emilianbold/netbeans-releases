@@ -239,6 +239,12 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         String page2 = "page2.jsp";
         Page source = controller.createPage(page1);
         Page target = controller.createPage(page2);
+        /* this create an NPE from being thrown in FacesModelListener 
+           In order to create the link , the pages need to exist in the node.*/
+        view.createNode(source, null, null);
+        view.createNode(target, null, null);
+        view.validateGraph();
+        
         Pin pinNode = null;
         NavigationCase result = controller.createLink(source, target, pinNode);
 
@@ -298,19 +304,37 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
 //        fail("The test case is a prototype.");
 //    }
 //
-//    /**
-//     * Test of isKnownFile method, of class PageFlowController.
-//     */
-//    public void testIsKnownFile() {
-//        System.out.println("isKnownFile");
-//        FileObject file = null;
-//        PageFlowController instance = null;
-//        boolean expResult = false;
-//        boolean result = instance.isKnownFile(file);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
+    /**
+     * Test of isKnownFile method, of class PageFlowController.
+     */
+    public void testIsKnownFile() throws IOException {
+        System.out.println("isKnownFile");
+        
+        FileObject webFolder = PageFlowView.getWebFolder(tu.getJsfDO().getPrimaryFile());
+        String strNewPage = "newPage";
+        FileObject newFO = webFolder.createData(strNewPage, "jsp");
+        boolean result = controller.isKnownFile(newFO);
+        assertTrue(result);
+    }
+    
+    public void testIsKnownFileXML() throws IOException {
+        FileObject webFolder = PageFlowView.getWebFolder(tu.getJsfDO().getPrimaryFile());
+        FileObject webINFFile = webFolder.getFileObject("WEB-INF");
+        String strNewPage = "newPage";
+        FileObject newFO = webINFFile.createData(strNewPage, "xml");
+        boolean result = controller.isKnownFile(newFO);
+        assertFalse(result);
+    }
+    
+     public void testIsKnownFileNull()  {
+         boolean npeFound = false;
+         try { 
+            boolean result = controller.isKnownFile(null);
+         } catch (NullPointerException npe ){
+             npeFound = true;
+         }
+         assertTrue(npeFound);
+    }
 //
 //    /**
 //     * Test of isKnownFolder method, of class PageFlowController.

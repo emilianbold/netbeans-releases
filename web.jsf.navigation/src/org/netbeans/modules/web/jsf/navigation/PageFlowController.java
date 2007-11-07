@@ -338,6 +338,11 @@ public class PageFlowController {
         return projectKnownFiles;
     }
 
+    /* 
+     * Check if the file type in known.
+     * @param file the fileobject type to check. If null, throws NPE.
+     * @return if it is of type jsp, jspf, or html it will return true.
+     */
     public final boolean isKnownFile(FileObject file) {
         if (file.getMIMEType().equals("text/x-jsp") && !file.getExt().equals("jspf")) {
             return true;
@@ -541,7 +546,12 @@ public class PageFlowController {
 
     /* 
      * Create a Page from a node 
-     * If no dataObject backing the page, call createPage(String)
+     *  This method
+     * does not actually add the pages to the scene.  It just creates the
+     * component.  You will need to call scene.createNode(page) if you want.
+     * @param node the node representing the page. If no dataObject backing the
+     *             page, call createPage(String)
+     * @return page the Page that was created.
      */
     public Page createPageFlowNode(Node node) {
         Page pageNode = new Page(this, node);
@@ -552,10 +562,14 @@ public class PageFlowController {
     }
 
     /*
-     * Create PageFlowNode from a string with no backing page. 
+     * Create PageFlowNode from a string with no backing page. This method
+     * does not actually add the pages to the scene.  It just creates the
+     * component.  You will need to call scene.createNode(page) if you want 
+     * to add it to the scene.
      * @param name the string of the name of the page to create
      *             If null is passed, NPE thrown.
      *             If empty string assertion thrown and null returned.
+     * @return page the Page that was created.
      */
     public Page createPage(String pageName) {
         Page node = null;
