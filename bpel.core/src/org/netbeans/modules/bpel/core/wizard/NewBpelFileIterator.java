@@ -67,11 +67,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.bpel.project.BpelproProject;
 import org.openide.ErrorManager;
-import org.openide.cookies.SaveCookie;
-import javax.swing.text.BadLocationException;
-import org.openide.cookies.EditorCookie;
-import org.netbeans.modules.xml.api.EncodingUtil;
-import javax.swing.text.Document;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
 
 /**
@@ -197,12 +193,12 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
     
-    private DataObject createBpelFile(String bpelFileName, FileObject srcFolder,
+    private DataObject createBpelFile(String bpelFileName, FileObject srcFolder, 
             String namespace) throws IOException {
         
         DataFolder df = DataFolder.findFolder( srcFolder );
         FileObject template = Templates.getTemplate( wiz );
-        
+
         boolean importSchemas=false;
         
         DataObject dTemplate = DataObject.find( template );
@@ -239,9 +235,10 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
             } finally {
                 reader.close();
             }
-            
+
             Writer writer = new BufferedWriter(new OutputStreamWriter(
-                    fileObject.getOutputStream(), "UTF-8")); //NOI18N
+                    fileObject.getOutputStream(), 
+                    FileEncodingQuery.getDefaultEncoding())); //NOI18N
             try {
                 writer.write(buffer.toString());
             } finally {
