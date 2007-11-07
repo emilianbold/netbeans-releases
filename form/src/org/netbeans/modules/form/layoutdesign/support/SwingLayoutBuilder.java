@@ -79,7 +79,7 @@ public class SwingLayoutBuilder {
     /**
      * Maps from component ID to Component.
      */
-    private Map/*<String,Component>*/ componentIDMap;
+    private Map<String,Component> componentIDMap;
 
     private boolean designMode;
 
@@ -87,7 +87,7 @@ public class SwingLayoutBuilder {
                               Container container, String containerId,
                               boolean designMode)
     {
-        componentIDMap = new HashMap/*<String,Component>*/();
+        componentIDMap = new HashMap<String,Component>();
         this.layoutModel = layoutModel;
         this.container = container;
         this.containerLC = layoutModel.getLayoutComponent(containerId);
@@ -246,7 +246,7 @@ public class SwingLayoutBuilder {
             int max = convertSize(interval.getMaximumSize(designMode), interval);
             if (interval.isComponent()) {
                 LayoutComponent layoutComp = interval.getComponent();
-                Component comp = (Component)componentIDMap.get(layoutComp.getId());
+                Component comp = componentIDMap.get(layoutComp.getId());
                 assert (comp != null);
                 if (minimum == LayoutConstants.NOT_EXPLICITLY_DEFINED) {
                     int dimension = (layoutComp.getLayoutInterval(LayoutConstants.HORIZONTAL) == interval) ? LayoutConstants.HORIZONTAL : LayoutConstants.VERTICAL;
@@ -367,18 +367,18 @@ public class SwingLayoutBuilder {
     
     private void composeLinks(GroupLayout layout, int dimension) {
 
-        Map links = SwingLayoutUtils.createLinkSizeGroups(containerLC, dimension);
+        Map<Integer,List<String>> links = SwingLayoutUtils.createLinkSizeGroups(containerLC, dimension);
         
-        Set linksSet = links.keySet();
-        Iterator i = linksSet.iterator();
+        Set<Integer> linksSet = links.keySet();
+        Iterator<Integer> i = linksSet.iterator();
         while (i.hasNext()) {
-            List group = (List)links.get(i.next());
-            List components = new ArrayList();
+            List<String> group = links.get(i.next());
+            List<Component> components = new ArrayList<Component>();
             for (int j=0; j < group.size(); j++) {
-                String compId = (String)group.get(j);
+                String compId = group.get(j);
                 LayoutComponent lc = layoutModel.getLayoutComponent(compId);
                 if (lc != null) {
-                    Component comp = (Component)componentIDMap.get(lc.getId());
+                    Component comp = componentIDMap.get(lc.getId());
                     if (comp == null) {
                         return;
                     } else {
@@ -386,7 +386,7 @@ public class SwingLayoutBuilder {
                     }
                 }
             }
-            Component[] compArray = (Component[])components.toArray(new Component[components.size()]);
+            Component[] compArray = components.toArray(new Component[components.size()]);
             if (compArray != null) {
                 if (dimension == LayoutConstants.HORIZONTAL) {
                     layout.linkSize(compArray, GroupLayout.HORIZONTAL);

@@ -64,7 +64,7 @@ public class SwingLayoutCodeGenerator {
     /**
      * Maps from component ID to <code>ComponentInfo</code>.
      */
-    private Map/*<String,ComponentInfo>*/ componentIDMap;
+    private Map<String,ComponentInfo> componentIDMap;
 
     /**
      * Creates new <code>SwingLayoutCodeGenerator</code>.
@@ -72,7 +72,7 @@ public class SwingLayoutCodeGenerator {
      * @param layoutModel layout model of the form.
      */
     public SwingLayoutCodeGenerator(LayoutModel layoutModel) {
-        componentIDMap = new HashMap/*<String,ComponentInfo>*/();
+        componentIDMap = new HashMap<String,ComponentInfo>();
         this.layoutModel = layoutModel;
     }
 
@@ -225,7 +225,7 @@ public class SwingLayoutCodeGenerator {
                 layout.append(getAddComponentStr());
                 int alignment = interval.getAlignment();
                 LayoutComponent layoutComp = interval.getComponent();
-                ComponentInfo info = (ComponentInfo)componentIDMap.get(layoutComp.getId());
+                ComponentInfo info = componentIDMap.get(layoutComp.getId());
                 if (min == LayoutConstants.NOT_EXPLICITLY_DEFINED) {
                     int dimension = (layoutComp.getLayoutInterval(LayoutConstants.HORIZONTAL) == interval) ? LayoutConstants.HORIZONTAL : LayoutConstants.VERTICAL;
                     if ((dimension == LayoutConstants.HORIZONTAL) && info.clazz.getName().equals("javax.swing.JComboBox")) { // Issue 68612 // NOI18N
@@ -382,19 +382,17 @@ public class SwingLayoutCodeGenerator {
 
     private void composeLinks(StringBuilder layout, LayoutComponent containerLC, String layoutVarName, int dimension) throws IOException {
 
-        Map linkSizeGroups = SwingLayoutUtils.createLinkSizeGroups(containerLC, dimension);
+        Map<Integer,List<String>> linkSizeGroups = SwingLayoutUtils.createLinkSizeGroups(containerLC, dimension);
         
-        Collection linkGroups = linkSizeGroups.values();
-        Iterator linkGroupsIt = linkGroups.iterator();
+        Collection<List<String>> linkGroups = linkSizeGroups.values();
+        Iterator<List<String>> linkGroupsIt = linkGroups.iterator();
         while (linkGroupsIt.hasNext()) {
-            List l = (List)linkGroupsIt.next();
+            List<String> l = linkGroupsIt.next();
             // sort so that the generated line is always the same when no changes were made
-            Collections.sort(l, new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    String id1 =(String)o1;
-                    String id2 =(String)o2;
-                    ComponentInfo info1 = (ComponentInfo)componentIDMap.get(id1);
-                    ComponentInfo info2 = (ComponentInfo)componentIDMap.get(id2);                    
+            Collections.sort(l, new Comparator<String>() {
+                public int compare(String id1, String id2) {
+                    ComponentInfo info1 = componentIDMap.get(id1);
+                    ComponentInfo info2 = componentIDMap.get(id2);                    
                     return info1.variableName.compareTo(info2.variableName);
                 }
             });
@@ -410,7 +408,7 @@ public class SwingLayoutCodeGenerator {
                 boolean first = true;
                 while (i.hasNext()) {
                     String cid = (String)i.next();
-                    ComponentInfo info = (ComponentInfo)componentIDMap.get(cid);
+                    ComponentInfo info = componentIDMap.get(cid);
                     if (first) {
                         first = false;
                         layout.append(info.variableName);

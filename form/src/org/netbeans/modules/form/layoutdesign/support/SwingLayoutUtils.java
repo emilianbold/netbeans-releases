@@ -62,7 +62,7 @@ public class SwingLayoutUtils {
      * components that are non-resizable unless one (or more) of
      * minimumSize, preferredSize or maximumSize properties is changed.
      */
-    private static Set nonResizableComponents = new HashSet();
+    private static Set<String> nonResizableComponents = new HashSet<String>();
     static {
         nonResizableComponents.addAll(
             Arrays.asList(new String[] {
@@ -81,7 +81,7 @@ public class SwingLayoutUtils {
      * components that are resizable unless one (or more) of
      * minimumSize, preferredSize or maximumSize properties is changed.
      */
-    private static Set resizableComponents = new HashSet();
+    private static Set<String> resizableComponents = new HashSet<String>();
     static {
         resizableComponents.addAll(
             Arrays.asList(new String[] {
@@ -120,9 +120,9 @@ public class SwingLayoutUtils {
         return STATUS_UNKNOWN;
     }
 
-    public static Map createLinkSizeGroups(LayoutComponent layoutComponent, int dimension) {
+    public static Map<Integer,List<String>> createLinkSizeGroups(LayoutComponent layoutComponent, int dimension) {
         
-        Map linkSizeGroup = new HashMap();
+        Map<Integer,List<String>> linkSizeGroup = new HashMap<Integer,List<String>>();
         
         if (layoutComponent.isLayoutContainer()) {
             for (LayoutComponent lc : layoutComponent.getSubcomponents()) {
@@ -130,9 +130,9 @@ public class SwingLayoutUtils {
                     if (lc.isLinkSized(dimension)) {
                         String cid = lc.getId();
                         Integer id = new Integer(lc.getLinkSizeId(dimension));
-                        List l = (List)linkSizeGroup.get(id);
+                        List<String> l = linkSizeGroup.get(id);
                         if (l == null) {
-                            l = new ArrayList();
+                            l = new ArrayList<String>();
                             l.add(cid);
                             linkSizeGroup.put(id, l);
                         } else {
