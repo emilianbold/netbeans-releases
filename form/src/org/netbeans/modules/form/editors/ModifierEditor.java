@@ -111,6 +111,7 @@ public class ModifierEditor extends JPanel implements ExPropertyEditor {
     
     private Component customComponent;
     
+    @Override
     public void addNotify() {
         setLayout(new BorderLayout());
         panel = new ModifierPanel(this);
@@ -127,6 +128,7 @@ public class ModifierEditor extends JPanel implements ExPropertyEditor {
         super.addNotify();
     }
 
+    @Override
     public void removeNotify() {
         super.removeNotify();
         if (panel != null) {

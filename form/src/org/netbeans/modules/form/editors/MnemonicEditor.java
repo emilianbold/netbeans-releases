@@ -55,6 +55,7 @@ public class MnemonicEditor extends PropertyEditorSupport implements NamedProper
      * Converts the char to String by either leaving
      * the single char or by creating unicode escape.
      */
+    @Override
     public String getAsText () {
         Object ovalue = getValue();
         char value = (char)0;
@@ -91,6 +92,7 @@ public class MnemonicEditor extends PropertyEditorSupport implements NamedProper
      * Set the property value by parsing given String.
      * @param text  The string to be parsed.
      */
+    @Override
     public void setAsText(String text) throws IllegalArgumentException {
         if (text.length() < 1) {
             setValue(new Integer(0));
@@ -151,6 +153,7 @@ public class MnemonicEditor extends PropertyEditorSupport implements NamedProper
      * a String the first character is taken as the new value.
      * @param newValue new value
      */
+    @Override
     public void setValue(Object newValue) throws IllegalArgumentException {
         if  (newValue instanceof Integer) {
             super.setValue(newValue);
@@ -181,6 +184,7 @@ public class MnemonicEditor extends PropertyEditorSupport implements NamedProper
      * @return A fragment of Java code representing an initializer for the
      *   	current value.
      */
+    @Override
     public String getJavaInitializationString() {
 	return "'" + getAsText() + "'"; // NOI18N
     }

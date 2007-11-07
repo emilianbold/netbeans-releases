@@ -67,6 +67,7 @@ public class EnumEditor extends PropertyEditorSupport
 
     // --------
 
+    @Override
     public String[] getTags() {
         int n = enumerationValues.length / 3;
         String[] tags = new String[n];
@@ -76,6 +77,7 @@ public class EnumEditor extends PropertyEditorSupport
         return tags;
     }
 
+    @Override
     public void setAsText(String str) {
         int n = enumerationValues.length / 3;
         for (int i=0; i < n; i++)
@@ -85,6 +87,7 @@ public class EnumEditor extends PropertyEditorSupport
             }
     }
 
+    @Override
     public String getAsText() {
         Object value = getValue();
         int n = enumerationValues.length / 3;
@@ -98,6 +101,7 @@ public class EnumEditor extends PropertyEditorSupport
                  enumerationValues[0].toString() : null;
     }
 
+    @Override
     public String getJavaInitializationString() {
         String initString = null;
 

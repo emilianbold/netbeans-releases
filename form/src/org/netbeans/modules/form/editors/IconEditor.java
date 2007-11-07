@@ -102,6 +102,7 @@ public class IconEditor extends PropertyEditorSupport
     private FileObject sourceFile;
     private boolean externalIconsAllowed = true;
 
+    @Override
     public void setValue(Object value) {
         if (sameValue(value, getValue()))
             return;
@@ -136,6 +137,7 @@ public class IconEditor extends PropertyEditorSupport
                && nbIcon1.getName().equals(nbIcon2.getName());
     }
 
+    @Override
     public String getAsText() {
         Object val = getValue();
         if (val instanceof NbImageIcon) {
@@ -152,10 +154,12 @@ public class IconEditor extends PropertyEditorSupport
         return ""; // NOI18N
     }
 
+    @Override
     public void setAsText(String string) throws IllegalArgumentException {
         setValue(createIconFromText(string));
     }
 
+    @Override
     public String getJavaInitializationString() {
         if (getValue() instanceof NbImageIcon) {
             NbImageIcon ii = (NbImageIcon)getValue();
@@ -201,16 +205,19 @@ public class IconEditor extends PropertyEditorSupport
         return sb.toString();
     }
 
+    @Override
     public String[] getTags() {
         if (currentFiles == null)
             currentFiles = getAvailableFileNames();
         return currentFiles;
     }
     
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
     
+    @Override
     public Component getCustomEditor() {
         CustomIconEditor customEditor = new CustomIconEditor(this);
         customEditor.setValue((NbImageIcon)getValue());
@@ -478,11 +485,13 @@ public class IconEditor extends PropertyEditorSupport
         }
 
         // FormDesignValue implementation
+        @Override
         public String getDescription() {
             return name;
         }
         
         // FormDesignValue implementation
+        @Override
         public FormDesignValue copy(FormProperty formProperty) {
             return new IconEditor.NbImageIcon(type, name, icon);   
         }

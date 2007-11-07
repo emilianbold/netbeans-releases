@@ -79,25 +79,30 @@ public class StringEditor extends PropertyEditorSupport
 
     private boolean valueUpdateInvoked;
 
+    @Override
     public void setValue(Object value) {
         super.setValue(value);
         if (!valueUpdateInvoked && textComp != null && textComp.isShowing())
             setValueToCustomEditor();
     }
 
+    @Override
     public void setAsText(String text) {
         setValue(text);
     }
 
+    @Override
     public String getJavaInitializationString () {
         String s = (String) getValue();
         return "\"" + toAscii(s) + "\""; // NOI18N
     }
 
+    @Override
     public boolean supportsCustomEditor () {
         return true;
     }
 
+    @Override
     public Component getCustomEditor () {
         if (customEditor == null) {
             JTextArea textArea = new JTextArea();
