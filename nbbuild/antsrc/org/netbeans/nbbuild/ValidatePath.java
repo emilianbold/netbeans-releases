@@ -38,6 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.nbbuild;
 
 import java.io.File;
@@ -50,8 +51,11 @@ import org.apache.tools.ant.types.*;
  * The task is used for validation runtime class in binary tests distribution.
  */
 public class ValidatePath extends Task {
+
     private String failedProperty;
+
     private Path path;
+
     public void setPath(Path p) {
         if (path == null) {
             path = p;
@@ -59,12 +63,14 @@ public class ValidatePath extends Task {
             path.append(p);
         }
     }
-    public Path createPath () {
+
+    public Path createPath() {
         if (path == null) {
             path = new Path(getProject());
         }
         return path.createPath();
     }
+
     public void setPathRef(Reference r) {
         createPath().setRefid(r);
     }
@@ -72,20 +78,19 @@ public class ValidatePath extends Task {
     public void setFailedProperty(String fp) {
         failedProperty = fp;
     }
-    
-    public void execute() throws BuildException {
-     String paths[] = path.list();
-     for (int i = 0 ; i < paths.length ; i++) {
-         if (!new File(paths[i]).exists()) {
-             String msg = "File " + paths[i] + " doesn't exists.";
-             if (failedProperty == null) {
-                 throw new BuildException(msg);
-             } else {
-                 getProject().log(msg, Project.MSG_WARN);
-             }
-             getProject().setProperty(failedProperty, "true");
-         }
-     }
+
+    public @Override void execute() throws BuildException {
+        for (String p : path.list()) {
+            if (!new File(p).exists()) {
+                String msg = "File " + p + " does not exist.";
+                if (failedProperty == null) {
+                    throw new BuildException(msg);
+                } else {
+                    log(msg, Project.MSG_WARN);
+                }
+                getProject().setProperty(failedProperty, "true");
+            }
+        }
     }
-    
+
 }
