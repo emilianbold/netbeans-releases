@@ -89,8 +89,9 @@ public class StartAction extends NodeAction {
     private static void performActionImpl(Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
             final ServerInstance si = (ServerInstance)nodes[i].getCookie(ServerInstance.class);
-            si.setServerState(ServerInstance.STATE_WAITING);
             if (si != null) {
+                si.setServerState(ServerInstance.STATE_WAITING);
+
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         String title = NbBundle.getMessage(StartAction.class, "LBL_Starting", si.getDisplayName());
