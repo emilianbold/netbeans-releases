@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -57,22 +57,18 @@ import java.util.ArrayList;
  * @author  nn136682
  */
 public class FilterXNode extends FilterNode {
+    
     private Node xnode;
-    private Node original;
+    
     private boolean extendsActions = true;
 
     public FilterXNode(Node original, Node xnode, boolean extendsActions) {
-        super(original);
-        this.xnode = xnode;
-        this.original = original;
-        disableDelegation(DELEGATE_GET_ACTIONS);
-        this.extendsActions = extendsActions;
+        this(original, xnode, extendsActions, null);
     }
     
     public FilterXNode(Node original, Node xnode, boolean extendsActions, Children xchildren) {
         super(original, xchildren);
         this.xnode = xnode;
-        this.original = original;
         disableDelegation(DELEGATE_GET_ACTIONS);
         this.extendsActions = extendsActions;
     }
