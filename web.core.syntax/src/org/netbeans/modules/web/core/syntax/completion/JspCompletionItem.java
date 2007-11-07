@@ -172,12 +172,12 @@ public class JspCompletionItem {
                     } else {
                         c.setCaretPosition(c.getCaret().getDot() + fill.length() - len);
                     }
-                    
-                    //format the inserted text
-                    reformat(c);
                 } finally {
                     doc.atomicUnlock();
                 }
+                //format the inserted text
+                reformat(c);
+                
                 if (moveBack != 0) {
                     Caret caret = c.getCaret();
                     int dot = caret.getDot();
