@@ -57,7 +57,7 @@ import java.util.ArrayList;
  * @author  nn136682
  */
 public class FilterXNode extends FilterNode {
-    protected Node xnode;
+    private Node xnode;
     private Node original;
     private boolean extendsActions = true;
 
@@ -77,8 +77,12 @@ public class FilterXNode extends FilterNode {
         this.extendsActions = extendsActions;
     }
     
-    public Node getXNode() {
+    protected Node getXNode() {
         return xnode;
+    }
+    
+    protected void setXNode(Node xnode) {
+        this.xnode = xnode;
     }
     
     public static class XChildren extends Children {

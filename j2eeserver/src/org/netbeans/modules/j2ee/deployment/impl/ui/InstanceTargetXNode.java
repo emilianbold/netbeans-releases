@@ -63,13 +63,11 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.S
     
     private ServerTarget instanceTarget;
     private ServerInstance instance;
-    private InstanceProperties instanceProperties;
     private InstanceTargetChildren instanceTargetChildren;
     
     public InstanceTargetXNode(Node instanceNode, ServerInstance instance) {
         this(instanceNode, Node.EMPTY, new InstanceTargetChildren(Node.EMPTY));
         this.instance = instance;
-        instanceProperties = instance.getInstanceProperties();
         instance.addStateListener(this);
     }
     
@@ -87,6 +85,7 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.S
     }
     
     public Node getDelegateTargetNode() {
+        Node xnode = getXNode();
         if (xnode != null && xnode != Node.EMPTY)
             return xnode;
         ServerTarget st = getServerTarget();
@@ -99,7 +98,7 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.S
     }
     
     private void resetDelegateTargetNode() {
-        xnode = null;
+        setXNode(null);
     }
     
     public javax.swing.Action[] getActions(boolean context) {
