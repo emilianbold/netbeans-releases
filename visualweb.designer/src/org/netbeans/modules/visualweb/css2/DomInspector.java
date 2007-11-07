@@ -192,8 +192,11 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
 
                         if (btc.webform == webform) {
                             // Force refresh if the box tree has changed
-                            if (((BoxTreeNode)btc.treeModel.getRoot()).getBox() != webform.getPane()
-                                                                                              .getPageBox()) {
+//                            if (((BoxTreeNode)btc.treeModel.getRoot()).getBox() != webform.getPane()
+//                                                                                              .getPageBox()) {
+                            // XXX #121239 Avoiding possible NPE.
+                            if (btc.treeModel != null && btc.treeModel.getRoot() instanceof BoxTreeNode && webform.getPane() != null
+                            && ((BoxTreeNode)btc.treeModel.getRoot()).getBox() != webform.getPane().getPageBox()) {
                                 btc.refresh();
                             }
 
