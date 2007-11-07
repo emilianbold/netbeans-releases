@@ -39,20 +39,16 @@
 package org.netbeans.modules.web.jsf.navigation;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.openide.filesystems.FileObject;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
-import org.netbeans.modules.web.jsf.navigation.PageFlowToolbarUtilities.Scope;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.*;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 
@@ -70,7 +66,7 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
 
     public PageFlowControllerTest(String testName) {
         super(testName);
-        zipPath = PageFlowViewTest.class.getResource("TestJSFApp.zip").getPath();
+        zipPath = PageFlowControllerTest.class.getResource("TestJSFApp.zip").getPath();
     }
 
     public static void main(java.lang.String[] args) {
