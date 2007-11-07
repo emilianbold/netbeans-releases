@@ -47,7 +47,7 @@ public class ImplAllAbstractTest extends HintsTestCase{
         editor = new EditorOperator(file);
         editor.setCaretPosition(4,1);
         new EventTool().waitNoEvent(750);
-        String pattern = ".*public void run\\(\\) \\{.*throw new UnsupportedOperationException\\(\\);.*\\}.*";
+        String pattern = ".*public void run\\(\\) \\{.*throw new UnsupportedOperationException\\(\"Not supported yet.\"\\);.*\\}.*";
         useHint("Implement",new String[]{"Implement all abstract methods"},pattern);
     }
     
@@ -58,13 +58,13 @@ public class ImplAllAbstractTest extends HintsTestCase{
         editor.setCaretPosition(6,1);
         new EventTool().waitNoEvent(750);
         String pattern = ".*public int getRowCount\\(\\) \\{.*" +
-                "throw new UnsupportedOperationException\\(\\);.*" +
+                "throw new UnsupportedOperationException\\(\"Not supported yet.\"\\);.*" +
                 "\\}.*" +
                 "public int getColumnCount\\(\\) \\{.*" +
-                "throw new UnsupportedOperationException\\(\\);.*" +
+                "throw new UnsupportedOperationException\\(\"Not supported yet.\"\\);.*" +
                 "\\}.*"+
                 "public Object getValueAt\\(int rowIndex, int columnIndex\\) \\{.*"+
-                "throw new UnsupportedOperationException\\(\\);.*" +
+                "throw new UnsupportedOperationException\\(\"Not supported yet.\"\\);.*" +
                 "\\}.*";
         useHint("Implement",new String[]{"Implement all abstract methods"},pattern);
     }
@@ -75,12 +75,12 @@ public class ImplAllAbstractTest extends HintsTestCase{
         editor = new EditorOperator(file);
         editor.setCaretPosition(11,1);
         new EventTool().waitNoEvent(750);
-        String pattern = ".*\\{.*public int compareTo\\(T o\\) \\{.*throw new UnsupportedOperationException\\(\\);.*\\}.*\\}.*";
+        String pattern = ".*\\{.*public int compareTo\\(T o\\) \\{.*throw new UnsupportedOperationException\\(\"Not supported yet.\"\\);.*\\}.*\\}.*";
         useHint("Implement",new String[]{"Implement all abstract methods"},pattern);
     }
     
     public static void main(String[] args) {
-        new TestRunner().run(ImplAllAbstractTest.class);
+        TestRunner.run(ImplAllAbstractTest.class);
     }
     
 }

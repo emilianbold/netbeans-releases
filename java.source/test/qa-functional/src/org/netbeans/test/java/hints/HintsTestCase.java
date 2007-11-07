@@ -30,10 +30,12 @@ package org.netbeans.test.java.hints;
 import java.awt.event.KeyEvent;
 import java.util.regex.Pattern;
 import javax.swing.ListModel;
+import javax.swing.SwingUtilities;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.junit.AssertionFailedErrorException;
 import org.netbeans.spi.editor.hints.Fix;
@@ -45,83 +47,100 @@ import org.netbeans.test.java.JavaTestCase;
  */
 public class HintsTestCase extends JavaTestCase {
     
+    private static final int MAX_CYCLES = 20;
+
     public HintsTestCase(String name) {
         super(name);
     }
-    
+
     private void compareArrays(String[] ethalon, String[] current) {
         for (int i = 0; i < current.length; i++) {
             String curItem = current[i];
             int j = 0;
             for (j = 0; j < ethalon.length; j++) {
                 String ethalItem = ethalon[j];
-                if(curItem.startsWith(ethalItem)) break;
+                if (curItem.startsWith(ethalItem)) {
+                    break;
+                }
             }
-            assertFalse("Item "+curItem+" is missing in ethalon list",j==ethalon.length);
+            assertFalse("Item " + curItem + " is missing in ethalon list", j == ethalon.length);
         }
-        
+
         for (int i = 0; i < ethalon.length; i++) {
             String ethalItem = ethalon[i];
             int j = 0;
             for (j = 0; j < current.length; j++) {
                 String curItem = current[j];
-                if(curItem.startsWith(ethalItem)) break;
+                if (curItem.startsWith(ethalItem)) {
+                    break;
+                }
             }
-            assertFalse("Item "+ethalItem+" is missing in current list",j==current.length);
+            assertFalse("Item " + ethalItem + " is missing in current list", j == current.length);
         }
     }
-    
     protected EditorOperator editor;
-    
     protected EditorOperator target;
-    
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         openDefaultProject();
         target = null;
     }
-    
+
     @Override
     protected void tearDown() throws Exception {
-        if(editor!=null) editor.close(false);
+        if (editor != null) {
+            editor.close(false);
+        }
         super.tearDown();
     }
-      
-    public void useHint(String hint,String[] hints,String pattern) {
-        new EventTool().waitNoEvent(500);        
-        editor.pushKey(KeyEvent.VK_ENTER,KeyEvent.ALT_DOWN_MASK);
+
+    public void useHint(String hint, String[] hints, String pattern) {
+        new EventTool().waitNoEvent(750);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 500);
         JListOperator jlo = null;
-        try {
-          jlo = new JListOperator(MainWindowOperator.getDefault());        
-        } catch(AssertionFailedErrorException afee) {          
-          editor.pushKey(KeyEvent.VK_ENTER,KeyEvent.ALT_DOWN_MASK);
-          jlo = new JListOperator(MainWindowOperator.getDefault());        
-        }
+        int cycles = 0;
+        while (cycles < MAX_CYCLES) {
+            cycles++;
+            editor.pushKey(KeyEvent.VK_ENTER, KeyEvent.ALT_DOWN_MASK);
+            try {
+                jlo = new JListOperator(MainWindowOperator.getDefault());
+                break;
+            } catch (TimeoutExpiredException tee) {
+                log("Try "+cycles);
+                editor.requestFocus();                
+                if(cycles==MAX_CYCLES) throw tee;
+            }
+        }      
         ListModel model = jlo.getModel();
         int index = -1;
         String[] list = new String[model.getSize()];
         for (int i = 0; i < model.getSize(); i++) {
-            String desc = ((Fix)model.getElementAt(i)).getText();
+            String desc = ((Fix) model.getElementAt(i)).getText();
             list[i] = desc;
-            if(desc.startsWith(hint)) index = i;
+            if (desc.startsWith(hint)) {
+                index = i;
+            }
         }
-        if(hints!=null) compareArrays(hints,list);
-        assertFalse("Required hint "+hint+" not found",index==-1);
+        if (hints != null) {
+            compareArrays(hints, list);
+        }
+        assertFalse("Required hint " + hint + " not found", index == -1);
         jlo.setSelectedIndex(index);
         jlo.pushKey(KeyEvent.VK_ENTER);
         new EventTool().waitNoEvent(750);
         String result;
-        if(target==null) {
+        if (target == null) {
             result = editor.getText();
         } else {
             target.setVisible(true);
             target.save();
             result = target.getText();
         }
-        Pattern p = Pattern.compile(pattern,Pattern.DOTALL);
-        if(!p.matcher(result).matches() ){
-            log("Pattern: "+pattern);
+        Pattern p = Pattern.compile(pattern, Pattern.DOTALL);
+        if (!p.matcher(result).matches()) {
+            log("Pattern: " + pattern);
             System.out.println(pattern);
             log("-------------------");
             log(result);
@@ -129,5 +148,4 @@ public class HintsTestCase extends JavaTestCase {
             fail("Expected pattern not found");
         }
     }
-    
 }

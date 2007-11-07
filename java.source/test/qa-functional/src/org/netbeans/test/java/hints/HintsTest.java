@@ -46,8 +46,7 @@ public class HintsTest extends HintsTestCase {
         String file = "castHint";
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
-        editor.setCaretPosition(9,1);
-        new EventTool().waitNoEvent(750);
+        editor.setCaretPosition(9,1);        
         useHint("Cast ...new Object(...) to String",new String[]{"Cast ...new Object(...) to String","Change type of s to Object"},".*String s = \\(String\\) new Object\\(\\);.*");
     }
     
@@ -55,8 +54,7 @@ public class HintsTest extends HintsTestCase {
         String file = "castHint";
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
-        editor.setCaretPosition(12,1);
-        new EventTool().waitNoEvent(750);
+        editor.setCaretPosition(12,1);        
         useHint("Cast ...get(...) to File",new String[]{"Cast ...get(...) to File","Change type of i to Object"},
                 ".*File i = \\(File\\) l.get\\(1\\);.*");
     }
@@ -66,7 +64,6 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(16,1);
-        new EventTool().waitNoEvent(750);
         useHint("Cast ...get(...) to Integer",new String[]{"Cast ...get(...) to Integer","Change type of i to Number"},
                 ".*Integer i = \\(Integer\\) nums.get\\(1\\);.*");
     }
@@ -76,10 +73,9 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(13,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create parameter x",new String[]{"Create parameter x",
-                                                  "Create local variable x",
-                                                  "Create field x in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+        useHint("Create Parameter x",new String[]{"Create Parameter x",
+                                                  "Create Local Variable x",
+                                                  "Create Field x in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
                 ".*public addHint\\(String\\[\\] x\\) \\{.*");
     }
     
@@ -88,10 +84,9 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(22,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create parameter",new String[]{"Create parameter a",
-                                                  "Create local variable a",
-                                                  "Create field a in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+        useHint("Create Parameter",new String[]{"Create Parameter a",
+                                                  "Create Local Variable a",
+                                                  "Create Field a in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
                 ".*public void method\\(String p1, int p2,int a\\) \\{.*");
     }
     
@@ -100,10 +95,9 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(23,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create parameter",new String[]{"Create parameter b",
-                                                  "Create local variable b",
-                                                  "Create field b in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+        useHint("Create Parameter",new String[]{"Create Parameter b",
+                                                  "Create Local Variable b",
+                                                  "Create Field b in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
                 ".*public void method\\(String p1, int p2,long b\\) \\{.*");
     }
     
@@ -112,10 +106,9 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(24,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create parameter",new String[]{"Create parameter c",
-                                                  "Create local variable c",
-                                                  "Create field c in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+        useHint("Create Parameter",new String[]{"Create Parameter c",
+                                                  "Create Local Variable c",
+                                                  "Create Field c in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
                 ".*public void method\\(String p1, int p2,char c\\) \\{.*");
     }
     
@@ -124,10 +117,9 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(25,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create parameter",new String[]{"Create parameter d",
-                                                  "Create local variable d",
-                                                  "Create field d in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+        useHint("Create Parameter",new String[]{"Create Parameter d",
+                                                  "Create Local Variable d",
+                                                  "Create Field d in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
                 ".*public void method\\(String p1, int p2,byte d\\) \\{.*");
     }
     
@@ -136,10 +128,9 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(26,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create parameter",new String[]{"Create parameter e",
-                                                  "Create local variable e",
-                                                  "Create field e in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+        useHint("Create Parameter",new String[]{"Create Parameter e",
+                                                  "Create Local Variable e",
+                                                  "Create Field e in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
                 ".*public void method\\(String p1, int p2,double e\\) \\{.*");
     }
     
@@ -148,10 +139,9 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(27,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create parameter",new String[]{"Create parameter f",
-                                                  "Create local variable f",
-                                                  "Create field f in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+        useHint("Create Parameter",new String[]{"Create Parameter f",
+                                                  "Create Local Variable f",
+                                                  "Create Field f in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
                 ".*public void method\\(String p1, int p2,Integer f\\) \\{.*");
     }
     
@@ -160,10 +150,9 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(28,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create parameter",new String[]{"Create parameter g",
-                                                  "Create local variable g",
-                                                  "Create field g in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+        useHint("Create Parameter",new String[]{"Create Parameter g",
+                                                  "Create Local Variable g",
+                                                  "Create Field g in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
                 ".*public void method\\(String p1, int p2,LinkedList<String> g\\) \\{.*");
     }
      
@@ -172,10 +161,9 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(29,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create parameter",new String[]{"Create parameter h",
-                                                  "Create local variable h",
-                                                  "Create field h in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+        useHint("Create Parameter",new String[]{"Create Parameter h",
+                                                  "Create Local Variable h",
+                                                  "Create Field h in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
                 ".*public void method\\(String p1, int p2,String h\\) \\{.*");
     } 
     
@@ -184,11 +172,10 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(34,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create parameter",new String[]{"Create parameter a",
-                                                  "Create local variable a",
-                                                  "Create field a in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
-                ".*public void method2\\(double x,int a,int ... y\\) \\{.*");
+        useHint("Create Parameter",new String[]{"Create Parameter a",
+                                                  "Create Local Variable a",
+                                                  "Create Field a in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+                ".*public void method2\\(double x,int a, int ... y\\) \\{.*");
     }
     
     public void testAddParamB() {
@@ -196,10 +183,9 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(30,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create parameter",new String[]{"Create parameter i",
-                                                  "Create local variable i",
-                                                  "Create field i in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+        useHint("Create Parameter",new String[]{"Create Parameter i",
+                                                  "Create Local Variable i",
+                                                  "Create Field i in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
                 ".*public void method\\(String p1, int p2,Map<String, List<String>> i\\) \\{.*");
     }
     
@@ -208,11 +194,10 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(13,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create local variable",new String[]{"Create parameter x",
-                                                  "Create local variable x",
-                                                  "Create field x in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
-                ".*String\\[\\] x = new java.lang.String\\[\\]\\{\"array\"\\};.*");
+        useHint("Create Local Variable",new String[]{"Create Parameter x",
+                                                  "Create Local Variable x",
+                                                  "Create Field x in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+                ".*String\\[\\] x = new String\\[\\]\\{\"array\"\\};.*");
     }
     
     public void testAddLocal2() {
@@ -220,10 +205,9 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(22,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create local variable",new String[]{"Create parameter a",
-                                                  "Create local variable a",
-                                                  "Create field a in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+        useHint("Create Local Variable",new String[]{"Create Parameter a",
+                                                  "Create Local Variable a",
+                                                  "Create Field a in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
                 ".*int a = 3;.*");
     }
     
@@ -232,11 +216,10 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(23,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create local variable",new String[]{"Create parameter b",
-                                                  "Create local variable b",
-                                                  "Create field b in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
-                ".*long b = 3L;.*");
+        useHint("Create Local Variable",new String[]{"Create Parameter b",
+                                                  "Create Local Variable b",
+                                                  "Create Field b in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+                ".*long b = 3l;.*");
     }
     
     public void testAddLocal4() {
@@ -244,10 +227,9 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(24,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create local variable",new String[]{"Create parameter c",
-                                                  "Create local variable c",
-                                                  "Create field c in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+        useHint("Create Local Variable",new String[]{"Create Parameter c",
+                                                  "Create Local Variable c",
+                                                  "Create Field c in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
                 ".*char c = 'c';.*");
     }
     
@@ -256,10 +238,9 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(25,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create local variable",new String[]{"Create parameter d",
-                                                  "Create local variable d",
-                                                  "Create field d in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+        useHint("Create Local Variable",new String[]{"Create Parameter d",
+                                                  "Create Local Variable d",
+                                                  "Create Field d in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
                 ".*byte d = \\(byte\\) 2;.*");
     }
     
@@ -268,10 +249,9 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(26,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create local variable",new String[]{"Create parameter e",
-                                                  "Create local variable e",
-                                                  "Create field e in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+        useHint("Create Local Variable",new String[]{"Create Parameter e",
+                                                  "Create Local Variable e",
+                                                  "Create Field e in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
                 ".*double e = 3.4;.*");
     }
     
@@ -280,11 +260,10 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(27,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create local variable",new String[]{"Create parameter f",
-                                                  "Create local variable f",
-                                                  "Create field f in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
-                ".*Integer f = new java.lang.Integer\\(1\\).*");
+        useHint("Create Local Variable",new String[]{"Create Parameter f",
+                                                  "Create Local Variable f",
+                                                  "Create Field f in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+                ".*Integer f = new Integer\\(1\\).*");
     }
     
      public void testAddLocal8() {
@@ -292,11 +271,10 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(28,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create local variable",new String[]{"Create parameter g",
-                                                  "Create local variable g",
-                                                  "Create field g in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
-                ".*LinkedList<String> g = new java.util.LinkedList<java.lang.String>\\(\\);.*");
+        useHint("Create Local Variable",new String[]{"Create Parameter g",
+                                                  "Create Local Variable g",
+                                                  "Create Field g in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+                ".*LinkedList<String> g = new LinkedList<String>\\(\\);.*");
     }
      
     public void testAddLocal9() {
@@ -304,10 +282,9 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(29,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create local variable",new String[]{"Create parameter h",
-                                                  "Create local variable h",
-                                                  "Create field h in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+        useHint("Create Local Variable",new String[]{"Create Parameter h",
+                                                  "Create Local Variable h",
+                                                  "Create Field h in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
                 ".*String h = \"ssss\";.*");
     } 
     
@@ -316,10 +293,9 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(34,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create local variable",new String[]{"Create parameter a",
-                                                  "Create local variable a",
-                                                  "Create field a in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+        useHint("Create Local Variable",new String[]{"Create Parameter a",
+                                                  "Create Local Variable a",
+                                                  "Create Field a in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
                 ".*int a = 3;.*");
     }
     
@@ -328,10 +304,9 @@ public class HintsTest extends HintsTestCase {
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
         editor.setCaretPosition(30,1);
-        new EventTool().waitNoEvent(750);
-        useHint("Create local variable",new String[]{"Create parameter i",
-                                                  "Create local variable i",
-                                                  "Create field i in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
+        useHint("Create Local Variable",new String[]{"Create Parameter i",
+                                                  "Create Local Variable i",
+                                                  "Create Field i in org.netbeans.test.java.hints.HintsTest.addHint"},                                                                                                    
                 ".*Map<String, List<String>> i = getMap\\(\\);.*");
     }
                     
