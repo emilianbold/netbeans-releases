@@ -205,7 +205,7 @@ public class LayoutUtils implements LayoutConstants {
      *         four elements if null is provided
      */
     static int[] getSizesOfDefaultGap(List sources, List targets, PaddingType gapType,
-                VisualMapper visualMapper, String contId, Map boundsMap) {
+                VisualMapper visualMapper, String contId, Map<String,LayoutRegion> boundsMap) {
         if (((sources != null) && (sources.isEmpty()))
             || ((targets != null) && (targets.isEmpty()))) {
             return new int[] { 0 }; // Preferred gap not between components
@@ -304,11 +304,11 @@ public class LayoutUtils implements LayoutConstants {
         return sizes;
     }
 
-    private static LayoutRegion sizeOfEmptySpaceHelper(LayoutInterval interval, Map boundsMap) {
+    private static LayoutRegion sizeOfEmptySpaceHelper(LayoutInterval interval, Map<String,LayoutRegion> boundsMap) {
         LayoutComponent component = interval.getComponent();
         String compId = component.getId();
         if (boundsMap.containsKey(compId)) {
-            return (LayoutRegion)boundsMap.get(compId);
+            return boundsMap.get(compId);
         } else {
             return interval.getCurrentSpace();
         }
@@ -338,22 +338,22 @@ public class LayoutUtils implements LayoutConstants {
      * @return <code>List</code> of <code>LayoutInterval</code>s that
      * represent <code>LayoutComponent</code>s.
      */
-    static List edgeSubComponents(LayoutInterval root, int edge) {
-        List components = null;
-        List candidates = new LinkedList();
+    static List<LayoutInterval> edgeSubComponents(LayoutInterval root, int edge) {
+        List<LayoutInterval> components = null;
+        List<LayoutInterval> candidates = new LinkedList<LayoutInterval>();
         if (root != null) {
-            components = new LinkedList();
+            components = new LinkedList<LayoutInterval>();
             candidates.add(root);
         }
         while (!candidates.isEmpty()) {
-            LayoutInterval candidate = (LayoutInterval)candidates.get(0);
+            LayoutInterval candidate = candidates.get(0);
             candidates.remove(candidate);
             if (candidate.isGroup()) {
                 if (candidate.isSequential()) {
                     int index = (edge == LEADING) ? 0 : candidate.getSubIntervalCount()-1;
                     candidates.add(candidate.getSubInterval(index));
                 } else {
-                    Iterator subs = candidate.getSubIntervals();
+                    Iterator<LayoutInterval> subs = candidate.getSubIntervals();
                     while (subs.hasNext()) {
                         candidates.add(subs.next());
                     }
@@ -427,8 +427,8 @@ public class LayoutUtils implements LayoutConstants {
         }
 
         // [more efficient algorithm based on region merging and ordering could be found...]
-        List int2list = null;
-        List addList = null;
+        List<LayoutInterval> int2list = null;
+        List<LayoutInterval> addList = null;
         Iterator it1 = getComponentIterator(interval1);
         while (it1.hasNext()) {
             LayoutRegion space1 = ((LayoutInterval)it1.next()).getCurrentSpace();
@@ -436,7 +436,7 @@ public class LayoutUtils implements LayoutConstants {
                            int2list.iterator() :
                            getComponentIterator(interval2, fromIndex, toIndex);
             if (int2list == null && it1.hasNext()) {
-                int2list = new LinkedList();
+                int2list = new LinkedList<LayoutInterval>();
                 addList = int2list;
             }
             while (it2.hasNext()) {

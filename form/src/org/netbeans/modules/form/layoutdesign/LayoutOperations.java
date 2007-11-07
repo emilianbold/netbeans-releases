@@ -77,12 +77,12 @@ class LayoutOperations implements LayoutConstants {
      * 'restTrailing' lists. Does not extract/remove the interval itself.
      */
     int extract(LayoutInterval interval, int alignment, boolean closed,
-                List restLeading, List restTrailing) {
+                List<List> restLeading, List<List> restTrailing) {
         return extract(interval, interval, alignment, closed, restLeading, restTrailing);
     }
         
     int extract(LayoutInterval leading, LayoutInterval trailing, int alignment, boolean closed,
-                List restLeading, List restTrailing)
+                List<List> restLeading, List<List> restTrailing)
     {
         LayoutInterval seq = leading.getParent();
         assert seq.isSequential();
@@ -101,8 +101,8 @@ class LayoutOperations implements LayoutConstants {
         }
 
         if (extractCount < seq.getSubIntervalCount()) {
-            List toRemainL = null;
-            List toRemainT = null;
+            List<Object/*Integer or LayoutInterval*/> toRemainL = null;
+            List<Object/*Integer or LayoutInterval*/> toRemainT = null;
             int startIndex = alignment == LEADING ? leadingIndex : leadingIndex - extractCount + 1;
             int endIndex = alignment == LEADING ? trailingIndex + extractCount - 1 : trailingIndex;
             Iterator it = seq.getSubIntervals();
@@ -110,14 +110,14 @@ class LayoutOperations implements LayoutConstants {
                 LayoutInterval li = (LayoutInterval) it.next();
                 if (idx < startIndex) {
                     if (toRemainL == null) {
-                        toRemainL = new LinkedList();
+                        toRemainL = new LinkedList<Object>();
                         toRemainL.add(new Integer(LayoutInterval.getEffectiveAlignment(li)));
                     }
                     toRemainL.add(li);
                 }
                 else if (idx > endIndex) {
                     if (toRemainT == null) {
-                        toRemainT = new LinkedList();
+                        toRemainT = new LinkedList<Object>();
                         toRemainT.add(new Integer(LayoutInterval.getEffectiveAlignment(li)));
                     }
                     toRemainT.add(li);
@@ -159,7 +159,7 @@ class LayoutOperations implements LayoutConstants {
 //     *        TRAILING or something else meaning not aligned)
      * @return parallel group if it has been created, or null
      */
-    LayoutInterval addGroupContent(List list, LayoutInterval seq,
+    LayoutInterval addGroupContent(List<List> list, LayoutInterval seq,
                                    int index, int dimension, int position/*, int mainAlignment*/)
     {
         assert seq.isSequential() && (position == LEADING || position == TRAILING);
@@ -169,7 +169,7 @@ class LayoutOperations implements LayoutConstants {
 
         // Remove sequences just with one gap
         for (int i=list.size()-1; i >= 0; i--) {
-            List subList = (List)list.get(i);
+            List subList = list.get(i);
             assert subList.size() >= 2;
             if (subList.size() == 2) { // there is just one interval
                 LayoutInterval li = (LayoutInterval) subList.get(1);
@@ -195,7 +195,7 @@ class LayoutOperations implements LayoutConstants {
         }
 
         if (list.size() == 1) { // just one sequence
-            List subList = (List) list.get(0);
+            List subList = list.get(0);
             for (int n=subList.size(),i=n-1; i > 0; i--) { // skip alignment at 0
                 LayoutInterval li = (LayoutInterval) subList.get(i);
                 if (resizingFillGap && li.isEmptySpace() && !LayoutInterval.canResize(li)
@@ -617,7 +617,7 @@ class LayoutOperations implements LayoutConstants {
     {
         boolean allOverlapping = true;
         LayoutInterval singleOverlap = null;
-        List overlapList = null;
+        List<LayoutInterval> overlapList = null;
 
         // looking for all intervals the given space is located next to
         Iterator it = group.getSubIntervals();
@@ -631,7 +631,7 @@ class LayoutOperations implements LayoutConstants {
                     }
                     else {
                         if (overlapList == null) {
-                            overlapList = new LinkedList();
+                            overlapList = new LinkedList<LayoutInterval>();
                             overlapList.add(singleOverlap);
                         }
                         overlapList.add(li);
@@ -650,7 +650,7 @@ class LayoutOperations implements LayoutConstants {
             subGroup.setAlignment(alignment^1);
             int index = -1;
             do {
-                LayoutInterval li = (LayoutInterval) overlapList.remove(0);
+                LayoutInterval li = overlapList.remove(0);
                 int idx = layoutModel.removeInterval(li);
                 if (index < 0) {
                     index = idx;
@@ -1308,7 +1308,7 @@ class LayoutOperations implements LayoutConstants {
         }
     }
     
-    void mergeAdjacentGaps(Set updatedContainers) {
+    void mergeAdjacentGaps(Set<LayoutComponent> updatedContainers) {
         Iterator it = layoutModel.getAllComponents();
         while (it.hasNext()) {
             LayoutComponent comp = (LayoutComponent) it.next();

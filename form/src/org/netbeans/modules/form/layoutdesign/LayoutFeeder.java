@@ -191,7 +191,7 @@ class LayoutFeeder implements LayoutConstants {
             IncludeDesc inclusion1 = null;
             IncludeDesc inclusion2 = null;
 
-            List inclusions = new LinkedList();
+            List<IncludeDesc> inclusions = new LinkedList<IncludeDesc>();
             boolean preserveOriginal = false;
 
             // if resizing in the other dimension then renew the original position
@@ -247,7 +247,7 @@ class LayoutFeeder implements LayoutConstants {
                 }
             }
 
-            IncludeDesc found = (IncludeDesc) inclusions.get(0);
+            IncludeDesc found = inclusions.get(0);
             inclusions.clear();
             if (preserveOriginal) { // resized in this dimension only
                 inclusion1 = originalPos1;
@@ -296,7 +296,7 @@ class LayoutFeeder implements LayoutConstants {
                             assert inclusions.size() == 1;
                         }
                     }
-                    inclusion2 = (IncludeDesc) inclusions.get(0);
+                    inclusion2 = inclusions.get(0);
                     inclusions.clear();
                 }
             }
@@ -585,7 +585,7 @@ class LayoutFeeder implements LayoutConstants {
      * @param group layout group that is scanned by this method.
      * @param region region to check.
      */
-    private static void fillOverlappingComponents(List overlaps, LayoutInterval group, LayoutRegion region) {
+    private static void fillOverlappingComponents(List<LayoutComponent> overlaps, LayoutInterval group, LayoutRegion region) {
         Iterator iter = group.getSubIntervals();
         while (iter.hasNext()) {
             LayoutInterval subInterval = (LayoutInterval)iter.next();
@@ -615,12 +615,12 @@ class LayoutFeeder implements LayoutConstants {
     // Helper method for getDimensionSolvingOverlap() method
     private static int[][] overlappingGapSides(LayoutInterval layoutRoot, LayoutRegion region) {
         int[][] overlapSides = new int[][] {{0,0},{0,0}};
-        List overlaps = new LinkedList();
+        List<LayoutComponent> overlaps = new LinkedList<LayoutComponent>();
 //        LayoutInterval layoutRoot = LayoutInterval.getRoot(positions[HORIZONTAL].interval);
         fillOverlappingComponents(overlaps, layoutRoot, region);
-        Iterator iter = overlaps.iterator();
+        Iterator<LayoutComponent> iter = overlaps.iterator();
         while (iter.hasNext()) {
-            LayoutComponent component = (LayoutComponent)iter.next();
+            LayoutComponent component = iter.next();
             LayoutRegion compRegion = component.getLayoutInterval(HORIZONTAL).getCurrentSpace();
             for (int i=0; i<DIM_COUNT; i++) {
                 int[] edges = overlappingSides(compRegion, region, i);
@@ -1556,8 +1556,8 @@ class LayoutFeeder implements LayoutConstants {
 //        }
 
         // separate content out of the emerging group
-        List alignedList = new ArrayList(2);
-        List remainder = new ArrayList(2);
+        List<LayoutInterval> alignedList = new ArrayList<LayoutInterval>(2);
+        List<List> remainder = new ArrayList<List>(2);
         int originalCount = parParent.getSubIntervalCount();
 
         int extAlign1 = extract(toAlignWith, alignedList, remainder, alignment);
@@ -1640,7 +1640,7 @@ class LayoutFeeder implements LayoutConstants {
         }
 
         // add the intervals and their separated neighbors to the aligned group
-        LayoutInterval aligning2 = (LayoutInterval) alignedList.get(1);
+        LayoutInterval aligning2 = alignedList.get(1);
         if (aligning2.getParent() != group) {
             if (aligning2.getParent() != null) {
                 layoutModel.removeInterval(aligning2);
@@ -1651,7 +1651,7 @@ class LayoutFeeder implements LayoutConstants {
             layoutModel.setIntervalAlignment(aligning2, alignment);
         }
 
-        LayoutInterval aligning1 = (LayoutInterval) alignedList.get(0);
+        LayoutInterval aligning1 = alignedList.get(0);
         if (aligning1.getParent() != group) {
             if (aligning1.getParent() != null) {
                 layoutModel.setIntervalAlignment(aligning1, extAlign1); //aligning1.getAlignment()); // remember explicit alignment
@@ -1686,7 +1686,7 @@ class LayoutFeeder implements LayoutConstants {
         return group;
     }
 
-    private int extract(LayoutInterval interval, List toAlign, List toRemain, int alignment) {
+    private int extract(LayoutInterval interval, List<LayoutInterval> toAlign, List<List> toRemain, int alignment) {
         int effAlign = LayoutInterval.getEffectiveAlignment(interval, alignment);
         LayoutInterval parent = interval.getParent();
         if (parent.isSequential()) {
@@ -1921,7 +1921,7 @@ class LayoutFeeder implements LayoutConstants {
 
     // -----
 
-    private void analyzeParallel(LayoutInterval group, List inclusions) {
+    private void analyzeParallel(LayoutInterval group, List<IncludeDesc> inclusions) {
         Iterator it = group.getSubIntervals();
         while (it.hasNext()) {
             LayoutInterval sub = (LayoutInterval) it.next();
@@ -2000,7 +2000,7 @@ class LayoutFeeder implements LayoutConstants {
         }
     }
 
-    private void analyzeSequential(LayoutInterval group, List inclusions) {
+    private void analyzeSequential(LayoutInterval group, List<IncludeDesc> inclusions) {
         boolean inSequence = false;
         boolean parallelWithSequence = false;
         int index = -1;
@@ -2178,11 +2178,11 @@ class LayoutFeeder implements LayoutConstants {
                                      boolean subgroup,
                                      int distance,
                                      int ortDistance,
-                                     List inclusions)
+                                     List<IncludeDesc> inclusions)
     {
         if (!inclusions.isEmpty()) {
             int index = inclusions.size() - 1;
-            IncludeDesc last = (IncludeDesc) inclusions.get(index);
+            IncludeDesc last = inclusions.get(index);
             boolean useLast = false;
             boolean useNew = false;
 
@@ -2242,7 +2242,7 @@ class LayoutFeeder implements LayoutConstants {
      * then the inclusion created here is used - because requested parallel
      * aligning needs to be preserved even if overlapping can't be avoided.
      */
-    private IncludeDesc addAligningInclusion(List inclusions) {
+    private IncludeDesc addAligningInclusion(List<IncludeDesc> inclusions) {
         if (aSnappedParallel == null)
             return null;
 
@@ -2272,7 +2272,7 @@ class LayoutFeeder implements LayoutConstants {
      *        will be merged with new inclusion sequentially; if false, original
      *        inclusion is just consulted when choosing best inclusion
      */
-    private void mergeParallelInclusions(List inclusions, IncludeDesc original, boolean preserveOriginal) {
+    private void mergeParallelInclusions(List<IncludeDesc> inclusions, IncludeDesc original, boolean preserveOriginal) {
         // 1st step - find representative (best) inclusion
         IncludeDesc best = null;
         boolean bestOriginal = false;
@@ -2357,8 +2357,8 @@ class LayoutFeeder implements LayoutConstants {
         // 3rd analyse inclusions requiring a subgroup (parallel with part of sequence)
         LayoutInterval subGroup = null;
         LayoutInterval nextTo = null;
-        List separatedLeading = new LinkedList();
-        List separatedTrailing = new LinkedList();
+        List<List> separatedLeading = new LinkedList<List>();
+        List<List> separatedTrailing = new LinkedList<List>();
 
         for (Iterator it=inclusions.iterator(); it.hasNext(); ) {
             IncludeDesc iDesc = (IncludeDesc) it.next();

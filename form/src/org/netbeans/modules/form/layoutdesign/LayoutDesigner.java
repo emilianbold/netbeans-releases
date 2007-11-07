@@ -674,7 +674,7 @@ public class LayoutDesigner implements LayoutConstants {
                                 r.y -= dy;
                                 compToRect.put(components[i], r);
                             }
-                            addingInts = layoutModel.createIntervalsFromBounds(compToRect);
+                            addingInts = LayoutModel.createIntervalsFromBounds(compToRect);
                         } else { // moving multiple existing components (already in layout, no resizing)
                             LayoutInterval[] commonParents = new LayoutInterval[DIM_COUNT];
                             Map<LayoutComponent, LayoutComponent> compMap = new HashMap<LayoutComponent, LayoutComponent>();
@@ -1175,15 +1175,15 @@ public class LayoutDesigner implements LayoutConstants {
     private void paintLinks(Graphics2D g, LayoutComponent component) {
         
         if ((component.isLinkSized(HORIZONTAL)) && (component.isLinkSized(VERTICAL))) {
-            Map linkGroupsH = layoutModel.getLinkSizeGroups(HORIZONTAL);            
-            Map linkGroupsV = layoutModel.getLinkSizeGroups(VERTICAL);
+            Map<Integer,List<String>> linkGroupsH = layoutModel.getLinkSizeGroups(HORIZONTAL);            
+            Map<Integer,List<String>> linkGroupsV = layoutModel.getLinkSizeGroups(VERTICAL);
             Integer linkIdH = new Integer(component.getLinkSizeId(HORIZONTAL));
             Integer linkIdV = new Integer(component.getLinkSizeId(VERTICAL));
             
-            List lH = (List)linkGroupsH.get(linkIdH);
-            List lV = (List)linkGroupsV.get(linkIdV);
+            List<String> lH = linkGroupsH.get(linkIdH);
+            List<String> lV = linkGroupsV.get(linkIdV);
 
-            Set merged = new HashSet(); 
+            Set<String> merged = new HashSet<String>(); 
             for (int i=0; i < lH.size(); i++) {
                 merged.add(lH.get(i));
             }
@@ -1191,9 +1191,9 @@ public class LayoutDesigner implements LayoutConstants {
                 merged.add(lV.get(i));
             }
 
-            Iterator mergedIt = merged.iterator();
+            Iterator<String> mergedIt = merged.iterator();
             while (mergedIt.hasNext()) {
-                String id = (String)mergedIt.next();
+                String id = mergedIt.next();
                 LayoutComponent lc = layoutModel.getLayoutComponent(id);
                 LayoutInterval interval = lc.getLayoutInterval(HORIZONTAL);
                 LayoutRegion region = interval.getCurrentSpace();
@@ -1596,7 +1596,7 @@ public class LayoutDesigner implements LayoutConstants {
                 r.y -= minY;
             }
         }
-        LayoutInterval[] addingInts = layoutModel.createIntervalsFromBounds(compToBounds);
+        LayoutInterval[] addingInts = LayoutModel.createIntervalsFromBounds(compToBounds);
         if (relative) {
             addUnspecified(components, targetContainer, addingInts);
         } else {

@@ -84,7 +84,7 @@ import org.openide.util.Utilities;
 
 public class LayoutTestUtils implements LayoutConstants {
     
-    static void writeString(List codeList, String name, String value) {
+    static void writeString(List<String> codeList, String name, String value) {
         if (value != null) {
             codeList.add("String " + name + "= \"" + value + "\";"); //NOI18N
         } else {
@@ -92,11 +92,11 @@ public class LayoutTestUtils implements LayoutConstants {
         }
     }
 
-    static void writeLayoutComponentArray(List codeList, String arrayName, String lcName) {
+    static void writeLayoutComponentArray(List<String> codeList, String arrayName, String lcName) {
         codeList.add("LayoutComponent[] " + arrayName + " = new LayoutComponent[] { " + lcName + " };"); //NOI18N
     }
     
-    static void writeCollection(List codeList, String name, Collection c) {
+    static void writeCollection(List<String> codeList, String name, Collection c) {
         codeList.add("Collection " + name + " = new ArrayList();"); //NOI18N
 	Iterator i = c.iterator();
         while (i.hasNext()) {
@@ -104,7 +104,7 @@ public class LayoutTestUtils implements LayoutConstants {
         }
     }
 
-    static void writeStringArray(List codeList, String name, String[] compIds) {
+    static void writeStringArray(List<String> codeList, String name, String[] compIds) {
         codeList.add("String[] " + name + " = new String[] {"); //NOI18N
         for (int i=0; i < compIds.length; i++) {
             codeList.add("\"" + compIds[i] + "\"" + (i+1 < compIds.length ? "," : "")); // NOI18N
@@ -112,7 +112,7 @@ public class LayoutTestUtils implements LayoutConstants {
         codeList.add("};"); //NOI18N
     }
 
-    static void writeIntArray(List codeList, String name, int[] values) {
+    static void writeIntArray(List<String> codeList, String name, int[] values) {
         codeList.add("int[] " + name + " = new int[] {"); //NOI18N
         for (int i=0; i < values.length; i++) {
             codeList.add(Integer.toString(values[i]) + (i+1 < values.length ? "," : "")); // NOI18N
@@ -120,7 +120,7 @@ public class LayoutTestUtils implements LayoutConstants {
         codeList.add("};"); //NOI18N
     }
     
-    static void writeRectangleArray(List codeList, String name, Rectangle[] bounds) {
+    static void writeRectangleArray(List<String> codeList, String name, Rectangle[] bounds) {
         codeList.add("Rectangle[] " + name + " = new Rectangle[] {"); //NOI18N
         for (int i=0; i < bounds.length; i++) {
             codeList.add("new Rectangle(" + bounds[i].x + ", " // NOI18N
@@ -238,7 +238,7 @@ public class LayoutTestUtils implements LayoutConstants {
 	return targetFolder;
     }
     
-    public static void writeTest(FormDesigner fd, FormDataObject formDO, Map idToNameMap, LayoutModel lm) {
+    public static void writeTest(FormDesigner fd, FormDataObject formDO, Map<String,String> idToNameMap, LayoutModel lm) {
 	FileObject formFO = formDO.getFormFile();
 
 	fd.getLayoutDesigner().dumpTestcode(formDO);

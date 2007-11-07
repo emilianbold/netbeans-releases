@@ -159,22 +159,22 @@ public final class LayoutComponent implements LayoutConstants {
 
     static LayoutComponent getCommonParent(LayoutComponent comp1, LayoutComponent comp2) {
         // Find all parents of given components
-        Iterator parents1 = parentsOfComponent(comp1).iterator();
-        Iterator parents2 = parentsOfComponent(comp2).iterator();
-        LayoutComponent parent1 = (LayoutComponent)parents1.next();
-        LayoutComponent parent2 = (LayoutComponent)parents2.next();
+        Iterator<LayoutComponent> parents1 = parentsOfComponent(comp1).iterator();
+        Iterator<LayoutComponent> parents2 = parentsOfComponent(comp2).iterator();
+        LayoutComponent parent1 = parents1.next();
+        LayoutComponent parent2 = parents2.next();
 
         // Candidate for the common parent
         LayoutComponent parent = null;
         while (parent1 == parent2) {
             parent = parent1;
             if (parents1.hasNext()) {
-                parent1 = (LayoutComponent)parents1.next();
+                parent1 = parents1.next();
             } else {
                 break;
             }
             if (parents2.hasNext()) {
-                parent2 = (LayoutComponent)parents2.next();
+                parent2 = parents2.next();
             } else {
                 break;
             }
@@ -182,8 +182,8 @@ public final class LayoutComponent implements LayoutConstants {
         return parent;
     }
 
-    private static List parentsOfComponent(LayoutComponent comp) {
-        List parents = new LinkedList();
+    private static List<LayoutComponent> parentsOfComponent(LayoutComponent comp) {
+        List<LayoutComponent> parents = new LinkedList<LayoutComponent>();
         while (comp != null) {
             parents.add(0, comp);
             comp = comp.getParent();
@@ -371,7 +371,7 @@ public final class LayoutComponent implements LayoutConstants {
     // kept to be available quickly for the layout designer
 
     void setCurrentBounds(Rectangle bounds, int baseline) {
-        LayoutRegion space = layoutIntervals[0].getCurrentSpace();;
+        LayoutRegion space = layoutIntervals[0].getCurrentSpace();
         space.set(bounds, baseline > 0 ? bounds.y + baseline : LayoutRegion.UNKNOWN);
         for (int i=1; i < layoutIntervals.length; i++) {
             layoutIntervals[i].setCurrentSpace(space);

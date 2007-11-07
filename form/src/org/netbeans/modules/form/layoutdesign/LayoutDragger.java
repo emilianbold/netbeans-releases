@@ -1656,7 +1656,7 @@ class LayoutDragger implements LayoutConstants {
         List fixedComps = LayoutUtils.edgeSubComponents(interval, oppAlignment);
         List sources = (alignment == LEADING) ? fixedComps : movingComps;
         List targets = (alignment == LEADING) ? movingComps : fixedComps;
-        Map map = new HashMap();
+        Map<String,LayoutRegion> map = new HashMap<String,LayoutRegion>();
         for (int i=0; i<movingComponents.length; i++) {
             map.put(movingComponents[i].getId(), movingBounds[i]);
         }
@@ -1697,6 +1697,7 @@ class LayoutDragger implements LayoutConstants {
             return interval != null;
         }
         
+        @Override
         public String toString() {
             StringBuffer sb = new StringBuffer();
             sb.append("distance=").append(distance); // NOI18N

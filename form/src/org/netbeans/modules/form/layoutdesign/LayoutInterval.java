@@ -90,7 +90,7 @@ public final class LayoutInterval implements LayoutConstants {
     private int groupAlignment = LEADING;
 
     // contained sub-intervals (if this is a group)
-    private List subIntervals;
+    private List<LayoutInterval> subIntervals;
 
     // associated LayoutComponent (if any)
     private LayoutComponent layoutComponent;
@@ -117,7 +117,7 @@ public final class LayoutInterval implements LayoutConstants {
         minSize = NOT_EXPLICITLY_DEFINED;
         prefSize = NOT_EXPLICITLY_DEFINED;
         if (type == SEQUENTIAL || type == PARALLEL) {
-            subIntervals = new ArrayList();
+            subIntervals = new ArrayList<LayoutInterval>();
             maxSize = NOT_EXPLICITLY_DEFINED; // group can resize by default
         }
         else {
@@ -301,7 +301,7 @@ public final class LayoutInterval implements LayoutConstants {
      * Returns an iterator of sub-intervals.
      * @return iterator of sub-intervals, empty if there are no sub-intervals
      */
-    public Iterator getSubIntervals() {
+    public Iterator<LayoutInterval> getSubIntervals() {
         return subIntervals != null ? subIntervals.iterator() :
                                       Collections.EMPTY_LIST.iterator();
     }
@@ -457,15 +457,14 @@ public final class LayoutInterval implements LayoutConstants {
     }
 
     LayoutInterval remove(int index) {
-        LayoutInterval interval = (LayoutInterval) subIntervals.get(index);
+        LayoutInterval interval = subIntervals.get(index);
         subIntervals.remove(index);
         interval.parentInterval = null;
         return interval;
     }
 
     LayoutInterval getSubInterval(int index) {
-        return subIntervals != null ?
-               (LayoutInterval) subIntervals.get(index) : null;
+        return subIntervals != null ? subIntervals.get(index) : null;
     }
 
     int indexOf(LayoutInterval interval) {
@@ -580,8 +579,8 @@ public final class LayoutInterval implements LayoutConstants {
      * are parents of the given interval. The root is the first in the list;
      * the interval itelf is also included - at the end.
      */
-    private static List parentsOfInterval(LayoutInterval interval) {
-        List parents = new LinkedList();
+    private static List<LayoutInterval> parentsOfInterval(LayoutInterval interval) {
+        List<LayoutInterval> parents = new LinkedList<LayoutInterval>();
         while (interval != null) {
             parents.add(0, interval);
             interval = interval.getParent();

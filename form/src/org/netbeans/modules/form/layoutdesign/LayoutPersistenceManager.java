@@ -125,7 +125,7 @@ class LayoutPersistenceManager implements LayoutConstants {
      * @return the layout model saved in a String
      */
     static String saveContainer(LayoutModel layoutModel, LayoutComponent container,
-                                Map idToNameMap, int indent, boolean humanReadable)
+                                Map<String,String> idToNameMap, int indent, boolean humanReadable)
     {
         LayoutPersistenceManager lpm = new LayoutPersistenceManager(layoutModel);
         lpm.layoutContainer = container;
@@ -229,7 +229,7 @@ class LayoutPersistenceManager implements LayoutConstants {
             if (interval.isComponent()) {
                 String name = interval.getComponent().getId();
                 if (idNameMap != null) {
-                    name = (String)idNameMap.get(name);
+                    name = idNameMap.get(name);
                     assert (name != null);
                 }
                 sb.append('<').append(XML_COMPONENT).append(' ');
@@ -368,7 +368,7 @@ class LayoutPersistenceManager implements LayoutConstants {
      * @param nameToIdMap map from component names to component IDs
      */
     static void loadContainer(LayoutModel layoutModel, String containerId,
-                              NodeList layoutNodeList, Map nameToIdMap)
+                              NodeList layoutNodeList, Map<String,String> nameToIdMap)
         throws java.io.IOException
     {
         LayoutPersistenceManager lpm = new LayoutPersistenceManager(layoutModel);
@@ -501,7 +501,7 @@ class LayoutPersistenceManager implements LayoutConstants {
         NamedNodeMap attrMap = componentNode.getAttributes();
         String name = attrMap.getNamedItem(ATTR_COMPONENT_ID).getNodeValue();
         Node linkSizeId = attrMap.getNamedItem(ATTR_LINK_SIZE);
-        String id = (String)idNameMap.get(name);
+        String id = idNameMap.get(name);
         if (id == null) { // try to workaround the missing name error (issue 77092)
             id = useTemporaryId(name);
         }
