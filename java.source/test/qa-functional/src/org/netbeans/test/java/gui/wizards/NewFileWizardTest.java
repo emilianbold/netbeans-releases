@@ -245,7 +245,7 @@ public class NewFileWizardTest extends JellyTestCase {
         
         // check if class name is generated 4 times in the source code
         int oldIndex = 0;
-        for (int i=0; i<2; i++) {
+        for (int i=0; i<1; i++) {
             oldIndex = text.indexOf(TEST_CLASS_NAME, oldIndex);
             if (oldIndex>-1) oldIndex++;
         }        

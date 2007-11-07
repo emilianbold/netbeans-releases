@@ -446,14 +446,9 @@ public class Common extends Object {
      * @param result
      * @return
      */
-    public static String unify(String result) {
-        int left=result.indexOf("* Created on");
+    public static String unify(String result) {        
+        int left=result.indexOf("@author");
         int right=result.indexOf('\n',left);
-        if (left > -1)
-            result=result.substring(0,left+"* Created on".length())+result.substring(right);
-        
-        left=result.indexOf("@author");
-        right=result.indexOf('\n',left);
         if (left > -1)
             result=result.substring(0,left+"@author".length())+result.substring(right);
         return result;
