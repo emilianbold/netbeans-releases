@@ -80,7 +80,6 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.store.RAMDirectory;
 import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.modules.java.source.usages.LuceneIndexMBeanImpl;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
@@ -113,52 +112,6 @@ class LuceneIndex extends Index {
         this.directory = FSDirectory.getDirectory(refCacheRoot, Index.isTest() ? NoLockFactory.getNoLockFactory() : new NBLockFactory());
     }
 
-    @SuppressWarnings("unchecked") // NOI18N, unchecked - lucene has source 1.4
-    private List<String> getUsagesData(final String resourceName, Set<ClassIndexImpl.UsageType> mask, BooleanOperator operator) throws IOException {                
-        if (!isValid(false)) {
-            return null;
-        }        
-        final Searcher searcher = new IndexSearcher (this.getReader());
-        try {
-            final List<String> result = new LinkedList<String> ();
-            Query query = null;
-            if (mask == null) {
-                query = new WildcardQuery(DocumentUtil.referencesTerm (resourceName,null));
-            }
-            else {
-                assert operator != null;
-                switch (operator) {
-                    case AND:
-                        query = new WildcardQuery(DocumentUtil.referencesTerm (resourceName, mask));
-                        break;
-                    case OR:
-                        BooleanQuery booleanQuery = new BooleanQuery ();
-                        for (ClassIndexImpl.UsageType ut : mask) {
-                            final Query subQuery = new WildcardQuery(DocumentUtil.referencesTerm (resourceName, EnumSet.of(ut)));
-                            booleanQuery.add(subQuery, Occur.SHOULD);                        
-                        }
-                        query = booleanQuery;
-                        break;
-                    default:
-                        throw new IllegalArgumentException (operator.toString());
-                }
-            }
-            assert query != null;
-            final Hits hits = searcher.search (query);
-            for (Iterator<Hit> it = (Iterator<Hit>) hits.iterator(); it.hasNext();) {
-                final Hit hit = it.next ();
-                final Document doc = hit.getDocument();
-                final String user = DocumentUtil.getBinaryName(doc);
-                final String map = DocumentUtil.getRefereneType(doc,resourceName);
-                if (map != null) {
-                    result.add (DocumentUtil.encodeUsage(user,map));
-                }
-            }
-            return result;
-        } finally {
-            searcher.close();
-        }
-    }
 
     @SuppressWarnings ("unchecked")     // NOI18N, unchecked - lucene has source 1.4
     public List<String> getUsagesFQN(final String resourceName, final Set<ClassIndexImpl.UsageType>mask, final BooleanOperator operator) throws IOException, InterruptedException {
@@ -208,26 +161,6 @@ class LuceneIndex extends Index {
         }
     }
 
-    private List<String> getReferencesData(final String resourceName) throws IOException {
-        if (!isValid(false)) {
-            return null;
-        }    
-        Searcher searcher = new IndexSearcher (this.getReader());
-        try {
-            Hits hits = searcher.search(DocumentUtil.binaryNameQuery(resourceName));
-            assert hits.length() <= 1;
-            if (hits.length() == 0) {
-                return null;
-            }
-            else {
-                Hit hit = (Hit) hits.iterator().next();
-                return DocumentUtil.getReferences(hit.getDocument());
-            }
-        }
-        finally {
-            searcher.close();
-        }
-    }
         
     public String getSourceName (final String resourceName) throws IOException {
         if (!isValid(false)) {
