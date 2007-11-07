@@ -81,6 +81,7 @@ class FakeScrollPanePeer extends FakeContainerPeer
 //            this.setBackground(SystemColor.scrollbar);
 //        }
         
+        @Override
         public void paint(Graphics g) {
             ScrollPane target = (ScrollPane) _target;
             Dimension sz = target.getSize();
@@ -89,6 +90,7 @@ class FakeScrollPanePeer extends FakeContainerPeer
             FakePeerUtils.drawLoweredBox(g,0,0,sz.width,sz.height);
         }
 
+        @Override
         public Dimension getMinimumSize() {
             ScrollPane scrollPane = (ScrollPane) _target;
             int n = scrollPane.getComponentCount();

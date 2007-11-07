@@ -72,6 +72,7 @@ class FakeButtonPeer extends FakeComponentPeer
             this.setForeground(SystemColor.controlText);
         }
         
+        @Override
         public void paint(Graphics g) {
             Button target =(Button) _target;
             Dimension sz = target.getSize();
@@ -103,6 +104,7 @@ class FakeButtonPeer extends FakeComponentPeer
             g.drawString(label, x, y);
         }
 
+        @Override
         public Dimension getMinimumSize() {
             String label = ((Button)_target).getLabel();
 

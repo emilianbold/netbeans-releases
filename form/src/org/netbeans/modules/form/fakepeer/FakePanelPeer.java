@@ -69,6 +69,7 @@ class FakePanelPeer extends FakeContainerPeer
             this.setForeground(SystemColor.windowText);
         }
 
+        @Override
         public void paint(Graphics g) {
             Dimension sz = _target.getSize();
 

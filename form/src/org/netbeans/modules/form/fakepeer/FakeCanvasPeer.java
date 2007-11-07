@@ -68,6 +68,7 @@ class FakeCanvasPeer extends FakeComponentPeer
             this.setForeground(SystemColor.controlText);
         }
 
+        @Override
         public void paint(Graphics g) {
             g.setColor(_target.getForeground());
         }

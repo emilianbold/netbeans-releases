@@ -75,6 +75,7 @@ class FakeLabelPeer extends FakeComponentPeer
             this.setForeground(SystemColor.controlText);
         }
         
+        @Override
         public void paint(Graphics g) {
             Label target = (Label) _target;
 
@@ -112,6 +113,7 @@ class FakeLabelPeer extends FakeComponentPeer
             g.drawString(label, x, y);
         }
 
+        @Override
         public Dimension getMinimumSize() {
             String label = ((Label)_target).getText();
 

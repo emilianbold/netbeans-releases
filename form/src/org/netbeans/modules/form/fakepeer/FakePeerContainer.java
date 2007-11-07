@@ -56,19 +56,23 @@ public class FakePeerContainer extends Container
         setFont(FakePeerSupport.getDefaultAWTFont());
     }
 
+    @Override
     public void addNotify() {
         FakePeerSupport.attachFakePeerRecursively(this);
         super.addNotify();
     }
 
+    @Override
     protected void addImpl(Component comp, Object constraints, int index) {
         FakePeerSupport.attachFakePeer(comp);
         super.addImpl(comp, constraints, index);
     }
     
+    @Override
     public void update(Graphics g) {
     }
 
+    @Override
     public void paint(Graphics g) {
         Dimension sz = getSize();
 //        Shape oldClip = g.getClip();

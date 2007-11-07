@@ -373,6 +373,7 @@ abstract class FakeComponentPeer
 
     protected class Delegate extends Component
     {
+        @Override
         public void paint(Graphics g) {
             Dimension sz = _target.getSize();
 
@@ -399,6 +400,7 @@ abstract class FakeComponentPeer
             g.drawString(className, x,(sz.height - h) / 2 + h - 1);
         }
 
+        @Override
         public Dimension getMinimumSize() {
             String className = _target.getClass().getName();
             className = className.substring(className.lastIndexOf('.') + 1);

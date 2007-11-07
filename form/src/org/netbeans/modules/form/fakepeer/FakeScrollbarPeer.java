@@ -72,6 +72,7 @@ class FakeScrollbarPeer extends FakeComponentPeer
             this.setBackground(SystemColor.scrollbar);
         }
         
+        @Override
         public void paint(Graphics g) {
             Scrollbar target = (Scrollbar) _target;
             Dimension sz = target.getSize();
@@ -91,6 +92,7 @@ class FakeScrollbarPeer extends FakeComponentPeer
                                         scrollRange);
         }
 
+        @Override
         public Dimension getMinimumSize() {
             Scrollbar target =(Scrollbar) _target;
             return target.getOrientation() == Scrollbar.HORIZONTAL ?

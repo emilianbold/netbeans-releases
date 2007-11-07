@@ -86,6 +86,7 @@ class FakeChoicePeer extends FakeComponentPeer
             this.setForeground(SystemColor.controlText);
         }
         
+        @Override
         public void paint(Graphics g) {
             Choice target =(Choice) _target;
             Dimension sz = target.getSize();
@@ -122,6 +123,7 @@ class FakeChoicePeer extends FakeComponentPeer
                 g, w-BUT_W-2, y+2, BUT_W, comph-4, 4, target.isEnabled());
         }
 
+        @Override
         public Dimension getMinimumSize() {
             String label = ((Choice)_target).getSelectedItem();
 

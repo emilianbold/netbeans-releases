@@ -54,6 +54,7 @@ class FakeTextAreaPeer extends FakeTextComponentPeer
         super(target);
     }
 
+    @Override
     Component createDelegate() {
         return new Delegate();
     }
@@ -94,6 +95,7 @@ class FakeTextAreaPeer extends FakeTextComponentPeer
 
     private class Delegate extends FakeTextComponentPeer.Delegate
     {
+        @Override
         public void paint(Graphics g) {
             super.paint(g);
 
@@ -147,6 +149,7 @@ class FakeTextAreaPeer extends FakeTextComponentPeer
             }
         }
 
+        @Override
         public Dimension getMinimumSize() {
             TextArea target = (TextArea)_target;
             return FakeTextAreaPeer.this.getMinimumSize(target.getColumns(),target.getRows());

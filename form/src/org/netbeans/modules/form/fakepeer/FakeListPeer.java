@@ -122,6 +122,7 @@ class FakeListPeer extends FakeComponentPeer
             this.setForeground(SystemColor.windowText);
         }
         
+        @Override
         public void paint(Graphics g) {
             List target =(List) _target;
             Dimension sz = target.getSize();
@@ -156,6 +157,7 @@ class FakeListPeer extends FakeComponentPeer
             }
         }
 
+        @Override
         public Dimension getMinimumSize() {
             return FakeListPeer.this.getMinimumSize(1);
         }

@@ -63,11 +63,13 @@ class FakeTextComponentPeer extends FakeComponentPeer
         return new Delegate();
     }
 
+    @Override
     void initDelegate() {
         _text = ((TextComponent)_target).getText();
         super.initDelegate();
     }
 
+    @Override
     public boolean isFocusTraversable() {
         return true;
     }
@@ -138,6 +140,7 @@ class FakeTextComponentPeer extends FakeComponentPeer
             this.setForeground(SystemColor.windowText);
         }
         
+        @Override
         public void paint(Graphics g) {
             Dimension sz = _target.getSize();
             int w = sz.width;

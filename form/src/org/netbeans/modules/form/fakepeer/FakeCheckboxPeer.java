@@ -78,6 +78,7 @@ class FakeCheckboxPeer extends FakeComponentPeer
             this.setForeground(SystemColor.controlText);
         }
         
+        @Override
         public void paint(Graphics g) {
             Checkbox target = (Checkbox) _target;
             Dimension sz = target.getSize();
@@ -130,6 +131,7 @@ class FakeCheckboxPeer extends FakeComponentPeer
             }
         }
 
+        @Override
         public Dimension getMinimumSize() {
             String label = ((Checkbox)_target).getLabel();
 

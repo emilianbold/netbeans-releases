@@ -54,6 +54,7 @@ class FakeTextFieldPeer extends FakeTextComponentPeer
         super(target);
     }
 
+    @Override
     Component createDelegate() {
         return new Delegate();
     }
@@ -87,6 +88,7 @@ class FakeTextFieldPeer extends FakeTextComponentPeer
 
     private class Delegate extends FakeTextComponentPeer.Delegate
     {
+        @Override
         public void paint(Graphics g) {
             super.paint(g);
 
@@ -104,6 +106,7 @@ class FakeTextFieldPeer extends FakeTextComponentPeer
             }
         }
 
+        @Override
         public Dimension getMinimumSize() {
             String text = ((TextField)_target).getText();
 
