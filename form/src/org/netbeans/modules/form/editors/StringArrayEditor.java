@@ -152,12 +152,12 @@ public class StringArrayEditor implements XMLPropertyEditor,
             return;
         }
         StringTokenizer tok = new StringTokenizer(text, ","); // NOI18N
-        java.util.List list = new LinkedList();
+        java.util.List<String> list = new LinkedList<String>();
         while (tok.hasMoreTokens()) {
             String s = tok.nextToken();
             list.add(s.trim());
         }
-        String [] a = (String[])list.toArray(new String[list.size()]);
+        String [] a = list.toArray(new String[list.size()]);
         setValue(a);
     }
 
