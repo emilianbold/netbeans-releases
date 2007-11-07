@@ -61,12 +61,14 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -82,6 +84,7 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
     private final ClassPath sourcePath;
     private final String mainClassPropName;
     private FileObject current;
+    private FileChangeListener listener;
     
     /** Creates a new instance of MainClassUpdater */
     public MainClassUpdater(final Project project, final PropertyEvaluator eval,
@@ -95,14 +98,14 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
         this.eval = eval;
         this.helper = helper;
         this.sourcePath = sourcePath;
-        this.mainClassPropName = mainClassPropName;
+        this.mainClassPropName = mainClassPropName;        
         this.eval.addPropertyChangeListener(this);
         this.addFileChangeListener ();
     }
     
     public synchronized void unregister () {
-        if (current != null) {
-            current.removeFileChangeListener(this);
+        if (current != null && listener != null) {
+            current.removeFileChangeListener(listener);
         }
     }
     
@@ -119,6 +122,9 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
     
     @Override
     public void fileRenamed (final FileRenameEvent evt) {
+        if (!project.getProjectDirectory().isValid()) {
+            return;
+        }
         final FileObject _current;
         synchronized (this) {
             _current = this.current;
@@ -172,9 +178,10 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
     
     private void addFileChangeListener () {
         synchronized (MainClassUpdater.this) {
-            if (current != null) {
-                current.removeFileChangeListener(MainClassUpdater.this);
+            if (current != null && listener != null) {
+                current.removeFileChangeListener(listener);
                 current = null;
+                listener = null;
             }            
         }
         final String mainClassName = org.netbeans.modules.java.j2seproject.MainClassUpdater.this.eval.getProperty(mainClassPropName);
@@ -193,8 +200,9 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
                              if (te != null) {
                                 synchronized (MainClassUpdater.this) {
                                     current = SourceUtils.getFile(te, cpInfo);
+                                    listener = WeakListeners.create(FileChangeListener.class, MainClassUpdater.this, current);
                                     if (current != null && sourcePath.contains(current)) {
-                                        current.addFileChangeListener(MainClassUpdater.this);
+                                        current.addFileChangeListener(listener);
                                     }
                                 }
                             }                            
