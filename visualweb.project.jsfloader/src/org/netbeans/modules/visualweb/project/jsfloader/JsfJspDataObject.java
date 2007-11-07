@@ -102,7 +102,7 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
     static final long serialVersionUID =8354927561693097159L;
 
     static final String JSF_ATTRIBUTE = "jsfjsp"; // NOI18N
-    private static final String JSP_ICON_BASE = "org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspObject"; // NOI18N
+    private static final String JSP_ICON_BASE = "org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspObject.png"; // NOI18N
     private static final String PROP_ENCODING = "encoding"; // NOI18N
     private static final String DEFAULT_ENCODING = "ISO-8559-1"; // NOI18N
     
@@ -117,7 +117,9 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
     public JsfJspDataObject(FileObject primaryFile, UniFileLoader loader) throws DataObjectExistsException {
         super(primaryFile, loader);
         CookieSet set = getCookieSet();
-        set.add(new Class[] {OpenCookie.class, EditCookie.class}, this);
+        
+        set.add(OpenCookie.class, this);
+        set.add(EditCookie.class, this);
         set.add(JsfJspEditorSupport.class, this);
         set.add(ViewSupport.class, this);
         set.add(TagLibParseCookie.class, this);
@@ -155,30 +157,32 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
         currentLookup = new ProxyLookup(noEncodingLookup, Lookups.singleton(feq));
     }
     
+    @Override
     protected Node createNodeDelegate () {
         DataNode n = new JsfJspDataNode(this, Children.LEAF);
-        n.setIconBase(JSP_ICON_BASE);
+        n.setIconBaseWithExtension(JSP_ICON_BASE);
         return n;
     }
 
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx("org.netbeans.modules.visualweb.project.jsfloader.JsfJspDataLoader" + ".Obj"); // NOI18N
     }
 
     /** Creates new Cookie */
-    public Node.Cookie createCookie(Class klass) {
+    public <T extends Node.Cookie> T createCookie(Class<T> klass) {
         if (OpenCookie.class.equals(klass)
         || EditCookie.class.equals(klass)) {
             if(openEdit == null) {
                 openEdit = new OpenEdit();
             }
-            return openEdit;
+            return klass.cast(openEdit);
         } else if (JsfJspEditorSupport.class.isAssignableFrom(klass)) {
-            return getJsfJspEditorSupport();
+            return klass.cast(getJsfJspEditorSupport());
         } else if (ViewSupport.class.isAssignableFrom(klass)) {
-            return new ViewSupport(getPrimaryEntry());
+            return klass.cast(new ViewSupport(getPrimaryEntry()));
         } else if (TagLibParseCookie.class.isAssignableFrom(klass)) {
-            return TagLibParseFactory.createTagLibParseCookie(getPrimaryFile());
+            return klass.cast(TagLibParseFactory.createTagLibParseCookie(getPrimaryFile()));
         } else {
             return null;
         }
@@ -195,12 +199,13 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
     }
 
     /** Gets the superclass cookie, without hacking save cookie. */
-    Node.Cookie getPureCookie(Class clazz) {
+    <T extends Node.Cookie> T getPureCookie(Class<T> clazz) {
         return super.getCookie(clazz);
     }
 
     /** Overrides behaviour to provide compound save cookie. */
-    public Node.Cookie getCookie(Class clazz) {
+    @Override
+    public <T extends Node.Cookie> T getCookie(Class<T> clazz) {
         if(clazz == SaveCookie.class){
             FileObject primaryJavaFileObject = Utils.findJavaForJsp(getPrimaryFile());
             if(primaryJavaFileObject != null && primaryJavaFileObject.isValid()) {
@@ -216,15 +221,16 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
                 if(jspSaveCookie == null && javaSaveCookie == null) {
                     return null;
                 } else {
-                    return new CompoundSaveCookie(jspSaveCookie, javaSaveCookie);
+                    return clazz.cast(new CompoundSaveCookie(jspSaveCookie, javaSaveCookie));
                 }
             }
         } else {
             // XXX NB #80853 Fix the cookie creation when referred by impl classes.
             if (TagLibParseCookie.class.isAssignableFrom(clazz)) {
-                clazz = TagLibParseCookie.class;
+                return clazz.cast(super.getCookie(TagLibParseCookie.class));
             }
         }
+        
         return super.getCookie(clazz);
     }
     
@@ -319,7 +325,7 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
     }
     
     
-    private static final ThreadLocal pureCopy = new ThreadLocal();
+    private static final ThreadLocal<Boolean> pureCopy = new ThreadLocal<Boolean>();
     
     /** Copies only this object without touching the corresponding jsf jsp one.
      * Used when copying originated form corresponding file. */
@@ -392,6 +398,7 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
     }
     
     /** Handles copy. Handles also copy of corresponding jsf jsp file. */
+    @Override
     protected DataObject handleCopy(DataFolder folder) throws IOException {
         if(pureCopy.get() == Boolean.TRUE) {
             return super.handleCopy(folder);
@@ -499,6 +506,7 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
     }
     
     /** Handles create from template. Also handles creating from template of corresponding java file. */
+    @Override
     protected DataObject handleCreateFromTemplate(DataFolder df, String name) throws IOException {
         DataObject result = null;
         try {
@@ -590,6 +598,7 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
     }
 
     /** Renames the file. Handles also rename of corresponding jsf jsp file. */
+    @Override
     protected FileObject handleRename(String name) throws IOException {
         FileObject fo = super.handleRename(name);
         return fo;

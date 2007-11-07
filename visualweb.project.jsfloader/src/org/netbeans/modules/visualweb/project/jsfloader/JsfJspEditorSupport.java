@@ -64,9 +64,7 @@ import org.openide.DialogDisplayer;
 
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -83,7 +81,6 @@ import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
-import org.openide.windows.Workspace;
 
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -135,11 +132,13 @@ public final class JsfJspEditorSupport extends DataEditorSupport
 
 
     // XXX Making it accessible within this package.
+    @Override
     protected boolean canClose() {
         return super.canClose();
     }
 
     // XXX Making it accessible within this package.
+    @Override
     protected void notifyClosed() {
         super.notifyClosed();
         JsfJspDataObject dataObject = (JsfJspDataObject) getDataObject();
@@ -151,6 +150,7 @@ public final class JsfJspEditorSupport extends DataEditorSupport
      * @return true if the environment accepted being marked as modified
      *    or false if it has refused and the document should remain unmodified
      */
+    @Override
     protected boolean notifyModified() {
         if(!super.notifyModified()) {
             return false;
@@ -164,6 +164,7 @@ public final class JsfJspEditorSupport extends DataEditorSupport
     }
     
     /** Overrides superclass method. Adds removing of save cookie. */
+    @Override
     protected void notifyUnmodified() {
         super.notifyUnmodified();
         
@@ -291,6 +292,7 @@ public final class JsfJspEditorSupport extends DataEditorSupport
     }
     
     
+    @Override
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
         ((JsfJspDataObject)getDataObject()).updateFileEncoding(false);
         super.loadFromStreamToKit(doc, stream, kit);
@@ -307,6 +309,7 @@ public final class JsfJspEditorSupport extends DataEditorSupport
         }
     }
     
+    @Override
     protected CloneableEditor createCloneableEditor() {
         return new JspEditorTopComponent((JsfJspDataObject)getDataObject());
     }
@@ -329,6 +332,7 @@ public final class JsfJspEditorSupport extends DataEditorSupport
     
     /** XXX Making it accessible whitin this package. And overrides it
      * the way to also include status of corresponding java file. */
+    @Override
     protected String messageName() {
         DataObject jspObj = getDataObject();
         if(!jspObj.isValid()) {
@@ -350,12 +354,12 @@ public final class JsfJspEditorSupport extends DataEditorSupport
         JsfJavaEditorSupport jsfJavaEditorSupport = getJsfJavaEditorSupport(jspObj.getPrimaryFile(), true);
         int version = 3;
         if(isModified() || (jsfJavaEditorSupport != null && jsfJavaEditorSupport.isModified())) {
-            if(jspObj.getPrimaryFile().isReadOnly()) {
+            if(!jspObj.getPrimaryFile().canWrite()) {
                 version = 2;
             } else {
                 version = 1;
             }
-        } else if(jspObj.getPrimaryFile().isReadOnly()) {
+        } else if(!jspObj.getPrimaryFile().canWrite()) {
             version = 0;
         }
         
@@ -363,23 +367,10 @@ public final class JsfJspEditorSupport extends DataEditorSupport
     }
     
     /** XXX Making it accessible whitin this package. */
+    @Override
     protected String messageToolTip() {
         return super.messageToolTip();
     }
-    
-    // XXX PROBLEM NB didn't solve the issues we asked for(NB #59046, #59043), that
-    // way there is no real support for multiviews containing two or more editors
-    // which is our case, and also there seems to be no way to hack it (like this overriding).
-//    /** XXX Overriding superclass to select the correct tab in multiview. */
-//    protected Pane openAt(final org.openide.text.PositionRef pos, final int column) {
-//        Pane pane = super.openAt(pos, column);
-//        if(pane instanceof TopComponent) {
-//            JsfJavaEditorSupport jsfJavaEditorSupport = getJsfJavaEditorSupport(false);
-//            jsfJavaEditorSupport.viewJspSource((TopComponent)pane);
-//        }
-//        return pane;
-//    }
-    
     
     /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */
     private static class Environment extends DataEditorSupport.Env {
@@ -406,6 +397,7 @@ public final class JsfJspEditorSupport extends DataEditorSupport
          * Overrides superclass method.
          * @return text editor support (instance of enclosing class)
          */
+        @Override
         public CloneableOpenSupport findCloneableOpenSupport() {
             return (JsfJspEditorSupport)getDataObject().getCookie(JsfJspEditorSupport.class);
         }
@@ -443,7 +435,9 @@ public final class JsfJspEditorSupport extends DataEditorSupport
         
         
         /** Overriding super class to get it open in multiview. */
-        public void open(Workspace workspace) {
+        @Override
+        @SuppressWarnings("deprecation")
+        public void open(org.openide.windows.Workspace workspace) {
             if(discard()) {
                 JsfJspEditorSupport support = (JsfJspEditorSupport)jsfJspDataObject.getCookie(JsfJspEditorSupport.class);
                 ErrorManager.getDefault().log(ErrorManager.WARNING,
@@ -458,9 +452,7 @@ public final class JsfJspEditorSupport extends DataEditorSupport
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                             new IllegalStateException("Can't find JsfJavaEditorSupport for " + jsfJspDataObject)); // NOI18N
                 } else {
-                    CloneableTopComponent editor = jsfJavaEditorSupport.doOpenDesigner();
-                    // XXX Trick to use designer comp to find multiview, the jsp component might not be part of multiview yet.
-                    //jsfJavaEditorSupport.viewJspSource(editor);
+                    jsfJavaEditorSupport.doOpenDesigner();
                 }
             }
         }
@@ -482,16 +474,14 @@ public final class JsfJspEditorSupport extends DataEditorSupport
                
         // XXX PaletteController
         private void initializePalette( ) {
-            String paletteFolderName = "CreatorJspPalette";
+            String paletteFolderName = "CreatorJspPalette"; // NOI18N
             PaletteController controller;
             try {
-//                controller = PaletteFactory.createPalette("CreatorJspPalette", new JspPaletteActions()); // NOI18N
                 controller = PaletteFactory.createPalette(paletteFolderName, new CodeClipPaletteActions(paletteFolderName, this), null, new CodeClipDragAndDropHandler()); // NOI18N
                 
             } catch (java.io.IOException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 controller = null;
-//                System.out.println("Java Palette is null." );
             }
             jspPaletteController = controller;
             return;            
@@ -532,11 +522,11 @@ public final class JsfJspEditorSupport extends DataEditorSupport
         
         public JComponent getToolbarRepresentation() {
             if(toolbar == null) {
-                JEditorPane pane = getEditorPane();
-                if (pane != null) {
-                    Document doc = pane.getDocument();
+                JEditorPane jPane = getEditorPane();
+                if (jPane != null) {
+                    Document doc = jPane.getDocument();
                     if(doc instanceof NbDocument.CustomToolbar) {
-                        toolbar = ((NbDocument.CustomToolbar)doc).createToolbar(pane);
+                        toolbar = ((NbDocument.CustomToolbar)doc).createToolbar(jPane);
                     }
                 }
                 if(toolbar == null) {
@@ -551,10 +541,12 @@ public final class JsfJspEditorSupport extends DataEditorSupport
             return this;
         }
         
+        @Override
         public void componentDeactivated() {
             super.componentDeactivated();
         }
         
+        @Override
         public void componentActivated() {
             super.componentActivated();
             // XXX #6299978 NB #61886 Multiview doesn't handle focus transfer,
@@ -566,26 +558,31 @@ public final class JsfJspEditorSupport extends DataEditorSupport
             InSyncService.getProvider().jspDataObjectTopComponentActivated(jsfJspDataObject);
         }
         
+        @Override
         public void componentHidden() {
             super.componentHidden();
             
             InSyncService.getProvider().jspDataObjectTopComponentHidden(jsfJspDataObject);
         }
         
+        @Override
         public void componentShowing() {
             super.componentShowing();
             
             InSyncService.getProvider().jspDataObjectTopComponentShown(jsfJspDataObject);
         }
         
+        @Override
         public void componentClosed() {
             super.componentClosed();
         }
         
+        @Override
         public void componentOpened() {
             super.componentOpened();
         }
         
+        @Override
         public void requestVisible() {
             if(multiViewElementCallback != null) {
                 multiViewElementCallback.requestVisible();
@@ -594,6 +591,7 @@ public final class JsfJspEditorSupport extends DataEditorSupport
             }
         }
         
+        @Override
         public void requestActive() {
             if(multiViewElementCallback != null) {
                 multiViewElementCallback.requestActive();
@@ -602,6 +600,7 @@ public final class JsfJspEditorSupport extends DataEditorSupport
             }
         }
         
+        @Override
         public Action[] getActions() {
             // need to delegate to multiview's actions because of the way editor
             // constructs actions : NbEditorKit.NbBuildPopupMenuAction
@@ -609,12 +608,14 @@ public final class JsfJspEditorSupport extends DataEditorSupport
                 multiViewElementCallback.createDefaultActions() : super.getActions();
         }
         
+        @Override
         public void writeExternal(ObjectOutput out) throws IOException {
             super.writeExternal(out);
             
             out.writeObject(jsfJspDataObject);
         }
         
+        @Override
         public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
             super.readExternal(in);
             
@@ -637,12 +638,13 @@ public final class JsfJspEditorSupport extends DataEditorSupport
         }
         
         
-        private WeakReference lookupWRef = new WeakReference(null);
+        private WeakReference<Lookup> lookupWRef = new WeakReference<Lookup>(null);
         
         /** Adds <code>NavigatorLookupHint</code> into the original lookup,
          * for the navigator. */
+        @Override
         public Lookup getLookup() {
-            Lookup lookup = (Lookup)lookupWRef.get();
+            Lookup lookup = lookupWRef.get();
             
             if (lookup == null) {
                 Lookup superLookup = super.getLookup();
@@ -651,7 +653,7 @@ public final class JsfJspEditorSupport extends DataEditorSupport
                 } else {
                     lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.singleton(jspPaletteController)});
                 }
-                lookupWRef = new WeakReference(lookup);
+                lookupWRef = new WeakReference<Lookup>(lookup);
             }
             
             return lookup;

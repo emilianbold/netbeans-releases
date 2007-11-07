@@ -88,7 +88,7 @@ public class JsfJavaDataObject extends MultiDataObject implements JsfJavaDataObj
     }
 
     /** Gets the superclass cookie, without hacking save cookie. */
-    Node.Cookie getPureCookie(Class clazz) {
+    <T extends Node.Cookie> T getPureCookie(Class<T> clazz) {
         return super.getCookie(clazz);
     }
 
@@ -96,8 +96,7 @@ public class JsfJavaDataObject extends MultiDataObject implements JsfJavaDataObj
     
     /** Overrides behaviour to provide compound save cookie. */
     @Override
-    @SuppressWarnings(value ="unchecked")
-    public Node.Cookie getCookie(Class clazz) {
+    public <T extends Node.Cookie> T getCookie(Class<T> clazz) {
         if(clazz == SaveCookie.class){
             FileObject primaryJsfFileObject = Utils.findJspForJava(getPrimaryFile());
             if( primaryJsfFileObject != null && primaryJsfFileObject.isValid()) {
@@ -113,11 +112,11 @@ public class JsfJavaDataObject extends MultiDataObject implements JsfJavaDataObj
                 if(javaSaveCookie == null && jspSaveCookie == null) {
                     return null;
                 } else {
-                    return new CompoundSaveCookie(javaSaveCookie, jspSaveCookie);
+                    return clazz.cast(new CompoundSaveCookie(javaSaveCookie, jspSaveCookie));
                 }
             }
         }else if (clazz.isAssignableFrom(JsfJavaEditorSupport.class)) {
-            return getJsfJavaEditorSupport();
+            return clazz.cast(getJsfJavaEditorSupport());
         }
 
         return super.getCookie(clazz);
@@ -142,10 +141,12 @@ public class JsfJavaDataObject extends MultiDataObject implements JsfJavaDataObj
         getCookieSet().add(save);
     }
 
+    @Override
     protected Node createNodeDelegate () {
         return new JsfJavaDataNode(this);
     }
 
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx("org.netbeans.modules.visualweb.project.jsfloader.JsfJavaDataLoader" + ".Obj"); // NOI18N
     }
@@ -180,7 +181,7 @@ public class JsfJavaDataObject extends MultiDataObject implements JsfJavaDataObj
 // XXX Hacking problems with cut/copy of .jsp and .java backing file
 //... dont address to NB, resolve by creating new dataobject type.. possibly maintained with the help of project.
     
-    private static final ThreadLocal pureCopy = new ThreadLocal();
+    private static final ThreadLocal<Boolean> pureCopy = new ThreadLocal<Boolean>();
     
     /** Copies only this object without touching the corresponding jsf jsp one.
      * Used when copying originated form corresponding file. */
@@ -194,6 +195,7 @@ public class JsfJavaDataObject extends MultiDataObject implements JsfJavaDataObj
     }
     
     /** Handles copy. Handles also copy of corresponding jsf jsp file. */
+    @Override
     protected DataObject handleCopy(DataFolder folder) throws IOException {
         if(pureCopy.get() == Boolean.TRUE) {
             return super.handleCopy(folder);
@@ -224,6 +226,7 @@ public class JsfJavaDataObject extends MultiDataObject implements JsfJavaDataObj
      * Capture the name the data object had, before doing the rename and update my editor title.
      * 
      */
+    @Override
     protected FileObject handleRename(String name) throws IOException {
         FileObject fo = super.handleRename(name);
 

@@ -44,6 +44,7 @@ package org.netbeans.modules.visualweb.project.jsfloader;
 
 
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
@@ -58,7 +59,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.Action;
 import org.openide.actions.OpenAction;
-import org.openide.actions.DeleteAction;
 import org.openide.filesystems.FileObject;
 
 import org.openide.loaders.DataObject;
@@ -102,6 +102,7 @@ public class JsfJspDataNode extends org.openide.loaders.DataNode implements Prop
         JsfProjectUtils.addProjectPropertyListener(project, this);
     }
 
+    @Override
     public void destroy() throws IOException {
         FileObject thisFileObject = getDataObject().getPrimaryFile();
         Project project = FileOwnerQuery.getOwner(thisFileObject);
@@ -114,7 +115,7 @@ public class JsfJspDataNode extends org.openide.loaders.DataNode implements Prop
          */
         FileObject fo = getDataObject().getPrimaryFile();
         if(null == fo) return;
-        JsfPortletSupport portletSupport = this.getPortletSupport(fo);
+        JsfPortletSupport portletSupport = JsfJspDataNode.getPortletSupport(fo);
         if(null != portletSupport) {
             try {
                 if(portletSupport.isInitialPage(PortletModeType.VIEW, fo) ||
@@ -145,6 +146,7 @@ public class JsfJspDataNode extends org.openide.loaders.DataNode implements Prop
         }
     }
     
+    @Override
     public Image getIcon(int type) {
         Image returnImage = null;
         
@@ -155,7 +157,7 @@ public class JsfJspDataNode extends org.openide.loaders.DataNode implements Prop
          * appropriately if the JSP is an INITIAL VIEW, EDIT, or HELP page.
          * -David Botterill 9/20/2005
          */
-        JsfPortletSupport portletSupport = this.getPortletSupport(fo);
+        JsfPortletSupport portletSupport = JsfJspDataNode.getPortletSupport(fo);
         if(null != portletSupport) {
             /**
              * Determine if the current file is an initial page for any of the modes.
@@ -211,6 +213,7 @@ public class JsfJspDataNode extends org.openide.loaders.DataNode implements Prop
     }
     
     /** Adds the encoding property, and hacking adding of 'helpID's. */
+    @Override
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet();
         
@@ -221,13 +224,14 @@ public class JsfJspDataNode extends org.openide.loaders.DataNode implements Prop
         ps.setShortDescription(NbBundle.getMessage(JsfJspDataNode.class, "HINT_textfileSetName")); // NOI18N
         sheet.put(ps);
         
-        ps.put(new PropertySupport.ReadOnly(
+        ps.put(new PropertySupport.ReadOnly<String> (
                 PROP_FILE_ENCODING,
                 String.class,
                 NbBundle.getMessage(JsfJspDataNode.class, "PROP_fileEncoding"), //NOI18N
                 NbBundle.getMessage(JsfJspDataNode.class, "HINT_fileEncoding") //NOI18N
                 ) {
-            public Object getValue() {
+            @Override
+            public String getValue() throws IllegalAccessException, InvocationTargetException {
                 return ((JsfJspDataObject)getDataObject()).getFileEncoding();
             }
         });
@@ -242,15 +246,18 @@ public class JsfJspDataNode extends org.openide.loaders.DataNode implements Prop
         return sheet;
     }
     
+    @Override
     public Action getPreferredAction() {
         return SystemAction.get(OpenAction.class);
     }
     
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(HELP_ID);
     }
     
+    @Override
     public void setName(String name) {
         String currentName = getName();
         if (name.equals(currentName)) {
@@ -259,7 +266,7 @@ public class JsfJspDataNode extends org.openide.loaders.DataNode implements Prop
 
         InstanceContent ic = new InstanceContent();
         ic.add(this);
-        Dictionary d = new Hashtable();
+        Dictionary<String,String> d = new Hashtable<String,String>();
         d.put("name", name);
         ic.add(d);
         Lookup l = new AbstractLookup(ic);

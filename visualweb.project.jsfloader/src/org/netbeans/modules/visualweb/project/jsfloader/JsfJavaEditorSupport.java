@@ -55,6 +55,7 @@ import java.io.ObjectInput;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -165,6 +166,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
     }
     
     /** Overriding to get java source opened as default, to match the original behaviour. */
+    @Override
     public void open() {
         //Bugfix #10688 open() is now run in AWT thread
         Mutex.EVENT.writeAccess(new Runnable() {
@@ -186,6 +188,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
         });
     }  
     
+    @Override
     protected void notifyClosed() {
         super.notifyClosed();
         lastMultiView = null;
@@ -194,6 +197,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
     /** Overrides superclass method. Adds updating of display name.
      * @return true if the environment accepted being marked as modified
      *    or false if it has refused and the document should remain unmodified */
+    @Override
     protected boolean notifyModified() {
         boolean oldValue = isModified();
         boolean ret = super.notifyModified();
@@ -223,6 +227,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
     }
     
     /** Overrides superclass method. Adds removing of save cookie. */
+    @Override
     protected void notifyUnmodified() {
         super.notifyUnmodified();
         
@@ -240,6 +245,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
     }
     
     /** @Override */
+    @Override
     protected void updateTitles() {
         // XXX #6486899 Hack to by pass dangerous recursion, see the issue.
         // The real problem is in insync,
@@ -328,27 +334,12 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
     }
     /** Indicates whether the <code>Env</code> is read only. */
     private boolean isEnvReadOnly() {
-        CloneableEditorSupport.Env env = env();
-//        return env instanceof Env && ((Env)env).getFileImpl().isReadOnly();
-        return env instanceof Env && getDataObject().getPrimaryFile().isReadOnly();
+        CloneableEditorSupport.Env environment = env();
+        return environment instanceof Env && !getDataObject().getPrimaryFile().canWrite();
     }
     
-    // XXX PROBLEM NB didn't solve the issues we asked for(NB #59046, #59043), that
-    // way there is no real support for multiviews containing two or more editors
-    // which is our case, and also there seems to be no way to hack it (like this overriding).
-//    /** XXX Overriding superclass to select the correct tab in multiview. */
-//    protected Pane openAt(final org.openide.text.PositionRef pos, final int column) {
-//        Pane pane = super.openAt(pos, column);
-//        if(pane instanceof TopComponent) {
-//            viewJavaSource((TopComponent)pane);
-//        }
-//        return pane;
-//    }
-    
-    
-// <multiview>
-    
     /** Gets called if jsp editor is opened first via EditCookie. */
+    @Override
     protected CloneableEditorSupport.Pane createPane() {
         JsfJavaDataObject jsfJavaDataObject = (JsfJavaDataObject)getDataObject();
         JsfJspDataObject jsfJspDataObject = Utils.findCorrespondingJsfJspDataObject(jsfJavaDataObject.getPrimaryFile(), false);
@@ -444,18 +435,19 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
             toolTip = jsfJspEditorSupport.messageToolTip();
         }
         
-        Enumeration en = getMultiViews();
+        Enumeration<? extends TopComponent> en = getMultiViews();
         while(en.hasMoreElements()) {
-            TopComponent tc = (TopComponent)en.nextElement();
+            TopComponent tc = en.nextElement();
             tc.setToolTipText(toolTip);
         }
     }
     
     /** Gets currently associated multivies, helper method. */
-    private Enumeration getMultiViews() {
+    private Enumeration<? extends TopComponent> getMultiViews() {
         CloneableTopComponent ctc = lastMultiView;
         if(ctc == null) {
-            return Collections.enumeration(Collections.EMPTY_SET);
+            Set<TopComponent> emptySet = Collections.emptySet();
+            return Collections.enumeration(emptySet);
         } else {
             return ctc.getReference().getComponents();
         }
@@ -541,8 +533,6 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
         
         
         public MultiViewElement createElement() {
-//            final MultiViewElement multiViewElement =  DesignerServiceHack.getDefault().
-//                    getMultiViewElementForDataObject(jsfJspDataObject);
             if (jsfJspDataObject.isTemplate()) {
                 return MultiViewFactory.BLANK_ELEMENT;
             }
@@ -574,9 +564,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
                 
                 return multiViewDelegate;
             }
-//                WebForm webForm = jsfJspDataObject.getWebForm();
-//                webForm.createTopComponent(jsfJspEditorSupport);
-//                return webForm.getMultiViewElement();
+            
             return MultiViewFactory.BLANK_ELEMENT;
         }
         
@@ -682,7 +670,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
         }
         
         public MultiViewElement createElement() {
-            DataEditorSupport javaEditor = (DataEditorSupport)jsfJavaDataObject.getCookie(DataEditorSupport.class);
+            DataEditorSupport javaEditor = (DataEditorSupport)jsfJavaDataObject.getCookie(JsfJavaEditorSupport.class);
             if(javaEditor != null) {
                 javaEditor.prepareDocument();
                 final MultiViewElement multiViewElement = new JavaEditorTopComponent(javaEditor);
@@ -762,6 +750,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
             initialize();
         }
         
+        @Override
         public void readExternal (ObjectInput in)
         throws IOException, ClassNotFoundException {
             //required to do this to make sure cloneableEditorSupport is deserialized.
@@ -794,18 +783,12 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
                 paletteDirectory = "CreatorJavaPalette";
             }    
             
-//            JsfJavaEditorSupport javaES = (JsfJavaEditorSupport)cloneableEditorSupport();
-//            JsfJspEditorSupport jes = Utils.findCorrespondingJsfJspEditorSupport(javaES.getDataObject().getPrimaryFile(), true);
-//            JsfJspEditorSupport jes = Utils.findCorrespondingJsfJspEditorSupport(javaES.getDataObject().getPrimaryFile(), true);
-
-//            String paletteFolderName = "CreatorJavaPalette";
             PaletteController controller;
             try {
                 controller = PaletteFactory.createPalette(paletteDirectory, new CodeClipPaletteActions(paletteDirectory, this), null, new CodeClipDragAndDropHandler()); // NOI18N
             } catch (java.io.IOException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 controller = null;
-//                System.out.println("Java Palette is null." );
             }
             javaPaletteController = controller;
             return;
@@ -815,11 +798,11 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
         
         public JComponent getToolbarRepresentation() {
             if (toolbar == null) {
-                JEditorPane pane = getEditorPane();
-                if (pane != null) {
-                    Document doc = pane.getDocument();
+                JEditorPane jPane = getEditorPane();
+                if (jPane != null) {
+                    Document doc = jPane.getDocument();
                     if (doc instanceof NbDocument.CustomToolbar) {
-                        toolbar = ((NbDocument.CustomToolbar)doc).createToolbar(pane);
+                        toolbar = ((NbDocument.CustomToolbar)doc).createToolbar(jPane);
                     }
                 }
                 if (toolbar == null) {
@@ -834,29 +817,21 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
             return this;
         }
         
+        @Override
         public void componentDeactivated() {
             super.componentDeactivated();
         }
         
+        @Override
         public void componentActivated() {
             super.componentActivated();
         }
         
         public void setMultiViewCallback(MultiViewElementCallback callback) {
             multiViewObserver = callback;
-            
-//            // needed for deserialization...
-//// XXX This smells really badly, is this supposed to be the 'typical' way to
-//// deserialize the needed stuff? (comes from FormEditorSupport)
-//            JsfJavaEditorSupport jsfJavaEditorSupport = (JsfJavaEditorSupport)jsfJavaDataObject.getCookie(JsfJavaEditorSupport.class);
-//            if(jsfJavaEditorSupport != null) {
-//                // this is used (or misused?) to obtain the deserialized
-//                // multiview topcomponent and set it to JsfJavaEditorSupport
-//                jsfJavaEditorSupport.setMultiView((CloneableTopComponent)multiViewElementCallback.getTopComponent());
-//            }
-            
         }
         
+        @Override
         public void requestVisible() {
             if (multiViewObserver != null)
                 multiViewObserver.requestVisible();
@@ -864,6 +839,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
                 super.requestVisible();
         }
         
+        @Override
         public void requestActive() {
             if (multiViewObserver != null)
                 multiViewObserver.requestActive();
@@ -871,26 +847,32 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
                 super.requestActive();
         }
         
+        @Override
         public void componentClosed() {
             super.componentClosed();
         }
         
+        @Override
         public void componentShowing() {
             super.componentShowing();
         }
         
+        @Override
         public void componentHidden() {
             super.componentHidden();
         }
         
+        @Override
         public void componentOpened() {
             super.componentOpened();
         }
         
+        @Override
         public void updateName() {
             super.updateName();
         }
         
+        @Override
         protected boolean closeLast() {
             return true;
         }
@@ -921,6 +903,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
             return oneOrLess;
         }
         
+        @Override
         public Action[] getActions() {
             // need to delegate to multiview's actions because of the way editor
             // constructs actions : NbEditorKit.NbBuildPopupMenuAction
@@ -948,6 +931,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
         // XXX Overrides superclass, to fake the display name of the JSF editor,
         // in order to prevent overriding of the multiview display name based on multiview SPI impl.
         // see NB #57035
+        @Override
         public String getDisplayName() {
             JsfJavaEditorSupport javaES = (JsfJavaEditorSupport)cloneableEditorSupport();
             JsfJspEditorSupport jes = Utils.findCorrespondingJsfJspEditorSupport(javaES.getDataObject().getPrimaryFile(), true);
@@ -958,12 +942,13 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
             }
         }
         
-        private WeakReference lookupWRef = new WeakReference(null);
+        private WeakReference<Lookup> lookupWRef = new WeakReference<Lookup>(null);
         
         /** Adds <code>NavigatorLookupHint</code> into the original lookup,
          * for the navigator. */
+        @Override
         public Lookup getLookup() {
-            Lookup lookup = (Lookup)lookupWRef.get();
+            Lookup lookup = lookupWRef.get();
             
             if (lookup == null) {
                 Lookup superLookup = super.getLookup();
@@ -973,7 +958,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
                     DataObject dObj = ((JsfJavaEditorSupport)cloneableEditorSupport()).getDataObject();
                     lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.fixed(NAVIGATOR_HINT, javaPaletteController)});
                 }
-                lookupWRef = new WeakReference(lookup);
+                lookupWRef = new WeakReference<Lookup>(lookup);
             }
             return lookup;
         }
@@ -1054,7 +1039,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
             boolean closingLast;
             if(jsfJavaEditorSupport != null) {
                 int i = 0;
-                for (Enumeration en = jsfJavaEditorSupport.getMultiViews(); en.hasMoreElements(); ) {
+                for (Enumeration<? extends TopComponent> en = jsfJavaEditorSupport.getMultiViews(); en.hasMoreElements(); ) {
                     en.nextElement();
                     i++;
                 }

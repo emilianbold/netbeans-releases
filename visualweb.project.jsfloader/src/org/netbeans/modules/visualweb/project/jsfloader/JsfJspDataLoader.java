@@ -44,29 +44,16 @@ package org.netbeans.modules.visualweb.project.jsfloader;
 
 
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import org.openide.ErrorManager;
 
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.FileEntry;
 import org.openide.loaders.UniFileLoader;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.util.MapFormat;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.visualweb.api.insync.InSyncService;
 
 
 /**
@@ -78,7 +65,7 @@ public class JsfJspDataLoader extends UniFileLoader {
 
 
     static final long serialVersionUID =-5809935261731217882L;
-    static final ThreadLocal jspTemplateCreation = new ThreadLocal();
+    static final ThreadLocal<Boolean> jspTemplateCreation = new ThreadLocal<Boolean>();
     
     public JsfJspDataLoader() {
         // Use String representation instead of JsfJspDataObject.class.getName() for classloading performance
