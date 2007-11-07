@@ -42,27 +42,40 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
 import org.openide.filesystems.FileUtil;
 
 import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.spi.*;
-import javax.enterprise.deploy.spi.status.*;
-import javax.enterprise.deploy.spi.exceptions.*;
+
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 
-import java.util.*;
-import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.exceptions.TargetException;
+import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
+import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
@@ -85,7 +98,6 @@ public class TargetServer {
     private final ServerInstance instance;
     private final DeploymentTarget dtarget;
     private IncrementalDeployment incremental; //null value signifies don't do incremental
-    private boolean debugMode = false;
     private Map availablesMap = null;
     private Set deployedRootTMIDs = new HashSet(); // type TargetModule
     private Set undeployTMIDs = new HashSet(); // TMID
@@ -409,7 +421,6 @@ public class TargetServer {
     }
     
     public void startTargets(boolean debugMode, ProgressUI ui) throws ServerException {
-        this.debugMode = debugMode;
         if (instance.getStartServer().isAlsoTargetServer(null)) {
             if (debugMode) {
                 instance.startDebug(ui);
