@@ -370,36 +370,15 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         assertFalse(result);
     }
 
-//    /**
-//     * Test of setupGraph method, of class PageFlowController.
-//     */
-//    public void testSetupGraph() {
-//        System.out.println("setupGraph");
-//        PageFlowController instance = null;
-//        boolean expResult = false;
-//        boolean result = instance.setupGraph();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of setupGraphNoSaveData method, of class PageFlowController.
-//     */
-//    public void testSetupGraphNoSaveData() {
-//        System.out.println("setupGraphNoSaveData");
-//        PageFlowController instance = null;
-//        boolean expResult = false;
-//        boolean result = instance.setupGraphNoSaveData();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
+
+
+    
 //    /**
 //     * Test of createEdge method, of class PageFlowController.
 //     */
 //    public void testCreateEdge() {
+//       
+//        
 //        System.out.println("createEdge");
 //        NavigationCaseEdge caseNode = null;
 //        PageFlowController instance = null;

@@ -178,7 +178,7 @@ public class PageFlowController {
                 configModel.addPropertyChangeListener(pcl);
             }
         }
-        //        if (cl == null) {
+//        if (cl == null) {
 //            cl = new FacesModelComponentEventListener(this);
 //            if (configModel != null) {
 //                configModel.addComponentListener(cl);
@@ -338,7 +338,7 @@ public class PageFlowController {
         return projectKnownFiles;
     }
 
-    /* 
+    /** 
      * Check if the file type in known.
      * @param file the fileobject type to check. If null, throws NPE.
      * @return if it is of type jsp, jspf, or html it will return true.
@@ -511,7 +511,13 @@ public class PageFlowController {
         }
     }
 
-    public void createEdge(NavigationCaseEdge caseNode) {
+    /**
+     * Creates and edge in the scene, this method does not add an reference in
+     * the faces configuration.  In general it is best to call createLink 
+     * as that will call createEdge indirectly through the faces model listener.
+     * @param caseNode a NavigationCaseEdge.  If null, will throw NPE.
+     */
+    protected void createEdge(NavigationCaseEdge caseNode) {
         String fromPage = caseNode.getFromViewId();
         String toPage = caseNode.getToViewId();
         if (getPageName2Page(fromPage) == null || getPageName2Page(toPage) == null) {
@@ -544,7 +550,7 @@ public class PageFlowController {
     public java.util.Stack<String> PageFlowCreationStack = new java.util.Stack<String>();
     private int PageFlowCreationCount = 0;
 
-    /* 
+    /** 
      * Create a Page from a node 
      *  This method
      * does not actually add the pages to the scene.  It just creates the
