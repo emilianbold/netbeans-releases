@@ -321,7 +321,10 @@ public final class CheckoutWizard implements ChangeListener{
                     buf.append(separator).append(module);
                     separator = ",";   // NOI18N
                 }
-                modulePanel.moduleTextField.setText(buf.toString());
+                String s = buf.toString();
+                if (s.length() > 0) {
+                    modulePanel.moduleTextField.setText(s);
+                }
             } else if (e.getSource() == modulePanel.tagButton) {
                 BranchSelector selector = new BranchSelector();
                 String rootString = repositoryStep.getCvsRoot();
