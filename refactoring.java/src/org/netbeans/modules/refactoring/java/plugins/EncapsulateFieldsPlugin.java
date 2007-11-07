@@ -44,6 +44,7 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
@@ -53,20 +54,19 @@ import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.EncapsulateFieldRefactoring;
+import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin.EncapsulateDesc;
+import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin.Encapsulator;
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring.EncapsulateFieldInfo;
-import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /** Encapsulate fields refactoring. This is a composed refactoring (uses instances of {@link org.netbeans.modules.refactoring.api.EncapsulateFieldRefactoring}
@@ -76,11 +76,10 @@ import org.openide.util.NbBundle;
  * @author Jan Becicka
  * @author Jan Pokorsky
  */
-public final class EncapsulateFieldsPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
+public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
     
-    private List<EncapsulateFieldRefactoring> refactorings;
+    private List<EncapsulateFieldRefactoringPlugin> refactorings;
     private final EncapsulateFieldsRefactoring refactoring;
-    private boolean cancelRequest = false;
     
     private ProgressListener listener = new ProgressListener() {
         public void start(ProgressEvent event) {
@@ -103,10 +102,12 @@ public final class EncapsulateFieldsPlugin extends ProgressProviderAdapter imple
         this.refactoring = refactoring;
     }
 
-    public Problem checkParameters() {
-        return validation(2);
+    @Override
+    protected Problem checkParameters(CompilationController javac) throws IOException {
+        return validation(2, javac);
     }
     
+    @Override
     public Problem fastCheckParameters() {
         Collection<EncapsulateFieldInfo> fields = refactoring.getRefactorFields();
         if (fields.isEmpty()) {
@@ -116,36 +117,17 @@ public final class EncapsulateFieldsPlugin extends ProgressProviderAdapter imple
                 refactoring.getMethodModifiers(),
                 refactoring.getFieldModifiers(),
                 refactoring.isAlwaysUseAccessors());
-        return validation(1);
-    }
-
-    public Problem preCheck() {
-        fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 2);
         try {
-            fireProgressListenerStep();
-            
-            final Problem[] result = new Problem[1];
-            final TreePathHandle selectedObject = refactoring.getSelectedObject();
-            JavaSource js = JavaSource.forFileObject(selectedObject.getFileObject());
-            
-            js.runUserActionTask(new Task<CompilationController>() {
-
-                public void run(CompilationController javac) throws Exception {
-                    javac.toPhase(JavaSource.Phase.RESOLVED);
-                    result[0] = preCheck(selectedObject.resolve(javac), javac);
-                }
-            }, true);
-            
-            return result[0];
-            
+            return validation(1, null);
         } catch (IOException ex) {
             throw new IllegalStateException(ex);
-        } finally {
-            fireProgressListenerStop();
         }
     }
 
-    private  Problem preCheck(TreePath selectedField, CompilationController javac) throws IOException {
+    @Override
+    protected Problem preCheck(CompilationController javac) throws IOException {
+        javac.toPhase(JavaSource.Phase.RESOLVED);
+        TreePath selectedField = refactoring.getSelectedObject().resolve(javac);
         if (selectedField == null) {
             return new Problem(true, NbBundle.getMessage(EncapsulateFieldsPlugin.class, "DSC_ElNotAvail"));
         }
@@ -187,36 +169,31 @@ public final class EncapsulateFieldsPlugin extends ProgressProviderAdapter imple
     
     public Problem prepare(RefactoringElementsBag elements) {
         Problem problem = null;
-        RefactoringSession session = elements.getSession();
-        for (EncapsulateFieldRefactoring ref : refactorings) {
+        Set<FileObject> references = new HashSet<FileObject>();
+        List<EncapsulateDesc> descs = new ArrayList<EncapsulateDesc>(refactorings.size());
+        for (EncapsulateFieldRefactoringPlugin ref : refactorings) {
             if (cancelRequest) {
                 return null;
             }
-            Problem lastProblem = ref.prepare(session);
-            if (lastProblem != null) {
-                if (problem == null) {
-                    problem = lastProblem;
-                } else {
-                    problem.setNext(lastProblem);
-                    problem = lastProblem;
-                }
+            
+            EncapsulateDesc desc = ref.prepareEncapsulator(problem);
+            problem = desc.p;
+            desc.p = null;
+            if (problem != null && problem.isFatal()) {
+                return problem;
             }
+            descs.add(desc);
+            references.addAll(desc.refs);
         }
+
+        Encapsulator encapsulator = new Encapsulator(descs, problem);
+        createAndAddElements(references, new TransformTask(encapsulator, descs.get(0).fieldHandle), elements, refactoring);
+        problem = encapsulator.getProblem();
         return problem;
     }
     
-    public void cancelRequest() {
-        if (refactorings != null) {
-            // if there were initialized refactorings for some fields,
-            // cancel their prepare phase
-            for (EncapsulateFieldRefactoring ref : refactorings) {
-                ref.cancelRequest();
-            }
-        }
-    }
-    
     private void initRefactorings(Collection<EncapsulateFieldInfo> refactorFields, Set<Modifier> methodModifier, Set<Modifier> fieldModifier, boolean alwaysUseAccessors) {
-        refactorings = new ArrayList<EncapsulateFieldRefactoring>(refactorFields.size());
+        refactorings = new ArrayList<EncapsulateFieldRefactoringPlugin>(refactorFields.size());
         for (EncapsulateFieldInfo info: refactorFields) {
             EncapsulateFieldRefactoring ref = new EncapsulateFieldRefactoring(info.getField());
             ref.setGetterName(info.getGetterName());
@@ -224,36 +201,60 @@ public final class EncapsulateFieldsPlugin extends ProgressProviderAdapter imple
             ref.setMethodModifiers(methodModifier);
             ref.setFieldModifiers(fieldModifier);
             ref.setAlwaysUseAccessors(alwaysUseAccessors);
-            refactorings.add(ref);
+            refactorings.add(new EncapsulateFieldRefactoringPlugin(ref));
         }
     }
     
-    private Problem validation(int phase) {
+    private Problem validation(int phase, CompilationController javac) throws IOException {
         Problem result = null;
-        for (EncapsulateFieldRefactoring ref : refactorings) {
+        for (EncapsulateFieldRefactoringPlugin ref : refactorings) {
             Problem lastresult = null;
             switch (phase) {
-            case 0: lastresult = ref.preCheck(); break;
             case 1: lastresult = ref.fastCheckParameters(); break;
             case 2:
-                lastresult = ref.checkParameters();
+                lastresult = ref.preCheck(javac);
+                result = chainProblems(result, lastresult);
+                if (result != null && result.isFatal()) {
+                    return result;
+                }
+                lastresult = ref.checkParameters(javac);
                 ref.addProgressListener(listener);
                 break;
             }
-            if (lastresult != null) {
-                if (result != null) {
-                    result.setNext(lastresult);
-                } else {
-                    result = lastresult;
-                }
-
-                if (lastresult.isFatal()) {
-                    return result;
-                }
+            
+            result = chainProblems(result, lastresult);
+            if (result != null && result.isFatal()) {
+                return result;
             }
+            
         }
 
-        return null;
+        return result;
+    }
+    
+    private static Problem chainProblems(Problem oldp, Problem newp) {
+        if (oldp == null) {
+            return newp;
+        } else if (newp == null) {
+            return oldp;
+        } else if (newp.isFatal()) {
+            newp.setNext(oldp);
+            return newp;
+        } else {
+            // [TODO] performance
+            Problem p = oldp;
+            while (p.getNext() != null)
+                p = p.getNext();
+            p.setNext(newp);
+            return oldp;
+        }
+    }
+
+    @Override
+    protected JavaSource getJavaSource(Phase p) {
+        TreePathHandle selectedField = refactoring.getSelectedObject();
+        FileObject fo = selectedField.getFileObject();
+        return JavaSource.forFileObject(fo);
     }
 
 }    

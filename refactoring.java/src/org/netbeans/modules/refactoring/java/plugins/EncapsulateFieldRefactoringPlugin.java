@@ -62,9 +62,11 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -87,12 +89,14 @@ import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.EncapsulateFieldRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
+import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -409,41 +413,52 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         try {
             fireProgressListenerStep();
             
-            Set<FileObject> refs = getRelevantFiles();
-            
-            Problem p = null;
-            
-            if (refactoring.isAlwaysUseAccessors()
-                    && refactoring.getMethodModifiers().contains(Modifier.PRIVATE)
-                    // is reference fromother files?
-                    && refs.size() > 1) {
-                // breaks code
-                return createProblem(p, true, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateMethodsAccess"));
-            }
-            if (refactoring.isAlwaysUseAccessors()
-                    // is default accessibility?
-                    && getAccessibility(refactoring.getMethodModifiers()) == null
-                    // is reference fromother files?
-                    && refs.size() > 1) {
-                // breaks code likely
-                p = createProblem(p, false, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateMethodsDefaultAccess"));
+            EncapsulateDesc desc = prepareEncapsulator(null);
+            if (desc.p != null && desc.p.isFatal()) {
+                return desc.p;
             }
             
-            Encapsulator encapsulator = new Encapsulator(refactoring, sourceType.getFileObject(), currentGetter, currentSetter);
-            createAndAddElements(refs, new TransformTask(encapsulator, sourceType), bag, refactoring);
+            Encapsulator encapsulator = new Encapsulator(
+                    Collections.singletonList(desc), desc.p);
             
-            if (encapsulator.getProblem() != null) {
-                if (p != null) {
-                    p.setNext(encapsulator.getProblem());
-                } else {
-                    p = encapsulator.getProblem();
-                }
-            }
+            createAndAddElements(
+                    desc.refs,
+                    new TransformTask(encapsulator, desc.fieldHandle),
+                    bag, refactoring);
             
-            return p;
+            return encapsulator.getProblem();
         } finally {
             fireProgressListenerStop();
         }
+    }
+    
+    EncapsulateDesc prepareEncapsulator(Problem previousProblem) {
+        Set<FileObject> refs = getRelevantFiles();
+        EncapsulateDesc etask = new EncapsulateDesc();
+
+        if (refactoring.isAlwaysUseAccessors()
+                && refactoring.getMethodModifiers().contains(Modifier.PRIVATE)
+                // is reference fromother files?
+                && refs.size() > 1) {
+            // breaks code
+            etask.p = createProblem(previousProblem, true, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateMethodsAccess"));
+            return etask;
+        }
+        if (refactoring.isAlwaysUseAccessors()
+                // is default accessibility?
+                && getAccessibility(refactoring.getMethodModifiers()) == null
+                // is reference fromother files?
+                && refs.size() > 1) {
+            // breaks code likely
+            etask.p = createProblem(previousProblem, false, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateMethodsDefaultAccess"));
+        }
+
+        etask.fieldHandle = sourceType;
+        etask.refs = refs;
+        etask.currentGetter = currentGetter;
+        etask.currentSetter = currentSetter;
+        etask.refactoring = refactoring;
+        return etask;
     }
     
     private Set<FileObject> getRelevantFiles() {
@@ -489,27 +504,36 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         return false;
     }
     
-    private static final class Encapsulator extends RefactoringVisitor {
+    static final class Encapsulator extends RefactoringVisitor {
         
-        private final EncapsulateFieldRefactoring refactoring;
         private final FileObject sourceFile;
         private Problem problem;
-        private boolean useAccessors;
-        private final ElementHandle<ExecutableElement> currentGetter;
-        private final ElementHandle<ExecutableElement> currentSetter;
+        private List<EncapsulateDesc> descs;
+        private Map<VariableElement, EncapsulateDesc> fields;
 
-        public Encapsulator(EncapsulateFieldRefactoring refactoring, FileObject src,
-                ElementHandle<ExecutableElement> currentGetter, ElementHandle<ExecutableElement> currentSetter) {
-            this.refactoring = refactoring;
-            this.sourceFile = src;
-            this.currentGetter = currentGetter;
-            this.currentSetter = currentSetter;
+        public Encapsulator(List<EncapsulateDesc> descs, Problem problem) {
+            assert descs != null && descs.size() > 0;
+            this.sourceFile = descs.get(0).fieldHandle.getFileObject();
+            this.descs = descs;
+            this.problem = problem;
         }
 
         public Problem getProblem() {
             return problem;
         }
 
+        @Override
+        public void setWorkingCopy(WorkingCopy workingCopy) throws ToPhaseException {
+            super.setWorkingCopy(workingCopy);
+            
+            // init caches
+            fields = new HashMap<VariableElement, EncapsulateDesc>(descs.size());
+            for (EncapsulateDesc desc : descs) {
+                desc.field = (VariableElement) desc.fieldHandle.resolveElement(workingCopy);
+                fields.put(desc.field, desc);
+            }
+        }
+        
         @Override
         public Tree visitCompilationUnit(CompilationUnitTree node, Element field) {
             return scan(node.getTypeDecls(), field);
@@ -520,13 +544,26 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             if (getCurrentPath().getCompilationUnit() == getCurrentPath().getParentPath().getLeaf()) {
                 // node is toplevel class
                 TypeElement clazz = (TypeElement) workingCopy.getTrees().getElement(getCurrentPath());
-                useAccessors = resolveAlwaysUseAccessors(clazz, field);
+                for (EncapsulateDesc desc : descs) {
+                    desc.useAccessors = resolveAlwaysUseAccessors(clazz, desc);
+                }
+
             }
             
             if (sourceFile == workingCopy.getFileObject()) {
                 Element el = workingCopy.getTrees().getElement(getCurrentPath());
-                if (el == field.getEnclosingElement()) {
-                    createGetterAndSetter(node, (VariableElement) field);
+                if (el == descs.get(0).field.getEnclosingElement()) {
+                    // all fields come from the same class so testing the first field should be enough
+                    ClassTree nct = node;
+                    for (EncapsulateDesc desc : descs) {
+                        nct = createGetterAndSetter(
+                                nct,
+                                desc.field,
+                                desc.refactoring.getGetterName(),
+                                desc.refactoring.getSetterName(),
+                                desc.refactoring.getMethodModifiers());
+                    }
+                    rewrite(node, nct);
                 }
             }
             return scan(node.getMembers(), field);
@@ -536,8 +573,9 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         public Tree visitVariable(VariableTree node, Element field) {
             if (sourceFile == workingCopy.getFileObject()) {
                 Element el = workingCopy.getTrees().getElement(getCurrentPath());
-                if (el == field) {
-                    resolveFieldDeclaration(node, field);
+                EncapsulateDesc desc = fields.get(el);
+                if (desc != null) {
+                    resolveFieldDeclaration(node, desc);
                     return null;
                 }
             }
@@ -546,10 +584,6 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         
         @Override
         public Tree visitAssignment(AssignmentTree node, Element field) {
-            if (!useAccessors) {
-                return null;
-            }
-            
             ExpressionTree variable = node.getVariable();
             boolean isArray = false;
             while (variable.getKind() == Tree.Kind.ARRAY_ACCESS) {
@@ -558,16 +592,17 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             }
             
             Element el = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), variable));
-            if (el == field && refactoring.getSetterName() != null
+            EncapsulateDesc desc = fields.get(el);
+            if (desc != null && desc.useAccessors && desc.refactoring.getSetterName() != null
                     // check (field = 3) == 3
                     && (isArray || checkAssignmentInsideExpression())
-                    && !isInConstructorOfFieldClass(getCurrentPath(), field)
-                    && !isInGetterSetter(getCurrentPath())) {
+                    && !isInConstructorOfFieldClass(getCurrentPath(), desc.field)
+                    && !isInGetterSetter(getCurrentPath(), desc.currentGetter, desc.currentSetter)) {
                 if (isArray) {
-                    ExpressionTree invkgetter = createGetterInvokation(variable);
+                    ExpressionTree invkgetter = createGetterInvokation(variable, desc.refactoring.getGetterName());
                     rewrite(variable, invkgetter);
                 } else {
-                    ExpressionTree setter = createMemberSelection(variable, refactoring.getSetterName());
+                    ExpressionTree setter = createMemberSelection(variable, desc.refactoring.getSetterName());
                     
                     // resolve types
                     Trees trees = workingCopy.getTrees();
@@ -595,10 +630,6 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
 
         @Override
         public Tree visitCompoundAssignment(CompoundAssignmentTree node, Element field) {
-            if (!useAccessors) {
-                return null;
-            }
-            
             ExpressionTree variable = node.getVariable();
             boolean isArray = false;
             while (variable.getKind() == Tree.Kind.ARRAY_ACCESS) {
@@ -607,23 +638,24 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             }
             
             Element el = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), variable));
-            if (el == field && refactoring.getSetterName() != null
+            EncapsulateDesc desc = fields.get(el);
+            if (desc != null && desc.useAccessors && desc.refactoring.getSetterName() != null
                     // check (field += 3) == 3
                     && (isArray || checkAssignmentInsideExpression())
-                    && !isInConstructorOfFieldClass(getCurrentPath(), field)
-                    && !isInGetterSetter(getCurrentPath())) {
+                    && !isInConstructorOfFieldClass(getCurrentPath(), desc.field)
+                    && !isInGetterSetter(getCurrentPath(), desc.currentGetter, desc.currentSetter)) {
                 if (isArray) {
-                    ExpressionTree invkgetter = createGetterInvokation(variable);
+                    ExpressionTree invkgetter = createGetterInvokation(variable, desc.refactoring.getGetterName());
                     rewrite(variable, invkgetter);
                 } else {
-                    ExpressionTree setter = createMemberSelection(variable, refactoring.getSetterName());
+                    ExpressionTree setter = createMemberSelection(variable, desc.refactoring.getSetterName());
 
                     // translate compound op to binary op; ADD_ASSIGNMENT -> ADD
                     String s = node.getKind().name();
                     s = s.substring(0, s.length() - "_ASSIGNMENT".length()); // NOI18N
                     Tree.Kind operator = Tree.Kind.valueOf(s);
 
-                    ExpressionTree invkgetter = createGetterInvokation(variable);
+                    ExpressionTree invkgetter = createGetterInvokation(variable, desc.refactoring.getGetterName());
                     
                     // resolve types
                     Trees trees = workingCopy.getTrees();
@@ -653,52 +685,51 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
 
         @Override
         public Tree visitUnary(UnaryTree node, Element field) {
-            if (!useAccessors) {
-                return null;
+            ExpressionTree t = node.getExpression();
+            Kind kind = node.getKind();
+            boolean isArrayOrImmutable = kind != Kind.POSTFIX_DECREMENT
+                    && kind != Kind.POSTFIX_INCREMENT
+                    && kind != Kind.PREFIX_DECREMENT
+                    && kind != Kind.PREFIX_INCREMENT;
+            while (t.getKind() == Tree.Kind.ARRAY_ACCESS) {
+                isArrayOrImmutable = true;
+                t = ((ArrayAccessTree) t).getExpression();
             }
-            if (refactoring.getGetterName() != null && refactoring.getSetterName() != null) {
-                ExpressionTree t = node.getExpression();
-                Kind kind = node.getKind();
-                boolean isArrayOrImmutable = kind != Kind.POSTFIX_DECREMENT
-                        && kind != Kind.POSTFIX_INCREMENT
-                        && kind != Kind.PREFIX_DECREMENT
-                        && kind != Kind.PREFIX_INCREMENT;
-                while (t.getKind() == Tree.Kind.ARRAY_ACCESS) {
-                    isArrayOrImmutable = true;
-                    t = ((ArrayAccessTree) t).getExpression();
-                }
-                Element el = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), t));
-                if (el == field && (isArrayOrImmutable || checkAssignmentInsideExpression())
-                        && !isInConstructorOfFieldClass(getCurrentPath(), field)
-                        && !isInGetterSetter(getCurrentPath())) {
-                    // check (++field + 3)
-                    ExpressionTree invkgetter = createGetterInvokation(t);
-                    if (isArrayOrImmutable) {
-                        rewrite(t, invkgetter);
-                    } else {
-                        ExpressionTree setter = createMemberSelection(node.getExpression(), refactoring.getSetterName());
-                    
-                        Tree.Kind operator = kind == Tree.Kind.POSTFIX_INCREMENT || kind == Tree.Kind.PREFIX_INCREMENT
-                                ? Tree.Kind.PLUS
-                                : Tree.Kind.MINUS;
-                        
-                        // resolve types
-                        Trees trees = workingCopy.getTrees();
-                        ExpressionTree expTree = node.getExpression();
-                        TreePath varPath = trees.getPath(workingCopy.getCompilationUnit(), expTree);
-                        TypeMirror varType = trees.getTypeMirror(varPath);
-                        TypeMirror expType = workingCopy.getTypes().getPrimitiveType(TypeKind.INT);
-                        ExpressionTree newExpTree = make.Binary(operator, invkgetter, make.Literal(1));
-                        if (!workingCopy.getTypes().isSubtype(expType, varType)) {
-                            newExpTree = make.TypeCast(make.Type(varType), make.Parenthesized(newExpTree));
-                        }
+            Element el = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), t));
+            EncapsulateDesc desc = fields.get(el);
+            if (desc != null && desc.useAccessors
+                    && desc.refactoring.getGetterName() != null
+                    && desc.refactoring.getSetterName() != null
+                    && (isArrayOrImmutable || checkAssignmentInsideExpression())
+                    && !isInConstructorOfFieldClass(getCurrentPath(), desc.field)
+                    && !isInGetterSetter(getCurrentPath(), desc.currentGetter, desc.currentSetter)) {
+                // check (++field + 3)
+                ExpressionTree invkgetter = createGetterInvokation(t, desc.refactoring.getGetterName());
+                if (isArrayOrImmutable) {
+                    rewrite(t, invkgetter);
+                } else {
+                    ExpressionTree setter = createMemberSelection(node.getExpression(), desc.refactoring.getSetterName());
 
-                        MethodInvocationTree invksetter = make.MethodInvocation(
-                                Collections.<ExpressionTree>emptyList(),
-                                setter,
-                                Collections.singletonList(newExpTree));
-                        rewrite(node, invksetter);
+                    Tree.Kind operator = kind == Tree.Kind.POSTFIX_INCREMENT || kind == Tree.Kind.PREFIX_INCREMENT
+                            ? Tree.Kind.PLUS
+                            : Tree.Kind.MINUS;
+
+                    // resolve types
+                    Trees trees = workingCopy.getTrees();
+                    ExpressionTree expTree = node.getExpression();
+                    TreePath varPath = trees.getPath(workingCopy.getCompilationUnit(), expTree);
+                    TypeMirror varType = trees.getTypeMirror(varPath);
+                    TypeMirror expType = workingCopy.getTypes().getPrimitiveType(TypeKind.INT);
+                    ExpressionTree newExpTree = make.Binary(operator, invkgetter, make.Literal(1));
+                    if (!workingCopy.getTypes().isSubtype(expType, varType)) {
+                        newExpTree = make.TypeCast(make.Type(varType), make.Parenthesized(newExpTree));
                     }
+
+                    MethodInvocationTree invksetter = make.MethodInvocation(
+                            Collections.<ExpressionTree>emptyList(),
+                            setter,
+                            Collections.singletonList(newExpTree));
+                    rewrite(node, invksetter);
                 }
             }
             return null;
@@ -706,13 +737,11 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
 
         @Override
         public Tree visitMemberSelect(MemberSelectTree node, Element field) {
-            if (!useAccessors) {
-                return null;
-            }
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
-            if (el == field && !isInConstructorOfFieldClass(getCurrentPath(), field)
-                    && !isInGetterSetter(getCurrentPath())) {
-                ExpressionTree nodeNew = createGetterInvokation(node);
+            EncapsulateDesc desc = fields.get(el);
+            if (desc != null && desc.useAccessors && !isInConstructorOfFieldClass(getCurrentPath(), desc.field)
+                    && !isInGetterSetter(getCurrentPath(), desc.currentGetter, desc.currentSetter)) {
+                ExpressionTree nodeNew = createGetterInvokation(node, desc.refactoring.getGetterName());
                 rewrite(node, nodeNew);
             }
             return super.visitMemberSelect(node, field);
@@ -720,13 +749,11 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
 
         @Override
         public Tree visitIdentifier(IdentifierTree node, Element field) {
-            if (!useAccessors) {
-                return null;
-            }
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
-            if (el == field && !isInConstructorOfFieldClass(getCurrentPath(), field)
-                    && !isInGetterSetter(getCurrentPath())) {
-                ExpressionTree nodeNew = createGetterInvokation(node);
+            EncapsulateDesc desc = fields.get(el);
+            if (desc != null && desc.useAccessors && !isInConstructorOfFieldClass(getCurrentPath(), desc.field)
+                    && !isInGetterSetter(getCurrentPath(), desc.currentGetter, desc.currentSetter)) {
+                ExpressionTree nodeNew = createGetterInvokation(node, desc.refactoring.getGetterName());
                 rewrite(node, nodeNew);
             }
             return null;
@@ -760,12 +787,12 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
          * field -> getField()
          * or copy in case of refactoring.getGetterName() == null
          */
-        private ExpressionTree createGetterInvokation(ExpressionTree current) {
+        private ExpressionTree createGetterInvokation(ExpressionTree current, String getterName) {
             // check if exist refactoring.getGetterName() != null and visibility (subclases)
-            if (refactoring.getGetterName() == null) {
+            if (getterName == null) {
                 return current;
             }
-            ExpressionTree getter = createMemberSelection(current, refactoring.getGetterName());
+            ExpressionTree getter = createMemberSelection(current, getterName);
             
             MethodInvocationTree invkgetter = make.MethodInvocation(
                     Collections.<ExpressionTree>emptyList(),
@@ -785,14 +812,17 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             return selector;
         }
         
-        private void createGetterAndSetter(ClassTree node, VariableElement field) {
+        private ClassTree createGetterAndSetter(
+                ClassTree node, VariableElement field, String getterName,
+                String setterName, Set<Modifier> useModifiers) {
+            
             String fieldName = field.getSimpleName().toString();
             boolean staticMod = field.getModifiers().contains(Modifier.STATIC);
             String parName = staticMod ? "a" + getCapitalizedName(field) : stripPrefix(fieldName); //NOI18N
             String getterBody = "{return " + fieldName + ";}"; //NOI18N
             String setterBody = (staticMod? "{": "{this.") + fieldName + " = " + parName + ";}"; //NOI18N
             
-            Set<Modifier> mods = new HashSet<Modifier>(refactoring.getMethodModifiers());
+            Set<Modifier> mods = new HashSet<Modifier>(useModifiers);
             if (staticMod) {
                 mods.add(Modifier.STATIC);
             }
@@ -801,17 +831,17 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             ClassTree newNode = null;
 
             ExecutableElement getterElm = null;
-            if (refactoring.getGetterName() != null) {
+            if (getterName != null) {
                 getterElm = findMethod(
                         workingCopy,
                         (TypeElement) field.getEnclosingElement(),
-                        refactoring.getGetterName(),
+                        getterName,
                         Collections.<VariableElement>emptyList(), false);
             }
-            if (getterElm == null && refactoring.getGetterName() != null) {
+            if (getterElm == null && getterName != null) {
                 MethodTree getter = make.Method(
                         make.Modifiers(mods),
-                        refactoring.getGetterName(),
+                        getterName,
                         fieldTree.getType(),
                         Collections.<TypeParameterTree>emptyList(),
                         Collections.<VariableTree>emptyList(),
@@ -822,19 +852,19 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             }
             
             ExecutableElement setterElm = null;
-            if (refactoring.getSetterName() != null) {
+            if (setterName != null) {
                 setterElm = findMethod(
                         workingCopy,
                         (TypeElement) field.getEnclosingElement(),
-                        refactoring.getSetterName(),
+                        setterName,
                         Collections.<VariableElement>singletonList(field), false);
             }
-            if (setterElm == null && refactoring.getSetterName() != null) {
+            if (setterElm == null && setterName != null) {
                 VariableTree paramTree = make.Variable(
                         make.Modifiers(Collections.<Modifier>emptySet()), parName, fieldTree.getType(), null);
                 MethodTree setter = make.Method(
                         make.Modifiers(mods),
-                        refactoring.getSetterName(),
+                        setterName,
                         make.PrimitiveType(TypeKind.VOID),
                         Collections.<TypeParameterTree>emptyList(),
                         Collections.singletonList(paramTree),
@@ -843,40 +873,41 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                         null);
                 newNode = GeneratorUtilities.get(workingCopy).insertClassMember(newNode == null? node: newNode, setter);
             }
-            if (newNode != null) {
-                rewrite(node, newNode);
+            if (newNode == null) {
+                node = newNode;
             }
+            return newNode;
         }
         
-        private void resolveFieldDeclaration(VariableTree node, Element field) {
-            Modifier currentAccess = getAccessibility(field.getModifiers());
-            Modifier futureAccess = getAccessibility(refactoring.getFieldModifiers());
+        private void resolveFieldDeclaration(VariableTree node, EncapsulateDesc desc) {
+            Modifier currentAccess = getAccessibility(desc.field.getModifiers());
+            Modifier futureAccess = getAccessibility(desc.refactoring.getFieldModifiers());
             if (currentAccess != futureAccess) {
-                ModifiersTree modTree = make.Modifiers(replaceAccessibility(currentAccess, futureAccess, field), node.getModifiers().getAnnotations());
+                ModifiersTree modTree = make.Modifiers(replaceAccessibility(currentAccess, futureAccess, desc.field), node.getModifiers().getAnnotations());
                 VariableTree newNode = make.Variable(modTree, node.getName(), node.getType(), node.getInitializer());
                 rewrite(node, newNode);
             }
         }
         
-        private boolean resolveAlwaysUseAccessors(TypeElement where, Element field) {
-            if (refactoring.isAlwaysUseAccessors()) {
+        private boolean resolveAlwaysUseAccessors(TypeElement where, EncapsulateDesc desc) {
+            if (desc.refactoring.isAlwaysUseAccessors()) {
                 return true;
             }
             
             // target field accessibility
-            Set<Modifier> mods = refactoring.getFieldModifiers();
+            Set<Modifier> mods = desc.refactoring.getFieldModifiers();
             if (mods.contains(Modifier.PRIVATE)) {
                 // check enclosing top level class
-                return SourceUtils.getOutermostEnclosingTypeElement(where) != SourceUtils.getOutermostEnclosingTypeElement(field);
+                return SourceUtils.getOutermostEnclosingTypeElement(where) != SourceUtils.getOutermostEnclosingTypeElement(desc.field);
             }
             
             if (mods.contains(Modifier.PROTECTED)) {
                 // check inheritance
-                if (isSubclassOf(where, (TypeElement) field.getEnclosingElement())) {
+                if (isSubclassOf(where, (TypeElement) desc.field.getEnclosingElement())) {
                     return false;
                 }
                 // check same package
-                return workingCopy.getElements().getPackageOf(where) != workingCopy.getElements().getPackageOf(field);
+                return workingCopy.getElements().getPackageOf(where) != workingCopy.getElements().getPackageOf(desc.field);
             }
             
             if (mods.contains(Modifier.PUBLIC)) {
@@ -885,7 +916,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             
             // default access
             // check same package
-            return workingCopy.getElements().getPackageOf(where) != workingCopy.getElements().getPackageOf(field);
+            return workingCopy.getElements().getPackageOf(where) != workingCopy.getElements().getPackageOf(desc.field);
         }
 
         private boolean isInConstructorOfFieldClass(TreePath path, Element field) {
@@ -912,7 +943,11 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             }
         }
 
-        private boolean isInGetterSetter(TreePath path) {
+        private boolean isInGetterSetter(
+                TreePath path,
+                ElementHandle<ExecutableElement> currentGetter,
+                ElementHandle<ExecutableElement> currentSetter) {
+            
             if (sourceFile != workingCopy.getFileObject()) {
                 return false;
             }
@@ -939,6 +974,22 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             }
         }
         
+    }
+    
+    /**
+     * A descriptor of the encapsulated field for Encapsulator.
+     */
+    static final class EncapsulateDesc {
+        Problem p;
+        Set<FileObject> refs;
+        TreePathHandle fieldHandle;
+        
+        // following fields are used solely by Encapsulator
+        VariableElement field;
+        private ElementHandle<ExecutableElement> currentGetter;
+        private ElementHandle<ExecutableElement> currentSetter;
+        private EncapsulateFieldRefactoring refactoring;
+        private boolean useAccessors;
     }
     
 }
