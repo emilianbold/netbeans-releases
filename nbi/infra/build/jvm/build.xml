@@ -175,7 +175,8 @@
     <target name="create-zip-sfx"> 
         <exec executable="zip" dir="${jvm.source.dir}/${jvm.sub.dir}">
             <arg value="-r"/>
-            <arg value="-8"/> 
+            <arg value="-y"/>
+            <arg value="-9"/> 
             <arg value="${work.dir}/jvm.zip"/>
             <arg value="."/>
         </exec>
