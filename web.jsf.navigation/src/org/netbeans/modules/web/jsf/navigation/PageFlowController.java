@@ -121,34 +121,28 @@ public class PageFlowController {
         //        webFolder = project.getProjectDirectory().getFileObject(DEFAULT_DOC_BASE_FOLDER);
         webFolder = PageFlowView.getWebFolder(configFile);
         if (webFolder == null) {
-            //            DialogDescriptor desc = new DialogDescriptor(
-            //                    NbBundle.getMessage(PageFlowController.class, "NotWebFolder"),
-            //                    NbBundle.getMessage(PageFlowController.class, "TLE_NoWebFolder"),
-            //                    false,
-            //                    DialogDescriptor.WARNING_MESSAGE,
-            //                    DialogDescriptor.NO_OPTION,
-            //                    null);
-            //
-            //            Dialog d = DialogDisplayer.getDefault().createDialog(desc);
-            //            d.setVisible(true);
-            if (isShowNoWebFolderDialog()) {
-
-                final NotWebFolder panel = new NotWebFolder(NO_WEB_FOLDER_WARNING);
-                DialogDescriptor descriptor = new DialogDescriptor(panel, NO_WEB_FOLDER_TITLE, true, NotifyDescriptor.PLAIN_MESSAGE, NotifyDescriptor.YES_OPTION, null);
-                descriptor.setMessageType(NotifyDescriptor.PLAIN_MESSAGE);
-                descriptor.setClosingOptions(new Object[]{NotifyDescriptor.OK_OPTION});
-                descriptor.setOptionsAlign(DialogDescriptor.BOTTOM_ALIGN);
-                final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
-                d.setSize(380, 180);
-                d.setVisible(true);
-
-                setShowNoWebFolderDialog(panel.getShowDialog());
-            }
+            ifNecessaryShowNoWebFolderDialog();
 
 
             webFiles = new LinkedList<FileObject>();
         } else {
             webFiles = getAllProjectRelevantFilesObjects();
+        }
+    }
+
+    protected void ifNecessaryShowNoWebFolderDialog() {
+        if (isShowNoWebFolderDialog()) {
+
+            final NotWebFolder panel = new NotWebFolder(NO_WEB_FOLDER_WARNING);
+            DialogDescriptor descriptor = new DialogDescriptor(panel, NO_WEB_FOLDER_TITLE, true, NotifyDescriptor.PLAIN_MESSAGE, NotifyDescriptor.YES_OPTION, null);
+            descriptor.setMessageType(NotifyDescriptor.PLAIN_MESSAGE);
+            descriptor.setClosingOptions(new Object[]{NotifyDescriptor.OK_OPTION});
+            descriptor.setOptionsAlign(DialogDescriptor.BOTTOM_ALIGN);
+            final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
+            d.setSize(380, 180);
+            d.setVisible(true);
+
+            setShowNoWebFolderDialog(panel.getShowDialog());
         }
     }
 
@@ -482,11 +476,11 @@ public class PageFlowController {
 
             EventQueue.invokeLater(new Runnable() {
 
-                        public void run() {
+                public void run() {
 
-                            setupGraph();
-                        }
-                    });
+                    setupGraph();
+                }
+            });
         }
     }
 
@@ -544,6 +538,10 @@ public class PageFlowController {
     public java.util.Stack<String> PageFlowCreationStack = new java.util.Stack<String>();
     private int PageFlowCreationCount = 0;
 
+    /* 
+     * Create a Page from a node 
+     * If no dataObject backing the page, call createPage(String)
+     */
     public Page createPageFlowNode(Node node) {
         Page pageNode = new Page(this, node);
         Calendar rightNow = Calendar.getInstance();
@@ -553,19 +551,22 @@ public class PageFlowController {
     }
 
     /*
-     * Create PageFlowNode with no backing page. 
+     * Create PageFlowNode from a string with no backing page. 
      */
     public Page createPage(String pageName) {
-        Node tmpNode = new AbstractNode(Children.LEAF);
-        tmpNode.setName(pageName);
-        Page node = createPageFlowNode(tmpNode);
+        Page node = null;
+        if (pageName != null && pageName.length() != 0) {
+            Node tmpNode = new AbstractNode(Children.LEAF);
+            tmpNode.setName(pageName);
+            node = createPageFlowNode(tmpNode);
+        }
         return node;
     }
     public java.util.Stack<String> PageFlowDestroyStack = new java.util.Stack<String>();
     private int PageFlowDestroyCount = 0;
 
     public void destroyPageFlowNode(Page pageNode) {
-	if( pageNode != null ) {	
+        if (pageNode != null) {
             pageNode.destroy2();
             Calendar rightNow = Calendar.getInstance();
             PageFlowDestroyStack.push("\n" + PageFlowDestroyCount + ". " + rightNow.get(Calendar.MINUTE) + ":" + rightNow.get(Calendar.SECOND) + " -  " + pageNode);
@@ -697,7 +698,7 @@ public class PageFlowController {
             Page node = removePageName2Page(key, true);
         }
     //            pageName2Node.clear();
-        //        }
+    //        }
     }
 
     public void putPageName2Page(String displayName, Page pageNode) {
@@ -944,30 +945,30 @@ public class PageFlowController {
                     StatusDisplayer.getDefault().setStatusText("otvirani"); // NOI18N
                     EventQueue.invokeLater(new Runnable() {
 
-                                public void run() {
+                        public void run() {
 
-                                    ec2.edit();
-                                    JEditorPane[] panes = ec.getOpenedPanes();
-                                    if (panes != null && panes.length > 0) {
-                                        openPane(panes[0], navCase);
-                                    //ec.open();
-                                    } else {
-                                        ec.addPropertyChangeListener(new PropertyChangeListener() {
+                            ec2.edit();
+                            JEditorPane[] panes = ec.getOpenedPanes();
+                            if (panes != null && panes.length > 0) {
+                                openPane(panes[0], navCase);
+                            //ec.open();
+                            } else {
+                                ec.addPropertyChangeListener(new PropertyChangeListener() {
 
-                                                    public void propertyChange(PropertyChangeEvent evt) {
-                                                        if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
-                                                            final JEditorPane[] panes = ec.getOpenedPanes();
-                                                            if (panes != null && panes.length > 0) {
-                                                                openPane(panes[0], navCase);
-                                                            }
-                                                            ec.removePropertyChangeListener(this);
-                                                        }
-                                                    }
-                                                });
-                                        ec.open();
+                                    public void propertyChange(PropertyChangeEvent evt) {
+                                        if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
+                                            final JEditorPane[] panes = ec.getOpenedPanes();
+                                            if (panes != null && panes.length > 0) {
+                                                openPane(panes[0], navCase);
+                                            }
+                                            ec.removePropertyChangeListener(this);
+                                        }
                                     }
-                                }
-                            });
+                                });
+                                ec.open();
+                            }
+                        }
+                    });
                 }
             }
         }
@@ -1003,9 +1004,11 @@ public class PageFlowController {
         static Collection<FileObject> getAllRelevantFiles(PageFlowController controller) {
             return controller.getAllProjectRelevantFilesObjects();
         }
+
         static Set<NavigationRule> getAllNavigationRules(PageFlowController controller) {
             return controller.navRule2String.keySet();
         }
+
         static Set<NavigationCase> getAllNavigationCases(PageFlowController controller) {
             return controller.navCase2NavCaseEdge.keySet();
         }

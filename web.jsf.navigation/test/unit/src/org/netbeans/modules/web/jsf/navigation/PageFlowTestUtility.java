@@ -208,8 +208,6 @@ public class PageFlowTestUtility {
         EditorKit kit = JSFConfigEditorSupport.getEditorKit("text/x-jsf+xml");
         assert (kit instanceof XMLKit);
         editorSupport.edit();
-
-        Thread.sleep(5000);
         JEditorPane[] panes = editorSupport.getOpenedPanes();
         JSFConfigModel model = ConfigurationUtils.getConfigModel(getJsfDO().getPrimaryFile(), true);
         assertNotNull(model);
