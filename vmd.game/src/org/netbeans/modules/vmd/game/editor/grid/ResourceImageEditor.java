@@ -77,7 +77,7 @@ public class ResourceImageEditor extends javax.swing.JPanel {
 		
 		this.textFieldImage.setText(imageResource.getRelativeResourcePath());
 		this.textFieldNumTiles.setText(Integer.toString(imageResource.getStaticTileCount(tileWidth, tileHeight)));
-		this.textFieldSize.setText(org.openide.util.NbBundle.getMessage(ResourceImageEditor.class, "ResourceImageEditor.labelImage.txt", tileWidth, tileHeight));
+		this.textFieldSize.setText(org.openide.util.NbBundle.getMessage(ResourceImageEditor.class, "ResourceImageEditor.tileSize.txt", tileWidth, tileHeight));
 		this.resourceComponent.setImageResource(imageResource, tileWidth, tileHeight, zeroBasedIndex);
 		this.resourceComponent.setSelectedIndex(0);
 	}
@@ -112,7 +112,7 @@ public class ResourceImageEditor extends javax.swing.JPanel {
         textFieldNumTiles.setBorder(null);
 
         jLabel3.setLabelFor(textFieldSize);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(ResourceImageEditor.class, "ResourceImageEditor.labelSize.txt")); // NOI18N
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(ResourceImageEditor.class, "ResourceImageEditor.tileSizeLbl.txt")); // NOI18N
 
         textFieldSize.setEditable(false);
         textFieldSize.setBorder(null);

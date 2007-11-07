@@ -111,7 +111,7 @@
               <ComponentRef name="textFieldSize"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/vmd/game/editor/grid/Bundle.properties" key="ResourceImageEditor.labelSize.txt" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/vmd/game/editor/grid/Bundle.properties" key="ResourceImageEditor.tileSizeLbl.txt" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
         </Component>
