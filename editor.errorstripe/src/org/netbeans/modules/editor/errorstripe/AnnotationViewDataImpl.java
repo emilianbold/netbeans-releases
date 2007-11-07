@@ -135,29 +135,33 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         LegacyCrapProvider legacyCrap = MimeLookup.getLookup(legacyMimePath).lookup(LegacyCrapProvider.class);
 
         // Collect legacy mark providers
-        List<MarkProvider> markProviders = new ArrayList<MarkProvider>();
-        createMarkProviders(legacyCrap.getMarkProviderCreators(), markProviders, pane);
+        List<MarkProvider> newMarkProviders = new ArrayList<MarkProvider>();
+        if (legacyCrap != null) {
+            createMarkProviders(legacyCrap.getMarkProviderCreators(), newMarkProviders, pane);
+        }
         
         // Collect mark providers
         String mimeType = pane.getUI().getEditorKit(pane).getContentType();
         MimePath mimePath = MimePath.parse(mimeType);
         Collection<? extends MarkProviderCreator> creators = 
             MimeLookup.getLookup(mimePath).lookupAll(MarkProviderCreator.class);
-        createMarkProviders(creators, markProviders, pane);
+        createMarkProviders(creators, newMarkProviders, pane);
 
-        this.markProviders = markProviders;
+        this.markProviders = newMarkProviders;
 
         
         // Collect legacy status providers
-        List<UpToDateStatusProvider> statusProviders = new ArrayList<UpToDateStatusProvider>();
-        createStatusProviders(legacyCrap.getUpToDateStatusProviderFactories(), statusProviders, pane);
+        List<UpToDateStatusProvider> newStatusProviders = new ArrayList<UpToDateStatusProvider>();
+        if (legacyCrap != null) {
+            createStatusProviders(legacyCrap.getUpToDateStatusProviderFactories(), newStatusProviders, pane);
+        }
         
         // Collect status providers
         Collection<? extends UpToDateStatusProviderFactory> factories = 
             MimeLookup.getLookup(mimePath).lookupAll(UpToDateStatusProviderFactory.class);
-        createStatusProviders(factories, statusProviders, pane);
+        createStatusProviders(factories, newStatusProviders, pane);
 
-        this.statusProviders = statusProviders;
+        this.statusProviders = newStatusProviders;
         
         
         long end = System.currentTimeMillis();
@@ -696,8 +700,8 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         }
         
         private void computeInstances() {
-            ArrayList<MarkProviderCreator> creators = new ArrayList<MarkProviderCreator>();
-            ArrayList<UpToDateStatusProviderFactory> factories = new ArrayList<UpToDateStatusProviderFactory>();
+            ArrayList<MarkProviderCreator> newCreators = new ArrayList<MarkProviderCreator>();
+            ArrayList<UpToDateStatusProviderFactory> newFactories = new ArrayList<UpToDateStatusProviderFactory>();
             
             for(FileObject f : instanceFiles) {
                 if (!f.isValid() || !f.isData()) {
@@ -710,10 +714,10 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
                     if (ic != null) {
                         if (MarkProviderCreator.class.isAssignableFrom(ic.instanceClass())) {
                             MarkProviderCreator creator = (MarkProviderCreator) ic.instanceCreate();
-                            creators.add(creator);
+                            newCreators.add(creator);
                         } else if (UpToDateStatusProviderFactory.class.isAssignableFrom(ic.instanceClass())) {
                             UpToDateStatusProviderFactory factory = (UpToDateStatusProviderFactory) ic.instanceCreate();
-                            factories.add(factory);
+                            newFactories.add(factory);
                         }
                     }
                 } catch (Exception e) {
@@ -721,8 +725,8 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
                 }
             }
             
-            this.creators = creators;
-            this.factories = factories;
+            this.creators = newCreators;
+            this.factories = newFactories;
         }
     } // End of LegacyToolbarActionsProvider class
 }
