@@ -306,65 +306,74 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
     protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
         BaseDocument doc = (BaseDocument)c.getDocument();
-        String text = getInsertPrefix().toString();
-        if (text != null) {
-            boolean completeMethod = text.length() == len && toAdd != null && "()".equals(toAdd.trim());
-            int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
-            if (semiPos > -2)
-                toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
-            if (toAdd != null && !toAdd.equals("\n")) {//NOI18N
-                TokenSequence<JavaTokenId> sequence = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset + len);
-                if (sequence == null || !sequence.moveNext() && !sequence.movePrevious()) {
-                    text += toAdd;
+        CharSequence prefix = getInsertPrefix();
+        if (prefix == null)
+            return;
+        StringBuilder text = new StringBuilder(prefix);
+        boolean completeMethod = text.length() == len && toAdd != null && "()".equals(toAdd.trim());
+        int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
+        if (semiPos > -2)
+            toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
+        if (toAdd != null && !toAdd.equals("\n")) {//NOI18N
+            char ch;
+            int i = 0;
+            while(i < toAdd.length() && (ch = toAdd.charAt(i)) <= ' ' ) {
+                text.append(ch);
+                i++;
+            }
+            if (i > 0)
+                toAdd = toAdd.substring(i);
+            TokenSequence<JavaTokenId> sequence = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset + len);
+            if (sequence == null || !sequence.moveNext() && !sequence.movePrevious()) {
+                text.append(toAdd);
+                toAdd = null;
+            }
+            boolean added = false;
+            while(toAdd != null && toAdd.length() > 0) {
+                String tokenText = sequence.token().text().toString();
+                if (tokenText.startsWith(toAdd)) {
+                    len = sequence.offset() - offset + toAdd.length();
+                    text.append(toAdd);
                     toAdd = null;
-                }
-                boolean added = false;
-                while(toAdd != null && toAdd.length() > 0) {
-                    String tokenText = sequence.token().text().toString();
-                    if (tokenText.startsWith(toAdd)) {
-                        len = sequence.offset() - offset + toAdd.length();
-                        text += toAdd;
-                        toAdd = null;
-                    } else if (toAdd.startsWith(tokenText)) {
-                        sequence.moveNext();
-                        len = sequence.offset() - offset;
-                        text += toAdd.substring(0, tokenText.length());
-                        toAdd = toAdd.substring(tokenText.length());
-                        added = true;
-                    } else if (sequence.token().id() == JavaTokenId.WHITESPACE && sequence.token().text().toString().indexOf('\n') < 0) {//NOI18N
-                        if (!sequence.moveNext()) {
-                            text += toAdd;
-                            toAdd = null;
-                        }
-                    } else {
-                        if (!added)
-                            text += toAdd;
+                } else if (toAdd.startsWith(tokenText)) {
+                    sequence.moveNext();
+                    len = sequence.offset() - offset;
+                    text.append(toAdd.substring(0, tokenText.length()));
+                    toAdd = toAdd.substring(tokenText.length());
+                    added = true;
+                } else if (sequence.token().id() == JavaTokenId.WHITESPACE && sequence.token().text().toString().indexOf('\n') < 0) {//NOI18N
+                    if (!sequence.moveNext()) {
+                        text.append(toAdd);
                         toAdd = null;
                     }
+                } else {
+                    if (!added)
+                        text.append(toAdd);
+                    toAdd = null;
                 }
             }
-            // Update the text
-            doc.atomicLock();
-            try {
-                String textToReplace = doc.getText(offset, len);
-                if (text.equals(textToReplace)) {
-                    if (semiPos > -1)
-                        doc.insertString(semiPos, ";", null); //NOI18N
-                    return;
-                }                
-                Position position = doc.createPosition(offset);
-                Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
-                doc.remove(offset, len);
-                doc.insertString(position.getOffset(), text, null);
-                if (semiPosition != null)
-                    doc.insertString(semiPosition.getOffset(), ";", null);
-                else if (completeMethod)
-                    c.setCaretPosition(c.getCaretPosition() - 1);
-            } catch (BadLocationException e) {
-                // Can't update
-            } finally {
-                doc.atomicUnlock();
-            }
+        }
+        // Update the text
+        doc.atomicLock();
+        try {
+            String textToReplace = doc.getText(offset, len);
+            if (textToReplace.contentEquals(text)) {
+                if (semiPos > -1)
+                    doc.insertString(semiPos, ";", null); //NOI18N
+                return;
+            }                
+            Position position = doc.createPosition(offset);
+            Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
+            doc.remove(offset, len);
+            doc.insertString(position.getOffset(), text.toString(), null);
+            if (semiPosition != null)
+                doc.insertString(semiPosition.getOffset(), ";", null);
+            else if (completeMethod)
+                c.setCaretPosition(c.getCaretPosition() - 1);
+        } catch (BadLocationException e) {
+            // Can't update
+        } finally {
+            doc.atomicUnlock();
         }
     }
             
@@ -1307,12 +1316,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     }
                 }
             }
-            String add = inImport ? ";" : CodeStyle.getDefault(null).spaceBeforeMethodCallParen() ? " ()" : "()"; //NOI18N
-            if (toAdd != null && !add.startsWith(toAdd))
-                add += toAdd;
             if (inImport || params.isEmpty()) {
+                String add = inImport ? ";" : CodeStyle.getDefault(null).spaceBeforeMethodCallParen() ? " ()" : "()"; //NOI18N
+                if (toAdd != null && !add.startsWith(toAdd))
+                    add += toAdd;
                 super.substituteText(c, offset, len, add);
-            } else {                
+            } else {
+                String add = "()"; //NOI18N
+                if (toAdd != null && !add.startsWith(toAdd))
+                    add += toAdd;
                 BaseDocument doc = (BaseDocument)c.getDocument();
                 String text = ""; //NOI18N
                 int semiPos = add.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
@@ -1363,7 +1375,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 if (ctm != null) {
                     StringBuilder sb = new StringBuilder();
                     sb.append(getInsertPrefix());
-                    sb.append("("); //NOI18N
+                    if (CodeStyle.getDefault(null).spaceBeforeMethodCallParen())
+                    sb.append(' '); //NOI18N
+                    sb.append('('); //NOI18N
                     if (text.length() > 1) {
                         for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
                             ParamDesc paramDesc = it.next();
@@ -1371,11 +1385,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             sb.append(paramDesc.name);
                             sb.append(" named instanceof="); //NOI18N
                             sb.append(paramDesc.fullTypeName);
-                            sb.append("}"); //NOI18N
+                            sb.append('}'); //NOI18N
                             if (it.hasNext())
                                 sb.append(", "); //NOI18N
                         }
-                        sb.append(")");//NOI18N
+                        sb.append(')');//NOI18N
                         if (text.length() > 2)
                             sb.append(text.substring(2));
                     }
@@ -1832,11 +1846,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sequence.moveNext();
             }
             String add = isAbstract ? "() {}" : "()"; //NOI18N
-            if (CodeStyle.getDefault(null).spaceBeforeMethodCallParen())
-                add = " " + add; //NOI18N
             if (toAdd != null && !add.startsWith(toAdd))
                 add += toAdd;   
-            String text = ""; //NOI18N
+            String text = CodeStyle.getDefault(null).spaceBeforeMethodCallParen() ? " " : ""; //NOI18N
             if (sequence == null) {
                 text += add;
                 add = null;
@@ -1871,7 +1883,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
                 doc.remove(offset, len);
                 doc.insertString(offset, text, null);
-                position = doc.createPosition(offset);
+                position = doc.createPosition(offset + text.indexOf('(') + 1);
                 if (semiPosition != null)
                     doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
                 else if (!isAbstract && params.isEmpty() && "()".equals(text.trim())) //NOI18N
@@ -1883,7 +1895,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if (isAbstract && text.length() > 3) {
                 try {
                     JavaSource js = JavaSource.forDocument(doc);
-                    final int off = offset + 4;
+                    final int off = offset + text.indexOf('{') + 1;
                     js.runModificationTask(new Task<WorkingCopy>() {
 
                         public void run(WorkingCopy copy) throws IOException {
@@ -1903,7 +1915,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 } catch (Exception ex) {
                 }
             }            
-            if (!params.isEmpty() && text.length() > 1) {
+            if (!params.isEmpty() && text.trim().length() > 1) {
                 CodeTemplateManager ctm = CodeTemplateManager.get(doc);
                 if (ctm != null) {
                     StringBuilder sb = new StringBuilder();
@@ -1919,7 +1931,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     }
                     if (position != null)
                         offset = position.getOffset();
-                    c.setCaretPosition(offset + 1);
+                    c.setCaretPosition(offset);
                     ctm.createTemporary(sb.toString()).insert(c);
                     Completion.get().showToolTip();
                 }
@@ -2010,11 +2022,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sequence.moveNext();
             }
             String add = isAbstract ? "() {}" : "()"; //NOI18N
-            if (CodeStyle.getDefault(null).spaceBeforeMethodCallParen())
-                add = " " + add; //NOI18N
             if (toAdd != null && !add.startsWith(toAdd))
                 add += toAdd;
-            String text = ""; //NOI18N
+            String text = CodeStyle.getDefault(null).spaceBeforeMethodCallParen() ? " " : ""; //NOI18N
             if (sequence == null) {
                 text += add;
                 add = null;
@@ -2044,23 +2054,28 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }
             doc.atomicLock();
+            Position position = null;
             try {
-                Position position = doc.createPosition(offset);
+                position = doc.createPosition(offset);
                 Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
                 doc.remove(offset, len);
-                doc.insertString(position.getOffset(), text, null);
+                offset = position.getOffset();
+                doc.insertString(offset, text, null);
+                position = doc.createPosition(offset);
                 if (semiPosition != null)
-                    doc.insertString(position.getOffset(), ";", null); //NOI18N
+                    doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
                 else if (!isAbstract && "()".equals(text.trim())) //NOI18N
                     c.setCaretPosition(c.getCaretPosition() - 1);
             } catch (BadLocationException e) {
             } finally {
                 doc.atomicUnlock();
             }
-            if (isAbstract && text.length() > 3) {
+            if (isAbstract && text.trim().length() > 3) {
                 try {
+                    if (position != null)
+                        offset = position.getOffset();
                     JavaSource js = JavaSource.forDocument(c.getDocument());
-                    final int off = c.getSelectionEnd() - text.length() + 4;
+                    final int off = offset + text.indexOf('{') + 1;
                     js.runModificationTask(new Task<WorkingCopy>() {
 
                         public void run(WorkingCopy copy) throws IOException {
