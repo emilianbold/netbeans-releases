@@ -132,7 +132,7 @@ public class AddServerInstanceWizard extends WizardDescriptor {
         String[] contentData = getContentData();
         if (contentData != null) {
             putProperty(PROP_CONTENT_DATA, contentData);
-            putProperty(PROP_CONTENT_SELECTED_INDEX, new Integer(getContentSelectedIndex()));
+            putProperty(PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(getContentSelectedIndex()));
         }
     }
 
