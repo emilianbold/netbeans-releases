@@ -90,10 +90,10 @@ public final class LibraryManager {
         for(LibraryEntry entry : librariesEntries.values()){
             if (entry.containsProject(projectUid)){
 		LibProjectImpl lib = (LibProjectImpl)entry.getLibrary().getObject();
-		if( lib != null ) {
-		    res.add(lib);
-		}
+            if( lib != null ) {
+                res.add(lib);
             }
+        }
         }
         return res;
     }
@@ -103,11 +103,11 @@ public final class LibraryManager {
      */
     public Collection<CsmUID<CsmProject>> getLirariesKeys(CsmUID<CsmProject> projectUid){
         List<CsmUID<CsmProject>> res = new ArrayList<CsmUID<CsmProject>>();
-        for(LibraryEntry entry : librariesEntries.values()){
-            if (entry.containsProject(projectUid)){
-                res.add(entry.getLibrary());
+            for(LibraryEntry entry : librariesEntries.values()){
+                if (entry.containsProject(projectUid)){
+                    res.add(entry.getLibrary());
+                }
             }
-        }
         return res;
     }
 
@@ -269,7 +269,7 @@ public final class LibraryManager {
             entry = getOrCreateLibrary(project.getModel(), folder);
         }
         if (!entry.containsProject(projectUid)){
-            entry.addProject(projectUid);
+                entry.addProject(projectUid);
         }
         return (LibProjectImpl)entry.getLibrary().getObject();
     }
@@ -297,6 +297,12 @@ public final class LibraryManager {
             }
         }
         return entry;
+    }
+    
+    public void onProjectPropertyChanged(CsmUID<CsmProject> project) {
+        for (LibraryEntry entry : librariesEntries.values()) {
+            entry.removeProject(project);
+        }
     }
     
     /**
@@ -355,7 +361,7 @@ public final class LibraryManager {
             entry.addProject(project);
         }
     }
-    
+
     private static class LibraryEntry {
         private String folder;
         private CsmUID<CsmProject> libraryUID;
