@@ -535,7 +535,7 @@ public class DesignTimeDataSourceHelper {
             DatabaseSettingsImporter.getInstance().updateWebXml(currentProj, jdbcResources);
             
             // Support for Creator 2 projects and a hack - serverplugin not detecting datasources in project
-            if (jdbcResource == null  && dynamicDataSources.length > 0) {
+            if (jdbcResource == null) {
                 RequestedJdbcResource[] resources = null;                
                 DataSourceInfo dsInfo = null;
                 DesignTimeDataSourceService dataSourceService = null;
@@ -564,7 +564,7 @@ public class DesignTimeDataSourceHelper {
                         }
                     }
                 }
-            } else if (dynamicDataSources.length > 0) {
+            } else {
                 // Check if datasource exists in the context.  If it doesn't exist then bind the datasource .
                 Iterator it = jdbcResources.iterator();
                 boolean found = false;
