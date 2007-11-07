@@ -1128,12 +1128,12 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 ServerInstance.class,
                 "MSG_AnotherServerRunning",
                 new Object[] {
-            si.getDisplayName(),
+                    si.getDisplayName(),
                     cd.getServerDebugInfo().getHost(),
                     cd.getServerDebugInfo().getTransport().equals(ServerDebugInfo.TRANSPORT_SOCKET) ?
                         "socket" : "shared memory",
                     cd.getServerDebugInfo().getTransport().equals(ServerDebugInfo.TRANSPORT_SOCKET) ?
-                        new Integer(cd.getServerDebugInfo().getPort()).toString() : cd.getServerDebugInfo().getShmemName()
+                        Integer.toString(cd.getServerDebugInfo().getPort()) : cd.getServerDebugInfo().getShmemName()
         }),
                 NotifyDescriptor.QUESTION_MESSAGE
                 );
@@ -1589,21 +1589,16 @@ public class ServerInstance implements Node.Cookie, Comparable {
         if (ss == null) {
             return null;
         }
-        
+
         Target t = null;
-        
+
         // Getting targets from AS8.1 requires start server which would hang UI, so avoid start server
-        if (! isReallyRunning() && ss.needsStartForTargetList()) {
-            if (t == null) {
-                for (Iterator it = debugInfo.keySet().iterator(); t == null && it.hasNext(); ) {
-                    Target cachedTarget = (Target) it.next();
-                    if (ss.isAlsoTargetServer(cachedTarget)) {
-                        t = cachedTarget;
-                    }
+        if (!isReallyRunning() && ss.needsStartForTargetList()) {
+            for (Iterator it = debugInfo.keySet().iterator(); t == null && it.hasNext(); ) {
+                Target cachedTarget = (Target) it.next();
+                if (ss.isAlsoTargetServer(cachedTarget)) {
+                    t = cachedTarget;
                 }
-            } else {
-                if (ss.isAlsoTargetServer(target))
-                    t = target;
             }
         } else {
             ServerTarget[] targets = getTargets();
@@ -1612,12 +1607,12 @@ public class ServerInstance implements Node.Cookie, Comparable {
                     t = targets[i].getTarget();
                 }
             }
-            
+
             if (t == null && targets.length > 0) {
                 t = targets[0].getTarget();
             }
         }
-        
+
         return t;
     }
 
