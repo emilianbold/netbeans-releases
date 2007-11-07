@@ -43,7 +43,6 @@ package org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator;
 
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import java.io.IOException;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.j2ee.persistence.action.*;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategySupport;
@@ -53,13 +52,12 @@ import com.sun.source.tree.Tree;
 import java.io.File;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
-import org.netbeans.modules.j2ee.persistence.util.AbstractTask;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategy;
 import org.openide.filesystems.FileUtil;
 
@@ -173,7 +171,7 @@ public class EntityManagerGenerationStrategySupportTest extends EntityManagerGen
     private void assertAnnotation(File testFile, final String annotation, final boolean expectSuccess) throws Exception {
         JavaSource targetSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         
-        CancellableTask task = new TaskSupport() {
+        Task task = new TaskSupport() {
             void doAsserts(EntityManagerGenerationStrategySupport strategy) {
                 Element result = strategy.getAnnotation(annotation);
                 if (expectSuccess){
@@ -203,7 +201,7 @@ public class EntityManagerGenerationStrategySupportTest extends EntityManagerGen
     private void assertField(File testFile, final String field, final String fieldName, final boolean expectSuccess) throws Exception {
         JavaSource targetSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         
-        CancellableTask task = new TaskSupport() {
+        Task task = new TaskSupport() {
             void doAsserts(EntityManagerGenerationStrategySupport strategy) {
                 VariableTree result = strategy.getField(field);
                 if (expectSuccess){
@@ -226,7 +224,7 @@ public class EntityManagerGenerationStrategySupportTest extends EntityManagerGen
     
     
     // a helper class for avoiding some duplicate code
-    private abstract class TaskSupport extends AbstractTask<WorkingCopy> {
+    private abstract class TaskSupport implements Task<WorkingCopy> {
         
         public void run(WorkingCopy workingCopy) throws Exception {
             

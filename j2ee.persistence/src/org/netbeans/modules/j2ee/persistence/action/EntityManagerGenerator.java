@@ -48,11 +48,11 @@ import com.sun.source.tree.Tree;
 import java.io.IOException;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.persistence.util.AbstractTask;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionInJ2SE;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategy;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
@@ -146,7 +146,7 @@ public final class EntityManagerGenerator {
         Parameters.notNull("options", options); //NO18N
         Parameters.notNull("strategyClass", strategyClass); //NO18N
         
-        AbstractTask task = new AbstractTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws Exception {
                 

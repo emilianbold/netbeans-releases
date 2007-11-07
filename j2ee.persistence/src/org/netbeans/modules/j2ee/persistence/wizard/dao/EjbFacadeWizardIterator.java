@@ -69,13 +69,13 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
-import org.netbeans.modules.j2ee.persistence.util.AbstractTask;
 import org.netbeans.modules.j2ee.persistence.util.GenerationUtils;
 import org.netbeans.modules.j2ee.persistence.action.EntityManagerGenerator;
 import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
@@ -200,7 +200,7 @@ import org.openide.util.NbBundle;
         createdFiles.add(facade);
         // add the @stateless annotation 
         JavaSource source = JavaSource.forFileObject(facade);
-        source.runModificationTask(new AbstractTask<WorkingCopy>(){
+        source.runModificationTask(new Task<WorkingCopy>(){
             public void run(WorkingCopy parameter) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(parameter);
                 AnnotationTree stateless = genUtils.createAnnotation(EJB_STATELESS);
@@ -232,7 +232,7 @@ import org.openide.util.NbBundle;
         }
 
         // add implements clauses to the facade
-        source.runModificationTask(new AbstractTask<WorkingCopy>() {
+        source.runModificationTask(new Task<WorkingCopy>() {
 
             public void run(WorkingCopy parameter) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(parameter);
@@ -347,7 +347,7 @@ import org.openide.util.NbBundle;
     FileObject createInterface(String name, final String annotationType, FileObject targetFolder) throws IOException {
         FileObject sourceFile = GenerationUtils.createInterface(targetFolder, name, null);
         JavaSource source = JavaSource.forFileObject(sourceFile);
-        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
+        ModificationResult result = source.runModificationTask(new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws Exception {
                 
@@ -378,7 +378,7 @@ import org.openide.util.NbBundle;
     void addMethodToInterface(final List<GenerationOptions> options, final FileObject target) throws IOException {
         
         JavaSource source = JavaSource.forFileObject(target);
-        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
+        ModificationResult result = source.runModificationTask(new Task<WorkingCopy>() {
             
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils utils = GenerationUtils.newInstance(copy);

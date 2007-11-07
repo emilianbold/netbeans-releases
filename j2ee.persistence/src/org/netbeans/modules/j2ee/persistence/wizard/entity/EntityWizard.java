@@ -51,8 +51,6 @@ import com.sun.source.tree.VariableTree;
 import java.io.IOException;
 import java.util.ArrayList;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import org.openide.*;
-import org.openide.util.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -64,11 +62,11 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.persistence.util.AbstractTask;
 import org.netbeans.modules.j2ee.persistence.util.GenerationUtils;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
@@ -80,7 +78,9 @@ import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * A wizard for creating entity classes.
@@ -225,7 +225,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         
 
         JavaSource targetSource = JavaSource.create(cpHelper.createClasspathInfo(), entityFo);
-        AbstractTask<WorkingCopy> task = new AbstractTask<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);

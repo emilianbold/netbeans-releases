@@ -58,6 +58,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -65,7 +66,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
-import org.netbeans.modules.j2ee.persistence.util.AbstractTask;
 import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper;
 import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper.State;
 import org.openide.util.ChangeSupport;
@@ -260,7 +260,7 @@ public class EntityClosure {
                 
         final Set<String> result = new HashSet<String>();
 
-        source.runUserActionTask(new AbstractTask<CompilationController>() {
+        source.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController parameter) throws Exception {
                 TypeElement entity = parameter.getElements().getTypeElement(entityClass);
                 for (Element element : entity.getEnclosedElements()){

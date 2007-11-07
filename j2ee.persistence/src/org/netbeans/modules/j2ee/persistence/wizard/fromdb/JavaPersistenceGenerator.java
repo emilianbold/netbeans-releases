@@ -63,11 +63,11 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.persistence.util.AbstractTask;
 import org.netbeans.modules.j2ee.persistence.util.GenerationUtils;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.CMPMappingModel;
@@ -361,7 +361,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     JavaSource javaSource = (pkClassFO != null) ?
                         JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO, pkClassFO) :
                         JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO);
-                    javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+                    javaSource.runModificationTask(new Task<WorkingCopy>() {
                         public void run(WorkingCopy copy) throws IOException {
                             if (copy.getFileObject().equals(entityClassFO)) {
                                 new EntityClassGenerator(copy, entityClass, generateNamedQueries).run();
