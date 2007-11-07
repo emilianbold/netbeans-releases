@@ -138,7 +138,10 @@
     <target name="untar-native" depends="untar-native-unix,untar-native-windows"/>
     
     <target name="untar-native-unix" unless="windows">
-        <exec executable="tar" dir="${jvm.source.dir}">
+        <exec 
+            executable="${tar.executable}" 
+            dir="${jvm.source.dir}"
+            failonerror="yes">
             <arg value="-${jvm.source.file.compression}xvf"/>
             <arg value="${cache.dir}/${jvm.file.name}"/>
         </exec>
@@ -161,19 +164,19 @@
     
     <target name="pack-files">
         <echo message="Executing pack200 in ${jvm.source.dir}/${jvm.sub.dir}"/>
-        <exec executable="sh" failonerror="yes" dir="${jvm.source.dir}/${jvm.sub.dir}">
+        <exec executable="${sh.executable}" failonerror="yes" dir="${jvm.source.dir}/${jvm.sub.dir}">
             <arg value="${scripts.dir}/pack200.sh"/>
         </exec>
     </target>
     <target name="unpack-files">
         <echo message="Executing unpack200 in ${unpack.dir}"/>
-        <exec executable="sh" failonerror="yes" dir="${unpack.dir}">
+        <exec executable="${sh.executable}" failonerror="yes" dir="${unpack.dir}">
             <arg value="${scripts.dir}/unpack200.sh"/>
         </exec>
     </target>
     
     <target name="create-zip-sfx"> 
-        <exec executable="zip" dir="${jvm.source.dir}/${jvm.sub.dir}">
+        <exec executable="${zip.executable}" failonerror="yes" dir="${jvm.source.dir}/${jvm.sub.dir}">
             <arg value="-r"/>
             <arg value="-y"/>
             <arg value="-9"/> 
@@ -187,7 +190,7 @@
             <fileset file="${work.dir}/jvm.zip"/>
         </concat>
         <delete file="${work.dir}/jvm.zip"/>
-        <exec executable="zip">
+        <exec executable="${zip.executable}">
             <arg value="-A"/>
             <arg value="${work.dir}/${jvm.dest.file}"/>
         </exec>

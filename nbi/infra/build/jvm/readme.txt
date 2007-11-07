@@ -39,3 +39,5 @@ Should be run on each required platform.
 To specify x64 target, environment variable TARGET_PLATFORM can be set to solaris-sparcv9 or solaris/linux/windows-amd64.
 Another option - just run Ant on x64 JVM if it is possible.
 build-private.sh file is missing but contains only one line with java builds host (JVM_BUILDS_HOST=...).
+
+Notes: UnzipSFX Version 5.51 (22 May 2004) on Linux doesn`t work with symlinks so v.5.50 is used.
