@@ -1,8 +1,4 @@
 /*
- * JavaTestSourceConstructorElem.java
- * 
- * Created on
- * 
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
@@ -23,11 +19,11 @@ public class JavaTestSourceConstructorElem {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public JavaTestSourceConstructorElem(int param2, int param1) {
+    public JavaTestSourceConstructorElem(int param1, int param2) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public JavaTestSourceConstructorElem(int param2, float param1, String param3) {
+    public JavaTestSourceConstructorElem(float param1, int param2, String param3) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

@@ -1,8 +1,4 @@
 /*
- * JavaTestSourceMethodElem.java
- * 
- * Created on
- * 
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
@@ -19,11 +15,11 @@ public class JavaTestSourceMethodElem {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    private synchronized int method1(int param2, int param1) {
+    private synchronized int method1(int param1, int param2) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    private final float method1(int param2, float param1, String param3) {
+    private final float method1(float param1, int param2, String param3) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -31,11 +27,11 @@ public class JavaTestSourceMethodElem {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public static boolean method2(int param2, int param1) {
+    public static boolean method2(int param1, int param2) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public static void method2(int param2, float param1, String param3) {
+    public static void method2(float param1, int param2, String param3) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
