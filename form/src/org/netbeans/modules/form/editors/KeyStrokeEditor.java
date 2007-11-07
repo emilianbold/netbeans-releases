@@ -68,6 +68,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
         TXT_ALT = bundle.getString("CTL_AltAsText"); // NOI18N
     }
 
+    @Override
     public String getJavaInitializationString() {
         KeyStroke key =(KeyStroke) getValue();
         int mods = key.getModifiers();
@@ -95,11 +96,13 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             + getVirtualkeyName(key.getKeyCode()) + ", " + modsText.toString() + ")"; // NOI18N
     }
 
+    @Override
     public String getAsText() {
         KeyStroke key = (KeyStroke) getValue();
         return key != null ? keyStrokeAsString(key, true) : "null"; // NOI18N
     }
 
+    @Override
     public void setAsText(String text) throws IllegalArgumentException {
         if (text == null || "".equals(text) || "null".equals(text)) { // NOI18N
             setValue(null);
@@ -231,10 +234,12 @@ public class KeyStrokeEditor extends PropertyEditorSupport
     // custom editor
     //
 
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
 
+    @Override
     public java.awt.Component getCustomEditor() {
         return new CustomEditor();
     }
@@ -265,8 +270,8 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             gbc.gridx = 0;
             gbc.gridy = 0;
             gbc.gridwidth = 1;
-            gbc.anchor = gbc.WEST;
-            gbc.fill = gbc.NONE;
+            gbc.anchor = GridBagConstraints.WEST;
+            gbc.fill = GridBagConstraints.NONE;
             gbc.weightx = 0;
             gbc.weighty = 0;
             gbc.insets = new Insets(12, 12, 5, 12);
@@ -276,7 +281,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             gbc.gridx = 1;
             gbc.gridy = 0;
             gbc.gridwidth = 1;
-            gbc.fill = gbc.HORIZONTAL;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 1.0;
             gbc.weighty = 0;
             gbc.insets = new Insets(12, 0, 5, 11);
@@ -306,7 +311,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             gbc.gridx = 2;
             gbc.gridy = 0;
             gbc.gridwidth = 1;
-            gbc.fill = gbc.NONE;
+            gbc.fill = GridBagConstraints.NONE;
             gbc.weightx = 0;
             gbc.weighty = 0;
             gbc.insets = new Insets(12, 0, 5, 12);
@@ -319,8 +324,8 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             gbc.gridx = 0;
             gbc.gridy = 1;
             gbc.gridwidth = 1;
-            gbc.anchor = gbc.WEST;
-            gbc.fill = gbc.NONE;
+            gbc.anchor = GridBagConstraints.WEST;
+            gbc.fill = GridBagConstraints.NONE;
             gbc.weightx = 0;
             gbc.weighty = 0;
             gbc.insets = new Insets(0, 12, 0, 12);
@@ -330,7 +335,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             gbc.gridx = 1;
             gbc.gridy = 1;
             gbc.gridwidth = 2;
-            gbc.fill = gbc.HORIZONTAL;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 1.0;
             gbc.weighty = 0;
             gbc.insets = new Insets(0, 0, 0, 11);
@@ -351,7 +356,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             // fill in virtual key list
 
             if (_virtualKeys == null) {
-                java.util.List list = new ArrayList();
+                java.util.List<String> list = new ArrayList<String>();
 
                 Field[] fields = KeyEvent.class.getDeclaredFields();
                 for (int i = 0; i < fields.length; i++) {
@@ -367,7 +372,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
                 }
                 _virtualKeys = new String[list.size()];
                 for (int i = 0; i < list.size(); i++) {
-                    _virtualKeys[i] =(String) list.get(i);
+                    _virtualKeys[i] = list.get(i);
                 }
             }
             _virtualKey.addItem(""); // NOI18N
@@ -439,6 +444,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
         }
 
         private class KeyGrabberField extends JTextField {
+            @Override
             protected void processKeyEvent(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_TAB)
                     super.processKeyEvent(e);

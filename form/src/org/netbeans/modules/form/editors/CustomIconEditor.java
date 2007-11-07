@@ -106,6 +106,7 @@ public class CustomIconEditor extends javax.swing.JPanel {
         }
 
         packageCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 setIcon(packageIcon);
@@ -364,12 +365,12 @@ public class CustomIconEditor extends javax.swing.JPanel {
 
     private static ComboBoxModel createPackageComboModel(FileObject root) {
         // can't use PackageView from java project support - it only works with sources
-        TreeSet data = new TreeSet();
+        TreeSet<String> data = new TreeSet<String>();
         collectPackages(root, root, data);
-        return new DefaultComboBoxModel(new Vector(data));
+        return new DefaultComboBoxModel(new Vector<String>(data));
     }
 
-    private static void collectPackages(FileObject folder, FileObject root, Collection col) {
+    private static void collectPackages(FileObject folder, FileObject root, Collection<String> col) {
         assert folder.isFolder();
         boolean hasSubfolders = false;
         boolean hasFiles = false;
@@ -418,7 +419,7 @@ public class CustomIconEditor extends javax.swing.JPanel {
             ifi.setEffectiveSize(maxIconW, maxIconH);
         }
 
-        Vector v = new Vector(data.size()+1);
+        Vector<Object> v = new Vector<Object>(data.size()+1);
         v.add(NbBundle.getMessage(CustomIconEditor.class, "CustomIconEditor_FileCombo_Select")); // NOI18N
         v.addAll(data);
         return new DefaultComboBoxModel(v);
@@ -446,6 +447,7 @@ public class CustomIconEditor extends javax.swing.JPanel {
             }
         }
 
+        @Override
         public String toString() {
             return file.getNameExt();
         }
@@ -507,6 +509,7 @@ public class CustomIconEditor extends javax.swing.JPanel {
 
     private class IconComboRenderer extends DefaultListCellRenderer {
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value,
                 int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list,
@@ -516,6 +519,7 @@ public class CustomIconEditor extends javax.swing.JPanel {
             return this;
         }
 
+        @Override
         public void paintComponent(Graphics g) {
             Icon icon = getIcon();
             if (icon != null && !fileCombo.isPopupVisible()) {
@@ -534,6 +538,7 @@ public class CustomIconEditor extends javax.swing.JPanel {
     // -----
 
     private class FileDropHandler extends TransferHandler {
+        @Override
         public boolean canImport(JComponent c, DataFlavor[] flavors) {
             for (DataFlavor f : flavors) {
                 if (DataFlavor.javaFileListFlavor.equals(f)) {
@@ -543,6 +548,7 @@ public class CustomIconEditor extends javax.swing.JPanel {
             return false;
         }
 
+        @Override
         public boolean importData(JComponent comp, Transferable t) {
             if (!t.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
                 return false;

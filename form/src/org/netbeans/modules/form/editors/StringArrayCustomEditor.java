@@ -61,7 +61,7 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
     private ResourceBundle bundle = NbBundle.getBundle (
                                        StringArrayCustomEditor.class);
 
-    private Vector itemsVector;
+    private Vector<String> itemsVector;
     private StringArrayCustomizable editor;
 
     private final static int DEFAULT_WIDTH = 400;
@@ -71,7 +71,7 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
     /** Initializes the Form */
     public StringArrayCustomEditor(StringArrayCustomizable sac) {
         editor = sac;
-        itemsVector = new Vector ();
+        itemsVector = new Vector<String>();
         String[] array = editor.getStringArray ();
         if (array != null)
             for (int i = 0; i < array.length; i++)
@@ -104,12 +104,14 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
         updateButtons ();
     }
 
+    @Override
     public java.awt.Dimension getPreferredSize () {
         // ensure minimum width
         java.awt.Dimension sup = super.getPreferredSize ();
         return new java.awt.Dimension (Math.max (sup.width, DEFAULT_WIDTH), sup.height);
     }
 
+    @Override
     public void addNotify() {
         super.addNotify();
         itemField.requestFocusInWindow();
@@ -283,7 +285,7 @@ private void itemFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     private void moveDownButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveDownButtonActionPerformed
         int sel = itemList.getSelectedIndex ();
-        String s = (String) itemsVector.elementAt (sel);
+        String s = itemsVector.elementAt (sel);
         itemsVector.removeElementAt (sel);
         itemsVector.insertElementAt (s, sel + 1);
         itemList.setListData (itemsVector);
@@ -294,7 +296,7 @@ private void itemFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     private void moveUpButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveUpButtonActionPerformed
         int sel = itemList.getSelectedIndex ();
-        String s = (String) itemsVector.elementAt (sel);
+        String s = itemsVector.elementAt (sel);
         itemsVector.removeElementAt (sel);
         itemsVector.insertElementAt (s, sel - 1);
         itemList.setListData (itemsVector);
@@ -326,7 +328,7 @@ private void itemFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         updateButtons ();
         int sel = itemList.getSelectedIndex ();
         if (sel != -1) {
-            itemField.setText ((String) itemsVector.elementAt (sel));
+            itemField.setText (itemsVector.elementAt (sel));
         }
     }//GEN-LAST:event_itemListValueChanged
 

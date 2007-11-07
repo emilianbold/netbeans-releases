@@ -218,6 +218,7 @@ public class ClassPathFileChooser extends JPanel implements ExplorerManager.Prov
         return DialogDisplayer.getDefault().createDialog(dd);
     }
 
+    @Override
     public void addNotify() {
         confirmed = false;
         super.addNotify();
@@ -392,7 +393,7 @@ public class ClassPathFileChooser extends JPanel implements ExplorerManager.Prov
     // ------
 
     private static FileObject fileFromNode(Node n) {
-        DataObject dobj = (DataObject) n.getCookie(DataObject.class);
+        DataObject dobj = n.getCookie(DataObject.class);
         return dobj != null ? dobj.getPrimaryFile() : null;
     }
 
@@ -537,11 +538,13 @@ public class ClassPathFileChooser extends JPanel implements ExplorerManager.Prov
             this.filter = filter;
         }
 
+        @Override
         protected Node copyNode(Node node) {
             return filter != null ? new FilteredNode(node, null, filter) :
                                     super.copyNode(node);
         }
 
+        @Override
         protected Node[] createNodes(Node key) {
             if (filter != null) {
                 FileObject fo = fileFromNode(key);
