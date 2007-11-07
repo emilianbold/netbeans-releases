@@ -41,11 +41,13 @@ package org.netbeans.modules.web.jsf.navigation;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.openide.filesystems.FileObject;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
+import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.netbeans.modules.web.jsf.navigation.PageFlowToolbarUtilities.Scope;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.*;
@@ -85,17 +87,7 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         super.setUp();
         tu = new PageFlowTestUtility(this);
 
-        javax.swing.SwingUtilities.invokeAndWait(new Runnable() {
-
-            public void run() {
-                try {
-                    tu.setUp(zipPath, "TestJSFApp");
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                    fail();
-                }
-            }
-        });
+        tu.setUp(zipPath, "TestJSFApp");
 
         importantValuesNotNull();
     }
@@ -129,7 +121,7 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
     /**
      * Test of setShowNoWebFolderDialog method, of class PageFlowController.
      */
-    public void testNoWebFolderDialog() throws InterruptedException, InvocationTargetException {
+    public void testNoWebFolderDialog() {
         System.out.println("setShowNoWebFolderDialog");
         boolean show = false;
         controller.setShowNoWebFolderDialog(false);
@@ -164,106 +156,78 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
      * register listeners in this same way, it would only work 50% of the time.
      * Regardless, this test should always pass because page2 is always null.
      */
-    public void testUnregisterListeners() throws IOException, Exception {
+    public void testUnregisterListeners() throws IOException {
         System.out.println("unregisterListeners");
         final String strNewPage2 = "newPage2";
         FileObject webFolder = PageFlowView.getWebFolder(tu.getJsfDO().getPrimaryFile());
 
         controller.unregisterListeners();
         webFolder.createData(strNewPage2, JSP_EXT);
-        javax.swing.SwingUtilities.invokeAndWait(new Runnable() {
-
-            public void run() {
-                Page page2 = controller.getPageName2Page(strNewPage2 + "." + JSP_EXT);
-                assertNull(page2);
-            }
-        });
+        Page page2 = controller.getPageName2Page(strNewPage2 + "." + JSP_EXT);
+        assertNull(page2);
 
     }
 
     /**
      * Test of isCurrentScope method, of class PageFlowController.
      */
-    public void testIsCurrentScope() throws InterruptedException, InvocationTargetException {
+    public void testIsCurrentScope() {
         System.out.println("isCurrentScope");
-        Scope scope = null;
-        boolean expResult = false;
-
-        javax.swing.SwingUtilities.invokeAndWait(new Runnable() {
-
-            public void run() {
-                boolean result = controller.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_PROJECT);
-                assertTrue(result);
-                result = controller.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_ALL_FACESCONFIG);
-                assertFalse(result);
-                PageFlowToolbarUtilities.getInstance(view).setCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_ALL_FACESCONFIG);
-                result = controller.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_PROJECT);
-                assertFalse(result);
-                result = controller.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_ALL_FACESCONFIG);
-                assertTrue(result);
-            }
-        });
-
+        boolean result = controller.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_PROJECT);
+        assertTrue(result);
+        result = controller.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_ALL_FACESCONFIG);
+        assertFalse(result);
+        PageFlowToolbarUtilities.getInstance(view).setCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_ALL_FACESCONFIG);
+        result = controller.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_PROJECT);
+        assertFalse(result);
+        result = controller.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_ALL_FACESCONFIG);
+        assertTrue(result);
 
     }
 
     /**
      * Test of createPage method, of class PageFlowController.
      */
-    public void testCreatePage() throws InterruptedException, InvocationTargetException {
+    public void testCreatePage() {
         System.out.println("createPage");
         final String pageName = "pageJSP";
-        javax.swing.SwingUtilities.invokeAndWait(new Runnable() {
+        Page result = controller.createPage(pageName + "." + JSP_EXT);
+        assertEquals(pageName + "." + JSP_EXT, result.getName());
 
-            public void run() {
-                Page result = controller.createPage(pageName + "." + JSP_EXT);
-                assertEquals(pageName + "." + JSP_EXT, result.getName());
-            }
-        });
 
     }
 
     /**
      * Test of createPage method, of class PageFlowController.
      */
-    public void testCreatePageEmptyString() throws InterruptedException, InvocationTargetException {
+    public void testCreatePageEmptyString() {
         System.out.println("createPageEmptyString");
-        javax.swing.SwingUtilities.invokeAndWait(new Runnable() {
-
-            public void run() {
-                Page result = controller.createPage("");
-                setTestPage(result);
-
-            }
-        });
-         //assertNull(testPage);
+        boolean aeFound = false;
+        try {
+            Page result = controller.createPage("");
+        } catch (AssertionError ae) {
+            aeFound = true;
+        }
+        assertTrue(aeFound);
     }
-    
+
+    @Override
+    protected boolean runInEQ() {
+        return true;
+    }
+
     /**
      * Test of createPage method, of class PageFlowController.
      */
-    public void testCreatePageNull() throws InterruptedException, InvocationTargetException {
+    public void testCreatePageNull() {
         System.out.println("createPageNull");
-        final String pageName = "";
-        javax.swing.SwingUtilities.invokeAndWait(new Runnable() {
-
-            public void run() {
-                try { 
-                Page result = controller.createPage(null);
-                setTestPage(result);
-                } catch (Exception ex ){
-                    Exceptions.printStackTrace(ex);
-                }
-
-            }
-        });
-        
-        assertNull(testPage);
-    }
-    
-    private Page testPage;
-    public final void setTestPage( Page page ){
-        testPage = page;
+        boolean npeCaught = false;
+        try {
+            Page result = controller.createPage(null);
+        } catch (NullPointerException npe) {
+            npeCaught = true;
+        }
+        assertTrue(npeCaught);
     }
 
     /**
@@ -271,15 +235,55 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
      */
     public void testCreateLink() {
         System.out.println("createLink");
-        Page source = null;
-        Page target = null;
+        String page1 = "page1.jsp";
+        String page2 = "page2.jsp";
+        Page source = controller.createPage(page1);
+        Page target = controller.createPage(page2);
         Pin pinNode = null;
-        PageFlowController instance = null;
-        NavigationCase expResult = null;
-        NavigationCase result = instance.createLink(source, target, pinNode);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        NavigationCase result = controller.createLink(source, target, pinNode);
+
+        assertEquals(result.getToViewId(), "/" + target.getName());
+        assert (result.getParent() instanceof NavigationRule);
+        NavigationRule resultRule = (NavigationRule) result.getParent();
+        assertEquals(resultRule.getFromViewId(), "/" + source.getName());
+        assertEquals(result.getFromOutcome(), "case1");
+    }
+
+    /**
+     * Test of createLink method, of class PageFlowController.
+     */
+    public void testCreateLinkWithNullValues() {
+        System.out.println("createLink with null values");
+        boolean npeCaught = false;
+        String page1 = "page1.jsp";
+        String page2 = "page2.jsp";
+        Page source = controller.createPage(page1);
+        Page target = controller.createPage(page2);
+        Pin pinNode = null;
+
+        try {
+            NavigationCase result = controller.createLink(null, target, pinNode);
+        } catch (NullPointerException npe) {
+            npeCaught = true;
+        }
+        assertTrue(npeCaught);
+        npeCaught = false;
+
+        try {
+            NavigationCase result = controller.createLink(source, null, pinNode);
+        } catch (NullPointerException npe) {
+            npeCaught = true;
+        }
+        assertTrue(npeCaught);
+        npeCaught = false;
+
+        try {
+            NavigationCase result = controller.createLink(source, null, pinNode);
+        } catch (NullPointerException npe) {
+            npeCaught = true;
+        }
+        assertTrue(npeCaught);
+
     }
 //
 //    /**

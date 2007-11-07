@@ -98,7 +98,6 @@ public class PageFlowController {
     private final Map<NavigationRule, String> navRule2String = new WeakHashMap<NavigationRule, String>();
     private final HashMap<String, WeakReference<Page>> pageName2Page = new HashMap<String, WeakReference<Page>>(); //Should this be synchronized.
     //    public static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18NF
-
     private static final String NO_WEB_FOLDER_WARNING = NbBundle.getMessage(PageFlowController.class, "MSG_NoWebFolder");
     private static final String NO_WEB_FOLDER_TITLE = NbBundle.getMessage(PageFlowController.class, "TLE_NoWebFolder");
     private FileObject webFolder;
@@ -158,7 +157,6 @@ public class PageFlowController {
     }
     private static final String PROP_SHOW_NO_WEB_FOLDER = "showNoWebFolder"; // NOI18N
 
-
     public final void setShowNoWebFolderDialog(boolean show) {
         getPreferences().putBoolean(PROP_SHOW_NO_WEB_FOLDER, show);
     }
@@ -173,7 +171,6 @@ public class PageFlowController {
     private PropertyChangeListener pcl;
     private FileChangeListener fcl;
     //    private ComponentListener cl;
-
     public void registerListeners() {
         if (pcl == null) {
             pcl = new FacesModelPropertyChangeListener(this);
@@ -230,12 +227,17 @@ public class PageFlowController {
 
     /**
      * Creates a Link in the FacesConfiguration 
-     * @param source
-     * @param target
+     * @param source from page, if null an NPE will be thrown.
+     * @param target to page, if null an NPE will be thrown.
      * @param pinNode if null then it was not conntect to a pin.
      * @return
      */
     public NavigationCase createLink(Page source, Page target, Pin pinNode) {
+        if ( source == null ){
+            throw new NullPointerException("Source page should not be null.");
+        } else if ( target == null ){
+            throw new NullPointerException("Target page should not be null");
+        }
 
         String sourceName = source.getDisplayName();
         int caseNum = 1;
@@ -388,7 +390,6 @@ public class PageFlowController {
         }
         otherFacesConfigListener = null;
     }
-
 
     public boolean setupGraphNoSaveData() {
         LOGGER.entering(PageFlowController.class.toString(), "setupGraphNoSaveData()");
@@ -552,16 +553,22 @@ public class PageFlowController {
 
     /*
      * Create PageFlowNode from a string with no backing page. 
+     * @param name the string of the name of the page to create
+     *             If null is passed, NPE thrown.
+     *             If empty string assertion thrown and null returned.
      */
     public Page createPage(String pageName) {
         Page node = null;
-        if (pageName != null && pageName.length() != 0) {
-            Node tmpNode = new AbstractNode(Children.LEAF);
-            tmpNode.setName(pageName);
-            node = createPageFlowNode(tmpNode);
+        if (pageName == null) {
+            throw new NullPointerException("Page name string is null");
         }
+        assert pageName.length() != 0;
+        Node tmpNode = new AbstractNode(Children.LEAF);
+        tmpNode.setName(pageName);
+        node = createPageFlowNode(tmpNode);
         return node;
     }
+    
     public java.util.Stack<String> PageFlowDestroyStack = new java.util.Stack<String>();
     private int PageFlowDestroyCount = 0;
 
