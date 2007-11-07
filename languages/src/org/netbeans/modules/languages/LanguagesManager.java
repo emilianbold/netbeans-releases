@@ -290,13 +290,7 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
                             try {
                                 InputStream is = getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/languages/resources/DefaultKeyBindings.xml");
                                 try {
-                                    FileObject fo = root.getFileObject("Keybindings/NetBeans/Defaults");
-                                    if (fo == null) {
-                                        fo = root.createFolder("Keybindings");
-                                        fo = fo.createFolder("NetBeans");
-                                        fo = fo.createFolder("Defaults");
-                                    }
-                                    FileObject bindings = fo.createData("keybindings.xml");
+                                    FileObject bindings = FileUtil.createData(root, "Keybindings/NetBeans/Defaults/keybindings.xml");
                                     OutputStream os = bindings.getOutputStream();
                                     try {
                                         FileUtil.copy(is, os);
