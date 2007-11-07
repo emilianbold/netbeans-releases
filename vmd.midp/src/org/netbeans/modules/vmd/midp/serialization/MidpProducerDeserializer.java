@@ -37,27 +37,26 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */package org.netbeans.modules.vmd.midp.serialization;
+ */
+package org.netbeans.modules.vmd.midp.serialization;
 
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.ProducerDeserializer;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.java.JavaClassNameResolver;
+import org.netbeans.modules.vmd.midp.java.MidpJavaSupport;
 
 /**
  * @author David Kaspar
  */
 public class MidpProducerDeserializer extends ProducerDeserializer {
 
-    public MidpProducerDeserializer() {
-        super(MidpDocumentSupport.PROJECT_TYPE_MIDP);
+    public MidpProducerDeserializer () {
+        super (MidpDocumentSupport.PROJECT_TYPE_MIDP);
     }
 
-    public boolean checkValidity(DesignDocument document, ComponentProducer producer) {
-        JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
-        Boolean isValid = resolver.isValid(MidpTypes.getFQNClassName(producer.getMainComponentTypeID()));
-        return isValid != null ? isValid : true;
+    public boolean checkValidity (DesignDocument document, ComponentProducer producer) {
+        return MidpJavaSupport.checkValidity(document, producer.getMainComponentTypeID ());
     }
+
 }

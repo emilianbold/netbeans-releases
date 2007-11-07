@@ -45,9 +45,9 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.midp.java.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
-import org.netbeans.modules.vmd.midp.java.JavaClassNameResolver;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
 import org.netbeans.modules.vmd.midpnb.components.commands.FileBrowserOpenCommandCD;
@@ -62,10 +62,7 @@ import org.openide.util.NbBundle;
 public class FileBrowserProducer extends MidpComponentProducer {
 
     public FileBrowserProducer() {
-        super(FileBrowserCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES,
-                NbBundle.getMessage(FileBrowserProducer.class, "DISP_File_Browser"), // NOI18N
-                NbBundle.getMessage(FileBrowserProducer.class, "TTIP_File_Browser"), // NOI18N
-                FileBrowserCD.ICON_PATH, FileBrowserCD.ICON_LARGE_PATH));
+        super(FileBrowserCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(FileBrowserProducer.class, "DISP_File_Browser"), NbBundle.getMessage(FileBrowserProducer.class, "TTIP_File_Browser"), FileBrowserCD.ICON_PATH, FileBrowserCD.ICON_LARGE_PATH)); // NOI18N
     }
 
     @Override
@@ -80,11 +77,11 @@ public class FileBrowserProducer extends MidpComponentProducer {
     }
 
     @Override
-    public boolean checkValidity(DesignDocument document) {
-        JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
-        resolver.addResolveListenerIfNotRegistered(this);
-        Boolean isValid = resolver.isValid("javax.microedition.io.file.FileSystemRegistry"); // NOI18N
-        return isValid != null ? isValid : true;
+    public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
+        if (useCachedValue) {
+            return MidpJavaSupport.getCache(document).checkValidityCached("javax.microedition.io.file.FileSystemRegistry"); // NOI18N
+        }
+        return MidpJavaSupport.checkValidity(document, "javax.microedition.io.file.FileSystemRegistry"); // NOI18N
     }
-
+    
 }

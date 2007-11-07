@@ -42,9 +42,9 @@ package org.netbeans.modules.vmd.midpnb.producers;
 
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.midp.java.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
-import org.netbeans.modules.vmd.midp.java.JavaClassNameResolver;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
 import org.netbeans.modules.vmd.midpnb.components.commands.SplashScreenDismissCommandCD;
@@ -58,16 +58,13 @@ import org.openide.util.NbBundle;
  */
 public class SplashScreenProducer extends MidpComponentProducer {
 
-    public SplashScreenProducer() {
-        super(SplashScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES,
-                NbBundle.getMessage(SplashScreenProducer.class, "DISP_Splash_Screen"), // NOI18N
-                NbBundle.getMessage(SplashScreenProducer.class, "TTIP_Splash_Screen"), // NOI18N
-                SplashScreenCD.ICON_PATH, SplashScreenCD.ICON_LARGE_PATH));
+    public SplashScreenProducer () {
+       super(SplashScreenCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(SplashScreenProducer.class, "DISP_Splash_Screen"), NbBundle.getMessage(SplashScreenProducer.class, "TTIP_Splash_Screen"), SplashScreenCD.ICON_PATH, SplashScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
 
     @Override
-    public Result postInitialize(DesignDocument document, DesignComponent splashScreen) {
-        DesignComponent dismissCommand = MidpDocumentSupport.getSingletonCommand(document, SplashScreenDismissCommandCD.TYPEID);
+    public Result postInitialize (DesignDocument document, DesignComponent splashScreen) {
+        DesignComponent dismissCommand = MidpDocumentSupport.getSingletonCommand (document, SplashScreenDismissCommandCD.TYPEID);
 
         DesignComponent dismissEventSource = document.createComponent(SplashScreenDismissCommandEventSourceCD.TYPEID);
 
@@ -78,12 +75,13 @@ public class SplashScreenProducer extends MidpComponentProducer {
 
         return new Result(splashScreen, dismissCommand, dismissEventSource);
     }
-
+    
     @Override
-    public boolean checkValidity(DesignDocument document) {
-        JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
-        resolver.addResolveListenerIfNotRegistered(this);
-        Boolean isValid = resolver.isValid("javax.microedition.lcdui.Canvas"); // NOI18N
-        return isValid != null ? isValid : true;
+    public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
+        if (useCachedValue) {
+            return MidpJavaSupport.getCache(document).checkValidityCached("javax.microedition.lcdui.Canvas"); // NOI18N
+        }
+        return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
     }
+    
 }

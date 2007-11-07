@@ -38,13 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.vmd.midpnb.producers;
 
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.midp.java.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
-import org.netbeans.modules.vmd.midp.java.JavaClassNameResolver;
 import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
 import org.netbeans.modules.vmd.midpnb.components.commands.SVGSplashScreenDismissCommandCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.SVGSplashScreenDismissCommandEventSourceCD;
@@ -57,34 +58,38 @@ import org.openide.util.NbBundle;
  * @author Anton Chechel
  */
 public class SVGSplashScreenProducer extends MidpComponentProducer {
-
+    
     public SVGSplashScreenProducer() {
-        super(SVGSplashScreenCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG,
-                NbBundle.getMessage(SVGSplashScreenProducer.class, "DISP_SVG_Splash_Screen"), // NOI18N
-                NbBundle.getMessage(SVGSplashScreenProducer.class, "TTIP_SVG_Splash_Screen"), // NOI18N
-                SVGSplashScreenCD.ICON_PATH, SVGSplashScreenCD.ICON_LARGE_PATH));
+        super(SVGSplashScreenCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, NbBundle.getMessage(SVGSplashScreenProducer.class, "DISP_SVG_Splash_Screen"), NbBundle.getMessage(SVGSplashScreenProducer.class, "TTIP_SVG_Splash_Screen"), SVGSplashScreenCD.ICON_PATH, SVGSplashScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
 
     @Override
-    public Result postInitialize(DesignDocument document, DesignComponent splashScreen) {
+    public Result postInitialize (DesignDocument document, DesignComponent splashScreen) {
         DesignComponent dismissCommand = MidpDocumentSupport.getSingletonCommand(document, SVGSplashScreenDismissCommandCD.TYPEID);
-
+        
         DesignComponent dismissEventSource = document.createComponent(SVGSplashScreenDismissCommandEventSourceCD.TYPEID);
-
+        
         dismissEventSource.writeProperty(CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(splashScreen));
         dismissEventSource.writeProperty(CommandEventSourceCD.PROP_COMMAND, PropertyValue.createComponentReference(dismissCommand));
-
+        
         MidpDocumentSupport.addEventSource(splashScreen, DisplayableCD.PROP_COMMANDS, dismissEventSource);
-
+        
         return new Result(splashScreen, dismissCommand, dismissEventSource);
     }
-
+    
     @Override
-    public boolean checkValidity(DesignDocument document) {
-        JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
-        resolver.addResolveListenerIfNotRegistered(this);
-        Boolean isValid1 = resolver.isValid("javax.microedition.m2g.SVGImage"); // NOI18N
-        Boolean isValid2 = resolver.isValid("javax.microedition.lcdui.Canvas"); // NOI18N
-        return isValid1 != null && isValid2 != null ? isValid1 && isValid2 : true;
+    public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
+        Boolean isValid1;
+        Boolean isValid2;
+        if (useCachedValue) {
+            isValid1 = MidpJavaSupport.getCache(document).checkValidityCached("javax.microedition.m2g.SVGImage"); // NOI18N
+            isValid2 = MidpJavaSupport.getCache(document).checkValidityCached("javax.microedition.lcdui.Canvas"); // NOI18N
+        } else {
+            isValid1 = MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage"); // NOI18N
+            isValid2 = MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
+        }
+        
+        return isValid1 != null && isValid2 != null ? isValid1 && isValid2 : null;
     }
+
 }

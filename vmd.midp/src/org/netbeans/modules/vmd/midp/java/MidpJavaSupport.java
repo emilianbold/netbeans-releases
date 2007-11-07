@@ -38,37 +38,159 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midp.java;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.vmd.midp.components.*;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.openide.filesystems.FileObject;
-
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Elements;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  * Utility class for checking whether given typeID is in classpath of current project
  *
  * @author Anton Chechel
  */
-final class MidpJavaSupport {
+public final class MidpJavaSupport implements Runnable, PropertyChangeListener {
+
+    private static HashMap<String, WeakReference<MidpJavaSupport>> instanceMap;
+    private static RequestProcessor validationRP;
     
-    private MidpJavaSupport() {
+    private final ConcurrentLinkedQueue<String> validationQueue;
+    private final ConcurrentHashMap<String, Boolean> validationCache;
+    private final AtomicBoolean isValidationRunning;
+    private WeakReference<DesignDocument> document;
+
+    private MidpJavaSupport(DesignDocument document) {
+        this.document = new WeakReference<DesignDocument>(document);
+
+        validationQueue = new ConcurrentLinkedQueue<String>();
+        validationCache = new ConcurrentHashMap<String, Boolean>();
+        isValidationRunning = new AtomicBoolean();
+
+        registerClassPathListener();
     }
-    
+
+    public Boolean checkValidityCached(TypeID typeID) {
+        return checkValidityCached(MidpTypes.getFQNClassName(typeID));
+    }
+
+    public Boolean checkValidityCached(String fqnName) {
+        if (validationCache.containsKey(fqnName)) {
+            return validationCache.get(fqnName);
+        } else {
+            scheduleValidation(fqnName);
+            return null;
+        }
+    }
+
+    private void scheduleValidation(String fqnName) {
+        validationQueue.add(fqnName);
+        if (!isValidationRunning.getAndSet(true)) {
+            validationRP.post(this);
+        }
+    }
+
+    public void run() {
+        while (true) {
+            if (validationQueue.isEmpty()) {
+                isValidationRunning.set(false);
+                break;
+            }
+            String fqnName = validationQueue.remove();
+            boolean isValid = checkValidity(document.get(), fqnName);
+            validationCache.put(fqnName, isValid);
+        }
+
+//        fireResolved();
+    }
+
+    private void registerClassPathListener() {
+        final ClasspathInfo info = getClasspathInfo(ProjectUtils.getProject(document.get()));
+        if (info == null) {
+            Debug.warning("Can't get ClasspathInfo for project"); // NOI18N
+            return;
+        }
+
+        try {
+            Task<CompilationController> ct = new Task<CompilationController>() {
+
+                public void run(CompilationController cc) throws Exception {
+                    ClassPath cp = info.getClassPath(ClasspathInfo.PathKind.BOOT);
+                    PropertyChangeListener wcl = WeakListeners.propertyChange(MidpJavaSupport.this, cp);
+                    cp.addPropertyChangeListener(wcl);
+                }
+            };
+
+            JavaSource.create(info).runUserActionTask(ct, true);
+        } catch (IOException ex) {
+            Debug.warning(ex);
+        }
+    }
+
+    private ClasspathInfo getClasspathInfo(Project project) {
+        if (project == null) {
+            return null;
+        }
+
+        SourceGroup group = getSourceGroup(project);
+        return group != null ? ClasspathInfo.create(group.getRootFolder()) : null;
+    }
+
+    private SourceGroup getSourceGroup(Project project) {
+        SourceGroup[] sourceGroups = org.netbeans.api.project.ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        return sourceGroups != null && sourceGroups.length > 0 ? sourceGroups[0] : null;
+    }
+
+//    private void fireResolved() {
+//        DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document.get());
+//        String projectID = context.getProjectID();
+//        String projectType = context.getProjectType();
+//        ComponentProducersResolvingRegistry.getDefault().fireProducersChanged(projectID, projectType);
+//    }
+
+    // for classpath listener
+    public void propertyChange(PropertyChangeEvent evt) {
+        validationCache.clear();
+//        fireResolved();
+    }
+
+    /**
+     * Checks whether given typeID is in classpath of current project
+     * 
+     * @param document container of gived typeID
+     * @param typeID to be checked
+     * @return isValid
+     */
+    public static boolean checkValidity(DesignDocument document, TypeID typeID) {
+        return checkValidity(document, MidpTypes.getFQNClassName(typeID));
+    }
+
     /**
      * Checks whether given fqName is in classpath of current project
      * 
@@ -76,19 +198,19 @@ final class MidpJavaSupport {
      * @param fqName to be checked
      * @return isValid
      */
-    static boolean checkValidity(DesignDocument document, String fqName) {
+    public static boolean checkValidity(DesignDocument document, String fqName) {
         DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
         if (context == null) { // document is loading
             return true;
         }
-        
+
         List<SourceGroup> sg = ProjectUtils.getSourceGroups(context);
         boolean isValid = false;
         CheckingTask ct = new CheckingTask();
         Collection<FileObject> collection = Collections.emptySet();
         for (SourceGroup sourceGroup : sg) {
             ct.setFQName(fqName);
-            
+
             ClasspathInfo cpi = ClasspathInfo.create(sourceGroup.getRootFolder());
             try {
                 JavaSource.create(cpi, collection).runUserActionTask(ct, true);
@@ -100,24 +222,46 @@ final class MidpJavaSupport {
                 break;
             }
         }
-        
+
         return isValid;
     }
 
+    /**
+     * @return instance of JavaClassNameResolver for given DesignDocument, creates it
+     * if doesn't exist
+     */
+    public synchronized static MidpJavaSupport getCache(DesignDocument document) {
+        if (instanceMap == null) {
+            instanceMap = new HashMap<String, WeakReference<MidpJavaSupport>>(1);
+            validationRP = new RequestProcessor("VMD MIDP ClassPath validation"); // NOI18N
+        }
+
+        String projectID = document.getDocumentInterface().getProjectID();
+        WeakReference<MidpJavaSupport> reference = instanceMap.get(projectID);
+        MidpJavaSupport instance = reference != null ? reference.get() : null;
+        if (instance == null) {
+            instance = new MidpJavaSupport(document);
+            instanceMap.put(projectID, new WeakReference<MidpJavaSupport>(instance));
+        }
+
+        return instance;
+    }
+
     private static final class CheckingTask implements Task<CompilationController> {
+
         private boolean result;
         private String fqName;
-        
+
         public void run(CompilationController controller) throws Exception {
             Elements elements = controller.getElements();
             TypeElement te = elements.getTypeElement(fqName);
             result = (te != null);
         }
-        
+
         public boolean getResult() {
             return result;
         }
-        
+
         public void setFQName(String fqName) {
             this.fqName = fqName;
         }

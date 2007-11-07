@@ -43,10 +43,8 @@ package org.netbeans.modules.vmd.midp.producers;
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
-import org.netbeans.modules.vmd.api.palette.PaletteSupport;
+import org.netbeans.modules.vmd.midp.java.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
-import org.netbeans.modules.vmd.midp.java.JavaClassNameResolver;
-import org.netbeans.modules.vmd.midp.java.ResolveListener;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.openide.util.NbBundle;
 
@@ -54,7 +52,7 @@ import org.openide.util.NbBundle;
  *
  * @author Anton Chechel
  */
-public class ChoiceElementProducer extends ComponentProducer implements ResolveListener {
+public class ChoiceElementProducer extends ComponentProducer {
 
     private static final String PRODUCER_ID = "#ChoiceElementProducer"; // NOI18N
 
@@ -62,19 +60,11 @@ public class ChoiceElementProducer extends ComponentProducer implements ResolveL
         super(PRODUCER_ID, ChoiceElementCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ELEMENTS, NbBundle.getMessage(ChoiceElementProducer.class, "DISP_ChoiceElement"), NbBundle.getMessage(ChoiceElementProducer.class, "TTIP_ChoiceElement"), ChoiceElementCD.ICON_PATH, ChoiceElementCD.LARGE_ICON_PATH)); // NOI18N
     }
 
-    public boolean checkValidity(DesignDocument document) {
-        JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
-        resolver.addResolveListenerIfNotRegistered(this);
-        Boolean isValid = resolver.isValid("javax.microedition.lcdui.ChoiceGroup"); // NOI18N
-        return isValid != null ? isValid : true;
-    }
-
-    public void resolveFinished() {
-        PaletteSupport.schedulePaletteRefresh();
-    }
-    
-    public void resolveExpired() {
-        PaletteSupport.schedulePaletteRefresh();
+     public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
+        if (useCachedValue) {
+            return MidpJavaSupport.getCache(document).checkValidityCached("javax.microedition.lcdui.ChoiceGroup"); // NOI18N
+        }
+        return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.ChoiceGroup"); // NOI18N
     }
 
 }

@@ -65,7 +65,7 @@ public class EntryPointProducer extends ComponentProducer {
         return new Result (entryPoint, eventSource);
     }
 
-    public boolean checkValidity(DesignDocument document) {
+     public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
         return true;
     }
 

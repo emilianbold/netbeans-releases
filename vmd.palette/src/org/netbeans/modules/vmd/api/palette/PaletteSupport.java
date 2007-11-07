@@ -47,9 +47,6 @@ import org.openide.util.Lookup;
 import org.openide.util.datatransfer.ExTransferable;
 
 import java.awt.datatransfer.Transferable;
-import org.netbeans.modules.vmd.api.model.Debug;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
-import org.netbeans.modules.vmd.palette.PaletteKit;
 
 /**
  * @author David Kaspar
@@ -59,21 +56,6 @@ public final class PaletteSupport {
     public static final String VIEW_TAG_NO_PALETTE = "no-palette"; // NOI18N
 
     private PaletteSupport () {
-    }
-
-    public static void schedulePaletteRefresh() {
-        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        if (document != null) {
-            String projectType = document.getDocumentInterface().getProjectType();
-            PaletteKit kit = PaletteMap.getInstance().getPaletteKitForProjectType(projectType);
-            if (kit != null) {
-                kit.schedulePaletteRefresh();
-            } else {
-                Debug.warning("Can't get PaletteKit for " + projectType); // NOI18N
-            }
-        } else {
-            Debug.warning("Can't get active document"); // NOI18N
-        }
     }
 
     public static PaletteController getPaletteController (DesignDocument document) {

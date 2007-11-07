@@ -38,6 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.vmd.midpnb.producers;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -45,10 +46,10 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.midp.java.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
-import org.netbeans.modules.vmd.midp.java.JavaClassNameResolver;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
 import org.netbeans.modules.vmd.midpnb.components.commands.SMSComposerSendCommandCD;
@@ -61,16 +62,13 @@ import org.openide.util.NbBundle;
  * @author Karol Harezlak
  */
 public class SMSComposerProducer extends MidpComponentProducer {
-
+    
     public SMSComposerProducer() {
-        super(SMSComposerCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES,
-                NbBundle.getMessage(SMSComposerProducer.class, "DISP_SMS_Composer"), // NOI18N
-                NbBundle.getMessage(SMSComposerProducer.class, "TTIP_SMS_Composer"), // NOI18N
-                SMSComposerCD.ICON_PATH, SMSComposerCD.ICON_LARGE_PATH));
+        super(SMSComposerCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(SMSComposerProducer.class, "DISP_SMS_Composer"), NbBundle.getMessage(SMSComposerProducer.class, "TTIP_SMS_Composer"), SMSComposerCD.ICON_PATH, SMSComposerCD.ICON_LARGE_PATH)); // NOI18N
     }
-
+    
     @Override
-    public Result postInitialize(DesignDocument document, DesignComponent smsComposer) {
+    public Result postInitialize (DesignDocument document, DesignComponent smsComposer) {
         DesignComponent sendCommand = MidpDocumentSupport.getSingletonCommand(document, SMSComposerSendCommandCD.TYPEID);
         DesignComponent smsEventSource = document.createComponent(SMSComposerSendCommandEventSourceCD.TYPEID);
         smsEventSource.writeProperty(CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(smsComposer));
@@ -82,12 +80,12 @@ public class SMSComposerProducer extends MidpComponentProducer {
         smsComposer.writeProperty(SMSComposerCD.PROP_MESSAGE_LABEL, MidpTypes.createStringValue(SMSComposerCD.MESSAGE_LABEL));
         return new Result(smsComposer, sendCommand, smsEventSource);
     }
-
+    
     @Override
-    public boolean checkValidity(DesignDocument document) {
-        JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
-        resolver.addResolveListenerIfNotRegistered(this);
-        Boolean isValid = resolver.isValid("javax.wireless.messaging.TextMessage"); // NOI18N
-        return isValid != null ? isValid : true;
+    public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
+        if (useCachedValue) {
+            return MidpJavaSupport.getCache(document).checkValidityCached("javax.wireless.messaging.TextMessage"); // NOI18N
+        }
+        return MidpJavaSupport.checkValidity(document, "javax.wireless.messaging.TextMessage"); // NOI18N
     }
 }

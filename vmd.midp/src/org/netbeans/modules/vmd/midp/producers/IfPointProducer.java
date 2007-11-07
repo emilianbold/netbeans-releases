@@ -71,7 +71,7 @@ public class IfPointProducer extends ComponentProducer {
         return new Result (ifCallPoint, trueCase, falseCase);
     }
 
-    public boolean checkValidity(DesignDocument document) {
+     public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
         return true;
     }
 

@@ -44,9 +44,7 @@ import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.palette.PaletteSupport;
-import org.netbeans.modules.vmd.midp.java.JavaClassNameResolver;
-import org.netbeans.modules.vmd.midp.java.ResolveListener;
+import org.netbeans.modules.vmd.midp.java.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midpnb.components.handlers.SVGMenuEventHandlerCD;
 import org.netbeans.modules.vmd.midpnb.components.items.TableItemCD;
@@ -64,40 +62,31 @@ import org.openide.util.NbBundle;
  * @author Karol Harezlak
  * @author Anton Chechel
  */
-public abstract class CustomComponentProducer extends ComponentProducer implements ResolveListener {
+public abstract class CustomComponentProducer extends ComponentProducer {
 
     public CustomComponentProducer(TypeID typeID, PaletteDescriptor paletteDescriptor) {
         super(typeID.toString(), typeID, paletteDescriptor);
     }
 
-    public boolean checkValidity(DesignDocument document) {
-        return true;
-    }
-
-    public void resolveFinished() {
-        PaletteSupport.schedulePaletteRefresh();
-    }
-    
-    public void resolveExpired() {
-        PaletteSupport.schedulePaletteRefresh();
+    public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
+        Boolean isValid1;
+        Boolean isValid2;
+        if (useCachedValue) {
+            isValid1 = MidpJavaSupport.getCache(document).checkValidityCached("javax.microedition.m2g.SVGImage"); // NOI18N
+            isValid2 = MidpJavaSupport.getCache(document).checkValidityCached("javax.microedition.lcdui.Canvas"); // NOI18N
+        } else {
+            isValid1 = MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage"); // NOI18N
+            isValid2 = MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
+        }
+        
+        return isValid1 != null && isValid2 != null ? isValid1 && isValid2 : null;
     }
 
     public static final class SVGPlayerProducer extends CustomComponentProducer {
 
         public SVGPlayerProducer() {
             super(SVGPlayerCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG,
-                    NbBundle.getMessage(CustomComponentProducer.class, "DISP_SVG_Player"), // NOI18N
-                    NbBundle.getMessage(CustomComponentProducer.class, "TTIP_SVG_Player"), // NOI18N
-                    SVGPlayerCD.ICON_PATH, SVGPlayerCD.ICON_LARGE_PATH));
-        }
-
-        @Override
-        public boolean checkValidity(DesignDocument document) {
-            JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
-            resolver.addResolveListenerIfNotRegistered(this);
-            Boolean isValid1 = resolver.isValid("javax.microedition.m2g.SVGImage"); // NOI18N
-            Boolean isValid2 = resolver.isValid("javax.microedition.lcdui.Canvas"); // NOI18N
-            return isValid1 != null && isValid2 != null ? isValid1 && isValid2 : true;
+                    NbBundle.getMessage(CustomComponentProducer.class, "DISP_SVG_Player"), NbBundle.getMessage(CustomComponentProducer.class, "TTIP_SVG_Player"), SVGPlayerCD.ICON_PATH, SVGPlayerCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
 
@@ -105,18 +94,7 @@ public abstract class CustomComponentProducer extends ComponentProducer implemen
 
         public SVGImageProducer() {
             super(SVGImageCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG,
-                    NbBundle.getMessage(CustomComponentProducer.class, "DISP_SVG_Image"), // NOI18N
-                    NbBundle.getMessage(CustomComponentProducer.class, "TTIP_SVG_Image"), // NOI18N
-                    SVGImageCD.ICON_PATH, SVGImageCD.ICON_LARGE_PATH));
-        }
-
-        @Override
-        public boolean checkValidity(DesignDocument document) {
-            JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
-            resolver.addResolveListenerIfNotRegistered(this);
-            Boolean isValid1 = resolver.isValid("javax.microedition.m2g.SVGImage"); // NOI18N
-            Boolean isValid2 = resolver.isValid("javax.microedition.lcdui.Canvas"); // NOI18N
-            return isValid1 != null && isValid2 != null ? isValid1 && isValid2 : true;
+                    NbBundle.getMessage(CustomComponentProducer.class, "DISP_SVG_Image"), NbBundle.getMessage(CustomComponentProducer.class, "TTIP_SVG_Image"), SVGImageCD.ICON_PATH, SVGImageCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
 
@@ -124,18 +102,7 @@ public abstract class CustomComponentProducer extends ComponentProducer implemen
 
         public SVGMenuEventHandlerProducer() {
             super(SVGMenuEventHandlerCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG,
-                    NbBundle.getMessage(CustomComponentProducer.class, "DISP_SVG_Menu_Action"), // NOI18N
-                    NbBundle.getMessage(CustomComponentProducer.class, "TTIP_SVG_Menu_Action"), // NOI18N
-                    SVGMenuEventHandlerCD.ICON_PATH, SVGMenuEventHandlerCD.LARGE_ICON_PATH));
-        }
-
-        @Override
-        public boolean checkValidity(DesignDocument document) {
-            JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
-            resolver.addResolveListenerIfNotRegistered(this);
-            Boolean isValid1 = resolver.isValid("javax.microedition.m2g.SVGImage"); // NOI18N
-            Boolean isValid2 = resolver.isValid("javax.microedition.lcdui.Canvas"); // NOI18N
-            return isValid1 != null && isValid2 != null ? isValid1 && isValid2 : true;
+                    NbBundle.getMessage(CustomComponentProducer.class, "DISP_SVG_Menu_Action"), NbBundle.getMessage(CustomComponentProducer.class, "TTIP_SVG_Menu_Action"), SVGMenuEventHandlerCD.ICON_PATH, SVGMenuEventHandlerCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
@@ -143,17 +110,15 @@ public abstract class CustomComponentProducer extends ComponentProducer implemen
 
         public TableItemProducer() {
             super(TableItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS,
-                    NbBundle.getMessage(CustomComponentProducer.class, "DISP_Table_Item"), // NOI18N
-                    NbBundle.getMessage(CustomComponentProducer.class, "TTIP_Table_Item"), // NOI18N
-                    TableItemCD.ICON_PATH, TableItemCD.ICON_LARGE_PATH));
+                    NbBundle.getMessage(CustomComponentProducer.class, "DISP_Table_Item"), NbBundle.getMessage(CustomComponentProducer.class, "TTIP_Table_Item"), TableItemCD.ICON_PATH, TableItemCD.ICON_LARGE_PATH)); // NOI18N
         }
 
         @Override
-        public boolean checkValidity(DesignDocument document) {
-            JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
-            resolver.addResolveListenerIfNotRegistered(this);
-            Boolean isValid = resolver.isValid("javax.microedition.lcdui.Item"); // NOI18N
-            return isValid != null ? isValid : true;
+        public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
+            if (useCachedValue) {
+                return MidpJavaSupport.getCache(document).checkValidityCached("javax.microedition.lcdui.Item"); // NOI18N
+            }
+            return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Item"); // NOI18N
         }
     }
 
@@ -161,17 +126,15 @@ public abstract class CustomComponentProducer extends ComponentProducer implemen
 
         public SimpleCancellableTaskProducer() {
             super(SimpleCancellableTaskCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES,
-                    NbBundle.getMessage(CustomComponentProducer.class, "DISP_Simple_Cancellable_Task"), // NOI18N
-                    NbBundle.getMessage(CustomComponentProducer.class, "TTIP_Simple_Cancellable_Task"), // NOI18N
-                    CancellableTaskCD.ICON_PATH, CancellableTaskCD.ICON_LARGE_PATH));
+                    NbBundle.getMessage(CustomComponentProducer.class, "DISP_Simple_Cancellable_Task"), NbBundle.getMessage(CustomComponentProducer.class, "TTIP_Simple_Cancellable_Task"), CancellableTaskCD.ICON_PATH, CancellableTaskCD.ICON_LARGE_PATH)); // NOI18N
         }
 
         @Override
-        public boolean checkValidity(DesignDocument document) {
-            JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
-            resolver.addResolveListenerIfNotRegistered(this);
-            Boolean isValid = resolver.isValid("java.lang.Runnable"); // NOI18N
-            return isValid != null ? isValid : true;
+        public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
+            if (useCachedValue) {
+                return MidpJavaSupport.getCache(document).checkValidityCached("java.lang.Runnable"); // NOI18N
+            }
+            return MidpJavaSupport.checkValidity(document, "java.lang.Runnable"); // NOI18N
         }
     }
 
@@ -179,17 +142,15 @@ public abstract class CustomComponentProducer extends ComponentProducer implemen
 
         public SimpleTableModelProducer() {
             super(SimpleTableModelCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES,
-                    NbBundle.getMessage(CustomComponentProducer.class, "DISP_Simple_Table_Model"), // NOI18N
-                    NbBundle.getMessage(CustomComponentProducer.class, "TTIP_Simple_Table_Model"), // NOI18N
-                    TableModelCD.ICON_PATH, TableModelCD.ICON_LARGE_PATH));
+                    NbBundle.getMessage(CustomComponentProducer.class, "DISP_Simple_Table_Model"), NbBundle.getMessage(CustomComponentProducer.class, "TTIP_Simple_Table_Model"), TableModelCD.ICON_PATH, TableModelCD.ICON_LARGE_PATH)); // NOI18N
         }
 
         @Override
-        public boolean checkValidity(DesignDocument document) {
-            JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
-            resolver.addResolveListenerIfNotRegistered(this);
-            Boolean isValid = resolver.isValid("javax.microedition.lcdui.Form"); // NOI18N
-            return isValid != null ? isValid : true;
+        public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
+            if (useCachedValue) {
+                return MidpJavaSupport.getCache(document).checkValidityCached("javax.microedition.lcdui.Form"); // NOI18N
+            }
+            return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Form"); // NOI18N
         }
     }
 }

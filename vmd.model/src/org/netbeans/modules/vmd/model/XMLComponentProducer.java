@@ -121,7 +121,7 @@ public final class XMLComponentProducer extends ComponentProducer {
         return super.postInitialize (document, mainComponent);
     }
 
-    public boolean checkValidity (final DesignDocument document) {
+    public Boolean checkValidity (final DesignDocument document, boolean useCachedValue) {
         if (! checkValidityByDeserializers (document))
             return false;
 
@@ -137,7 +137,7 @@ public final class XMLComponentProducer extends ComponentProducer {
             }
         });
 
-        return producers[0] == null || producers[0].checkValidity (document);
+        return producers[0] == null || producers[0].checkValidity (document, useCachedValue);
     }
 
     private boolean checkValidityByDeserializers (DesignDocument document) {

@@ -38,6 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.vmd.midpnb.producers;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -45,9 +46,9 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.midp.java.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
-import org.netbeans.modules.vmd.midp.java.JavaClassNameResolver;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
 import org.netbeans.modules.vmd.midpnb.components.commands.PIMBrowserOpenCommandCD;
@@ -60,30 +61,28 @@ import org.openide.util.NbBundle;
  * @author Karol Harezlak
  */
 public class PIMBrowserProducer extends MidpComponentProducer {
-
+    
     public PIMBrowserProducer() {
-        super(PIMBrowserCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES,
-                NbBundle.getMessage(PIMBrowserProducer.class, "DISP_PIM_Browser"), // NOI18N
-                NbBundle.getMessage(PIMBrowserProducer.class, "TTIP_PIM_Browser"), // NOI18N
-                PIMBrowserCD.ICON_PATH, PIMBrowserCD.ICON_LARGE_PATH));
+        super(PIMBrowserCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(PIMBrowserProducer.class, "DISP_PIM_Browser"), NbBundle.getMessage(PIMBrowserProducer.class, "TTIP_PIM_Browser"), PIMBrowserCD.ICON_PATH, PIMBrowserCD.ICON_LARGE_PATH)); // NOI18N
     }
 
     @Override
-    public Result postInitialize(DesignDocument document, DesignComponent pimBrowser) {
+    public Result postInitialize (DesignDocument document, DesignComponent pimBrowser) {
         DesignComponent openCommand = MidpDocumentSupport.getSingletonCommand(document, PIMBrowserOpenCommandCD.TYPEID);
         DesignComponent openEventSource = document.createComponent(PIMBrowserOpenCommandEventSourceCD.TYPEID);
         openEventSource.writeProperty(CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(pimBrowser));
         openEventSource.writeProperty(CommandEventSourceCD.PROP_COMMAND, PropertyValue.createComponentReference(openCommand));
         MidpDocumentSupport.addEventSource(pimBrowser, DisplayableCD.PROP_COMMANDS, openEventSource);
-
+        
         return new Result(pimBrowser, openCommand, openEventSource);
     }
-
+    
     @Override
-    public boolean checkValidity(DesignDocument document) {
-        JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
-        resolver.addResolveListenerIfNotRegistered(this);
-        Boolean isValid = resolver.isValid("javax.microedition.pim.PIM"); // NOI18N
-        return isValid != null ? isValid : true;
+    public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
+        if (useCachedValue) {
+            return MidpJavaSupport.getCache(document).checkValidityCached("javax.microedition.pim.PIM"); // NOI18N
+        }
+        return MidpJavaSupport.checkValidity(document, "javax.microedition.pim.PIM"); // NOI18N
     }
+
 }

@@ -38,14 +38,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.vmd.midpnb.producers;
 
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
-import org.netbeans.modules.vmd.api.palette.PaletteSupport;
-import org.netbeans.modules.vmd.midp.java.JavaClassNameResolver;
-import org.netbeans.modules.vmd.midp.java.ResolveListener;
+import org.netbeans.modules.vmd.midp.java.MidpJavaSupport;
 import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuElementEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
 import org.openide.util.NbBundle;
@@ -54,31 +53,27 @@ import org.openide.util.NbBundle;
  *
  * @author Anton Chechel
  */
-public class SVGMenuElementEventSourceProducer extends ComponentProducer implements ResolveListener {
-
+public class SVGMenuElementEventSourceProducer extends ComponentProducer {
+    
     private static final String PRODUCER_ID = "#SVGMenuElementEventSourceProducer"; // NOI18N
-
+    
     public SVGMenuElementEventSourceProducer() {
         super(PRODUCER_ID, SVGMenuElementEventSourceCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG,
-                NbBundle.getMessage(SVGMenuElementEventSourceProducer.class, "DISP_SVG_Menu_Element"), // NOI18N
-                NbBundle.getMessage(SVGMenuElementEventSourceProducer.class, "TTIP_SVG_Menu_Element"), // NOI18N
-                SVGMenuElementEventSourceCD.ICON_PATH, SVGMenuElementEventSourceCD.ICON_LARGE_PATH));
+                NbBundle.getMessage(SVGMenuElementEventSourceProducer.class, "DISP_SVG_Menu_Element"), NbBundle.getMessage(SVGMenuElementEventSourceProducer.class, "TTIP_SVG_Menu_Element"), SVGMenuElementEventSourceCD.ICON_PATH, SVGMenuElementEventSourceCD.ICON_LARGE_PATH)); // NOI18N
     }
 
-    public boolean checkValidity(DesignDocument document) {
-        JavaClassNameResolver resolver = JavaClassNameResolver.getInstance(document);
-        resolver.addResolveListenerIfNotRegistered(this);
-        Boolean isValid1 = resolver.isValid("javax.microedition.m2g.SVGImage"); // NOI18N
-        Boolean isValid2 = resolver.isValid("javax.microedition.lcdui.Canvas"); // NOI18N
-        return isValid1 != null && isValid2 != null ? isValid1 && isValid2 : true;
-    }
-
-    public void resolveFinished() {
-        PaletteSupport.schedulePaletteRefresh();
+    public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
+        Boolean isValid1;
+        Boolean isValid2;
+        if (useCachedValue) {
+            isValid1 = MidpJavaSupport.getCache(document).checkValidityCached("javax.microedition.m2g.SVGImage"); // NOI18N
+            isValid2 = MidpJavaSupport.getCache(document).checkValidityCached("javax.microedition.lcdui.Canvas"); // NOI18N
+        } else {
+            isValid1 = MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage"); // NOI18N
+            isValid2 = MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
+        }
+        
+        return isValid1 != null && isValid2 != null ? isValid1 && isValid2 : null;
     }
     
-    public void resolveExpired() {
-        PaletteSupport.schedulePaletteRefresh();
-    }
-
 }

@@ -71,9 +71,9 @@ import org.openide.util.LookupListener;
  */
 public class PaletteKit implements Runnable, LookupListener {
 
-    private static final String PALETTE_FOLDER_NAME = "palette"; // NOI18N
     static final String CUSTOM_CATEGORY_NAME = "custom"; // NOI18N
-
+    private static final String PALETTE_FOLDER_NAME = "palette"; // NOI18N
+    
     private WeakReference<DesignDocument> activeDocument;
     private PaletteController paletteController;
     private DNDHandler dndHandler;
@@ -82,12 +82,10 @@ public class PaletteKit implements Runnable, LookupListener {
     private LinkedList<Lookup> validationQueue;
     private DataFolder rootFolder;
     private FileSystem fs;
-    private final Object validationSynch = new Object();
     private Result<PaletteProvider> lookupResult;
     private final AtomicBoolean requiresPaletteInit = new AtomicBoolean(false);
-    private final AtomicBoolean requiresPaletteUpdate = new AtomicBoolean(false);
 
-    PaletteKit(final String projectType) {
+    public PaletteKit(final String projectType) {
         this.fs = Repository.getDefault().getDefaultFileSystem();
 
         validationQueue = new LinkedList<Lookup>();
@@ -182,7 +180,6 @@ public class PaletteKit implements Runnable, LookupListener {
 
     void refreshPaletteController() {
         if (paletteController == null) {
-            Debug.warning("Can't get PaletteController"); // NOI18N
             return;
         }
         paletteController.refresh();
@@ -249,7 +246,7 @@ public class PaletteKit implements Runnable, LookupListener {
                 try {
                     catFO = DataFolder.create(rootFolder, catID).getPrimaryFile();
                 } catch (IOException ex) {
-                    Debug.warning("Can't create folder for palette category: ", ex); // NOI18N
+                    Debug.warning("Can't create folder for palette category: " + ex); // NOI18N
                 }
             }
             
@@ -291,16 +288,7 @@ public class PaletteKit implements Runnable, LookupListener {
                         lock.releaseLock();
                     }
                 } catch (IOException e) {
-                    StringBuffer str = new StringBuffer();
-                    str.append("Can't create file for palette item: "); // NOI18N
-                    str.append(path);
-                    str.append(", "); // NOI18N
-                    str.append(producerID);
-                    str.append("."); // NOI18N
-                    str.append(PaletteItemDataLoader.EXTENSION);
-                    str.append(": "); // NOI18N
-                    str.append(e);
-                    Debug.warning(str.toString());
+                    Debug.warning("Can't create file for palette item: " + path + ", " + producerID + ", " + producerID + "." + PaletteItemDataLoader.EXTENSION + ": " + e); // NOI18N
                 }
             }
         }
@@ -326,8 +314,8 @@ public class PaletteKit implements Runnable, LookupListener {
     }
 
     private void scheduleCheckValidityCore(Lookup lookup) {
-        validationQueue.add(lookup);
-        synchronized (validationSynch) {
+        synchronized (validationQueue) {
+            validationQueue.add(lookup);
             if (isValidationRunning) {
                 return;
             }
@@ -338,13 +326,15 @@ public class PaletteKit implements Runnable, LookupListener {
 
     public void run() {
         while (true) {
-            synchronized (validationSynch) {
+            Lookup lookup;
+            synchronized (validationQueue) {
                 if (validationQueue.isEmpty()) {
                     isValidationRunning = false;
                     break;
                 }
+                lookup = validationQueue.remove();
             }
-            checkValidityCore(validationQueue.remove());
+            checkValidityCore(lookup);
         }
 
         SwingUtilities.invokeLater(new Runnable() {
@@ -387,29 +377,14 @@ public class PaletteKit implements Runnable, LookupListener {
             }
         });
 
-        boolean isValid = result[0] != null;
+        Boolean isValid = result[0] != null;
 
         // check component's availability in classpath
         if (isValid) {
-            isValid = result[0].checkValidity(activeDocument.get());
+            isValid = result[0].checkValidity(activeDocument.get(), false);
         }
 
-        node.setValid(isValid);
-    }
-    
-    public void schedulePaletteRefresh() {
-        if (requiresPaletteUpdate.getAndSet(true)) {
-            return;
-        }
-        
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                while (requiresPaletteUpdate.getAndSet(false)) {
-                    clearNodesStateCache();
-                    refreshPaletteController();
-                }
-            }
-        });
+        node.setValid(isValid == null || isValid);
     }
 
     void clearNodesStateCache() {

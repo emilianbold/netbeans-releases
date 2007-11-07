@@ -136,9 +136,10 @@ public abstract class ComponentProducer {
      * available on the class of a project where the document belongs.
      * 
      * @param document the document where the producer could be used (and therefore checked against)
-     * @return the result checking; true if the producer is valid
+     * @param useCachedValue use value from cache
+     * @return the result checking; true if the producer is valid, false is not valid and null if unresolved yet
      */
-    public abstract boolean checkValidity(DesignDocument document);
+    public abstract Boolean checkValidity(DesignDocument document, boolean useCachedValue);
 
     /**
      * Represents the result of creation by the producer. Should be created by implementation of ComponentProducer.createComponent method.
@@ -193,7 +194,7 @@ public abstract class ComponentProducer {
             return null;
 
         return new ComponentProducer (typeid.toString (), typeid, paletteDescriptor) {
-            public boolean checkValidity(DesignDocument document) {
+            public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
                 return true;
             }
         };
