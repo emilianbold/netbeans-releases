@@ -42,36 +42,69 @@
 package org.netbeans.api.autoupdate;
 
 /**
- *
+ * Thrown to indicate that operation failed
+ * @see OperationSupport
+ * @see InstallSupport
  * @author Radek Matous
  */
 public final class OperationException extends Exception {
     private ERROR_TYPE error;
     private String msg;
+    /**
+     * Define the failure
+     */
     public static enum ERROR_TYPE {
+        /**
+         * Problem with proxy configuration
+         */
         PROXY,
+        /**
+         * Installation of custom component failed
+         */
         INSTALLER,
+        /**
+         * Installation of plugin failed
+         */
         INSTALL,
+        /**
+         * Activation of plugin failed
+         */
         ENABLE,
+        /**
+         * Uninstallation of plugin failed
+         */
         UNINSTALL,
     }       
  
-    /** not public contructor */
-    public OperationException (ERROR_TYPE error) {
+    /**
+     * Constructs an <code>OperationException</code>
+     * @param error the definition of failure
+     */
+    public OperationException(ERROR_TYPE error) {
         super (/*e.g.message from ERR*/);
         this.error = error;
         msg = error.toString ();
     }
     
-    /** not public contructor */
-    public OperationException (ERROR_TYPE error, Exception x) {
+    /**
+     * Constructs an <code>OperationException</code>
+     * @param error the definition of failure
+     * @param x the cause (<code>x.getLocalizedMessage</code> is saved for later retrieval by the
+     *         {@link #getLocalizedMessage()} method)
+     */
+    public OperationException(ERROR_TYPE error, Exception x) {
         super (x);
         this.error = error;
         msg = x.getLocalizedMessage ();
     }
     
-    /** not public contructor */
-    public OperationException (ERROR_TYPE error, String message) {
+    /**
+     * Constructs an <code>OperationException</code>
+     * @param error the definition of failure
+     * @param message (is saved for later retrieval by the
+     * {@link #getLocalizedMessage()} method)
+     */
+    public OperationException(ERROR_TYPE error, String message) {
         super (message);
         this.error = error;
         msg = message;
@@ -82,6 +115,9 @@ public final class OperationException extends Exception {
         return msg;
     }
     
-    public ERROR_TYPE getErrorType () {return error;}
+    /**
+     * @return the definition of failure
+     */
+    public ERROR_TYPE getErrorType() {return error;}
     
 }
