@@ -44,7 +44,6 @@ package org.netbeans.modules.form.editors;
 import java.awt.event.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.beans.FeatureDescriptor;
 import java.lang.reflect.Modifier;
 
 import javax.swing.*;
