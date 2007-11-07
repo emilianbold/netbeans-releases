@@ -156,12 +156,12 @@ class UsagesASTEvaluator extends ASTEvaluator {
         ASTItem leaf = path.get (path.size () - 1);
         DatabaseContext context = ContextASTEvaluator.getCurrentContext (document, leaf.getOffset ());
         String name = ((String) feature.getValue ("name", sc)).trim ();
-        boolean declaration_precedes_ussage = feature.getBoolean ("declaration_precedes_ussage", true);
+        boolean declaration_precedes_ussage = feature.getBoolean ("declaration_precedes_usage", true);
         DatabaseDefinition definition = context.getDefinition (name, leaf.getOffset ());
         if (definition != null && definition.getOffset () == leaf.getOffset ()) return;
         if (definition != null && declaration_precedes_ussage && definition.getOffset () > leaf.getOffset ()) return;
         DatabaseUsage usage = new DatabaseUsage (name, leaf.getOffset (), leaf.getEndOffset ());
-        //S ystem.out.println("add " + usage + " (" + definition + ") to " + context);
+//        System.out.println("add " + usage + " (" + definition + ") to " + context);
         if (definition != null) {
             definition.addUsage (usage);
             usage.setDatabaseDefinition (definition);

@@ -265,18 +265,18 @@ SEMANTIC_USAGE:selectorIdentifier: {
     name:"$$";
     type:"variable";
     condition: org.netbeans.modules.languages.ext.NBS.notTokenComand;
-    declaration_precedes_ussage:"false";
+    declaration_precedes_usage:"false";
 }
 
 SEMANTIC_USAGE:ntRef: {
     name:"$$";
     type:"variable";
-    declaration_precedes_ussage:"false";
+    declaration_precedes_usage:"false";
 }
 SEMANTIC_USAGE:tokenDefName: {
     name:"$$";
     type:"variable";
-    declaration_precedes_ussage:"false";
+    declaration_precedes_usage:"false";
 }
 
 BUNDLE "org.netbeans.modules.languages.resources.Bundle"

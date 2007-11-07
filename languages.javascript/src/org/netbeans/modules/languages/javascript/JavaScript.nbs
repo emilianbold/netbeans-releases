@@ -420,6 +420,7 @@ SEMANTIC_CONTEXT:FunctionDeclaration: {
 }
 SEMANTIC_USAGE:js_identifier: {
     name:"$$";
+    declaration_precedes_usage:"false";
 }
 
 
