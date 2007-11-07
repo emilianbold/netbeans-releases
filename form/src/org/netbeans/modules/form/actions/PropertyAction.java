@@ -54,7 +54,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.form.*;
-import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
  * Action that invokes custom property editor for the given property.

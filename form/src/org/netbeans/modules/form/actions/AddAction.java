@@ -51,7 +51,6 @@ import org.openide.nodes.NodeAcceptor;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.palette.PaletteMenuView;
 import org.netbeans.modules.form.*;
-import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
