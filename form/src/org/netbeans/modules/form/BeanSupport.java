@@ -119,6 +119,10 @@ public class BeanSupport
     /** Utility method that obtains icon for a bean class.
      * (This method is currently used only for obtaining default icons for AWT
      *  components. Other icons should be provided by BeanInfo.)
+     * 
+     * @param beanClass class of the bean
+     * @param iconType not used
+     * @return icon for the bean class
      */
     public static Image getBeanIcon(Class beanClass, int iconType) {
         return getIconForDefault(beanClass);
@@ -127,6 +131,8 @@ public class BeanSupport
     /** A utility method that returns a class of event adapter for
      * specified listener. It works only on known listeners from java.awt.event.
      * Null is returned for unknown listeners.
+     * 
+     * @param listener class of the listener
      * @return class of an adapter for specified listener or null if
      *               unknown/does not exist
      */
