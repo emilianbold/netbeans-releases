@@ -47,12 +47,12 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.swing.Action;
 import org.openide.nodes.*;
-import org.openide.actions.PropertiesAction;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.form.actions.*;
 import org.openide.actions.PasteAction;
 import org.openide.actions.ReorderAction;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  * This class represents the root node of the form (displayed as root in
@@ -77,14 +77,17 @@ class FormRootNode extends FormNode {
 //    public Image getIcon(int iconType) {
 //    }
 
+    @Override
     public boolean canRename() {
         return false;
     }
 
+    @Override
     public boolean canDestroy() {
         return false;
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         if (actions == null) { // from AbstractNode
             List<Action> l = new ArrayList<Action>();
@@ -115,6 +118,7 @@ class FormRootNode extends FormNode {
         return ((RootChildren)getChildren()).othersNode;
     }
     
+    @Override
     public Node.PropertySet[] getPropertySets() {
         Node.PropertySet codeSet = new Node.PropertySet(
                 "codeGeneration", // NOI18N
@@ -168,7 +172,8 @@ class FormRootNode extends FormNode {
         return allProperties;
     }
 
-    protected void createPasteTypes(Transferable t, java.util.List s) {
+    @Override
+    protected void createPasteTypes(Transferable t, java.util.List<PasteType> s) {
         if (isModifiableContainer()) {
             CopySupport.createPasteTypes(t, s, getFormModel(), null);
         }
@@ -215,10 +220,11 @@ class FormRootNode extends FormNode {
         }
 
         // FormNodeChildren implementation
+        @Override
         protected void updateKeys() {
             othersNode = null;
 
-            List keys = new LinkedList();
+            List<Object> keys = new LinkedList<Object>();
             boolean otherComps = shouldHaveOthersNode(formModel);
             if (otherComps) {
                 keys.add(OTHERS_ROOT);

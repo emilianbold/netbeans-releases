@@ -158,7 +158,7 @@ class CopySupport {
 
     // -----------
 
-    static void createPasteTypes(Transferable trans, java.util.List s,
+    static void createPasteTypes(Transferable trans, java.util.List<PasteType> s,
                                  FormModel targetForm, RADComponent targetComponent) {
         if (targetForm.isReadOnly()) {
             return;
@@ -266,7 +266,7 @@ class CopySupport {
     /**
      * Paste type for meta components.
      */
-    private static class RADPaste extends PasteType implements Mutex.ExceptionAction {
+    private static class RADPaste extends PasteType implements Mutex.ExceptionAction<Transferable> {
         private List<RADComponent> sourceComponents;
         private FormModel targetForm;
         private RADComponent targetComponent;
@@ -282,6 +282,7 @@ class CopySupport {
             this.fromCut = cut;
         }
 
+        @Override
         public String getName() {
             return FormUtils.getBundleString(fromCut ? "CTL_CutPaste" : "CTL_CopyPaste"); // NOI18N
         }
@@ -291,7 +292,7 @@ class CopySupport {
                 return doPaste();
             else { // reinvoke synchronously in AWT thread
                 try {
-                    return (Transferable) Mutex.EVENT.readAccess(this);
+                    return Mutex.EVENT.readAccess(this);
                 }
                 catch (MutexException ex) {
                     Exception e = ex.getException();
@@ -305,7 +306,7 @@ class CopySupport {
             }
         }
 
-        public Object run() throws Exception {
+        public Transferable run() throws Exception {
             return doPaste();
         }
 
@@ -511,7 +512,7 @@ class CopySupport {
     /**
      * Paste type for a class (java node).
      */
-    private static class ClassPaste extends PasteType implements Mutex.ExceptionAction {
+    private static class ClassPaste extends PasteType implements Mutex.ExceptionAction<Transferable> {
         private Transferable transferable;
         private ClassSource classSource;
         private FormModel targetForm;
@@ -534,7 +535,7 @@ class CopySupport {
             }
             else { // reinvoke synchronously in AWT thread
                 try {
-                    return (Transferable) Mutex.EVENT.readAccess(this);
+                    return Mutex.EVENT.readAccess(this);
                 }
                 catch (MutexException ex) {
                     Exception e = ex.getException();
@@ -548,7 +549,7 @@ class CopySupport {
             }
         }
 
-        public Object run() throws Exception {
+        public Transferable run() throws Exception {
             return doPaste();
         }
 
@@ -571,8 +572,7 @@ class CopySupport {
     }
 
     static ClassSource getCopiedBeanClassSource(Transferable t) {
-        DataObject dobj = (DataObject)
-            NodeTransfer.cookie(t, NodeTransfer.COPY, DataObject.class);
+        DataObject dobj = NodeTransfer.cookie(t, NodeTransfer.COPY, DataObject.class);
         FileObject fo = (dobj != null && dobj.isValid()) ? dobj.getPrimaryFile() : null;
         if (fo == null)
             return null;

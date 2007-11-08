@@ -66,6 +66,7 @@ import org.netbeans.modules.form.menu.AddSubItemAction;
 import org.netbeans.modules.form.menu.InsertMenuAction;
 import org.netbeans.modules.form.menu.MenuEditLayer;
 import org.netbeans.modules.form.palette.PaletteUtils;
+import org.openide.util.datatransfer.PasteType;
 
 public class RADComponentNode extends FormNode
         implements RADComponentCookie, FormPropertyCookie {
@@ -487,7 +488,7 @@ public class RADComponentNode extends FormNode
     {
         // we run this as privileged to avoid security problems - because
         // the property change is fired from untrusted bean customizer code
-        AccessController.doPrivileged(new PrivilegedAction() {
+        AccessController.doPrivileged(new PrivilegedAction<Object>() {
             public Object run() {
                 Object oldValue = evt != null ? evt.getOldValue() : null;
                 Object newValue = evt != null ? evt.getNewValue() : null;
@@ -561,7 +562,7 @@ public class RADComponentNode extends FormNode
      *          types valid for this node
      */
     @Override
-    protected void createPasteTypes(Transferable t, java.util.List s) {
+    protected void createPasteTypes(Transferable t, java.util.List<PasteType> s) {
         CopySupport.createPasteTypes(t, s, component.getFormModel(), component);
     }
 

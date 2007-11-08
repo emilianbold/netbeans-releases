@@ -81,8 +81,9 @@ public class FormNode extends AbstractNode implements FormCookie {
         return this;
     }
 
-    public Node.Cookie getCookie(Class type) {
-        Node.Cookie cookie = super.getCookie(type);
+    @Override
+    public <T extends Node.Cookie> T getCookie(Class<T> type) {
+        T cookie = super.getCookie(type);
         if (cookie == null
             && (DataObject.class.isAssignableFrom(type)
                 || SaveCookie.class.isAssignableFrom(type)
@@ -102,6 +103,7 @@ public class FormNode extends AbstractNode implements FormCookie {
         super.fireCookieChange();
     }
 
+    @Override
     public javax.swing.Action[] getActions(boolean context) {
         if (actions == null) {
             actions = new Action[] { SystemAction.get(PropertiesAction.class) };
@@ -109,6 +111,7 @@ public class FormNode extends AbstractNode implements FormCookie {
         return actions;
     }
 
+    @Override
     public Component getCustomizer() {
         Component customizer = createCustomizer();
         if (customizer instanceof Window) {
@@ -120,6 +123,7 @@ public class FormNode extends AbstractNode implements FormCookie {
                 formEditor.registerFloatingWindow(customizerWindow);
                 // attach a listener to unregister the window when it is closed
                 customizerWindow.addWindowListener(new WindowAdapter() {
+                    @Override
                     public void windowClosing(WindowEvent e) {
                         if (e.getSource() instanceof Window) {
                             Window window = (Window) e.getSource();
@@ -140,7 +144,12 @@ public class FormNode extends AbstractNode implements FormCookie {
         return null;
     }
     
-    /** Provides access for firing property changes */
+    /** Provides access for firing property changes
+     * 
+     * @param name property name
+     * @param oldValue old value of the property
+     * @param newValue new value of the property
+     */
     public void firePropertyChangeHelper(String name,
                                          Object oldValue, Object newValue) {
         super.firePropertyChange(name, oldValue, newValue);
@@ -168,6 +177,7 @@ public class FormNode extends AbstractNode implements FormCookie {
     // provide a fake node which destroys itself immediately - closing the
     // properties window. [Would be nice to find some better solution...]
 
+    @Override
     public Node.Handle getHandle() {
         return new Handle();
     }
@@ -183,10 +193,12 @@ public class FormNode extends AbstractNode implements FormCookie {
         ClosingNode() {
             super(Children.LEAF);
         }
+        @Override
         public String getName() {
             java.awt.EventQueue.invokeLater(this);
             return super.getName();
         }
+        @Override
         public Node.PropertySet[] getPropertySets() {
             java.awt.EventQueue.invokeLater(this);
             return super.getPropertySets();

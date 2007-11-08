@@ -51,6 +51,7 @@ import org.openide.actions.*;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.form.actions.AddAction;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  * This class represents the root node of "Other Components".
@@ -64,11 +65,12 @@ class FormOthersNode extends FormNode {
         super(new OthersChildren(formModel), formModel);
 
         getCookieSet().add(new OthersIndex((OthersChildren)getChildren()));
-        setIconBase("org/netbeans/modules/form/resources/formNonVisual"); // NOI18N
+        setIconBaseWithExtension("org/netbeans/modules/form/resources/formNonVisual.gif"); // NOI18N
         setName("Others Node"); // NOI18N
         setName(FormUtils.getBundleString("CTL_NonVisualComponents")); // NOI18N
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         if (actions == null) { // from AbstractNode
             List<Action> l = new ArrayList<Action>();
@@ -89,7 +91,8 @@ class FormOthersNode extends FormNode {
         return actions;
     }
 
-    protected void createPasteTypes(Transferable t, java.util.List s) {
+    @Override
+    protected void createPasteTypes(Transferable t, java.util.List<PasteType> s) {
         CopySupport.createPasteTypes(t, s, getFormModel(), null);
     }
 
@@ -105,6 +108,7 @@ class FormOthersNode extends FormNode {
         }
 
         // FormNodeChildren implementation
+        @Override
         protected void updateKeys() {
             setKeys(formModel.getOtherComponents().toArray());
         }

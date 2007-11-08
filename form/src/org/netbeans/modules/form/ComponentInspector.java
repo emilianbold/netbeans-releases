@@ -74,11 +74,9 @@ public class ComponentInspector extends TopComponent
 {
     private ExplorerManager explorerManager;
 
-    private TestAction testAction = (TestAction)
-                SystemAction.findObject(TestAction.class, true);
+    private TestAction testAction = SystemAction.findObject(TestAction.class, true);
 
-    private PasteAction pasteAction = (PasteAction)
-                SystemAction.findObject(PasteAction.class, true);
+    private PasteAction pasteAction = SystemAction.findObject(PasteAction.class, true);
 
     private CopyCutActionPerformer copyActionPerformer = new CopyCutActionPerformer(true);
     private CopyCutActionPerformer cutActionPerformer = new CopyCutActionPerformer(false);
@@ -95,7 +93,7 @@ public class ComponentInspector extends TopComponent
 
     /** Default icon base for control panel. */
     private static final String EMPTY_INSPECTOR_ICON_BASE =
-        "org/netbeans/modules/form/resources/emptyInspector"; // NOI18N
+        "org/netbeans/modules/form/resources/emptyInspector.gif"; // NOI18N
 
     /** The icon for ComponentInspector */
     private static final String iconURL =
@@ -107,14 +105,20 @@ public class ComponentInspector extends TopComponent
     // construction (ComponentInspector is a singleton)
 
     /** Gets default instance. Don't use directly, it reserved for '.settings' file only,
-     * i.e. deserialization routines, otherwise you can get non-deserialized instance. */
+     * i.e. deserialization routines, otherwise you can get non-deserialized instance.
+     * 
+     * @return ComponentInspector singleton.
+     */
     public static synchronized ComponentInspector getDefault() {
         if (instance == null)
             instance = new ComponentInspector();
         return instance;
     }
 
-    /** Finds default instance. Use in client code instead of {@link #getDefault()}. */
+    /** Finds default instance. Use in client code instead of {@link #getDefault()}.
+     * 
+     * @return ComponentInspector singleton.
+     */
     public static synchronized ComponentInspector getInstance() {
         if (instance == null) {
             TopComponent tc = WindowManager.getDefault().findTopComponent("ComponentInspector"); // NOI18N
@@ -133,6 +137,7 @@ public class ComponentInspector extends TopComponent
 
     /** Overriden to explicitely set persistence type of ComponentInspector
      * to PERSISTENCE_ALWAYS */
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
@@ -185,25 +190,33 @@ public class ComponentInspector extends TopComponent
         return explorerManager;
     }
 
+    @Override
     public UndoRedo getUndoRedo() {
         UndoRedo ur = focusedForm != null ?
                           focusedForm.getFormUndoRedoManager() : null;
         return ur != null ? ur : super.getUndoRedo();
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.component-inspector"); // NOI18N
     }
 
-    /** Replaces this in object stream. */
+    /** Replaces this in object stream.
+     * 
+     * @return ResolvableHelper
+     */
+    @Override
     public Object writeReplace() {
         return new ResolvableHelper();
     }
 
+    @Override
     protected void componentActivated() {
         attachActions();
     }
 
+    @Override
     protected void componentDeactivated() {
         detachActions();
     }
@@ -438,17 +451,19 @@ public class ComponentInspector extends TopComponent
     }
 
     private Clipboard getClipboard() {
-        Clipboard c = (java.awt.datatransfer.Clipboard)
-            Lookup.getDefault().lookup(java.awt.datatransfer.Clipboard.class);
+        Clipboard c = Lookup.getDefault().lookup(java.awt.datatransfer.Clipboard.class);
         if (c == null)
             c = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
         return c;
     }
     
+    @Override
     protected String preferredID() {
         return getClass().getName();
     }
     
+    @Override
+    @SuppressWarnings("deprecation")
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
         return treeView.requestFocusInWindow();
@@ -483,14 +498,12 @@ public class ComponentInspector extends TopComponent
             if (designer.getDesignerMode() == FormDesigner.MODE_CONNECT) {
                 // specially handle node selection in connection mode
                 if (selectedNodes.length > 0) {
-                    RADComponentCookie cookie = (RADComponentCookie)
-                        selectedNodes[0].getCookie(RADComponentCookie.class);
+                    RADComponentCookie cookie = selectedNodes[0].getCookie(RADComponentCookie.class);
                     if (cookie != null
                         && cookie.getRADComponent() == designer.getConnectionSource()
                         && selectedNodes.length > 1)
                     {
-                        cookie = (RADComponentCookie)
-                            selectedNodes[selectedNodes.length-1]
+                        cookie = selectedNodes[selectedNodes.length-1]
                                 .getCookie(RADComponentCookie.class);
                     }
                     if (cookie != null)
@@ -501,8 +514,7 @@ public class ComponentInspector extends TopComponent
             {   // the change comes from ComponentInspector => synchronize FormDesigner
                 designer.clearSelectionImpl();
                 for (int i=0; i < selectedNodes.length; i++) {
-                    FormCookie formCookie = (FormCookie)
-                        selectedNodes[i].getCookie(FormCookie.class);
+                    FormCookie formCookie = selectedNodes[i].getCookie(FormCookie.class);
                     if (formCookie != null) {
                         Node node = formCookie.getOriginalNode();
                         if (node instanceof RADComponentNode)
@@ -555,7 +567,7 @@ public class ComponentInspector extends TopComponent
 
     // performer for DeleteAction
     private class DeleteActionPerformer extends javax.swing.AbstractAction
-                                        implements ActionPerformer, Mutex.Action
+                                        implements ActionPerformer, Mutex.Action<Object>
     {
         private Node[] nodesToDestroy;
 
@@ -656,7 +668,7 @@ public class ComponentInspector extends TopComponent
 
     // paste type used for ExTransferable.Multi
     private static class MultiPasteType extends PasteType
-                                 implements Mutex.ExceptionAction
+                                 implements Mutex.ExceptionAction<Transferable>
     {
         private Transferable[] transIn;
         private PasteType[] pasteTypes;
@@ -672,7 +684,7 @@ public class ComponentInspector extends TopComponent
                 return doPaste();
             else { // reinvoke synchronously in AWT thread
                 try {
-                    return (Transferable) Mutex.EVENT.readAccess(this);
+                    return Mutex.EVENT.readAccess(this);
                 }
                 catch (MutexException ex) {
                     Exception e = ex.getException();
@@ -686,7 +698,7 @@ public class ComponentInspector extends TopComponent
             }
         }
 
-        public Object run() throws Exception {
+        public Transferable run() throws Exception {
             return doPaste();
         }
 
@@ -706,8 +718,9 @@ public class ComponentInspector extends TopComponent
     private static class EmptyInspectorNode extends AbstractNode {
         public EmptyInspectorNode() {
             super(Children.LEAF);
-            setIconBase(EMPTY_INSPECTOR_ICON_BASE);
+            setIconBaseWithExtension(EMPTY_INSPECTOR_ICON_BASE);
         }
+        @Override
         public boolean canRename() {
             return false;
         }
