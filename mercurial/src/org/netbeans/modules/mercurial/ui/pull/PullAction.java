@@ -190,6 +190,9 @@ public class PullAction extends AbstractAction {
     }
 
     public boolean isEnabled() {
+        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        if(ctxFiles == null || ctxFiles.size() == 0) 
+            return false;
         return true; // #121293: Speed up menu display, warn user if not set when Pull selected
     }
 

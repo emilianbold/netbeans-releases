@@ -47,6 +47,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -95,6 +96,9 @@ public class PushAction extends AbstractAction {
         push(context);
     }
     public boolean isEnabled() {
+        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        if(ctxFiles == null || ctxFiles.size() == 0) 
+            return false;
         return true; // #121293: Speed up menu display, warn user if not set when Push selected
     }
     

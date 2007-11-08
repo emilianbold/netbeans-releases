@@ -47,6 +47,7 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.util.Set;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.DialogDisplayer;
@@ -73,21 +74,23 @@ public class MergeAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
 
-    public boolean isEnabled() {        
+    public boolean isEnabled() {
+        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        if(ctxFiles == null || ctxFiles.size() == 0) 
+            return false;
         return true; // #121293: Speed up menu display, warn user if nothing to merge when Merge selected
-        //return HgRepositoryContextCache.hasHeads(context);
     }
 
     public void actionPerformed(ActionEvent ev) {
         final File root = HgUtils.getRootFile(context);
-        if (root == null) {
-            return;
-        }
-        if(!HgCommand.isMergeRequired(root)){
+        if(root != null && !HgCommand.isMergeRequired(root)){
             JOptionPane.showMessageDialog(null,
                 NbBundle.getMessage(MergeAction.class,"MSG_NOTHING_TO_MERGE"),
                 NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE"),
                 JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        if (root == null) {
             return;
         }
 
