@@ -122,6 +122,7 @@ class ConnectionPanel2 extends javax.swing.JPanel {
         putClientProperty("WizardPanel_contentSelectedIndex", new Integer(1)); // NOI18N
     }
 
+    @Override
     public java.awt.Dimension getPreferredSize() {
         return new java.awt.Dimension(450, 300);
     }
@@ -164,7 +165,7 @@ class ConnectionPanel2 extends javax.swing.JPanel {
                 PropertyDescriptor[] descs = targetBeanInfo.getPropertyDescriptors();
 
                 // filter out read-only properties // [FUTURE: provide also indexed properties]
-                ArrayList list = new ArrayList();
+                List<PropertyDescriptor> list = new ArrayList<PropertyDescriptor>();
                 for (int i = 0; i < descs.length; i++) {
                     if (descs[i].getWriteMethod() != null) {
                         list.add(descs[i]);
@@ -172,9 +173,9 @@ class ConnectionPanel2 extends javax.swing.JPanel {
                 }
 
                 // sort the properties by name
-                Collections.sort(list, new Comparator() {
-                    public int compare(Object o1, Object o2) {
-                        return((PropertyDescriptor)o1).getName().compareTo(((PropertyDescriptor)o2).getName());
+                Collections.sort(list, new Comparator<PropertyDescriptor>() {
+                    public int compare(PropertyDescriptor o1, PropertyDescriptor o2) {
+                        return o1.getName().compareTo(o2.getName());
                     }
                 });
 
@@ -196,15 +197,15 @@ class ConnectionPanel2 extends javax.swing.JPanel {
                 BeanInfo targetBeanInfo =
                     wizardPanel.getTargetComponent().getBeanInfo();
                 methodDescriptors = targetBeanInfo.getMethodDescriptors();
-                ArrayList list = new ArrayList();
+                ArrayList<MethodDescriptor> list = new ArrayList<MethodDescriptor>();
                 for (int i = 0; i < methodDescriptors.length; i++) {
                     list.add(methodDescriptors[i]);
                 }
 
                 // sort the methods by name
-                Collections.sort(list, new Comparator() {
-                    public int compare(Object o1, Object o2) {
-                        return((MethodDescriptor)o1).getName().compareTo(((MethodDescriptor)o2).getName());
+                Collections.sort(list, new Comparator<MethodDescriptor>() {
+                    public int compare(MethodDescriptor o1, MethodDescriptor o2) {
+                        return o1.getName().compareTo(o2.getName());
                     }
                 });
 

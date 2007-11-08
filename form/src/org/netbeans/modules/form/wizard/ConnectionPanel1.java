@@ -89,7 +89,7 @@ class ConnectionPanel1 extends javax.swing.JPanel {
         });
 
          // populate event tree
-        final Vector eventNodes = new Vector();
+        final Vector<EventSetNode> eventNodes = new Vector<EventSetNode>();
         TreeNode rootNode = new TreeNode() {
             public TreeNode getChildAt(int childIndex) {
                 return(TreeNode) eventNodes.elementAt(childIndex);
@@ -115,8 +115,8 @@ class ConnectionPanel1 extends javax.swing.JPanel {
         };
 
         EventSetDescriptor lastEventSetDesc = null;
-        TreeNode eventSetNode = null;
-        List eventSetEvents = null;
+        EventSetNode eventSetNode = null;
+        List<EventNode> eventSetEvents = null;
 
         Event[] events = source.getAllEvents();
         for (int i=0; i < events.length; i++) {
@@ -124,7 +124,7 @@ class ConnectionPanel1 extends javax.swing.JPanel {
             EventSetDescriptor eventSetDesc = event.getEventSetDescriptor();
 
             if (eventSetDesc != lastEventSetDesc) {
-                eventSetEvents = new ArrayList();
+                eventSetEvents = new ArrayList<EventNode>();
                 eventSetNode = new EventSetNode(eventSetDesc.getName(),
                                                 eventSetEvents);
                 eventNodes.add(eventSetNode);
@@ -178,6 +178,7 @@ class ConnectionPanel1 extends javax.swing.JPanel {
         putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0)); // NOI18N
     }
 
+    @Override
     public java.awt.Dimension getPreferredSize() {
         return new java.awt.Dimension(450, 300);
     }
@@ -303,15 +304,15 @@ class ConnectionPanel1 extends javax.swing.JPanel {
 
     static class EventSetNode implements TreeNode {
         private String eventSetName;
-        private List subNodes;
+        private List<EventNode> subNodes;
 
-        public EventSetNode(String eventSetName, List subNodes) {
+        public EventSetNode(String eventSetName, List<EventNode> subNodes) {
             this.eventSetName = eventSetName;
             this.subNodes = subNodes;
         }
 
         public TreeNode getChildAt(int childIndex) {
-            return (TreeNode) subNodes.get(childIndex);
+            return subNodes.get(childIndex);
         }
         public int getChildCount() {
             return subNodes.size();
@@ -331,6 +332,7 @@ class ConnectionPanel1 extends javax.swing.JPanel {
         public Enumeration children() {
             return Collections.enumeration(subNodes);
         }
+        @Override
         public String toString() {
             return eventSetName;
         }
@@ -364,6 +366,7 @@ class ConnectionPanel1 extends javax.swing.JPanel {
         public Enumeration children() {
             return null;
         }
+        @Override
         public String toString() {
             if (!event.hasEventHandlers())
                 return event.getName();

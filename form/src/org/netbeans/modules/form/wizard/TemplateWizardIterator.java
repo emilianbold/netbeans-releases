@@ -50,7 +50,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.FocusAdapter;
 import java.io.IOException;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -145,7 +144,7 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
                                     orig.getSimpleName(),
                                     orig.getTypeParameters(),
                                     extendsTree,
-                                    (List<? extends ExpressionTree>) orig.getImplementsClause(),
+                                    orig.getImplementsClause(),
                                     orig.getMembers()
                                     );
                             wcopy.rewrite(orig, copy);
@@ -280,6 +279,7 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
             superclassTextField.getAccessibleContext()
                 .setAccessibleDescription(bundle.getString("ACSD_SuperclassTextField"));  // NOI18N
             superclassTextField.addFocusListener(new FocusAdapter() {
+                @Override
                 public void focusGained(java.awt.event.FocusEvent evt) {
                     superclassTextField.selectAll();
                 }
@@ -295,6 +295,7 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
             add(superclassTextField, gridBagConstraints);
         }
 
+        @Override
         public void addNotify() {
             super.addNotify();
             superclassTextField.requestFocus();

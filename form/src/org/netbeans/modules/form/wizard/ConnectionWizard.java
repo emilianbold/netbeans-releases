@@ -46,6 +46,7 @@ import java.util.HashSet;
 import javax.swing.event.*;
 import java.lang.reflect.Method;
 
+import java.util.Set;
 import org.openide.*;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.form.*;
@@ -150,7 +151,7 @@ public class ConnectionWizard extends WizardDescriptor {
             return null;
 
         StringBuffer buf = new StringBuffer();
-        HashSet allExceptions = new HashSet();
+        Set<Class> allExceptions = new HashSet<Class>();
 
         // params can be specified as method calls which in turn may produce exceptions
         if (paramValues != null) {
@@ -214,6 +215,7 @@ public class ConnectionWizard extends WizardDescriptor {
         return buf.toString();
     }
 
+    @Override
     protected void updateState() {
         super.updateState();
         java.util.ResourceBundle bundle = NbBundle.getBundle(ConnectionWizard.class);
