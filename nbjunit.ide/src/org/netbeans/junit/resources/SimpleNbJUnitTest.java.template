@@ -1,38 +1,67 @@
-/*
- * __NAME__.java
- * NetBeans JUnit based test
- *
- * Created on __DATE__, __TIME__
- */                
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
 
-package Template.Classes;
- 
-import junit.framework.*;
-import org.netbeans.junit.*;
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
          
 /**
- *
- * @author __USER__                       
+ * A Test based on NbTestCase. It is a NetBeans extension to JUnit TestCase
+ * which among othres allows to compare files via assertFile methods, create
+ * working directories for testcases, write to log files, compare log files
+ * against reference (golden) files, etc.
+ * 
+ * More details here http://xtest.netbeans.org/NbJUnit/NbJUnit-overview.html.
+ * 
+ * @author ${user}
  */
-public class SimpleNbJUnitTest extends NbTestCase {
+public class ${name} extends NbTestCase {
 
-    public SimpleNbJUnitTest(java.lang.String testName) {
+    /** Default constructor.
+     * @param testName name of particular test case
+    */
+    public ${name}(String testName) {
         super(testName);
     }        
         
+    /** Creates suite from particular test cases. You can define order of testcases here. */
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new ${name}("test1"));
+        suite.addTest(new ${name}("test2"));
+        return suite;
+    }
+
+    /* Method allowing test execution directly from the IDE. */
     public static void main(java.lang.String[] args) {
+        // run whole suite
         junit.textui.TestRunner.run(suite());
+        // run only selected test case
+        //junit.textui.TestRunner.run(new ${name}("test1"));
     }
     
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(__NAME__.class);
-        return suite;
-    }            
+    /** Called before every test case. */
+    public void setUp() {
+        System.out.println("########  "+getName()+"  #######");
+    }
     
-    // Add test methods here, they have to start with 'test' name.
-    // for example: 
-    // public void testHello() {}
+    /** Called after every test case. */
+    public void tearDown() {
+    }
 
+    // Add test methods here, they have to start with 'test'.
+    
+    /** Test case 1. */
+    public void test1() {
+    }
 
-
+    /** Test case 2. */
+    public void test2() {
+    }
 }
