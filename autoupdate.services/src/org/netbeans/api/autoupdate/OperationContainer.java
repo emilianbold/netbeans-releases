@@ -86,6 +86,7 @@ import org.netbeans.modules.autoupdate.services.OperationContainerImpl;
  */
 public final class OperationContainer<Support> {
     /**
+     * The factory method to construct instance of <code>OperationContainer</code> for install operation
      * @return newly constructed instance of <code>OperationContainer</code> for install operation
      */
     public static OperationContainer<InstallSupport> createForInstall() {
@@ -96,6 +97,7 @@ public final class OperationContainer<Support> {
     }
 
     /**
+     * The factory method to construct  instance of <code>OperationContainer</code> for install operation
      * @return newly constructed instance of <code>OperationContainer</code> for install operation
      */
     public static OperationContainer<OperationSupport> createForDirectInstall() {
@@ -106,6 +108,7 @@ public final class OperationContainer<Support> {
     }    
     
     /**
+     * The factory method to construct  instance of <code>OperationContainer</code> for update operation
      * @return newly constructed instance of <code>OperationContainer</code> for update operation
      */    
     public static OperationContainer<InstallSupport> createForUpdate() {
@@ -116,6 +119,7 @@ public final class OperationContainer<Support> {
     }
     
     /**
+     * The factory method to construct  instance of <code>OperationContainer</code> for update operation
      * @return newly constructed instance of <code>OperationContainer</code> for update operation
      */    
     public static OperationContainer<OperationSupport> createForDirectUpdate() {
@@ -126,6 +130,7 @@ public final class OperationContainer<Support> {
     }    
     
     /**
+     * The factory method to construct  instance of <code>OperationContainer</code> for uninstall operation
      * @return newly constructed instance of <code>OperationContainer</code> for uninstall operation
      */        
     public static OperationContainer<OperationSupport> createForUninstall() {
@@ -136,6 +141,7 @@ public final class OperationContainer<Support> {
     }
     
     /**
+     * The factory method to construct  instance of <code>OperationContainer</code> for uninstall operation
      * @return newly constructed instance of <code>OperationContainer</code> for uninstall operation
      */            
     public static OperationContainer<OperationSupport> createForDirectUninstall() {
@@ -146,6 +152,7 @@ public final class OperationContainer<Support> {
     }
     
     /**
+     * The factory method to construct  instance of <code>OperationContainer</code> for enable operation
      * @return newly constructed instance of <code>OperationContainer</code> for enable operation
      */            
     public static OperationContainer<OperationSupport> createForEnable() {
@@ -156,6 +163,7 @@ public final class OperationContainer<Support> {
     }
     
     /**
+     * The factory method to construct  instance of <code>OperationContainer</code> for disable operation
      * @return newly constructed instance of <code>OperationContainer</code> for disable operation
      */                
     public static OperationContainer<OperationSupport> createForDisable() {
@@ -166,6 +174,7 @@ public final class OperationContainer<Support> {
     }
 
     /**
+     * The factory method to construct  instance of <code>OperationContainer</code> for disable operation
      * @return newly constructed instance of <code>OperationContainer</code> for disable operation
      */                    
     public static OperationContainer<OperationSupport> createForDirectDisable() {
@@ -176,6 +185,7 @@ public final class OperationContainer<Support> {
     }
     
     /**
+     * The factory method to construct  instance of <code>OperationContainer</code> for installation of custom compomnent
      * @return newly constructed instance of <code>OperationContainer</code> for installation of custom compomnent
      */                    
     public static OperationContainer<OperationSupport> createForCustomInstallComponent () {
@@ -186,6 +196,7 @@ public final class OperationContainer<Support> {
     }
 
     /**
+     * The factory method to construct  instance of <code>OperationContainer</code> for uninstallation of custom compomnent
      * @return newly constructed instance of <code>OperationContainer</code> for uninstallation of custom compomnent
      */                        
     public static OperationContainer<OperationSupport> createForCustomUninstallComponent () {
