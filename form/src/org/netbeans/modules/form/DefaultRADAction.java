@@ -81,6 +81,7 @@ public class DefaultRADAction extends CookieAction {
         return new Class[] { RADComponentCookie.class };
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -93,6 +94,7 @@ public class DefaultRADAction extends CookieAction {
      * @param activatedNodes the set of activated nodes
      * @return <code>true</code> to enable
      */
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length == 1) {
             RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);
