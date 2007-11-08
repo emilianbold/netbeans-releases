@@ -100,7 +100,7 @@ function write_table_header() {
     document.write('<td class="no_border no_padding" colspan="6">');
     document.write('<table class="components_table"><tr>');
     document.write('	<td class="no_border no_padding" style="width: 50%;"><img src="img/1px-gray.png" style="width: 100%; height: 1px"/></td>');
-    document.write('	<td class="no_border title bold" style="color:black"">NetBeans IDE 6.0 {build.number}</td>');
+    document.write('	<td class="no_border title bold" style="color:black"">NetBeans IDE {build.display.version}</td>');
     document.write('	<td class="no_border no_padding" style="width: 50%;"><img src="img/1px-gray.png" style="width: 100%; height: 1px"/></td>');
     document.write('</tr></table>');
     document.write('</td>');
@@ -394,11 +394,11 @@ function download(option) {
     } else {
         basename="bundles/";
     }
-    //if ((platform == "macosx-x86") || (platform != "macosx-ppc")) {
-    //  basename  += "{nb.files.prefix}-{build.number}{nb.build.suffix}";
-    //} else {
-	basename  += "{nb.files.prefix}-{build.number}{nb.build.suffix}";
-    //}
+    if (platform == "zip") {
+        basename  += "{nb.zip.files.prefix}";
+    } else {
+	basename  += "{nb.bundle.files.prefix}";
+    }
 
     var file_name = "start.html?" + basename;
 
