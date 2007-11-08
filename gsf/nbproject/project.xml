@@ -351,7 +351,11 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.ruby.rhtml</friend>
+                <!-- These two modules are friends for Auto Update purposes - such that
+                     they can get gsf installed through a dependency on it since gsf api
+                     doesn't depend on gsf -->
                 <friend>org.netbeans.modules.javafx.dataloader</friend>
+                <friend>org.netbeans.modules.languages.php</friend>
                 <package>org.netbeans.napi.gsfret.source</package>
             </friend-packages>
         </data>
