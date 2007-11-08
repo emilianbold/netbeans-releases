@@ -756,19 +756,20 @@ public class PageFlowController {
         }
     }
 
-    public void clearPageName2Page() {
+    /**
+     * Clears the pageName 2 Page mapping.  Generally you want do this when you 
+     * are about to throw everything in the scene away.  This keeps references 
+     * from being kept.
+     */
+    protected void clearPageName2Page() {
         LOGGER.finest("PageName2Page: clear");
-
-        //        printThreadInfo();
         Set<String> keys;
         synchronized (pageName2Page) {
             keys = new HashSet<String>(pageName2Page.keySet());
         }
         for (String key : keys) {
-            Page node = removePageName2Page(key, true);
+            removePageName2Page(key, true);
         }
-    //            pageName2Node.clear();
-    //        }
     }
 
     public void putPageName2Page(String displayName, Page pageNode) {

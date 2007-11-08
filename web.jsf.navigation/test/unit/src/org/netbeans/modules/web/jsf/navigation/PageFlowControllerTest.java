@@ -641,17 +641,19 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
     }
     
    
-//
-//    /**
-//     * Test of clearPageName2Page method, of class PageFlowController.
-//     */
-//    public void testClearPageName2Page() {
-//        System.out.println("clearPageName2Page");
-//        PageFlowController instance = null;
-//        instance.clearPageName2Page();
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
+
+    /**
+     * Test of clearPageName2Page method, of class PageFlowController.
+     */
+    public void testClearPageName2Page() {
+        System.out.println("clearPageName2Page");
+        String oldName = "welcomeJSF.jsp";
+        Page page = controller.getPageName2Page(oldName);
+        assertNotNull(page);
+        controller.clearPageName2Page();
+        Page page2 = controller.getPageName2Page(oldName);
+        assertNull(page2);
+    }
 //
 //    /**
 //     * Test of putPageName2Page method, of class PageFlowController.
