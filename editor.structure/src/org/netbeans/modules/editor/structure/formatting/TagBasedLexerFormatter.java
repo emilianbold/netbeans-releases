@@ -238,8 +238,6 @@ public abstract class TagBasedLexerFormatter {
                         firstUnformattableLine = Utilities.getLineOffset(doc, tokenSequence.offset());
                     }
 
-                    thereAreMoreTokens &= tokenSequence.moveNext();
-
                     // detect the end of an unformattable block; mark it
                     if (firstUnformattableLine > -1 && (!wasPreviousTokenUnformattable || !thereAreMoreTokens)) {
 
@@ -266,6 +264,8 @@ public abstract class TagBasedLexerFormatter {
                             embeddingType[i] = EmbeddingType.INNER;
                         }
                     }
+                    
+                    thereAreMoreTokens &= tokenSequence.moveNext();
 
                 } while (thereAreMoreTokens);
             }
