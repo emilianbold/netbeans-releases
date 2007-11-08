@@ -436,7 +436,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             customizeButton.setText(
                     panel.getProperty(CUSTOMIZE_BUTTON_TEXT_PROPERTY));
             
-            updateSizes();
+            updateSizes();           
             
             super.initialize();
         }
@@ -522,7 +522,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             textScrollPane.setBackground(Color.WHITE);
             
             // scrollPane ////////////////////////////////////////////////////
-            scrollPane = new NbiScrollPane(textScrollPane);
+            scrollPane = new NbiScrollPane(textScrollPane);    
             scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);                        
             scrollPane.setViewportBorder(new EmptyBorder(new Insets(0, 0, 0, 0)));     
             scrollPane.setBorder(new EmptyBorder(new Insets(0, 0, 0, 0)));
@@ -571,7 +571,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,        // anchor
                     GridBagConstraints.HORIZONTAL,          // fill
-                    new Insets(11, 11, 11, 11),        // padding
+                    new Insets(10, 11, 11, 11),        // padding
                     0, 0));                           // padx, pady - ???
             NbiTextPane separatorPane =  new NbiTextPane();
             BundleType type = BundleType.getType(
@@ -583,7 +583,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                         1.0, 10.0,                         // weight-x, weight-y
                         GridBagConstraints.LINE_START,     // anchor
                         GridBagConstraints.BOTH,           // fill
-                        new Insets(0, 11, 11, 11),            // padding
+                        new Insets(0, 11, 0, 11),            // padding
                         0, 0));                            // padx, pady - ???
             }else {
                 for (RegistryNode node: registryNodes) {
@@ -658,16 +658,16 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                         GridBagConstraints.BOTH,             // fill
                         new Insets(0, 0, 0, 0),              // padding
                         0, 0));                              // padx, pady - ???
-            }
+            }           
             add(customizeButton, new GridBagConstraints(
                     1, dy,                            // x, y
                     1, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.NONE,          // fill
-                    new Insets(7, 11, 11, 0),         // padding
+                    new Insets(10, 11, 0, 0),         // padding
                     0, 0));                           // padx, pady - ???
-            separatorPane =  new NbiTextPane();
+            separatorPane =  new NbiTextPane();        
             add(separatorPane , new GridBagConstraints(
                     2, dy,                            // x, y
                     1, 1,                             // width, height
@@ -675,7 +675,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     GridBagConstraints.CENTER,        // anchor
                     GridBagConstraints.BOTH,          // fill
                     new Insets(0, 0, 0, 0),           // padding
-                    0, 0));                           // padx, pady - ???
+                    0, 0));                           // padx, pady - ???       
             
             add(installationSizeLabel, new GridBagConstraints(
                     3, dy,                            // x, y
@@ -683,19 +683,19 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     0.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.EAST,          // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(7, 11, 0, 11),         // padding
+                    new Insets(10, 11, 0, 11),         // padding
                     0, 0));                           // padx, pady - ???
             
             // move error label after the left welcome image
             Component errorLabel = getComponent(0);
-            getLayout().removeLayoutComponent(errorLabel);
+            getLayout().removeLayoutComponent(errorLabel);      
             add(errorLabel, new GridBagConstraints(
                     1, 99,                             // x, y
                     99, 1,                             // width, height
                     1.0, 0.0,                          // weight-x, weight-y
                     GridBagConstraints.CENTER,         // anchor
                     GridBagConstraints.HORIZONTAL,     // fill
-                    new Insets(5, 11, 5, 11),          // padding
+                    new Insets(4, 11, 4, 0),          // padding
                     0, 0));                            // ??? (padx, pady)
             
             // platform-specific tweak //////////////////////////////////////////////
