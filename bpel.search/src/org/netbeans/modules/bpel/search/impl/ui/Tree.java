@@ -293,7 +293,7 @@ final class Tree extends JTree implements SearchListener {
     item.setIcon(getPrintIcon());
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
-        PrintManager.getPrintAction().actionPerformed(event);
+        PrintManager.getPrintPreviewAction().actionPerformed(event);
       }
     });
     item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,
@@ -354,7 +354,7 @@ final class Tree extends JTree implements SearchListener {
   }
 
   private Icon getPrintIcon() {
-    Object object = PrintManager.getPrintAction().getValue(Action.SMALL_ICON);
+    Object object = PrintManager.getPrintPreviewAction().getValue(Action.SMALL_ICON);
 
     if (object instanceof Icon) {
       return (Icon) object;

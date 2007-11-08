@@ -49,11 +49,11 @@ import javax.swing.Action;
 public final class PrintManager {
 
   /**
-   * Returns Print action.
-   * @return Print action
+   * Returns Print Preview action.
+   * @return Print Preview action
    */
-  public static Action getPrintAction() {
-    return org.netbeans.modules.print.impl.action.PrintAction.INSTANCE;
+  public static Action getPrintPreviewAction() {
+    return org.netbeans.modules.print.impl.action.PrintPreviewAction.INSTANCE;
   }
 
   private PrintManager() {}

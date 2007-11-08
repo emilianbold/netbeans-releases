@@ -163,7 +163,7 @@ public final class View extends TopComponent {
     toolBar.add(button);
 
     // vlv: print
-    button = createButton(PrintManager.getPrintAction());
+    button = createButton(PrintManager.getPrintPreviewAction());
     setSize(button);
     toolBar.add(button);
 
