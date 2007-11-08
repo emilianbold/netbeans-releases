@@ -71,7 +71,7 @@ public class ComponentChooserEditor implements PropertyEditor,
     private static String defaultText = null;
 
     private FormModel formModel;
-    private List components;
+    private List<RADComponent> components;
     private Class[] beanTypes = null;
     private int componentCategory = 0;
 
@@ -279,7 +279,7 @@ public class ComponentChooserEditor implements PropertyEditor,
 
     protected List getComponents() {
         if (components == null)
-            components = new ArrayList();
+            components = new ArrayList<RADComponent>();
         else
             components.clear();
 
@@ -355,6 +355,7 @@ public class ComponentChooserEditor implements PropertyEditor,
             component = metacomp;
         }
 
+        @Override
         public boolean equals(Object obj) {
             boolean equal;
             
@@ -372,6 +373,14 @@ public class ComponentChooserEditor implements PropertyEditor,
             }
             
             return equal;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 89 * hash + (this.componentName != null ? this.componentName.hashCode() : 0);
+            hash = 89 * hash + (this.component != null ? this.component.hashCode() : 0);
+            return hash;
         }
 
         String getJavaInitString() {
@@ -393,6 +402,7 @@ public class ComponentChooserEditor implements PropertyEditor,
         }
 
         /** FormDesignValue implementation. */
+        @Override
         public String getDescription() {
             checkComponent();
             return componentName;
