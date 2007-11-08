@@ -42,7 +42,9 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.openide.util.Exceptions;
 import org.netbeans.modules.groovy.grailsproject.StreamRedirectThread;
+import org.netbeans.modules.groovy.grailsproject.StreamInputThread;
 import java.io.IOException;
+import java.io.OutputStream;
 
 public class ShellAction extends AbstractAction {
 
@@ -74,26 +76,30 @@ public class ShellAction extends AbstractAction {
 
                 io.setInputVisible(true);
                 
-                try {
-                    io.getOut().reset();
-                } catch (IOException exc) {
-                    // doesn't matter if output window can't be cleared before script starts.
-                }
+                io.select();
+                
+//                try {
+//                    io.getOut().reset();
+//                } catch (IOException exc) {
+//                    // doesn't matter if output window can't be cleared before script starts.
+//                }
 
                 GrailsServer server = GrailsServerFactory.getServer();
                 Process process = server.runCommand(prj, "shell", io, null);
 
                 assert process != null;
-
-                (new StreamRedirectThread(process.getInputStream(), io.getOut())).start();
-                (new StreamRedirectThread(process.getErrorStream(), io.getErr())).start();
+                
+                (new StreamInputThread   (process.getOutputStream(), io.getIn())).start();
+                (new StreamRedirectThread(process.getInputStream(),  io.getOut())).start();
+                // (new StreamRedirectThread(process.getErrorStream(),  io.getErr())).start();
                 
                 try {
                     int exitVal = process.waitFor();
+                    
                         } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
-                            }
-        
+                        }
+                        
             }
         }
     

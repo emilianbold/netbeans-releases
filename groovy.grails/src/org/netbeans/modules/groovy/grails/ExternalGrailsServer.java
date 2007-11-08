@@ -125,14 +125,14 @@ public class ExternalGrailsServer implements GrailsServer{
         }
         else if(cmd.startsWith("shell")) {
 
-                String tabName = "Grails Shell for: " + prj.getProjectDirectory().getName();
+                // String tabName = "Grails Shell for: " + prj.getProjectDirectory().getName();
                 
                 ExecutionEngine engine = ExecutionEngine.getDefault();
                 
                 String cwdName = File.separator + prj.getProjectDirectory().getPath();
                 
                 gsr = new GrailsServerRunnable(outputReady, cwdName, cmd);
-                ExecutorTask exTask = engine.execute(tabName, gsr, io);
+                new Thread(gsr).start();
 
                 try {
                     outputReady.await();
@@ -140,16 +140,7 @@ public class ExternalGrailsServer implements GrailsServer{
                             Exceptions.printStackTrace(ex);
                             }
 
-//                GrailsServerState serverState = prj.getLookup().lookup(GrailsServerState.class);
-//
-//                if (serverState != null) {
-//                    serverState.setRunning(true);
-//                    serverState.setExTask(exTask);
-//                    exTask.addTaskListener(serverState);
-//                    }
-//                else {
-//                    LOG.log(Level.WARNING, "Could not get serverState through lookup");
-//                    }
+
         }
         
         return gsr.getProcess();
