@@ -56,6 +56,7 @@ public class FormEditorModule extends ModuleInstall {
     private static final String BEANINFO_PATH_AWT = "org.netbeans.modules.form.beaninfo.awt"; // NOI18N
     private static final String BEANINFO_PATH_SWING = "org.netbeans.modules.form.beaninfo.swing"; // NOI18N
 
+    @Override
     public void restored() {
         Beans.setDesignTime(true);
 
@@ -65,23 +66,24 @@ public class FormEditorModule extends ModuleInstall {
 
         // Add beaninfo search path.
         String[] sp = Introspector.getBeanInfoSearchPath();
-        List paths = new ArrayList(Arrays.asList(sp));
+        List<String> paths = new ArrayList<String>(Arrays.asList(sp));
         if (!paths.contains(BEANINFO_PATH_AWT)) {
             paths.add(BEANINFO_PATH_AWT);
         }
         if (!paths.contains(BEANINFO_PATH_SWING)) {
             paths.add(BEANINFO_PATH_SWING);
         }
-        Introspector.setBeanInfoSearchPath((String[])paths.toArray(new String[paths.size()]));
+        Introspector.setBeanInfoSearchPath(paths.toArray(new String[paths.size()]));
     }
 
+    @Override
     public void uninstalled() {
         // Remove beaninfo search path.
         String[] sp = Introspector.getBeanInfoSearchPath();
-        List paths = new ArrayList(Arrays.asList(sp));
+        List<String> paths = new ArrayList<String>(Arrays.asList(sp));
         paths.remove(BEANINFO_PATH_AWT);
         paths.remove(BEANINFO_PATH_SWING);
-        Introspector.setBeanInfoSearchPath((String[])paths.toArray(new String[paths.size()]));
+        Introspector.setBeanInfoSearchPath(paths.toArray(new String[paths.size()]));
     }
 
 }
