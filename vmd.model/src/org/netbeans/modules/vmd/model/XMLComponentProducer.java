@@ -136,8 +136,12 @@ public final class XMLComponentProducer extends ComponentProducer {
                 }
             }
         });
-
-        return producers[0] == null || producers[0].checkValidity (document, useCachedValue);
+        
+        if (producers[0] == null) {
+            return true;
+        }
+        
+        return producers[0].checkValidity (document, useCachedValue);
     }
 
     private boolean checkValidityByDeserializers (DesignDocument document) {
