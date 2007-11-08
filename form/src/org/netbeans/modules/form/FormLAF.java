@@ -154,7 +154,7 @@ public class FormLAF {
     private static void invalidateXPStyle() {
         try {
             Class xpStyle = Class.forName("com.sun.java.swing.plaf.windows.XPStyle"); // NOI18N
-            java.lang.reflect.Method method = xpStyle.getDeclaredMethod("invalidateStyle", null); // NOI18N
+            java.lang.reflect.Method method = xpStyle.getDeclaredMethod("invalidateStyle", (Class[])null); // NOI18N
             method.setAccessible(true);
             method.invoke(null);
         } catch (Exception ex) {
@@ -344,7 +344,7 @@ public class FormLAF {
             Class clazz = Class.forName(layoutStyleClass);
             java.lang.reflect.Constructor constr = clazz.getDeclaredConstructor(new Class[0]);
             constr.setAccessible(true);
-            layoutStyle = (LayoutStyle)constr.newInstance(null);
+            layoutStyle = (LayoutStyle)constr.newInstance((Object[])null);
         } catch (Exception ex) {
             Logger.getLogger(FormLAF.class.getName()).log(Level.INFO, ex.getMessage(), ex);
         }
