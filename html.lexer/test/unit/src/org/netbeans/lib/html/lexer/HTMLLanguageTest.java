@@ -76,7 +76,7 @@ public class HTMLLanguageTest extends TestCase {
         // Check token categories
         Set testTids = language.tokenCategories();
         Collection tids = Arrays.asList(new String[] {
-            "text", "script", "ws", "error", "tag", "tag", "argument",
+            "text", "script", "style", "ws", "error", "tag", "tag", "argument",
             "operator", "value", "block-comment", "sgml-comment", "sgml-declaration", 
             "character", "text", "tag", "tag"
         });
