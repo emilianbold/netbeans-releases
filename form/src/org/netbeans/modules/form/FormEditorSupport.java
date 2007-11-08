@@ -157,9 +157,9 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     private FormEditor formEditor;
     
     /** Set of opened FormEditorSupport instances (java or form opened) */
-    private static Set opened = Collections.synchronizedSet(new HashSet());
+    private static Set<FormEditorSupport> opened = Collections.synchronizedSet(new HashSet<FormEditorSupport>());
     
-    private static Map fsToStatusListener = new HashMap();
+    private static Map<FileSystem,FileStatusListener> fsToStatusListener = new HashMap<FileSystem,FileStatusListener>();
     
     // --------------
     // constructor
@@ -177,6 +177,8 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     // opening & saving interface methods
     
     /** Main entry method. Called by OpenCookie implementation - opens the form.
+     * 
+     * @param forceFormElement determines whether we should force switch to form element.
      * @see OpenCookie#open
      */
     public void openFormEditor(boolean forceFormElement) {
@@ -195,13 +197,13 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     }
     
     private void addStatusListener(FileSystem fs) {
-        FileStatusListener fsl = (FileStatusListener)fsToStatusListener.get(fs);
+        FileStatusListener fsl = fsToStatusListener.get(fs);
         if (fsl == null) {
             fsl = new FileStatusListener() {
                 public void annotationChanged(FileStatusEvent ev) {
-                    Iterator iter = opened.iterator();
+                    Iterator<FormEditorSupport> iter = opened.iterator();
                     while (iter.hasNext()) {
-                        FormEditorSupport fes = (FormEditorSupport)iter.next();
+                        FormEditorSupport fes = iter.next();
                         if (ev.hasChanged(fes.getFormDataObject().getPrimaryFile())
                                 || ev.hasChanged(fes.getFormDataObject().getFormFile())) {
                             fes.updateMVTCDisplayName();
@@ -233,6 +235,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     /** Overriden from JavaEditor - opens editor and ensures it is selected
      * in the multiview.
      */
+    @Override
     public void open() {
         if (EventQueue.isDispatchThread()) {
             openInAWT();
@@ -261,6 +264,8 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     
     /** Overriden from JavaEditor - opens editor at given position and ensures
      * it is selected in the multiview.
+     * 
+     * @param pos position
      */
     public void openAt(PositionRef pos) {
         elementToOpen = JAVA_ELEMENT_INDEX;
@@ -280,7 +285,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
      * source editor and designer, does not report errors and does not throw
      * any exceptions. Runs in AWT event dispatch thread, returns after the
      * form is loaded (even if not called from AWT thread).
-     * & @return whether the form is loaded (true also if it already was)
+     * @return whether the form is loaded (true also if it already was)
      */
     public boolean loadForm() {
         // Ensure initialization of the formEditor
@@ -298,6 +303,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     /** Save the document in this thread and start reparsing it.
      * @exception IOException on I/O error
      */
+    @Override
     public void saveDocument() throws IOException {
         IOException ioEx = null;
         try {
@@ -373,6 +379,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         }
     }
     
+    @Override
     protected UndoRedo.Manager createUndoRedoManager() {
         editorUndoManager = super.createUndoRedoManager();
         return editorUndoManager;
@@ -399,6 +406,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             reloadDocument();
     }
     
+    @Override
     protected org.openide.util.Task reloadDocument() {
         if (multiviewTC == null)
             return super.reloadDocument();
@@ -494,6 +502,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         }
     }
 
+    @Override
     protected void notifyClosed() {
         opened.remove(this);
         if (opened.isEmpty()) {
@@ -538,6 +547,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             notifyClosed();
     }
     
+    @Override
     protected boolean notifyModified () {
         boolean alreadyModified = isModified();
         boolean retVal = super.notifyModified();
@@ -583,6 +593,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         return retVal;
     }
     
+    @Override
     protected void notifyUnmodified () {
         super.notifyUnmodified();
          // java source modification
@@ -664,6 +675,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     // -------
     // window system & multiview
     
+    @Override
     protected CloneableEditorSupport.Pane createPane() {
         if (!formDataObject.isValid()) {
             return super.createPane(); // Issue 110249
@@ -1148,10 +1160,12 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             return this;
         }
         
+        @Override
         public void componentDeactivated() {
             super.componentDeactivated();
         }
         
+        @Override
         public void componentActivated() {
             super.componentActivated();
         }
@@ -1168,6 +1182,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             }
         }
         
+        @Override
         public void requestVisible() {
             if (multiViewObserver != null)
                 multiViewObserver.requestVisible();
@@ -1175,6 +1190,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
                 super.requestVisible();
         }
         
+        @Override
         public void requestActive() {
             if (multiViewObserver != null)
                 multiViewObserver.requestActive();
@@ -1182,12 +1198,14 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
                 super.requestActive();
         }
         
+        @Override
         public void componentClosed() {
             // Issue 52286 & 55818
             super.canClose(null, true);
             super.componentClosed();
         }
         
+        @Override
         public void componentShowing() {
             super.componentShowing();
             DataObject dob = ((DataEditorSupport)cloneableEditorSupport()).getDataObject();
@@ -1206,20 +1224,23 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             
         }
         
+        @Override
         public void componentHidden() {
             super.componentHidden();
         }
         
+        @Override
         public void componentOpened() {
             super.componentOpened();
             DataObject dob = ((DataEditorSupport)cloneableEditorSupport()).getDataObject();
             if ((multiViewObserver != null) && !(dob instanceof FormDataObject)) {
                 multiViewObserver.getTopComponent().close(); // Issue 67879
-                EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
+                EditorCookie ec = dob.getCookie(EditorCookie.class);
                 ec.open();
             }
         }
         
+        @Override
         public void updateName() {
             super.updateName();
             if (multiViewObserver != null) {
@@ -1230,6 +1251,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             }
         }
         
+        @Override
         protected boolean closeLast() {
             return true;
         }
