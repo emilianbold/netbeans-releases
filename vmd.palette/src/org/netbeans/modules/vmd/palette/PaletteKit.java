@@ -85,7 +85,7 @@ public class PaletteKit implements Runnable, LookupListener {
     private Result<PaletteProvider> lookupResult;
     private final AtomicBoolean requiresPaletteInit = new AtomicBoolean(false);
 
-    public PaletteKit(final String projectType) {
+    PaletteKit(final String projectType) {
         this.fs = Repository.getDefault().getDefaultFileSystem();
 
         validationQueue = new LinkedList<Lookup>();
@@ -288,7 +288,16 @@ public class PaletteKit implements Runnable, LookupListener {
                         lock.releaseLock();
                     }
                 } catch (IOException e) {
-                    Debug.warning("Can't create file for palette item: " + path + ", " + producerID + ", " + producerID + "." + PaletteItemDataLoader.EXTENSION + ": " + e); // NOI18N
+                    StringBuffer str = new StringBuffer();
+                    str.append("Can't create file for palette item: "); // NOI18N
+                    str.append(path);
+                    str.append(", "); // NOI18N
+                    str.append(producerID);
+                    str.append("."); // NOI18N
+                    str.append(PaletteItemDataLoader.EXTENSION);
+                    str.append(": "); // NOI18N
+                    str.append(e);
+                    Debug.warning(str.toString());
                 }
             }
         }
