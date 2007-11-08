@@ -765,7 +765,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
             DecimalFormat format = ((JSpinner.NumberEditor) editor).getFormat();
             format.setMinimumFractionDigits(2);
             format.setMaximumFractionDigits(2);
-            currentTimeSpinner.setValue(0.0);
+            currentTimeSpinner.setValue(new Float(0.0f));
         }
         Font font = currentTimeSpinner.getFont();
         FontMetrics fm = currentTimeSpinner.getFontMetrics(font);
