@@ -72,7 +72,7 @@ public class TestData implements Serializable {
 
     public String getInstallerURL() {
         String val = System.getProperty("installer.url.prefix");
-        String prefix = (buildNumber != null) ? "http://bits.netbeans.org/netbeans/6.0/nightly/latest/bundles/netbeans-trunk-nightly-" + buildNumber : val;
+        String prefix = (buildNumber != null) ? "http://bits.netbeans.org/netbeans/6.0/nightly/latest/bundles/netbeans-6.0-" + buildNumber : val;
 
         String bundleType = getInstallerType();
         if(bundleType == null || bundleType.equals("all")) {
