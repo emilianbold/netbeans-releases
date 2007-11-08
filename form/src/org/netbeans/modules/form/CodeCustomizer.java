@@ -70,7 +70,7 @@ public class CodeCustomizer implements CustomCodeView.Listener {
     private FormModel formModel;
 
     // changed code data for components
-    private Map<RADComponent, CustomCodeData> changedDataMap = new HashMap();
+    private Map<RADComponent, CustomCodeData> changedDataMap = new HashMap<RADComponent, CustomCodeData>();
 
     private CustomCodeView codeView;
 
