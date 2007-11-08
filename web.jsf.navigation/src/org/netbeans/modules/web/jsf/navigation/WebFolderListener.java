@@ -168,7 +168,7 @@ public class WebFolderListener extends FileChangeAdapter {
                     view.resetNodeWidget(pageNode, false);
                     view.validateGraph();
                 } else if (pfc.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_PROJECT)) {
-                    Page node = pfc.createPageFlowNode(dataNode);
+                    Page node = pfc.createPage(dataNode);
                     view.createNode(node, null, null);
                     view.validateGraph();
                 }
@@ -264,7 +264,7 @@ public class WebFolderListener extends FileChangeAdapter {
             if (pfc.isPageInAnyFacesConfig(oldDisplayName)) {
                 pfc.changeToAbstractNode(oldNode, oldDisplayName);
                 if (pfc.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_PROJECT)) {
-                    Page newNode = pfc.createPageFlowNode(newNodeDelegate);
+                    Page newNode = pfc.createPage(newNodeDelegate);
                     view.createNode(newNode, null, null);
                 }
             } else {

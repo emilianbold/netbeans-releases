@@ -119,6 +119,17 @@ public class PageFlowToolbarUtilities {
     }
     private static PageFlowToolbarUtilities instance;
     private static final Map<PageFlowView, PageFlowToolbarUtilities> map = new WeakHashMap<PageFlowView, PageFlowToolbarUtilities>();
+    
+    /**
+     * Remove PageFlowView from the map in PageFlowToolbarUtilities
+     */  
+    protected static boolean removePageFlowView(PageFlowView view) {
+        if( map.containsKey(view)){
+            map.remove(view);
+            return true;
+        }
+        return false;
+    }
 
     /**
      *Accessor to get the instance. Singleton pattern

@@ -113,6 +113,8 @@ public class PageFlowTestUtility {
     }
 
     private void destroyProject() throws IOException {
+        saveFacesModel();
+        closeFacesModel(); //This gets rid of all the views.. Not sure though why closing the project does not call componentClosing.
         closeProject(project);
     }
 
@@ -151,9 +153,15 @@ public class PageFlowTestUtility {
     }
     JSFConfigEditorSupport editorSupport;
 
-    protected void closeFacesModel() {
+    protected void closeFacesModel() throws IOException {
         if (editorSupport != null) {
             editorSupport.close();
+        }
+    }
+    
+    protected void saveFacesModel() throws IOException {
+        if (editorSupport != null) {
+            editorSupport.saveDocument();
         }
     }
 
@@ -219,7 +227,8 @@ public class PageFlowTestUtility {
 
     private PageFlowView initPageFlowView() {
         Set<PageFlowView> views = PageFlowToolbarUtilities.getViews();
-        assertTrue(views.size() > 0);
+        assertTrue(views.size() >0);
+        
         PageFlowView myPageFlowView = null;
         for (PageFlowView view : views) {
             myPageFlowView = view;

@@ -225,7 +225,7 @@ public class PageFlowViewTestPostPone extends NbTestCase implements TestServices
 
     }
 
-    public void testMemoryLeaksOnScene() throws InterruptedException {
+    public void testMemoryLeaksOnScene() throws InterruptedException, IOException {
         PopupMenuProvider pnp = PageFlowSceneAccessor.getPopupMenuProvider(scene);
         FreePlaceNodesLayouter fpnl = PageFlowSceneAccessor.getFreePlaceNodesLayouter(scene);
         PFObjectSceneListener pfosl = PageFlowSceneAccessor.getPfObjectSceneListener(scene);

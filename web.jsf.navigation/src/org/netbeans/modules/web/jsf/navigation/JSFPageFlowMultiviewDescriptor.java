@@ -215,8 +215,10 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
             }
 
             tc.unregstierListeners();
+            PageFlowToolbarUtilities.removePageFlowView(tc);
            // tc.clearGraph();
             tc.destroyScene();
+            toolbar = null;
             tc = null;
 
             LOG.finest("PageFlowEditor componentClosed");

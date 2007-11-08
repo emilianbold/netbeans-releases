@@ -116,6 +116,8 @@ public class PageFlowController {
             Exceptions.printStackTrace(donfe);
         }
         configModel = ConfigurationUtils.getConfigModel(configFile, true);
+        
+        assert configModel != null;
         //  Project project = FileOwnerQuery.getOwner(configFile);
         //        webFolder = project.getProjectDirectory().getFileObject(DEFAULT_DOC_BASE_FOLDER);
         webFolder = PageFlowView.getWebFolder(configFile);
@@ -144,6 +146,7 @@ public class PageFlowController {
             setShowNoWebFolderDialog(panel.getShowDialog());
         }
     }
+
 
     public void destroy() {
         webFolder = null;
@@ -398,6 +401,7 @@ public class PageFlowController {
 
     public boolean setupGraphNoSaveData() {
         LOGGER.entering(PageFlowController.class.toString(), "setupGraphNoSaveData()");
+        
         assert configModel != null;
         //        assert webFolder != null;
         assert webFiles != null;
@@ -560,7 +564,7 @@ public class PageFlowController {
      *             page. If no dataObject backing the page, call createPage(String)
      * @return page the Page that was created.
      */
-    public Page createPageFlowNode(Node node) {
+    public Page createPage(Node node) {
         Page pageNode = new Page(this, node);
         Calendar rightNow = Calendar.getInstance();
         PageFlowCreationStack.push("\n" + PageFlowCreationCount + ". " + rightNow.get(Calendar.MINUTE) + ":" + rightNow.get(Calendar.SECOND) + " -  " + pageNode);
@@ -569,7 +573,7 @@ public class PageFlowController {
     }
 
     /*
-     * Create PageFlowNode from a string with no backing page. This method
+     * Create PageFlow from a string with no backing page. This method
      * does not actually add the pages to the scene.  It just creates the
      * component.  You will need to call scene.createNode(page) if you want 
      * to add it to the scene.
@@ -586,18 +590,24 @@ public class PageFlowController {
         assert pageName.length() != 0;
         Node tmpNode = new AbstractNode(Children.LEAF);
         tmpNode.setName(pageName);
-        node = createPageFlowNode(tmpNode);
+        node = createPage(tmpNode);
         return node;
     }
     
     public java.util.Stack<String> PageFlowDestroyStack = new java.util.Stack<String>();
     private int PageFlowDestroyCount = 0;
 
-    private void destroyPageFlowNode(Page pageNode) {
-        if (pageNode != null) {
-            pageNode.destroy2();
+    /**
+     * Destroys the page in the scene (removing the page content model and
+     * the page content listeners).  This odes not actual destroy the dataobject 
+     * or the backing file object.
+     * @param page Page to be deleted.
+     */
+    private void destroyPageFlowNode(Page page) {
+        if (page != null) {
+            page.destroy2();
             Calendar rightNow = Calendar.getInstance();
-            PageFlowDestroyStack.push("\n" + PageFlowDestroyCount + ". " + rightNow.get(Calendar.MINUTE) + ":" + rightNow.get(Calendar.SECOND) + " -  " + pageNode);
+            PageFlowDestroyStack.push("\n" + PageFlowDestroyCount + ". " + rightNow.get(Calendar.MINUTE) + ":" + rightNow.get(Calendar.SECOND) + " -  " + page);
             PageFlowDestroyCount++;
         }
     }
@@ -612,7 +622,7 @@ public class PageFlowController {
                 //DISPLAYNAME:
                 String webFileName = Page.getFolderDisplayName(getWebFolder(), webFile);
                 Page node = null;
-                node = createPageFlowNode((DataObject.find(webFile)).getNodeDelegate());
+                node = createPage((DataObject.find(webFile)).getNodeDelegate());
                 view.createNode(node, null, null);
                 //Do not remove the webFile page until it has been created with a data Node.  If the dataNode throws and exception, then it can be created with an Abstract node.
                 pages.remove(webFileName);
@@ -628,7 +638,7 @@ public class PageFlowController {
             if (pageName != null) {
                 Node tmpNode = new AbstractNode(Children.LEAF);
                 tmpNode.setName(pageName);
-                Page node = createPageFlowNode(tmpNode);
+                Page node = createPage(tmpNode);
                 view.createNode(node, null, null);
             }
         }
@@ -667,26 +677,44 @@ public class PageFlowController {
                         Exceptions.printStackTrace(donfe);
                     }
                 }
-                Page node = createPageFlowNode(wrapNode);
+                Page node = createPage(wrapNode);
                 view.createNode(node, null, null);
             }
         }
     }
     private static final Logger LOGGER = Logger.getLogger(PageFlowController.class.getName());
 
-    public Page removePageName2Page(Page pageNode, boolean destroy) {
-        return removePageName2Page(pageNode.getDisplayName(), destroy);
+    /**
+     * Remove the page from the hashtable of string (or pages names ) to actual 
+     * pages.  Use permDestroy value to destroy the page in the scene completely. 
+     * @param page that you want to remove.
+     * @param permDestroy true - destroys the page in the scene (removing the 
+     *                    page content model and the page content listeners).  
+     *                    This does not actual destroy the dataobject 
+     *                    or the backing file object.
+     *                    false - if you just want to remove it from the list 
+     *                    with the associated name.
+     * @return page that was removed.
+     */
+    public Page removePageName2Page(Page page, boolean permDestroy) {
+        return removePageName2Page(page.getDisplayName(), permDestroy);
     }
 
-    public Page removePageName2Page(String displayName, boolean destroy) {
-        LOGGER.finest("PageName2Page: remove " + displayName);
+    /**
+     * Refer to removePageName2Page(Page page, boolean permDestroy) for details
+     * @param pageName the string value of the page name that you want removed.
+     * @param destroy
+     * @return
+     */
+    public Page removePageName2Page(String pageName, boolean permDestroy) {
+        LOGGER.finest("PageName2Page: remove " + pageName);
         printThreadInfo();
         synchronized (pageName2Page) {
             Page node = null;
-            WeakReference<Page> nodeRef = pageName2Page.remove(displayName);
+            WeakReference<Page> nodeRef = pageName2Page.remove(pageName);
             if (nodeRef != null) {
                 node = nodeRef.get();
-                if (destroy) {
+                if (permDestroy) {
                     destroyPageFlowNode(node);
                 }
             }
