@@ -79,6 +79,15 @@ final class NbDocsStreamHandler extends URLStreamHandler {
         }
     }
     
+    @Override
+    protected synchronized InetAddress getHostAddress(URL u) {
+        if (u.getProtocol().equals("nbdocs")) { // NOI18N
+            return null;
+        } else {
+            return super.getHostAddress(u);
+        }
+    }
+    
     /** A URL connection that reads from the docs classloader.
      */
     private static final class NbDocsURLConnection extends URLConnection {
