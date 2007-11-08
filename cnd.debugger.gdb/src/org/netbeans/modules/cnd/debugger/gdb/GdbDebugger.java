@@ -1538,13 +1538,29 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     /**
-     * Returns list of cached local variables for this debugger.
+     * Returns list of cached local variables for this debugger. This typically gets
+     * called from an evaluator thread. If we don't have the type, it should be coming
+     * on the GdbReaderRP thread so we wait for it.
      *
      * @return list of local variables
      */
     @SuppressWarnings("unchecked")
     public List<GdbVariable> getLocalVariables() {
+        assert !(Thread.currentThread().getName().equals("GdbReaderRP"));
         synchronized (localVariables) {
+            for (GdbVariable var : localVariables) {
+                if (var.getType() == null) {
+                    for (int i = 0; i < 40; i++) {
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException ex) {
+                        }
+                        if (var.getType() != null) {
+                            break;
+                        }
+                    }
+                }
+            }
             return (List<GdbVariable>) localVariables.clone();
         }
     }
