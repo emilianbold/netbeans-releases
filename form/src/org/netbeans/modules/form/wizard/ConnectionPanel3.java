@@ -94,6 +94,7 @@ class ConnectionPanel3 extends javax.swing.JPanel {
         putClientProperty("WizardPanel_contentSelectedIndex", new Integer(2)); // NOI18N
     }
 
+    @Override
     public java.awt.Dimension getPreferredSize() {
         return new java.awt.Dimension(450, 300);
     }
