@@ -173,9 +173,6 @@ public final class PersistenceManager implements PropertyChangeListener {
     private final Map<DataObject, String> dataobjectToTopComponentMap = 
             new WeakHashMap<DataObject, String>(30);
     
-    /** A set of invalid Ids */
-    private Set invalidIds = new HashSet(10);
-    
     /** A set of used TcIds. Used to clean unused settings files
      * (ie. not referenced from tcRef or tcGroup). Cleaning is performed
      * when window system is loaded. */
@@ -227,7 +224,6 @@ public final class PersistenceManager implements PropertyChangeListener {
         id2TopComponentMap.clear();
         id2TopComponentNonPersistentMap.clear();
         dataobjectToTopComponentMap.clear();
-        invalidIds = new HashSet(10);
         usedTcIds.clear();
     }
     
@@ -435,9 +431,6 @@ public final class PersistenceManager implements PropertyChangeListener {
             //First check caches
             String result = topComponent2IDMap.get(tc);
             if (result != null) {
-                if (isInvalidId(result)) {
-                    restorePair(tc, result);
-                }
                 return result;
             }
             result = topComponentNonPersistent2IDMap.get(tc);
@@ -897,44 +890,6 @@ public final class PersistenceManager implements PropertyChangeListener {
         }
         
         return srcName;
-    }
-    
-    /** Reuses existing settings files */
-    private String restorePair (TopComponent tc, String id) {
-        //System.out.println("++ PM.restorePair ENTER"
-        //+ " tc:" + tc.getName() + " id:" + id);
-        FileObject compsFO = null;
-        try {
-            compsFO = getComponentsLocalFolder();
-        } catch (IOException exc) {
-            LOG.log(Level.INFO,
-                "[PersistenceManager.restorePair]" // NOI18N
-                + " Cannot get components folder", exc); // NOI18N
-            return null;
-        }
-        FileObject fo = compsFO.getFileObject(id, "settings");
-        if (fo != null) {
-            //System.out.println("++ PM.restorePair tc:" + tc.getName()
-            //+ " id:" + id);
-            //Thread.dumpStack();
-            synchronized(LOCK_IDS) {
-                id2TopComponentMap.put(id, new PersistenceManager.TopComponentReference(tc,id));
-                validateId(id);
-            }
-            return id;
-        } else {
-            return null;
-        }
-    }
-    
-    private boolean isInvalidId (String id) {
-        return invalidIds.contains(id);
-    }
-    
-    private void validateId (String id) {
-        if (invalidIds != null) {
-            invalidIds.remove(id);
-        }
     }
     
     /** map of exceptions to names of badly persistenced top components,
