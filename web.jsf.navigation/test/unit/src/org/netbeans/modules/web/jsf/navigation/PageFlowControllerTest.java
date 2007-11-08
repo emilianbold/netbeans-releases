@@ -586,11 +586,11 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         assertNotNull( controller.getPageName2Page(oldName)); //Confirming it wasn't removed.
     }
     
-         /**
+    /**
      * Test of replacePageName2Page method, of class PageFlowController.
      */
     public void testReplacePageName2PageEmptyString() {
-        System.out.println("replacePageName2Page when null page");
+        System.out.println("replacePageName2Page when new name or old names are empty string.");
         
         String oldName = "welcomeJSF.jsp";
         String newName = "welcomeJSF2.jsp";
@@ -611,6 +611,33 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         }
         assertTrue(assertionCaught);
         assertNotNull( controller.getPageName2Page(oldName)); //Confirming it wasn't removed.
+    }
+    
+        /**
+     * Test of replacePageName2Page method, of class PageFlowController.
+     */
+    public void testReplacePageName2PageWhenOldPageNonExsitent() {
+        System.out.println("replacePageName2Page when oldpage name did not exist.");
+        
+        
+        String oldName = "welcomeJSF.jsp";
+        String nonExistantName = "welcomeJSF2.jsp";
+        String newName = "welcomeJSF3.jsp";
+        
+        Page page = controller.getPageName2Page(oldName);
+        assertNotNull(page);
+        
+        Page pageNon = controller.getPageName2Page(newName);
+        Page pageNon2 = controller.getPageName2Page(nonExistantName);
+        assertNull(pageNon);
+        assertNull(pageNon2);
+        
+        boolean result = controller.replacePageName2Page(page, newName, nonExistantName);
+        assertFalse(result);
+        Page page2 = controller.getPageName2Page(newName);
+        Page page3 = controller.getPageName2Page(oldName);
+        assertNull(page2);
+        assertNotNull(page3);
     }
     
    

@@ -116,7 +116,7 @@ public class PageFlowController {
             Exceptions.printStackTrace(donfe);
         }
         configModel = ConfigurationUtils.getConfigModel(configFile, true);
-        
+
         assert configModel != null;
         //  Project project = FileOwnerQuery.getOwner(configFile);
         //        webFolder = project.getProjectDirectory().getFileObject(DEFAULT_DOC_BASE_FOLDER);
@@ -146,7 +146,6 @@ public class PageFlowController {
             setShowNoWebFolderDialog(panel.getShowDialog());
         }
     }
-
 
     public void destroy() {
         webFolder = null;
@@ -236,9 +235,9 @@ public class PageFlowController {
      * @return
      */
     public NavigationCase createLink(Page source, Page target, Pin pinNode) {
-        if ( source == null ){
+        if (source == null) {
             throw new NullPointerException("Source page should not be null.");
-        } else if ( target == null ){
+        } else if (target == null) {
             throw new NullPointerException("Target page should not be null");
         }
 
@@ -401,7 +400,7 @@ public class PageFlowController {
 
     public boolean setupGraphNoSaveData() {
         LOGGER.entering(PageFlowController.class.toString(), "setupGraphNoSaveData()");
-        
+
         assert configModel != null;
         //        assert webFolder != null;
         assert webFiles != null;
@@ -593,7 +592,6 @@ public class PageFlowController {
         node = createPage(tmpNode);
         return node;
     }
-    
     public java.util.Stack<String> PageFlowDestroyStack = new java.util.Stack<String>();
     private int PageFlowDestroyCount = 0;
 
@@ -737,23 +735,23 @@ public class PageFlowController {
         LOGGER.finest("PageName2Page: replace " + oldName + " to " + newName);
         assert (newName.length() > 0);
         assert (oldName.length() > 0);
-        
-        if( page == null ) {
+
+        if (page == null) {
             throw new NullPointerException("Page can not be null.");
         }
-        
+
         printThreadInfo();
         synchronized (pageName2Page) {
             WeakReference<Page> page2Ref = pageName2Page.remove(oldName);
             if (page2Ref != null) {
-                Page page2 = page2Ref.get();
-                
-                if (page == null || page2 == null) {
-                    System.err.println("PageFlowEditor: Trying to add Page [" + oldName + "] but it is null.");
+                Page pageFound = page2Ref.get();
+
+                if (pageFound != null) {
+                    LOGGER.finest("Trying to replace page in map, but page not found:" + page);
                 }
                 pageName2Page.put(newName, new WeakReference<Page>(page));
                 return true;
-            } 
+            }
             return false;
         }
     }
