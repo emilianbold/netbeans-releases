@@ -64,7 +64,7 @@ public interface BeanPropertyEditor {
     * the value should be available via the getValue method.     
     * An Exception should be thrown when the value cannot be set.
      
-    * @param class type to initialize the editor with
+    * @param type class type to initialize the editor with
     * @exception Exception thrown when the value cannot be set
     */
     public void intializeFromType(Class type) throws Exception;
