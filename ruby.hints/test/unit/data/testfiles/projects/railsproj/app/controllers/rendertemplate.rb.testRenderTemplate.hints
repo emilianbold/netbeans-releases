@@ -1,0 +1,3 @@
+    render_template :foo
+    ---------------
+HINT:render_template is deprecated in Rails, use render :template => ...

@@ -178,6 +178,15 @@ public class RailsDeprecations implements AstRule {
             String name = ((INameNode)node).getName();
             
             if (deprecatedMethods.containsKey(name)) {
+                // #121418: render_template is not just a deprecated Rails method,
+                // it's also an RSpec method
+                if ("render_template".equals(name)) { // NOI18N
+                    // Filter from RSpec modules
+                    if (info.getFileObject().getName().endsWith("_spec")) { // NOI18N
+                        return;
+                    }
+                }
+
                 // find_all is not only a deprecated Rails active record method,
                 // it's also a common method on Enumerable! Only warn about
                 // this when you're calling it as a static method!

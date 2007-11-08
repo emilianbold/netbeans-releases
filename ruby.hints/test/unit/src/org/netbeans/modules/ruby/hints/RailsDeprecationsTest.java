@@ -57,4 +57,13 @@ public class RailsDeprecationsTest extends HintTestBase {
         // Shouldn't mistake Enumerations find_all methods for ActiveRecord ones
         findHints(this, new RailsDeprecations(), "testfiles/projects/railsproj/app/controllers/findall.rb", null);
     }
+
+    public void testRenderTemplate() throws Exception {
+        // Should identify render_template in non spec files
+        findHints(this, new RailsDeprecations(), "testfiles/projects/railsproj/app/controllers/rendertemplate.rb", null);
+    }
+    public void testRSpec() throws Exception {
+        // Shouldn't identify render_template in specs
+        findHints(this, new RailsDeprecations(), "testfiles/projects/railsproj/app/controllers/rendertemplate_spec.rb", null);
+    }
 }
