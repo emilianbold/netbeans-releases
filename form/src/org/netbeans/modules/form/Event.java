@@ -59,7 +59,7 @@ public class Event {
     private EventSetDescriptor eventSetDescriptor;
     private Method listenerMethod;
     private boolean inCEDL; // CEDL - common event dispatching listener
-    private List eventHandlers;
+    private List<String> eventHandlers;
 
     Event(RADComponent component,
           EventSetDescriptor eventSetDescriptor,
@@ -122,7 +122,7 @@ public class Event {
 
     boolean addEventHandler(String handlerName) {
         if (eventHandlers == null)
-            eventHandlers = new ArrayList(1);
+            eventHandlers = new ArrayList<String>(1);
         else if (eventHandlers.contains(handlerName))
             return false;
 
