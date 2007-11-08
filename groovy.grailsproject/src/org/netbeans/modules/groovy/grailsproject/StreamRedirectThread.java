@@ -47,6 +47,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import org.openide.util.Exceptions;
 import org.openide.windows.OutputWriter;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /** 
  * This class is a thread used for listening a redirecting
@@ -69,10 +71,19 @@ public class StreamRedirectThread extends Thread {
      * @param dataObject DataObject which is executed 
      * @param is Input stream where to read
      * @param ow OutputWriter of NetBeans' InputOutput - where to write
+     * 
+     * 
      */
+    private  final Logger LOG = Logger.getLogger(StreamRedirectThread.class.getName());
+    
+    
     public StreamRedirectThread(InputStream is, OutputWriter ow) {
+        
+        
         this.is = is;
         this.ow = ow;
+        
+        
     }
     
     /** Starts this thread.
@@ -81,9 +92,18 @@ public class StreamRedirectThread extends Thread {
     public void run() {
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            String line=null;
-            while ( (line = br.readLine()) != null) {
-                ow.println(line);
+           
+            int input;
+            while ( (input = br.read()) != -1) {
+                // LOG.log(Level.WARNING, "Output: " + input);
+                
+                if (input == 10) {
+                    ow.print("\n");
+                    }
+                else {
+                    ow.write(input);
+                    }
+                
                 }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);

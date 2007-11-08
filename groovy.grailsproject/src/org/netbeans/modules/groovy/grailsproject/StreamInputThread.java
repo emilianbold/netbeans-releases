@@ -44,8 +44,11 @@ package org.netbeans.modules.groovy.grailsproject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import org.openide.util.Exceptions;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /** 
  * This class is a thread used for listening a redirecting
@@ -69,6 +72,9 @@ public class StreamInputThread extends Thread {
      * @param is Input stream where to read
      * @param ow OutputWriter of NetBeans' InputOutput - where to write
      */
+    
+    private  final Logger LOG = Logger.getLogger(StreamInputThread.class.getName());
+    
     public StreamInputThread(OutputStream os, Reader rd) {
         this.os = os;
         this.rd = rd;
@@ -81,10 +87,19 @@ public class StreamInputThread extends Thread {
         try {
             
             BufferedReader br = new BufferedReader(rd);
+            OutputStreamWriter outw = new OutputStreamWriter(os);
             
             int b;
-            while ( (b = br.read()) != -1) {
-                os.write(b);
+            String line; 
+            
+            while ( (line = br.readLine()) != null) {
+                
+                // LOG.log(Level.WARNING, "Input: " + line);
+
+                outw.write(line);
+                outw.write("\n");
+                outw.flush();
+                
                 }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
