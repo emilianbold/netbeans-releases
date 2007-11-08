@@ -53,7 +53,6 @@ import java.beans.*;
 
 import org.jdesktop.layout.Baseline;
 import org.jdesktop.layout.LayoutStyle;
-import org.netbeans.api.project.ProjectUtils;
 
 import org.netbeans.core.spi.multiview.*;
 import org.netbeans.modules.form.menu.MenuEditLayer;
@@ -494,6 +493,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     /** Tests whether top designed container is some parent of given component
      * (whether the component is in the tree under top designed container).
+     * 
+     * @param metacomp component.
+     * @return <code>true</code> if the component is in designer,
+     * returns <code>false</code> otherwise.
      */
     public boolean isInDesigner(RADVisualComponent metacomp) {
         Object comp = replicator.getClonedComponent(metacomp);
