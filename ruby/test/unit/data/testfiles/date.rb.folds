@@ -281,7 +281,7 @@
     #
     # The reverse of self.os?  See the documentation for that method for
     # more details.
-+   def self.ns? (jd, sg) not os?(jd, sg) end
+    def self.ns? (jd, sg) not os?(jd, sg) end
   
     # Convert a Civil Date to a Julian Day Number.
     # +y+, +m+, and +d+ are the year, month, and day of the
@@ -406,7 +406,7 @@
     #
     # Returns the (civil) Julian Day Number as [day_number,
     # fraction] where +fraction+ is always 1/2.
-+   def self.ajd_to_jd(ajd, of=0) clfloor(ajd + of + 1.to_r/2) end
+    def self.ajd_to_jd(ajd, of=0) clfloor(ajd + of + 1.to_r/2) end
   
     # Convert a (civil) Julian Day Number to an Astronomical Julian
     # Day Number.
@@ -417,7 +417,7 @@
     #
     # Returns the Astronomical Julian Day Number as a single
     # numeric value.
-+   def self.jd_to_ajd(jd, fr, of=0) jd + fr - of - 1.to_r/2 end
+    def self.jd_to_ajd(jd, fr, of=0) jd + fr - of - 1.to_r/2 end
   
     # Convert a fractional day +fr+ to [hours, minutes, seconds,
     # fraction_of_a_second]
@@ -436,52 +436,52 @@
   
     # Convert an Astronomical Modified Julian Day Number to an
     # Astronomical Julian Day Number.
-+   def self.amjd_to_ajd(amjd) amjd + 4800001.to_r/2 end
+    def self.amjd_to_ajd(amjd) amjd + 4800001.to_r/2 end
   
     # Convert an Astronomical Julian Day Number to an
     # Astronomical Modified Julian Day Number.
-+   def self.ajd_to_amjd(ajd) ajd - 4800001.to_r/2 end
+    def self.ajd_to_amjd(ajd) ajd - 4800001.to_r/2 end
   
     # Convert a Modified Julian Day Number to a Julian
     # Day Number.
-+   def self.mjd_to_jd(mjd) mjd + 2400001 end
+    def self.mjd_to_jd(mjd) mjd + 2400001 end
   
     # Convert a Julian Day Number to a Modified Julian Day
     # Number.
-+   def self.jd_to_mjd(jd) jd - 2400001 end
+    def self.jd_to_mjd(jd) jd - 2400001 end
   
     # Convert a count of the number of days since the adoption
     # of the Gregorian Calendar (in Italy) to a Julian Day Number.
-+   def self.ld_to_jd(ld) ld + 2299160 end
+    def self.ld_to_jd(ld) ld + 2299160 end
   
     # Convert a Julian Day Number to the number of days since
     # the adoption of the Gregorian Calendar (in Italy).
-+   def self.jd_to_ld(jd) jd - 2299160 end
+    def self.jd_to_ld(jd) jd - 2299160 end
   
     # Convert a Julian Day Number to the day of the week.
     #
     # Sunday is day-of-week 0; Saturday is day-of-week 6.
-+   def self.jd_to_wday(jd) (jd + 1) % 7 end
+    def self.jd_to_wday(jd) (jd + 1) % 7 end
   
     # Is a year a leap year in the Julian calendar?
     #
     # All years divisible by 4 are leap years in the Julian calendar.
-+   def self.julian_leap? (y) y % 4 == 0 end
+    def self.julian_leap? (y) y % 4 == 0 end
   
     # Is a year a leap year in the Gregorian calendar?
     #
     # All years divisible by 4 are leap years in the Gregorian calendar,
     # except for years divisible by 100 and not by 400.
-+   def self.gregorian_leap? (y) y % 4 == 0 and y % 100 != 0 or y % 400 == 0 end
+    def self.gregorian_leap? (y) y % 4 == 0 and y % 100 != 0 or y % 400 == 0 end
   
-+   class << self; alias_method :leap?, :gregorian_leap? end
-+   class << self; alias_method :new0, :new end
+    class << self; alias_method :leap?, :gregorian_leap? end
+    class << self; alias_method :new0, :new end
   
     # Is +jd+ a valid Julian Day Number?
     #
     # If it is, returns it.  In fact, any value is treated as a valid
     # Julian Day Number.
-+   def self.valid_jd? (jd, sg=ITALY) jd end
+    def self.valid_jd? (jd, sg=ITALY) jd end
   
     # Create a new Date object from a Julian Day Number.
     #
@@ -567,7 +567,7 @@
 |     jd
 -   end
   
-+   class << self; alias_method :valid_date?, :valid_civil? end
+    class << self; alias_method :valid_date?, :valid_civil? end
   
     # Create a new Date object for the Civil Date specified by
     # year +y+, month +m+, and day-of-month +d+.
@@ -589,7 +589,7 @@
 |     new0(jd_to_ajd(jd, 0, 0), 0, sg)
 -   end
   
-+   class << self; alias_method :new, :civil end
+    class << self; alias_method :new, :civil end
   
     # Do year +y+, week-of-year +w+, and day-of-week +d+ make a
     # valid Commercial Date?  Returns the corresponding Julian
@@ -742,109 +742,109 @@
     #
     # Using one of the factory methods such as Date::civil is
     # generally easier and safer.
-+   def initialize(ajd=0, of=0, sg=ITALY) @ajd, @of, @sg = ajd, of, sg end
+    def initialize(ajd=0, of=0, sg=ITALY) @ajd, @of, @sg = ajd, of, sg end
   
     # Get the date as an Astronomical Julian Day Number.
-+   def ajd() @ajd end
+    def ajd() @ajd end
   
     # Get the date as an Astronomical Modified Julian Day Number.
-+   def amjd() self.class.ajd_to_amjd(@ajd) end
+    def amjd() self.class.ajd_to_amjd(@ajd) end
   
     once :amjd
   
     # Get the date as a Julian Day Number.
-+   def jd() self.class.ajd_to_jd(@ajd, @of)[0] end
+    def jd() self.class.ajd_to_jd(@ajd, @of)[0] end
   
     # Get any fractional day part of the date.
-+   def day_fraction() self.class.ajd_to_jd(@ajd, @of)[1] end
+    def day_fraction() self.class.ajd_to_jd(@ajd, @of)[1] end
   
     # Get the date as a Modified Julian Day Number.
-+   def mjd() self.class.jd_to_mjd(jd) end
+    def mjd() self.class.jd_to_mjd(jd) end
   
     # Get the date as the number of days since the Day of Calendar
     # Reform (in Italy and the Catholic countries).
-+   def ld() self.class.jd_to_ld(jd) end
+    def ld() self.class.jd_to_ld(jd) end
   
     once :jd, :day_fraction, :mjd, :ld
   
     # Get the date as a Civil Date, [year, month, day_of_month]
-+   def civil() self.class.jd_to_civil(jd, @sg) end
+    def civil() self.class.jd_to_civil(jd, @sg) end
   
     # Get the date as an Ordinal Date, [year, day_of_year]
-+   def ordinal() self.class.jd_to_ordinal(jd, @sg) end
+    def ordinal() self.class.jd_to_ordinal(jd, @sg) end
   
     # Get the date as a Commercial Date, [year, week_of_year, day_of_week]
-+   def commercial() self.class.jd_to_commercial(jd, @sg) end
+    def commercial() self.class.jd_to_commercial(jd, @sg) end
   
     once :civil, :ordinal, :commercial
     private :civil, :ordinal, :commercial
   
     # Get the year of this date.
-+   def year() civil[0] end
+    def year() civil[0] end
   
     # Get the day-of-the-year of this date.
     #
     # January 1 is day-of-the-year 1
-+   def yday() ordinal[1] end
+    def yday() ordinal[1] end
   
     # Get the month of this date.
     #
     # January is month 1.
-+   def mon() civil[1] end
+    def mon() civil[1] end
   
     # Get the day-of-the-month of this date.
-+   def mday() civil[2] end
+    def mday() civil[2] end
   
     alias_method :month, :mon
     alias_method :day, :mday
   
     # Get the time of this date as [hours, minutes, seconds,
     # fraction_of_a_second]
-+   def time() self.class.day_fraction_to_time(day_fraction) end
+    def time() self.class.day_fraction_to_time(day_fraction) end
   
     once :time
     private :time
   
     # Get the hour of this date.
-+   def hour() time[0] end
+    def hour() time[0] end
   
     # Get the minute of this date.
-+   def min() time[1] end
+    def min() time[1] end
   
     # Get the second of this date.
-+   def sec() time[2] end
+    def sec() time[2] end
   
     # Get the fraction-of-a-second of this date.
-+   def sec_fraction() time[3] end
+    def sec_fraction() time[3] end
   
     private :hour, :min, :sec, :sec_fraction
   
-+   def zone() strftime('%Z') end
+    def zone() strftime('%Z') end
   
     private :zone
   
     # Get the commercial year of this date.  See *Commercial* *Date*
     # in the introduction for how this differs from the normal year.
-+   def cwyear() commercial[0] end
+    def cwyear() commercial[0] end
   
     # Get the commercial week of the year of this date.
-+   def cweek() commercial[1] end
+    def cweek() commercial[1] end
   
     # Get the commercial day of the week of this date.  Monday is
     # commercial day-of-week 1; Sunday is commercial day-of-week 7.
-+   def cwday() commercial[2] end
+    def cwday() commercial[2] end
   
     # Get the week day of this date.  Sunday is day-of-week 0;
     # Saturday is day-of-week 6.
-+   def wday() self.class.jd_to_wday(jd) end
+    def wday() self.class.jd_to_wday(jd) end
   
     once :wday
   
     # Is the current date old-style (Julian Calendar)?
-+   def os? () self.class.os?(jd, @sg) end
+    def os? () self.class.os?(jd, @sg) end
   
     # Is the current date new-style (Gregorian Calendar)?
-+   def ns? () self.class.ns?(jd, @sg) end
+    def ns? () self.class.ns?(jd, @sg) end
   
     once :os?, :ns?
   
@@ -857,29 +857,29 @@
     once :leap?
   
     # When is the Day of Calendar Reform for this Date object?
-+   def start() @sg end
+    def start() @sg end
   
     # Create a copy of this Date object using a new Day of Calendar Reform.
-+   def new_start(sg=self.class::ITALY) self.class.new0(@ajd, @of, sg) end
+    def new_start(sg=self.class::ITALY) self.class.new0(@ajd, @of, sg) end
   
     # Create a copy of this Date object that uses the Italian/Catholic
     # Day of Calendar Reform.
-+   def italy() new_start(self.class::ITALY) end
+    def italy() new_start(self.class::ITALY) end
   
     # Create a copy of this Date object that uses the English/Colonial
     # Day of Calendar Reform.
-+   def england() new_start(self.class::ENGLAND) end
+    def england() new_start(self.class::ENGLAND) end
   
     # Create a copy of this Date object that always uses the Julian
     # Calendar.
-+   def julian() new_start(self.class::JULIAN) end
+    def julian() new_start(self.class::JULIAN) end
   
     # Create a copy of this Date object that always uses the Gregorian
     # Calendar.
-+   def gregorian() new_start(self.class::GREGORIAN) end
+    def gregorian() new_start(self.class::GREGORIAN) end
   
-+   def offset() @of end
-+   def new_offset(of=0) self.class.new0(@ajd, of, @sg) end
+    def offset() @of end
+    def new_offset(of=0) self.class.new0(@ajd, of, @sg) end
   
     private :offset, :new_offset
   
@@ -968,7 +968,7 @@
     # If the day-of-the-month of the current Date is greater
     # than the last day of the target month, the day-of-the-month
     # of the returned Date will be the last day of the target month.
-+   def << (n) self >> -n end
+    def << (n) self >> -n end
   
     # Step the current date forward +step+ days at a
     # time (or backward, if +step+ is negative) until
@@ -997,28 +997,28 @@
 -   end
   
     # Return a new Date one day after this one.
-+   def succ() self + 1 end
+    def succ() self + 1 end
   
     alias_method :next, :succ
   
     # Is this Date equal to +other+?
     #
     # +other+ must both be a Date object, and represent the same date.
-+   def eql? (other) Date === other and self == other end
+    def eql? (other) Date === other and self == other end
   
     # Calculate a hash value for this date.
-+   def hash() @ajd.hash end
+    def hash() @ajd.hash end
   
     # Return internal object state as a programmer-readable string.
-+   def inspect() format('#<%s: %s,%s,%s>', self.class, @ajd, @of, @sg) end
+    def inspect() format('#<%s: %s,%s,%s>', self.class, @ajd, @of, @sg) end
   
     # Return the date as a human-readable string.
     #
     # The format used is YYYY-MM-DD.
-+   def to_s() strftime end
+    def to_s() strftime end
   
     # Dump to Marshal format.
-+   def _dump(limit) Marshal.dump([@ajd, @of, @sg], -1) end
+    def _dump(limit) Marshal.dump([@ajd, @of, @sg], -1) end
   
     # def self._load(str) new0(*Marshal.load(str)) end
   
@@ -1171,7 +1171,7 @@
 |     new0(jd_to_ajd(jd, fr, of), of, sg)
 -   end
   
-+   class << self; alias_method :new, :civil end
+    class << self; alias_method :new, :civil end
   
     # Create a new DateTime object corresponding to the specified
     # Commercial Date and hour +h+, minute +min+, second +s+.

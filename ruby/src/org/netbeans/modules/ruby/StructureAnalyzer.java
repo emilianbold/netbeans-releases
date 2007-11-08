@@ -323,23 +323,28 @@ public class StructureAnalyzer implements StructureScanner {
     private void addFolds(BaseDocument doc, List<? extends AstElement> elements, 
             Map<String,List<OffsetRange>> folds, List<OffsetRange> codeblocks) throws BadLocationException {
         for (AstElement element : elements) {
-            switch (element.getKind()) {
+            ElementKind kind = element.getKind();
+            switch (kind) {
+            case METHOD:
+            case CONSTRUCTOR:
             case CLASS:
             case MODULE:
                 Node node = element.getNode();
-
                 OffsetRange range = AstUtilities.getRange(node);
-                // Only make nested classes/modules foldable, similar to what the java editor is doing
-                if (range.getStart() > Utilities.getRowStart(doc, range.getStart())) {
-                    codeblocks.add(range);
+                
+                if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR ||
+                    // Only make nested classes/modules foldable, similar to what the java editor is doing
+                    (range.getStart() > Utilities.getRowStart(doc, range.getStart()))) {
+                    
+                    int start = range.getStart();
+                    // Start the fold at the END of the line
+                    start = org.netbeans.editor.Utilities.getRowEnd(doc, start);
+                    int end = range.getEnd();
+                    if (start != (-1) && end != (-1) && start < end && end <= doc.getLength()) {
+                        range = new OffsetRange(start, end);
+                        codeblocks.add(range);
+                    }
                 }
-
-                break;
-            case METHOD:
-            case CONSTRUCTOR:
-                node = element.getNode();
-                codeblocks.add(AstUtilities.getRange(node));
-
                 break;
             }
             

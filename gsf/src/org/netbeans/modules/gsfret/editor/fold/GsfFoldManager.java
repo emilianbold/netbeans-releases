@@ -426,13 +426,6 @@ public class GsfFoldManager implements FoldManager {
                 boolean collapseByDefault, FoldTemplate template) {
             if (range != OffsetRange.NONE) {
                 int start = range.getStart();
-                try {
-                    // Start the fold at the END of the line
-                    start = org.netbeans.editor.Utilities.getRowEnd(doc, start);
-                } catch (BadLocationException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                    start = range.getStart();
-                }
                 int end = range.getEnd();
                 if (start != (-1) && end != (-1) && end <= doc.getLength()) {
                     try {
