@@ -1090,7 +1090,9 @@ class WebActionProvider implements ActionProvider {
         if (fo == null)
             return false;
         
-        String className = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(), javaClass), javaClass);
+        String relPath = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(), javaClass), javaClass);
+        // #117888
+        String className = relPath.replace('/', '.').replaceFirst("\\.java$", ""); // is there a better way how to do it?
         try {
             WebApp webApp = DDProvider.getDefault().getDDRoot(fo);
             Servlet servlet = (Servlet)webApp.findBeanByName("Servlet","ServletClass",className); //NOI18N
