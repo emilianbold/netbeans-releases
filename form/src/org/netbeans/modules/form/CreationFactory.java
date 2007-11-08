@@ -59,7 +59,7 @@ import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
 public class CreationFactory {
 
-    private static HashMap registry;
+    private static Map<String,CreationDescriptor> registry;
 
     private static boolean defaultDescriptorsCreated = false;
 
@@ -128,13 +128,12 @@ public class CreationFactory {
     // registry methods
 
     public static CreationDescriptor getDescriptor(Class cls) {
-        CreationDescriptor cd = (CreationDescriptor)
-                                getRegistry().get(cls.getName());
+        CreationDescriptor cd = getRegistry().get(cls.getName());
         if (cd == null && !defaultDescriptorsCreated
                 && (cls.getName().startsWith("javax.swing.") // NOI18N
                     || cls.getName().startsWith("java.awt."))) { // NOI18N
             createDefaultDescriptors();
-            cd = (CreationDescriptor)getRegistry().get(cls.getName());
+            cd = getRegistry().get(cls.getName());
         }
         return cd;
     }
@@ -318,6 +317,10 @@ public class CreationFactory {
 
     /** Evaluates creators for array of properties.
      * (Useful for CreationDescriptor.findBestCreator(...) implementation.)
+     * 
+     * @param creators creators to consider
+     * @param properties properties to consider
+     * @param changedOnly determines whether to consider changed properties only
      * @return array of int - for each creator a count of placed properties
      */
     public static int[] evaluateCreators(CreationDescriptor.Creator[] creators,
@@ -344,6 +347,11 @@ public class CreationFactory {
 
     /** Finds the best creator upon given evaluation.
      * (Useful for CreationDescriptor.findBestCreator(...) implementation.)
+     * 
+     * @param creators creators to consider.
+     * @param properties properties to consider.
+     * @param placed for each creator a count of placed properties
+     * @param placeAllProps determines whether all properties should be placed
      * @return index of most suitable creator
      */
     public static int getBestCreator(CreationDescriptor.Creator[] creators,
@@ -448,9 +456,9 @@ public class CreationFactory {
         return nullValues1 < nullValues2 ? 1 : 2;
     }
 
-    static HashMap getRegistry() {
+    static Map<String,CreationDescriptor> getRegistry() {
         if (registry == null)
-            registry = new HashMap(40);
+            registry = new HashMap<String,CreationDescriptor>(40);
         return registry;
     }
 
@@ -748,6 +756,7 @@ public class CreationFactory {
         // created by default constructor - this causes problems
         registerDescriptor(
             new CreationDescriptor(javax.swing.JPanel.class) {
+                @Override
                 public Object createDefaultInstance() {
                     return new javax.swing.JPanel(new java.awt.FlowLayout());
                 }
