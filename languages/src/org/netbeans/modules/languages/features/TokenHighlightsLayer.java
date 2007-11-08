@@ -99,18 +99,13 @@ class TokenHighlightsLayer extends AbstractHighlightsContainer {
             attributeSet = new SimpleAttributeSet ();
             startOffset1 = endOffset1;
             TokenSequence ts = hierarchy.tokenSequence ();
-            moveNext(ts);
-            return endOffset1 > startOffset1;
-        }
-
-        private void moveNext(TokenSequence ts) {
+            
             AttributeSet as = null;
             do {
                 do {
                     ts.move (startOffset1);
-                    if (!ts.moveNext ()) {
-                        return;
-                    }
+                    if (!ts.moveNext ())
+                        return endOffset1 > startOffset1;
                     Token t = ts.token ();
                     if (ts.language () == null)
                         throw new NullPointerException ("ts.language()==null: TS " + ts + " : " + document.getProperty("mimeType"));
@@ -127,17 +122,14 @@ class TokenHighlightsLayer extends AbstractHighlightsContainer {
                     }
                     TokenSequence ts1 = ts.embedded ();
                     if (ts1 == null) break;
-                    moveNext(ts1);
-                    if (endOffset1 > startOffset1) {
-                        return;
-                    }
+                    ts = ts1;
                 } while (true);
-                if (endOffset1 > startOffset1) {
-                    return;
-                }
+                if (endOffset1 > startOffset1)
+                    return true;
                 startOffset1 = ts.offset () + ts.token ().length ();
                 endOffset1 = startOffset1;
             } while (startOffset1 < endOffset);
+            return false;
         }
 
         public int getStartOffset () {
