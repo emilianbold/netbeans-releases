@@ -75,6 +75,8 @@ public class JspLineBreakpointTest extends NbTestCase {
     private static final int LINE_NUMBER = 2;
     private static final String STRATUM = "JSP";
     
+    private final String SRC_ROOT = System.getProperty ("test.dir.src");
+    
     private JPDASupport support;
     private String testAppCLAZ = null;
     private String testAppSMAP = null;
@@ -109,7 +111,8 @@ public class JspLineBreakpointTest extends NbTestCase {
             //install SDE extension to class file
             runSDEInstaller(testAppCLAZ, testAppSMAP);
 
-            String URL = getClass().getResource("testapps/resources/included.jsp").toString();
+            //String URL = getClass().getResource("testapps/resources/included.jsp").toString();
+            String URL = "file:"+SRC_ROOT+"/org/netbeans/api/debugger/jpda/testapps/resources/included.jsp";
             LineBreakpoint lb = LineBreakpoint.create(URL, LINE_NUMBER);
             lb.setStratum(STRATUM); // NOI18N
             lb.setSourceName(SOURCE_NAME);
@@ -155,7 +158,8 @@ public class JspLineBreakpointTest extends NbTestCase {
             //install SDE extension to class file
             runSDEInstaller(testAppCLAZ, testAppSMAP);
 
-            String URL = getClass().getResource("testapps/resources/included.jsp").toString();
+            //String URL = getClass().getResource("testapps/resources/included.jsp").toString();
+            String URL = "file:"+SRC_ROOT+"/org/netbeans/api/debugger/jpda/testapps/resources/included.jsp";
             LineBreakpoint lb = LineBreakpoint.create(URL, LINE_NUMBER);
             lb.setStratum(STRATUM); // NOI18N
             lb.setSourceName(SOURCE_NAME);
