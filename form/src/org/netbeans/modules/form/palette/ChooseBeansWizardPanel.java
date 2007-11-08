@@ -67,8 +67,8 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel {
     private File[] currentFiles; // roots (typically JAR files) chosen by the user
     private Map libraryNameMap; // map from root file names to library names
 
-    private java.util.List markedBeans; // beans marked in JAR manifest
-    private java.util.List allBeans; // all bean classes under given roots
+    private java.util.List<BeanInstaller.ItemInfo> markedBeans; // beans marked in JAR manifest
+    private java.util.List<BeanInstaller.ItemInfo> allBeans; // all bean classes under given roots
     private String sourceType;
 
     private BeanSelector beanSelector;
@@ -310,6 +310,7 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel {
             return al;
         }
 
+        @Override
         public Dimension getPreferredSize() {
             return new Dimension(400, 300);
         }

@@ -154,7 +154,7 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel {
         if (project == null)
             return;
 
-        List fileList = new ArrayList();
+        List<File> fileList = new ArrayList<File>();
         AntArtifact[] artifacts =
             AntArtifactQuery.findArtifactsByType(project, "jar"); // NOI18N
 

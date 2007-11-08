@@ -44,7 +44,6 @@ package org.netbeans.modules.form.palette;
 import java.util.*;
 import java.io.*;
 import java.beans.*;
-import javax.swing.Action;
 
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
@@ -148,10 +147,12 @@ class PaletteItemDataObject extends MultiDataObject {
 
     // ------
 
+    @Override
     public Node createNodeDelegate() {
         return new ItemNode();
     }
 
+    @Override
     public Node.Cookie getCookie(Class cookieClass) {
         if (PaletteItem.class.equals(cookieClass)) {
             if (!fileLoaded)
@@ -275,6 +276,7 @@ class PaletteItemDataObject extends MultiDataObject {
         }
         
         /** Gets default display name. Overides superclass method. */
+        @Override
         protected String defaultDisplayName() {
             return NbBundle.getBundle(PaletteItemDataObject.class)
             .getString("PROP_PaletteItemLoader_Name"); // NOI18N
@@ -291,6 +293,7 @@ class PaletteItemDataObject extends MultiDataObject {
     public static final class PaletteItemDataLoaderBeanInfo extends SimpleBeanInfo {
         private static String iconURL = "org/netbeans/modules/form/resources/palette_manager.png"; // NOI18N
         
+        @Override
         public BeanInfo[] getAdditionalBeanInfo() {
             try {
                 return new BeanInfo[] { Introspector.getBeanInfo(UniFileLoader.class) };
@@ -300,6 +303,7 @@ class PaletteItemDataObject extends MultiDataObject {
             }
         }
         
+        @Override
         public java.awt.Image getIcon(final int type) {
             return Utilities.loadImage(iconURL);
         }
@@ -315,6 +319,7 @@ class PaletteItemDataObject extends MultiDataObject {
             super(PaletteItemDataObject.this, Children.LEAF);
         }
 
+        @Override
         public String getDisplayName() {
             if (!fileLoaded)
                 loadFile();
@@ -340,6 +345,7 @@ class PaletteItemDataObject extends MultiDataObject {
             return displayName;
         }
 
+        @Override
         public String getShortDescription() {
             if (!fileLoaded)
                 loadFile();
@@ -359,10 +365,12 @@ class PaletteItemDataObject extends MultiDataObject {
             return tooltip;
         }
 
+        @Override
         public boolean canRename() {
             return false;
         }
 
+        @Override
         public java.awt.Image getIcon(int type) {
             if (!fileLoaded)
                 loadFile();
@@ -393,6 +401,7 @@ class PaletteItemDataObject extends MultiDataObject {
         }
 
         // TODO properties
+        @Override
         public Node.PropertySet[] getPropertySets() {
             return NO_PROPERTIES;
         }
@@ -461,18 +470,20 @@ class PaletteItemDataObject extends MultiDataObject {
     }
     
     private class PaletteItemHandler extends DefaultHandler {
-        List cpTypeList; // list for classpath type entries
-        List cpNameList; // list for classpath root name entries
+        List<String> cpTypeList; // list for classpath type entries
+        List<String> cpNameList; // list for classpath root name entries
         String componentClassName;
         String componentExplicitType;
         
+        @Override
         public void startDocument() throws SAXException {
-            cpTypeList = new ArrayList();
-            cpNameList = new ArrayList();
+            cpTypeList = new ArrayList<String>();
+            cpNameList = new ArrayList<String>();
             componentClassName = null;
             componentExplicitType = null;
         }
-                
+
+        @Override
         public void startElement(String uri, String localName, String qName,
             Attributes attributes) throws SAXException {
             if (XML_ROOT.equals(qName)) {

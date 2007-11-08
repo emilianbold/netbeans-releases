@@ -123,8 +123,8 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
             // collect the roots making up the classpath of the libraries
             // (presumably JAR files)
 
-            Map fileMap = new HashMap(); // to avoid duplicities in case some JAR file is in more libraries
-            Map libraryMap = new HashMap(); // to remember libraries for JAR files
+            Map<String,File> fileMap = new HashMap<String,File>(); // to avoid duplicities in case some JAR file is in more libraries
+            Map<String,String> libraryMap = new HashMap<String,String>(); // to remember libraries for JAR files
 
             for (int i=0; i < libraries.length; i++) {
                 List content = libraries[i].getContent("classpath"); // NOI18N
@@ -192,7 +192,7 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
     static class LibrarySelector extends JPanel {
 
         JList list;
-        List libList;
+        List<Library> libList;
 
         LibrarySelector() {
             list = new JList();
@@ -256,7 +256,7 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
 
         void updateLibraryList() {
             Library[] libraries = LibraryManager.getDefault().getLibraries();
-            libList = new ArrayList(libraries.length);
+            libList = new ArrayList<Library>(libraries.length);
             for (int i=0; i < libraries.length; i++)
                 if (libraries[i].getType().equals("j2se")) // NOI18N
                     libList.add(libraries[i]);
@@ -267,11 +267,13 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
             });
         }
 
+        @Override
         public void addNotify() {
             super.addNotify();
             list.requestFocus();
         }
 
+        @Override
         public java.awt.Dimension getPreferredSize() {
             return new java.awt.Dimension(400, 300);
         }

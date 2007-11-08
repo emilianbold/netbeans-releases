@@ -195,7 +195,7 @@ public final class BeanInstaller {
     /** Finds available JavaBeans in given JAR files. Looks for beans
      * specified in the JAR manifest only.
      * @return list of ItemInfo */
-    static List findJavaBeansInJar(File[] jarFiles) {
+    static List<ItemInfo> findJavaBeansInJar(File[] jarFiles) {
         Map<String,ItemInfo> beans = null;
 
         for (int i=0; i < jarFiles.length; i++) {
@@ -245,7 +245,7 @@ public final class BeanInstaller {
      * This method is supposed to search in JAR files or folders containing
      * built classes.
      * @return list of ItemInfo */
-    static List findJavaBeans(File[] roots) {
+    static List<ItemInfo> findJavaBeans(File[] roots) {
         Map<String,ItemInfo> beans = new HashMap<String,ItemInfo>(100);
 
         for (int i=0; i < roots.length; i++) {
@@ -477,12 +477,11 @@ public final class BeanInstaller {
 
     // --------
 
-    static class ItemInfo implements Comparable {
+    static class ItemInfo implements Comparable<ItemInfo> {
         String classname;
         String source; // full file path or library name
 
-        public int compareTo(Object o) {
-            ItemInfo ii = (ItemInfo) o;
+        public int compareTo(ItemInfo ii) {
             int i;
             i = classname.lastIndexOf('.');
             String name1 = i >= 0 ? classname.substring(i+1) : classname;
