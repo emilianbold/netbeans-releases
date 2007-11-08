@@ -53,7 +53,6 @@ import org.openide.util.actions.SystemAction;
 /** The DataNode for Forms.
  *
  * @author Ian Formanek
- * @version 1.00, Jul 21, 1998
  */
 public class FormDataNode extends FilterNode {
     /** generated Serialized Version UID */
@@ -62,7 +61,10 @@ public class FormDataNode extends FilterNode {
     /** Icon base for form data objects. */
     private static final String FORM_ICON_BASE = "org/netbeans/modules/form/resources/form.gif"; // NOI18N
 
-    /** Constructs a new FormDataObject for specified primary file */
+    /** Constructs a new FormDataObject for specified primary file
+     * 
+     * @param fdo form data object
+     */
     public FormDataNode(FormDataObject fdo) {
         this(JavaDataSupport.createJavaNode(fdo.getPrimaryFile()));
     }
