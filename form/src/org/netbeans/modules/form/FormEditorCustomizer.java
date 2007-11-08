@@ -42,7 +42,6 @@
 package org.netbeans.modules.form;
 
 import java.lang.reflect.Modifier;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
