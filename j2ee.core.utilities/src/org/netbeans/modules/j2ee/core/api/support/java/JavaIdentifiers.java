@@ -46,11 +46,13 @@ public final class JavaIdentifiers {
      * Checks whether the given <code>packageName</code> represents a
      * valid name for a package.
      *
-     * @param packageName the package name to check.
+     * @param packageName the package name to check; must not be null.
      * @return true if the given <code>packageName</code> is a valid package
      * name, false otherwise.
      */
     public static boolean isValidPackageName(String packageName) {
+        Parameters.notNull("packageName", packageName); //NO18N
+        
         if (packageName.length() > 0 && packageName.charAt(0) == '.') {// NOI18N
             return false;
         }
