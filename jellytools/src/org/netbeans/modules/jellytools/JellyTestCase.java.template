@@ -1,5 +1,13 @@
-package Template.Classes;
- 
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.JellyTestCase;
 
@@ -18,21 +26,22 @@ import org.netbeans.jellytools.JellyTestCase;
  *    - captures screen into a PNG file in case of test failure (property jemmy.screen.capture - default true)
  *    - waits at least 1000 ms between test cases (property jelly.wait.no.event - default true)
  *
- * @author __USER__                       
- * Created on __DATE__, __TIME__
+ * @author ${user}
  */
-public class JellyTestCaseTest extends JellyTestCase {
+public class ${name} extends JellyTestCase {
     
-    /** Constructor required by JUnit */
-    public JellyTestCaseTest(String name) {
+    /** Default constructor.
+     * @param testName name of particular test case
+    */
+    public ${name}(String name) {
         super(name);
     }
 
     /** Creates suite from particular test cases. You can define order of testcases here. */
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new __NAME__("test1"));
-        suite.addTest(new __NAME__("test2"));
+        suite.addTest(new ${name}("test1"));
+        suite.addTest(new ${name}("test2"));
         return suite;
     }
     
@@ -41,7 +50,7 @@ public class JellyTestCaseTest extends JellyTestCase {
         // run whole suite
         junit.textui.TestRunner.run(suite());
         // run only selected test case
-        //junit.textui.TestRunner.run(new __NAME__("test1"));
+        //junit.textui.TestRunner.run(new ${name}("test1"));
     }
     
     /** Called before every test case. */
@@ -53,7 +62,7 @@ public class JellyTestCaseTest extends JellyTestCase {
     public void tearDown() {
     }
 
-    // Add test methods here, they have to start with 'test' name.
+    // Add test methods here, they have to start with 'test'.
     
     /** Test case 1. */
     public void test1() {

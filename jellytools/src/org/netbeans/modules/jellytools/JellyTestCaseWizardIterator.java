@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.jellytools;
 
 import com.sun.source.tree.CompilationUnitTree;
@@ -66,19 +65,17 @@ import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /** Wizard to create a new JellyTestCase based test. */
 public class JellyTestCaseWizardIterator implements TemplateWizard.Iterator {
-    
+
     /** Singleton instance of JavaWizardIterator, should it be ever needed. */
     private static JellyTestCaseWizardIterator instance;
-    
     /** Wizard instance. */
     private TemplateWizard wizard;
-    
     /** index of step Name and Location */
     private static final int INDEX_TARGET = 2;
-    
     /** name of panel Name and Location */
     private final String NAME_AND_LOCATION = NbBundle.getMessage(JellyTestCaseWizardIterator.class,
             "LBL_panel_Target");  //NOI18N
@@ -87,7 +84,7 @@ public class JellyTestCaseWizardIterator implements TemplateWizard.Iterator {
     /** panel for choosing name and target location of the test class */
     private WizardDescriptor.Panel targetPanel;
     private Project lastSelectedProject = null;
-    
+
     /** Returns JavaWizardIterator singleton instance. This method is used
      * for constructing the instance from filesystem.attributes.
      */
@@ -97,25 +94,25 @@ public class JellyTestCaseWizardIterator implements TemplateWizard.Iterator {
         }
         return instance;
     }
-    
+
     /** Not needed.  */
     public void addChangeListener(ChangeListener l) {
     }
-    
+
     /** Not needed. */
     public void removeChangeListener(ChangeListener l) {
     }
-    
+
     /** Returns true if previous panel exists. */
     public boolean hasPrevious() {
         return current > INDEX_TARGET;
     }
-    
+
     /** Returns true if next panel exists. */
     public boolean hasNext() {
         return current < INDEX_TARGET;
     }
-    
+
     /** Returns previous panel index.  */
     public void previousPanel() {
         if (!hasPrevious()) {
@@ -123,7 +120,7 @@ public class JellyTestCaseWizardIterator implements TemplateWizard.Iterator {
         }
         current--;
     }
-    
+
     /** Returns next panel index. */
     public void nextPanel() {
         if (!hasNext()) {
@@ -131,7 +128,7 @@ public class JellyTestCaseWizardIterator implements TemplateWizard.Iterator {
         }
         current++;
     }
-    
+
     /** Returns current panel. */
     public WizardDescriptor.Panel current() {
         switch (current) {
@@ -141,7 +138,7 @@ public class JellyTestCaseWizardIterator implements TemplateWizard.Iterator {
                 throw new IllegalStateException();
         }
     }
-    
+
     /** Returns Name and Location panel for selected project. */
     private WizardDescriptor.Panel getTargetPanel() {
         final Project project = Templates.getProject(wizard);
@@ -153,7 +150,7 @@ public class JellyTestCaseWizardIterator implements TemplateWizard.Iterator {
         }
         return targetPanel;
     }
-    
+
     /** Returns name of panel.  */
     public String name() {
         switch (current) {
@@ -163,34 +160,35 @@ public class JellyTestCaseWizardIterator implements TemplateWizard.Iterator {
                 throw new AssertionError(current);
         }
     }
-    
+
     /** Initialize wizard. */
     public void initialize(TemplateWizard wiz) {
         this.wizard = wiz;
         current = INDEX_TARGET;
-        
-        String [] panelNames =  new String [] {
-            NbBundle.getMessage(JellyTestCaseWizardIterator.class,"LBL_panel_chooseFileType"),
-            NAME_AND_LOCATION};
-        
-        ((javax.swing.JComponent)getTargetPanel().getComponent()).putClientProperty("WizardPanel_contentData", panelNames);
-        ((javax.swing.JComponent)getTargetPanel().getComponent()).putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0));
+
+        String[] panelNames = new String[]{
+            NbBundle.getMessage(JellyTestCaseWizardIterator.class, "LBL_panel_chooseFileType"),
+            NAME_AND_LOCATION
+        };
+
+        ((javax.swing.JComponent) getTargetPanel().getComponent()).putClientProperty("WizardPanel_contentData", panelNames);
+        ((javax.swing.JComponent) getTargetPanel().getComponent()).putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0));
     }
-    
+
     /** Uninitialize wizard. */
     public void uninitialize(TemplateWizard wiz) {
         this.wizard = null;
         targetPanel = null;
         lastSelectedProject = null;
     }
-    
+
     /** Create a new file from template. */
     public Set<DataObject> instantiate(TemplateWizard wizard) throws IOException {
         DataObject createdDO = wizard.getTemplate().createFromTemplate(wizard.getTargetFolder(), wizard.getTargetName());
         setPackageName(createdDO);
         return Collections.singleton(createdDO);
     }
-    
+
     /** For Functional Test Packages it is not correctly initialized classpath and that's why
      * package is not set by createFromTemplate method. We need to get package
      * from wizard panel and set it after DataObject from template is created.
@@ -201,9 +199,9 @@ public class JellyTestCaseWizardIterator implements TemplateWizard.Iterator {
             // find NetBeans SystemClassLoader in threads hierarchy
             ThreadGroup tg = Thread.currentThread().getThreadGroup();
             ClassLoader systemClassloader = Thread.currentThread().getContextClassLoader();
-            while(!systemClassloader.getClass().getName().endsWith("SystemClassLoader")) { // NOI18N
+            while (!systemClassloader.getClass().getName().endsWith("SystemClassLoader")) { // NOI18N
                 tg = tg.getParent();
-                if(tg == null) {
+                if (tg == null) {
                     Logger.getAnonymousLogger().log(Level.WARNING, "NetBeans SystemClassLoader not found!"); // NOI18N
                     // log and ignore
                     return;
@@ -212,39 +210,41 @@ public class JellyTestCaseWizardIterator implements TemplateWizard.Iterator {
                 tg.enumerate(list);
                 systemClassloader = list[0].getContextClassLoader();
             }
-            
+
             // get package name from panel
             Class clazz = Class.forName("org.netbeans.modules.java.project.JavaTargetChooserPanelGUI", false, systemClassloader); //NOI18N
-            Method method = clazz.getDeclaredMethod("getPackageName", (Class[])null); //NOI18N
+            Method method = clazz.getDeclaredMethod("getPackageName", (Class[]) null); //NOI18N
             method.setAccessible(true);
-            packageNameFromPanel = method.invoke(targetPanel.getComponent(), (Object[])null).toString();
+            packageNameFromPanel = method.invoke(targetPanel.getComponent(), (Object[]) null).toString();
         } catch (Exception e) {
             // log and ignore
             Logger.getAnonymousLogger().log(Level.WARNING, "Problem when using reflection to correct package name.", e); // NOI18N
             return;
         }
         // set package name
-        JavaSource js = JavaSource.forFileObject(createdDO.getPrimaryFile());
-        try {
-            js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                public void run(WorkingCopy workingCopy) throws IOException {
-                    workingCopy.toPhase(Phase.RESOLVED);
-                    CompilationUnitTree cut = workingCopy.getCompilationUnit();
-                    TreeMaker make = workingCopy.getTreeMaker();
-                    CompilationUnitTree copy = make.CompilationUnit(
-                        make.Identifier(packageNameFromPanel),
-                        cut.getImports(),
-                        cut.getTypeDecls(),
-                        cut.getSourceFile()
-                    );
-                    workingCopy.rewrite(cut, copy);
+        final JavaSource js = JavaSource.forFileObject(createdDO.getPrimaryFile());
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                        public void run(WorkingCopy workingCopy) throws IOException {
+                            workingCopy.toPhase(Phase.RESOLVED);
+                            CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                            TreeMaker make = workingCopy.getTreeMaker();
+                            CompilationUnitTree copy = make.CompilationUnit(
+                                    make.Identifier(packageNameFromPanel),
+                                    cut.getImports(),
+                                    cut.getTypeDecls(),
+                                    cut.getSourceFile());
+                            workingCopy.rewrite(cut, copy);
+                        }
+                        public void cancel() {
+                        }
+                    }).commit();
+                } catch (IOException e) {
+                    Logger.getLogger("").log(Level.SEVERE, e.getMessage(), e);
                 }
-                
-                public void cancel() {
-                }
-            }).commit();
-        } catch (IOException e) {
-            Logger.getLogger("").log(Level.SEVERE, e.getMessage(), e);
-        }
+            }
+        });
     }
 }

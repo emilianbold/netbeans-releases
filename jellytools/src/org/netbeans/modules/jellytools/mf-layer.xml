@@ -27,7 +27,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -57,6 +57,7 @@ Author: Jiri.Skrivanek@sun.com
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jellytools.Bundle"/>
             <file name="JellyTestCaseTest.java" url="JellyTestCase.java.template">
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jellytools.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/jellytools/JUnitLogo.png"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/jellytools/JellyTestCase.html" />
