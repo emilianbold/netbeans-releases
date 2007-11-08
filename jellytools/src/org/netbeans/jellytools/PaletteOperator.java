@@ -107,12 +107,7 @@ public class PaletteOperator extends TopComponentOperator {
     /** Select a component in expanded category of components. Use one of
      * expand methods before using this method.
      * @param displayName display name of component to be selected (e.g. Button)
-     * @see #expandBeans
-     * @see #expandAWT
-     * @see #expandSwingContainers
-     * @see #expandSwingControls
-     * @see #expandSwingMenus
-     * @see #expandSwingWindows
+     * @see #expand
      */
     public void selectComponent(final String displayName) {
         int index = lstComponents().findItemIndex(new ListItemChooser() {

@@ -71,7 +71,6 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
  * @see CheckoutWizardOperator
  * @see ImportWizardOperator
  * @see EditCVSRootOperator
- * @see ProxyConfigurationOperator
  *
  * @author Jiri.Skrivanek@sun.com
  */
