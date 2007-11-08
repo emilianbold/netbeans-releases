@@ -85,7 +85,7 @@ public final class OperationSupport {
      * Finishes operation, applies all changes and ensures restart of the application immediately.
      * If method {@link #doOperation} returns non null instance of <code>Restarter</code> then
      * this method must be called to apply all changes
-     * @param restarter instance of <code>Restarter</code> obtained from previous call {@link doOperation}.
+     * @param restarter instance of <code>Restarter</code> obtained from previous call {@link #doOperation}.
      * Mustn't be null.
      * @param progress instance of {@link ProgressHandle} or null
      * @throws org.netbeans.api.autoupdate.OperationException
@@ -96,17 +96,21 @@ public final class OperationSupport {
     }
 
     /**
-     * Finishes operation, applies all changes.
+     * Finishes operation, all the changes will be completed after restart the application.
      * If method {@link #doOperation} returns non null instance of <code>Restarter</code> then
      * this method must be called to apply all changes
-     * @param restarter instance of <code>Restarter</code> obtained from previous call {@link doOperation}.
+     * @param restarter instance of <code>Restarter</code> obtained from previous call {@link #doOperation}.
      * Mustn't be null.
      */
     public void doRestartLater(Restarter restarter) {
         getImpl (container.impl.getType ()).doRestartLater (restarter);
     }
     
-    public static final class Restarter { Restarter () {} }
+    /** A helper object returned by a performer of the operation for invoking
+     * methods {@link #doRestart} or {@link #doRestartLater}
+     * 
+     */
+    public static final class Restarter { Restarter() {} }
     
     //end of API - next just impl details
     private OperationContainer<OperationSupport> container;

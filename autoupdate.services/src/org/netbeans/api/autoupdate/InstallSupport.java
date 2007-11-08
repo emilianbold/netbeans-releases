@@ -46,14 +46,52 @@ import org.netbeans.modules.autoupdate.services.InstallSupportImpl;
 import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 
 /**
- * @author Radek Matous
+ * Performs all operations scheduled on instance of <code>OperationContainer</code>.
+ * Instance of <code>InstallSupport</code> can be obtained by calling {@link OperationContainer#getSupport}
+ * 
+ * <p>
+ * Typical scenario how to use:
+ * <ul>
+ * <li>Use instance of the <code>OperationContainer</code> created for chosen
+ * operation: {@link OperationContainer#createForInstall} or {@link OperationContainer#createForUninstall} and contained
+ * correct <code>UpdateElement</code>s. See {@link OperationContainer}</li>
+ * <li>Call the {@link #doDownload} for downloading install data.</li>
+ * <li>Call the {@link #doValidate} for verify consistency of downloaded data.</li>
+ * <li>Call the {@link #doInstall} for install contained <code>UpdateElement</code>.</li>
+ * <li>If application restart is required for completing the Install/Update operation
+ * then call {@link #doRestart} or {@link #doRestartLater}.
+ * 
+ * </ul>
+ * Code example:
+ * <pre style="background-color: rgb(255, 255, 153);"> 
+ * UpdateElement element = ...;
+ * OperationContainer&lt;InstallSupport&gt; container = createForInstall();
+ * ... add elements ...
+ * InstallSupport support = container.getSupport();
+ * Validator v = support.doDownload(null, false);
+ * Installer i = support.doValidate(v, null);
+ * Restarter r = support.doInstall(i, null);
+ * if (r != null) {
+ *      support.doRestart(r, null);
+ * }
+ * </pre>
+ * </p>
+ * @author Radek Matous, Jiri Rechtacek
  */
 public final class InstallSupport {
     InstallSupport () {
         impl = new InstallSupportImpl (this);
     }
     
-    public Validator doDownload (ProgressHandle progress/*or null*/, boolean isGlobal) throws OperationException {
+    /** Downloads all instances i.e. <code>UpdateElement</code>s in corresponing <code>OperationContainer</code>.
+     * 
+     * @param progress ProgressHandle for notification progress in downloading, can be <code>null</code>
+     * @param isGlobal if <code>true</code> then forces download instances into shared directories i.e. installation directory
+     * @return <code>Validator</code> an instance of Validator which allows to verify downloaded instances in the next step
+     * Mustn't be null.
+     * @throws org.netbeans.api.autoupdate.OperationException
+     */
+    public Validator doDownload(ProgressHandle progress/*or null*/, boolean isGlobal) throws OperationException {
         if (impl.doDownload (progress, isGlobal)) {
             return new Validator ();
         } else {
@@ -61,7 +99,16 @@ public final class InstallSupport {
         }
     }
 
-    public Installer doValidate (Validator validator, ProgressHandle progress/*or null*/) throws OperationException {
+    /** Validates all instances that have been downloaded in the previous step.
+     * 
+     * @param validator an instance of <code>Validator</code> that has been returned by {link @doDownload}
+     * @param progress ProgressHandle for notification progress in validation, can be <code>null</code>
+     * @return <code>Installer</code> an instance of Installer which allows to install all verified instances
+     * Mustn't be null.
+     * @throws org.netbeans.api.autoupdate.OperationException
+     * @see #doDownload
+     */
+    public Installer doValidate(Validator validator, ProgressHandle progress/*or null*/) throws OperationException {
         if (impl.doValidate (validator, progress)) {
             return new Installer ();
         } else {
@@ -69,7 +116,16 @@ public final class InstallSupport {
         }
     }
 
-    public Restarter doInstall (Installer installer ,ProgressHandle progress/*or null*/) throws OperationException {
+    /** Validates all instances that have been verified in the previous step.
+     * 
+     * @param installer an instance of <code>Installer</code> that has been returned by InstallSupport#doValidate
+     * @param progress ProgressHandle for notification progress in installation, can be <code>null</code>
+     * @return <code>Restarter</code> an instance of Restart if application restart is required for complete the install operation, or null
+     * Mustn't be null.
+     * @throws org.netbeans.api.autoupdate.OperationException
+     * @see #doValidate
+     */
+    public Restarter doInstall(Installer installer ,ProgressHandle progress/*or null*/) throws OperationException {
         Boolean restart = impl.doInstall (installer, progress);
         if (restart == null /*was problem*/ || ! restart.booleanValue ()) {
             return null;
@@ -78,35 +134,92 @@ public final class InstallSupport {
         }
     }
     
-    public void doCancel () throws OperationException {
+    /**
+     * Cancels changes done in previous calling methods.
+     * @throws org.netbeans.api.autoupdate.OperationException
+     * @see OperationException
+     */
+    public void doCancel() throws OperationException {
         // finds and deletes possible downloaded files
         impl.doCancel ();
     }
 
+    /**
+     * Completes the operation, applies all changes and ensures restart of the application immediately.
+     * If method {@link #doInstall} returns non null instance of <code>Restarter</code> then
+     * this method must be called to apply all changes.
+     * @param restarter instance of <code>Restarter</code> obtained from previous call {@link #doInstall}.
+     * Mustn't be null.
+     * @param progress instance of {@link ProgressHandle} or null
+     * @throws org.netbeans.api.autoupdate.OperationException
+     * @see OperationException
+     */
     public void doRestart(Restarter restarter,ProgressHandle progress/*or null*/) throws OperationException {
         impl.doRestart (restarter, progress);
     }
 
+    /**
+     * Finishes operation, all the changes will be completed after restart the application.
+     * If method {@link #doInstall} returns non null instance of <code>Restarter</code> then
+     * this method must be called to apply all changes
+     * @param restarter instance of <code>Restarter</code> obtained from previous call {@link #doInstall}.
+     * Mustn't be null.
+     */
     public void doRestartLater(Restarter restarter) {
         impl.doRestartLater(restarter);
     }
     
+    /** Returns java.security.cert.Certificate.toString() of given <code>UpdateElement</code>.
+     * 
+     * @param validator  <code>Installer</code> an instance of Installer has been returned by {link @doValidate}
+     * @param uElement <code>UpdateElement</code> 
+     * @return content of UpdateElement's certificate
+     * @see #doValidate
+     */
     public String getCertificate(Installer validator, UpdateElement uElement) {
         return impl.getCertificate (validator, uElement);
     }
 
+    /** Returns if the <code>UpdateElement</code> is trusted or not.
+     * 
+     * @param validator  <code>Installer</code> an instance of Installer has been returned by {link @doValidate}
+     * @param uElement <code>UpdateElement</code> 
+     * @return true for trusted <code>UpdateElement</code>
+     * @see #doValidate
+     * @see <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/security/cert/Certificate.html">java.security.cert.Certificate</a>
+     */
     public boolean isTrusted(Installer validator, UpdateElement uElement) {
         return impl.isTrusted (validator, uElement);
     }
 
+    /** Returns if the <code>UpdateElement</code> is signed or not.
+     * 
+     * @param validator  <code>Installer</code> an instance of Installer has been returned by {link @doValidate}
+     * @param uElement <code>UpdateElement</code> 
+     * @return true for trusted <code>UpdateElement</code>
+     * @see <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/security/cert/Certificate.html">java.security.cert.Certificate</a>
+     * @see #doValidate
+     */
     public boolean isSigned(Installer validator, UpdateElement uElement) {
         return impl.isSigned (validator, uElement);
     }
 
+    /** Returns the corresponing <code>OperationContainer</code>.
+     * 
+     * @return the <code>OperationContainer</code>
+     */
     public OperationContainer<InstallSupport> getContainer() {return container;}
     
-    //just tokens for passing it further to guarantee the order of operations
+    /** A helper object returned by a {@link #doDownload} for invoke
+     * the method {@link #doValidate}
+     * 
+     */
     public static final class Validator {private Validator() {}}
+
+    /** A helper object returned by a {@link #doValidate} for invoke
+     * the method {@link #doInstall}
+     * 
+     */
     public static final class Installer {private Installer() {}}
 
     //end of API - next just impl details

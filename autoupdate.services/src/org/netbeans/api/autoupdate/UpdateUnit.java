@@ -125,7 +125,7 @@ public final class UpdateUnit {
     }
     
     /** Returns if the <code>UpdateUnit</code> is in a pending state.
-     * State of this unit will be changed while restart IDE.
+     * State of this unit will be changed while restart the application.
      * 
      * @return true of UpdateUnit is pending
      */
