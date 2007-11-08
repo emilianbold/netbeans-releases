@@ -60,6 +60,7 @@ public class ScrollPopupMenu extends JPopupMenu {
         maxHeight = maxH;
     }
 
+    @Override
     public void setVisible(boolean visible) {
         if (visible == isVisible())
             return;
@@ -104,10 +105,12 @@ public class ScrollPopupMenu extends JPopupMenu {
         }
     }
 
+    @Override
     public boolean isVisible() {
         return popWin != null ? popWin.isShowing() : false;
     }
 
+    @Override
     public void setLocation(int x, int y) {
         if (popWin != null && popWin.isShowing())
             popWin.setLocation(x, y);
@@ -117,6 +120,7 @@ public class ScrollPopupMenu extends JPopupMenu {
         }
     }
 
+    @Override
     public void pack() {
         if (popWin == null)
             return;

@@ -127,6 +127,7 @@ class CategorySelector extends JPanel implements ExplorerManager.Provider {
         return explorerManager;
     }
 
+    @Override
     public java.awt.Dimension getPreferredSize() {
         return new java.awt.Dimension(400, 300);
     }

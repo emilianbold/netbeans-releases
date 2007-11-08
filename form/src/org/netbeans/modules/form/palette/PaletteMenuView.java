@@ -85,6 +85,7 @@ public class PaletteMenuView extends org.openide.awt.JMenuPlus {
     /** popupMenu field should be set here because getPopupMenu() is called from
      * superclass constructor.
      */
+    @Override
     public JPopupMenu getPopupMenu() {
         if (!hacked) {
             try {
