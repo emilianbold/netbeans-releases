@@ -82,7 +82,7 @@ public class CreationDescriptor {
     }
 
     private Class describedClass;
-    private ArrayList creators = new ArrayList(10);
+    private List<Creator> creators = new ArrayList<Creator>(10);
     private Object[] defaultParams;
     private Creator defaultCreator;
 
@@ -129,7 +129,7 @@ public class CreationDescriptor {
             for (int i=0; i < constrParamTypes.length; i++)
                 creators.add( new ConstructorCreator(describedClass,
                                                          constrParamTypes[i],
-                                                         constrPropNames[i]) );;
+                                                         constrPropNames[i]) );
         }
 
         defaultParams = defParams == null ? emptyParams : defParams;
@@ -223,7 +223,7 @@ public class CreationDescriptor {
     }
 
     public Creator[] getCreators() {
-        return (Creator[]) creators.toArray(new Creator[creators.size()]);
+        return creators.toArray(new Creator[creators.size()]);
     }
 
     public Creator findBestCreator(FormProperty[] properties, int style) {
@@ -257,9 +257,9 @@ public class CreationDescriptor {
 
     // finds first constructor that matches defaultConstrParams
     private Creator findDefaultCreator() throws NoSuchMethodException {        
-        for (Iterator it = creators.iterator(); it.hasNext();) {
+        for (Iterator<Creator> it = creators.iterator(); it.hasNext();) {
             
-            Creator creator = (Creator) it.next();
+            Creator creator = it.next();
             Class[] paramTypes = creator.getParameterTypes();
             
             if (paramTypes.length == defaultParams.length) {
@@ -402,7 +402,7 @@ public class CreationDescriptor {
             throws NoSuchMethodException
         {            
                         
-            ArrayList paramTypesList = new ArrayList();
+            List<Class> paramTypesList = new ArrayList<Class>();
             propertyNames = new String[properties.length];    
             
             for (int i = 0; i < properties.length; i++) {                                
@@ -412,7 +412,7 @@ public class CreationDescriptor {
                 propertyNames[i] = properties[i].getPropertyName();
             }                       
                                     
-            Class[] paramTypes = (Class[]) paramTypesList.toArray(new Class[paramTypesList.size()]);
+            Class[] paramTypes = paramTypesList.toArray(new Class[paramTypesList.size()]);
 
             method = factoryClass.getMethod(methodName, paramTypes);  
                 
@@ -444,7 +444,7 @@ public class CreationDescriptor {
                    IllegalArgumentException, InvocationTargetException
         {
                                 
-            ArrayList paramValuesList = new ArrayList(); 
+            List<Object> paramValuesList = new ArrayList<Object>(); 
             for (int i=0; i < properties.length; i++) {
                 FormProperty prop = CreationFactory.findProperty(properties[i].getPropertyName(), props);
                 if (prop == null)
