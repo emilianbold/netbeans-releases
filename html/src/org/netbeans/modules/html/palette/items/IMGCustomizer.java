@@ -87,7 +87,8 @@ public class IMGCustomizer extends javax.swing.JPanel {
         jFileChooser1.addChoosableFileFilter(
             new FileFilter() {
                 public boolean accept(File pathname) {
-                    return pathname.isDirectory() || FileUtil.toFileObject(pathname).getMIMEType().startsWith("image/"); // NOI18N
+                    FileObject fo = FileUtil.toFileObject(pathname);
+                    return pathname.isDirectory() || (fo != null && fo.getMIMEType().startsWith("image/")); // NOI18N
                 }
                 public String getDescription() {
                     String desc = NbBundle.getMessage(IMGCustomizer.class, "LBL_IMG_FileChooserDesc");
