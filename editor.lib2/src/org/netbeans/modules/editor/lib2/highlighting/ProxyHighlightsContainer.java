@@ -119,9 +119,9 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
                     seq.add(layers[layers.length - i - 1].getHighlights(startOffset, endOffset));
                 } catch (ThreadDeath td) {
                     throw td;
-//                } catch (Throwable t) {
-//                    blacklisted[i] = true;
-//                    LOG.log(Level.WARNING, "The layer failed to supply highlights: " + layers[i], t); //NOI18N
+                } catch (Throwable t) {
+                    blacklisted[i] = true;
+                    LOG.log(Level.WARNING, "The layer failed to supply highlights: " + layers[i], t); //NOI18N
                 }
             }
 

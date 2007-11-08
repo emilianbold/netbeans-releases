@@ -296,9 +296,9 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
                 cache.addAllHighlights(seq);
             } catch (ThreadDeath td) {
                 throw td;
-//            } catch (Throwable t) {
-//                blacklisted[i] = true;
-//                LOG.log(Level.WARNING, "The layer failed to supply highlights: " + layers[i], t); //NOI18N
+            } catch (Throwable t) {
+                blacklisted[i] = true;
+                LOG.log(Level.WARNING, "The layer failed to supply highlights: " + layers[i], t); //NOI18N
             }
         }
     }
