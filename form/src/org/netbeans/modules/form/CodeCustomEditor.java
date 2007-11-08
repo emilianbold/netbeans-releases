@@ -77,6 +77,7 @@ class CodeCustomEditor extends javax.swing.JPanel implements DocumentListener, R
         // We want the editor pane's height to accommodate to the actual number
         // of lines. For that we also need to include the horizontal scrollbar
         // height into the preferred height. See also invokeUpdate method.
+        @Override
         public Dimension getPreferredSize() {
             Dimension prefSize = super.getPreferredSize();
             Component hBar = getHorizontalScrollBar();
@@ -136,6 +137,7 @@ class CodeCustomEditor extends javax.swing.JPanel implements DocumentListener, R
 
         // issue 103809
         addComponentListener(new ComponentAdapter() {
+            @Override
             public void componentShown(ComponentEvent ev) {
                 revalidate();
                 repaint();
