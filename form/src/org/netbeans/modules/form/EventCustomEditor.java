@@ -259,7 +259,7 @@ public class EventCustomEditor extends javax.swing.JPanel {
                 String toRemove;
                 if (ii >= 0) { // the handler was previously renamed - cancel it
                     changes.getRenamedNewNames().remove(ii);
-                    toRemove = (String) changes.getRenamedOldNames().get(ii);
+                    toRemove = changes.getRenamedOldNames().get(ii);
                     changes.getRenamedOldNames().remove(ii);
                 }
                 else toRemove = (String) handlers[i];

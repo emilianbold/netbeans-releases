@@ -146,7 +146,7 @@ class EventProperty extends PropertySupport.ReadWrite {
 
                     if (!ignore) { // do rename
                         change = new Change();
-                        change.getRenamedNewNames().add(val);
+                        change.getRenamedNewNames().add((String)val);
                         change.getRenamedOldNames().add(current);
                     }
                 }
@@ -176,8 +176,8 @@ class EventProperty extends PropertySupport.ReadWrite {
 
             if (change.hasRenamed()) // some handlers to rename
                 for (int i=0; i < change.getRenamedOldNames().size(); i++) {
-                    String oldName = (String)change.getRenamedOldNames().get(i);
-                    String newName = (String)change.getRenamedNewNames().get(i);
+                    String oldName = change.getRenamedOldNames().get(i);
+                    String newName = change.getRenamedNewNames().get(i);
 
                     try {
                         formEvents.renameEventHandler(oldName, newName);
@@ -223,6 +223,7 @@ class EventProperty extends PropertySupport.ReadWrite {
             node.firePropertyChangeHelper(getName(), null, null);
     }
 
+    @Override
     public Object getValue(String key) {
         if ("canEditAsText".equals(key)) // NOI18N
             return Boolean.TRUE;
@@ -257,6 +258,7 @@ class EventProperty extends PropertySupport.ReadWrite {
 //        return displayName;
 //    }
 //
+    @Override
     public boolean canWrite() {
         return !isReadOnly();
     }
@@ -268,6 +270,7 @@ class EventProperty extends PropertySupport.ReadWrite {
     /** Returns property editor for this property.
      * @return the property editor for adding/removing/renaming event handlers
      */
+    @Override
     public PropertyEditor getPropertyEditor() {
         return new EventEditor();
     }
@@ -286,36 +289,37 @@ class EventProperty extends PropertySupport.ReadWrite {
         boolean hasRenamed() {
             return renamedOldName != null && renamedOldName.size() > 0;
         }
-        List getAdded() {
+        List<String> getAdded() {
             if (added == null)
-                added = new ArrayList();
+                added = new ArrayList<String>();
             return added;
         }
-        List getRemoved() {
+        List<String> getRemoved() {
             if (removed == null)
-                removed = new ArrayList();
+                removed = new ArrayList<String>();
             return removed;
         }
-        List getRenamedOldNames() {
+        List<String> getRenamedOldNames() {
             if (renamedOldName == null)
-                renamedOldName = new ArrayList();
+                renamedOldName = new ArrayList<String>();
             return renamedOldName;
         }
-        List getRenamedNewNames() {
+        List<String> getRenamedNewNames() {
             if (renamedNewName == null)
-                renamedNewName = new ArrayList();
+                renamedNewName = new ArrayList<String>();
             return renamedNewName;
         }
-        private List added;
-        private List removed;
-        private List renamedOldName;
-        private List renamedNewName;
+        private List<String> added;
+        private List<String> removed;
+        private List<String> renamedOldName;
+        private List<String> renamedNewName;
     }
 
     // --------
 
     private class EventEditor extends PropertyEditorSupport {
 
+        @Override
         public String getAsText() {
             if (this.getValue() == null) {
                 if (NO_EVENT == null)
@@ -325,6 +329,7 @@ class EventProperty extends PropertySupport.ReadWrite {
             return this.getValue().toString();
         }
 
+        @Override
         public void setAsText(String txt) {
             if (!"".equals(txt) && !Utilities.isJavaIdentifier(txt)) { // NOI18N
                 // invalid handler name entered
@@ -355,15 +360,18 @@ class EventProperty extends PropertySupport.ReadWrite {
             this.setValue(txt);
         }
 
+        @Override
         public String[] getTags() {
             String[] handlers = getEventHandlers();
             return handlers.length > 1 ? handlers : null;
         }
 
+        @Override
         public boolean supportsCustomEditor() {
             return isReadOnly() ? false : true;
         }
 
+        @Override
         public java.awt.Component getCustomEditor() {
             if (isReadOnly())
                 return null;
