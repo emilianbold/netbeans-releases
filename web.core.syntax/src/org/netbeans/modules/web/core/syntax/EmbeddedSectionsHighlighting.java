@@ -102,7 +102,6 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
             }
             Color elBC = getColoring(fcs, JspTokenId.EL.primaryCategory());
             if (elBC != null) {
-                System.out.println("COLOR: el = " + elBC.toString());
                 elAttribs = AttributesUtilities.createImmutable(
                     StyleConstants.Background, elBC, 
                     ATTR_EXTENDS_EOL, Boolean.TRUE);
