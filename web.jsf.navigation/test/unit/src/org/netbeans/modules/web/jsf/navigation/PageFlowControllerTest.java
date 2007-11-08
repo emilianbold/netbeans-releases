@@ -546,22 +546,74 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         assertTrue( npeCaught );
     }
     
-//
+    /**
+     * Test of replacePageName2Page method, of class PageFlowController.
+     */
+    public void testReplacePageName2Page() {
+        System.out.println("replacePageName2Page");
+        
+        
+        String oldName = "welcomeJSF.jsp";
+        String newName = "welcomeJSF2.jsp";
+        Page page = controller.getPageName2Page(oldName);
+        Page pageNon = controller.getPageName2Page(newName);
+        assertNotNull(page);
+        assertNull(pageNon);
+        boolean result = controller.replacePageName2Page(page, newName, oldName);
+        assertTrue(result);
+        Page page2 = controller.getPageName2Page(newName);
+        Page page3 = controller.getPageName2Page(oldName);
+        assertNotNull(page2);
+        assertNull(page3);
+    }
     
-//
-//    /**
-//     * Test of replacePageName2Page method, of class PageFlowController.
-//     */
-//    public void testReplacePageName2Page() {
-//        System.out.println("replacePageName2Page");
-//        Page node = null;
-//        String newName = "";
-//        String oldName = "";
-//        PageFlowController instance = null;
-//        instance.replacePageName2Page(node, newName, oldName);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
+     /**
+     * Test of replacePageName2Page method, of class PageFlowController.
+     */
+    public void testReplacePageName2PageNull() {
+        System.out.println("replacePageName2Page when null page");
+        
+        
+        String oldName = "welcomeJSF.jsp";
+        String newName = "welcomeJSF2.jsp";
+        boolean npeCaught = false;
+        try { 
+            boolean result = controller.replacePageName2Page(null, newName, oldName);
+        } catch( NullPointerException npe ){
+            npeCaught = true;
+        }
+        assertTrue(npeCaught);
+        assertNotNull( controller.getPageName2Page(oldName)); //Confirming it wasn't removed.
+    }
+    
+         /**
+     * Test of replacePageName2Page method, of class PageFlowController.
+     */
+    public void testReplacePageName2PageEmptyString() {
+        System.out.println("replacePageName2Page when null page");
+        
+        String oldName = "welcomeJSF.jsp";
+        String newName = "welcomeJSF2.jsp";
+        boolean assertionCaught = false;
+        try { 
+            boolean result = controller.replacePageName2Page(null, "", oldName);
+        } catch( AssertionError error ){
+            assertionCaught = true;
+        }
+        assertTrue(assertionCaught);
+        assertNotNull( controller.getPageName2Page(oldName)); //Confirming it wasn't removed.
+        
+        assertionCaught = false;
+        try { 
+            boolean result = controller.replacePageName2Page(null, newName, "");
+        } catch( AssertionError error ){
+            assertionCaught = true;
+        }
+        assertTrue(assertionCaught);
+        assertNotNull( controller.getPageName2Page(oldName)); //Confirming it wasn't removed.
+    }
+    
+   
 //
 //    /**
 //     * Test of clearPageName2Page method, of class PageFlowController.

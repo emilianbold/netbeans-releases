@@ -723,22 +723,38 @@ public class PageFlowController {
     }
 
     /**
-     * Replace page name in PageName2Node HasMap
-     * @param Page node, String newName, String oldName
+     * Replace page name in PageName2Node HasMap. This is general used in a
+     * page rename.  In general this removes the old Page and add the new one with 
+     * the given name.
+     * @param page Page that should be added into the map.  If null, NPE thrown 
+     *             and nothing removed from the map.
+     * @param String newName String that you want to assign to the page.
+     * @param String oldName String that was assigned to the page.
+     * @return true if page was found to replace, false is page was not found.
      **/
-    public void replacePageName2Page(Page node, String newName, String oldName) {
+    public boolean replacePageName2Page(Page page, String newName, String oldName) {
 
         LOGGER.finest("PageName2Page: replace " + oldName + " to " + newName);
+        assert (newName.length() > 0);
+        assert (oldName.length() > 0);
+        
+        if( page == null ) {
+            throw new NullPointerException("Page can not be null.");
+        }
+        
         printThreadInfo();
         synchronized (pageName2Page) {
-            WeakReference<Page> node2Ref = pageName2Page.remove(oldName);
-            if (node2Ref != null) {
-                Page node2 = node2Ref.get();
-                if (node == null || node2 == null) {
+            WeakReference<Page> page2Ref = pageName2Page.remove(oldName);
+            if (page2Ref != null) {
+                Page page2 = page2Ref.get();
+                
+                if (page == null || page2 == null) {
                     System.err.println("PageFlowEditor: Trying to add Page [" + oldName + "] but it is null.");
                 }
-                pageName2Page.put(newName, new WeakReference<Page>(node));
-            }
+                pageName2Page.put(newName, new WeakReference<Page>(page));
+                return true;
+            } 
+            return false;
         }
     }
 
