@@ -57,13 +57,13 @@ class CustomCodeData {
     private CodeCategory defaultCategory = CodeCategory.CREATE_AND_INIT;
 
     // creation and initialization code
-    private List<EditableBlock> initEditableBlocks = new ArrayList();
-    private List<GuardedBlock> initGuardedBlocks = new ArrayList();
+    private List<EditableBlock> initEditableBlocks = new ArrayList<EditableBlock>();
+    private List<GuardedBlock> initGuardedBlocks = new ArrayList<GuardedBlock>();
 
     // declaration code
     private VariableDeclaration declaration;
-    private List<EditableBlock> declarationEditableBlocks = new ArrayList();
-    private List<GuardedBlock> declarationGuardedBlocks = new ArrayList();
+    private List<EditableBlock> declarationEditableBlocks = new ArrayList<EditableBlock>();
+    private List<GuardedBlock> declarationGuardedBlocks = new ArrayList<GuardedBlock>();
 
     private int highestPreference; // used temporarily when filling in editable blocks
 
@@ -271,13 +271,14 @@ class CustomCodeData {
             return post;
         }
 
+        @Override
         public String toString() {
             return displayName;
         }
     }
 
     static class EditableBlock {
-        private List<CodeEntry> entries = new ArrayList();
+        private List<CodeEntry> entries = new ArrayList<CodeEntry>();
         private int prefEntryIndex;
 
         private void addEntry(CodeEntry e, boolean preferred) {

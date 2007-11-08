@@ -128,7 +128,7 @@ class CustomCodeView extends javax.swing.JPanel {
 
         // create gutter panels - let their layout share the component map so
         // they have the same width
-        Map<Component, Position> positions = new HashMap();
+        Map<Component, Position> positions = new HashMap<Component, Position>();
         initGutter = new JPanel();
         initGutter.setLayout(new GutterLayout(initCodeEditor, positions));
         declareGutter = new JPanel();
@@ -139,6 +139,7 @@ class CustomCodeView extends javax.swing.JPanel {
 //        jScrollPane2.setBorder(null);
     }
 
+    @Override
     public void addNotify() {
         super.addNotify();
         initCodeEditor.requestFocusInWindow();
@@ -169,8 +170,8 @@ class CustomCodeView extends javax.swing.JPanel {
             guardBlockInfos.clear();
         }
         else {
-            editBlockInfos = new HashMap();
-            guardBlockInfos = new HashMap();
+            editBlockInfos = new HashMap<CodeCategory, EditBlockInfo[]>();
+            guardBlockInfos = new HashMap<CodeCategory, GuardBlockInfo[]>();
         }
 
         FormUtils.setupEditorPane(initCodeEditor, srcFile, positions[0]);
@@ -258,7 +259,7 @@ class CustomCodeView extends javax.swing.JPanel {
         Document doc = getDocument(category);
         EditableBlock eBlock = codeData.getEditableBlock(category, blockIndex);
         boolean lastBlock = blockIndex+1 == codeData.getEditableBlockCount(category);
-        List<EditableLine> lineList = new LinkedList();
+        List<EditableLine> lineList = new LinkedList<EditableLine>();
         int startIndex = doc.getLength();
         boolean needLineEnd = false;
 
