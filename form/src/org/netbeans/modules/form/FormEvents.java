@@ -58,13 +58,13 @@ public class FormEvents {
     static final Event[] NO_EVENTS = {};
 
     // CEDL: mapping listener type name to ListenerInfo
-    private Map usedListeners = new HashMap();
+    private Map<String,ListenerInfo> usedListeners = new HashMap<String,ListenerInfo>();
 
     // CEDL: mapping listener method signature to list of Event
-    private Map usedMethods = new HashMap();
+    private Map<String,List<Event>> usedMethods = new HashMap<String,List<Event>>();
 
     // event handlers: mapping event handler name to list of Event
-    private Map eventHandlers = new HashMap();
+    private Map<String,List<Event>> eventHandlers = new HashMap<String,List<Event>>();
 
     private FormModel formModel;
 
@@ -80,18 +80,18 @@ public class FormEvents {
     }
 
     public Class[] getCEDLTypes() {
-        Collection infoValues = usedListeners.values();
+        Collection<ListenerInfo> infoValues = usedListeners.values();
         Class[] listenerTypes = new Class[infoValues.size()];
         int i = 0;
-        Iterator it = infoValues.iterator();
+        Iterator<ListenerInfo> it = infoValues.iterator();
         while (it.hasNext())
-            listenerTypes[i++] = ((ListenerInfo)it.next()).listenerType;
+            listenerTypes[i++] = it.next().listenerType;
         
         return listenerTypes;
     }
 
     public Event[] getEventsForCEDLMethod(Method listenerMethod) {
-        List eventList = (List) usedMethods.get(fullMethodName(listenerMethod));
+        List<Event> eventList = usedMethods.get(fullMethodName(listenerMethod));
         if (eventList == null)
             return NO_EVENTS;
 
@@ -101,20 +101,19 @@ public class FormEvents {
     }
 
     public Event[] getEventsForHandler(String handlerName) {
-        List handlerEventList = (List) eventHandlers.get(handlerName);
+        List<Event> handlerEventList = eventHandlers.get(handlerName);
         Event[] events = new Event[handlerEventList.size()];
         handlerEventList.toArray(events);
         return events;
     }
 
     public Method getOriginalListenerMethod(String handlerName) {
-        List handlerEventList = (List) eventHandlers.get(handlerName);
-        return handlerEventList != null ?
-               ((Event)handlerEventList.get(0)).getListenerMethod() : null;
+        List<Event> handlerEventList = eventHandlers.get(handlerName);
+        return handlerEventList != null ? handlerEventList.get(0).getListenerMethod() : null;
     }
 
     public String[] getAllEventHandlers() {
-        Set nameSet = eventHandlers.keySet();
+        Set<String> nameSet = eventHandlers.keySet();
         String[] names = new String[nameSet.size()];
         nameSet.toArray(names);
         return names;
@@ -132,11 +131,11 @@ public class FormEvents {
             event = null;
         }
         else { // find/create handler, attach event to it
-            List handlerEventList;
+            List<Event> handlerEventList;
             if (handlerName != null) {
-                handlerEventList = (List) eventHandlers.get(handlerName);
+                handlerEventList = eventHandlers.get(handlerName);
                 if (handlerEventList != null) // handler already exists
-                    checkCompatibility(event, (Event) handlerEventList.get(0));
+                    checkCompatibility(event, handlerEventList.get(0));
             }
             else { // no name provided, find a free one
                 handlerEventList = null;
@@ -145,7 +144,7 @@ public class FormEvents {
             }
 
             if (handlerEventList == null) { // create new handler
-                handlerEventList = new ArrayList(3);
+                handlerEventList = new ArrayList<Event>(3);
                 eventHandlers.put(handlerName, handlerEventList);
                 newHandler = true;
             }
@@ -187,13 +186,13 @@ public class FormEvents {
                 || oldHandlerName.equals(newHandlerName))
             return;
 
-        List handlerEventList = (List) eventHandlers.get(oldHandlerName);
+        List<Event> handlerEventList = eventHandlers.get(oldHandlerName);
         if (handlerEventList == null)
             return; // oldHandlerName handler not found
 
         if (eventHandlers.get(newHandlerName) == null) {
             for (int j=0; j < handlerEventList.size(); j++) {
-                Event event = (Event) handlerEventList.get(j);
+                Event event = handlerEventList.get(j);
                 event.renameEventHandler(oldHandlerName, newHandlerName);
             }
             eventHandlers.remove(oldHandlerName);
@@ -269,8 +268,7 @@ public class FormEvents {
             return; // method signature already used
 
         String listenerTypeName = listenerType.getName();
-        ListenerInfo lInfo = (ListenerInfo)
-                             usedListeners.get(listenerTypeName);
+        ListenerInfo lInfo = usedListeners.get(listenerTypeName);
         if (lInfo == null) {
             lInfo = new ListenerInfo(listenerType);
             usedListeners.put(listenerTypeName, lInfo);
@@ -285,8 +283,7 @@ public class FormEvents {
         if (removeEventFromMethod(event)) {
             String listenerTypeName = event.getEventSetDescriptor()
                                                 .getListenerType().getName();
-            ListenerInfo lInfo = (ListenerInfo)
-                                 usedListeners.get(listenerTypeName);
+            ListenerInfo lInfo = usedListeners.get(listenerTypeName);
             if (lInfo != null && --lInfo.useCount == 0)
                 usedListeners.remove(listenerTypeName);
 
@@ -296,10 +293,10 @@ public class FormEvents {
 
     private boolean addEventToMethod(Event event) {
         String methodName = fullMethodName(event.getListenerMethod());
-        List eventList = (List) usedMethods.get(methodName);
+        List<Event> eventList = usedMethods.get(methodName);
 
         if (eventList == null) {
-            eventList = new ArrayList();
+            eventList = new ArrayList<Event>();
             eventList.add(event);
             usedMethods.put(methodName, eventList);
         }
@@ -319,7 +316,7 @@ public class FormEvents {
     private boolean removeEventFromMethod(Event event) {
         boolean removed;
         String methodName = fullMethodName(event.getListenerMethod());
-        List eventList = (List) usedMethods.get(methodName);
+        List<Event> eventList = usedMethods.get(methodName);
 
         if (eventList != null) {
             removed = eventList.remove(event);
@@ -332,7 +329,7 @@ public class FormEvents {
     }
 
     private void detachEventHandler(Event event, String handlerName) {
-        List handlerEventList = (List) eventHandlers.get(handlerName);
+        List<Event> handlerEventList = eventHandlers.get(handlerName);
         handlerEventList.remove(event);
         if (handlerEventList.size() == 0)
             eventHandlers.remove(handlerName); // handler is not used anymore
