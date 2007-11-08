@@ -110,7 +110,7 @@ public class FormDataLoader extends MultiFileLoader {
      */
     @Override
     protected MultiDataObject createMultiObject(FileObject primaryFile)
-        throws DataObjectExistsException, java.io.IOException
+        throws DataObjectExistsException
     {
         return new FormDataObject(FileUtil.findBrother(primaryFile, FORM_EXTENSION),
                                   primaryFile,
