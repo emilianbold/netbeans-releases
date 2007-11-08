@@ -121,7 +121,7 @@ public class BackgroundImageUrlDialog { //extends URLPanel{
                 retValue = true;
                 
             }
-        } catch (Exception exc){
+        } catch (IOException exc){
             LOGGER.log(Level.WARNING, null, exc);
         }
         return retValue;
