@@ -35,6 +35,7 @@ import org.netbeans.modules.ruby.RubyTestBase;
 import java.util.Map;
 import org.netbeans.api.gsf.CompilationInfo;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -57,6 +58,7 @@ import org.netbeans.modules.ruby.hints.infrastructure.RulesManager;
 import org.netbeans.modules.ruby.hints.spi.ErrorRule;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.modules.ruby.hints.spi.Rule;
+import org.netbeans.modules.ruby.hints.spi.SelectionRule;
 import org.netbeans.modules.ruby.hints.spi.UserConfigurableRule;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -107,13 +109,18 @@ public abstract class HintTestBase extends RubyTestBase {
     }
 
     private String annotate(BaseDocument doc, List<ErrorDescription> result, int caretOffset) throws Exception {
-        Map<OffsetRange, ErrorDescription> posToDesc = new HashMap<OffsetRange, ErrorDescription>();
+        Map<OffsetRange, List<ErrorDescription>> posToDesc = new HashMap<OffsetRange, List<ErrorDescription>>();
         Set<OffsetRange> ranges = new HashSet<OffsetRange>();
         for (ErrorDescription desc : result) {
             int start = desc.getRange().getBegin().getOffset();
             int end = desc.getRange().getEnd().getOffset();
             OffsetRange range = new OffsetRange(start, end);
-            posToDesc.put(range, desc);
+            List<ErrorDescription> l = posToDesc.get(range);
+            if (l == null) {
+                l = new ArrayList<ErrorDescription>();
+                posToDesc.put(range, l);
+            }
+            l.add(desc);
             ranges.add(range);
         }
         StringBuilder sb = new StringBuilder();
@@ -151,9 +158,10 @@ public abstract class HintTestBase extends RubyTestBase {
                         }
                         underlineStart = i-lineStart;
                         OffsetRange range = starts.get(i);
-                        ErrorDescription desc = posToDesc.get(range);
-                        if (desc != null) {
-                            descsOnLine.add(desc);
+                        if (posToDesc.get(range) != null) {
+                            for (ErrorDescription desc : posToDesc.get(range)) {
+                                descsOnLine.add(desc);
+                            }
                         }
                     }
                     if (ends.containsKey(i)) {
@@ -171,6 +179,11 @@ public abstract class HintTestBase extends RubyTestBase {
                     sb.append("\n");
                 }
                 if (descsOnLine != null) {
+                    Collections.sort(descsOnLine, new Comparator<ErrorDescription>() {
+                        public int compare(ErrorDescription arg0, ErrorDescription arg1) {
+                            return arg0.getDescription().compareTo(arg1.getDescription());
+                        }
+                    });
                     for (ErrorDescription desc : descsOnLine) {
                         sb.append("HINT:");
                         sb.append(desc.getDescription());
@@ -252,7 +265,18 @@ public abstract class HintTestBase extends RubyTestBase {
             }
             provider.setTestingHints(null, null, testHints, null);
             provider.computeErrors(info, result);
+        } else if (hint instanceof SelectionRule) {
+            SelectionRule rule = (SelectionRule)hint;
+            List<SelectionRule> testHints = new ArrayList<SelectionRule>();
+            testHints.add(rule);
             
+            provider.setTestingHints(null, null, null, testHints);
+            
+            if (caretLine != null) {
+                int start = text.indexOf(caretLine);
+                int end = start+caretLine.length();
+                provider.computeSelectionHints(info, result, start, end);
+            }
         } else {
             assert hint instanceof AstRule && ucr != null;
             AstRule astRule = (AstRule)hint;
