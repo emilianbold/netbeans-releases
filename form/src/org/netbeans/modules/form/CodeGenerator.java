@@ -63,8 +63,8 @@ public abstract class CodeGenerator {
      * global Java variable for every component
      * @param component The RADComponent for which the properties are to be
      * obtained
+     * @return synthetic properties for the given component.
      */
-
     public Node.Property[] getSyntheticProperties(RADComponent component) {
         return new Node.Property[0];
     }
