@@ -78,7 +78,11 @@ public class FormCustomEditor extends JPanel implements PropertyChangeListener {
     private javax.swing.JPanel cardPanel;
     private javax.swing.JComboBox editorsCombo;
 
-    /** Creates new form FormCustomEditor */
+    /** Creates new form FormCustomEditor
+     * 
+     * @param editor form property editor
+     * @param currentCustomEditor current custom editor
+     */
     public FormCustomEditor(FormPropertyEditor editor,
                             Component currentCustomEditor)
     {
@@ -276,12 +280,14 @@ public class FormCustomEditor extends JPanel implements PropertyChangeListener {
         }
     }
 
+    @Override
     public Dimension getPreferredSize() {
         Dimension inh = super.getPreferredSize();
         return new Dimension(Math.max(inh.width, DEFAULT_WIDTH), Math.max(inh.height, DEFAULT_HEIGHT));
     }
 
     private class EditorComboRenderer extends DefaultListCellRenderer {
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if (index == originalEditorIndex && editorsCombo.isPopupVisible()) {
@@ -306,6 +312,9 @@ public class FormCustomEditor extends JPanel implements PropertyChangeListener {
      * Used by PropertyAction to mimic property sheet behavior - trying to invoke
      * PropertyEnv listener of the current property editor (we can't create our
      * own PropertyEnv instance).
+     * 
+     * @return current value
+     * @throws java.beans.PropertyVetoException if someone vetoes this change.
      */
     public Object commitChanges() throws PropertyVetoException {
         int currentIndex = editorsCombo.getSelectedIndex();
