@@ -184,6 +184,25 @@ roots_loop:
                 break;
             }
             client.update(root, SVNRevision.HEAD, recursive);
+            
+            // XXX this isn't clean - the cache gets notified only about files which realy were updated. 
+            // However, the revision in the metadata is set to HEAD even if the file didn't change =>
+            // the status is refresh twice for each file which was updated just because we want to refresh 
+            // the cahced revision value...
+            if(recursive) {
+                SvnUtils.refreshRecursively(root);
+            } else {                
+                FileStatusCache cache = Subversion.getInstance().getStatusCache();
+                cache.onNotify(root, null);
+                if(root.isDirectory()) {
+                    File[] files = root.listFiles();
+                    if(files != null) {                        
+                        for(File f : files) {
+                            cache.onNotify(f, null);
+                        }
+                    }
+                }
+            }
             ISVNStatus status[] = client.getStatus(root, true, false);
             for (int k = 0; k<status.length; k++) {
                 ISVNStatus s = status[k];
@@ -254,7 +273,7 @@ roots_loop:
         public void logCompleted(String str) {
         }
 
-        public void onNotify(File file, SVNNodeKind kind) {            
+        public void onNotify(File file, SVNNodeKind kind) {   
         }
         
         List<FileUpdateInfo> getResults() {
