@@ -73,6 +73,7 @@ import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateProcessor;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateProcessorFactory;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.lib.editor.util.CharacterConversions;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
@@ -221,7 +222,7 @@ implements DocumentListener, KeyListener {
     }
     
     public void setParametrizedText(String parametrizedText) {
-        this.parametrizedText = parametrizedText;
+        this.parametrizedText = CharacterConversions.lineSeparatorToLineFeed(parametrizedText);
         parseParametrizedText();
     }
 
