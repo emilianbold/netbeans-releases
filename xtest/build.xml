@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -142,7 +142,9 @@ made subject to such option by the copyright holder.
   
     <target name="makedist">
         <!-- build xtest from nbbuild, so required openide/core modules are built as well -->     
-        <ant dir="../nbbuild" target="all-xtest" inheritAll="false"/>
+        <ant dir="../nbbuild" target="all-xtest" inheritAll="false">
+            <property name="cluster.config" value="basic"/>
+        </ant>
         <antcall target="zipdist"/>
     </target>
 
