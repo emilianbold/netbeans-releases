@@ -63,7 +63,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -144,6 +143,9 @@ public class FormJavaSource {
     }
     /**
      * Returns names for all methods with the specified return type
+     * 
+     * @param returnType return type
+     * @return names of all methods with the given return type.
      */
     public String[] getMethodNames(final Class returnType) {
         final Object[] result = new Object[1];
@@ -171,7 +173,10 @@ public class FormJavaSource {
     /**
      * Returns names for all methods with the specified return type which 
      * start with the prefixes "is" and "get"
-     */        
+     * 
+     * @param returnType return type.
+     * @return names of methods.
+     */
     public String[] getPropertyReadMethodNames(Class returnType) {
         String[] names = getMethodNames(returnType);
         List<String> result = new ArrayList<String>(names.length);
@@ -187,9 +192,6 @@ public class FormJavaSource {
         
     }
     
-    /**
-     *
-     */
     public static String extractPropertyName(String methodName) {
 	for (int i = 0; i < PROPERTY_PREFIXES.length; i++) {
 	    if(methodName.startsWith(PROPERTY_PREFIXES[i]) && 
@@ -214,7 +216,7 @@ public class FormJavaSource {
         
         final SourcePositions positions = controller.getTrees().getSourcePositions();
         
-        TreeScanner scan = new TreeScanner<Void, List<String>>() {
+        TreeScanner<Void, List<String>> scan = new TreeScanner<Void, List<String>>() {
             @Override
             public Void visitClass(ClassTree node, List<String> p) {
                 long startOffset = positions.getStartPosition(controller.getCompilationUnit(), node);
@@ -238,34 +240,14 @@ public class FormJavaSource {
             }
         };
         
-        List<String> fields = new ArrayList<String>();
-        scan.scan(controller.getCompilationUnit(), fields);
+        List<String> fieldNames = new ArrayList<String>();
+        scan.scan(controller.getCompilationUnit(), fieldNames);
         
-        return fields;
+        return fieldNames;
     }	
 
-    private boolean isAssignableFrom(String typeName, Class returnType) {	
-	Class clazz = getClassByName(typeName);	    
-	return clazz!=null ? returnType.isAssignableFrom(clazz) : false;	    
-    }
-    
-    private Class getClassByName(String className) {
-	Class clazz = null;
-	try {
-	    clazz = ClassPathUtils.loadClass(className, formDataObject.getPrimaryFile());
-	}
-	catch (Exception ex) {
-            // could be anything, ignore it...
-            ex.printStackTrace();	    
-	}
-	catch (LinkageError ex) {
-	    ex.printStackTrace();	    
-	}
-	return clazz;
-    }	    
-    
-    private static String[] toArray(List list) {
-        return (String[])list.toArray(new String[list.size()]);
+    private static String[] toArray(List<String> list) {
+        return list.toArray(new String[list.size()]);
     }
 
     public static boolean isInDefaultPackage(FormModel formModel) {
