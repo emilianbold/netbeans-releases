@@ -491,13 +491,6 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         } else {
             if ((oldInfo.getStatus() & displayStatuses) + (newInfo.getStatus() & displayStatuses) == 0) return false;
         }
-        File root = Mercurial.getInstance().getTopmostManagedParent(file);
-        // Not required: affectsView is called in PropertyChange handler, which schedules a refreshStatuses,
-        // this results in a call to setupModels which refreshes the BranchInfo and UpdateTargets by calling:
-        // setRepositoryBranchInfo() and refreshUpdateTargets()
-        
-        //setRepositoryBranchInfo(root);
-        //refreshUpdateTargets(root);                
         return context == null? false: context.contains(file);
     }
 

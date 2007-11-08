@@ -109,7 +109,6 @@ public class ShowAllChangesAction extends SystemAction {
             }
 
             final VCSContext ctx = VCSContext.forNodes(allNodes.toArray(new Node[allNodes.size()]));
-            Set<File> files = ctx.getRootFiles();
             final String title;
             if (projects.length == 1) {
                 Project project = projects[0];

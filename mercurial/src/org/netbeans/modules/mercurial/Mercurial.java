@@ -102,6 +102,7 @@ public class Mercurial {
     private FileStatusCache     fileStatusCache;
     private HashMap<String, RequestProcessor>   processorsToUrl;
     private boolean goodVersion;
+    private String version;
     private boolean checkedVersion;
 
     private Mercurial() {
@@ -116,6 +117,7 @@ public class Mercurial {
         mercurialInterceptor = new MercurialInterceptor();
         // Need hgext.hgk added to user's .hgrc file to support Mercurial > View
         HgModuleConfig.getDefault().addHgkExtension();
+        checkVersion(); // Does the Hg check but postpones querying user until menu is activated
     }
 
     private void setDefaultPath() {
@@ -135,32 +137,35 @@ public class Mercurial {
     }
 
     private void checkVersion() {
-        String version = HgCommand.getHgVersion();
+        version = HgCommand.getHgVersion();
         LOG.log(Level.FINE, "version: {0}", version); // NOI18N
         if (version != null) {
             goodVersion = version.startsWith(MERCURIAL_GOOD_VERSION) ||
                           version.startsWith(MERCURIAL_BETTER_VERSION);
-            if (!goodVersion) {
-                Preferences prefs = HgModuleConfig.getDefault().getPreferences();
-                String runVersion = prefs.get(HgModuleConfig.PROP_RUN_VERSION, null);
-                if (runVersion == null || !runVersion.equals(version)) {
-                    int response = JOptionPane.showOptionDialog(null,
-                                    NbBundle.getMessage(Mercurial.class,"MSG_VERSION_CONFIRM_QUERY", version, MERCURIAL_BETTER_VERSION), // NOI18N
-                                    NbBundle.getMessage(Mercurial.class,"MSG_VERSION_CONFIRM"), // NOI18N
-                                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,null, null, null);
-
-                     if (response == JOptionPane.YES_OPTION) {
-                         goodVersion = true;
-                         prefs.put(HgModuleConfig.PROP_RUN_VERSION, version);
-                     } else {
-                         prefs.remove(HgModuleConfig.PROP_RUN_VERSION);
-                     }
-                } else {
-                   goodVersion = true;
-                }
-            }
         } else {
             goodVersion = false;
+        }
+    }
+    
+    public void checkVersionNotify() {  
+        if (version != null && !goodVersion) {
+            Preferences prefs = HgModuleConfig.getDefault().getPreferences();
+            String runVersion = prefs.get(HgModuleConfig.PROP_RUN_VERSION, null);
+            if (runVersion == null || !runVersion.equals(version)) {
+                int response = JOptionPane.showOptionDialog(null,
+                        NbBundle.getMessage(Mercurial.class, "MSG_VERSION_CONFIRM_QUERY", version, MERCURIAL_BETTER_VERSION), // NOI18N
+                        NbBundle.getMessage(Mercurial.class, "MSG_VERSION_CONFIRM"), // NOI18N
+                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
+
+                if (response == JOptionPane.YES_OPTION) {
+                    goodVersion = true;
+                    prefs.put(HgModuleConfig.PROP_RUN_VERSION, version);
+                } else {
+                    prefs.remove(HgModuleConfig.PROP_RUN_VERSION);
+                }
+            } else {
+                goodVersion = true;
+            }
         }
     }
 
@@ -258,7 +263,7 @@ public class Mercurial {
 
     public boolean isGoodVersion() {
         if (checkedVersion == false) {
-            checkVersion();
+            checkVersionNotify();
             checkedVersion = true;
         }
         return goodVersion;

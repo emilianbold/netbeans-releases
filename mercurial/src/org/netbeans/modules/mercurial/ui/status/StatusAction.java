@@ -74,7 +74,6 @@ public class StatusAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent ev) {
-        Mercurial hg = Mercurial.getInstance();
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
         
         if (files == null || files.length == 0) return;
