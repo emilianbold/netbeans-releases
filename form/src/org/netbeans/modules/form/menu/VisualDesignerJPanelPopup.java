@@ -43,7 +43,6 @@ package org.netbeans.modules.form.menu;
 
 import javax.swing.JComponent;
 import javax.swing.JMenu;
-import javax.swing.JPanel;
 import javax.swing.Popup;
 
 /** A custom Popup container for menu items that doesn't use a real top level component.
@@ -52,7 +51,6 @@ import javax.swing.Popup;
  * @author joshua.marinacci@sun.com
  */
 class VisualDesignerJPanelPopup extends Popup {
-    private static final boolean DEBUG = false;
     JComponent cont;
     JMenu menu;
     VisualDesignerPopupFactory fact;
@@ -65,20 +63,11 @@ class VisualDesignerJPanelPopup extends Popup {
     }
     
     // when this menu is shown hide all of the other menus
+    @Override
     public void show() {
         // hide all menus except this one
         fact.hideOtherMenus(menu);
         cont.setVisible(true);
-    }
-    
-    public void hide() {
-        p("hiding");
-    }
-    
-    private void p(String string) {
-        if(DEBUG) {
-            System.out.println(string);
-        }
     }
     
 }

@@ -70,11 +70,6 @@ import org.openide.util.actions.NodeAction;
  * @author Joshua Marinacci
  */
 public class AddSubItemAction extends NodeAction {
-    private static final boolean DEBUG = false;
-    public AddSubItemAction() {
-        p("add sub item action is created");
-    }
-
     private JMenuItem[] items;
     
     //fix this
@@ -92,6 +87,7 @@ public class AddSubItemAction extends NodeAction {
 
     protected void performAction(Node[] activatedNodes) { }
 
+    @Override
     public JMenuItem getMenuPresenter() {
         return getPopupPresenter();
     }
@@ -101,6 +97,7 @@ public class AddSubItemAction extends NodeAction {
      * @return the JMenuItem representation for the action
      */
     
+    @Override
     public JMenuItem getPopupPresenter() {
         JMenu popupMenu = new JMenu(NbBundle.getMessage(AddSubItemAction.class, "ACT_AddFromPalette")); //NOI18N
         
@@ -120,13 +117,6 @@ public class AddSubItemAction extends NodeAction {
         return popupMenu;
     }
 
- 
-    private static void p(String s) {
-        if(DEBUG) {
-            System.out.println(s);
-        }
-    }
-    
     
     // this add listener works by finding a matching item in the palette
     // and calling the usual addComponentToEndOfMenu routine to do the
@@ -144,11 +134,9 @@ public class AddSubItemAction extends NodeAction {
                 if(nd instanceof RADComponentNode) {
                     RADComponentNode rnode = (RADComponentNode) nd;
                     RADComponent comp = rnode.getRADComponent();
-                    p("adding nodes to: comp = " + comp);
                     PaletteItem[] items = PaletteUtils.getAllItems();
                     for(PaletteItem item : items) {
                         if(clazz == item.getComponentClass()) {
-                            p("found the menu item palette stuff");
                             MenuEditLayer.addComponentToEndOfMenu(comp, item);
                             return;
                         }
@@ -168,19 +156,15 @@ public class AddSubItemAction extends NodeAction {
         final Node[] nodes = getActivatedNodes();
         final List components = FormUtils.getSelectedLayoutComponents(nodes);
         //only create this menu the first time it is called
-        p("checking to creating the menu");
         if (!(menu.getMenuComponentCount() > 0)) {
-            p("creating the menu");
             // extract the list of menu related components from the palette
             Node[] categories = PaletteUtils.getCategoryNodes(PaletteUtils.getPaletteNode(), false);
             //p("categories");
             for(Node cat : categories) {
-                p("cat = " + cat + " " + cat.getDisplayName() + " " + cat.getClass().getName());
                 if("SwingMenus".equals(cat.getName())) {
-                    p("found swing menus");
                     Node[] items = PaletteUtils.getItemNodes(cat, false);
                     for(Node item : items) {
-                        PaletteItem paletteItem = (PaletteItem)item.getLookup().lookup( PaletteItem.class );
+                        PaletteItem paletteItem = item.getLookup().lookup( PaletteItem.class );
                         if( null != paletteItem) {
                             
                             if(JMenuBar.class.isAssignableFrom(paletteItem.getComponentClass())) continue;
@@ -204,10 +188,10 @@ public class AddSubItemAction extends NodeAction {
         }
         RADComponent rc = (RADComponent)components.get(0);
         FormDesigner formDesigner = FormEditor.getFormDesigner(rc.getFormModel());
-        java.util.Collection col = formDesigner.getDesignerActions(true);
+        java.util.Collection<Action> col = formDesigner.getDesignerActions(true);
         int n = col.size();
         assert n == (items.length / 2);
-        Action[] actions = (Action[]) col.toArray(new Action[n]);
+        Action[] actions = col.toArray(new Action[n]);
         for (int i=0; i < n; i++) {
             items[i].setEnabled(actions[i].isEnabled());
             items[i+n].setEnabled(actions[i].isEnabled());

@@ -28,7 +28,6 @@
 package org.netbeans.modules.form.menu;
 
 import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.RADComponentCookie;
@@ -55,8 +54,7 @@ public class InsertMenuAction extends NodeAction {
 
     protected void performAction(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length == 1) {
-            RADComponentCookie radCookie = (RADComponentCookie)activatedNodes[0]
-                                            .getCookie(RADComponentCookie.class);
+            RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);
             final RADComponent metacomp = radCookie == null ? null :
                                       radCookie.getRADComponent();
             

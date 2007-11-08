@@ -61,12 +61,13 @@ class VisualDesignerPopupMenuUI extends PopupMenuUI {
         this.ui = ui;
     }
     
+    @Override
     public boolean isPopupTrigger(MouseEvent e) {
         return ui.isPopupTrigger(e);
     }
+    @Override
     public Popup getPopup(JPopupMenu popup, int x, int y) {
-        //PopupFactory popupFactory = PopupFactory.getSharedInstance();
-        PopupFactory popupFactory = layer.hackedPopupFactory;//layer.getPopupFactory();
+        PopupFactory popupFactory = layer.hackedPopupFactory;
         if(popupFactory == null) {
             return super.getPopup(popup, x, y);
         }

@@ -62,8 +62,6 @@ import org.netbeans.modules.form.RADVisualContainer;
  * @author joshua.marinacci@sun.com
  */
 class VisualDesignerPopupFactory extends PopupFactory {
-    private static final boolean DEBUG = false;
-    
     public Map<JMenu, JPanel> containerMap;
     private Map<JMenu, VisualDesignerJPanelPopup> popupMap;
     
@@ -75,18 +73,15 @@ class VisualDesignerPopupFactory extends PopupFactory {
         this.canvas = canvas;
     }
     
+    @Override
     public Popup getPopup(Component owner, Component contents, int x, int y) throws IllegalArgumentException {
-        
         final JMenu menu = (JMenu) owner;
-        p("creating a popup for: " + menu.getText());
-        JComponent parent = canvas.getMenuParent(menu);
         JPanel cont = containerMap.get(menu);
         
         if (cont == null) {
             cont = new VisualDesignerJPanelContainer(menu,this);
             cont.setLayout(new BoxLayout(cont, BoxLayout.Y_AXIS));
-            
-            
+
             RADVisualContainer menuRAD = (RADVisualContainer) canvas.formDesigner.getMetaComponent(menu);
             for(RADComponent c : menuRAD.getSubBeans()) {
                 JComponent comp = (JComponent) canvas.formDesigner.getComponent(c);
@@ -135,12 +130,6 @@ class VisualDesignerPopupFactory extends PopupFactory {
         cont.setLocation(pt);
     }
     
-    private static void p(String string) {
-        if(DEBUG) {
-            System.out.println(string);
-        }
-    }
-    
     void hideOtherMenus(JMenu menu) {
         for(JMenu m : containerMap.keySet()) {
             if(m != menu) {
@@ -167,6 +156,7 @@ class VisualDesignerPopupFactory extends PopupFactory {
             this.menu = menu;
             this.fact = fact;
         }
+        @Override
         public void setVisible(boolean visible) {
             // if making visible
             if(visible) {

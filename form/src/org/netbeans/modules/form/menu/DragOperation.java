@@ -40,15 +40,11 @@
  */
 package org.netbeans.modules.form.menu;
 
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.BorderFactory;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
@@ -59,13 +55,10 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.form.FormEditor;
-import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.HandleLayer;
 import org.netbeans.modules.form.MetaComponentCreator;
 import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.RADVisualComponent;
-import org.netbeans.modules.form.RADVisualContainer;
-import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.palette.PaletteUtils;
 
@@ -77,7 +70,6 @@ import org.netbeans.modules.form.palette.PaletteUtils;
  * @author joshua.marinacci@sun.com
  */
 class DragOperation {
-    private static final boolean DEBUG = false;
     private MenuEditLayer menuEditLayer;
     private JComponent dragComponent;
     private boolean started = false;
@@ -104,7 +96,6 @@ class DragOperation {
     // start a drag from one menu item to another
     void start(JMenuItem item, Point pt) {
         op = Op.INTER_MENU_DRAG;
-        p("starting an inner menu drag for: " + item + " at " + pt);
         started = true;
         
         
@@ -153,11 +144,9 @@ class DragOperation {
             RADVisualComponent precreated = creator.precreateVisualComponent(
                     paletteItem.getComponentClassSource());
             if(precreated != null) {
-                p("precreated: " + precreated.getBeanClass());
                 Object comp = precreated.getBeanInstance();
                 if(comp instanceof JComponent) {
                     JComponent jcomp = (JComponent) comp;
-                    p("it's a jcomponent");
                     if(comp instanceof JMenuItem) {
                         JMenuItem mcomp = (JMenuItem) comp;
                         mcomp.setBorder(MenuEditLayer.DRAG_MENU_BORDER);
@@ -166,10 +155,8 @@ class DragOperation {
                         mcomp.setBorderPainted(true);
                     }
                     if(comp instanceof JSeparator) {
-                        p("it's a separator");
                         //jcomp.setBorder(BorderFactory.createLineBorder(new Color(0xFFA400), 1));//, thickness)MenuEditLayer.DRAG_SEPARATOR_BORDER);
                         //jcomp.setPreferredSize(new Dimension(80,5));
-                        p("border = " + jcomp.getBorder());
                     }
                     return jcomp;
                 }
@@ -182,7 +169,6 @@ class DragOperation {
         if(item == null && type != null && JComponent.class.isAssignableFrom(type)) {
             try {
                 dragComponent = (JComponent)type.newInstance();
-                p("created a drag component here: " + dragComponent);
             } catch (Exception ex) {
                 System.out.println("exception: " + ex.getMessage());
                 ex.printStackTrace();
@@ -236,11 +222,9 @@ class DragOperation {
         }
         
         op = Op.PICK_AND_PLOP_FROM_PALETTE;
-        p("starting drag op for : " + item.getComponentClassName() + " at " + pt);
         started = true;
         dragComponent = createDragFeedbackComponent(null, item.getComponentClass());
         dragComponent.setSize(dragComponent.getPreferredSize());
-        p("created drag component = " + dragComponent);
         dragComponent.setLocation(pt);
         menuEditLayer.layers.add(dragComponent, JLayeredPane.DRAG_LAYER);
         menuEditLayer.repaint();
@@ -307,8 +291,6 @@ class DragOperation {
                 menuEditLayer.dropTargetLayer.clearDropTarget();
             }
             
-        } else {
-            p("DragOperation: dragComponent shouldn't be null when moving");
         }
     }
     
@@ -321,11 +303,9 @@ class DragOperation {
         started = false;
         currentItem = null;
         if(dragComponent == null) return;
-        p("ending an operation at: " + pt);
         menuEditLayer.layers.remove(dragComponent);
         menuEditLayer.dropTargetLayer.clearDropTarget();
         
-        p("op = " + op);
         switch (op) {
         case PICK_AND_PLOP_FROM_PALETTE: completePickAndPlopFromPalette(pt, clear); break;
         case INTER_MENU_DRAG: completeInterMenuDrag(pt); break ;
@@ -356,7 +336,7 @@ class DragOperation {
                 JMenuBar.class.isAssignableFrom(rad.getBeanClass()))) {
            return (JComponent) menuEditLayer.formDesigner.getComponent(rad);
         } else {
-            return (JComponent) getDeepestComponentInPopups(pt);
+            return getDeepestComponentInPopups(pt);
         }
     }
     
@@ -365,16 +345,11 @@ class DragOperation {
     }
     
     private void completeInterMenuDrag(Point pt) {
-        p("================\n\n\n\n==========\n\n========");
-        p("complete inter menu drag: target comp = " + targetComponent);
         if(targetComponent == null) return;
         
         //check if it's still a valid target
-        JComponent tcomp = (JComponent) getDeepestComponent(pt);
-        p("target = " + targetComponent);
-        p("tcomp = " + tcomp);
+        JComponent tcomp = getDeepestComponent(pt);
         if(targetComponent != tcomp) {
-            p("no longer over a valid target. bailing");
             menuEditLayer.formDesigner.toggleSelectionMode();
             return;
         }
@@ -387,28 +362,20 @@ class DragOperation {
             
             // if dragging a jmenu onto a toplevel jmenu
             if(menu.getParent() instanceof JMenuBar && isOnlyJMenus(payloadComponents)) { //payloadComponent instanceof JMenu) {
-                p("dropping into a toplevel menu");
                 if(DropTargetLayer.isMenuLeftEdge(pt2, menu)) {
-                    p("doing a left drop");
                     menuEditLayer.moveRadComponentToBefore(payloadComponent, menu);
                     return;
                 } else if (DropTargetLayer.isMenuRightEdge(pt2, menu)) {
-                    p("doing a right drop");
                     menuEditLayer.moveRadComponentToAfter(payloadComponent, menu);
                     return;
                 } else {  // else must be in the center so just add to the menu instead of next to
-                    p("doing a center drop");
                     menuEditLayer.moveRadComponentInto(payloadComponent, menu);
                     return;
                 }
             }
-            p("on a jmenu. could be in or above");
-            p("converted point = " + pt2);
             if(DropTargetLayer.isSubMenuRightEdge(pt2, menu)) {
-                p("doing 'in' menu drop");
                 menuEditLayer.moveRadComponentInto(payloadComponent, menu);
             } else {
-                p("doing above/below menu drop");
                 if(DropTargetLayer.isBelowItem(pt2,menu)) {
                     menuEditLayer.moveRadComponentToAfter(payloadComponent, targetComponent);
                 } else {
@@ -419,13 +386,10 @@ class DragOperation {
         }
         
         if(tcomp instanceof JMenuBar) {
-            p("dragging to the menubar itself");
             if(payloadComponent instanceof JMenu) {
-                p("adding menu to the end of the menubar");
                 menuEditLayer.moveRadComponentInto(payloadComponent, targetComponent);
                 return;
             } else {
-                p("can't drag a non-JMenu to the menubar");
                 return;
             }
         }
@@ -439,7 +403,6 @@ class DragOperation {
     }
     
     private void completePickAndPlopFromPalette(Point pt, boolean clear) {
-        p("complete pick and plop from palette: target comp = " + targetComponent);
         PaletteItem paletteItem = PaletteUtils.getSelectedItem();
         if(paletteItem == null) return;
         
@@ -447,11 +410,8 @@ class DragOperation {
         
         
         //check if it's still a valid target
-        JComponent tcomp = (JComponent) getDeepestComponent(pt);
-        p("target = " + targetComponent);
-        p("tcomp = " + tcomp);
+        JComponent tcomp = getDeepestComponent(pt);
         if(targetComponent != tcomp) {
-            p("no longer over a valid target. bailing");
             if(clear) {
                 menuEditLayer.formDesigner.toggleSelectionMode();
             }
@@ -473,47 +433,35 @@ class DragOperation {
             try {
                 newComponent = (JComponent)paletteItem.getComponentClass().newInstance();
             } catch (Exception ex) {
-                p("couldn't create new component!");
                 ex.printStackTrace();
                 return;
             }
         }
         
         // add new component reference to the form
-        // i can probably remove both of these variables
-        LayoutComponent layoutComponent = creator.getPrecreatedLayoutComponent();
-        Object constraints = null;
-        
+        creator.getPrecreatedLayoutComponent();
         
         Point pt2 = SwingUtilities.convertPoint(menuEditLayer.glassLayer, pt, targetComponent);
         // dragged to a menu, add inside the menu instead of next to it
         if(targetComponent instanceof JMenu) {
-            p("============== doing a new comp to a jmenu");
             
             //toplevel menus
             if(targetComponent.getParent() instanceof JMenuBar) {
-                p("on top of a toplevel menu");
                 
                 if(DropTargetLayer.isMenuLeftEdge(pt2, targetComponent) && isMenuPayload(creator)) {
-                    p("on the left edge");
                     RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
                     menuEditLayer.addRadComponentToBefore(newRad, targetComponent);
                 } else if(DropTargetLayer.isMenuRightEdge(pt2, targetComponent) && isMenuPayload(creator)) {
-                    p("on the right edge");
                     RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
                     menuEditLayer.addRadComponentToAfter(newRad, targetComponent);
                 } else {
-                    p("else in the center");
                     menuEditLayer.addRadComponentToEnd(targetComponent, creator);
                 }
             } else {
                 if(DropTargetLayer.isSubMenuRightEdge(pt2, targetComponent)) {
-                    p("doing in menu drop");
                     menuEditLayer.addRadComponentToEnd(targetComponent, creator);
                 } else {
-                    p("doing above/below menu drop");
                     RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
-                    p("new rad = " + newRad);
                     if(DropTargetLayer.isBelowItem(pt2, targetComponent)) {
                         menuEditLayer.addRadComponentToAfter(newRad, targetComponent);
                     } else {
@@ -523,13 +471,10 @@ class DragOperation {
             }
         } else {
             if(targetComponent instanceof JMenuBar) {
-                p("======= doing a new comp directly to the jmenubar");
                 menuEditLayer.addRadComponentToEnd(targetComponent, creator);
             } else {
                 // add the new component to the target's containing menu
-                p("doing the new kind of add");
                 RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
-                p("new rad = " + newRad);
                 //menuEditLayer.addRadComponentToBefore(newRad, targetComponent);
                 if(DropTargetLayer.isBelowItem(pt2, targetComponent)) {
                     menuEditLayer.addRadComponentToAfter(newRad, targetComponent);
@@ -565,7 +510,6 @@ class DragOperation {
     public JComponent getDeepestComponentInPopups(Point pt) {
         Component[] popups = menuEditLayer.layers.getComponentsInLayer(JLayeredPane.DEFAULT_LAYER);
         for(Component popup : popups) {
-            //p("looking at popup: " + popup);
             if(popup.isVisible()) {
                 Point pt2 = SwingUtilities.convertPoint(menuEditLayer, pt, popup);
                 JComponent child = (JComponent) javax.swing.SwingUtilities.getDeepestComponentAt(popup, pt2.x, pt2.y);
@@ -583,10 +527,5 @@ class DragOperation {
     public PaletteItem getCurrentItem() {
         return currentItem;
     }
-    
-    private static void p(String s) {
-        if(DEBUG) {
-            System.out.println(s);
-        }
-    }
+
 }

@@ -54,10 +54,10 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
+import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -110,7 +110,6 @@ public class MenuEditLayer extends JPanel {
     public static final int EMPTY_ICON_BORDER_WIDTH = 2;
     
     /* === private constants === */
-    private static final boolean DEBUG = false;
     private static final boolean USE_NEW_ITEM_COLOR_SWITCHING = false;
     
     /* === public and package level fields. these should probably become getters and setters  ===*/
@@ -141,24 +140,18 @@ public class MenuEditLayer extends JPanel {
         menuPopupUIMap = new HashMap<JMenu, PopupMenuUI>();
         formModelListeners = new HashMap<RADVisualContainer,FormModelListener>();
         
-        
-        setLayout(null);
         layers = new JLayeredPane();
         this.setLayout(new BorderLayout());
-        this.add(layers,"Center");
+        this.add(layers, BorderLayout.CENTER);
         
         dragop = new DragOperation(this);
         
         glassLayer = new JComponent() {
+            @Override
             public void paintComponent(Graphics g) {
-                if(DEBUG) {
-                    g.setColor(Color.GREEN);
-                    g.drawString("Glass Layer", 30,30);
-                    g.drawRect(0,0,getWidth()-1,getHeight()-1);
-                }
             }
         };
-        
+
         layers.add(glassLayer, new Integer(500)); // put the glass layer over the drag layer
         glassLayer.setSize(400,400); //josh: do i need this line? probably can delete it.
         
@@ -166,19 +159,11 @@ public class MenuEditLayer extends JPanel {
         layers.add(dropTargetLayer, new Integer(JLayeredPane.DRAG_LAYER-5)); // put the drop target layer just above the drag layer
         
         // make the extra layers resize to the main component
-        this.addComponentListener(new ComponentListener() {
+        this.addComponentListener(new ComponentAdapter() {
+            @Override
             public void componentResized(ComponentEvent e) {
                 glassLayer.setSize(MenuEditLayer.this.getSize());
                 dropTargetLayer.setSize(MenuEditLayer.this.getSize());
-            }
-
-            public void componentMoved(ComponentEvent arg0) {
-            }
-
-            public void componentShown(ComponentEvent arg0) {
-            }
-
-            public void componentHidden(ComponentEvent arg0) {
             }
         });
         
@@ -273,12 +258,9 @@ public class MenuEditLayer extends JPanel {
     }
     
     
+    @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if(DEBUG) {
-            g.setColor(Color.RED);
-            g.drawString("the MenuEditLayer is visible",5,getHeight()-5);
-        }
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.setColor(Color.BLACK);
@@ -352,20 +334,13 @@ public class MenuEditLayer extends JPanel {
         if(keyboardMenuNavigator == null) {
             keyboardMenuNavigator = new KeyboardMenuNavigator(this);
             glassLayer.addKeyListener(keyboardMenuNavigator);
-            glassLayer.addKeyListener(new KeyListener() {
-
-                public void keyTyped(KeyEvent e) {
-                }
-
+            glassLayer.addKeyListener(new KeyAdapter() {
+                @Override
                 public void keyPressed(KeyEvent e) {
                     if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                         dragop.fastEnd();
                     }
-                }
-
-                public void keyReleased(KeyEvent e) {
-                }
-                
+                }                
             });
         }
     }
@@ -395,17 +370,17 @@ public class MenuEditLayer extends JPanel {
                     if(events != null) {
                         for(FormModelEvent evt : events) {
                             // if this is a menubar delete event
-                            if(evt.getChangeType() == evt.COMPONENT_REMOVED) {
+                            if(evt.getChangeType() == FormModelEvent.COMPONENT_REMOVED) {
                                 if(evt.getComponent() != null && 
                                         JMenuBar.class.isAssignableFrom(evt.getComponent().getBeanClass())) {
                                     hideMenuLayer();
                                 }
                             }
-                            if(evt.getChangeType() == evt.FORM_TO_BE_CLOSED) {
+                            if(evt.getChangeType() == FormModelEvent.FORM_TO_BE_CLOSED) {
                                 hideMenuLayer();
                                 isAlive = false;
                             }
-                            if(evt.getChangeType() == evt.COMPONENT_ADDED) {
+                            if(evt.getChangeType() == FormModelEvent.COMPONENT_ADDED) {
                                 if(evt.getCreatedDeleted()) {
                                     if(USE_NEW_ITEM_COLOR_SWITCHING) {
                                         configureNewComponent(evt.getComponent());
@@ -533,7 +508,6 @@ public class MenuEditLayer extends JPanel {
     
     
     void configureMenu(final JComponent parent, final JMenu menu) {
-        //p("configuring the menu: " + menu.getText());
         // make sure it will draw it's border so we can have rollovers and selection
         menu.setBorderPainted(true);
         //install the wrapper icon if not a toplevel JMenu
@@ -545,23 +519,17 @@ public class MenuEditLayer extends JPanel {
         
         // configure the maps and popups
         JPopupMenu popup = menu.getPopupMenu();
-        //p("got a popup: " + popup);
         menuPopupUIMap.put(menu, popup.getUI());
         popup.setUI(new VisualDesignerPopupMenuUI(this, popup.getUI()));
         
         // get all of the components in this menu
         Component[] subComps = menu.getMenuComponents();
-        //p("the current subcomps of the menu are:");
-        for(Component c : subComps) {
-            //p("   comp: " + c);
-        }
         // if this isn't the first time this menu has been opened then the sub components
         // will have been moved to the popupPanel already, so we will find them there instead.
         JPanel popupPanel = getPopupFactory().containerMap.get(menu);
         if(popupPanel != null) {
             subComps = popupPanel.getComponents();
         }
-        
         
         RADVisualContainer menuRAD = (RADVisualContainer) formDesigner.getMetaComponent(menu);
         registerForm(menuRAD,menu);
@@ -645,7 +613,7 @@ public class MenuEditLayer extends JPanel {
             g.drawRect(width-ACCEL_PREVIEW_WIDTH+offset,   1,ACCEL_PREVIEW_WIDTH-1+ioffset, height+ioffset);
             g.drawRect(width-ACCEL_PREVIEW_WIDTH+offset+1, 2,ACCEL_PREVIEW_WIDTH-3+ioffset, height-2+ioffset);
             g.setColor(Color.LIGHT_GRAY);
-            g.setFont(new Font("SansSerif",Font.PLAIN,10));
+            g.setFont(new Font("SansSerif",Font.PLAIN,10)); // NOI18N
             String shortcut = NbBundle.getMessage(MenuEditLayer.class, "MENU_Shortcut"); // NOI18N
             g.drawString(shortcut, width-ACCEL_PREVIEW_WIDTH+15,height-3+ioffset);
         }
@@ -715,6 +683,7 @@ public class MenuEditLayer extends JPanel {
     
     
     //override JComponent.isOpaque to always return false
+    @Override
     public boolean isOpaque() {
         return false;
     }
@@ -861,18 +830,18 @@ public class MenuEditLayer extends JPanel {
 
     private String getComponentDefaultsPrefix(JComponent c) {
         if(c instanceof JMenuBar) {
-            return "MenuBar";
+            return "MenuBar"; // NOI18N
         }
         if(c instanceof JMenu) {
-            return "Menu";
+            return "Menu"; // NOI18N
         }
         if(c instanceof JCheckBoxMenuItem) {
-            return "CheckBoxMenuItem";
+            return "CheckBoxMenuItem"; // NOI18N
         }
         if(c instanceof JRadioButtonMenuItem) {
-            return "RadioButtonMenuItem";
+            return "RadioButtonMenuItem"; // NOI18N
         }
-        return "MenuItem";
+        return "MenuItem"; // NOI18N
     }
     
     private Color getNormalBackground(RADComponent metacomp, JComponent c) {
@@ -905,7 +874,7 @@ public class MenuEditLayer extends JPanel {
     
     private Color getNormalForeground(JComponent c) {
         String prefix = getComponentDefaultsPrefix(c);
-        Color color = UIManager.getDefaults().getColor(prefix+".foreground");
+        Color color = UIManager.getDefaults().getColor(prefix+".foreground"); // NOI18N
         if(color == null) {
             color = Color.BLACK;
         }
@@ -1034,18 +1003,13 @@ public class MenuEditLayer extends JPanel {
             if(target.getParent() instanceof JMenuBar) {
                 targetParent = (JComponent) target.getParent();
             }
-            //p("target parent = " + targetParent);
             RADVisualComponent targetRad = (RADVisualComponent) formDesigner.getMetaComponent(target);
-            //p("target rad = " + targetRad);
             RADVisualContainer targetParentRad = (RADVisualContainer) formDesigner.getMetaComponent(targetParent);
-            //p("target parent rad = " + targetParentRad);
             
             assert targetParentRad != null;
             
-            //p("=== inserting before drop target component ===");
             int index2 = targetParentRad.getIndexOf(targetRad) + offset;
-            //p("inserting at index: " + index2);
-            FormModelEvent fme2 = formDesigner.getFormModel().fireComponentAdded(payloadRad, false);
+            formDesigner.getFormModel().fireComponentAdded(payloadRad, false);
             formDesigner.getFormModel().addVisualComponent(payloadRad, targetParentRad, new Integer(index2), true);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -1055,10 +1019,8 @@ public class MenuEditLayer extends JPanel {
     
     boolean addRadComponentToEnd(JComponent targetComponent, MetaComponentCreator creator) {
         RADVisualContainer targetContainer = (RADVisualContainer) formDesigner.getMetaComponent(targetComponent);
-        //p("target container = " + targetContainer);
         Object constraints = null;
         boolean added = creator.addPrecreatedComponent(targetContainer, constraints);
-        //p("added comp: " + creator.getPrecreatedMetaComponent());
         return added;
     }
     
@@ -1079,32 +1041,23 @@ public class MenuEditLayer extends JPanel {
             if(payloadParent == null) {
                 payloadParent = (JComponent) payload.getParent();
             }
-            //p("payload parent = " + payloadParent);
             RADVisualComponent payloadRad = (RADVisualComponent) formDesigner.getMetaComponent(payload);
-            //p("payload rad = " + payloadRad);
             RADVisualContainer payloadParentRad = (RADVisualContainer) formDesigner.getMetaComponent(payloadParent);
-            //p("payload parent rad = " + payloadParentRad);
-            
-            if(payloadRad != null && payloadParentRad == null) {
-                p("MenuDesigner: WARNING! their is a payload rad without a parent! how did we get here!");
-            }
             
             // remove the component from it's old location
             // if no payload rad then that probably means this is a new component from the palette
             if(payloadRad != null && payloadParentRad != null) {
                 int index = payloadParentRad.getIndexOf(payloadRad);
                 payloadParentRad.remove(payloadRad);
-                FormModelEvent fme = formDesigner.getFormModel().fireComponentRemoved(payloadRad, payloadParentRad, index, false);
+                formDesigner.getFormModel().fireComponentRemoved(payloadRad, payloadParentRad, index, false);
             }
             
             RADVisualContainer targetMenuRad = (RADVisualContainer) formDesigner.getMetaComponent(targetMenu);
-            //p("target menu rad = " + targetMenuRad);
             //add inside the target menu
-            //p("=== inserting at end of a menu ===");
             //add to end of the toplevel menu
             targetMenuRad.add(payloadRad, -1);
             targetMenuRad.getLayoutSupport().addComponents(new RADVisualComponent[] { payloadRad }, null, -1);
-            FormModelEvent fme2 = formDesigner.getFormModel().fireComponentAdded(payloadRad, false);
+            formDesigner.getFormModel().fireComponentAdded(payloadRad, false);
             return;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -1131,24 +1084,16 @@ public class MenuEditLayer extends JPanel {
             if(payloadParent == null) {
                 payloadParent = (JComponent) payload.getParent();
             }*/
-            //p("payload parent = " + payloadParent);
             
             JComponent targetParent = getMenuParent(target);
             
             if(targetParent == null) {
                 targetParent = (JComponent) target.getParent();
             }
-            //p("target parent = " + targetParent);
-            
             RADVisualComponent payloadRad = (RADVisualComponent) formDesigner.getMetaComponent(payload);
-            //p("payload rad = " + payloadRad);
             RADVisualComponent targetRad = (RADVisualComponent) formDesigner.getMetaComponent(target);
-            //p("target rad = " + targetRad);
             RADVisualContainer payloadParentRad = (RADVisualContainer) formDesigner.getMetaComponent(payloadParent);
-            //p("payload parent rad = " + payloadParentRad);
             RADVisualContainer targetParentRad = (RADVisualContainer) formDesigner.getMetaComponent(targetParent);
-            //p("target parent rad = " + targetParentRad);
-            
 
             //if a toplevel menu dragged next to another toplevel menu
             if(payload instanceof JMenu && payload.getParent() instanceof JMenuBar 
@@ -1158,39 +1103,33 @@ public class MenuEditLayer extends JPanel {
                 payloadParent = (JComponent) payload.getParent();
                 payloadParentRad = (RADVisualContainer) formDesigner.getMetaComponent(payloadParent);
                 targetParentRad = (RADVisualContainer) formDesigner.getMetaComponent(targetParent);
-                //p("new payload parent rad = " + payloadParentRad);
             }
             
-            //p("=== removing ===");
             //skip if no payload rad, which probably means this is a new component from the palette
             if(payloadRad != null && payloadParentRad != null) {
-                //p("=== did a remove ===");
                 int index = payloadParentRad.getIndexOf(payloadRad);
                 payloadParentRad.remove(payloadRad);
-                FormModelEvent fme = formDesigner.getFormModel().fireComponentRemoved(payloadRad, payloadParentRad, index, false);
+                formDesigner.getFormModel().fireComponentRemoved(payloadRad, payloadParentRad, index, false);
             }
 
                 
             //if dragged component into a toplevel menu
             if(targetParent == null && target instanceof JMenu && target.getParent() instanceof JMenuBar) {
-                //p("=== inserting at end of a toplevel menu ===");
                 targetParentRad = (RADVisualContainer) targetRad;
                 //add to end of the toplevel menu
                 targetParentRad.add(payloadRad, -1);
                 targetParentRad.getLayoutSupport().addComponents(new RADVisualComponent[] { payloadRad }, null, -1);
-                FormModelEvent fme2 = formDesigner.getFormModel().fireComponentAdded(payloadRad, false);
+                formDesigner.getFormModel().fireComponentAdded(payloadRad, false);
                 return;
             }
             
             // insert if target exists, else the item was removed by dragging out of the menu
             if(targetParentRad != null) {
-                //p("=== inserting before drop target component ===");
                 int index2 = targetParentRad.getIndexOf(targetRad) + offset;
-                //p("index of target = " + index2);
                 targetParentRad.add(payloadRad, index2);
                 targetParentRad.getLayoutSupport().addComponents(new RADVisualComponent[] { payloadRad }, 
                         null, index2);
-                FormModelEvent fme2 = formDesigner.getFormModel().fireComponentAdded(payloadRad, false);
+                formDesigner.getFormModel().fireComponentAdded(payloadRad, false);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -1200,9 +1139,7 @@ public class MenuEditLayer extends JPanel {
     public static boolean addComponentToEndOfMenu(RADComponent targetContainer, PaletteItem paletteItem) {
         FormModel model = targetContainer.getFormModel();
         MetaComponentCreator creator = model.getComponentCreator();
-        RADVisualComponent precreated = creator.precreateVisualComponent(
-                paletteItem.getComponentClassSource());
-        JComponent newComponent = (JComponent) precreated.getBeanInstance();
+        creator.precreateVisualComponent(paletteItem.getComponentClassSource());
         boolean added = creator.addPrecreatedComponent(targetContainer, null);
         return added;
     }
@@ -1222,7 +1159,6 @@ public class MenuEditLayer extends JPanel {
     
     // change the look of the component to reflect the fully edited state
     private void configureEditedComponent(JComponent c) {
-        //p("configuring an edited component");
         if(c == null) return;
         if(USE_NEW_ITEM_COLOR_SWITCHING) {
             if(c.getForeground() == Color.LIGHT_GRAY) {
@@ -1243,44 +1179,27 @@ public class MenuEditLayer extends JPanel {
         if(!formModelListeners.containsKey(metacomp)) {
             FormModelListener fml = new FormModelListener() {
                 public void formChanged(FormModelEvent[] events) {
-                    p("form changed starting");
                     if (events != null) {
                         for(FormModelEvent evt : events) {
-                            
-                            p("form model update: " + evt.getChangeType() + " = ");
-                            switch(evt.getChangeType()) {
-                            case FormModelEvent.COMPONENT_PROPERTY_CHANGED: p("COMPONENT_PROPERTY_CHANGED");break;
-                            case FormModelEvent.COMPONENT_ADDED: p("COMPONENT_ADDED");break;
-                            case FormModelEvent.COMPONENT_REMOVED: p("COMPONENT_REMOVED");break;
-                            case FormModelEvent.COMPONENTS_REORDERED: p("COMPONENTS_REORDERED");break;
-                            case FormModelEvent.BINDING_PROPERTY_CHANGED: p("BINDING_PROPERTY_CHANGED");break;
-                            case FormModelEvent.FORM_LOADED: p("FORM_LOADED"); break;
-                            case FormModelEvent.FORM_TO_BE_CLOSED: p("FORM_TO_BE_CLOSED"); break;
-                            default: p("unknown type");
-                            }
-                            if(evt.getComponent() != null) {
-                                p(" " + evt.getComponent().getName());
-                            };
-                            
-                            if(evt.getChangeType() == evt.FORM_TO_BE_CLOSED) {
+                            if(evt.getChangeType() == FormModelEvent.FORM_TO_BE_CLOSED) {
                                 formModelListeners.remove(metacomp);
                                 metacomp.getFormModel().addFormModelListener(this);
                                 continue;
                             }
                             
-                            if(evt.getChangeType() == evt.COMPONENT_PROPERTY_CHANGED) {
-                                if("action".equals(evt.getPropertyName())) {
+                            if(evt.getChangeType() == FormModelEvent.COMPONENT_PROPERTY_CHANGED) {
+                                if("action".equals(evt.getPropertyName())) { // NOI18N
                                     configureEditedComponent(evt.getComponent());
                                 }
                             }
-                            if(evt.getChangeType() == evt.COMPONENT_PROPERTY_CHANGED || evt.getChangeType() == evt.BINDING_PROPERTY_CHANGED) {
+                            if(evt.getChangeType() == FormModelEvent.COMPONENT_PROPERTY_CHANGED || evt.getChangeType() == FormModelEvent.BINDING_PROPERTY_CHANGED) {
                                 if(evt.getContainer() == metacomp || evt.getComponent() == metacomp) {
                                     rebuildOnScreenMenu(metacomp);
                                 }
                                 updateIcon(evt.getComponent());
                             }
                             
-                            if(evt.getChangeType() == evt.COMPONENT_ADDED) {
+                            if(evt.getChangeType() == FormModelEvent.COMPONENT_ADDED) {
                                 updateIcon(evt.getComponent());
                                 //reinstall the accelerator preview when moving items around
                                 if(evt.getComponent() != null) {
@@ -1292,31 +1211,27 @@ public class MenuEditLayer extends JPanel {
                             }
                             
                             // if this menu was deleted then make sure it's popup is hidden and removed
-                            if(evt.getChangeType() == evt.COMPONENT_REMOVED) {
+                            if(evt.getChangeType() == FormModelEvent.COMPONENT_REMOVED) {
                                 if(evt.getComponent() == metacomp) {
-                                    p("this component was removed");
                                     unconfigureMenu(menu);
                                     continue;
                                 }
                             }
                             // if something added to the menu we monitor
-                            if(evt.getChangeType() == evt.COMPONENT_ADDED ||
-                                    evt.getChangeType() == evt.COMPONENTS_REORDERED ||
-                                    evt.getChangeType() == evt.COMPONENT_REMOVED) {
+                            if(evt.getChangeType() == FormModelEvent.COMPONENT_ADDED ||
+                                    evt.getChangeType() == FormModelEvent.COMPONENTS_REORDERED ||
+                                    evt.getChangeType() == FormModelEvent.COMPONENT_REMOVED) {
                                 if(evt.getContainer() == metacomp) {
                                     // then rebuild the menu
                                     rebuildOnScreenMenu(metacomp);
                                     return;
                                 }
                                 if(evt.getContainer() == getFormMenuBar()) {
-                                    p("it was a rad though: " + getFormMenuBar());
                                     JComponent comp = (JComponent) formDesigner.getComponent(getFormMenuBar());
-                                    p("comp = " + comp);
                                     //comp.revalidate();
                                     RADVisualContainer rad = (RADVisualContainer) getFormMenuBar();
                                     comp.removeAll();
                                     for(RADVisualComponent c : rad.getSubComponents()) {
-                                        p("c = " + c);
                                         if(c!=null) {
                                             comp.add((JComponent)formDesigner.getComponent(c));
                                         }
@@ -1325,7 +1240,6 @@ public class MenuEditLayer extends JPanel {
                             }
                         }
                     }
-                    p("form changed ending");
                 }
             };
             formModelListeners.put(metacomp,fml);
@@ -1336,29 +1250,23 @@ public class MenuEditLayer extends JPanel {
     private void rebuildOnScreenMenu(RADVisualContainer menuRAD) {
         if(menuRAD == null) return;
         if(hackedPopupFactory == null) return;
-        p("** rebuildOnScreenMenu() called on: " + menuRAD.getName());
         JMenu menu = (JMenu) formDesigner.getComponent(menuRAD);
         if(hackedPopupFactory.containerMap.containsKey(menu)) {
             JPanel popupContainer = hackedPopupFactory.containerMap.get(menu);
             if(popupContainer == null) return;
-            //p("looking over components left");
             for(Component c : popupContainer.getComponents()) {
-                //p("found comp: " + c);
                 if(c instanceof JMenu) {
                     unconfigureMenu((JMenu)c);
                 } else {
                     unconfigureMenuItem((JComponent)c);
                 }
             }
-            //p("removing all from container");;
             popupContainer.removeAll();
             // rebuild it
             for(RADVisualComponent child : menuRAD.getSubComponents()) {
                 if(child != null) {
                     JComponent jchild = (JComponent) formDesigner.getComponent(child);
-                    //p("checking: " + jchild);
                     if(!isConfigured(jchild)) {
-                        //p("not configured!");
                         if(jchild instanceof JMenu) {
                             configureMenu(menu, (JMenu)jchild);
                         } else {
@@ -1373,22 +1281,16 @@ public class MenuEditLayer extends JPanel {
             popupContainer.setSize(popupContainer.getLayout().preferredLayoutSize(popupContainer));
             validate();
             popupContainer.repaint();
-        } else {
-            //p("menu popup not built yet: " + menu.getName());
         }
     }
     
     private void updateIcon(RADComponent rad) {
-        p("updating icon for rad: " + rad);
         try {
             Component comp = (Component) formDesigner.getComponent(rad);
             if(comp instanceof JMenuItem) {
                 JMenuItem item = (JMenuItem) comp;
-                //p("item rad = " + rad);
                 RADProperty icon_prop = rad.getBeanProperty("icon");
-                //p("icon prop = " + icon_prop);
                 Object value = icon_prop.getValue();
-                //p("value = " + value);
                 // extract the new value
                 Icon icon = null;
                 if(value instanceof Icon) {
@@ -1399,10 +1301,8 @@ public class MenuEditLayer extends JPanel {
                 }
                 if(value instanceof ResourceValue) {
                     ResourceValue rv = (ResourceValue) value;
-                    //p("design value = " + rv.getDesignValue());
                     Object designValue = rv.getDesignValue();
                     if(designValue instanceof Icon) {
-                        //p("updating icon w/ design value");
                         icon = (Icon) designValue;
                     }
                     if(designValue instanceof NbImageIcon) {
@@ -1425,15 +1325,6 @@ public class MenuEditLayer extends JPanel {
         }
         
     }
-    
-    private static void p(String string) {
-        //turn off for now
-        if(DEBUG) {
-            System.out.println(string);
-        }
-    }
-    
-    
     
     //returns true if this array contains a menu component
     public static boolean containsMenuTypeComponent(RADVisualComponent[] comps) {
@@ -1496,17 +1387,11 @@ public class MenuEditLayer extends JPanel {
         JComponent pressComp = null;
         private boolean isEditing = false;
         
-        public void mouseClicked(MouseEvent e) {
-        }
-        
+        @Override
         public void mousePressed(MouseEvent e) {
-            p("mouse pressed: " + e);
-            p("started = " + dragop.isStarted() + " pnp = " + dragop.isPickAndPlop() + " target = " + dragop.getTargetComponent());
-            
             //if this is a valid menu drop
             if(dragop.isStarted() && dragop.getTargetComponent() != null &&
                     isMenuRelatedComponentClass(dragop.getTargetComponent().getClass())) {
-                p("skipping the lower part");
                 if(e.isShiftDown()) {
                     dragop.end(e.getPoint(), false);
                     PaletteItem item = PaletteUtils.getSelectedItem();
@@ -1570,7 +1455,6 @@ public class MenuEditLayer extends JPanel {
 
             
             if(c == null && !isMenuRelatedRADComponent(rad)) {
-                p("not a menu component. going back to handle layer");
                 PaletteUtils.clearPaletteSelection();
                 hideMenuLayer();
                 formDesigner.getHandleLayer().mousePressed(e);
@@ -1580,18 +1464,14 @@ public class MenuEditLayer extends JPanel {
             // start editing
             if(e.getClickCount() > 1) {
                 if(c instanceof JMenuItem) {
-                    p("starting the inline editing");
                     JMenuItem item = (JMenuItem) c;
                     Point pt = SwingUtilities.convertPoint(glassLayer, e.getPoint(), item);
                     SelectedPortion portion = DropTargetLayer.calculateSelectedPortion(item, pt);
-                    p("selected portion = " + portion);
                     RADComponent radcomp = formDesigner.getMetaComponent(item);
                     configureEditedComponent(c);
                     if(portion == SelectedPortion.Icon) {
-                        p("editing icon");
                         showIconEditor(radcomp);
                     } else if (portion == SelectedPortion.Accelerator) {
-                        p("editing accel");
                         showAcceleratorEditor(radcomp);
                     } else {
                         isEditing = true;
@@ -1602,33 +1482,30 @@ public class MenuEditLayer extends JPanel {
             
             // show context menu
             if(e.isPopupTrigger()) {
-                p("showing a context menu");
                 showContextMenu(e.getPoint());
                 return;
             }
 
             //prep for drag motion for menuitem to menuitem drags
             if(!dragop.isStarted() && c instanceof JMenuItem) {
-                p("possibly starting a drag op");
                 pressPoint = e.getPoint();
                 pressComp = c;
                 return;
             }
         }
         
+        @Override
         public void mouseReleased(MouseEvent e) {
             if(e.isPopupTrigger()) {
-                //p("showing a context menu");
                 showContextMenu(e.getPoint());
                 return;
             }
             
-            //p("mouse released: " + e);
             if(dragop.isStarted() && !e.isShiftDown()) {
                 dragop.end(e.getPoint());
             } else {
                 if(!isEditing) {
-                    JComponent c = (JComponent) dragop.getDeepestComponentInPopups(e.getPoint());
+                    JComponent c = dragop.getDeepestComponentInPopups(e.getPoint());
                     if(c != null) { 
                         if(c instanceof JMenuItem) {
                             Point localPt = SwingUtilities.convertPoint(glassLayer, e.getPoint(), c);
@@ -1653,7 +1530,7 @@ public class MenuEditLayer extends JPanel {
         
         private void showIconEditor(RADComponent comp) {
             try {
-                RADProperty prop = comp.getBeanProperty("icon");
+                RADProperty prop = comp.getBeanProperty("icon"); // NOI18N
                 new PropertyAction(prop).actionPerformed(null);
             } catch (Throwable th) {
                 th.printStackTrace();
@@ -1661,13 +1538,14 @@ public class MenuEditLayer extends JPanel {
         }
         private void showAcceleratorEditor(RADComponent comp) {
             try {
-                RADProperty prop = comp.getBeanProperty("accelerator");
+                RADProperty prop = comp.getBeanProperty("accelerator"); // NOI18N
                 new PropertyAction(prop).actionPerformed(null);
             } catch (Throwable th) {
                 th.printStackTrace();
             }
         }
         
+        @Override
         public void mouseEntered(MouseEvent e) {
             if(showMenubarWarning) {
                 showMenubarWarning = false;
@@ -1685,14 +1563,12 @@ public class MenuEditLayer extends JPanel {
                 
                 // if not menu related at all, then jump back to handle layer
                 if(item != null && !isMenuRelatedComponentClass(item.getComponentClass())) {
-                    p("not a menu component. going back to the handle layer");
                     hideMenuLayer();
                     return;
                 }
                 
                 if(formDesigner.getDesignerMode() == FormDesigner.MODE_ADD && item != null) {
                     if(JMenuBar.class.isAssignableFrom(item.getComponentClass())) {
-                        p("dragging in a menu bar. go back to handle layer");
                         hideMenuLayer();
                         return;
                     }
@@ -1701,7 +1577,6 @@ public class MenuEditLayer extends JPanel {
                 
                 /*
                 if(formDesigner.getDesignerMode() == FormDesigner.MODE_SELECT && showMenubarWarning) {
-                    p("still in bad mode");
                     //glassLayer.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     showMenubarWarning = false;
                     repaint();
@@ -1709,17 +1584,17 @@ public class MenuEditLayer extends JPanel {
             }
         }
         
+        @Override
         public void mouseExited(MouseEvent e) {
-            //p("mouse exited: " + e);
             if(dragop.isStarted()) {
                  dragop.setTargetVisible(false);
             }
         }
         
+        @Override
         public void mouseDragged(MouseEvent e) {
             if(!dragop.isStarted() && pressPoint != null && pressComp instanceof JMenuItem
                     && e.getPoint().distance(pressPoint) > 10) {
-                p("starting the dragop");
                 dragop.start((JMenuItem)pressComp, e.getPoint());
                 pressPoint = null;
                 pressComp = null;
@@ -1730,6 +1605,7 @@ public class MenuEditLayer extends JPanel {
             return;
         }
         
+        @Override
         public void mouseMoved(MouseEvent e) {
             if(shouldRedispatchToHandle()) {
                 formDesigner.getHandleLayer().dispatchEvent(e);
@@ -1759,15 +1635,10 @@ public class MenuEditLayer extends JPanel {
     }
     
     private boolean shouldRedispatchDnDToHandle(DropTargetDragEvent dtde) {
-        //return false;
-        
         RADComponent rad = formDesigner.getHandleLayer().getMetaComponentAt(dtde.getLocation(), HandleLayer.COMP_DEEPEST);
-        p("comp under = " + rad);
         if(rad != null && isMenuRelatedComponentClass(rad.getBeanClass())) {
-            p("over menu stuff. cancel the proxying");
             return false;
         }
-        //if(true) return false;
         if(!USE_JSEPARATOR_FIX) return false;
         PaletteItem item = PaletteUtils.getSelectedItem();
         if(item != null && JSeparator.class.isAssignableFrom(item.getComponentClass())) {
@@ -1783,25 +1654,21 @@ public class MenuEditLayer extends JPanel {
                 formDesigner.getHandleLayer().getNewComponentDropListener().dragEnter(dtde);
                 return;
             }
-            p("drag enter: " + dtde);
             if(!dragop.isStarted()) {
                 start(dtde);
             }
         }
         
         private void start(DropTargetDragEvent dtde) {
-            p("really starting the Drag stuff");
             PaletteItem item = PaletteUtils.getSelectedItem();
 
             if(item != null && !isMenuRelatedComponentClass(item.getComponentClass())) {
-                p("not a menu component. going back to the handle layer");
                 hideMenuLayer();
                 return;
             }
 
             if(formDesigner.getDesignerMode() == FormDesigner.MODE_ADD && item != null) {
                 if(JMenuBar.class.isAssignableFrom(item.getComponentClass())) {
-                    p("dragging in a menu bar. go back to handle layer");
                     hideMenuLayer();
                     return;
                 }
@@ -1810,19 +1677,13 @@ public class MenuEditLayer extends JPanel {
         }
         
         public void dragOver(DropTargetDragEvent dtde) {
-            p("full dragover: " + dtde.getLocation());
-            p("should redispatch = " + shouldRedispatchDnDToHandle(dtde));
             // look at the rad component under the cursor first
-
             if(dragProxying && shouldRedispatchDnDToHandle(dtde)) {
                 formDesigner.getHandleLayer().getNewComponentDropListener().dragOver(dtde);
                 return;
             }
-            p("switching to normal menulayer dnd");
             dragProxying = false;
-            p("drag over: " + dtde);
             if(dragop.isStarted()) {
-                p("moving dragop");
                 dragop.move(dtde.getLocation());
             } else {
                 start(dtde);

@@ -40,14 +40,12 @@
  */
 package org.netbeans.modules.form.menu;
 
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import org.netbeans.modules.form.InPlaceEditLayer;
 import org.netbeans.modules.form.RADComponent;
-import org.netbeans.modules.form.RADContainer;
 import org.netbeans.modules.form.RADVisualComponent;
 import org.netbeans.modules.form.RADVisualContainer;
 
@@ -56,15 +54,13 @@ import org.netbeans.modules.form.RADVisualContainer;
  *
  * @author joshua.marinacci@sun.com
  */
-public class KeyboardMenuNavigator implements KeyListener {
-    private static final boolean DEBUG = false;
+public class KeyboardMenuNavigator extends KeyAdapter {
     MenuEditLayer menuEditLayer;
     private RADVisualContainer menuBarRAD;
     private RADVisualContainer currentMenuRAD;
     KeyboardFinishListener listener;
     
     public KeyboardMenuNavigator(MenuEditLayer menuEditLayer) {
-        p("kb created");
         this.menuEditLayer = menuEditLayer;
         configure();
     }
@@ -90,6 +86,7 @@ public class KeyboardMenuNavigator implements KeyListener {
         menuEditLayer.formDesigner.getInPlaceEditLayer().removeFinishListener(listener);
     }
     
+    @Override
     public void keyPressed(KeyEvent e) {
         if(e.getKeyCode() == KeyEvent.VK_DOWN) {
             selectOffsetMenuItem(+1);
@@ -116,13 +113,8 @@ public class KeyboardMenuNavigator implements KeyListener {
             }
         }
     }
-    public void keyReleased(KeyEvent e) {
-    }
-    public void keyTyped(KeyEvent e) {
-    }
     
     private void selectNextMenuItem(int offset) {
-        p("select next menu item");
         //josh: do nothing here until i figure out why tab events aren't being called
         if(currentMenuRAD == null) return;
         if(!menuEditLayer.isComponentSelected()) {
@@ -156,7 +148,6 @@ public class KeyboardMenuNavigator implements KeyListener {
     // select the next menu item offset from the current one.
     // pass in -1 and +1 to do prev and next menu items
     private void selectOffsetMenuItem(int offset) {
-        p("select offset menu item: " + offset);
         if(currentMenuRAD == null) return;
         if(currentMenuRAD.getSubComponents().length == 0) {
             menuEditLayer.setSelectedRADComponent(null);//Component((JComponent)null);
@@ -187,7 +178,6 @@ public class KeyboardMenuNavigator implements KeyListener {
     // select the next menu offset from the current one
     // pass in -1 and + 1 to do prev and next menu items
     private void selectOffsetMenu(int offset) {
-        p("select offset menu: " + offset);
         //clear the selected component
         //menuEditLayer.setSelectedComponent(null);
         
@@ -250,7 +240,6 @@ public class KeyboardMenuNavigator implements KeyListener {
     }
     
     private void goUpOneLevelAndNext() {
-        p("go up one level and next");
         menuEditLayer.setSelectedRADComponent(currentMenuRAD);
         currentMenuRAD = currentMenuRAD.getParentContainer();
         if(isLastItem(menuEditLayer.getSingleSelectedComponent(), currentMenuRAD)) {
@@ -294,9 +283,5 @@ public class KeyboardMenuNavigator implements KeyListener {
             }
         }
     }
-    
-    private static void p(String s) {
-        if(DEBUG) 
-            System.out.println(s);
-    }
+
 }

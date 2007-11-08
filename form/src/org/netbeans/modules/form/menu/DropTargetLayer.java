@@ -60,6 +60,7 @@ import javax.swing.UIManager;
 import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.menu.DropTargetLayer.DropTargetType;
 import org.netbeans.modules.form.menu.MenuEditLayer.SelectedPortion;
+import org.openide.util.Utilities;
 
 /**
  *  This component handles drawing all drop targets for the menu bar and
@@ -74,11 +75,8 @@ import org.netbeans.modules.form.menu.MenuEditLayer.SelectedPortion;
  * @author joshy
  */
 class DropTargetLayer extends JComponent {
-
-
     public enum DropTargetType { INTER_MENU, NONE, INTO_SUBMENU }
     
-    private static final boolean DEBUG = false;
     private MenuEditLayer canvas;
     private Point currentTargetPoint;
     private DropTargetType currentTargetType;
@@ -153,13 +151,9 @@ class DropTargetLayer extends JComponent {
         return pt.y > tcomp.getHeight()/2;
     }
     
+    @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
-        
-        if(DEBUG) {
-            g.setColor(Color.GREEN);
-            g.drawString("DropTarget Layer ", 30,100); //NOI18N
-        }
         
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
@@ -309,7 +303,6 @@ class DropTargetLayer extends JComponent {
         int accelWidth = getAcceleratorWidth(item);
 
         int textWidth = item.getWidth() - iconLeft - iconWidth - iconGap - accelWidth;
-        int textLeft = iconLeft + iconWidth + iconGap;
         int accelLeft = item.getWidth() - accelWidth;
 
         // draw bounding boxes
@@ -400,7 +393,7 @@ class DropTargetLayer extends JComponent {
     //josh: hard coded to account for the checkbox gutter. replace in the future
     // with a calculated value
     private static int getIconLeft(JMenuItem item) {
-        if(isWindows()) {
+        if(Utilities.isWindows()) {
             if(isVista()) {
                 return 1;
             }
@@ -443,25 +436,18 @@ class DropTargetLayer extends JComponent {
     private static int getIconRight(JMenuItem item) {
         return getIconLeft(item) + getIconWidth(item);
     }
-    
  
     static boolean isMetal() {
         String laf = UIManager.getLookAndFeel().getName();
         if(laf==null) return false;
-        if(laf.startsWith("Metal")) {
+        if(laf.startsWith("Metal")) { // NOI18N
             return true;
         }
         return false;
     }
-    private static boolean isWindows() {
-        if(System.getProperty("os.name").startsWith("Windows")) {
-            return true;
-        }
-        return false;
-    }
-    
+
     static boolean isVista() {
-        if(System.getProperty("os.name").startsWith("Windows Vista")) {
+        if(System.getProperty("os.name").startsWith("Windows Vista")) { // NOI18N
             return true;
         }
         return false;
@@ -470,16 +456,10 @@ class DropTargetLayer extends JComponent {
     static boolean isAqua() {
         String laf = UIManager.getLookAndFeel().getName();
         if(laf==null) return false;
-        if(laf.startsWith("Mac OS X")) {
+        if(laf.startsWith("Mac OS X")) { // NOI18N
             return true;
         }
         return false;
-    }
-    
-    private static void p(String s) {
-        if(DEBUG) {
-            System.out.println(s);
-        }
     }
     
     public static boolean isMultiselectPressed(MouseEvent evt) {
