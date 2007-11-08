@@ -46,10 +46,13 @@
 
 package org.netbeans.modules.css.visual.ui;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.css.Utilities;
 //import org.netbeans.modules.css.visual.model.CssMetaModel;
 import java.awt.Component;
 import java.io.File;
+import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.openide.filesystems.FileObject;
@@ -62,6 +65,8 @@ import org.openide.util.NbBundle;
  * @version 1.0
  */
 public class BackgroundImageUrlDialog { //extends URLPanel{
+    
+    private static final Logger LOGGER = Logger.getLogger(BackgroundImageUrlDialog.class.getName());
     
     private FileObject base;
     
@@ -84,9 +89,24 @@ public class BackgroundImageUrlDialog { //extends URLPanel{
             fileChooser.addChoosableFileFilter(new ImageFilter()) ;
             if ( fileChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
                 File imageFile = fileChooser.getSelectedFile();
-                File newImageFile = new File(currDir, imageFile.getName());
-                Utilities.copyFile(imageFile, newImageFile);
-                imageUrl = imageFile.getName();
+                FileObject imageFO = FileUtil.toFileObject(imageFile);
+                if(imageFO == null) {
+                    //should not happen with Master FS
+                    //assert imageFile != null;
+                    LOGGER.log(Level.WARNING, null, new IllegalStateException("Cannot find FileObject for file " + imageFile.toURL()));
+                    return false;
+                }
+                
+                FileObject currDirFO = FileUtil.toFileObject(currDir);
+                if(currDirFO == null) {
+                    //should not happen with Master FS
+                    //assert imageFile != null;
+                    LOGGER.log(Level.WARNING, null, new IllegalStateException("Cannot find FileObject for file " + currDir.toURL()));
+                    return false;
+                }
+                
+                FileObject newImageFO = imageFO.copy(currDirFO, imageFO.getName(), imageFO.getExt());
+                imageUrl = newImageFO.getNameExt();
                 StringBuffer sb = new StringBuffer();
                 int len = imageUrl.length();
                 for (int i = 0; i < len; i++) {
@@ -99,9 +119,10 @@ public class BackgroundImageUrlDialog { //extends URLPanel{
                 }
                 imageUrl = sb.toString();
                 retValue = true;
+                
             }
         } catch (Exception exc){
-            exc.printStackTrace();
+            LOGGER.log(Level.WARNING, null, exc);
         }
         return retValue;
     }
