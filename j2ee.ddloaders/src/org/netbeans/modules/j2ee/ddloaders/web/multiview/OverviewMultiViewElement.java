@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
+import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.spi.multiview.*;
 import org.openide.nodes.*;
 import org.netbeans.modules.j2ee.dd.api.web.*;
@@ -134,7 +135,8 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
                  name.indexOf("Listener")>0 || //NOI18N
                  name.indexOf("SessionConfig")>0 ) { //NOI18N
                 // repaint view if the wiew is active and something is changed with elements listed above
-                if (OVERVIEW_MV_ID.equals(dObj.getSelectedPerspective().preferredID())) {
+                MultiViewPerspective selectedPerspective = dObj.getSelectedPerspective();
+                if (selectedPerspective != null && OVERVIEW_MV_ID.equals(selectedPerspective.preferredID())) {
                     repaintingTask.schedule(100);
                 } else {
                     needInit=true;
