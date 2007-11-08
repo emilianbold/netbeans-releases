@@ -733,8 +733,8 @@ public class PageFlowController {
     public boolean replacePageName2Page(Page page, String newName, String oldName) {
 
         LOGGER.finest("PageName2Page: replace " + oldName + " to " + newName);
-        assert (newName.length() > 0);
-        assert (oldName.length() > 0);
+        //assert (newName.length() > 0);
+        //assert (oldName.length() > 0);
 
         if (page == null) {
             throw new NullPointerException("Page can not be null.");
@@ -772,20 +772,41 @@ public class PageFlowController {
         }
     }
 
-    public void putPageName2Page(String displayName, Page pageNode) {
+    /**
+     * Associate a page with a given string name for future reference.  In general
+     * this method is called by a Page object to add itself.  Really no other classes 
+     * should use this method.
+     * @param displayName name of the page you would like to reference it with (key)
+     *                    displayName can not be an empty string.
+     * @param page Page to be associated with the string. If null, NPE thrown.
+     */
+    protected void putPageName2Page(String displayName, Page page) {
 
         LOGGER.finest("PageName2Page: put " + displayName);
-        printThreadInfo();
-        if (pageNode == null) {
-            throw new RuntimeException("PageFlowEditor: Trying to add Page [" + displayName + "] but it is null.");
+        //assert displayName.length() != 0;
+        if( page == null ){
+            throw new NullPointerException( "putPageName2Page does not accept null pages.");
         }
+        
+        printThreadInfo();
         synchronized (pageName2Page) {
-            pageName2Page.put(displayName, new WeakReference<Page>(pageNode));
+            pageName2Page.put(displayName, new WeakReference<Page>(page));
         }
     }
 
-    public Page getPageName2Page(String displayName) {
+    /**
+     * Get a page in the map given it's key.  This is a basic lookup table.
+     * @param displayName String or associated key.
+     * @return the Page that is associated with the given key.
+     */
+    protected Page getPageName2Page(String displayName) {
+        
+        
         printThreadInfo();
+        if ( displayName == null ){
+            throw new NullPointerException("Displayname should not be null. You may be using this method incorrectly.");
+        } 
+       // assert displayName.length() != 0;
         synchronized (pageName2Page) {
             /*
              * Begin Test

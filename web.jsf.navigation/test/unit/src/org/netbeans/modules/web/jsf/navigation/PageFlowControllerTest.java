@@ -594,22 +594,22 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         
         String oldName = "welcomeJSF.jsp";
         String newName = "welcomeJSF2.jsp";
-        boolean assertionCaught = false;
+        boolean npeCaught = false;
         try { 
             boolean result = controller.replacePageName2Page(null, "", oldName);
-        } catch( AssertionError error ){
-            assertionCaught = true;
+        } catch( NullPointerException error ){
+            npeCaught = true;
         }
-        assertTrue(assertionCaught);
+        assertTrue(npeCaught);
         assertNotNull( controller.getPageName2Page(oldName)); //Confirming it wasn't removed.
         
-        assertionCaught = false;
+        npeCaught = false;
         try { 
             boolean result = controller.replacePageName2Page(null, newName, "");
-        } catch( AssertionError error ){
-            assertionCaught = true;
+        } catch( NullPointerException error ){
+            npeCaught = true;
         }
-        assertTrue(assertionCaught);
+        assertTrue(npeCaught);
         assertNotNull( controller.getPageName2Page(oldName)); //Confirming it wasn't removed.
     }
     
@@ -654,33 +654,84 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         Page page2 = controller.getPageName2Page(oldName);
         assertNull(page2);
     }
-//
-//    /**
-//     * Test of putPageName2Page method, of class PageFlowController.
-//     */
-//    public void testPutPageName2Page() {
-//        System.out.println("putPageName2Page");
-//        String displayName = "";
-//        Page pageNode = null;
-//        PageFlowController instance = null;
-//        instance.putPageName2Page(displayName, pageNode);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of getPageName2Page method, of class PageFlowController.
-//     */
-//    public void testGetPageName2Page() {
-//        System.out.println("getPageName2Page");
-//        String displayName = "";
-//        PageFlowController instance = null;
-//        Page expResult = null;
-//        Page result = instance.getPageName2Page(displayName);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
+
+    /**
+     * Test of putPageName2Page method, of class PageFlowController.
+     */
+    public void testPutPageName2Page() {
+        System.out.println("putPageName2Page");
+        String pageName = "SomeName.jsp";
+        
+        Page page = controller.createPage(pageName);
+        assertNotNull(page);
+        controller.putPageName2Page(pageName, page);
+        Page result = controller.getPageName2Page(pageName);
+        assertEquals(page,result);
+    }
+    
+    /**
+     * Test of putPageName2Page method, of class PageFlowController.
+     */
+    public void testPutPageName2PageNull() {
+        System.out.println("putPageName2Page when page is null");
+        boolean npeCaught = false;
+        String someName = "somePage.jsp";
+        try { 
+            controller.putPageName2Page(someName, (Page)null);
+        } catch( NullPointerException npe){
+            npeCaught = true;
+        }
+        assertTrue(npeCaught);
+        assertNull( controller.getPageName2Page(someName));
+    }
+    
+    /**
+     * Test of putPageName2Page method, of class PageFlowController.
+     */
+    public void testPutPageName2PageEmptyString() {
+        System.out.println("putPageName2Page when name is empty string");
+        
+        String pageName = "SomeName.jsp";
+        
+        Page page = controller.createPage(pageName);
+        assertNotNull(page);         
+        controller.putPageName2Page("", page);
+        Page page2 = controller.getPageName2Page("");
+        assertEquals(page2,page);
+    }
+
+    /**
+     * Test of getPageName2Page method, of class PageFlowController.
+     */
+    public void testGetPageName2Page() {
+        System.out.println("getPageName2Page");
+        String displayName = "welcomeJSF.jsp";
+        Page result = controller.getPageName2Page(displayName);
+        assertNotNull(result);
+    }
+    
+    /**
+     * Test of getPageName2Page method, of class PageFlowController.
+     */
+    public void testGetPageName2PageNull() {
+        System.out.println("getPageName2Page given a null string");
+        boolean npeCaught = false;
+        try {
+            controller.getPageName2Page(null);
+        } catch (NullPointerException npe){
+            npeCaught = true;
+        }
+        assertTrue(npeCaught);
+    }
+    
+    /**
+     * Test of getPageName2Page method, of class PageFlowController.
+     */
+    public void testGetPageName2PageEmptyString() {
+        System.out.println("getPageName2Page given an empty string");
+        Page page = controller.getPageName2Page("");
+        assertNull(page);
+    }
 //
 //    /**
 //     * Test of printThreadInfo method, of class PageFlowController.
