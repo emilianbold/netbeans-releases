@@ -489,7 +489,19 @@ public class IntroduceHintTest extends NbTestCase {
                        null,
                        new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_CONSTRUCTORS, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
                        0, 0);
-    }    
+    }
+    
+    /**
+     * Tests adding 'static' kw if some of replaced occurences has been in static context
+     * @throws java.lang.Exception
+     */
+    public void testIntroduceFieldFix106495() throws Exception {
+        performFixTest("package test; public class Test {public Test() {int y = 3 + 4; int z = 3 + 4;} public Test(int i) {} public static void a() {int y = 3 + 4;}}",
+                       88 - 32, 93 - 32,
+                       "package test; public class Test { private static int name = 3 + 4; public Test() {int y = name; int z = name;} public Test(int i) {} public static void a() {int y = name;}}",
+                       new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_FIELD, true, EnumSet.<Modifier>of(Modifier.PRIVATE, Modifier.STATIC), false, true),
+                       3, 2);
+    }
 
     public void testCorrectMethodSelection1() throws Exception {
         performStatementSelectionVerificationTest("package test; public class Test {public void test() {int i = 3;}}", 105 - 52, 115 - 52, true, new int[] {0, 0});

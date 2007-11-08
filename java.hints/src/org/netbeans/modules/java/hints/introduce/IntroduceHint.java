@@ -168,7 +168,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 return null;
             
             if (!ExpressionTree.class.isAssignableFrom(leaf.getKind().asInterface()))
-                continue;
+               continue;
             
             long treeStart = ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), leaf);
             long treeEnd   = ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), leaf);
@@ -1269,13 +1269,23 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     mods.addAll(access);
                     final TreeMaker make = parameter.getTreeMaker();
                     
-                    ModifiersTree modsTree = make.Modifiers(mods);
+                    boolean isAnyOccurenceStatic = false;
                     
                     if (replaceAll) {
                         for (TreePath p : CopyFinder.computeDuplicates(parameter, resolved, new TreePath(parameter.getCompilationUnit()), new AtomicBoolean())) {
                             parameter.rewrite(p.getLeaf(), make.Identifier(name));
+                            Scope occurenceScope = parameter.getTrees().getScope(p);
+                            if(parameter.getTreeUtilities().isStaticContext(occurenceScope))
+                                isAnyOccurenceStatic = true;
+                            
                         }
                     }
+                    
+                    if(!statik && isAnyOccurenceStatic) {
+                        mods.add(Modifier.STATIC);
+                    }
+                    
+                    ModifiersTree modsTree = make.Modifiers(mods);
                     
                     VariableTree field = make.Variable(modsTree, name, make.Type(tm), initializeIn == IntroduceFieldPanel.INIT_FIELD ? expressionCopy : null);
                     ClassTree nueClass = GeneratorUtils.insertClassMember(parameter, pathToClass, field);
