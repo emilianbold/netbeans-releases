@@ -64,7 +64,7 @@
 
             <!-- hide -->
             <file name="org-openide-actions-PageSetupAction.instance_hidden"/>
-            <file name="org-openide-actions-PrintPreviewAction.instance_hidden"/>
+            <file name="org-openide-actions-PrintAction.instance_hidden"/>
         </folder>
     </folder>
 
