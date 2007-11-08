@@ -476,6 +476,8 @@ public class FormEditor {
     }
     
     /** Reports errors occurred during loading or saving the form.
+     * 
+     * @param operation operation being performed.
      */
     public void reportErrors(int operation) {        
         if (!anyPersistenceError())
@@ -964,12 +966,12 @@ public class FormEditor {
             }
         };
 
-        FormLoaderSettings.getInstance().getPreferences().addPreferenceChangeListener(settingsListener);
+        FormLoaderSettings.getPreferences().addPreferenceChangeListener(settingsListener);
     }
 
     private static void detachSettingsListener() {
         if (settingsListener != null) {
-            FormLoaderSettings.getInstance().getPreferences().removePreferenceChangeListener(settingsListener);
+            FormLoaderSettings.getPreferences().removePreferenceChangeListener(settingsListener);
             settingsListener = null;
         }
     }
@@ -1021,7 +1023,11 @@ public class FormEditor {
         }
     }
 
-    /** @return JEditorPane set up with the actuall forms java source*/
+    /**
+     * Returns code editor pane for the specified form.
+     * 
+     * @param formModel form model.
+     * @return JEditorPane set up with the actuall forms java source*/
     public static JEditorPane createCodeEditorPane(FormModel formModel) {                        
         FormDataObject dobj = getFormDataObject(formModel);
         JavaCodeGenerator codeGen = (JavaCodeGenerator) FormEditor.getCodeGenerator(formModel);
@@ -1044,43 +1050,69 @@ public class FormEditor {
         return assistant;
     }
 
-    /** @return FormDesigner for given form */
+    /**
+     * @param formModel form model.
+     * @return FormDesigner for given form */
     public static FormDesigner getFormDesigner(FormModel formModel) {
         FormEditor formEditor = openForms.get(formModel);
         return formEditor != null ? formEditor.getFormDesigner() : null;
     }
 
-    /** @return CodeGenerator for given form */
+    /**
+     * Returns code generator for the specified form.
+     * 
+     * @param formModel form model.
+     * @return CodeGenerator for given form */
     public static CodeGenerator getCodeGenerator(FormModel formModel) {
         FormEditor formEditor = openForms.get(formModel);
         return formEditor != null ? formEditor.getCodeGenerator() : null;
     }
 
-    /** @return FormDataObject of given form */
+    /**
+     * Returns form data object for the specified form.
+     * 
+     * @param formModel form model.
+     * @return FormDataObject of given form */
     public static FormDataObject getFormDataObject(FormModel formModel) {
         FormEditor formEditor = openForms.get(formModel);
         return formEditor != null ? formEditor.getFormDataObject() : null;
     }
 
-    /** @return FormJavaSource of given form */
+    /**
+     * Returns <code>FormJavaSource</code> for the specified form.
+     * 
+     * @param formModel form model.
+     * @return FormJavaSource of given form */
     public static FormJavaSource getFormJavaSource(FormModel formModel) {
         FormEditor formEditor = openForms.get(formModel);
         return formEditor != null ? formEditor.getFormJavaSource() : null;
     }
 
-    /** @return ResourceSupport of given form */
+    /**
+     * Returns <code>ResourceSupport</code> for the specified form.
+     * 
+     * @param formModel form model.
+     * @return ResourceSupport of given form */
     static ResourceSupport getResourceSupport(FormModel formModel) {
         FormEditor formEditor = openForms.get(formModel);
         return formEditor != null ? formEditor.getResourceSupport() : null;
     }
 
-    /** @return BindingDesignSupport of given form */
+    /**
+     * Returns <code>BindingDesignSupport</code> for the specified form.
+     * 
+     * @param formModel form model.
+     * @return BindingDesignSupport of given form */
     static BindingDesignSupport getBindingSupport(FormModel formModel) {
         FormEditor formEditor = openForms.get(formModel);
         return formEditor != null ? formEditor.getBindingSupport() : null;
     }
 
-    /** @return FormEditor instance for given form */
+    /**
+     * Returns form editor for the specified form.
+     * 
+     * @param formModel form model.
+     * @return FormEditor instance for given form */
     public static FormEditor getFormEditor(FormModel formModel) {
         return openForms.get(formModel);
     }
@@ -1133,6 +1165,9 @@ public class FormEditor {
 
     /**
      * Updates project classpath with the layout extensions library.
+     * 
+     * @param formModel form model.
+     * @return <code>true</code> if the project was updated.
      */
     public static boolean updateProjectForNaturalLayout(FormModel formModel) {
         FormEditor formEditor = getFormEditor(formModel);
@@ -1157,6 +1192,9 @@ public class FormEditor {
 
     /**
      * Updates project classpath with the beans binding library.
+     * 
+     * @param formModel form model.
+     * @return <code>true</code> if the project was updated.
      */
     public static boolean updateProjectForBeansBinding(FormModel formModel) {
         FormEditor formEditor = getFormEditor(formModel);
