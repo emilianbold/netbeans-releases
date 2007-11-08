@@ -46,6 +46,8 @@ import org.netbeans.modules.autoupdate.services.OperationContainerImpl;
 import org.netbeans.modules.autoupdate.services.OperationSupportImpl;
 
 /**
+ * Performs all operations scheduled on instance of <code>OperationContainer</code>.
+ * Instance of <code>OperationSupport</code> can be obtained by calling {@link OperationContainer#getSupport}
  * @author Radek Matous, Jiri Rechtacek
  */
 public final class OperationSupport {
@@ -53,7 +55,15 @@ public final class OperationSupport {
     OperationSupport () {
     }
 
-    public Restarter doOperation (ProgressHandle progress) throws OperationException {
+    /**
+     * Performs operation
+     * @param progress instance of {@link ProgressHandle} or null
+     * @return instance of {@link Restarter} which is necessary 
+     * for next calls like {@link #doRestart} or {@link #doRestartLater}
+     * @throws org.netbeans.api.autoupdate.OperationException
+     * @see OperationException
+     */
+    public Restarter doOperation(ProgressHandle progress) throws OperationException {
         Boolean res =  getImpl (container.impl.getType ()).doOperation (progress, container);
         if (res == null /*was problem*/ || ! res) {
             return null;
@@ -62,15 +72,37 @@ public final class OperationSupport {
         }
     }
 
-    public void doCancel () throws OperationException {
+    /**
+     * Cancels changes done in previous call {@link #doOperation} if supported.
+     * @throws org.netbeans.api.autoupdate.OperationException
+     * @see OperationException
+     */
+    public void doCancel() throws OperationException {
         getImpl (container.impl.getType ()).doCancel ();
     }
 
-    public void doRestart (Restarter restarter, ProgressHandle progress) throws OperationException {
+    /**
+     * Finishes operation, applies all changes and ensures restart of the application immediately.
+     * If method {@link #doOperation} returns non null instance of <code>Restarter</code> then
+     * this method must be called to apply all changes
+     * @param restarter instance of <code>Restarter</code> obtained from previous call {@link doOperation}.
+     * Mustn't be null.
+     * @param progress instance of {@link ProgressHandle} or null
+     * @throws org.netbeans.api.autoupdate.OperationException
+     * @see OperationException
+     */
+    public void doRestart(Restarter restarter, ProgressHandle progress) throws OperationException {
         getImpl (container.impl.getType ()).doRestart (restarter, progress);
     }
 
-    public void doRestartLater (Restarter restarter) {
+    /**
+     * Finishes operation, applies all changes.
+     * If method {@link #doOperation} returns non null instance of <code>Restarter</code> then
+     * this method must be called to apply all changes
+     * @param restarter instance of <code>Restarter</code> obtained from previous call {@link doOperation}.
+     * Mustn't be null.
+     */
+    public void doRestartLater(Restarter restarter) {
         getImpl (container.impl.getType ()).doRestartLater (restarter);
     }
     
