@@ -340,18 +340,5 @@ public class ListSelector extends javax.swing.JPanel {
             fromModel.clear();
         }
     }
-
-    public static void main(String[] args) {
-        List list = new LinkedList();
-        list.add("A");
-        list.add("B");
-        list.add("C");
-        JFrame frame = new JFrame();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        ListSelector selector = new ListSelector();
-        selector.setItems(list, Collections.EMPTY_LIST);
-        frame.add(selector);
-        frame.setVisible(true);
-    }
     
 }
