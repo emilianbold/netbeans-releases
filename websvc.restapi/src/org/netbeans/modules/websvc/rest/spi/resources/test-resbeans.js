@@ -323,7 +323,7 @@ TestSupport.prototype = {
     },
     
     testResource : function () {
-        this.updatepage('result', 'Loading...');
+        this.updatepage('result', 'MSG_TEST_RESBEANS_Loading');
         var mimetype = this.getFormMimeType();
         var method = this.getFormMethod();
         var p = '';
@@ -396,34 +396,34 @@ TestSupport.prototype = {
         if(path.indexOf('http:') != -1)
             req = path;
         else
-            req = baseURL+path
+            req = baseURL+escape(path);
         
         //change url if there are template params
         var tparams = document.forms[0].tparams;
         if(tparams != null) {
             if(tparams.length == undefined) {
-                req += "/" + tparams.value;
+                req += "/" + escape(tparams.value);
             } else {
                 var len = tparams.length;
                 for(var j=0;j<len;j++) {
-                    req += "/" + tparams[j].value;
+                    req += "/" + escape(tparams[j].value);
                 }
             }
         }
 
         if(method == 'GET' && p.length > 0)
-            req+= "?"+p;
+            req+= "?"+escape(p);
         
         //process matrix parameters
         var mparams = document.forms[0].mparams;
         if(mparams != null) {
             if(mparams.length == undefined) {
-                req += ";"+mparams.name+"="+mparams.value;
+                req += escape(";"+mparams.name+"="+mparams.value);
             } else {
                 var len = mparams.length;
                 for(var j=0;j<len;j++) {
                     var param = mparams[j]
-                    req += ";"+param.name+"="+param.value;
+                    req += escape(";"+param.name+"="+param.value);
                 }
             }
         }
