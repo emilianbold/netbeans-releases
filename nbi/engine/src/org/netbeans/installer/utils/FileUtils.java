@@ -272,11 +272,20 @@ public final class FileUtils {
     
     public static long getSize(
             final File file) {
-        long size = -1;
+        long size = 0;
         
-        if ((file != null) && !file.isDirectory() && exists(file)) {
+        if(file != null && exists(file)) {            
             try {
-                size = file.length();
+                if (file.isDirectory()) {
+                    File[] files = file.listFiles();
+                    if(files!=null) {
+                        for(File f : files) {
+                            size += getSize(f);
+                        }
+                    }
+                } else {
+                    size = file.length();
+                }
             } catch (SecurityException e) {
                 ErrorManager.notifyError(
                         ResourceUtils.getString(FileUtils.class,

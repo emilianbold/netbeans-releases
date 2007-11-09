@@ -40,7 +40,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.List;
-import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
@@ -60,8 +59,11 @@ import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ExecutionResults;
+import org.netbeans.installer.utils.helper.NbiThread;
+import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.RemovalMode;
 import org.netbeans.installer.utils.helper.Status;
+import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.launchers.LauncherResource;
 import static org.netbeans.installer.utils.system.windows.WindowsRegistry.HKLM;
@@ -85,6 +87,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     public void install(
             final Progress progress) throws InstallationException {
+        if(progress.isCanceled()) return;
+        
         final File location = getProduct().getInstallationLocation();
         final File installer = new File(location, JDK_INSTALLER_FILE_NAME);
         
@@ -117,26 +121,36 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             }
             String [] commands = null;
             ExecutionResults results = null;
-            progress.setDetail(PROGRESS_DETAIL_RUNNING_JDK_INSTALLER);
+            
+            
             boolean jreInstallation = false;
+            final CompositeProgress overallProgress = new CompositeProgress();
+            overallProgress.synchronizeTo(progress);
+            overallProgress.synchronizeDetails(true);
             
             if(SystemUtils.isWindows()) {
                 final File jdk = JavaUtils.findJDKHome(getProduct().getVersion());
+                final File jre = JavaUtils.findJreHome(getProduct().getVersion());
                 if (jdk == null) {
-                    results = runJDKInstallerWindows(location, installer, jdkLogFile, progress);
+                    final Progress jdkProgress = new Progress();
+                    final Progress jreProgress = new Progress();
+                    if(jre!=null) {
+                        overallProgress.addChild(jdkProgress, progress.COMPLETE);
+                    } else {
+                        overallProgress.addChild(jdkProgress, progress.COMPLETE * 3 / 5 );
+                        overallProgress.addChild(jreProgress, progress.COMPLETE * 2 / 5);
+                    }
+                    results = runJDKInstallerWindows(location, installer, jdkLogFile, jdkProgress);
                     addUninsallationJVM(results, location);
                     
-                    progress.addPercentage(30);
-                    
-                    if(results.getErrorCode()==0) {
-                        
-                        final File jre = JavaUtils.findJreHome(getProduct().getVersion());
+                    jdkProgress.setPercentage(Progress.COMPLETE);
+                    if(!progress.isCanceled() && results.getErrorCode()==0) {
                         if(jre == null) {
                             jreInstallation = true;
-                            progress.setDetail(PROGRESS_DETAIL_RUNNING_JRE_INSTALLER);
                             final File jreInstaller = findJREWindowsInstaller();
                             if(jreInstaller!=null) {
-                                results = runJREInstallerWindows(jreInstaller,jreLogFile);
+                                results = runJREInstallerWindows(jreInstaller,jreLogFile, jreProgress);
+                                jreProgress.setPercentage(Progress.COMPLETE);
                                 addUninsallationJVM(results, JavaUtils.findJreHome(getProduct().getVersion()));
                             }
                         } else {
@@ -149,7 +163,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                             " is already installed, skipping JDK and JRE configuration");
                 }
             } else {
-                results = runJDKInstallerUnix(location, installer, jdkLogFile, progress);
+                final Progress jdkProgress = new Progress();
+                overallProgress.addChild(jdkProgress,Progress.COMPLETE);
+                results = runJDKInstallerUnix(location, installer, jdkLogFile, jdkProgress);
                 addUninsallationJVM(results, location);
             }
             
@@ -175,6 +191,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     
     private ExecutionResults runJDKInstallerWindows(File location, File installer, File logFile, Progress progress) throws InstallationException {
+        progress.setDetail(PROGRESS_DETAIL_RUNNING_JDK_INSTALLER);
+        
         try {
             SystemUtils.setEnvironmentVariable("TEMP",
                     SystemUtils.getTempDirectory().getAbsolutePath(),
@@ -184,32 +202,43 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     SystemUtils.getTempDirectory().getAbsolutePath(),
                     EnvironmentScope.PROCESS,
                     false);
-            LogManager.log("... JDK installation log file : " + logFile);
-            final String loggingOption = (logFile!=null) ?
-                "/log " + BACK_SLASH + QUOTE  + logFile.getAbsolutePath()  + BACK_SLASH + QUOTE +" ":
-                EMPTY_STRING;
-            final String installLocationOption = "/qn INSTALLDIR=" + BACK_SLASH + QUOTE + location + BACK_SLASH + QUOTE;
-            
-            String [] commands = new String [] {
-                installer.getAbsolutePath(),
-                "/s",
-                "/v" + loggingOption + installLocationOption};
-            return SystemUtils.executeCommand(location, commands);
         } catch (NativeException e) {
             throw new InstallationException(
                     ResourceUtils.getString(ConfigurationLogic.class,
                     ERROR_INSTALL_JDK_ERROR_KEY),e);
+        }
+        
+        final String loggingOption = (logFile!=null) ?
+            "/log " + BACK_SLASH + QUOTE  + logFile.getAbsolutePath()  + BACK_SLASH + QUOTE +" ":
+            EMPTY_STRING;
+        final String installLocationOption = "/qn INSTALLDIR=" + BACK_SLASH + QUOTE + location + BACK_SLASH + QUOTE;
+        LogManager.log("... JDK installation log file : " + logFile);
+        
+        String [] commands = new String [] {
+            installer.getAbsolutePath(),
+            "/s",
+            "/v" + loggingOption + installLocationOption};
+        
+        ProgressThread progressThread = new ProgressThread(progress,location,getJDKinstallationSize());
+        try {
+            progressThread.start();
+            return SystemUtils.executeCommand(location, commands);
         } catch (IOException e) {
             throw new InstallationException(
                     ResourceUtils.getString(ConfigurationLogic.class,
                     ERROR_INSTALL_JDK_ERROR_KEY),e);
+        } finally {
+            progressThread.finish();
         }
     }
+    
+    
     
     private ExecutionResults runJDKInstallerUnix(File location, File installer, File logFile, Progress progress) throws InstallationException {
         File yesFile = null;
         ExecutionResults results = null;
         try {
+            progress.setDetail(PROGRESS_DETAIL_RUNNING_JDK_INSTALLER);
             yesFile = FileUtils.createTempFile();
             FileUtils.writeFile(yesFile, "yes" + SystemUtils.getLineSeparator());
             
@@ -225,8 +254,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         " < " + yesFile.getAbsolutePath() +
                         loggingOption
             };
-            results = SystemUtils.executeCommand(location, commands);
-            progress.addPercentage(50);
+            ProgressThread progressThread = new ProgressThread(progress,location, getJDKinstallationSize());
+            try {
+                progressThread.start();
+                results = SystemUtils.executeCommand(location, commands);
+            } finally {
+                progressThread.finish();
+            }
             // unix JDK installers create extra level directory jdkxxx
             File [] jdkDirs = location.listFiles(new FileFilter() {
                 public boolean accept(File pathname) {
@@ -264,12 +298,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
         return results;
     }
-    private void addUninsallationJVM(ExecutionResults results, File location) {
-        if(results!=null && results.getErrorCode()==0 && location!=null) {
-            SystemUtils.getNativeUtils().addUninstallerJVM(new LauncherResource(false, location));
-        }
-    }
-    private ExecutionResults runJREInstallerWindows(File jreInstaller, File logFile) throws InstallationException {
+    
+    private ExecutionResults runJREInstallerWindows(File jreInstaller, File logFile, Progress progress) throws InstallationException {
+        progress.setDetail(PROGRESS_DETAIL_RUNNING_JRE_INSTALLER);
         final String [] command = new String [] {
             "msiexec.exe",
             "/qn",
@@ -280,7 +311,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "/log",
             logFile.getAbsolutePath()
         };
+        
         LogManager.log("... JRE installation log file : " + logFile);
+        
+        final File location = new File(parseString("$E{ProgramFiles}"),
+                "Java\\jre" + getProduct().getVersion().toJdkStyle());
+        LogManager.log("... JRE installation location (default) : " + location);
+        
         try {
             SystemUtils.setEnvironmentVariable("TEMP",
                     SystemUtils.getTempDirectory().getAbsolutePath(),
@@ -290,18 +327,29 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     SystemUtils.getTempDirectory().getAbsolutePath(),
                     EnvironmentScope.PROCESS,
                     false);
-            return SystemUtils.executeCommand(command);
-        } catch (IOException e) {
-            throw new InstallationException(
-                    ResourceUtils.getString(ConfigurationLogic.class,
-                    ERROR_INSTALL_JRE_ERROR_KEY),e);
+            
         }  catch (NativeException e) {
             throw new InstallationException(
                     ResourceUtils.getString(ConfigurationLogic.class,
                     ERROR_INSTALL_JRE_ERROR_KEY),e);
         }
+        ProgressThread progressThread = new ProgressThread(progress,location, getJREinstallationSize());
+        try {
+            progressThread.start();
+            return SystemUtils.executeCommand(command);
+        } catch (IOException e) {
+            throw new InstallationException(
+                    ResourceUtils.getString(ConfigurationLogic.class,
+                    ERROR_INSTALL_JRE_ERROR_KEY),e);
+        } finally {
+            progressThread.finish();
+        }        
     }
-    
+    private void addUninsallationJVM(ExecutionResults results, File location) {
+        if(results!=null && results.getErrorCode()==0 && location!=null) {
+            SystemUtils.getNativeUtils().addUninstallerJVM(new LauncherResource(false, location));
+        }
+    }
     /** Find path to public JRE installer ie. jre.msi file WITHOUT file itself.
      * @return null if jre.msi file for given JRE version is not found
      */
@@ -361,7 +409,47 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         LogManager.log("... found JRE windows installer at " + jreInstallerFile.getPath());
         return jreInstallerFile;
     }
-    
+    private long getJREinstallationSize() {
+        return getProduct().getVersion().getMinor()==5 ?
+            70000000L :
+            (getProduct().getVersion().getMinor()==6 ?
+                90000000L :
+                100000000L);
+    }
+    private long getJDKinstallationSize() {
+        final long size;
+        if(getProduct().getVersion().getMinor()==5) {
+            if(SystemUtils.isWindows()) {
+                size = 140000000L ;
+            } else if(SystemUtils.isLinux()){
+                size = 150000000L ;
+            } else if(SystemUtils.getCurrentPlatform().isCompatibleWith(Platform.SOLARIS_SPARC)) {
+                size = 148000000L;
+            } else if(SystemUtils.getCurrentPlatform().isCompatibleWith(Platform.SOLARIS_X86)) {
+                size = 140000000L;
+            } else {
+                // who knows...
+                size = 160000000L;
+            }
+        } else if(getProduct().getVersion().getMinor()==6) {
+            if(SystemUtils.isWindows()) {
+                size = 170000000L ;
+            } else if(SystemUtils.isLinux()){
+                size = 200000000L ;
+            } else if(SystemUtils.getCurrentPlatform().isCompatibleWith(Platform.SOLARIS_SPARC)) {
+                size = 178000000L;
+            } else if(SystemUtils.getCurrentPlatform().isCompatibleWith(Platform.SOLARIS_X86)) {
+                size = 170000000L;
+            } else {
+                // who knows...
+                size = 180000000L;
+            }
+        } else {
+            // who knows...
+            size = 200000000L;
+        }
+        return size;
+    }
     
     @Override
     public boolean registerInSystem() {
@@ -411,9 +499,92 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
         return null;
     }
-    
-    /////////////////////////////////////////////////////////////////////////////////
-    // Constants
+    class ProgressThread extends NbiThread {
+        private File directory ;
+        private long deltaSize = 0;
+        private long initialSize = 0L;
+        private Progress progress;
+        private final Object LOCK = new Object();
+        private boolean loop = false;
+        
+        public ProgressThread(Progress progress, File directory, final long maxDeltaSize) {
+            LogManager.log("... new ProgressThread created");
+            this.directory = directory;
+            if(directory.exists()) {
+                initialSize = FileUtils.getSize(directory);
+            }
+            this.deltaSize = maxDeltaSize;
+            this.progress = progress;
+            LogManager.log("... directory : " + directory);
+            LogManager.log("...   initial : " + initialSize);
+            LogManager.log("...     delta : " + deltaSize);
+        }
+        public void run() {
+            LogManager.log("... progress thread started");
+            long sleepTime = 1000L;
+            try {
+                synchronized (LOCK) {
+                    loop = true;
+                }                
+                while (isRunning()) {
+                    try {                         
+                        if (directory.exists()) {                            
+                            updateProgressBar();
+                        }                               
+                        Thread.currentThread().sleep(sleepTime);                        
+                    } catch (InterruptedException ex) {                        
+                        LogManager.log(ex);
+                        break;
+                    } catch (Exception ex) {                        
+                        LogManager.log(ex);
+                        break;
+                    }
+                }
+            }  finally {                                
+                synchronized (LOCK) {                    
+                    LOCK.notify();                    
+                }
+            }
+            progress.setPercentage(Progress.COMPLETE);
+            LogManager.log("... progress thread finished");
+        }
+        public void finish() {            
+            if(!isRunning()) return;            
+            synchronized (LOCK) {
+                loop = false;
+            }                        
+            synchronized (LOCK) {                
+                try {                                        
+                    LOCK.wait();                                      
+                } catch (InterruptedException e){
+                    LogManager.log(e);                    
+                }
+            }            
+        }
+        private boolean isRunning() {                        
+            boolean result;
+            synchronized (LOCK) {                                
+                result = loop;
+            }                        
+            return result;
+        }
+        private void updateProgressBar() {
+            LogManager.log("... get directory size");
+            long size = FileUtils.getSize(directory);
+            LogManager.log("... size : " + size);
+            long d = progress.COMPLETE * (size - initialSize) / deltaSize;
+            LogManager.log(".... real progress : " + d);
+            d = progress.getPercentage() + (d  - progress.getPercentage() + 1) / 2;
+            LogManager.log("... bound progress : " + d);
+            d = (d<0) ? 0 : (d > progress.COMPLETE ? progress.COMPLETE : d);
+            if(((int)d) > progress.getPercentage()) {
+                LogManager.log("..... set progress : " + d);
+                progress.setPercentage(d);
+            }
+        }
+    }
+/////////////////////////////////////////////////////////////////////////////////
+// Constants
     public static final String WIZARD_COMPONENTS_URI =
             "resource:" + // NOI18N
             "org/netbeans/installer/products/jdk/wizard.xml"; // NOI18N
