@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -59,8 +59,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -107,6 +105,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarClassPathUi;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.LibrariesChooser;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
 
@@ -150,26 +149,32 @@ public final class LibrariesNode extends AbstractNode {
         this.librariesNodeActions = librariesNodeActions;
     }
 
+    @Override
     public String getDisplayName () {
         return this.displayName; 
     }
 
+    @Override
     public String getName () {
         return this.getDisplayName();
     }    
 
+    @Override
     public Image getIcon( int type ) {        
         return computeIcon( false, type );
     }
         
+    @Override
     public Image getOpenedIcon( int type ) {
         return computeIcon( true, type );
     }
 
+    @Override
     public Action[] getActions(boolean context) {        
         return this.librariesNodeActions;
     }
 
+    @Override
     public boolean canCopy() {
         return false;
     }
@@ -213,7 +218,7 @@ public final class LibrariesNode extends AbstractNode {
     }
 
     //Static inner classes
-    private static class LibrariesChildren extends Children.Keys implements PropertyChangeListener {
+    private static class LibrariesChildren extends Children.Keys<Object> implements PropertyChangeListener {
 
         
         /**
@@ -243,7 +248,7 @@ public final class LibrariesNode extends AbstractNode {
         private final String classPathProperty;
         private final String platformProperty;
         private final String j2eePlatformProperty;
-        private final Set classPathIgnoreRef;
+        private final Set<String> classPathIgnoreRef;
         private final String includedLibrariesElement;
 
         //XXX: Workaround: classpath is used only to listen on non existent files.
@@ -259,7 +264,7 @@ public final class LibrariesNode extends AbstractNode {
             this.helper = helper;
             this.refHelper = refHelper;
             this.classPathProperty = classPathProperty;
-            this.classPathIgnoreRef = new HashSet(Arrays.asList(classPathIgnoreRef));
+            this.classPathIgnoreRef = new HashSet<String>(Arrays.asList(classPathIgnoreRef));
             this.platformProperty = platformProperty;
             this.j2eePlatformProperty = j2eePlatformProperty;
             this.includedLibrariesElement = includedLibrariesElement;
@@ -281,11 +286,13 @@ public final class LibrariesNode extends AbstractNode {
             }
         }
 
+        @Override
         protected void addNotify() {
             this.eval.addPropertyChangeListener (this);
             this.setKeys(getKeys ());
         }
 
+        @Override
         protected void removeNotify() {
             this.eval.removePropertyChangeListener(this);
             synchronized (this) {
@@ -294,7 +301,7 @@ public final class LibrariesNode extends AbstractNode {
                     fsListener = null;
                 }
             }
-            this.setKeys(Collections.EMPTY_SET);
+            this.setKeys(Collections.<Object>emptyList());
         }
 
         protected Node[] createNodes(Object obj) {
@@ -326,12 +333,12 @@ public final class LibrariesNode extends AbstractNode {
             return result;
         }
         
-        private List getKeys () {
+        private List<Object> getKeys () {
             EditableProperties projectSharedProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             EditableProperties projectPrivateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
             EditableProperties privateProps = PropertyUtils.getGlobalProperties();
-            List/*<URL>*/ rootsList = new ArrayList ();
-            List result = getKeys (projectSharedProps, projectPrivateProps, privateProps, classPathProperty, rootsList);
+            List<URL> rootsList = new ArrayList<URL>();
+            List<Object> result = getKeys (projectSharedProps, projectPrivateProps, privateProps, classPathProperty, rootsList);
             //Add PlatformNode if needed and project exists
             FileObject projectDir = helper.getAntProjectHelper().getProjectDirectory();
             if (platformProperty!=null && projectDir !=null && projectDir.isValid() && !projectDir.isVirtual()) {
@@ -342,7 +349,7 @@ public final class LibrariesNode extends AbstractNode {
             }
             //XXX: Workaround: Remove this when there will be API for listening on nonexistent files
             // See issue: http://www.netbeans.org/issues/show_bug.cgi?id=33162
-            ClassPath cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath ((URL[])rootsList.toArray(new URL[rootsList.size()]));
+            ClassPath cp = ClassPathSupport.createClassPath (rootsList.toArray(new URL[rootsList.size()]));
             cp.addPropertyChangeListener (this);
             cp.getRoots();
             synchronized (this) {
@@ -351,9 +358,9 @@ public final class LibrariesNode extends AbstractNode {
             return result;
         }
 
-        private List getKeys (EditableProperties projectSharedProps, EditableProperties projectPrivateProps,
-                              EditableProperties privateProps, String currentClassPath, List/*<URL>*/ rootsList) {
-            List result = new ArrayList ();
+        private List<Object> getKeys (EditableProperties projectSharedProps, EditableProperties projectPrivateProps,
+                              EditableProperties privateProps, String currentClassPath, List<URL> rootsList) {
+            List<Object> result = new ArrayList<Object>();
             String raw = projectSharedProps.getProperty (currentClassPath);
             if (raw == null) {
                 raw = projectPrivateProps.getProperty(currentClassPath);
@@ -364,22 +371,21 @@ public final class LibrariesNode extends AbstractNode {
             if (raw == null) {
                 return result;
             }
-            List pe = new ArrayList(Arrays.asList(PropertyUtils.tokenizePath( raw )));
+            List<String> pe = new ArrayList<String>(Arrays.asList(PropertyUtils.tokenizePath( raw )));
             while (pe.size()>0){
-                String prop = (String) pe.remove(0);
+                String prop = pe.remove(0);
                 String propName = EjbJarProjectProperties.getAntPropertyName (prop);
                 if (classPathIgnoreRef.contains(propName)) {
                     continue;
                 }
                 else if (prop.startsWith( LIBRARY_PREFIX )) {
                     //Library reference
-                    String eval = prop.substring( LIBRARY_PREFIX.length(), prop.lastIndexOf('.') ); //NOI18N
-                    Library lib = LibraryManager.getDefault().getLibrary (eval);
+                    String name = prop.substring( LIBRARY_PREFIX.length(), prop.lastIndexOf('.') ); //NOI18N
+                    Library lib = LibraryManager.getDefault().getLibrary (name);
                     if (lib != null) {
-                        List/*<URL>*/ roots = lib.getContent("classpath");  //NOI18N
+                        List<URL> roots = lib.getContent("classpath");  //NOI18N
                         Icon libIcon = new ImageIcon (Utilities.loadImage(LIBRARIES_ICON));
-                        for (Iterator it = roots.iterator(); it.hasNext();) {
-                            URL rootUrl = (URL) it.next();
+                        for (URL rootUrl : roots) {
                             rootsList.add (rootUrl);
                             FileObject root = URLMapper.findFileObject (rootUrl);
                             if (root != null) {
@@ -443,7 +449,7 @@ public final class LibrariesNode extends AbstractNode {
             return result;
         }
 
-        private static SourceGroup createFileSourceGroup (File file, List/*<URL>*/ rootsList) {
+        private static SourceGroup createFileSourceGroup (File file, List<URL> rootsList) {
             Icon icon;
             Icon openedIcon;
             String displayName;
@@ -535,6 +541,7 @@ public final class LibrariesNode extends AbstractNode {
             return this.uri;
         }
         
+        @Override
         public int hashCode() {
             int hashCode = this.type<<16;
             switch (this.type) {
@@ -548,6 +555,7 @@ public final class LibrariesNode extends AbstractNode {
             return hashCode;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (!(obj instanceof Key)) {
                 return false;
@@ -575,6 +583,7 @@ public final class LibrariesNode extends AbstractNode {
     }
 
     private static class AddProjectAction extends AbstractAction {
+        private static final long serialVersionUID = 165241990174991827L;
 
         private final Project project;
         private final String classPathId;
@@ -595,7 +604,7 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         private void addArtifacts (AntArtifactChooser.ArtifactItem[] artifactItems) {
-            EjbJarProjectClassPathExtender cpExtender = (EjbJarProjectClassPathExtender) project.getLookup().lookup(EjbJarProjectClassPathExtender.class);
+            EjbJarProjectClassPathExtender cpExtender = project.getLookup().lookup(EjbJarProjectClassPathExtender.class);
             if (cpExtender != null) {
                 try {
                     cpExtender.addAntArtifacts(classPathId, artifactItems, includedLibrariesElement );                    
@@ -610,6 +619,7 @@ public final class LibrariesNode extends AbstractNode {
     }
 
     private static class AddLibraryAction extends AbstractAction {
+        private static final long serialVersionUID = 199046755168677046L;
 
         private final Project project;
         private final AntProjectHelper helper;
@@ -632,7 +642,7 @@ public final class LibrariesNode extends AbstractNode {
             ((JButton)options[0]).setEnabled(false);
             ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (EjbJarClassPathUi.class,"AD_AddLibrary"));
             // TODO: AB: replace EMPTY_SET with the set of already added libraries
-            LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], Collections.EMPTY_SET);
+            LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], Collections.<Library>emptySet());
             DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( EjbJarClassPathUi.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
                 true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
             Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
@@ -644,7 +654,7 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         private void addLibraries (Library[] libraries) {
-            EjbJarProjectClassPathExtender cpExtender = (EjbJarProjectClassPathExtender) project.getLookup().lookup(EjbJarProjectClassPathExtender.class);
+            EjbJarProjectClassPathExtender cpExtender = project.getLookup().lookup(EjbJarProjectClassPathExtender.class);
             if (cpExtender != null) {
                 try {
                     cpExtender.addLibraries(classPathId, libraries, includedLibrariesElement);
@@ -659,6 +669,7 @@ public final class LibrariesNode extends AbstractNode {
     }
 
     private static class AddFolderAction extends AbstractAction {
+        private static final long serialVersionUID = 9542176364190093L;
 
         private final Project project;
         private final String classPathId;
@@ -695,9 +706,9 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         private void addJarFiles (File[] files, FileFilter fileFilter) {
-            EjbJarProjectClassPathExtender cpExtender = (EjbJarProjectClassPathExtender) project.getLookup().lookup(EjbJarProjectClassPathExtender.class);
+            EjbJarProjectClassPathExtender cpExtender = project.getLookup().lookup(EjbJarProjectClassPathExtender.class);
             if (cpExtender != null) {
-                List fileObjects = new LinkedList();
+                List<FileObject> fileObjects = new ArrayList<FileObject>();
                 for (int i = 0; i < files.length; i++) {
                     if (fileFilter.accept(files[i])) {
                         File normalizedFile = FileUtil.normalizeFile(files[i]);
@@ -733,8 +744,9 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         public boolean accept(File f) {
-            if (f.isDirectory())
-                return true;            
+            if (f.isDirectory()) {
+                return true;
+            }
             try {
                 return FileUtil.isArchiveFile(f.toURI().toURL());
             } catch (MalformedURLException mue) {

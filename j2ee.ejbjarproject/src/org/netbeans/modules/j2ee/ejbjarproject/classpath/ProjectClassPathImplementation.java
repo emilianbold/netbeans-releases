@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -54,6 +54,7 @@ import java.beans.PropertyChangeSupport;
 import java.net.MalformedURLException;
 import java.io.File;
 import java.net.URL;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -65,7 +66,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
     private AntProjectHelper helper;
     private String expression;
     private String resolved;
-    private List resources;
+    private List<PathResourceImplementation> resources;
     private boolean isProperty;
     private final PropertyEvaluator evaluator;
 
@@ -85,9 +86,9 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         this(helper, property, evaluator, true);
     }
 
-    public synchronized List /*<PathResourceImplementation>*/ getResources() {
+    public synchronized List<PathResourceImplementation> getResources() {
         if (this.resources == null) {
-            this.resources = this.getPath ();
+            this.resources = this.getPath();
         }
         return this.resources;
     }
@@ -114,7 +115,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
             }
         }
         
-        List newRoots = getPath ();
+        List<PathResourceImplementation> newRoots = getPath();
         boolean fire = false;
         synchronized (this) {
             if (this.resources != null && !this.resources.equals(newRoots)) {
@@ -127,8 +128,8 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         }
     }
 
-    private List getPath() {
-        List result = new ArrayList ();
+    private List<PathResourceImplementation> getPath() {
+        List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         String prop = isProperty ? evaluator.getProperty(expression) : resolved;
         if (prop != null) {
             String[] pieces = PropertyUtils.tokenizePath(prop);

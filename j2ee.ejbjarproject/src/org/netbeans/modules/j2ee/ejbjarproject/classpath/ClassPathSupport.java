@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -75,7 +75,7 @@ public class ClassPathSupport {
     
     public final static String ELEMENT_INCLUDED_LIBRARIES = "included-library"; // NOI18N
     
-    private static String[] ejbjarElemOrder = new String[] { "name", "minimum-ant-version", "explicit-platform", "use-manifest", "included-library", "web-services", "source-roots", "test-roots" };
+    private static String[] ejbjarElemOrder = new String[] { "name", "minimum-ant-version", "explicit-platform", "use-manifest", "included-library", "web-services", "source-roots", "test-roots" }; //NOI18N
     
     private static final String ATTR_FILES = "files"; //NOI18N
     private static final String ATTR_DIRS = "dirs"; //NOI18N
@@ -83,7 +83,7 @@ public class ClassPathSupport {
     private PropertyEvaluator evaluator;
     private ReferenceHelper referenceHelper;
     private AntProjectHelper antProjectHelper;
-    private Set /*<String>*/ wellKnownPaths;
+    private Set<String> wellKnownPaths;
     private String libraryPrefix;
     private String librarySuffix;
     private String antArtifactPrefix;
@@ -99,7 +99,7 @@ public class ClassPathSupport {
         this.evaluator = evaluator;
         this.referenceHelper = referenceHelper;
         this.antProjectHelper = antProjectHelper;
-        this.wellKnownPaths = wellKnownPaths == null ? null : new HashSet( Arrays.asList( wellKnownPaths ) );
+        this.wellKnownPaths = wellKnownPaths == null ? null : new HashSet<String>(Arrays.asList(wellKnownPaths));
         this.libraryPrefix = libraryPrefix;
         this.librarySuffix = librarySuffix;
         this.antArtifactPrefix = antArtifactPrefix;
@@ -107,20 +107,20 @@ public class ClassPathSupport {
     
     /** Creates list of <CODE>Items</CODE> from given property.
      */    
-    public Iterator /*<Item>*/ itemsIterator( String propertyValue, String includedLibrariesElement ) {
+    public Iterator<Item> itemsIterator(String propertyValue, String includedLibrariesElement) {
         // XXX More performance frendly impl. would retrun a lazzy iterator.
         return itemsList( propertyValue, includedLibrariesElement ).iterator();
     }
     
-    public List /*<Item>*/ itemsList( String propertyValue, String includedLibrariesElement ) {    
+    public List<Item> itemsList(String propertyValue, String includedLibrariesElement) {
         
         // Get the list of items which are included in deployment
-        List includedItems = ( includedLibrariesElement != null ) ? 
+        List<String> includedItems = ( includedLibrariesElement != null ) ?
             getIncludedLibraries( antProjectHelper, includedLibrariesElement ) : 
-            Collections.EMPTY_LIST;
+            Collections.<String>emptyList();
         
         String pe[] = PropertyUtils.tokenizePath( propertyValue == null ? "": propertyValue ); // NOI18N        
-        List items = new ArrayList( pe.length );        
+        List<Item> items = new ArrayList<Item>( pe.length );
         for( int i = 0; i < pe.length; i++ ) {
             String property = EjbJarProjectProperties.getAntPropertyName( pe[i] );
             Item item;
@@ -188,16 +188,16 @@ public class ClassPathSupport {
      * !! This method creates references in the project !!
      * !! This method may add <included-library> items to project.xml !!
      */
-    public String[] encodeToStrings( Iterator /*<Item>*/ classpath, String includedLibrariesElement ) {
+    public String[] encodeToStrings( Iterator<Item> classpath, String includedLibrariesElement ) {
         
-        ArrayList result = new ArrayList();
-        ArrayList includedLibraries = new ArrayList();
+        List<String> result = new ArrayList<String>();
+        List<String> includedLibraries = new ArrayList<String>();
         
-        List cp = new LinkedList();
+        List<Item> cp = new LinkedList<Item>();
         
         while( classpath.hasNext() ) {
 
-            Item item = (Item)classpath.next();
+            Item item = classpath.next();
             cp.add(item);
             String reference = null;
             
@@ -235,7 +235,7 @@ public class ClassPathSupport {
                     if ( item.isBroken() ) {
                         break;
                     }
-                    AntArtifact artifact = (AntArtifact)item.getArtifact();                                       
+                    AntArtifact artifact = item.getArtifact();
                     if ( reference == null) {
                         if ( artifact == null ) {
                             break;
@@ -260,16 +260,17 @@ public class ClassPathSupport {
             
         }
         
-        if ( includedLibrariesElement != null )
-            putIncludedLibraries( includedLibraries, cp, antProjectHelper, includedLibrariesElement );
+        if ( includedLibrariesElement != null ) {
+            putIncludedLibraries(includedLibraries, cp, antProjectHelper, includedLibrariesElement);
+        }
 
         String[] items = new String[ result.size() ];
         for( int i = 0; i < result.size(); i++) {
             if ( i < result.size() - 1 ) {
-                items[i] = result.get( i ) + ":";
+                items[i] = result.get( i ) + ":"; //NOI18N
             }
             else  {       
-                items[i] = (String)result.get( i );    //NOI18N
+                items[i] = result.get(i);
             }
         }
         
@@ -309,13 +310,13 @@ public class ClassPathSupport {
      * Returns a list with the classpath items which are to be included 
      * in deployment.
      */
-    private static List /*<String>*/ getIncludedLibraries( AntProjectHelper antProjectHelper, String includedLibrariesElement ) {
+    private static List<String> getIncludedLibraries( AntProjectHelper antProjectHelper, String includedLibrariesElement ) {
         assert antProjectHelper != null;
         assert includedLibrariesElement != null;
         
         Element data = antProjectHelper.getPrimaryConfigurationData( true );
         NodeList libs = data.getElementsByTagNameNS( EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, includedLibrariesElement );
-        List libraries = new ArrayList( libs.getLength() );
+        List<String> libraries = new ArrayList<String>(libs.getLength());
         for ( int i = 0; i < libs.getLength(); i++ ) {
             Element item = (Element)libs.item( i );
             libraries.add( findText( item ));
@@ -345,7 +346,7 @@ public class ClassPathSupport {
             //find a correcponding classpath item for the library
             for(int idx = 0; idx < classpath.size(); idx++ ) {
                 ClassPathSupport.Item item = (ClassPathSupport.Item)classpath.get(idx);
-                String libraryPropName = "${" + libraryName + "}";
+                String libraryPropName = "${" + libraryName + "}"; //NOI18N
                 if(libraryPropName.equals(item.getReference())) {
                     appendChildElement(data, createLibraryElement(doc, libraryName, item, includedLibrariesElement), ejbjarElemOrder);
                 }
@@ -365,9 +366,9 @@ public class ClassPathSupport {
      * @return a list of direct child elements (may be empty)
      * @throws IllegalArgumentException if there are non-element children besides whitespace
      */
-    private static List/*<Element>*/ findSubElements(Element parent) throws IllegalArgumentException {
+    private static List<Element> findSubElements(Element parent) throws IllegalArgumentException {
         NodeList l = parent.getChildNodes();
-        List/*<Element>*/ elements = new ArrayList(l.getLength());
+        List<Element> elements = new ArrayList<Element>(l.getLength());
         for (int i = 0; i < l.getLength(); i++) {
             Node n = l.item(i);
             if (n.getNodeType() == Node.ELEMENT_NODE) {
@@ -601,6 +602,7 @@ public class ClassPathSupport {
             return broken;
         }
         
+        @Override
         public String toString() {
             return "artifactURI=" + artifactURI
                     + ", type=" + type 
@@ -611,6 +613,7 @@ public class ClassPathSupport {
                     + ", broken=" + broken;
         }
         
+        @Override
         public int hashCode() {
         
             int hash = getType();
@@ -635,6 +638,7 @@ public class ClassPathSupport {
             return hash;
         }
     
+        @Override
         public boolean equals( Object itemObject ) {
 
             if ( !( itemObject instanceof Item ) ) {

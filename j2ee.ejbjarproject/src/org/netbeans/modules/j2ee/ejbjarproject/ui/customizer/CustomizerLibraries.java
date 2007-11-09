@@ -63,10 +63,11 @@ import org.openide.util.NbBundle;
  * @author  phrebejk
  */
 public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, ListDataListener {
+    private static final long serialVersionUID = 198208833270776688L;
     
-    public static final String COMPILE = "COMPILE";
-    public static final String COMPILE_TESTS = "COMPILE_TESTS";
-    public static final String RUN_TESTS = "RUN_TESTS";
+    public static final String COMPILE = "COMPILE"; //NOI18N
+    public static final String COMPILE_TESTS = "COMPILE_TESTS"; //NOI18N
+    public static final String RUN_TESTS = "RUN_TESTS"; //NOI18N
     
     EjbJarProjectProperties uiProperties;
     
@@ -162,7 +163,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         else {
             jLabelErrorMessage.setText( " " ); // NOI18N
         }
-        EjbJarLogicalViewProvider viewProvider = (EjbJarLogicalViewProvider) uiProperties.getProject().getLookup().lookup(EjbJarLogicalViewProvider.class);
+        EjbJarLogicalViewProvider viewProvider = uiProperties.getProject().getLookup().lookup(EjbJarLogicalViewProvider.class);
         //Update the state of project's node if needed
         viewProvider.testBroken();        
     }

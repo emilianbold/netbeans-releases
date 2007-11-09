@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -47,6 +47,7 @@ import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 public class PanelConfigureProjectVisual extends JPanel {
+    private static final long serialVersionUID = 178059227255000355L;
 
     private PanelConfigureProject panel;
 

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -77,7 +77,7 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
         this.project = project;
     }
     
-    private static void addFile(FileObject projectDirectory, String fileName, List/*<FileObject>*/ result) {
+    private static void addFile(FileObject projectDirectory, String fileName, List<FileObject> result) {
         FileObject file = projectDirectory.getFileObject(fileName);
         
         if (file != null) {
@@ -85,9 +85,9 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
         }
     }
     
-    public List/*<FileObject>*/ getMetadataFiles() {
+    public List<FileObject> getMetadataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
-        List/*<FileObject>*/ files = new ArrayList();
+        List<FileObject> files = new ArrayList<FileObject>();
         
         addFile(projectDirectory, "nbproject", files); // NOI18N
         addFile(projectDirectory, "build.xml", files); // NOI18N
@@ -96,12 +96,13 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
         return files;
     }
     
-    public List/*<FileObject>*/ getDataFiles() {
-        List/*<FileObject>*/ files = new ArrayList();
+    public List<FileObject> getDataFiles() {
+        List<FileObject> files = new ArrayList<FileObject>();
         
         FileObject metaInf = project.getEjbModule().getMetaInf();
-        if (metaInf != null)
+        if (metaInf != null) {
             files.add(metaInf);
+        }
         
         SourceRoots src = project.getSourceRoots();
         FileObject[] srcRoots = src.getRoots();
@@ -115,8 +116,9 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
         if (prop != null) {
             FileObject projectDirectory = project.getProjectDirectory();
             FileObject srcDir = project.getAntProjectHelper().resolveFileObject(prop);
-            if (projectDirectory != srcDir && !files.contains(srcDir))
+            if (projectDirectory != srcDir && !files.contains(srcDir)) {
                 files.add(srcDir);
+            }
         }
   
         SourceRoots test = project.getTestSourceRoots();
@@ -129,15 +131,16 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
         File resourceDir = project.getEjbModule().getResourceDirectory();
         if (resourceDir != null) {
             FileObject resourceFO = FileUtil.toFileObject(resourceDir);
-            if (resourceFO != null)
+            if (resourceFO != null) {
                 files.add(resourceFO);
+            }
         }
         
         return files;
     }
     
     public void notifyDeleting() throws IOException {
-        EjbJarActionProvider ap = (EjbJarActionProvider) project.getLookup().lookup(EjbJarActionProvider.class);
+        EjbJarActionProvider ap = project.getLookup().lookup(EjbJarActionProvider.class);
         
         assert ap != null;
         
@@ -151,7 +154,7 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
         
         ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
         
-        EjbJarProjectClassPathExtender extender = (EjbJarProjectClassPathExtender)project.getLookup().lookup(EjbJarProjectClassPathExtender.class);
+        EjbJarProjectClassPathExtender extender = project.getLookup().lookup(EjbJarProjectClassPathExtender.class);
         extender.notifyDeleting();
     }
     
@@ -196,10 +199,11 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
 		AntProjectHelper helper = project.getAntProjectHelper();
 		EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
-		String jarName = (String) projectProps.get(EjbJarProjectProperties.JAR_NAME);
+		String jarName = projectProps.get(EjbJarProjectProperties.JAR_NAME);
 		String oldName = jarName.substring(0, jarName.length() - 4);
-		if (jarName.endsWith(".jar") && oldName.equals(oldProjectName)) //NOI18N
-		    projectProps.put(EjbJarProjectProperties.JAR_NAME, newName + ".jar"); //NOI18N
+		if (jarName.endsWith(".jar") && oldName.equals(oldProjectName)) { //NOI18N
+                    projectProps.put(EjbJarProjectProperties.JAR_NAME, newName + ".jar"); //NOI18N
+                }
 
 		helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
             }
@@ -229,12 +233,14 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
     }
     
     private static boolean isParent(File folder, File fo) {
-        if (folder.equals(fo))
+        if (folder.equals(fo)) {
             return false;
+        }
         
         while (fo != null) {
-            if (fo.equals(folder))
+            if (fo.equals(folder)) {
                 return true;
+            }
             
             fo = fo.getParentFile();
         }

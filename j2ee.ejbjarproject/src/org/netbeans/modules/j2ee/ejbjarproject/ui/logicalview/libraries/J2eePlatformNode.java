@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -113,30 +113,34 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
         this.platformPropName = platformPropName;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
         
-        J2eeModuleProvider moduleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-        moduleProvider.addInstanceListener(
-                (InstanceListener)WeakListeners.create(InstanceListener.class, this, moduleProvider));
+        J2eeModuleProvider moduleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        moduleProvider.addInstanceListener(WeakListeners.create(InstanceListener.class, this, moduleProvider));
     }
     
     public static J2eePlatformNode create(Project project, PropertyEvaluator evaluator, String platformPropName) {
         return new J2eePlatformNode(project, evaluator, platformPropName);
     }
 
+    @Override
     public String getName () {
         return this.getDisplayName();
     }
     
+    @Override
     public String getDisplayName() {
         return "";
     }
     
+    @Override
     public String getHtmlDisplayName() {
-        if (getPlatform() != null)
+        if (getPlatform() != null) {
             return getPlatform().getDisplayName();
-        else 
+        } else {
             return NbBundle.getMessage(J2eePlatformNode.class, "LBL_J2eeServerMissing");
+        }
     }
     
+    @Override
     public Image getIcon(int type) {
         Image result = null;
         if (getPlatform() != null) {
@@ -145,14 +149,17 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
         return result != null ? result : brokenIcon;
     }
     
+    @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }
 
+    @Override
     public boolean canCopy() {
         return false;
     }
     
+    @Override
     public Action[] getActions(boolean context) {
         return new SystemAction[0];
     }
@@ -166,8 +173,9 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
     }
     
     private void refresh() {
-        if (platformCache != null)
+        if (platformCache != null) {
             platformCache.removePropertyChangeListener(weakPlatformListener);
+        }
 
         platformCache = null;
 
@@ -214,31 +222,33 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
         return platformCache;
     }
 
-    private static class PlatformContentChildren extends Children.Keys {
+    private static class PlatformContentChildren extends Children.Keys<SourceGroup> {
 
         PlatformContentChildren () {
         }
 
+        @Override
         protected void addNotify() {
             this.setKeys (this.getKeys());
         }
 
+        @Override
         protected void removeNotify() {
-            this.setKeys(Collections.EMPTY_SET);
+            this.setKeys(Collections.<SourceGroup>emptyList());
         }
 
-        protected Node[] createNodes(Object key) {
-            SourceGroup sg = (SourceGroup) key;
+        protected Node[] createNodes(SourceGroup key) {
+            SourceGroup sg = key;
             return new Node[] {ActionFilterNode.create(PackageView.createPackageView(sg), null, null, null, null, null, null)};
         }
 
-        private List getKeys () {
-            List result;
+        private List<SourceGroup> getKeys () {
+            List<SourceGroup> result;
             
             J2eePlatform j2eePlatform = ((J2eePlatformNode)this.getNode()).getPlatform();
             if (j2eePlatform != null) {
                 File[] classpathEntries = j2eePlatform.getClasspathEntries();
-                result = new ArrayList(classpathEntries.length);
+                result = new ArrayList<SourceGroup>(classpathEntries.length);
                 for (int i = 0; i < classpathEntries.length; i++) {
                     FileObject file = FileUtil.toFileObject(classpathEntries[i]);
                     if (file != null) {
@@ -249,7 +259,7 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
                     }
                 }
             } else {
-                result = Collections.EMPTY_LIST;
+                result = Collections.<SourceGroup>emptyList();
             }
             
             return result;

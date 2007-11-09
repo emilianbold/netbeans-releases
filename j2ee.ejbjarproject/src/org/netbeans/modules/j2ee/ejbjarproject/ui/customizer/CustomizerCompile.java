@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -52,6 +52,7 @@ import org.openide.util.HelpCtx;
  * @author  phrebejk
  */
 public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
+    private static final long serialVersionUID = 236843764L;
 
         
     public CustomizerCompile( EjbJarProjectProperties uiProperties ) {

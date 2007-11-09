@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,7 +41,10 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.customizer;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -52,7 +55,20 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 import java.text.MessageFormat;
-import javax.swing.*;
+import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.CellEditorListener;
@@ -75,6 +91,9 @@ import org.openide.util.NbBundle;
  * @author Tomas Zezula
  */
 public final class EjbJarSourceRootsUi {
+    
+    private EjbJarSourceRootsUi() {
+    }
   
     public static DefaultTableModel createModel( SourceRoots roots ) {
         
@@ -172,7 +191,7 @@ public final class EjbJarSourceRootsUi {
         final JButton downButton;
         private final Project project;
         private final SourceRoots sourceRoots;
-        private final Set ownedFolders;
+        private final Set<File> ownedFolders;
         private DefaultTableModel rootsModel;
         private EditMediator relatedEditMediator;
         private File lastUsedDir; //Last used current folder in JFileChooser
@@ -194,7 +213,7 @@ public final class EjbJarSourceRootsUi {
             this.removeButton = removeButton;
             this.upButton = upButton;
             this.downButton = downButton;
-            this.ownedFolders = new HashSet();
+            this.ownedFolders = new HashSet<File>();
 
             this.project = master;
             this.sourceRoots = sourceRoots;
@@ -229,10 +248,11 @@ public final class EjbJarSourceRootsUi {
                 chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
                 chooser.setMultiSelectionEnabled( true );
                 
-                if (sourceRoots.isTest())                
-                    chooser.setDialogTitle( NbBundle.getMessage( EjbJarSourceRootsUi.class, "LBL_TestFolder_DialogTitle" )); // NOI18N
-                else
-                    chooser.setDialogTitle( NbBundle.getMessage( EjbJarSourceRootsUi.class, "LBL_SourceFolder_DialogTitle" )); // NOI18N
+                if (sourceRoots.isTest()) {
+                    chooser.setDialogTitle(NbBundle.getMessage(EjbJarSourceRootsUi.class, "LBL_TestFolder_DialogTitle"));  // NOI18N
+                } else {
+                    chooser.setDialogTitle(NbBundle.getMessage(EjbJarSourceRootsUi.class, "LBL_SourceFolder_DialogTitle")); // NOI18N
+                }
 
                 File curDir = this.lastUsedDir;
                 if (curDir == null) {
@@ -316,8 +336,8 @@ public final class EjbJarSourceRootsUi {
             int lastIndex = si == null || si.length == 0 ? -1 : si[si.length - 1];
             ListSelectionModel selectionModel = this.rootsList.getSelectionModel();
             selectionModel.clearSelection();
-            Set rootsFromOtherProjects = new HashSet ();
-            Set rootsFromRelatedSourceRoots = new HashSet();
+            Set<File> rootsFromOtherProjects = new HashSet<File>();
+            Set<File> rootsFromRelatedSourceRoots = new HashSet<File>();
             for( int i = 0; i < files.length; i++ ) {
                 File normalizedFile = FileUtil.normalizeFile(files[i]);
                 Project p;
@@ -425,15 +445,18 @@ public final class EjbJarSourceRootsUi {
     }
 
     private static class SourceRootsModel extends DefaultTableModel {
+        private static final long serialVersionUID = 139645020171023706L;
 
         public SourceRootsModel (Object[][] data) {
             super (data,new Object[]{"location","label"});//NOI18N
         }
 
+        @Override
         public boolean isCellEditable(int row, int column) {
             return column == 1;
         }
 
+        @Override
         public Class getColumnClass(int columnIndex) {
             switch (columnIndex) {
                 case 0:
@@ -447,6 +470,7 @@ public final class EjbJarSourceRootsUi {
     }
     
     private static class FileRenderer extends DefaultTableCellRenderer {
+        private static final long serialVersionUID = 19773973042472054L;
         
         private File projectFolder;
         
@@ -454,6 +478,7 @@ public final class EjbJarSourceRootsUi {
             this.projectFolder = projectFolder;
         }
         
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,int row, int column) {
             String displayName;
             if (value instanceof File) {
@@ -479,6 +504,7 @@ public final class EjbJarSourceRootsUi {
     }
 
     private static class WarningDlg extends JPanel {
+        private static final long serialVersionUID = 178428385251850014L;
 
         public WarningDlg (Set invalidRoots) {            
             this.initGui (invalidRoots);
@@ -529,6 +555,7 @@ public final class EjbJarSourceRootsUi {
         }
 
         private static class InvalidRootRenderer extends DefaultListCellRenderer {
+            private static final long serialVersionUID = 194496879246810209L;
 
             private boolean projectConflict;
 

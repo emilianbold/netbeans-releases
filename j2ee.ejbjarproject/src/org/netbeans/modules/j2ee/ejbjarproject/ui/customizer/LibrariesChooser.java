@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.customizer;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Image;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.libraries.Library;
@@ -48,27 +51,34 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.openide.util.HelpCtx;
 import org.openide.util.WeakListeners;
-
-import javax.swing.*;
-import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
-
-
+import java.util.Set;
+import javax.swing.AbstractListModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JList;
+import javax.swing.JPanel;
 import org.openide.util.Utilities;
 /**
  *
  * @author  tz97951
  */
-public class LibrariesChooser extends javax.swing.JPanel implements HelpCtx.Provider {
+public class LibrariesChooser extends JPanel implements HelpCtx.Provider {
+    private static final long serialVersionUID = 109720779197839288L;
 
-    private Set/*<Library>*/ containedLibraries;
+    private Set<Library> containedLibraries;
 
     /** Creates new form LibrariesChooser */
-    public LibrariesChooser (final JButton addLibraryOption, Set/*<Library>*/ containedLibraries) {
+    public LibrariesChooser (final JButton addLibraryOption, Set<Library> containedLibraries) {
         this.containedLibraries = containedLibraries;
         initComponents();
         jList1.setPrototypeCellValue("0123456789012345678901234");      //NOI18N
@@ -160,10 +170,10 @@ public class LibrariesChooser extends javax.swing.JPanel implements HelpCtx.Prov
 
     private void editLibraries(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editLibraries
         LibrariesListModel model = (LibrariesListModel) jList1.getModel ();
-        Collection oldLibraries = Arrays.asList(model.getLibraries());
+        Collection<Library> oldLibraries = Arrays.asList(model.getLibraries());
         LibrariesCustomizer.showCustomizer((Library)this.jList1.getSelectedValue());
-        List currentLibraries = Arrays.asList(model.getLibraries());
-        Collection newLibraries = new ArrayList (currentLibraries);                
+        List<Library> currentLibraries = Arrays.asList(model.getLibraries());
+        Collection<Library> newLibraries = new ArrayList<Library>(currentLibraries);
         
         newLibraries.removeAll(oldLibraries);                
         int indexes[] = new int [newLibraries.size()];
@@ -187,13 +197,13 @@ public class LibrariesChooser extends javax.swing.JPanel implements HelpCtx.Prov
 
 
     private static final class LibrariesListModel extends AbstractListModel implements PropertyChangeListener {
+        private static final long serialVersionUID = 22946764535447141L;
 
         private Library[] cache;
 
         public LibrariesListModel () {
             LibraryManager manager = LibraryManager.getDefault();
-            manager.addPropertyChangeListener((PropertyChangeListener)WeakListeners.create(PropertyChangeListener.class,
-                    this, manager));
+            manager.addPropertyChangeListener(WeakListeners.create(PropertyChangeListener.class, this, manager));
         }
 
         public synchronized int getSize() {
@@ -237,11 +247,10 @@ public class LibrariesChooser extends javax.swing.JPanel implements HelpCtx.Prov
 
         private Library[] createLibraries () {
             Library[] libs = LibraryManager.getDefault().getLibraries();
-            Arrays.sort(libs, new Comparator () {
-                public int compare (Object o1, Object o2) {
-                    assert (o1 instanceof Library) && (o2 instanceof Library);
-                    String name1 = ((Library)o1).getDisplayName();
-                    String name2 = ((Library)o2).getDisplayName();
+            Arrays.sort(libs, new Comparator<Library>() {
+                public int compare (Library o1, Library o2) {
+                    String name1 = (o1).getDisplayName();
+                    String name2 = (o2).getDisplayName();
                     return name1.compareToIgnoreCase(name2);
                 }
             });
@@ -251,10 +260,12 @@ public class LibrariesChooser extends javax.swing.JPanel implements HelpCtx.Prov
 
 
     private final class LibraryRenderer extends DefaultListCellRenderer {
+        private static final long serialVersionUID = 120819570259435573L;
         
         private static final String LIBRARY_ICON = "org/netbeans/modules/java/j2seproject/ui/resources/libraries.gif";  //NOI18N               
         private Icon cachedIcon;
         
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String displayName = null;
             String toolTip = null;

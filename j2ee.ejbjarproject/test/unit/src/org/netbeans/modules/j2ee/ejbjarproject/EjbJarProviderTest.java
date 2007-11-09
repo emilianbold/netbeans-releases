@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -91,10 +91,10 @@ public class EjbJarProviderTest extends TestBase {
         assertNotNull(metaInfFO.getFileObject("webservices.xml"));
 
         // ensure deployment descriptor files are returned
-        J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         assertEquals(ejbJarXmlFO, FileUtil.toFileObject(provider.getJ2eeModule().getDeploymentConfigurationFile(EJBJAR_XML)));
         
-        EjbJarImplementation ejbJar = (EjbJarImplementation)project.getLookup().lookup(EjbJarImplementation.class);
+        EjbJarImplementation ejbJar = project.getLookup().lookup(EjbJarImplementation.class);
         assertEquals(metaInfFO, ejbJar.getMetaInf());
         assertEquals(ejbJarXmlFO, ejbJar.getDeploymentDescriptor());
     }
@@ -102,7 +102,7 @@ public class EjbJarProviderTest extends TestBase {
     public void testMetadataModel()throws Exception {
         File f = new File(getDataDir().getAbsolutePath(), "projects/EJBModule1");
         project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
-        J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         J2eeModule j2eeModule = provider.getJ2eeModule();
         assertNotNull(j2eeModule.getMetadataModel(EjbJarMetadata.class));
         assertNotNull(j2eeModule.getMetadataModel(WebservicesMetadata.class));
@@ -125,14 +125,14 @@ public class EjbJarProviderTest extends TestBase {
         
         // ensure meta.inf-related files are silently returned as null
         
-        J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         J2eeModule j2eeModule = provider.getJ2eeModule();
         assertNotNull(j2eeModule.getDeploymentConfigurationFile(EJBJAR_XML));
         assertNull(FileUtil.toFileObject(j2eeModule.getDeploymentConfigurationFile(EJBJAR_XML)));
         assertNotNull(j2eeModule.getMetadataModel(EjbJarMetadata.class));
         assertNotNull(j2eeModule.getMetadataModel(WebservicesMetadata.class));
         
-        EjbJarImplementation ejbJar = (EjbJarImplementation)project.getLookup().lookup(EjbJarImplementation.class);
+        EjbJarImplementation ejbJar = project.getLookup().lookup(EjbJarImplementation.class);
         assertNull(ejbJar.getMetaInf());
         assertNull(ejbJar.getDeploymentDescriptor());
     }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -113,6 +113,7 @@ final class LibrariesSourceGroup implements SourceGroup {
         return root.equals(file) || FileUtil.isParentOf(root,file);
     }
 
+    @Override
     public boolean equals (Object other) {
         if (!(other instanceof LibrariesSourceGroup)) {
             return false;
@@ -122,6 +123,7 @@ final class LibrariesSourceGroup implements SourceGroup {
             root == null ? osg.root == null : root.equals (osg.root);  
     }
 
+    @Override
     public int hashCode () {
         return ((displayName == null ? 0 : displayName.hashCode())<<16) | ((root==null ? 0 : root.hashCode()) & 0xffff);
     }

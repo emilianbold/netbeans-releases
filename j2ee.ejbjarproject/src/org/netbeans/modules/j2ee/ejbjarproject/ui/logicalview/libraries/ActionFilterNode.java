@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -103,7 +103,7 @@ class ActionFilterNode extends FilterNode {
      */
     static ActionFilterNode create (Node original, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, 
                                     String classPathId, String entryId, String includedLibrariesElement) {
-        DataObject dobj = (DataObject) original.getLookup().lookup(DataObject.class);
+        DataObject dobj = original.getLookup().lookup(DataObject.class);
         assert dobj != null;
         FileObject root =  dobj.getPrimaryFile();
         Lookup lkp = new ProxyLookup (new Lookup[] {original.getLookup(), helper == null ?
@@ -130,12 +130,14 @@ class ActionFilterNode extends FilterNode {
         this.mode = mode;
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         Action[] result = initActions();        
         return result;
     }
 
 
+    @Override
     public Action getPreferredAction() {
         if (mode == MODE_FILE) {
             Action[] actions = initActions();
@@ -148,7 +150,7 @@ class ActionFilterNode extends FilterNode {
 
     private Action[] initActions () {
         if (actionCache == null) {
-            List result = new ArrayList(2);
+            List<Action> result = new ArrayList<Action>(2);
             if (mode == MODE_FILE) {
                 Action[] superActions = super.getActions(false);
                 for (int i=0; i<superActions.length; i++) {
@@ -170,7 +172,7 @@ class ActionFilterNode extends FilterNode {
                     result.add (SystemAction.get(RemoveClassPathRootAction.class));
                 }
             }            
-            actionCache = (Action[]) result.toArray(new Action[result.size()]);
+            actionCache = result.toArray(new Action[result.size()]);
         }
         return actionCache;
     }
@@ -186,11 +188,12 @@ class ActionFilterNode extends FilterNode {
             this.cpRoot = cpRooot;
         }
 
+        @Override
         protected Node[] createNodes(Node n) {
             switch (mode) {
                 case MODE_ROOT:
                 case MODE_PACKAGE:
-                    DataObject dobj = (DataObject) n.getCookie(org.openide.loaders.DataObject.class);
+                    DataObject dobj = n.getCookie(org.openide.loaders.DataObject.class);
                     if (dobj == null) {
                         assert false : "DataNode without DataObject in Lookup";  //NOI18N
                         return new Node[0];
@@ -297,9 +300,9 @@ class ActionFilterNode extends FilterNode {
            boolean removed = false;
            EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
            String raw = props.getProperty (classPathId);
-           List resources = cs.itemsList( raw, includedLibrariesElement );
-           for (Iterator i = resources.iterator(); i.hasNext();) {
-               ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
+           List<ClassPathSupport.Item> resources = cs.itemsList( raw, includedLibrariesElement );
+           for (Iterator<ClassPathSupport.Item> i = resources.iterator(); i.hasNext();) {
+               ClassPathSupport.Item item = i.next();
                if (entryId.equals(EjbJarProjectProperties.getAntPropertyName(item.getReference()))) {
                    i.remove();
                    removed = true;
@@ -313,7 +316,7 @@ class ActionFilterNode extends FilterNode {
 
                //update lib references in private properties
                EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-               ArrayList l = new ArrayList ();
+               ArrayList<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>();
                l.addAll(resources);
                EjbJarProjectProperties.storeLibrariesLocations(l.iterator(), privateProps);
                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);

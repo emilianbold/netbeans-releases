@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -150,12 +150,13 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
         
         EditableProperties globalProperties = PropertyUtils.getGlobalProperties();
         if(globalProperties.getProperty(WSCOMPILE_TOOLS_CLASSPATH) == null) {
-            globalProperties.setProperty(WSCOMPILE_TOOLS_CLASSPATH, "${java.home}\\..\\lib\\tools.jar");
+            globalProperties.setProperty(WSCOMPILE_TOOLS_CLASSPATH, "${java.home}\\..\\lib\\tools.jar"); // NOI18N
             
             try {
                 PropertyUtils.putGlobalProperties(globalProperties);
             } catch(java.io.IOException ex) {
-                String mes = "Error saving global properties when adding wscompile.tools.classpath for service '" + serviceName + "'\r\n" + ex.getMessage();
+                String mes = "Error saving global properties when adding wscompile.tools.classpath for service '"
+                        + serviceName + "'\r\n" + ex.getMessage(); // NOI18N
                 NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
             }
@@ -167,11 +168,11 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
         EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         
         { // Block that adjusts wscompile.client.classpath as necessary.
-            HashSet wscJars = new HashSet();
+            HashSet<String> wscJars = new HashSet<String>();
             boolean newWscJars = false;
             String wscClientClasspath = projectProperties.getProperty(WSCOMPILE_CLASSPATH);
             if(wscClientClasspath != null) {
-                String [] libs = PropertyUtils.tokenizePath(wscClientClasspath);
+                String[] libs = PropertyUtils.tokenizePath(wscClientClasspath);
                 for(int i = 0; i < libs.length; i++) {
                     wscJars.add(libs[i]);
                 }
@@ -189,7 +190,7 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
                 for(Iterator iter = wscJars.iterator(); iter.hasNext(); ) {
                     newClasspathBuf.append(iter.next().toString());
                     if(iter.hasNext()) {
-                        newClasspathBuf.append(":");
+                        newClasspathBuf.append(":"); // NOI18N
                     }
                 }
                 projectProperties.put(WSCOMPILE_CLASSPATH, newClasspathBuf.toString());
@@ -221,7 +222,7 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
     }
     
     public FileObject getMetaInf() {
-        EjbJarProvider provider = (EjbJarProvider)project.getLookup().lookup(EjbJarProvider.class);
+        EjbJarProvider provider = project.getLookup().lookup(EjbJarProvider.class);
         return provider.getMetaInf();
     }
     
@@ -241,10 +242,10 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
         for (int i = 0; i < groups.length && packageName == null; i++) {
             packageName = FileUtil.getRelativePath(groups[i].getRootFolder(), parent);
             if (packageName != null) {
-                packageName = groups[i].getName() + "/" + packageName;
+                packageName = groups[i].getName() + "/" + packageName; // NOI18N
             }
         }
-        return packageName + "";
+        return packageName + ""; // NOI18N
     }
     
     private FileObject getFileObject(String propname) {
@@ -337,7 +338,9 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
             String defaultFeatures = "wsi, strict"; // NOI18N -- defaults if stub descriptor is bad type (should never happen?)
             if (stubDescriptor instanceof JAXRPCClientStubDescriptor) {
                 JAXRPCClientStubDescriptor stubDesc = (JAXRPCClientStubDescriptor) stubDescriptor;
-                if (wscompileFeatures!=null) stubDesc.setDefaultFeatures(wscompileFeatures);
+                if (wscompileFeatures!=null) {
+                    stubDesc.setDefaultFeatures(wscompileFeatures);
+                }
                 defaultFeatures = stubDesc.getDefaultFeaturesAsArgument();
             } else {
                 // !PW FIXME wrong stub type -- log error message.
@@ -542,8 +545,8 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
         return wsdlFolder;
     }
     
-    public List/*StubDescriptor*/ getStubDescriptors() {
-        ArrayList stubs = new ArrayList(2);
+    public List<ClientStubDescriptor> getStubDescriptors() {
+        List<ClientStubDescriptor> stubs = new ArrayList<ClientStubDescriptor>(2);
         /*
         String version = project.getEjbModule().getJ2eePlatformVersion();
         if(EjbProjectConstants.J2EE_14_LEVEL.equals(version)) {
@@ -562,26 +565,26 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
      *  probably does not belong at this time.
      */
     private static final String [] WSCOMPILE_CLIENT_FEATURES = {
-        "datahandleronly", // - portable
+        "datahandleronly", // - portable // NOI18N
         //        "documentliteral", // SEI ONLY
         //        "rpcliteral", // SEI ONLY
-        "explicitcontext",
+        "explicitcontext", // NOI18N
         //        "infix:<name>", // difficult to implement.
-        "jaxbenumtype",
-        "nodatabinding", //  - portable
-        "noencodedtypes",
-        "nomultirefs",
-        "norpcstructures", //  - portable
-        "novalidation", //  - portable
-        "resolveidref",
-        "searchschema", //  - portable
-        "serializeinterfaces",
-        "strict", //  - portable
-        //        "useonewayoperations", // SEI ONLY
-        "wsi", // - portable
-        "unwrap",// - portable
-        "donotoverride", // - portable
-        "donotunwrap", // - portable
+        "jaxbenumtype", // NOI18N
+        "nodatabinding", //  - portable // NOI18N
+        "noencodedtypes", // NOI18N
+        "nomultirefs", // NOI18N
+        "norpcstructures", //  - portable // NOI18N
+        "novalidation", //  - portable // NOI18N
+        "resolveidref", // NOI18N
+        "searchschema", //  - portable // NOI18N
+        "serializeinterfaces", // NOI18N
+        "strict", //  - portable // NOI18N
+        //        "useonewayoperations", // SEI ONLY // NOI18N
+        "wsi", // - portable // NOI18N
+        "unwrap",// - portable // NOI18N
+        "donotoverride", // - portable // NOI18N
+        "donotunwrap", // - portable // NOI18N
     };
     
     private static final List allClientFeatures = Arrays.asList(WSCOMPILE_CLIENT_FEATURES);
@@ -602,7 +605,7 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
     private static final List importantClientFeatures = Arrays.asList(WSCOMPILE_KEY_CLIENT_FEATURES);
     
     public List getServiceClients() {
-        List serviceNames = new ArrayList();
+        List<WsCompileClientEditorSupport.ServiceSettings> serviceNames = new ArrayList<WsCompileClientEditorSupport.ServiceSettings>();
         
         Element data = helper.getPrimaryConfigurationData(true);
         NodeList nodes = data.getElementsByTagName(WEB_SERVICE_CLIENTS);

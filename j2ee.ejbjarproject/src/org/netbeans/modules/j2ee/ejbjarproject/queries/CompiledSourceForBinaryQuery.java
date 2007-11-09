@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -71,7 +71,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
-    private Map/*<URL,SourceForBinaryQuery.Result>*/  cache = new HashMap ();
+    private Map<URL,SourceForBinaryQuery.Result>  cache = new HashMap<URL,SourceForBinaryQuery.Result>();
 
     public CompiledSourceForBinaryQuery (AntProjectHelper helper,PropertyEvaluator evaluator, 
             SourceRoots srcRoots, SourceRoots testRoots) {
@@ -86,7 +86,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             binaryRoot = FileUtil.getArchiveFile(binaryRoot);
             // XXX check whether this is really the root
         }
-        SourceForBinaryQuery.Result res = (SourceForBinaryQuery.Result) cache.get (binaryRoot);
+        SourceForBinaryQuery.Result res = cache.get(binaryRoot);
         if (res != null) {
             return res;
         }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -57,6 +57,7 @@ import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
 
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
+    private static final long serialVersionUID = 108898362212877173L;
     
     private PanelConfigureProject panel;
     
@@ -168,8 +169,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             String path = projectLocationTextField.getText();
             if (path.length() > 0) {
                 File f = new File(path);
-                if (f.exists())
+                if (f.exists()) {
                     chooser.setSelectedFile(f);
+                }
             }
             if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
                 File projectDir = chooser.getSelectedFile();
@@ -179,6 +181,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
     }//GEN-LAST:event_browseLocationAction
     
+    @Override
     public void addNotify() {
         super.addNotify();
         //same problem as in 31086, initial focus on Cancel button
@@ -221,10 +224,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
     void read (WizardDescriptor settings) {
         File projectLocation = (File) settings.getProperty(WizardProperties.PROJECT_DIR);
-        if (projectLocation == null)
+        if (projectLocation == null) {
             projectLocation = ProjectChooser.getProjectsFolder();
-        else
+        } else {
             projectLocation = projectLocation.getParentFile();
+        }
         
         projectLocationTextField.setText(projectLocation.getAbsolutePath());
         
@@ -232,8 +236,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (projectName == null) {
             int baseCount = FoldersListSettings.getDefault().getNewProjectCount() + 1;
             String formater = NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NPW1_DefaultProjectName");
-            while ((projectName = validFreeProjectName(projectLocation, formater, baseCount)) == null)
+            while ((projectName = validFreeProjectName(projectLocation, formater, baseCount)) == null) {
                 baseCount++;
+            }
         }
         
         projectNameTextField.setText(projectName);                
@@ -289,8 +294,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     
     private String getCreatedFolderPath() {
         StringBuffer folder = new StringBuffer(projectLocationTextField.getText().trim());
-        if (!projectLocationTextField.getText().endsWith(File.separator))
+        if (!projectLocationTextField.getText().endsWith(File.separator)) {
             folder.append(File.separatorChar);
+        }
         folder.append(projectNameTextField.getText().trim());
         
         return folder.toString();

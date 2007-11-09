@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -57,7 +57,8 @@ import org.openide.util.Lookup;
  *
  * @author Peter Williams
  */
-public class CustomizerWSServiceHost extends javax.swing.JPanel implements PropertyChangeListener, HelpCtx.Provider {
+public class CustomizerWSServiceHost extends JPanel implements PropertyChangeListener, HelpCtx.Provider {
+    private static final long serialVersionUID = 105002390260070271L;
     
     private EjbJarProjectProperties ejbJarProperties;
     private WsCompileEditorSupport.Panel wsCompileEditor;
@@ -90,6 +91,7 @@ public class CustomizerWSServiceHost extends javax.swing.JPanel implements Prope
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
     
+    @Override
     public void addNotify() {
         super.addNotify();
 
@@ -101,6 +103,7 @@ public class CustomizerWSServiceHost extends javax.swing.JPanel implements Prope
         component.addPropertyChangeListener(WsCompileEditorSupport.PROP_FEATURES_CHANGED, this);
     }
 
+    @Override
     public void removeNotify() {
         super.removeNotify();
 
@@ -110,7 +113,7 @@ public class CustomizerWSServiceHost extends javax.swing.JPanel implements Prope
 
     public void initValues() {
         if(wsCompileEditor == null) {
-            WsCompileEditorSupport editorSupport = (WsCompileEditorSupport) Lookup.getDefault().lookup(WsCompileEditorSupport.class);
+            WsCompileEditorSupport editorSupport = Lookup.getDefault().lookup(WsCompileEditorSupport.class);
             wsCompileEditor = editorSupport.getWsCompileSupport();
         }
 

@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.event.ChangeListener;

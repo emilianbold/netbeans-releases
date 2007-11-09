@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -63,6 +63,9 @@ import org.openide.util.NbBundle;
  * @author Petr Hrebejk
  */
 public class ClassPathUiSupport {
+    
+    private ClassPathUiSupport() {
+    }
     
     // private ClassPathSupport cps;
      
@@ -192,14 +195,14 @@ public class ClassPathUiSupport {
         
     }
     
-    public static int[] addLibraries( DefaultListModel listModel, int[] indices, Library[] libraries, Set/*<Library>*/ alreadyIncludedLibs, boolean includeInDeployment ) {
+    public static int[] addLibraries( DefaultListModel listModel, int[] indices, Library[] libraries, Set<Library> alreadyIncludedLibs, boolean includeInDeployment ) {
         int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
         for (int i = 0, j=1; i < libraries.length; i++) {
             if (!alreadyIncludedLibs.contains(libraries[i])) {
                 listModel.add( lastIndex + j++, ClassPathSupport.Item.create( libraries[i], null, includeInDeployment ) );
             }
         }
-        Set addedLibs = new HashSet (Arrays.asList(libraries));
+        Set<Library> addedLibs = new HashSet<Library>(Arrays.asList(libraries));
         int[] indexes = new int[libraries.length];
         for (int i=0, j=0; i<listModel.getSize(); i++) {
             ClassPathSupport.Item item = (ClassPathSupport.Item)listModel.get (i);
@@ -256,6 +259,7 @@ public class ClassPathUiSupport {
      * This allows the TableModel's data to be used in EditMediator
      */
     public static final class ClassPathTableModel extends AbstractTableModel implements ListDataListener {
+        private static final long serialVersionUID = 61197507L;
         private DefaultListModel model;
         
         public ClassPathTableModel(DefaultListModel model) {
@@ -275,6 +279,7 @@ public class ClassPathUiSupport {
             return model.getSize();
         }
         
+        @Override
         public String getColumnName(int column) {
             if (column == 0) {
                 return NbBundle.getMessage(ClassPathUiSupport.class, "LBL_CustomizeLibraries_TableHeader_Library");
@@ -283,6 +288,7 @@ public class ClassPathUiSupport {
             }
         }
         
+        @Override
         public Class getColumnClass(int columnIndex) {
             if (columnIndex == 0) {
                 return ClassPathSupport.Item.class;
@@ -291,6 +297,7 @@ public class ClassPathUiSupport {
             }
         }
         
+        @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return columnIndex != 0 && getShowItemAsIncludedInDeployment(getItem(rowIndex)) instanceof Boolean;
         }
@@ -304,9 +311,11 @@ public class ClassPathUiSupport {
             }
         }
         
+        @Override
         public void setValueAt(Object value, int row, int column) {
-            if (column != 1 || !(value instanceof Boolean))
+            if (column != 1 || !(value instanceof Boolean)) {
                 return;
+            }
             
             getItem(row).setIncludedInDeployment(value == Boolean.TRUE);
             fireTableCellUpdated(row, column);

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -70,6 +70,8 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
  * @author  Tomas Zezula
  */
 public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Provider {
+    private static final long serialVersionUID = 26668383530631180L;
+    
     private String originalEncoding;
     private EjbJarProjectProperties uiProperties;
     private File projectFld;
@@ -571,6 +573,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     // End of variables declaration//GEN-END:variables
     
     private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {
+        private static final long serialVersionUID = 165039671121173778L;
         
         public EncodingRenderer() {
             setOpaque(true);
@@ -600,6 +603,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     }
     
     private static class EncodingModel extends DefaultComboBoxModel {
+        private static final long serialVersionUID = 242741101262934942L;
         
         public EncodingModel(String originalEncoding) {
             Charset defEnc = null;

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -127,7 +127,7 @@ public final class TestUtil extends ProxyLookup {
                 System.err.println("No FileObject for " + root + " found.\n" +
                                     "Maybe you need ${openide/masterfs.dir}/modules/org-netbeans-modules-masterfs.jar\n" +
                                     "in test.unit.run.cp.extra, or make sure Lookups.metaInfServices is included in Lookup.default, so that\n" +
-                                    "Lookup.default<URLMapper>=" + Lookup.getDefault().lookup(new Lookup.Template(URLMapper.class)).allInstances() + " includes MasterURLMapper\n" +
+                                    "Lookup.default<URLMapper>=" + Lookup.getDefault().lookup(new Lookup.Template<URLMapper>(URLMapper.class)).allInstances() + " includes MasterURLMapper\n" +
                                     "e.g. by using TestUtil.setLookup(Object[]) rather than TestUtil.setLookup(Lookup).");
             }
             // For the benefit of those not using masterfs.
@@ -179,14 +179,14 @@ public final class TestUtil extends ProxyLookup {
         System.gc();
     }
     
-    private static final Map/*<FileObject,int>*/ loadCount = new WeakHashMap();
+    private static final Map<FileObject, Integer> loadCount = new WeakHashMap<FileObject, Integer>();
     
     /**
      * Check how many times {@link ProjectFactory#loadProject} has been called
      * (with any outcome) on a given project directory.
      */
     public static int projectLoadCount(FileObject dir) {
-        Integer i = (Integer)loadCount.get(dir);
+        Integer i = loadCount.get(dir);
         if (i != null) {
             return i.intValue();
         } else {
@@ -288,7 +288,7 @@ public final class TestUtil extends ProxyLookup {
         TestProjectFactory() {}
         
         public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
-            Integer i = (Integer)loadCount.get(projectDirectory);
+            Integer i = loadCount.get(projectDirectory);
             if (i == null) {
                 i = new Integer(1);
             } else {
@@ -359,6 +359,7 @@ public final class TestUtil extends ProxyLookup {
             return dir;
         }
         
+        @Override
         public String toString() {
             return "testproject:" + getProjectDirectory().getNameExt();
         }

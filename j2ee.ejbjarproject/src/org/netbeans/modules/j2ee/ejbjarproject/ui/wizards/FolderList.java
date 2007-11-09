@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -48,6 +48,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -59,7 +60,8 @@ import org.openide.filesystems.FileUtil;
  * List of source/test roots
  * @author tzezula
  */
-public final class FolderList extends javax.swing.JPanel {
+public final class FolderList extends JPanel {
+    private static final long serialVersionUID = 5343510121384536L;
 
     public static final String PROP_FILES = "files";    //NOI18N
     public static final String PROP_LAST_USED_DIR = "lastUsedDir";  //NOI18N
@@ -226,7 +228,7 @@ public final class FolderList extends javax.swing.JPanel {
             File[] files = chooser.getSelectedFiles();
             int[] indecesToSelect = new int[files.length];
             DefaultListModel model = (DefaultListModel)this.roots.getModel();
-            Set invalidRoots = new HashSet ();
+            Set<File> invalidRoots = new HashSet<File>();
             File[] relatedFolders = this.relatedFolderList == null ? 
                 new File[0] : this.relatedFolderList.getFiles();
             for (int i=0, index=model.size(); i<files.length; i++, index++) {
@@ -280,6 +282,9 @@ public final class FolderList extends javax.swing.JPanel {
     }
 
     private static class Renderer extends DefaultListCellRenderer {
+        private static final long serialVersionUID = 251374683106183800L;
+        
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             File f = (File) value;
             String message = f.getAbsolutePath();

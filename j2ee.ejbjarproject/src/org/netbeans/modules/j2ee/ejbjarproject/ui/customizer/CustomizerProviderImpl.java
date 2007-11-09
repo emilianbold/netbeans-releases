@@ -50,7 +50,6 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
@@ -77,7 +76,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     
     public static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-j2ee-ejbjarproject/Customizer"; //NO18N
 
-    private static Map /*<Project,Dialog>*/project2Dialog = new HashMap(); 
+    private static Map<Project,Dialog> project2Dialog = new HashMap<Project,Dialog>(); 
     
     public CustomizerProviderImpl(Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
         this.project = project;
@@ -96,7 +95,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     
     public void showCustomizer( String preselectedCategory, String preselectedSubCategory ) {
         
-        Dialog dialog = (Dialog)project2Dialog.get (project);
+        Dialog dialog = project2Dialog.get(project);
         if ( dialog != null ) {            
             dialog.setVisible(true);
             return;
@@ -143,7 +142,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             uiProperties.save();
             
             // Close & dispose the the dialog
-            Dialog dialog = (Dialog)project2Dialog.get( project );
+            Dialog dialog = project2Dialog.get(project);
             if ( dialog != null ) {
                 dialog.setVisible(false);
                 dialog.dispose();
@@ -152,14 +151,16 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         
         // Listening to window events ------------------------------------------
                 
+        @Override
         public void windowClosed( WindowEvent e) {
             project2Dialog.remove( project );
         }    
         
+        @Override
         public void windowClosing( WindowEvent e ) {
             //Dispose the dialog otherwsie the {@link WindowAdapter#windowClosed}
             //may not be called
-            Dialog dialog = (Dialog)project2Dialog.get( project );
+            Dialog dialog = project2Dialog.get(project);
             if ( dialog != null ) {
                 dialog.setVisible(false);
                 dialog.dispose();

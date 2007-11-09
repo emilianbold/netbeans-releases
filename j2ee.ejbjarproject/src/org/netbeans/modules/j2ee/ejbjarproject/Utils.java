@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,12 +46,12 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
-import javax.swing.*;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import javax.swing.JComponent;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -65,9 +65,12 @@ public class Utils {
     private static final String WIZARD_PANEL_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
     private static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; //NOI18N;
 
+    private Utils() {
+    }
+
     public static String toClasspathString(File[] classpathEntries) {
         if (classpathEntries == null) {
-            return "";
+            return ""; //NOI18N
         }
         StringBuffer classpath = new StringBuffer();
         for (int i = 0; i < classpathEntries.length; i++) {
@@ -136,10 +139,8 @@ public class Utils {
                     J2eeApplicationProvider j2eeApp = (J2eeApplicationProvider)j2eeAppProvider;
                     J2eeModuleProvider[] j2eeModules = j2eeApp.getChildModuleProviders();
                     if ((j2eeModules != null) && (j2eeModules.length > 0)) { // == there are some modules in the j2ee app
-                        J2eeModuleProvider affectedPrjProvider1 =
-                                (J2eeModuleProvider)p1.getLookup().lookup(J2eeModuleProvider.class);
-                        J2eeModuleProvider affectedPrjProvider2 =
-                                (J2eeModuleProvider)p2.getLookup().lookup(J2eeModuleProvider.class);
+                        J2eeModuleProvider affectedPrjProvider1 = p1.getLookup().lookup(J2eeModuleProvider.class);
+                        J2eeModuleProvider affectedPrjProvider2 = p2.getLookup().lookup(J2eeModuleProvider.class);
                         if (affectedPrjProvider1 != null && affectedPrjProvider2 != null) {
                             List childModules = Arrays.asList(j2eeModules);
                             if (childModules.contains(affectedPrjProvider1) &&
@@ -168,7 +169,7 @@ public class Utils {
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
         
         boolean isCallerEJBModule = false;
-        J2eeModuleProvider callerJ2eeModuleProvider = (J2eeModuleProvider) enterpriseProject.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider callerJ2eeModuleProvider = enterpriseProject.getLookup().lookup(J2eeModuleProvider.class);
         if (callerJ2eeModuleProvider != null && callerJ2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
             // TODO: HACK - this should be set by calling AntArtifactQuery.findArtifactsByType(p, EjbProjectConstants.ARTIFACT_TYPE_EJBJAR)
             // but now freeform doesn't implement this correctly
@@ -178,10 +179,10 @@ public class Utils {
         // call ejb should not make this check, all should be handled in EnterpriseReferenceContainer
         boolean isCallerFreeform = enterpriseProject.getClass().getName().equals("org.netbeans.modules.ant.freeform.FreeformProject");
         
-        List /*<Project>*/ filteredResults = new ArrayList(allProjects.length);
+        List<Project> filteredResults = new ArrayList<Project>(allProjects.length);
         for (int i = 0; i < allProjects.length; i++) {
             boolean isEJBModule = false;
-            J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) allProjects[i].getLookup().lookup(J2eeModuleProvider.class);
+            J2eeModuleProvider j2eeModuleProvider = allProjects[i].getLookup().lookup(J2eeModuleProvider.class);
             if (j2eeModuleProvider != null && j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
                 isEJBModule = true;
             }
@@ -190,7 +191,7 @@ public class Utils {
                 filteredResults.add(allProjects[i]);
             }
         }
-        return (Project []) filteredResults.toArray(new Project[filteredResults.size()]);
+        return filteredResults.toArray(new Project[filteredResults.size()]);
     }
 
 }

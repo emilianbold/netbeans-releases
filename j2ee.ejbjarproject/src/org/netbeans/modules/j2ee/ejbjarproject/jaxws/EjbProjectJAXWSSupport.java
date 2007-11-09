@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -77,7 +77,9 @@ public class EjbProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
             FileObject metaInfFo = ejbModule.getMetaInf();
             if (metaInfFo!=null) {
                 FileObject wsdlFo = metaInfFo.getFileObject("wsdl"); //NOI18N
-                if (wsdlFo!=null) return wsdlFo;
+                if (wsdlFo!=null) {
+                    return wsdlFo;
+                }
                 else if (create) {
                     return metaInfFo.createFolder("wsdl"); //NOI18N
                 }
@@ -92,12 +94,14 @@ public class EjbProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
      */
     public String getWsdlLocation(String serviceName) {
         String localWsdl = serviceName+".wsdl"; //NOI18N
-        JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
+        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
         if (jaxWsModel!=null) {
             Service service = jaxWsModel.findServiceByName(serviceName);
             if (service!=null) {
                 String localWsdlFile = service.getLocalWsdlFile();
-                if (localWsdlFile!=null) localWsdl=localWsdlFile;
+                if (localWsdlFile!=null) {
+                    localWsdl = localWsdlFile;
+                }
             }
         }
         String prefix = "META-INF/wsdl/"; //NOI18N
@@ -117,6 +121,7 @@ public class EjbProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
     
     /** return root folder for xml artifacts
      */
+    @Override
     protected FileObject getXmlArtifactsRoot() {
         return project.getAPIEjbJar().getMetaInf();
     }
@@ -125,6 +130,7 @@ public class EjbProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
         //noop since nonJSR 109 web services are not supported in the EJB module
     }
 
+    @Override
     public String addService(String name, String serviceImpl, String wsdlUrl, String serviceName, String portName, String packageName, boolean isJsr109) {
         // create jax-ws.xml if necessary
         FileObject fo = WSUtils.findJaxWsFileObject(project);
@@ -138,6 +144,7 @@ public class EjbProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
         return super.addService(name, serviceImpl, wsdlUrl, serviceName, portName, packageName, isJsr109);
     }
 
+    @Override
     public void addService(String serviceName, String serviceImpl, boolean isJsr109) {
         // create jax-ws.xml if necessary
         FileObject fo = WSUtils.findJaxWsFileObject(project);

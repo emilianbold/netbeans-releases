@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -63,6 +63,7 @@ import org.openide.util.Exceptions;
  * @author Tomas Zezula
  */
 final class RemoveClassPathRootAction extends NodeAction {
+    private static final long serialVersionUID = 233655141159588145L;
 
     /**
      * Implementation of this interfaces has to be placed
@@ -94,18 +95,20 @@ final class RemoveClassPathRootAction extends NodeAction {
     }
 
     protected void performAction(final Node[] activatedNodes) {
-        final Set changedProjectsSet = new HashSet();
+        final Set<Project> changedProjectsSet = new HashSet<Project>();
         
         ProjectManager.mutex().writeAccess(new Runnable() {
             public void run() {
                 for (int i = 0; i < activatedNodes.length; i++) {
-                    Removable removable = (Removable) activatedNodes[i].getLookup().lookup(Removable.class);
-                    if (removable == null)
+                    Removable removable = activatedNodes[i].getLookup().lookup(Removable.class);
+                    if (removable == null) {
                         continue;
+                    }
                     
                     Project p = removable.remove();
-                    if (p != null)
+                    if (p != null) {
                         changedProjectsSet.add(p);
+                    }
                 }
                 
                 for (Iterator i = changedProjectsSet.iterator(); i.hasNext();) {
@@ -122,7 +125,7 @@ final class RemoveClassPathRootAction extends NodeAction {
 
     protected boolean enable(Node[] activatedNodes) {
         for (int i=0; i<activatedNodes.length; i++) {
-            Removable removable = (Removable) activatedNodes[i].getLookup().lookup(Removable.class);
+            Removable removable = activatedNodes[i].getLookup().lookup(Removable.class);
             if (removable==null) {
                 return false;
             }
@@ -141,6 +144,7 @@ final class RemoveClassPathRootAction extends NodeAction {
         return new HelpCtx (RemoveClassPathRootAction.class);
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }

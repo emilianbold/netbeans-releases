@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.wizards;
 
+import javax.swing.JPanel;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
@@ -54,7 +55,8 @@ import org.openide.modules.SpecificationVersion;
  *
  * @author Andrei Badea
  */
-public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
+public final class J2eeVersionWarningPanel extends JPanel {
+    private static final long serialVersionUID = 11195574181067260L;
     
     /**
      * Display a warning that the target platform will be downgraded to JDK 1.4
@@ -123,7 +125,8 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
             return downgradeJdk15CheckBox.isSelected();
         } else if (WARN_SET_SOURCE_LEVEL_15.equals(warningType)) {
             return downgradeSourceLevel15CheckBox.isSelected();
-        } else return false;
+        }
+        return false;
     }
     
     public String getSuggestedJavaPlatformName() {
@@ -144,17 +147,20 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
         SpecificationVersion version = defaultPlatform.getSpecification().getVersion();
         String sourceLevel = version.toString();
         // #89131: these levels are not actually distinct from 1.5.
-        if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7"))
-            sourceLevel = "1.5";       
+        if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")) {
+            sourceLevel = "1.5";
+        }
 //        System.out.println("default platform is "+version);
         
         // no warning if 1.4 is the default for j2ee14
-        if (new SpecificationVersion("1.4").equals(version) && j2eeLevel.equals(J2eeModule.J2EE_14)) // NOI18N
+        if (new SpecificationVersion("1.4").equals(version) && j2eeLevel.equals(J2eeModule.J2EE_14)) { // NOI18N
             return null;
+        }
         
         // no warning if 1.5, 1.6, 1.7 is the default for j2ee15
-        if ("1.5".equals(sourceLevel) && j2eeLevel.equals(J2eeModule.JAVA_EE_5)) // NOI18N
+        if ("1.5".equals(sourceLevel) && j2eeLevel.equals(J2eeModule.JAVA_EE_5)) { // NOI18N
             return null;
+        }
         
         if (j2eeLevel.equals(J2eeModule.J2EE_14)) {
             JavaPlatform[] java14Platforms = getJavaPlatforms("1.4"); //NOI18N

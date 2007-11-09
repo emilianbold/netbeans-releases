@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -80,6 +80,7 @@ public class ClassPathProviderImplTest extends TestBase {
         super(testName);
     }
     
+    @Override
     public void setUp() throws Exception {
         // setup some platforms -- needed for testing findClassPath(FileObject, ClassPath.BOOT)
         FileObject scratch = TestUtil.makeScratchDir(this);
@@ -95,7 +96,7 @@ public class ClassPathProviderImplTest extends TestBase {
         // setup the project
         File f = new File(getDataDir().getAbsolutePath(), "projects/EJBModule1");
         project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
-        Sources src = (Sources)project.getLookup().lookup(Sources.class);
+        Sources src = project.getLookup().lookup(Sources.class);
         SourceGroup[] groups = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         
         sourceRoot = findSourceRoot(groups, "${src.dir}");

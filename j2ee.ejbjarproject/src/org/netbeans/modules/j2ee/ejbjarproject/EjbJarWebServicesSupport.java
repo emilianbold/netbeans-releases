@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -146,11 +146,13 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
         String featurePropertyName = "wscompile.service." + serviceName + ".features"; // NOI18N
         JAXRPCStubDescriptor stubDesc = null;
         if (fromWSDL) {
-            if (wscompileFeatures!=null)
+            if (wscompileFeatures!=null) {
                 stubDesc = new JAXRPCStubDescriptor(StubDescriptor.WSDL_SERVICE_STUB,
                         NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_WSDLServiceStub"),
                         wscompileFeatures);
-            else stubDesc = wsdlServiceStub;
+            } else {
+                stubDesc = wsdlServiceStub;
+            }
         } else {
             stubDesc = seiServiceStub;
         }
@@ -212,7 +214,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
             return;
         }
         
-        EjbJarProvider pwm = (EjbJarProvider) project.getLookup().lookup(EjbJarProvider.class);
+        EjbJarProvider pwm = project.getLookup().lookup(EjbJarProvider.class);
         pwm.getConfigSupport().ensureConfigurationReady();
         EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
         Session s = null;
@@ -404,7 +406,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
         for(int i = 0; i < sessionBeans.length; i++) {
             Session sessionBean = sessionBeans[i];
             if(sessionBean.getEjbName().equals(linkName)) {
-                EjbJarProvider pwm = (EjbJarProvider) project.getLookup().lookup(EjbJarProvider.class);
+                EjbJarProvider pwm = project.getLookup().lookup(EjbJarProvider.class);
                 pwm.getConfigSupport().ensureConfigurationReady();
                 beans.removeSession(sessionBean);
                 break;
@@ -512,7 +514,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
     private static final List importantWsdlServiceFeatures = Arrays.asList(WSCOMPILE_KEY_WSDL_SERVICE_FEATURES);
     
     public List/*WsCompileEditorSupport.ServiceSettings*/ getServices() {
-        List serviceList = new ArrayList();
+        List<WsCompileEditorSupport.ServiceSettings> serviceList = new ArrayList<WsCompileEditorSupport.ServiceSettings>();
         
         // Implementation from getServiceClients() -- FIXME
         Element data = helper.getPrimaryConfigurationData(true);
@@ -614,11 +616,11 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
         EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         
         { // Block that adjusts wscompile.client.classpath as necessary.
-            HashSet wscJars = new HashSet();
+            HashSet<String> wscJars = new HashSet<String>();
             boolean newWscJars = false;
             String wscClientClasspath = projectProperties.getProperty(WSCOMPILE_CLASSPATH);
             if(wscClientClasspath != null) {
-                String [] libs = PropertyUtils.tokenizePath(wscClientClasspath);
+                String[] libs = PropertyUtils.tokenizePath(wscClientClasspath);
                 for(int i = 0; i < libs.length; i++) {
                     wscJars.add(libs[i]);
                 }
@@ -658,7 +660,9 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
     
     public void addInfrastructure(String implBeanClass, FileObject pkg){
         FileObject implClassFo = pkg.getFileObject(implBeanClass, "java");
-        if(implClassFo == null) return;
+        if(implClassFo == null) {
+            return;
+        }
         JavaSource targetSource = JavaSource.forFileObject(implClassFo);
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
@@ -860,7 +864,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
     }
     
     public FileObject getMetaInf() {
-        EjbJarProvider provider = (EjbJarProvider)project.getLookup().lookup(EjbJarProvider.class);
+        EjbJarProvider provider = project.getLookup().lookup(EjbJarProvider.class);
         return provider.getMetaInf();
     }
     

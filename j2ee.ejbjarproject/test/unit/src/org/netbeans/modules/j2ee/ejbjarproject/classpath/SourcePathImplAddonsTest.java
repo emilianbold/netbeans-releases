@@ -76,6 +76,7 @@ public class SourcePathImplAddonsTest extends TestBase{
     private EjbJarProject proj;
     private AntProjectHelper helper;
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         // setup some platforms -- needed for testing findClassPath(FileObject, ClassPath.BOOT)
@@ -109,6 +110,7 @@ public class SourcePathImplAddonsTest extends TestBase{
         helper = proj.getAntProjectHelper();
     }
     
+    @Override
     protected void tearDown() throws Exception {
         // Delete
         if (projdirFO != null){

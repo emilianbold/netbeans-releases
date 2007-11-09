@@ -91,6 +91,7 @@ import org.openide.util.NbBundle;
  * @author  pb97924, Martin Adamek
  */
 public class ImportLocationVisual extends JPanel /*implements DocumentListener */{
+    private static final long serialVersionUID = 191118906113007220L;
 
     private static final String J2EE_SPEC_15_LABEL = NbBundle.getMessage(ImportLocationVisual.class, "J2EESpecLevel_15");
     private static final String J2EE_SPEC_14_LABEL = NbBundle.getMessage(ImportLocationVisual.class, "J2EESpecLevel_14");
@@ -99,7 +100,7 @@ public class ImportLocationVisual extends JPanel /*implements DocumentListener *
     private final DefaultComboBoxModel serversModel = new DefaultComboBoxModel();
     private final ImportLocation panel;
     private final DocumentListener documentListener;
-    private List earProjects;
+    private List<Project> earProjects;
     private BigDecimal ejbJarXmlVersion;
     private WizardDescriptor wizardDescriptor;
     private J2eeVersionWarningPanel warningPanel;
@@ -795,15 +796,17 @@ public class ImportLocationVisual extends JPanel /*implements DocumentListener *
                 String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
                 FoldersListSettings fls = FoldersListSettings.getDefault();
                 String srcLevel = "1.6"; //NOI18N
-                if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_14) && fls.isAgreedSetSourceLevel14())
+                if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_14) && fls.isAgreedSetSourceLevel14()) {
                     srcLevel = "1.4"; //NOI18N
-                else if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_15) && fls.isAgreedSetSourceLevel15())
+                } else if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_15) && fls.isAgreedSetSourceLevel15()) {
                     srcLevel = "1.5"; //NOI18N
+                }
                 
                 d.putProperty(WizardProperties.SOURCE_LEVEL, srcLevel);
             }            
-        } else
+        } else {
             d.putProperty(WizardProperties.SOURCE_LEVEL, null);
+        }
         
         // TODO: ma154696: add also search for test roots
     }
@@ -957,7 +960,7 @@ public class ImportLocationVisual extends JPanel /*implements DocumentListener *
 
     private Project getSelectedEarApplication() {
         int idx = addToAppComboBox.getSelectedIndex();
-        return (idx <= 0) ? null : (Project) earProjects.get(idx - 1);
+        return (idx <= 0) ? null : earProjects.get(idx - 1);
     }
     
     private void initEnterpriseApplications() {
@@ -965,7 +968,7 @@ public class ImportLocationVisual extends JPanel /*implements DocumentListener *
         addToAppComboBox.setSelectedIndex(0);
         
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
-        earProjects = new ArrayList();
+        earProjects = new ArrayList<Project>();
         for (int i = 0; i < allProjects.length; i++) {
             J2eeApplicationProvider j2eeAppProvider = allProjects[i].getLookup().lookup(J2eeApplicationProvider.class);
 	    if (j2eeAppProvider != null) {
@@ -1047,6 +1050,7 @@ public class ImportLocationVisual extends JPanel /*implements DocumentListener *
             return serverInstanceID;
         }
 
+        @Override
         public String toString() {
             return displayName;
         }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,7 +50,6 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
@@ -93,7 +92,7 @@ import org.openide.xml.XMLUtil;
  */
 class PlatformNode extends AbstractNode implements ChangeListener {
 
-    private static final String PLATFORM_ICON = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/platform";    //NOI18N
+    private static final String PLATFORM_ICON = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/platform.gif";    //NOI18N
     private static final String ARCHIVE_ICON = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/jar.gif"; //NOI18N
 
     private final PlatformProvider pp;
@@ -102,13 +101,15 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         super (new PlatformContentChildren (), Lookups.singleton (new JavadocProvider(pp)));        
         this.pp = pp;
         this.pp.addChangeListener(this);
-        setIconBase(PLATFORM_ICON);
+        setIconBaseWithExtension(PLATFORM_ICON);
     }
 
+    @Override
     public String getName () {
         return this.getDisplayName();
     }
 
+    @Override
     public String getDisplayName () {
         JavaPlatform plat = pp.getPlatform();
         String name;
@@ -127,6 +128,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         return name;
     }
     
+    @Override
     public String getHtmlDisplayName () {
         if (pp.getPlatform() == null) {
             String displayName = this.getDisplayName();
@@ -143,10 +145,12 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         }                                
     }
 
+    @Override
     public boolean canCopy() {
         return false;
     }
     
+    @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
             SystemAction.get (ShowJavadocAction.class)
@@ -176,32 +180,34 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         return new PlatformNode (pp);
     }
 
-    private static class PlatformContentChildren extends Children.Keys {
+    private static class PlatformContentChildren extends Children.Keys<SourceGroup> {
 
         PlatformContentChildren () {
         }
 
+        @Override
         protected void addNotify() {
             this.setKeys (this.getKeys());
         }
 
+        @Override
         protected void removeNotify() {
-            this.setKeys(Collections.EMPTY_SET);
+            this.setKeys(Collections.<SourceGroup>emptyList());
         }
 
-        protected Node[] createNodes(Object key) {
-            SourceGroup sg = (SourceGroup) key;
+        protected Node[] createNodes(SourceGroup key) {
+            SourceGroup sg = key;
             return new Node[] {ActionFilterNode.create(PackageView.createPackageView(sg), null,null,null,null,null,null)};
         }
 
-        private List getKeys () {            
+        private List<SourceGroup> getKeys () {
             JavaPlatform platform = ((PlatformNode)this.getNode()).pp.getPlatform();
             if (platform == null) {
-                return Collections.EMPTY_LIST;
+                return Collections.<SourceGroup>emptyList();
             }
             //Todo: Should listen on returned classpath, but now the bootstrap libraries are read only
             FileObject[] roots = platform.getBootstrapLibraries().getRoots();
-            List result = new ArrayList (roots.length);
+            List<SourceGroup> result = new ArrayList<SourceGroup>(roots.length);
             for (int i = 0; i < roots.length; i++) {
                 try {
                     FileObject file;
@@ -304,9 +310,9 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             JavaPlatform platform = platformProvider.getPlatform();            
             if (platform != null) {                            
                 URL[] javadocRoots = getJavadocRoots(platform);
-                URL pageURL = ShowJavadocAction.findJavadoc("/overview-summary.html",javadocRoots);
+                URL pageURL = ShowJavadocAction.findJavadoc("/overview-summary.html",javadocRoots); // NOI18N
                 if (pageURL == null) {
-                    pageURL = ShowJavadocAction.findJavadoc("/index.html",javadocRoots);
+                    pageURL = ShowJavadocAction.findJavadoc("/index.html",javadocRoots); // NOI18N
                 }
                 ShowJavadocAction.showJavaDoc(pageURL, platform.getDisplayName());
             }
@@ -314,15 +320,13 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         
         
         private static URL[]  getJavadocRoots (JavaPlatform platform) {
-            Set result = new HashSet ();
-            List/*<ClassPath.Entry>*/ l = platform.getBootstrapLibraries().entries();            
-            for (Iterator it = l.iterator(); it.hasNext();) {
-                ClassPath.Entry e = (ClassPath.Entry) it.next ();                
+            Set<URL> result = new HashSet<URL>();
+            List<ClassPath.Entry> l = platform.getBootstrapLibraries().entries();
+            for (ClassPath.Entry e : l) {
                 result.addAll(Arrays.asList(JavadocForBinaryQuery.findJavadoc (e.getURL()).getRoots()));
             }
-            return (URL[]) result.toArray (new URL[result.size()]);
+            return result.toArray (new URL[result.size()]);
         }
-        
         
     }
 

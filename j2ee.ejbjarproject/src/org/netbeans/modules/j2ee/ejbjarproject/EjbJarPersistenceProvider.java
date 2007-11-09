@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -86,7 +86,8 @@ import org.openide.filesystems.FileObject;
  *
  * @author Andrei Badea
  */
-public class EjbJarPersistenceProvider implements PersistenceLocationProvider, PersistenceScopeProvider, PersistenceScopesProvider, EntityClassScopeProvider, PropertyChangeListener, PersistenceProviderSupplier {
+public class EjbJarPersistenceProvider implements PersistenceLocationProvider, PersistenceScopeProvider,
+        PersistenceScopesProvider, EntityClassScopeProvider, PropertyChangeListener, PersistenceProviderSupplier {
     
     private final EjbJarProject project;
     private final PropertyEvaluator evaluator;
@@ -120,18 +121,18 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
     }
     
     public PersistenceScope findPersistenceScope(FileObject fo) {
-        Project project = FileOwnerQuery.getOwner(fo);
-        if (project != null) {
-            EjbJarPersistenceProvider provider = (EjbJarPersistenceProvider)project.getLookup().lookup(EjbJarPersistenceProvider.class);
+        Project owner = FileOwnerQuery.getOwner(fo);
+        if (owner != null) {
+            EjbJarPersistenceProvider provider = owner.getLookup().lookup(EjbJarPersistenceProvider.class);
             return provider.getPersistenceScope();
         }
         return null;
     }
     
     public EntityClassScope findEntityClassScope(FileObject fo) {
-        Project project = FileOwnerQuery.getOwner(fo);
-        if (project != null) {
-            EjbJarPersistenceProvider provider = (EjbJarPersistenceProvider)project.getLookup().lookup(EjbJarPersistenceProvider.class);
+        Project owner = FileOwnerQuery.getOwner(fo);
+        if (owner != null) {
+            EjbJarPersistenceProvider provider = owner.getLookup().lookup(EjbJarPersistenceProvider.class);
             return provider.getEntityClassScope();
         }
         return null;
@@ -156,10 +157,10 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
     private ClassPath getProjectSourcesClassPath() {
         synchronized (this) {
             if (projectSourcesClassPath == null) {
-                ClassPathProviderImpl cpProvider = project.getClassPathProvider();
+                ClassPathProviderImpl classPathProvider = project.getClassPathProvider();
                 projectSourcesClassPath = ClassPathSupport.createProxyClassPath(new ClassPath[] {
-                    cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
-                    cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+                    classPathProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
+                    classPathProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
                 });
             }
             return projectSourcesClassPath;
@@ -193,7 +194,7 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
     }
     
     public List<Provider> getSupportedProviders() {
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         J2eePlatform platform  = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
         
         if (platform == null){
@@ -202,7 +203,7 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
         List<Provider> result = new ArrayList<Provider>();
         
         addPersistenceProvider(ProviderUtil.HIBERNATE_PROVIDER, "hibernatePersistenceProviderIsDefault", platform, result); // NOI18N
-        addPersistenceProvider(ProviderUtil.TOPLINK_PROVIDER, "toplinkPersistenceProviderIsDefault", platform, result);// NOI18N
+        addPersistenceProvider(ProviderUtil.TOPLINK_PROVIDER, "toplinkPersistenceProviderIsDefault", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.KODO_PROVIDER, "kodoPersistenceProviderIsDefault", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.OPENJPA_PROVIDER, "openJpaPersistenceProviderIsDefault", platform, result); // NOI18N
         
@@ -221,8 +222,7 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
     }
     
     public boolean supportsDefaultProvider() {
-        
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         J2eePlatform platform  = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
         
         if (platform == null){
@@ -233,7 +233,7 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
         Set<String> supportedVersions = platform.getSupportedSpecVersions(j2eeModuleProvider.getJ2eeModule().getModuleType());
         
         return supportedVersions.contains(J2eeModule.JAVA_EE_5)
-                && platform.isToolSupported("defaultPersistenceProviderJavaEE5");
+                && platform.isToolSupported("defaultPersistenceProviderJavaEE5"); // NOI18N
     }
 
     /**

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -87,18 +87,18 @@ public final class SourceRoots {
     public static final String PROP_ROOTS = "roots";   //NOI18N
     private static final String PROP_BUILD_DIR = "build.dir";   //NOI18N
 
-    public static final String DEFAULT_SOURCE_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_src.dir");
-    public static final String DEFAULT_TEST_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_test.src.dir");
+    public static final String DEFAULT_SOURCE_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_src.dir"); //NOI18N
+    public static final String DEFAULT_TEST_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_test.src.dir"); //NOI18N
 
     private final UpdateHelper helper;
     private final PropertyEvaluator evaluator;
     private final ReferenceHelper refHelper;
     private final String elementName;
     private final String newRootNameTemplate;
-    private List sourceRootProperties;
-    private List sourceRootNames;
-    private List sourceRoots;
-    private List sourceRootURLs;
+    private List<String> sourceRootProperties;
+    private List<String> sourceRootNames;
+    private List<FileObject> sourceRoots;
+    private List<URL> sourceRootURLs;
     private final PropertyChangeSupport support;
     private final ProjectMetadataListener listener;
     private final boolean isTest;
@@ -123,7 +123,7 @@ public final class SourceRoots {
         this.support = new PropertyChangeSupport(this);
         this.listener = new ProjectMetadataListener();
         this.evaluator.addPropertyChangeListener (WeakListeners.propertyChange(this.listener,this.evaluator));
-        this.helper.getAntProjectHelper().addAntProjectListener ((AntProjectListener)WeakListeners.create(AntProjectListener.class, this.listener,this.helper));
+        this.helper.getAntProjectHelper().addAntProjectListener(WeakListeners.create(AntProjectListener.class, this.listener, this.helper));
     }
 
 
@@ -134,14 +134,14 @@ public final class SourceRoots {
      * @return an array of String
      */
     public   String[] getRootNames () {
-        return (String[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
+            public String[] run() {
                 synchronized (SourceRoots.this) {
                     if (sourceRootNames == null) {
                         readProjectMetadata();
                     }
                 }
-                return sourceRootNames.toArray (new String[sourceRootNames.size()]);
+                return sourceRootNames.toArray(new String[sourceRootNames.size()]);
             }
         });
     }
@@ -151,8 +151,8 @@ public final class SourceRoots {
      * @return an array of String
      */
     public String[] getRootProperties () {
-        return (String[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
+            public String[] run() {
                 synchronized (SourceRoots.this) {
                     if (sourceRootProperties == null) {
                         readProjectMetadata();
@@ -168,13 +168,13 @@ public final class SourceRoots {
      * @return an array of FileObject
      */
     public FileObject[] getRoots () {
-        return (FileObject[]) ProjectManager.mutex().readAccess(new Mutex.Action () {
-                public Object run () {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<FileObject[]>() {
+                public FileObject[] run () {
                     synchronized (this) {
                         //Local caching
                         if (sourceRoots == null) {
                             String[] srcProps = getRootProperties();
-                            List result = new ArrayList();
+                            List<FileObject> result = new ArrayList<FileObject>();
                             for (int i = 0; i<srcProps.length; i++) {
                                 String prop = evaluator.getProperty(srcProps[i]);
                                 if (prop != null) {
@@ -231,13 +231,13 @@ public final class SourceRoots {
      * @return an array of URL
      */
     public URL[] getRootURLs() {
-        return (URL[]) ProjectManager.mutex().readAccess(new Mutex.Action () {
-            public Object run () {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<URL[]>() {
+            public URL[] run () {
                 synchronized (this) {
                     //Local caching
                     if (sourceRootURLs == null) {
                         String[] srcProps = getRootProperties();
-                        List result = new ArrayList();
+                        List<URL> result = new ArrayList<URL>();
                         for (int i = 0; i<srcProps.length; i++) {
                             String prop = evaluator.getProperty(srcProps[i]);
                             if (prop != null) {
@@ -249,7 +249,7 @@ public final class SourceRoots {
                                 }
                             }
                         }
-                        sourceRootURLs = Collections.unmodifiableList(result);
+                        sourceRootURLs = Collections.<URL>unmodifiableList(result);
                     }
                 }
                 return sourceRootURLs.toArray(new URL[sourceRootURLs.size()]);
@@ -281,15 +281,15 @@ public final class SourceRoots {
      */
     public void putRoots (final URL[] roots, final String[] labels) {
         ProjectManager.mutex().writeAccess(
-                new Mutex.Action () {
-                    public Object run() {
+                new Runnable() {
+                    public void run() {
                         String[] originalProps = getRootProperties();
                         URL[] originalRoots = getRootURLs();
-                        Map oldRoots2props = new HashMap ();
+                        Map<URL, String> oldRoots2props = new HashMap<URL, String>();
                         for (int i=0; i<originalProps.length;i++) {
                             oldRoots2props.put (originalRoots[i],originalProps[i]);
                         }
-                        Map newRoots2lab = new HashMap();
+                        Map<URL, String> newRoots2lab = new HashMap<URL, String>();
                         for (int i=0; i<roots.length;i++) {
                             newRoots2lab.put (roots[i],labels[i]);
                         }
@@ -305,7 +305,7 @@ public final class SourceRoots {
                         }
                         //Remove all unused root properties
                         List newRoots = Arrays.asList(roots);
-                        Map propsToRemove = new HashMap (oldRoots2props);
+                        Map<URL, String> propsToRemove = new HashMap<URL, String>(oldRoots2props);
                         propsToRemove.keySet().removeAll(newRoots);
                         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                         for (Iterator it = propsToRemove.values().iterator(); it.hasNext();) {
@@ -318,7 +318,7 @@ public final class SourceRoots {
                         oldRoots2props.keySet().retainAll(newRoots);
                         for (Iterator it = newRoots.iterator(); it.hasNext();) {
                             URL newRoot = (URL) it.next ();
-                            String rootName = (String) oldRoots2props.get (newRoot);
+                            String rootName = oldRoots2props.get(newRoot);
                             if (rootName == null) {
                                 //Root is new generate property for it
                                 props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -345,14 +345,13 @@ public final class SourceRoots {
                             }
                             Element newRootNode = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root"); //NOI18N
                             newRootNode.setAttribute("id",rootName);    //NOI18N
-                            String label = (String) newRoots2lab.get (newRoot);
+                            String label = newRoots2lab.get(newRoot);
                             if (label != null && label.length()>0 && !label.equals (getRootDisplayName(null,rootName))) { //NOI18N
                                 newRootNode.setAttribute("name",label); //NOI18N
                             }
                             ownerElement.appendChild (newRootNode);
                         }
                         helper.putPrimaryConfigurationData(cfgEl,true);
-                        return null;
                     }
                 }
         );
@@ -435,8 +434,8 @@ public final class SourceRoots {
         Element cfgEl = helper.getPrimaryConfigurationData(true);
         NodeList nl = cfgEl.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, elementName);
         assert nl.getLength() == 0 || nl.getLength() == 1 : "Illegal project.xml"; //NOI18N
-        List rootProps = new ArrayList ();
-        List rootNames = new ArrayList ();
+        List<String> rootProps = new ArrayList<String>();
+        List<String> rootNames = new ArrayList<String>();
         // It can be 0 in the case when the project is created by EjbJarProjectGenerator and not yet customized
         if (nl.getLength()==1) {
             NodeList roots = ((Element)nl.item(0)).getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root");    //NOI18N
@@ -449,8 +448,8 @@ public final class SourceRoots {
                 rootNames.add (value);
             }
         }
-        this.sourceRootProperties = Collections.unmodifiableList(rootProps);
-        this.sourceRootNames = Collections.unmodifiableList(rootNames);
+        this.sourceRootProperties = Collections.<String>unmodifiableList(rootProps);
+        this.sourceRootNames = Collections.<String>unmodifiableList(rootNames);
     }
 
     private class ProjectMetadataListener implements PropertyChangeListener,AntProjectListener {

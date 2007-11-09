@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -72,6 +72,7 @@ import org.openide.util.NbBundle;
  * @author Petr Hrebejk
  */
 public class AntArtifactChooser extends JPanel implements PropertyChangeListener {
+    private static final long serialVersionUID = 247006131L;
     
     // XXX to become an array later
     private String artifactType;
@@ -284,6 +285,7 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
             return artifactURI;
         }
         
+        @Override
         public String toString() {
             return artifactURI.toString();
         }

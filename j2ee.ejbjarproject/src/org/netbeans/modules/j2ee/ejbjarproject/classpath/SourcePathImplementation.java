@@ -73,7 +73,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
     private static RequestProcessor REQ_PROCESSOR = new RequestProcessor(); // No I18N
 
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private List resources;
+    private List<PathResourceImplementation> resources;
     private SourceRoots sourceRoots;
     private AntProjectHelper projectHelper;
     private FileChangeListener fcl = null;
@@ -133,7 +133,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         this.support.firePropertyChange (PROP_RESOURCES,null,null);        
     } 
     
-    public List /*<PathResourceImplementation>*/ getResources() {
+    public List<PathResourceImplementation> getResources() {
         synchronized (this) {
             if (this.resources != null) {
                 return this.resources;
@@ -143,7 +143,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         String buildDir = projectHelper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.BUILD_DIR);
         synchronized (this) {
             if (this.resources == null) {
-                List result = new ArrayList (roots.length);
+                List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>(roots.length);
                 for (int i = 0; i < roots.length; i++) {
                     PathResourceImplementation res = ClassPathSupport.createResource(roots[i]);
                     result.add (res);

@@ -21,7 +21,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,13 +43,19 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.*;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
@@ -63,7 +69,6 @@ import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
@@ -74,6 +79,9 @@ import org.openide.util.NbBundle;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.j2ee.dd.spi.ejb.EjbJarMetadataModelFactory;
 import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFactory;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 
@@ -204,20 +212,23 @@ public final class EjbJarProvider extends J2eeModuleProvider
         return this;
     }
     
+    @Override
     public boolean useDefaultServer() {
         return false;
     }
     
+    @Override
     public String getServerID() {
         return helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_TYPE);
     }
     
+    @Override
     public String getServerInstanceID() {
         return helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
     }
     
     public void setServerInstanceID(String serverInstanceID) {
-        assert serverInstanceID != null : "passed serverInstanceID cannot be null";
+        assert serverInstanceID != null : "passed serverInstanceID cannot be null"; // NOI18N
         EjbJarProjectProperties.setServerInstance(project, helper, serverInstanceID);
     }
     
@@ -249,29 +260,6 @@ public final class EjbJarProvider extends J2eeModuleProvider
         }
         return null;
     }
-    
-// TODO MetadataModel: rewrite when MetadataModel<WebservicesMode> is ready
-//    
-//    private Webservices getWebservices() {
-//        if (Util.isJavaEE5orHigher(project)) {
-//            WebServicesSupport wss = WebServicesSupport.getWebServicesSupport(project.getProjectDirectory());
-//            try {
-//                return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getMergedDDRoot(wss);
-//            } catch (IOException ex) {
-//                ErrorManager.getDefault().notify(ex);
-//            }
-//        } else {
-//            FileObject wsdd = getDD();
-//            if(wsdd != null) {
-//                try {
-//                    return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getDDRoot(wsdd);
-//                } catch (java.io.IOException e) {
-//                    org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
-//                }
-//            }
-//        }
-//        return null;
-//    }
     
     public FileObject getDD() {
         FileObject metaInfFo = getMetaInf();
@@ -384,10 +372,11 @@ public final class EjbJarProvider extends J2eeModuleProvider
         return webservicesMetadataModel;
     }
 
+    @Override
     public FileObject[] getSourceRoots() {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        List roots = new LinkedList();
+        List<FileObject> roots = new LinkedList<FileObject>();
         FileObject metaInf = getMetaInf();
         if (metaInf != null) {
             roots.add(metaInf);
@@ -397,7 +386,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
             roots.add(groups[i].getRootFolder());
         }
         FileObject[] rootArray = new FileObject[roots.size()];
-        return (FileObject[])roots.toArray(rootArray);        
+        return roots.toArray(rootArray);
     }
     
     private void showErrorMessage(final String message) {

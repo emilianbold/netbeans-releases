@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -64,8 +64,9 @@ import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
  *
  * @author Peter Williams
  */
-public class CustomizerWSClientHost extends javax.swing.JPanel 
-    implements PropertyChangeListener, HelpCtx.Provider { // WebCustomizer.Panel, WebCustomizer.ValidatingPanel
+public class CustomizerWSClientHost extends JPanel 
+        implements PropertyChangeListener, HelpCtx.Provider { // WebCustomizer.Panel, WebCustomizer.ValidatingPanel
+    private static final long serialVersionUID = 46582241102677157L;
     
     private EjbJarProjectProperties ejbJarProperties;
     private WsCompileClientEditorSupport.Panel wsCompileEditor;
@@ -100,6 +101,7 @@ public class CustomizerWSClientHost extends javax.swing.JPanel
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
     
+    @Override
     public void addNotify() {
         super.addNotify();
 
@@ -112,6 +114,7 @@ public class CustomizerWSClientHost extends javax.swing.JPanel
         component.addPropertyChangeListener(WsCompileClientEditorSupport.PROP_OPTIONS_CHANGED, this);
     }
 
+    @Override
     public void removeNotify() {
         super.removeNotify();
 
@@ -122,7 +125,7 @@ public class CustomizerWSClientHost extends javax.swing.JPanel
 
     public void initValues() {
         if(wsCompileEditor == null) {
-            WsCompileClientEditorSupport editorSupport = (WsCompileClientEditorSupport) Lookup.getDefault().lookup(WsCompileClientEditorSupport.class);
+            WsCompileClientEditorSupport editorSupport = Lookup.getDefault().lookup(WsCompileClientEditorSupport.class);
             wsCompileEditor = editorSupport.getWsCompileSupport();
         }
 
@@ -139,7 +142,7 @@ public class CustomizerWSClientHost extends javax.swing.JPanel
         String prop = evt.getPropertyName();
         if (WsCompileClientEditorSupport.PROP_FEATURES_CHANGED.equals(prop)) {
             WsCompileClientEditorSupport.FeatureDescriptor newFeatureDesc = (WsCompileClientEditorSupport.FeatureDescriptor) evt.getNewValue();
-            String propertyName = "wscompile.client." + newFeatureDesc.getServiceName() + ".features";
+            String propertyName = "wscompile.client." + newFeatureDesc.getServiceName() + ".features"; //NOI18N
             ejbJarProperties.putAdditionalProperty(propertyName, newFeatureDesc.getFeatures());
         } else if (WsCompileClientEditorSupport.PROP_OPTIONS_CHANGED.equals(prop)) {
             WsCompileClientEditorSupport.OptionDescriptor oldOptionDesc = (WsCompileClientEditorSupport.OptionDescriptor) evt.getOldValue();
@@ -149,9 +152,9 @@ public class CustomizerWSClientHost extends javax.swing.JPanel
             String serviceName = newOptionDesc.getServiceName();
             String[] propertyNames=new String[]{"verbose","debug","xPrintStackTrace","xSerializable","optimize"}; //NOI18N
             for (int i=0;i<newOptions.length;i++) {   
-                if (oldOptions[i]!=newOptions[i])
-                    ejbJarProperties.putAdditionalProperty("wscompile.client."+serviceName+"."+propertyNames[i], //NOI18N
-                                                         newOptions[i]?"true":"false"); //NOI18N
+                if (oldOptions[i]!=newOptions[i]) {
+                    ejbJarProperties.putAdditionalProperty("wscompile.client." + serviceName + "." + propertyNames[i], newOptions[i] ? "true" : "false"); //NOI18N
+                }
             }
         }
     }

@@ -295,6 +295,7 @@ public class PlatformUiSupport {
             return this.getDisplayName().compareTo(((PlatformKey)o).getDisplayName());
         }
         
+        @Override
         public boolean equals (Object other) {
             if (other instanceof PlatformKey) {
                 PlatformKey otherKey = (PlatformKey)other;
@@ -306,10 +307,12 @@ public class PlatformUiSupport {
             }
         }
         
+        @Override
         public int hashCode () {
             return getDisplayName ().hashCode ();
         }
         
+        @Override
         public String toString () {
             return getDisplayName ();
         }
@@ -391,6 +394,7 @@ public class PlatformUiSupport {
     }
     
     private static class PlatformComboBoxModel extends AbstractListModel implements ComboBoxModel, PropertyChangeListener {
+        private static final long serialVersionUID = 41647580130743122L;
         
         private final JavaPlatformManager pm;
         private PlatformKey[] platformNamesCache;
@@ -436,14 +440,14 @@ public class PlatformUiSupport {
         private synchronized PlatformKey[] getPlatformNames () {
             if (this.platformNamesCache == null) {
                 JavaPlatform[] platforms = pm.getPlatforms (null, new Specification("j2se",null));    //NOI18N
-                Set/*<PlatformKey>*/ orderedNames = new TreeSet ();
+                Set<PlatformKey> orderedNames = new TreeSet<PlatformKey>();
                 boolean activeFound = false;
                 for (int i=0; i< platforms.length; i++) {
                     if (platforms[i].getInstallFolders().size()>0) {
                         PlatformKey pk = new PlatformKey(platforms[i]);
                         orderedNames.add (pk);
                         if (!activeFound && initialPlatform != null) {
-                            String antName = (String) platforms[i].getProperties().get("platform.ant.name");    //NOI18N
+                            String antName = platforms[i].getProperties().get("platform.ant.name");    //NOI18N
                             if (initialPlatform.equals(antName)) {
                                 if (this.selectedPlatform == null) {
                                     this.selectedPlatform = pk;
@@ -468,7 +472,7 @@ public class PlatformUiSupport {
                         }
                     }
                 }
-                this.platformNamesCache = (PlatformKey[]) orderedNames.toArray(new PlatformKey[orderedNames.size()]);
+                this.platformNamesCache = orderedNames.toArray(new PlatformKey[orderedNames.size()]);
             }
             return this.platformNamesCache;                    
         }
@@ -476,7 +480,9 @@ public class PlatformUiSupport {
     }
     
     private static class PlatformListCellRenderer extends DefaultListCellRenderer {
+        private static final long serialVersionUID = 51419604163086358L;
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             assert value instanceof PlatformKey : "Wrong model";  //NOI18N
             PlatformKey key = (PlatformKey) value;
@@ -492,7 +498,7 @@ public class PlatformUiSupport {
     }
 
     private static class SourceLevelComboBoxModel extends AbstractListModel implements ComboBoxModel, ListDataListener {
-        
+        private static final long serialVersionUID = 108135581162238931L;
         private static final String VERSION_PREFIX = "1.";      //The version prefix
         private static final int INITIAL_VERSION_MINOR = 2;     //1.2
         // if project is JAVA EE 5 show only 1.5 and higher

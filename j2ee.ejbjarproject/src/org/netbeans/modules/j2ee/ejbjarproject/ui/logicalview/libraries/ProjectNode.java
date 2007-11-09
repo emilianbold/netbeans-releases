@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -105,6 +105,7 @@ class ProjectNode extends AbstractNode {
         this.artifactLocation = artifactLocation;
     }
 
+    @Override
     public String getDisplayName () {        
         ProjectInformation info = getProjectInformation();        
         if (info != null) {
@@ -116,10 +117,12 @@ class ProjectNode extends AbstractNode {
         }
     }
 
+    @Override
     public String getName () {
         return this.getDisplayName();
     }
 
+    @Override
     public Image getIcon(int type) {
         if (cachedIcon == null) {
             ProjectInformation info = getProjectInformation();
@@ -134,14 +137,17 @@ class ProjectNode extends AbstractNode {
         return cachedIcon;
     }
 
+    @Override
     public Image getOpenedIcon(int type) {
         return this.getIcon(type);
     }
 
+    @Override
     public boolean canCopy() {
         return false;
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
             SystemAction.get (OpenProjectAction.class),
@@ -150,6 +156,7 @@ class ProjectNode extends AbstractNode {
         };
     }
 
+    @Override
     public Action getPreferredAction () {
         return getActions(false)[0];
     }
@@ -196,8 +203,8 @@ class ProjectNode extends AbstractNode {
         }
 
         public void showJavadoc() {
-            Set us = findJavadoc();
-            URL[] urls = (URL[])us.toArray(new URL[us.size()]);
+            Set<URL> us = findJavadoc();
+            URL[] urls = us.toArray(new URL[us.size()]);
             URL pageURL = ShowJavadocAction.findJavadoc("overview-summary.html",urls);
             if (pageURL == null) {
                 pageURL = ShowJavadocAction.findJavadoc("index.html",urls);
@@ -211,9 +218,9 @@ class ProjectNode extends AbstractNode {
                 NbBundle.getMessage (ProjectNode.class,"TXT_UnknownProjectName") : info.getDisplayName());
         }
         
-        private Set findJavadoc() {            
+        private Set<URL> findJavadoc() {
             File scriptLocation = this.antArtifact.getScriptLocation();            
-            Set urls = new HashSet();
+            Set<URL> urls = new HashSet<URL>();
             try {
                 URL artifactURL = scriptLocation.toURI().resolve(this.artifactLocation).normalize().toURL();
                 if (FileUtil.isArchiveFile(artifactURL)) {
@@ -229,6 +236,7 @@ class ProjectNode extends AbstractNode {
     }
 
     private static class OpenProjectAction extends NodeAction {
+        private static final long serialVersionUID = 87316177258248119L;
 
         protected void performAction(Node[] activatedNodes) {
             Project[] projects = new Project[activatedNodes.length];
@@ -277,6 +285,7 @@ class ProjectNode extends AbstractNode {
             return new HelpCtx (OpenProjectAction.class);
         }
 
+        @Override
         protected boolean asynchronous() {
             return false;
         }
@@ -320,7 +329,7 @@ class ProjectNode extends AbstractNode {
             boolean removed = false;
             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
             String raw = props.getProperty (classPathId);
-            List resources = cs.itemsList(raw, includedLibrariesElement);
+            List<ClassPathSupport.Item> resources = cs.itemsList(raw, includedLibrariesElement);
             for (Iterator i = resources.iterator(); i.hasNext();) {
                 ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
                 if (entryId.equals(EjbJarProjectProperties.getAntPropertyName(item.getReference()))) {
@@ -342,9 +351,8 @@ class ProjectNode extends AbstractNode {
                 }
 
                 return FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
-            } else {
-                return null;
             }
+            return null;
         }
     }
 }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -70,8 +70,9 @@ public class J2eePlatformUiSupport {
     }
     
     public static String getServerInstanceID(Object j2eePlatformModelObject) {
-        if (j2eePlatformModelObject == null)
+        if (j2eePlatformModelObject == null) {
             return null;
+        }
 
         J2eePlatform j2eePlatform = ((J2eePlatformAdapter)j2eePlatformModelObject).getJ2eePlatform();
         String[] serverInstanceIDs = Deployment.getDefault().getServerInstanceIDs();
@@ -94,6 +95,8 @@ public class J2eePlatformUiSupport {
     }
     
     private static final class J2eePlatformComboBoxModel extends AbstractListModel implements ComboBoxModel {
+        private static final long serialVersionUID = 27396850247176406L;
+        
         private J2eePlatformAdapter[] j2eePlatforms;
         private String initialJ2eePlatform;
         private J2eePlatformAdapter selectedJ2eePlatform;
@@ -122,7 +125,7 @@ public class J2eePlatformUiSupport {
         private synchronized J2eePlatformAdapter[] getJ2eePlatforms() {
             if (j2eePlatforms == null) {
                 String[] serverInstanceIDs = Deployment.getDefault().getServerInstanceIDs();
-                Set orderedNames = new TreeSet();
+                Set<J2eePlatformAdapter> orderedNames = new TreeSet<J2eePlatformAdapter>();
                 boolean activeFound = false;
 
                 for (int i = 0; i < serverInstanceIDs.length; i++) {
@@ -142,13 +145,15 @@ public class J2eePlatformUiSupport {
                     }
                 }
                 //j2eePlatforms = (J2eePlatform[])orderedNames.values().toArray(new J2eePlatform[orderedNames.size()]);
-                j2eePlatforms = (J2eePlatformAdapter[])orderedNames.toArray(new J2eePlatformAdapter[orderedNames.size()]);
+                j2eePlatforms = orderedNames.toArray(new J2eePlatformAdapter[orderedNames.size()]);
             }
             return j2eePlatforms;
         }
      }
     
     private static final class J2eeSpecVersionComboBoxModel extends AbstractListModel implements ComboBoxModel {
+        private static final long serialVersionUID = 20366133932230984L;
+        
         private J2eePlatformComboBoxItem[] j2eeSpecVersions;
         
         private J2eePlatformComboBoxItem initialJ2eeSpecVersion;
@@ -157,14 +162,15 @@ public class J2eePlatformUiSupport {
         public J2eeSpecVersionComboBoxModel(String j2eeSpecVersion) {
             initialJ2eeSpecVersion = new J2eePlatformComboBoxItem(j2eeSpecVersion);
             
-            List orderedListItems = new ArrayList();
+            List<J2eePlatformComboBoxItem> orderedListItems = new ArrayList<J2eePlatformComboBoxItem>();
             orderedListItems.add(new J2eePlatformComboBoxItem(EjbJarProjectProperties.JAVA_EE_5));
             orderedListItems.add(new J2eePlatformComboBoxItem(EjbJarProjectProperties.J2EE_1_4));
             if (!initialJ2eeSpecVersion.getCode().equals(EjbJarProjectProperties.JAVA_EE_5) &&
-                    !initialJ2eeSpecVersion.getCode().equals(EjbJarProjectProperties.J2EE_1_4))
+                    !initialJ2eeSpecVersion.getCode().equals(EjbJarProjectProperties.J2EE_1_4)) {
                 orderedListItems.add(0, new J2eePlatformComboBoxItem(EjbJarProjectProperties.J2EE_1_3));
+            }
             
-            j2eeSpecVersions = (J2eePlatformComboBoxItem[])orderedListItems.toArray(new J2eePlatformComboBoxItem[orderedListItems.size()]);
+            j2eeSpecVersions = orderedListItems.toArray(new J2eePlatformComboBoxItem[orderedListItems.size()]);
             selectedJ2eeSpecVersion = initialJ2eeSpecVersion;
         }
         
@@ -199,9 +205,15 @@ public class J2eePlatformUiSupport {
         }
 
         private static String findDisplayName(String code){
-            if(code.equals(EjbJarProjectProperties.JAVA_EE_5)) return JAVA_EE_5_DISPLAY_NAME;
-            if(code.equals(EjbJarProjectProperties.J2EE_1_4)) return J2EE_1_4_DISPLAY_NAME;
-            if(code.equals(EjbJarProjectProperties.J2EE_1_3)) return J2EE_1_3_DISPLAY_NAME;
+            if(code.equals(EjbJarProjectProperties.JAVA_EE_5)) {
+                return JAVA_EE_5_DISPLAY_NAME;
+            }
+            if(code.equals(EjbJarProjectProperties.J2EE_1_4)) {
+                return J2EE_1_4_DISPLAY_NAME;
+            }
+            if(code.equals(EjbJarProjectProperties.J2EE_1_3)) {
+                return J2EE_1_3_DISPLAY_NAME;
+            }
             return code; //version display name not found, use the version code for display name        
         }
 
@@ -209,14 +221,16 @@ public class J2eePlatformUiSupport {
             return code;        
         }
 
+        @Override
         public String toString(){
             return displayName;        
         }
     }
 
     public static boolean getJ2eePlatformAndSpecVersionMatch(Object j2eePlatformModelObject, Object j2eeSpecVersionModelObject) {
-        if (!(j2eePlatformModelObject instanceof J2eePlatformAdapter && j2eeSpecVersionModelObject instanceof String))
+        if (!(j2eePlatformModelObject instanceof J2eePlatformAdapter && j2eeSpecVersionModelObject instanceof String)) {
             return false;
+        }
         
         J2eePlatform j2eePlatform = ((J2eePlatformAdapter)j2eePlatformModelObject).getJ2eePlatform();
         String specVersion = (String)j2eeSpecVersionModelObject;
@@ -234,6 +248,7 @@ public class J2eePlatformUiSupport {
             return platform;
         }
         
+        @Override
         public String toString() {
             return platform.getDisplayName();
         }

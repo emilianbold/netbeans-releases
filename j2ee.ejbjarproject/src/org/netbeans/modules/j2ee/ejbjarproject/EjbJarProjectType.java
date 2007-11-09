@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -52,19 +52,20 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
  */
 public final class EjbJarProjectType implements AntBasedProjectType {
 
-    public static final String TYPE = "org.netbeans.modules.j2ee.ejbjarproject";
-    private static final String PROJECT_CONFIGURATION_NAME = "data";
-    public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-ejbjarproject/3";
-    private static final String PRIVATE_CONFIGURATION_NAME = "data";
-    private static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-ejbjarproject-private/1";
+    public static final String TYPE = "org.netbeans.modules.j2ee.ejbjarproject"; // NOI18N
+    private static final String PROJECT_CONFIGURATION_NAME = "data"; // NOI18N
+    public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-ejbjarproject/3"; // NOI18N
+    private static final String PRIVATE_CONFIGURATION_NAME = "data"; // NOI18N
+    private static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2ee-ejbjarproject-private/1"; // NOI18N
     
     public String getType() {
         return TYPE;
     }
     
     public Project createProject(AntProjectHelper helper) throws IOException {
-        if (null == helper)
-            throw new IllegalArgumentException("helper");
+        if (null == helper) {
+            throw new IllegalArgumentException("helper"); // NOI18N
+        }
         return new EjbJarProject(helper);
     }
 

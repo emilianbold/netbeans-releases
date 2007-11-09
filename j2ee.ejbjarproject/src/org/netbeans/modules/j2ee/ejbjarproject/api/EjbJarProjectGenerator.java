@@ -54,7 +54,6 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.ejbjarproject.*;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
@@ -70,6 +69,10 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
+import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
+import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
+import org.netbeans.modules.j2ee.ejbjarproject.Utils;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.PlatformUiSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
@@ -107,6 +110,8 @@ public class EjbJarProjectGenerator {
      * Create a new empty EjbJar project.
      * @param dir the top-level directory (need not yet exist but if it does it must be empty)
      * @param name the code name for the project
+     * @param j2eeLevel Java EE level
+     * @param serverInstanceID server instance ID
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
@@ -221,11 +226,11 @@ public class EjbJarProjectGenerator {
         final EjbJarProject p = (EjbJarProject) ProjectManager.getDefault().findProject(projectDir);
         final ReferenceHelper refHelper = p.getReferenceHelper();
         try {
-            ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction() {
-                public Object run() throws Exception {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
                     Element data = h.getPrimaryConfigurationData(true);
                     Document doc = data.getOwnerDocument();
-                    NodeList nl = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");
+                    NodeList nl = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots"); //NOI18N
                     assert nl.getLength() == 1;
                     Element sourceRoots = (Element) nl.item(0);
                     nl = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
@@ -245,10 +250,10 @@ public class EjbJarProjectGenerator {
                     if (testFolders.length == 0) {
                         String testLoc = NbBundle.getMessage(EjbJarProjectGenerator.class,"TXT_DefaultTestFolderName");
                         projectDir.createFolder(testLoc);
-                        String propName = "test.src.dir";
+                        String propName = "test.src.dir"; //NOI18N
                         Element root = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
                         root.setAttribute("id",propName);   //NOI18N
-                        root.setAttribute("name",NbBundle.getMessage(EjbJarProjectGenerator.class, "NAME_test.src.dir"));
+                        root.setAttribute("name",NbBundle.getMessage(EjbJarProjectGenerator.class, "NAME_test.src.dir")); //NOI18N
                         testRoots.appendChild(root);
                         EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                         props.put(propName,testLoc);
@@ -295,8 +300,9 @@ public class EjbJarProjectGenerator {
                     root.setDisplayName(name);
                     writeDD = true;
                 }
-                if (writeDD)
+                if (writeDD) {
                     root.write(ejbJarXml);
+                }
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
@@ -313,10 +319,12 @@ public class EjbJarProjectGenerator {
     }
     
     private static String relativePath(FileObject parent, FileObject child) {
-        if (child.equals(parent))
+        if (child.equals(parent)) {
             return "";
-        if (!FileUtil.isParentOf(parent, child))
+        }
+        if (!FileUtil.isParentOf(parent, child)) {
             throw new IllegalArgumentException("Cannot find relative path, " + parent + " is not parent of " + child);
+        }
         return child.getPath().substring(parent.getPath().length() + 1);
     }
     
@@ -370,8 +378,9 @@ public class EjbJarProjectGenerator {
         SpecificationVersion v = defaultPlatform.getSpecification().getVersion();
         String sourceLevel = v.toString();
         // #89131: these levels are not actually distinct from 1.5.
-        if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7"))
+        if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")) {
             sourceLevel = "1.5";
+        }
         ep.setProperty(EjbJarProjectProperties.JAVAC_SOURCE, sourceLevel); //NOI18N
         ep.setProperty(EjbJarProjectProperties.JAVAC_TARGET, sourceLevel); //NOI18N
         
@@ -504,8 +513,9 @@ public class EjbJarProjectGenerator {
                                 UpdateHelper updateHelper = project.getUpdateHelper();
                                 EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                 String finalPlatformName = platformName;
-                                if (finalPlatformName == null)
+                                if (finalPlatformName == null) {
                                     finalPlatformName = JavaPlatformManager.getDefault().getDefaultPlatform().getDisplayName();
+                                }
 
                                 PlatformUiSupport.storePlatform(ep, updateHelper, finalPlatformName, sourceLevel != null ? new SpecificationVersion(sourceLevel) : null);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);

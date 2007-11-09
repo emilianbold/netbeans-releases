@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -100,44 +100,43 @@ public class EjbJarJPASupport implements JPADataSourcePopulator, JPADataSourcePr
     }
     
 
-/**
- * Provides <code>JPADataSource</code> interface for <code>Datasource</code>s.
- */ 
-private static class DatasourceWrapper implements Datasource, JPADataSource{
-    
-    private Datasource delegate;
-    
-    DatasourceWrapper(Datasource datasource){
-        this.delegate = datasource;
-    }
-    
-    public String getJndiName() {
-        return delegate.getJndiName();
-    }
-    
-    public String getUrl() {
-        return delegate.getUrl();
-    }
-    
-    public String getUsername() {
-        return delegate.getUsername();
-    }
-    
-    public String getPassword() {
-        return delegate.getPassword();
-    }
-    
-    public String getDriverClassName() {
-        return delegate.getDriverClassName();
-    }
-    
-    public String getDisplayName() {
-        return delegate.getDisplayName();
-    }
-    
-    public String toString(){
-        return delegate.toString();
-    }
-}
+    /**
+     * Provides <code>JPADataSource</code> interface for <code>Datasource</code>s.
+     */ 
+    private static class DatasourceWrapper implements Datasource, JPADataSource{
+        private Datasource delegate;
 
+        DatasourceWrapper(Datasource datasource){
+            this.delegate = datasource;
+        }
+
+        public String getJndiName() {
+            return delegate.getJndiName();
+        }
+
+        public String getUrl() {
+            return delegate.getUrl();
+        }
+
+        public String getUsername() {
+            return delegate.getUsername();
+        }
+
+        public String getPassword() {
+            return delegate.getPassword();
+        }
+
+        public String getDriverClassName() {
+            return delegate.getDriverClassName();
+        }
+
+        public String getDisplayName() {
+            return delegate.getDisplayName();
+        }
+
+        @Override
+        public String toString() {
+            return delegate.toString();
+        }
+    }
 }

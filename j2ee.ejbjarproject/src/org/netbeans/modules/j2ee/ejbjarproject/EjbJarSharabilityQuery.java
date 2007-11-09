@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -87,8 +87,8 @@ public class EjbJarSharabilityQuery implements SharabilityQueryImplementation, P
      * @return one of {@link org.netbeans.api.queries.SharabilityQuery}'s constants
      */
     public int getSharability(final File file) {
-        Integer ret = (Integer) ProjectManager.mutex().readAccess( new Mutex.Action() {
-            public Object run() {
+        Integer ret = ProjectManager.mutex().readAccess(new Mutex.Action<Integer>() {
+            public Integer run() {
                 synchronized (EjbJarSharabilityQuery.this) {
                     if (delegate == null) {
                         delegate = createDelegate ();
@@ -118,7 +118,7 @@ public class EjbJarSharabilityQuery implements SharabilityQueryImplementation, P
         for (int i=0; i<testProps.length; i++) {
             props[srcProps.length+i] = "${"+testProps[i]+"}"; // NOI18N
         }
-        props[props.length - 1] = "${" + EjbJarProjectProperties.META_INF + "}";
+        props[props.length - 1] = "${" + EjbJarProjectProperties.META_INF + "}"; // NOI18N
         return helper.createSharabilityQuery(this.evaluator, props,
             new String[] {
                 "${" + EjbJarProjectProperties.DIST_DIR + "}", // NOI18N

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -59,9 +59,9 @@ public class ProjectEjbJarProvider implements EjbJarProvider, EjbJarsInProject/*
     }
     
     public EjbJar findEjbJar (FileObject file) {
-        Project project = FileOwnerQuery.getOwner (file);
-        if (project != null && project instanceof EjbJarProject) {
-            return ((EjbJarProject) project).getAPIEjbJar();
+        Project owner = FileOwnerQuery.getOwner (file);
+        if (owner != null && owner instanceof EjbJarProject) {
+            return ((EjbJarProject) owner).getAPIEjbJar();
         }
         return null;
     }
@@ -71,7 +71,7 @@ public class ProjectEjbJarProvider implements EjbJarProvider, EjbJarsInProject/*
     }
 
     public void disableSunCmpMappingExclusion() {
-        EjbJarProject ejbProject = (EjbJarProject) project;
+        EjbJarProject ejbProject = project;
         PropertyHelper ph = ejbProject.getPropertyHelper();
         
         String metaInfExcludes = ph.getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.META_INF_EXCLUDES);
@@ -81,8 +81,7 @@ public class ProjectEjbJarProvider implements EjbJarProvider, EjbJarsInProject/*
         String[] tokens = metaInfExcludes.split(" |,");
         StringBuffer newMetaInfExcludes = new StringBuffer();
         for (int i = 0; i < tokens.length; i++) {
-            if (tokens[i].equals("sun-cmp-mappings.xml") || tokens[i].equals("")) // NOI18N
-            {
+            if (tokens[i].equals("sun-cmp-mappings.xml") || tokens[i].equals("")) { // NOI18N
                 continue;
             }
 

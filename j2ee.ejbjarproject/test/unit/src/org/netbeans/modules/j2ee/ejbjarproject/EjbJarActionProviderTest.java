@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -68,10 +68,11 @@ public class EjbJarActionProviderTest extends TestBase {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         File f = new File(getDataDir().getAbsolutePath(), "projects/EJBModule1");
         project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
-        ap = (ActionProvider) project.getLookup().lookup(ActionProvider.class);
+        ap = project.getLookup().lookup(ActionProvider.class);
         assertNotNull("have ActionProvider", ap);
     }
     

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -71,7 +71,6 @@ import org.netbeans.modules.j2ee.ejbjarproject.SourceRoots;
 import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.MutexException;
 import org.openide.util.Mutex;
 import org.netbeans.api.project.Project;
@@ -89,6 +88,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectUtil;
 import org.netbeans.modules.j2ee.ejbjarproject.Utils;
+import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -299,9 +299,9 @@ public class EjbJarProjectProperties {
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );                
         EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
         
-        JAVAC_CLASSPATH_MODEL = ClassPathUiSupport.createTableModel( cs.itemsIterator( (String)projectProperties.get( JAVAC_CLASSPATH ), ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES ) );
-        JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( JAVAC_TEST_CLASSPATH ), null ) );
-        RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( RUN_TEST_CLASSPATH ), null ) );
+        JAVAC_CLASSPATH_MODEL = ClassPathUiSupport.createTableModel( cs.itemsIterator( projectProperties.get(JAVAC_CLASSPATH), ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES  ) );
+        JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( projectProperties.get(JAVAC_TEST_CLASSPATH), null  ) );
+        RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( projectProperties.get(RUN_TEST_CLASSPATH), null  ) );
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), evaluator.getProperty(J2EE_PLATFORM));
@@ -341,8 +341,8 @@ public class EjbJarProjectProperties {
     public void save() {
         try {
             // Store properties 
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
                     storeProperties();
                     return null;
                 }
@@ -457,21 +457,21 @@ public class EjbJarProjectProperties {
     private void resolveProjectDependenciesNew() {
             
         // Create a set of old and new artifacts.
-        Set oldArtifacts = new HashSet();
+        Set<Item> oldArtifacts = new HashSet<Item>();
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
-        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( JAVAC_CLASSPATH ), ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES ) );
-        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( JAVAC_TEST_CLASSPATH ), null ) );
-        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( RUN_TEST_CLASSPATH ), null ) );
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get(JAVAC_CLASSPATH), ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES  ) );
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get(JAVAC_TEST_CLASSPATH), null  ) );
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get(RUN_TEST_CLASSPATH), null  ) );
                    
-        Set newArtifacts = new HashSet();
+        Set<Item> newArtifacts = new HashSet<Item>();
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ) );
                 
         // Create set of removed artifacts and remove them
-        Set removed = new HashSet( oldArtifacts );
+        Set<Item> removed = new HashSet<Item>(oldArtifacts);
         removed.removeAll( newArtifacts );
-        Set added = new HashSet(newArtifacts);
+        Set<Item> added = new HashSet<Item>(newArtifacts);
         added.removeAll(oldArtifacts);
         
         // 1. first remove all project references. The method will modify
@@ -714,8 +714,8 @@ public class EjbJarProjectProperties {
      * It removes all properties that match this format that were in the {@link #properties}
      * but are not in the {@link #classpath}.
      */
-    public static void storeLibrariesLocations (Iterator /*<Item>*/ classpath, EditableProperties privateProps) {
-        ArrayList exLibs = new ArrayList ();
+    public static void storeLibrariesLocations (Iterator<Item> classpath, EditableProperties privateProps) {
+        List<String> exLibs = new ArrayList<String>();
         Iterator propKeys = privateProps.keySet().iterator();
         while (propKeys.hasNext()) {
             String key = (String) propKeys.next();
@@ -725,15 +725,15 @@ public class EjbJarProjectProperties {
             }
         }
         while (classpath.hasNext()) {
-            ClassPathSupport.Item item = (ClassPathSupport.Item)classpath.next();
-            ArrayList /*File*/ files = new ArrayList ();
-            ArrayList /*File*/ dirs = new ArrayList ();
+            ClassPathSupport.Item item = classpath.next();
+            List<File> files = new ArrayList<File>();
+            List<File> dirs = new ArrayList<File>();
             getFilesForItem (item, files, dirs);
             String key;
             if (files.size() > 1 || (files.size()>0 && dirs.size()>0)) {
                 String ref = item.getReference() == null ? item.getRaw() : item.getReference();
                 for (int i = 0; i < files.size(); i++) {
-                    File f = (File) files.get(i);
+                    File f = files.get(i);
                     key = getAntPropertyName(ref)+".libfile." + (i+1); //NOI18N
                     privateProps.setProperty (key, "" + f.getAbsolutePath()); //NOI18N
                     exLibs.remove(key);
@@ -742,7 +742,7 @@ public class EjbJarProjectProperties {
             if (dirs.size() > 1 || (files.size()>0 && dirs.size()>0)) {
                 String ref = item.getReference() == null ? item.getRaw() : item.getReference();
                 for (int i = 0; i < dirs.size(); i++) {
-                    File f = (File) dirs.get(i);
+                    File f = dirs.get(i);
                     key = getAntPropertyName(ref)+".libdir." + (i+1); //NOI18N
                     privateProps.setProperty (key, "" + f.getAbsolutePath()); //NOI18N
                     exLibs.remove(key);
@@ -755,12 +755,12 @@ public class EjbJarProjectProperties {
         }
     }
     
-    public static final void getFilesForItem (ClassPathSupport.Item item, List/*File*/ files, List/*File*/ dirs) {
+    public static final void getFilesForItem (ClassPathSupport.Item item, List<File> files, List<File> dirs) {
         if (item.isBroken()) {
             return ;
         }
         if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
-            List/*<URL>*/ roots = item.getLibrary().getContent("classpath");  //NOI18N
+            List<URL> roots = item.getLibrary().getContent("classpath");  //NOI18N
             for (Iterator it = roots.iterator(); it.hasNext();) {
                 URL rootUrl = (URL) it.next();
                 FileObject root = URLMapper.findFileObject (rootUrl);

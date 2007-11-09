@@ -74,6 +74,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -99,6 +100,7 @@ public class EjbJarClassPathUi {
     /** Renderer which can be used to render the classpath in lists
      */    
     public static class ClassPathListCellRenderer extends DefaultListCellRenderer {
+        private static final long serialVersionUID = 90331258129810941L;
         
         private static String RESOURCE_ICON_JAR = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/jar.gif"; //NOI18N
         private static String RESOURCE_ICON_LIBRARY = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/libraries.gif"; //NOI18N
@@ -121,7 +123,7 @@ public class EjbJarClassPathUi {
         private PropertyEvaluator evaluator;
         
         // Contains well known paths in the EJBProject
-        private static final Map WELL_KNOWN_PATHS_NAMES = new HashMap();
+        private static final Map<String, String> WELL_KNOWN_PATHS_NAMES = new HashMap<String, String>();
         static {
             WELL_KNOWN_PATHS_NAMES.put( EjbJarProjectProperties.JAVAC_CLASSPATH, NbBundle.getMessage( EjbJarProjectProperties.class, "LBL_JavacClasspath_DisplayName" ) );
             WELL_KNOWN_PATHS_NAMES.put( EjbJarProjectProperties.JAVAC_TEST_CLASSPATH, NbBundle.getMessage( EjbJarProjectProperties.class,"LBL_JavacTestClasspath_DisplayName") );
@@ -135,6 +137,7 @@ public class EjbJarClassPathUi {
             this.evaluator = evaluator;
         }
         
+        @Override
         public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             
             ClassPathSupport.Item item = (ClassPathSupport.Item)value;
@@ -159,7 +162,7 @@ public class EjbJarClassPathUi {
                         return item.getLibrary().getDisplayName();
                     }
                 case ClassPathSupport.Item.TYPE_CLASSPATH:
-                    String name = (String)WELL_KNOWN_PATHS_NAMES.get( EjbJarProjectProperties.getAntPropertyName( item.getReference() ) );
+                    String name = WELL_KNOWN_PATHS_NAMES.get(EjbJarProjectProperties.getAntPropertyName(item.getReference()));
                     return name == null ? item.getReference() : name;
                 case ClassPathSupport.Item.TYPE_ARTIFACT:
                     if ( item.isBroken() ) {
@@ -279,6 +282,7 @@ public class EjbJarClassPathUi {
     }
     
     public static class ClassPathTableCellItemRenderer extends DefaultTableCellRenderer {
+        private static final long serialVersionUID = 126730921133371694L;
         
         private ClassPathListCellRenderer renderer;
         private TableCellRenderer booleanRenderer;
@@ -287,17 +291,18 @@ public class EjbJarClassPathUi {
             renderer = new ClassPathListCellRenderer(evaluator);
         }
         
+        @Override
         public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column ) {
             
             if (value instanceof ClassPathSupport.Item) {
                 ClassPathSupport.Item item = (ClassPathSupport.Item)value;
-                setIcon( renderer.getIcon( item ) );
+                setIcon( ClassPathListCellRenderer.getIcon( item ) );
                 setToolTipText( renderer.getToolTipText( item ) );
                 return super.getTableCellRendererComponent(table, renderer.getDisplayName( item ), isSelected, false, row, column);
             } else {
-                if (value instanceof Boolean && booleanRenderer != null)
-                    return booleanRenderer.getTableCellRendererComponent( table, value, isSelected, false, row, column );
-                else {
+                if (value instanceof Boolean && booleanRenderer != null) {
+                    return booleanRenderer.getTableCellRendererComponent(table, value, isSelected, false, row, column);
+                } else {
                     setIcon( null );
                     return super.getTableCellRendererComponent( table, value, isSelected, false, row, column );
                 }
@@ -342,7 +347,7 @@ public class EjbJarClassPathUi {
                 throw new IllegalArgumentException( "The list's model has to be of class DefaultListModel" ); // NOI18N
             }
             
-            this.listModel = (DefaultListModel)list.getModel();
+            this.listModel = list.getModel();
             this.selectionModel = list.getSelectionModel();
             
             this.addJar = addJar;
@@ -423,7 +428,7 @@ public class EjbJarClassPathUi {
                 }
             }
             else if ( source == addLibrary ) {
-                Set/*<Library>*/includedLibraries = new HashSet ();
+                Set<Library> includedLibraries = new HashSet<Library>();
                 for (int i=0; i< listModel.getSize(); i++) {
                     ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.get(i);
                     if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken() ) {
@@ -512,11 +517,9 @@ public class EjbJarClassPathUi {
         
         private static final class JListListComponent implements ListComponent {
             private JList list;
-            private DefaultListModel model;
             
             public JListListComponent(JList list) {
                 this.list = list;
-                this.model = model;
             }
             
             public Component getComponent() {
@@ -594,12 +597,14 @@ public class EjbJarClassPathUi {
         }
 
         public boolean accept(File f) {
-            if (f.isDirectory())
+            if (f.isDirectory()) {
                 return true;
+            }
             String name = f.getName();
             int index = name.lastIndexOf('.');   //NOI18N
-            if (index <= 0 || index==name.length()-1)
+            if (index <= 0 || index==name.length()-1) {
                 return false;
+            }
             String extension = name.substring (index+1).toUpperCase();
             return this.extensions.contains(extension);
         }

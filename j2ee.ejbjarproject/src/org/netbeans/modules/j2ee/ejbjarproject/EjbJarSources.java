@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -97,8 +97,8 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
      * {@link EjbJarSources#fireChange} method.
      */
     public SourceGroup[] getSourceGroups(final String type) {
-        return (SourceGroup[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<SourceGroup[]>() {
+            public SourceGroup[] run() {
                 Sources _delegate;
                 synchronized (EjbJarSources.this) {
                     if (delegate == null) {
@@ -219,8 +219,11 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
     
     public void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
-        if (SourceRoots.PROP_ROOT_PROPERTIES.equals(propName) || EjbJarProjectProperties.BUILD_DIR.equals(propName) || EjbJarProjectProperties.DIST_DIR.equals(propName))
+        if (SourceRoots.PROP_ROOT_PROPERTIES.equals(propName)
+                || EjbJarProjectProperties.BUILD_DIR.equals(propName)
+                || EjbJarProjectProperties.DIST_DIR.equals(propName)) {
             this.fireChange();
+        }
     }
 
     public void stateChanged (ChangeEvent event) {

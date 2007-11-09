@@ -54,6 +54,7 @@ import org.openide.util.NbBundle;
  * @author Martin Grebac
  */
 public class NoWebServicesPanel extends JPanel implements HelpCtx.Provider {
+    private static final long serialVersionUID = 18059748988702440L;
 
     private JLabel label;
 

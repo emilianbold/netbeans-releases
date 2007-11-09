@@ -60,7 +60,7 @@ public class SourceLevelQueryImpl implements SourceLevelQueryImplementation {
     }
 
     public String getSourceLevel(FileObject javaFile) {
-        String sl = evaluator.getProperty("javac.source");
+        String sl = evaluator.getProperty("javac.source"); //NOI18N
         if (sl != null && sl.length() > 0) {
             return sl;
         } else {

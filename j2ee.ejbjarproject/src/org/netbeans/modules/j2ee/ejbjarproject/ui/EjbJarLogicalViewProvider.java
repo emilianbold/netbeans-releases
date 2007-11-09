@@ -261,7 +261,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
         public WebLogicalViewRootNode() {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-j2ee-ejbjarproject/Nodes"), // NOI18N
                     createLookup(project));
-            setIconBase( "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon" ); // NOI18N
+            setIconBaseWithExtension( "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif" ); // NOI18N
             super.setName( ProjectUtils.getInformation( project ).getDisplayName() );            
             if (hasBrokenLinks()) {
                 broken = true;

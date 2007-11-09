@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -71,7 +71,9 @@ public class EjbProjectJAXWSClientSupport extends ProjectJAXWSClientSupport/* im
             FileObject metaInfFo = ejbModule.getMetaInf();
             if (metaInfFo!=null) {
                 FileObject wsdlFo = metaInfFo.getFileObject("wsdl"); //NOI18N
-                if (wsdlFo!=null) return wsdlFo;
+                if (wsdlFo!=null) {
+                    return wsdlFo;
+                }
                 else if (create) {
                     return metaInfFo.createFolder("wsdl"); //NOI18N
                 }
@@ -85,26 +87,31 @@ public class EjbProjectJAXWSClientSupport extends ProjectJAXWSClientSupport/* im
     
     /** return root folder for xml artifacts
      */
+    @Override
     protected FileObject getXmlArtifactsRoot() {
         return project.getAPIEjbJar().getMetaInf();
     }
 
+    @Override
     public String addServiceClient(String clientName, String wsdlUrl, String packageName, boolean isJsr109) {
 
         String finalClientName = super.addServiceClient(clientName, wsdlUrl, packageName, isJsr109);
         
         // copy resources to META-INF/wsdl/client/${clientName}
         // this will be done only for local wsdl files
-        JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
+        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
         Client client = jaxWsModel.findClientByName(finalClientName);
-        if (client!=null && client.getWsdlUrl().startsWith("file:")) //NOI18N
+        if (client!=null && client.getWsdlUrl().startsWith("file:")) { //NOI18N
             try {
                 FileObject wsdlFolder = getWsdlFolderForClient(finalClientName);
-                FileObject xmlResorcesFo = getLocalWsdlFolderForClient(finalClientName,false);
-                if (xmlResorcesFo!=null) WSUtils.copyFiles(xmlResorcesFo, wsdlFolder);
+                FileObject xmlResorcesFo = getLocalWsdlFolderForClient(finalClientName, false);
+                if (xmlResorcesFo != null) {
+                    WSUtils.copyFiles(xmlResorcesFo, wsdlFolder);
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
         return finalClientName;
     }
 

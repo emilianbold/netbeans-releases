@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -64,6 +64,7 @@ public final class EjbJarProjectAntLogger extends AntLogger {
     public EjbJarProjectAntLogger() {
     }
     
+    @Override
     public boolean interestedInSession(AntSession session) {
         // Even if the initiating project is not a Web Project, suppress these messages.
         // However disable our tricks when running at VERBOSE or higher.
@@ -85,6 +86,7 @@ public final class EjbJarProjectAntLogger extends AntLogger {
         return false;
     }
     
+    @Override
     public boolean interestedInScript(File script, AntSession session) {
         if (script.getName().equals("build-impl.xml")) { // NOI18N
             File parent = script.getParentFile();
@@ -99,21 +101,25 @@ public final class EjbJarProjectAntLogger extends AntLogger {
         return false;
     }
     
+    @Override
     public String[] interestedInTargets(AntSession session) {
         return AntLogger.ALL_TARGETS;
     }
     
+    @Override
     public String[] interestedInTasks(AntSession session) {
         // XXX will eventually need them all anyway; as is, could list just javac
         return AntLogger.ALL_TASKS;
     }
     
+    @Override
     public int[] interestedInLogLevels(AntSession session) {
         return new int[] {
             AntEvent.LOG_WARN
         };
     }
     
+    @Override
     public void messageLogged(AntEvent event) {
         // filter out following message
         if (!event.isConsumed() && event.getLogLevel() == AntEvent.LOG_WARN &&

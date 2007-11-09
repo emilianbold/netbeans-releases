@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,8 +45,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
-import org.openide.filesystems.XMLFileSystem;
-import org.xml.sax.SAXException;
 
 /**
  * Repository whose getDefaultFileSystem() returns a writeable FS.
@@ -56,8 +54,7 @@ import org.xml.sax.SAXException;
  * @author Andrei Badea, Radko Najman
  */
 public class RepositoryImpl extends Repository {
-    
-    private XMLFileSystem system;
+    private static final long serialVersionUID = 6140451747920588L;
     
     public RepositoryImpl() {
         super(createDefFs());

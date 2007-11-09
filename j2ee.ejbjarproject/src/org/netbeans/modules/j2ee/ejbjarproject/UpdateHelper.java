@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -154,14 +154,12 @@ public class UpdateHelper {
      * @return the configuration data that is available
      */
     public Element getPrimaryConfigurationData (final boolean shared) {
-        return (Element) ProjectManager.mutex().readAccess(new Mutex.Action (){
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Element>(){
+            public Element run() {
                 if (!shared || isCurrent()) { //Only shared props should cause update
                     return helper.getPrimaryConfigurationData(shared);
                 }
-                else {
-                    return getUpdatedSharedConfigurationData ();
-                }
+                return getUpdatedSharedConfigurationData();
             }
         });
     }
@@ -322,8 +320,8 @@ public class UpdateHelper {
                             if (fileText.startsWith ("libs.")) {
                                 String libName = fileText.substring(6, fileText.indexOf(".classpath")); //NOI18N
                                 List/*<URL>*/ roots = LibraryManager.getDefault().getLibrary(libName).getContent("classpath"); //NOI18N
-                                ArrayList files = new ArrayList ();
-                                ArrayList dirs = new ArrayList ();
+                                ArrayList<FileObject> files = new ArrayList<FileObject>();
+                                ArrayList<FileObject> dirs = new ArrayList<FileObject>();
                                 for (Iterator it = roots.iterator(); it.hasNext();) {
                                     URL rootUrl = (URL) it.next();
                                     FileObject root = org.openide.filesystems.URLMapper.findFileObject (rootUrl);
@@ -339,10 +337,10 @@ public class UpdateHelper {
                                     }
                                 }
                                 if (files.size() > 0) {
-                                    library.setAttribute(ATTR_FILES, "" + files.size());
+                                    library.setAttribute(ATTR_FILES, "" + files.size()); //NOI18N
                                 }
                                 if (dirs.size() > 0) {
-                                    library.setAttribute(ATTR_DIRS, "" + dirs.size());
+                                    library.setAttribute(ATTR_DIRS, "" + dirs.size()); //NOI18N
                                 }
                             }
                         }

@@ -64,6 +64,7 @@ public class CompiledSourceForBinaryQueryTest extends TestBase {
         super(testName);
     }
     
+    @Override
     public void setUp() throws Exception {
         File f = new File(getDataDir().getAbsolutePath(), "projects/EJBModule1");
         project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
@@ -76,7 +77,7 @@ public class CompiledSourceForBinaryQueryTest extends TestBase {
         // the file must not exist
         assertFalse("Cannot test, the project should be cleaned first!", buildClassesDir .exists());
         URL buildClassesDirURL = new URL(buildClassesDir.toURL().toExternalForm() + "/");
-        SourceForBinaryQueryImplementation s4bqi = (SourceForBinaryQueryImplementation)project.getLookup().lookup(SourceForBinaryQueryImplementation.class);
+        SourceForBinaryQueryImplementation s4bqi = project.getLookup().lookup(SourceForBinaryQueryImplementation.class);
         assertNotNull(s4bqi.findSourceRoots(buildClassesDirURL));
     }
 }

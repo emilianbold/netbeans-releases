@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -96,7 +96,7 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
         handle.start(3);
         handle.progress(NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "LBL_NewEjbJarProjectWizardIterator_WizardProgress_CreatingProject"), 1);
         
-        Set resultSet = new HashSet();
+        Set<FileObject> resultSet = new HashSet<FileObject>();
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         if (dirF != null) {
             dirF = FileUtil.normalizeFile(dirF);
@@ -155,7 +155,9 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
     }
     
     public String name() {
-        return MessageFormat.format(NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_WizardStepsCount"), new String[] {(new Integer(index + 1)).toString(), (new Integer(panels.length)).toString()}); //NOI18N
+        return MessageFormat.format(
+                NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_WizardStepsCount"), //NOI18N
+                (new Integer(index + 1)).toString(), (new Integer(panels.length)).toString());
     }
     
     public boolean hasNext() {
@@ -165,11 +167,15 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
         return index > 0;
     }
     public void nextPanel() {
-        if (!hasNext()) throw new NoSuchElementException();
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
         index++;
     }
     public void previousPanel() {
-        if (!hasPrevious()) throw new NoSuchElementException();
+        if (!hasPrevious()) {
+            throw new NoSuchElementException();
+        }
         index--;
     }
     public WizardDescriptor.Panel current() {

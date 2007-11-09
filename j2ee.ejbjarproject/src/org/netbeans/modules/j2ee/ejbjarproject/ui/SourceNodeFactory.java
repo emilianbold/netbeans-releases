@@ -92,13 +92,13 @@ public final class SourceNodeFactory implements NodeFactory {
         public List<SourceGroupKey> keys() {
             FileObject projDir = project.getProjectDirectory();
             if ((projDir != null) && (!projDir.isValid())) {
-                return Collections.EMPTY_LIST;                
+                return Collections.<SourceGroupKey>emptyList();
             } 
             
             Sources sources = getSources();
             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             
-            List result =  new ArrayList(groups.length);
+            List<SourceGroupKey> result =  new ArrayList<SourceGroupKey>(groups.length);
             for( int i = 0; i < groups.length; i++ ) {
                 result.add(new SourceGroupKey(groups[i]));
             }
@@ -197,7 +197,7 @@ public final class SourceNodeFactory implements NodeFactory {
             this.nodeName = "Sources"; // NOI18N
         }
         
-        
+        @Override
         public Action[] getActions(boolean context) {
             if (!context) {
                 if (actions == null) {
@@ -219,6 +219,7 @@ public final class SourceNodeFactory implements NodeFactory {
     /** The special properties action
      */
     static class PreselectPropertiesAction extends AbstractAction {
+        private static final long serialVersionUID = 1517163112L;
         
         private final Project project;
         private final String nodeName;

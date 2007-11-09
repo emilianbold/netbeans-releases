@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -49,6 +49,7 @@ import org.openide.util.NbBundle;
  * @author Andrei Badea
  */
 public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provider {
+    private static final long serialVersionUID = 168604540122121876L;
     private Object initialJ2eeSpecVersion;
 
     /** Creates new form CustomizerRun */
@@ -66,8 +67,9 @@ public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provide
         Object j2eeSpecVersion = jComboBoxJ2eeSpecVersion.getSelectedItem();
         boolean match = true;
         
-        if (j2eePlatform != null && j2eeSpecVersion != null)
+        if (j2eePlatform != null && j2eeSpecVersion != null) {
             match = J2eePlatformUiSupport.getJ2eePlatformAndSpecVersionMatch(j2eePlatform, j2eeSpecVersion);
+        }
         
         jLabelJ2eePlatformSpecMismatch.setText(match ? "" : NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_PlatformSpecMismatch_JLabel"));
     }

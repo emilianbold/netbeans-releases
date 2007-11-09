@@ -85,7 +85,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
      */
     private final ClassPath[] cache = new ClassPath[9];
 
-    private final Map dirCache = new HashMap ();
+    private final Map<String, FileObject> dirCache = new HashMap<String, FileObject>();
 
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, 
             SourceRoots sourceRoots, SourceRoots testSourceRoots) {
@@ -99,12 +99,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
     }
 
     private synchronized FileObject getDir(String propname) {
-        FileObject fo = (FileObject) this.dirCache.get (propname);
+        FileObject fo = this.dirCache.get(propname);
         if (fo == null ||  !fo.isValid()) {
             String prop = helper.getStandardPropertyEvaluator ().getProperty (propname);
             if (prop != null) {
                 fo = helper.resolveFileObject(prop);
-                this.dirCache.put (propname, fo);
+                this.dirCache.put(propname, fo);
             }
         }
         return fo;

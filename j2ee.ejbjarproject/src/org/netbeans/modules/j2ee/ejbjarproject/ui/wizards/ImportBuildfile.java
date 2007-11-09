@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,6 +45,7 @@ import java.io.File;
 import java.text.MessageFormat;
 
 import javax.swing.JButton;
+import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -52,7 +53,8 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 
-public class ImportBuildfile extends javax.swing.JPanel implements DocumentListener {
+public class ImportBuildfile extends JPanel implements DocumentListener {
+    private static final long serialVersionUID = 79938133224278511L;
 
     private JButton ok;
     private String filePath;
@@ -67,7 +69,7 @@ public class ImportBuildfile extends javax.swing.JPanel implements DocumentListe
         ok.setEnabled(false);
         
         String fileName = filePath + File.separator + GeneratedFilesHelper.BUILD_XML_PATH;
-        String msg = MessageFormat.format(NbBundle.getMessage(ImportBuildfile.class, "LBL_IW_BuildfileDesc_Label"), new String[] {fileName}); //NOI18N
+        String msg = MessageFormat.format(NbBundle.getMessage(ImportBuildfile.class, "LBL_IW_BuildfileDesc_Label"), fileName); //NOI18N
         jLabelDesc.setText(msg);
         jTextFieldBuildName.getDocument().addDocumentListener(this);
         jTextFieldBuildName.setText(NbBundle.getMessage(ImportBuildfile.class, "LBL_IW_ProposedName_TextField")); //NOI18N
@@ -172,9 +174,10 @@ public class ImportBuildfile extends javax.swing.JPanel implements DocumentListe
     private void updateButton() {
         jTextFieldCreatedFile.setText(filePath + File.separator + jTextFieldBuildName.getText());
 
-        if (jTextFieldBuildName.getText().trim().length() == 0 || jTextFieldBuildName.getText().trim().equals(GeneratedFilesHelper.BUILD_XML_PATH))
+        if (jTextFieldBuildName.getText().trim().length() == 0 || jTextFieldBuildName.getText().trim().equals(GeneratedFilesHelper.BUILD_XML_PATH)) {
             ok.setEnabled(false);
-        else
+        } else {
             ok.setEnabled(true);
+        }
     }    
 }

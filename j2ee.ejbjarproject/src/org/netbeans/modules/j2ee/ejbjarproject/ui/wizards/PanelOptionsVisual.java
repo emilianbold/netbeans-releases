@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -60,7 +61,8 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
-public class PanelOptionsVisual extends javax.swing.JPanel {
+public class PanelOptionsVisual extends JPanel {
+    private static final long serialVersionUID = 819146398164975L;
     
 //    private static boolean lastMainClassCheck = false; // XXX Store somewhere
     
@@ -68,7 +70,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     private J2eeVersionWarningPanel warningPanel;
     private final DefaultComboBoxModel serversModel = new DefaultComboBoxModel();
     
-    private List earProjects;
+    private List<Project> earProjects;
     
     private static final String J2EE_SPEC_15_LABEL = NbBundle.getMessage(PanelOptionsVisual.class, "J2EESpecLevel_15"); //NOI18N
     private static final String J2EE_SPEC_14_LABEL = NbBundle.getMessage(PanelOptionsVisual.class, "J2EESpecLevel_14"); //NOI18N
@@ -287,15 +289,17 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
                 String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
                 FoldersListSettings fls = FoldersListSettings.getDefault();
                 String srcLevel = "1.6"; //NOI18N
-                if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_14) && fls.isAgreedSetSourceLevel14())
+                if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_14) && fls.isAgreedSetSourceLevel14()) {
                     srcLevel = "1.4"; //NOI18N
-                else if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_15) && fls.isAgreedSetSourceLevel15())
+                } else if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_15) && fls.isAgreedSetSourceLevel15()) {
                     srcLevel = "1.5"; //NOI18N
+                }
                 
                 d.putProperty(WizardProperties.SOURCE_LEVEL, srcLevel);
-            }            
-        } else
+            }
+        } else {
             d.putProperty(WizardProperties.SOURCE_LEVEL, null);
+        }
     }
     
     void read(WizardDescriptor d) {
@@ -379,7 +383,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     
     private Project getSelectedEarApplication() {
         int idx = addToAppComboBox.getSelectedIndex();
-        return (idx <= 0) ? null : (Project) earProjects.get(idx - 1);
+        return (idx <= 0) ? null : earProjects.get(idx - 1);
     }
     
     private void initEnterpriseApplications() {
@@ -387,7 +391,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         addToAppComboBox.setSelectedIndex(0);
         
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
-        earProjects = new ArrayList();
+        earProjects = new ArrayList<Project>();
         for (int i = 0; i < allProjects.length; i++) {
             J2eeApplicationProvider j2eeAppProvider = allProjects[i].getLookup().lookup(J2eeApplicationProvider.class);
 	    if (j2eeAppProvider != null) {
@@ -406,11 +410,13 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     
     private void setJ2eeVersionWarningPanel() {
         String j2ee = getSelectedJ2eeSpec();
-        if (j2ee == null)
+        if (j2ee == null) {
             return;
+        }
         String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
-        if (warningType == null && warningPanel == null)
+        if (warningType == null && warningPanel == null) {
             return;
+        }
         if (warningPanel == null) {
             warningPanel = new J2eeVersionWarningPanel(warningType);
             warningPlaceHolderPanel.add(warningPanel, java.awt.BorderLayout.CENTER);
@@ -439,6 +445,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
             return serverInstanceID;
         }
 
+        @Override
         public String toString() {
             return displayName;
         }

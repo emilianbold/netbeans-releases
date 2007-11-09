@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -72,13 +72,13 @@ final class FileSearchUtility {
     * @return enumeration of type <code>FileObject</code>
     */
     static Enumeration getChildrenToDepth(final FileObject root, final int depth, final boolean onlyWritables) {
-        class WithChildren implements Enumerations.Processor {
+        class WithChildren implements Enumerations.Processor<FileObject, FileObject> {
             private int rootDepth;
             public WithChildren(final int rootDepth) {
                 this.rootDepth = rootDepth;
             }
-            public Object process(final Object obj, final Collection toAdd) {
-                FileObject fo = (FileObject)obj;
+            public FileObject process(final FileObject obj, final Collection<FileObject> toAdd) {
+                FileObject fo = obj;
                 if (!onlyWritables || (onlyWritables && fo.canWrite())) {
                     if (fo.isFolder() && (getDepth(fo) - rootDepth) < depth) {
                         toAdd.addAll(Arrays.asList(fo.getChildren()));
@@ -95,9 +95,10 @@ final class FileSearchUtility {
     }
 
     static FileObject[] guessJavaRoots(final FileObject dir) {
-        List foundRoots = new ArrayList();
-        if (null == dir)
+        List<FileObject> foundRoots = new ArrayList<FileObject>();
+        if (null == dir) {
             return null;
+        }
         Enumeration ch = FileSearchUtility.getChildrenToDepth(dir, 10, true); // .getChildren(true);
         try {
             // digging through 10 levels exhaustively is WAY TOO EXPENSIVE
@@ -106,7 +107,7 @@ final class FileSearchUtility {
                 if (f.getExt().equals("java") && !f.isFolder()) { //NOI18N
                     String pckg = guessPackageName(f);
                     String pkgPath = f.getParent().getPath(); 
-                    if (pckg != null && pkgPath.endsWith(pckg.replace('.', '/'))) {
+                    if (pckg != null && pkgPath.endsWith(pckg.replace('.', '/'))) { //NOI18N
                         String rootName = pkgPath.substring(0, pkgPath.length() - pckg.length());
                         FileObject fr = f.getFileSystem().findResource(rootName);
                         if (!foundRoots.contains(fr)) {
@@ -123,15 +124,16 @@ final class FileSearchUtility {
         } else {
             FileObject[] resultArr = new FileObject[foundRoots.size()];
             for (int i = 0; i < foundRoots.size(); i++) {
-                resultArr[i] = (FileObject) foundRoots.get(i);
+                resultArr[i] = foundRoots.get(i);
             }
             return resultArr;
         }
     }
     
     static   FileObject guessConfigFilesPath(final FileObject dir) {
-        if (null == dir)
+        if (null == dir) {
             return null;
+        }
         Enumeration ch = FileSearchUtility.getChildrenToDepth(dir, 3, true); //getChildren(true);
         try {
             while (ch.hasMoreElements()) {
@@ -183,7 +185,12 @@ final class FileSearchUtility {
         } catch (java.io.IOException ioe) {
             Logger.getLogger("global").log(Level.INFO, null, ioe);
         } finally {
-            try { if (r != null) { r.close(); }} catch (java.io.IOException ioe) { ; // ignore this 
+            try {
+                if (r != null) {
+                    r.close();
+                }
+            } catch (java.io.IOException ioe) {
+                // ignore this 
             }
         }
         // AB: fix for #56160: assume the class is in the default package

@@ -48,7 +48,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -139,6 +142,8 @@ import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
 
@@ -280,15 +285,16 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         return helper.getProjectDirectory();
     }
     
+    @Override
     public String toString() {
         return "EjbJarProject[" + getProjectDirectory() + "]"; // NOI18N
     }
     
     private PropertyEvaluator createEvaluator() {
-        PropertyEvaluator eval = helper.getStandardPropertyEvaluator();
-        evalListener = WeakListeners.propertyChange(this, eval);
-        eval.addPropertyChangeListener(evalListener);
-        return eval;
+        PropertyEvaluator evaluator = helper.getStandardPropertyEvaluator();
+        evalListener = WeakListeners.propertyChange(this, evaluator);
+        evaluator.addPropertyChangeListener(evalListener);
+        return evaluator;
     }
     
     public PropertyEvaluator evaluator() {
@@ -481,8 +487,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                         dlg = DialogDisplayer.getDefault().createDialog(dd);
                         dlg.setVisible(true);
                     } finally {
-                        if (dlg != null)
+                        if (dlg != null) {
                             dlg.dispose();
+                        }
                     }
                 } finally {
                     synchronized (EjbJarProject.class) {
@@ -496,11 +503,11 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     
     /** Return configured project name. */
     public String getName() {
-        return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+            public String run() {
                 Element data = updateHelper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
-                NodeList nl = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                NodeList nl = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); //NOI18N
                 if (nl.getLength() == 1) {
                     nl = nl.item(0).getChildNodes();
                     if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {
@@ -514,11 +521,11 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
 
     /** Store configured project name. */
     public void setName(final String name) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
-                NodeList nl = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                NodeList nl = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); //NOI18N
                 Element nameEl;
                 if (nl.getLength() == 1) {
                     nameEl = (Element) nl.item(0);
@@ -527,12 +534,11 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                         nameEl.removeChild(deadKids.item(0));
                     }
                 } else {
-                    nameEl = data.getOwnerDocument().createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                    nameEl = data.getOwnerDocument().createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); //NOI18N
                     data.insertBefore(nameEl, /* OK if null */data.getChildNodes().item(0));
                 }
                 nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
                 helper.putPrimaryConfigurationData(data, true);
-                return null;
             }
         });
     }
@@ -543,16 +549,16 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             Document doc = element.getOwnerDocument();
             Element newRoot = doc.createElementNS (EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
             copyDocument (doc, element, newRoot);
-            Element sourceRoots = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
+            Element srcRoots = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots");  //NOI18N
             Element root = doc.createElementNS (EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
             root.setAttribute ("id","src.dir");   //NOI18N
-            sourceRoots.appendChild(root);
-            newRoot.appendChild (sourceRoots);
-            Element testRoots = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
+            srcRoots.appendChild(root);
+            newRoot.appendChild (srcRoots);
+            Element tstRoots = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
             root = doc.createElementNS (EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
             root.setAttribute ("id","test.src.dir");   //NOI18N
-            testRoots.appendChild (root);
-            newRoot.appendChild (testRoots);
+            tstRoots.appendChild (root);
+            newRoot.appendChild (tstRoots);
             helper.putPrimaryConfigurationData (newRoot, true);
             ProjectManager.getDefault().saveProject(this);
         }
@@ -604,8 +610,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         j2eePlatformListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(J2eePlatform.PROP_CLASSPATH)) {
-                    ProjectManager.mutex().writeAccess(new Mutex.Action() {
-                        public Object run() {
+                    ProjectManager.mutex().writeAccess(new Runnable() {
+                        public void run() {
                             EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                             String classpath = Utils.toClasspathString(platform.getClasspathEntries());
                             ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
@@ -615,7 +621,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                             } catch (IOException e) {
                                 Exceptions.printStackTrace(e);
                             }
-                            return null;
                         }
                     });
                 }
@@ -630,17 +635,18 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         }
     }
         
-    public void fileFolderCreated (org.openide.filesystems.FileEvent fe) {
+    public void fileFolderCreated (FileEvent fe) {
     }
     
-    public void fileRenamed (org.openide.filesystems.FileRenameEvent fe) {
+    public void fileRenamed (FileRenameEvent fe) {
         FileObject fo = fe.getFile ();
         checkLibraryFolder (fo);
     }
 
     private void checkLibraryFolder (FileObject fo) {
-        if (!FileUtil.isArchiveFile(fo))
+        if (!FileUtil.isArchiveFile(fo)) {
             return;
+        }
         
         if (fo.getParent ().equals (libFolder)) {
             try {
@@ -698,10 +704,11 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                     }
                 }
             };
-            if (askInCurrentThread)
+            if (askInCurrentThread) {
                 run.run();
-            else
+            } else {
                 RequestProcessor.getDefault().post(run);
+            }
         } else {
             try {
                 genFilesHelper.refreshBuildScript(
@@ -805,11 +812,12 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 
                 if (libFolderName != null && helper.resolveFile (libFolderName).isDirectory ()) {
                     libFolder = helper.resolveFileObject(libFolderName);
-                        FileObject children [] = libFolder.getChildren ();
-                        List libs = new LinkedList();
+                        FileObject[] children = libFolder.getChildren ();
+                        List<FileObject> libs = new LinkedList<FileObject>();
                         for (int i = 0; i < children.length; i++) {
-                            if (FileUtil.isArchiveFile(children[i]))
+                            if (FileUtil.isArchiveFile(children[i])) {
                                 libs.add(children[i]);
+                            }
                         }
                         FileObject[] libsArray = new FileObject[libs.size()];
                         libs.toArray(libsArray);
@@ -823,7 +831,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 
                 genFilesHelper.refreshBuildScript(
                     getBuildXmlName(),
-                    EjbJarProject.class.getResource("resources/build.xsl"),
+                    EjbJarProject.class.getResource("resources/build.xsl"), // NOI18N
                     true);
                 
                 String servInstID = getProperty(AntProjectHelper.PRIVATE_PROPERTIES_PATH, EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
@@ -883,8 +891,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
             
-            EjbJarLogicalViewProvider physicalViewProvider = (EjbJarLogicalViewProvider)
-                EjbJarProject.this.getLookup().lookup (EjbJarLogicalViewProvider.class);
+            EjbJarLogicalViewProvider physicalViewProvider = EjbJarProject.this.getLookup().lookup(EjbJarLogicalViewProvider.class);
             if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
                 BrokenReferencesSupport.showAlert();
             }

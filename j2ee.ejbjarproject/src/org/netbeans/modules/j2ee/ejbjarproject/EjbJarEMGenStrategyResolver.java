@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -71,7 +71,7 @@ import org.openide.util.Exceptions;
  *
  * @author Erno Mononen
  */
-public class EjbJarEMGenStrategyResolver implements EntityManagerGenerationStrategyResolver{
+public class EjbJarEMGenStrategyResolver implements EntityManagerGenerationStrategyResolver {
     
     
     /** Creates a new instance of EjbJarEMGenStrategyResolver */
@@ -91,7 +91,7 @@ public class EjbJarEMGenStrategyResolver implements EntityManagerGenerationStrat
         String jtaDataSource = persistenceUnit.getJtaDataSource();
         String transactionType = persistenceUnit.getTransactionType();
             boolean isInjectionTarget = isInjectionTarget(target);
-        boolean isJTA = (transactionType == null || transactionType.equals("JTA")); // JTA is default value for transaction type in non-J2SE projects
+        boolean isJTA = (transactionType == null || transactionType.equals("JTA")); // JTA is default value for transaction type in non-J2SE projects //NO18N
         boolean isContainerManaged = (jtaDataSource != null && !jtaDataSource.equals("")) && isJTA; //NO18N
         
         if (isContainerManaged && isInjectionTarget) { // Container-managed persistence context, managed class
@@ -135,7 +135,7 @@ public class EjbJarEMGenStrategyResolver implements EntityManagerGenerationStrat
         Project project = FileOwnerQuery.getOwner(target);
         J2eeModuleProvider j2eeModuleProvider = null;
         if (project != null){
-            j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+            j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         }
         if (j2eeModuleProvider != null) {
             result = j2eeModuleProvider.getJ2eeModule();
@@ -161,6 +161,5 @@ public class EjbJarEMGenStrategyResolver implements EntityManagerGenerationStrat
         }
         return null;
     }
-    
     
 }

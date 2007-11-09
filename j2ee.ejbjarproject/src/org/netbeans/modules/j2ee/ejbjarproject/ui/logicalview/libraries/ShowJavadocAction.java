@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -62,6 +62,7 @@ import org.openide.util.actions.NodeAction;
  * @author Tomas Zezula
  */
 final class ShowJavadocAction extends NodeAction {
+    private static final long serialVersionUID = 668539482490985L;
 
     /**
      * Implementation of this interfaces has to be placed
@@ -86,7 +87,7 @@ final class ShowJavadocAction extends NodeAction {
         if (activatedNodes.length!=1) {
             return;
         }
-        JavadocProvider jd = (JavadocProvider) activatedNodes[0].getLookup().lookup(JavadocProvider.class);
+        JavadocProvider jd = activatedNodes[0].getLookup().lookup(JavadocProvider.class);
         if (jd == null) {
             return;
         }
@@ -97,7 +98,7 @@ final class ShowJavadocAction extends NodeAction {
         if (activatedNodes.length!=1) {
             return false;
         }
-        JavadocProvider jd = (JavadocProvider) activatedNodes[0].getLookup().lookup(JavadocProvider.class);
+        JavadocProvider jd = activatedNodes[0].getLookup().lookup(JavadocProvider.class);
         if (jd == null) {
             return false;
         }
@@ -112,6 +113,7 @@ final class ShowJavadocAction extends NodeAction {
         return new HelpCtx (ShowJavadocAction.class);
     }
 
+    @Override
     public final boolean asynchronous () {
         return false;
     }

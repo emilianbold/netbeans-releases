@@ -85,40 +85,34 @@ public class EjbJarCompositePanelProvider implements ProjectCustomizer.Composite
             toReturn = ProjectCustomizer.Category.create(
                     SOURCES,
                     bundle.getString("LBL_Config_Sources"), //NOI18N
-                    null,
                     null);
         } else if (LIBRARIES.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     LIBRARIES,
                     bundle.getString( "LBL_Config_Libraries" ), // NOI18N
-                    null,
-                    null );
+                    null);
         } else if (BUILD.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     BUILD,
                     bundle.getString( "LBL_Config_Build" ), // NOI18N
-                    null,
                     null);
         } else if (JAR.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     JAR,
                     bundle.getString( "LBL_Config_Jar" ), // NOI18N
-                    null,
-                    null );
+                    null);
         } else if (JAVADOC.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     JAVADOC,
                     bundle.getString( "LBL_Config_Javadoc" ), // NOI18N
-                    null,
-                    null );
+                    null);
         } else if (RUN.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     RUN,
                     bundle.getString( "LBL_Config_Run" ), // NOI18N
-                    null,
-                    null );
-        } else if (WEBSERVICESCATEGORY.equals(name) && showWebServicesCategory(
-                (EjbJarProjectProperties)context.lookup(EjbJarProjectProperties.class))) {
+                    null);
+        } else if (WEBSERVICESCATEGORY.equals(name)
+                && showWebServicesCategory(context.lookup(EjbJarProjectProperties.class))) {
             ProjectCustomizer.Category services = ProjectCustomizer.Category.create(WEBSERVICES,
                     bundle.getString("LBL_Config_WebServices"), // NOI18N
                     null);
@@ -133,11 +127,11 @@ public class EjbJarCompositePanelProvider implements ProjectCustomizer.Composite
 
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         String nm = category.getName();
-        EjbJarProjectProperties uiProps = (EjbJarProjectProperties) context.lookup(EjbJarProjectProperties.class);
+        EjbJarProjectProperties uiProps = context.lookup(EjbJarProjectProperties.class);
         if (SOURCES.equals(nm)) {
             return new CustomizerSources(uiProps);
         } else if (LIBRARIES.equals(nm)) {
-            CustomizerProviderImpl.SubCategoryProvider prov = (CustomizerProviderImpl.SubCategoryProvider)context.lookup(CustomizerProviderImpl.SubCategoryProvider.class);
+            CustomizerProviderImpl.SubCategoryProvider prov = context.lookup(CustomizerProviderImpl.SubCategoryProvider.class);
             assert prov != null : "Assuming CustomizerProviderImpl.SubCategoryProvider in customizer context";
             return new CustomizerLibraries(uiProps, prov);
         } else if (BUILD.equals(nm)) {
@@ -149,7 +143,7 @@ public class EjbJarCompositePanelProvider implements ProjectCustomizer.Composite
         } else if (RUN.equals(nm)) {
             return new CustomizerRun(uiProps);
         } else if (WEBSERVICES.equals(nm)) {
-            EjbJarProvider ejbJarProvider = (EjbJarProvider) uiProps.getProject().getLookup().lookup(EjbJarProvider.class);
+            EjbJarProvider ejbJarProvider = uiProps.getProject().getLookup().lookup(EjbJarProvider.class);
             FileObject metaInf = ejbJarProvider.getMetaInf();
             List servicesSettings = null;
             if (metaInf != null) {

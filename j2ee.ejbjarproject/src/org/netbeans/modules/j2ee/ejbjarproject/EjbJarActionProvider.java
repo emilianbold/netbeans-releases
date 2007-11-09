@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -113,10 +113,10 @@ class EjbJarActionProvider implements ActionProvider {
     private ReferenceHelper refHelper;
     
     /** Map from commands to ant targets */
-    Map/*<String,String[]>*/ commands;
+    Map<String,String[]> commands;
     
     public EjbJarActionProvider(EjbJarProject project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
-        commands = new HashMap();
+        commands = new HashMap<String,String[]>();
         commands.put(COMMAND_BUILD, new String[] {"dist"}); // NOI18N
         commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
         commands.put(COMMAND_REBUILD, new String[] {"clean", "dist"}); // NOI18N
@@ -187,7 +187,7 @@ class EjbJarActionProvider implements ActionProvider {
                     if (buildFo == null || !buildFo.isValid()) {
                         //The build.xml was deleted after the isActionEnabled was called
                         NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(EjbJarActionProvider.class,
-                                "LBL_No_Build_XML_Found"), NotifyDescriptor.WARNING_MESSAGE);
+                                "LBL_No_Build_XML_Found"), NotifyDescriptor.WARNING_MESSAGE); // NOI18N
                         DialogDisplayer.getDefault().notify(nd);
                     } else {
                         ActionUtils.runTarget(buildFo, targetNames, p);
@@ -205,7 +205,7 @@ class EjbJarActionProvider implements ActionProvider {
      * @return array of targets or null to stop execution; can return empty array
      */
     /*private*/ String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
-        String[] targetNames = (String[])commands.get(command);
+        String[] targetNames = commands.get(command);
         
         //EXECUTION PART
         if (command.equals(COMMAND_RUN_SINGLE)) {
@@ -227,7 +227,7 @@ class EjbJarActionProvider implements ActionProvider {
                     
                     if (!SourceUtils.getMainClasses(file).isEmpty()) {
                         p.setProperty("run.class", clazz); // NOI18N
-                        targetNames = (String[]) commands.get(COMMAND_RUN_SINGLE);
+                        targetNames = commands.get(COMMAND_RUN_SINGLE);
                     } else {
                         NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(EjbJarActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
                         DialogDisplayer.getDefault().notify(nd);
@@ -485,7 +485,7 @@ class EjbJarActionProvider implements ActionProvider {
     
     private boolean isDebugged() {
         
-        J2eeModuleProvider jmp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider jmp = project.getLookup().lookup(J2eeModuleProvider.class);
         ServerDebugInfo sdi = jmp.getServerDebugInfo();
         if (sdi == null) {
             return false;
