@@ -23,6 +23,7 @@
                       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xtest/examples/resources/XTestProject.gif"/>
                       <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xtest.examples.PaintAppProjectIterator"/>
                     </file>
+                    <attr name="position" intvalue="3000"/>
                 </folder>
             </folder>
         </folder>
