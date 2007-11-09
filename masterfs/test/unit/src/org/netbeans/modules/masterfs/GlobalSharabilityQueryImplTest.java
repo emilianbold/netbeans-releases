@@ -59,7 +59,7 @@ public class GlobalSharabilityQueryImplTest extends TestCase {
     private static SharabilityQueryImplementation sq = new GlobalSharabilityQueryImpl();
     private static GlobalVisibilityQueryImpl vq = new GlobalVisibilityQueryImpl() {
         protected String getIgnoredFiles() {
-            return "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$";//NOI18N
+            return "^(CVS|SCCS|vssver.?\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$";//NOI18N
         }
     };
     

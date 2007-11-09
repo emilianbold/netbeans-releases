@@ -258,7 +258,7 @@ public class IDESettings  {
     // PRIVATE METHODS
     
     public String getIgnoredFiles () {
-        return getPreferences().get(PROP_IGNORED_FILES, "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$"); //NOI18N
+        return getPreferences().get(PROP_IGNORED_FILES, "^(CVS|SCCS|vssver.?\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$"); //NOI18N
     }
     
     public void setIgnoredFiles(String ignoredFiles) throws IllegalArgumentException {

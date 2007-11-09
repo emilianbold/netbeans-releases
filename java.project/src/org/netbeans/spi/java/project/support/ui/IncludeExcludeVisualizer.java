@@ -265,7 +265,7 @@ public class IncludeExcludeVisualizer {
         // XXX #95974: VisibilityQuery only works on FileObject, and that would be too slow
         // copied from: org.netbeans.modules.masterfs.GlobalVisibilityQueryImpl
         final Pattern ignoredFiles = Pattern.compile(NbPreferences.root().node("/org/netbeans/core"). // NOI18N
-                get("IgnoredFiles", "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$")); // NOI18N
+                get("IgnoredFiles", "^(CVS|SCCS|vssver.?\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$")); // NOI18N
 
         public void run() {
             File[] _roots;
