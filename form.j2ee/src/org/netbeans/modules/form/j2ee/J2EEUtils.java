@@ -430,6 +430,7 @@ public class J2EEUtils {
             String[] result = new String[entities.size()];
             int count = 0;
             for (FileObject fob : entities) {
+                addSchemaParameter(fob, dbconn.getSchema()); // see issue 121493 and 89092
                 result[count++] = packageName + '.' + fob.getName();
             }
             return result;
@@ -1029,6 +1030,69 @@ public class J2EEUtils {
             Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, eex.getMessage(), eex);
         }
         return properties;
+    }
+
+    /**
+     * Adds schema parameter into Table annotation if it is not present already.
+     * 
+     * @param entity entity to update.
+     * @param schema name of the schema.
+     */
+    private static void addSchemaParameter(FileObject entity, final String schema) {
+        if (schema == null) return;
+        JavaSource source = JavaSource.forFileObject(entity);
+        try {
+            source.runModificationTask(new CancellableTask<WorkingCopy>() {
+                public void run(WorkingCopy wc) throws Exception {
+                    wc.toPhase(JavaSource.Phase.RESOLVED);
+                    CompilationUnitTree cu = wc.getCompilationUnit();
+                    ClassTree clazz = null;
+                    for (Tree typeDecl : cu.getTypeDecls()) {
+                        if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                            ClassTree candidate = (ClassTree) typeDecl;
+                            if (candidate.getModifiers().getFlags().contains(javax.lang.model.element.Modifier.PUBLIC)) {
+                                clazz = candidate;
+                                break;
+                            }
+                        }
+                    }
+                    if (clazz == null) return;
+                    AnnotationTree tableAnn = null;
+                    for (AnnotationTree annotation : clazz.getModifiers().getAnnotations()) {
+                        Tree annotationType = annotation.getAnnotationType();
+                        Element classElement = wc.getTrees().getElement(wc.getTrees().getPath(cu, annotationType));
+                        if ((classElement != null) && ("javax.persistence.Table".equals(classElement.toString()))) { // NOI18N
+                            tableAnn = annotation;
+                            break;
+                        }
+                    }
+                    if (tableAnn == null) return;
+                    ExpressionTree schemaTree = null;
+                    for (ExpressionTree argument : tableAnn.getArguments()) {
+                        if (argument.getKind() == Tree.Kind.ASSIGNMENT) {
+                            AssignmentTree assignment = (AssignmentTree)argument;
+                            if ("schema".equals(assignment.getVariable().toString())) { // NOI18N
+                                schemaTree = assignment;
+                                break;
+                            }
+                        }
+                    }
+                    if (schemaTree == null) {
+                        TreeMaker make = wc.getTreeMaker();
+                        IdentifierTree nameTree = make.Identifier("schema"); // NOI18N
+                        LiteralTree valueTree = make.Literal(schema);
+                        schemaTree = make.Assignment(nameTree, valueTree);
+                        AnnotationTree newTableAnn = make.addAnnotationAttrValue(tableAnn, schemaTree);
+                        wc.rewrite(tableAnn, newTableAnn);
+                    }
+                }
+
+                public void cancel() {
+                }
+            }).commit();
+        } catch (IOException ex) {
+            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+        }
     }
 
 }
