@@ -66,11 +66,13 @@ import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
+import org.openide.ErrorManager;
 import org.openide.actions.CopyAction;
 import org.openide.actions.PasteAction;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
@@ -232,7 +234,6 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
     private class ConfChangeListener implements PropertyChangeListener
     {   
         final Node node;
-        
         private ConfChangeListener(Node n)
         {
             super();
@@ -251,11 +252,12 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                     if (evt.getNewValue() instanceof ProjectConfiguration[]){
                         final List<ProjectConfiguration> nObj=Arrays.asList((ProjectConfiguration[])evt.getNewValue());
                         final List<ProjectConfiguration> oObj=Arrays.asList((ProjectConfiguration[])evt.getOldValue());
-
                         //Add new configurations
                         List<ProjectConfiguration> base=new ArrayList(nObj);
                         base.removeAll(oObj);
                         Node n=null;
+                        ProjectConfiguration acfg=node.getLookup().lookup(J2MEProject.class).getConfigurationHelper().getActiveConfiguration();
+                                
                         for (ProjectConfiguration cfg : base)
                         {
                             //new Configuration
@@ -279,8 +281,7 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                             node.getChildren().add(new Node[] {n});
                             n.setName(cfg.getDisplayName());
                         }
-                        if (n != null)
-                            n.setValue("bold",Boolean.TRUE);
+                            
                         
                         //Remove configurations
                         base=new ArrayList(oObj);
@@ -300,7 +301,7 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                         final ProjectConfiguration nObj=(ProjectConfiguration)evt.getNewValue();
                         final ProjectConfiguration oObj=(ProjectConfiguration)evt.getOldValue();
 
-                        if (oObj!=null && oObj!=nObj)
+                        if (oObj!=nObj)
                         {
                             if (oObj!=null)
                             {
@@ -319,6 +320,34 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                                 {
                                     n.setValue("bold",Boolean.TRUE);
                                     n.setName(nObj.getDisplayName());
+                                }
+                                else
+                                {
+                                    //We must wait until the configuration nodes are updated    
+                                    RequestProcessor.getDefault().post(new Runnable()
+                                    {
+                                        public void run()
+                                        {
+                                            while (true)
+                                            {
+                                                ProjectConfiguration cfg=node.getLookup().lookup(J2MEProject.class).getConfigurationHelper().getActiveConfiguration();
+                                                Node n=node.getChildren().findChild(cfg.getDisplayName());
+                                                if (n != null)
+                                                {
+                                                    n.setValue("bold",Boolean.TRUE);
+                                                    n.setName(n.getDisplayName());
+                                                    break;
+                                                }
+                                                else
+                                                {
+                                                    try {
+                                                        Thread.sleep(100);
+                                                        continue;
+                                                    } catch (InterruptedException ex) {}
+                                                }
+                                            }
+                                        }
+                                    },100);
                                 }
                             }                    
                         }

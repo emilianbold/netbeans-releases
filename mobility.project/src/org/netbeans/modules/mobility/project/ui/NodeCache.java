@@ -169,13 +169,16 @@ class NodeCache implements PropertyChangeListener
         }
         resNode.setValue("gray",gray);
         allNodes.add(resNode);        
-        nodes.put(cfg.getDisplayName(),allNodes);
-        
-        /* we must do clones of node to add it to another branch of the logical view */
-        final ArrayList<Node> list=new ArrayList<Node>(allNodes.size());
-        for (Node node : allNodes)
-            list.add(node.cloneNode());
-        clones.put(cfg.getDisplayName(),list);
+        synchronized (this)
+        {
+            nodes.put(cfg.getDisplayName(),allNodes);
+
+            /* we must do clones of node to add it to another branch of the logical view */
+            final ArrayList<Node> list=new ArrayList<Node>(allNodes.size());
+            for (Node node : allNodes)
+                list.add(node.cloneNode());
+            clones.put(cfg.getDisplayName(),list);
+        }
     }
     
     public void update(final String name)
@@ -188,10 +191,16 @@ class NodeCache implements PropertyChangeListener
             }
         };
         
-        Collection<Node> allNodes;
+        Collection<Node> allBaseNodes,allCloneNodes;
         
-        allNodes=nodes.get(name);
-        if (allNodes == null)
+        synchronized (this)
+        {
+            allBaseNodes=nodes.get(name);
+            /* Nodes for cloned current configuration branch */
+            allCloneNodes=clones.get(name);
+        }
+        
+        if (allBaseNodes == null)
             addNode(cfg);
         else
         {
@@ -199,7 +208,7 @@ class NodeCache implements PropertyChangeListener
             final Collection<Node> resNodes=ConfigurationsProvider.createResourcesNodes(project,cfg);
             final boolean gray = usedLibs(cfg) == null ? true : false;
             /* Nodes for all configurations branch */
-            for (Node resNode : allNodes)
+            for (Node resNode : allBaseNodes)
             {
                 if (resNode.getName().equals("Resources"))
                 {
@@ -220,9 +229,8 @@ class NodeCache implements PropertyChangeListener
                 }
             }
             
-            /* Nodes for cloned current configuration branch */
-            allNodes=clones.get(name);
-            for (Node resNode : allNodes)
+            
+            for (Node resNode : allCloneNodes)
             {
                 if (resNode.getName().equals("Resources"))
                 {
@@ -247,10 +255,13 @@ class NodeCache implements PropertyChangeListener
             List<ProjectConfiguration> newV=Arrays.asList((ProjectConfiguration[])evt.getNewValue());
             HashSet<ProjectConfiguration> set=new HashSet<ProjectConfiguration>(oldV);
             set.removeAll(newV);
-            for (ProjectConfiguration cfg:set)
+            synchronized (this)
             {
-                nodes.remove(cfg.getDisplayName());
-                clones.remove(cfg.getDisplayName());
+                for (ProjectConfiguration cfg:set)
+                {
+                    nodes.remove(cfg.getDisplayName());
+                    clones.remove(cfg.getDisplayName());
+                }
             }
         }    
     }
