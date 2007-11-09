@@ -561,7 +561,12 @@ final public class PersistenceHandler implements PersistenceObserver {
         List<ModeConfig> modeConfigs = new ArrayList<ModeConfig>(modeSet.size());
         for (Iterator<? extends Mode> it = modeSet.iterator(); it.hasNext(); ) {
             ModeImpl modeImpl = (ModeImpl)it.next();
-            modeConfigs.add(getConfigFromMode(modeImpl));
+            //Do not save empty non permanent mode
+            ModeConfig mc = getConfigFromMode(modeImpl);
+            if ((mc.tcRefConfigs.length == 0) && (!mc.permanent)) {
+                continue;
+            }
+            modeConfigs.add(mc);
         }
         wmc.modes = modeConfigs.toArray(new ModeConfig[0]);
         
@@ -665,22 +670,17 @@ final public class PersistenceHandler implements PersistenceObserver {
         List<String> openedTcIDs = mode.getOpenedTopComponentsIDs();
         for(Iterator it = mode.getTopComponentsIDs().iterator(); it.hasNext(); ) {
             String tcID = (String)it.next();
+            //Filter tc we do not want to save
             boolean opened = openedTcIDs.contains(tcID);
             if (opened) {
-                TopComponent tc = getTopComponentForID(tcID,true);
-                if(tc == null || !pm.isTopComponentPersistent(tc)) {
+                if (pm.isTopComponentNonPersistentForID(tcID)) {
                     continue;
                 }
             } else {
-                //If TC is closed and TC instance exists look for persistence type
-                //DO NOT instantiate closed TC as it has bad performance effect.
-                TopComponent tc = getTopComponentForID(tcID,false);
-                if (tc != null) {
-                    if (!isTopComponentPersistentWhenClosed(tc)) {
-                        //We do not want to save closed TC which has persistence type
-                        //PERSISTENCE_ONLY_OPENED or PERSISTENCE_NEVER
-                        continue;
-                    }
+                if (pm.isTopComponentNonPersistentForID(tcID)) {
+                    continue;
+                } else if (pm.isTopComponentPersistentOnlyOpenedForID(tcID)) {
+                    continue;
                 }
             }
             

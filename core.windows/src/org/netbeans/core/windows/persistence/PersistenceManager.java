@@ -159,6 +159,21 @@ public final class PersistenceManager implements PropertyChangeListener {
     /** Contains already used TopComponent ID. It is used to make sure unique
      * ID is created for every TopComponent instance */
     private Set<String> globalIDSet = new HashSet<String>(30);
+
+    /** Contains ids of non persistent TC so we are able to decide if tc is not persistent
+     * during winsys save even if TC instance was gc'ed.
+     * Used to filer unwanted TC during winsys save.
+     * Ids are added when Id is assigned to TC.
+     */
+    private Set<String> topComponentNonPersistentID = new HashSet<String>(30);
+    
+    /** Contains ids of persistent only opened TC so we are able to decide if tc is persistent only opened
+     * during winsys save even if TC instance was gc'ed.
+     * Used to filer unwanted TC during winsys save.
+     * Ids are added during TC deserialization or when Id is assigned to TC when TC
+     * instance is created during runtime eg. when new editor is opened.
+     */
+    private Set<String> topComponentPersistentOnlyOpenedID = new HashSet<String>(30);
     
     /** Map between string ids and weakly hold top components */
     private final Map<String, Reference<TopComponent>> id2TopComponentMap = 
@@ -507,6 +522,9 @@ public final class PersistenceManager implements PropertyChangeListener {
                     synchronized(LOCK_IDS) {
                         topComponent2IDMap.put(tc, stringId);
                         id2TopComponentMap.put(stringId, new TopComponentReference(tc,stringId));
+                        if (tc.getPersistenceType() == TopComponent.PERSISTENCE_ONLY_OPENED) {
+                            topComponentPersistentOnlyOpenedID.add(stringId);
+                        }
                         dataobjectToTopComponentMap.put(dob, stringId);
                     }
                     dob.addPropertyChangeListener(this);
@@ -688,6 +706,36 @@ public final class PersistenceManager implements PropertyChangeListener {
         return true;
     }
     
+    /** Tests if given top component with specified stringId is not persistent.
+     * Test is based only on TC ID. Internal set on ID for non persistent
+     * TC is used so it can be used even if TC was already gc'ed.
+     * This method is used to filter TC from ModeConfig when winsys is saved.
+     * @param stringId TC Id to check
+     * @return true if component is not persistent, false otherwise
+     */
+    public boolean isTopComponentNonPersistentForID (String stringId) {
+        if (topComponentNonPersistentID.contains(stringId)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    /** Tests if given top component with specified stringId is persistent only opened.
+     * Test is based only on TC ID. Internal set on ID for persistent only opened
+     * TC is used so it can be used even if TC was already gc'ed.
+     * This method is used to filter TC from ModeConfig when winsys is saved.
+     * @param stringId TC Id to check
+     * @return true if component is persistent only opened, false otherwise
+     */
+    public boolean isTopComponentPersistentOnlyOpenedForID (String stringId) {
+        if (topComponentPersistentOnlyOpenedID.contains(stringId)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     /** Asks all top components active in the system to save their current state.
      */
     private void saveTopComponents (WindowManagerConfig wmc) {
@@ -851,6 +899,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             topComponentNonPersistent2IDMap.put(tc, srcName);
             id2TopComponentNonPersistentMap.put(srcName, new WeakReference<TopComponent>(tc));
             globalIDSet.add(srcName.toUpperCase(Locale.ENGLISH));
+            topComponentNonPersistentID.add(srcName);
         }
         
         return srcName;
@@ -887,6 +936,9 @@ public final class PersistenceManager implements PropertyChangeListener {
             topComponent2IDMap.put(tc, srcName);
             id2TopComponentMap.put(srcName, new PersistenceManager.TopComponentReference(tc,srcName));
             globalIDSet.add(srcName.toUpperCase(Locale.ENGLISH));
+            if (tc.getPersistenceType() == TopComponent.PERSISTENCE_ONLY_OPENED) {
+                topComponentPersistentOnlyOpenedID.add(srcName);
+            }
         }
         
         return srcName;
