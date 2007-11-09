@@ -101,6 +101,7 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
     private HashMap<String,J2MEPlatform.J2MEProfile> name2profile;
     private ArrayList<JCheckBox> optional;
     private boolean useDefault;
+    private final transient Object lock = new Object();
     
     /** Creates new form CustomizerCompile */
     public CustomizerMIDP() {
@@ -109,63 +110,66 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
         initAll();
     }
     
-    private synchronized void refreshAll() {
-        jPanelConfig.removeAll();
-        jPanelProfile.removeAll();
-        jPanelOptional.removeAll();
-        cfgGroup = new ButtonGroup();
-        profGroup = new ButtonGroup();
-        initAll();
-        initGroupValues(useDefault);
-        jPanelConfig.invalidate();
-        jPanelProfile.invalidate();
-        jPanelOptional.invalidate();
+    private void refreshAll() {
+        synchronized (lock) {
+            jPanelConfig.removeAll();
+            jPanelProfile.removeAll();
+            jPanelOptional.removeAll();
+            cfgGroup = new ButtonGroup();
+            profGroup = new ButtonGroup();
+            initAll();
+            initGroupValues(useDefault);
+            jPanelConfig.invalidate();
+            jPanelProfile.invalidate();
+            jPanelOptional.invalidate();
+        }
     }
     
-    private synchronized void initAll() {
-        optional = new ArrayList<JCheckBox>();
-        name2platform = new HashMap<String,J2MEPlatform>();
-        name2device = new HashMap<String,J2MEPlatform.Device>();
-        name2profile = new HashMap<String,J2MEPlatform.J2MEProfile>();
-        
-        // Read defined platforms and all configurations, profiles and optional packages
-        final JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification(J2MEPlatform.SPECIFICATION_NAME, null));
-        final HashMap<J2MEPlatform.J2MEProfile,J2MEPlatform.J2MEProfile> cfg = new HashMap<J2MEPlatform.J2MEProfile,J2MEPlatform.J2MEProfile>(), 
-        	prof = new HashMap<J2MEPlatform.J2MEProfile,J2MEPlatform.J2MEProfile>(), 
-        	opt = new HashMap<J2MEPlatform.J2MEProfile,J2MEPlatform.J2MEProfile>();
-        for( int i = 0; i < platforms.length; i++ ) {
-            if (platforms[i] instanceof J2MEPlatform) {
-                final J2MEPlatform platform = (J2MEPlatform)platforms[i];
-                if (platform.isValid()) {
-                    name2platform.put(platform.getDisplayName(), platform);
-                    final Profile profiles[] = platform.getSpecification().getProfiles();
-                    for (int j=0; j<profiles.length; j++) {
-                        if (profiles[j] instanceof J2MEPlatform.J2MEProfile) {
-                            J2MEPlatform.J2MEProfile p = (J2MEPlatform.J2MEProfile)profiles[j];
-                            if (J2MEPlatform.J2MEProfile.TYPE_CONFIGURATION.equals(p.getType())) {
-                                p = takeBetter(p, cfg.remove(p));
-                                cfg.put(p, p);
-                            } else if (J2MEPlatform.J2MEProfile.TYPE_PROFILE.equals(p.getType())) {
-                                p = takeBetter(p, prof.remove(p));
-                                prof.put(p, p);
-                            } else if (J2MEPlatform.J2MEProfile.TYPE_OPTIONAL.equals(p.getType())) {
-                                p = takeBetter(p, opt.remove(p));
-                                opt.put(p, p);
+    private void initAll() {
+        synchronized (lock) {
+            optional = new ArrayList<JCheckBox>();
+            name2platform = new HashMap<String,J2MEPlatform>();
+            name2device = new HashMap<String,J2MEPlatform.Device>();
+            name2profile = new HashMap<String,J2MEPlatform.J2MEProfile>();
+
+            // Read defined platforms and all configurations, profiles and optional packages
+            final JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification(J2MEPlatform.SPECIFICATION_NAME, null));
+            final HashMap<J2MEPlatform.J2MEProfile,J2MEPlatform.J2MEProfile> cfg = new HashMap<J2MEPlatform.J2MEProfile,J2MEPlatform.J2MEProfile>(), 
+                    prof = new HashMap<J2MEPlatform.J2MEProfile,J2MEPlatform.J2MEProfile>(), 
+                    opt = new HashMap<J2MEPlatform.J2MEProfile,J2MEPlatform.J2MEProfile>();
+            for( int i = 0; i < platforms.length; i++ ) {
+                if (platforms[i] instanceof J2MEPlatform) {
+                    final J2MEPlatform platform = (J2MEPlatform)platforms[i];
+                    if (platform.isValid()) {
+                        name2platform.put(platform.getDisplayName(), platform);
+                        final Profile profiles[] = platform.getSpecification().getProfiles();
+                        for (int j=0; j<profiles.length; j++) {
+                            if (profiles[j] instanceof J2MEPlatform.J2MEProfile) {
+                                J2MEPlatform.J2MEProfile p = (J2MEPlatform.J2MEProfile)profiles[j];
+                                if (J2MEPlatform.J2MEProfile.TYPE_CONFIGURATION.equals(p.getType())) {
+                                    p = takeBetter(p, cfg.remove(p));
+                                    cfg.put(p, p);
+                                } else if (J2MEPlatform.J2MEProfile.TYPE_PROFILE.equals(p.getType())) {
+                                    p = takeBetter(p, prof.remove(p));
+                                    prof.put(p, p);
+                                } else if (J2MEPlatform.J2MEProfile.TYPE_OPTIONAL.equals(p.getType())) {
+                                    p = takeBetter(p, opt.remove(p));
+                                    opt.put(p, p);
+                                }
                             }
                         }
                     }
                 }
             }
+            platformNames = name2platform.keySet().toArray(new String[name2platform.size()]);
+            Arrays.sort(platformNames);
+            J2MEPlatform.J2MEProfile arr[] = cfg.values().toArray(new J2MEPlatform.J2MEProfile[cfg.size()]);
+            initConfigurations(arr);
+            arr = prof.values().toArray(new J2MEPlatform.J2MEProfile[prof.size()]);
+            initProfiles(arr);
+            arr = opt.values().toArray(new J2MEPlatform.J2MEProfile[opt.size()]);
+            initOptional(arr);
         }
-        platformNames = name2platform.keySet().toArray(new String[name2platform.size()]);
-        Arrays.sort(platformNames);
-        J2MEPlatform.J2MEProfile arr[] = cfg.values().toArray(new J2MEPlatform.J2MEProfile[cfg.size()]);
-        initConfigurations(arr);
-        arr = prof.values().toArray(new J2MEPlatform.J2MEProfile[prof.size()]);
-        initProfiles(arr);
-        arr = opt.values().toArray(new J2MEPlatform.J2MEProfile[opt.size()]);
-        initOptional(arr);
-        
     }
     
     private J2MEPlatform.J2MEProfile takeBetter(final J2MEPlatform.J2MEProfile p1, final J2MEPlatform.J2MEProfile p2) {
@@ -272,103 +276,107 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
         }
     }
     
-    private synchronized void initDevices(final String platformName, final boolean reset) {
-        final J2MEPlatform platform = name2platform.get(platformName);
-        if (platform != null) {
-            props.put(VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.PLATFORM_ACTIVE_DESCRIPTION, useDefault), platform.getDisplayName());
-            props.put(VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.PLATFORM_TYPE, useDefault), platform.getType());
-            final J2MEPlatform.Device[] devices = platform.getDevices();
-            jComboDevice.removeActionListener(this);
-            name2device = new HashMap<String,J2MEPlatform.Device>();
-            for (int i=0; i<devices.length; i++) if (devices[i].isValid()) {
-                name2device.put(devices[i].getName(), devices[i]);
+    private void initDevices(final String platformName, final boolean reset) {
+        synchronized (lock) {
+            final J2MEPlatform platform = name2platform.get(platformName);
+            if (platform != null) {
+                props.put(VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.PLATFORM_ACTIVE_DESCRIPTION, useDefault), platform.getDisplayName());
+                props.put(VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.PLATFORM_TYPE, useDefault), platform.getType());
+                final J2MEPlatform.Device[] devices = platform.getDevices();
+                jComboDevice.removeActionListener(this);
+                name2device = new HashMap<String,J2MEPlatform.Device>();
+                for (int i=0; i<devices.length; i++) if (devices[i].isValid()) {
+                    name2device.put(devices[i].getName(), devices[i]);
+                }
+                String[] devNames = name2device.keySet().toArray(new String[name2device.size()]);
+                Arrays.sort(devNames);
+                vps.register(jComboDevice, devNames, DefaultPropertiesDescriptor.PLATFORM_DEVICE, useDefault);
+                initAllProfiles((String)jComboDevice.getSelectedItem(), reset);
+                jComboDevice.addActionListener(this);
+            } else {
+                jComboDevice.removeAllItems();
+                jComboDevice.setEnabled(false);
+                enableLabels(false);
             }
-            String[] devNames = name2device.keySet().toArray(new String[name2device.size()]);
-            Arrays.sort(devNames);
-            vps.register(jComboDevice, devNames, DefaultPropertiesDescriptor.PLATFORM_DEVICE, useDefault);
-            initAllProfiles((String)jComboDevice.getSelectedItem(), reset);
-            jComboDevice.addActionListener(this);
-        } else {
-            jComboDevice.removeAllItems();
-            jComboDevice.setEnabled(false);
-            enableLabels(false);
         }
     }
     
-    private synchronized void initAllProfiles(final String deviceName, final boolean reset) {
-        final J2MEPlatform.Device device = name2device.get(deviceName);
-        final HashSet<String> profNames = new HashSet<String>();
-        String defaultCfg = null, defaultProf = null;
-        final HashSet<String> defaultOpts = new HashSet<String>();
-        name2profile = new HashMap<String,J2MEPlatform.J2MEProfile>();
-        //collect all available configurations, profiles, and optional packages
-        if (device != null) {
-            final J2MEPlatform.J2MEProfile prof[] = device.getProfiles();
-            for (int i=0; i<prof.length; i++) {
-                profNames.add(prof[i].toString());
-                name2profile.put(prof[i].toString(), prof[i]);
-                if (J2MEPlatform.J2MEProfile.TYPE_CONFIGURATION.equals(prof[i].getType()) && prof[i].isDefault()) {
-                    defaultCfg = prof[i].toString();
-                } else if (J2MEPlatform.J2MEProfile.TYPE_PROFILE.equals(prof[i].getType()) && prof[i].isDefault()) {
-                    defaultProf = prof[i].toString();
-                } else if (J2MEPlatform.J2MEProfile.TYPE_OPTIONAL.equals(prof[i].getType()) && prof[i].isDefault()) {
-                    defaultOpts.add(prof[i].toString());
+    private void initAllProfiles(final String deviceName, final boolean reset) {
+        synchronized (lock) {
+            final J2MEPlatform.Device device = name2device.get(deviceName);
+            final HashSet<String> profNames = new HashSet<String>();
+            String defaultCfg = null, defaultProf = null;
+            final HashSet<String> defaultOpts = new HashSet<String>();
+            name2profile = new HashMap<String,J2MEPlatform.J2MEProfile>();
+            //collect all available configurations, profiles, and optional packages
+            if (device != null) {
+                final J2MEPlatform.J2MEProfile prof[] = device.getProfiles();
+                for (int i=0; i<prof.length; i++) {
+                    profNames.add(prof[i].toString());
+                    name2profile.put(prof[i].toString(), prof[i]);
+                    if (J2MEPlatform.J2MEProfile.TYPE_CONFIGURATION.equals(prof[i].getType()) && prof[i].isDefault()) {
+                        defaultCfg = prof[i].toString();
+                    } else if (J2MEPlatform.J2MEProfile.TYPE_PROFILE.equals(prof[i].getType()) && prof[i].isDefault()) {
+                        defaultProf = prof[i].toString();
+                    } else if (J2MEPlatform.J2MEProfile.TYPE_OPTIONAL.equals(prof[i].getType()) && prof[i].isDefault()) {
+                        defaultOpts.add(prof[i].toString());
+                    }
                 }
             }
-        }
-        //enable/disable configuration radio boxes
-        Component c[] = jPanelConfig.getComponents();
-        for (int i=0; i<c.length; i++) {
-            if (c[i] instanceof JRadioButton) {
-                final JRadioButton rb = (JRadioButton)c[i];
-                vps.register(rb, DefaultPropertiesDescriptor.PLATFORM_CONFIGURATION, useDefault);
-                if (profNames.contains(rb.getActionCommand())) {
-                    rb.setEnabled(!useDefault);
-                } else {
-                    rb.setEnabled(false);
+            //enable/disable configuration radio boxes
+            Component c[] = jPanelConfig.getComponents();
+            for (int i=0; i<c.length; i++) {
+                if (c[i] instanceof JRadioButton) {
+                    final JRadioButton rb = (JRadioButton)c[i];
+                    vps.register(rb, DefaultPropertiesDescriptor.PLATFORM_CONFIGURATION, useDefault);
+                    if (profNames.contains(rb.getActionCommand())) {
+                        rb.setEnabled(!useDefault);
+                    } else {
+                        rb.setEnabled(false);
+                    }
                 }
             }
-        }
-        //correct selection of configuration to default if necessary
-        if (reset && defaultCfg != null) {
-            selectDefault(jPanelConfig, defaultCfg, DefaultPropertiesDescriptor.PLATFORM_CONFIGURATION);
-        }
-        //enable/disable profile radio boxes
-        c = jPanelProfile.getComponents();
-        for (int i=0; i<c.length; i++) {
-            if (c[i] instanceof JRadioButton) {
-                final JRadioButton rb = (JRadioButton)c[i];
-                vps.register(rb, DefaultPropertiesDescriptor.PLATFORM_PROFILE, useDefault);
-                if (profNames.contains(rb.getActionCommand())) {
-                    rb.setEnabled(!useDefault);
-                } else {
-                    rb.setEnabled(false);
+            //correct selection of configuration to default if necessary
+            if (reset && defaultCfg != null) {
+                selectDefault(jPanelConfig, defaultCfg, DefaultPropertiesDescriptor.PLATFORM_CONFIGURATION);
+            }
+            //enable/disable profile radio boxes
+            c = jPanelProfile.getComponents();
+            for (int i=0; i<c.length; i++) {
+                if (c[i] instanceof JRadioButton) {
+                    final JRadioButton rb = (JRadioButton)c[i];
+                    vps.register(rb, DefaultPropertiesDescriptor.PLATFORM_PROFILE, useDefault);
+                    if (profNames.contains(rb.getActionCommand())) {
+                        rb.setEnabled(!useDefault);
+                    } else {
+                        rb.setEnabled(false);
+                    }
                 }
             }
-        }
-        //correct selection of profile to default if necessary
-        if (reset && defaultCfg != null) {
-            selectDefault(jPanelProfile, defaultProf, DefaultPropertiesDescriptor.PLATFORM_PROFILE);
-        }
-        //enable/disable optional package check boxes
-        final Set<String> optValues = getOptionalValues();
-        jPanelOptional.setVisible(false);
-        jPanelOptional.removeAll();
-        for (final JCheckBox cb : optional ) {
-            final String APIname = cb.getActionCommand();
-            final boolean selected = (reset ? defaultOpts : optValues).contains(APIname);
-            if (profNames.contains(APIname)) {
-                jPanelOptional.add(cb, new GridBagConstraints(0, GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-                cb.setEnabled(!useDefault);
-                cb.setSelected(selected);
+            //correct selection of profile to default if necessary
+            if (reset && defaultCfg != null) {
+                selectDefault(jPanelProfile, defaultProf, DefaultPropertiesDescriptor.PLATFORM_PROFILE);
             }
+            //enable/disable optional package check boxes
+            final Set<String> optValues = getOptionalValues();
+            jPanelOptional.setVisible(false);
+            jPanelOptional.removeAll();
+            for (final JCheckBox cb : optional ) {
+                final String APIname = cb.getActionCommand();
+                final boolean selected = (reset ? defaultOpts : optValues).contains(APIname);
+                if (profNames.contains(APIname)) {
+                    jPanelOptional.add(cb, new GridBagConstraints(0, GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+                    cb.setEnabled(!useDefault);
+                    cb.setSelected(selected);
+                }
+            }
+            jPanelOptional.add(new JPanel(), new GridBagConstraints(0, GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.REMAINDER, 1.0, 1.0, GridBagConstraints.NORTHWEST, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, 0));
+            jPanelOptional.setVisible(true);
+            jPanelOptional.repaint();
+            jPanelOptional.validate();
+            saveOptionalAPIs();
+            saveClassPath();
         }
-        jPanelOptional.add(new JPanel(), new GridBagConstraints(0, GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.REMAINDER, 1.0, 1.0, GridBagConstraints.NORTHWEST, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, 0));
-        jPanelOptional.setVisible(true);
-        jPanelOptional.repaint();
-        jPanelOptional.validate();
-        saveOptionalAPIs();
-        saveClassPath();
     }
         
     private Set<String> getOptionalValues() {
@@ -410,63 +418,67 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
         }
     }
     
-    private synchronized void saveOptionalAPIs() {
-        final StringBuffer sb = new StringBuffer();
-        final Component c[] = jPanelOptional.getComponents();
-        for (int i = 0 ; i < c.length - 1 ; i++) {
-            final JCheckBox cb = (JCheckBox)c[i];
-            if (cb.isSelected()) {
-                if (sb.length() > 0) sb.append(',');
-                sb.append(cb.getActionCommand());
+    private void saveOptionalAPIs() {
+        synchronized (lock) {
+            final StringBuffer sb = new StringBuffer();
+            final Component c[] = jPanelOptional.getComponents();
+            for (int i = 0 ; i < c.length - 1 ; i++) {
+                final JCheckBox cb = (JCheckBox)c[i];
+                if (cb.isSelected()) {
+                    if (sb.length() > 0) sb.append(',');
+                    sb.append(cb.getActionCommand());
+                }
             }
+            final String propName = VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.PLATFORM_APIS, useDefault);
+            props.put(propName, sb.toString());
         }
-        final String propName = VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.PLATFORM_APIS, useDefault);
-        props.put(propName, sb.toString());
     }
     
-    private synchronized void saveClassPath() {
-        final StringBuffer classpath = new StringBuffer();
-        Component c[] = jPanelConfig.getComponents();
-        for (int i=0; i<c.length; i++) {
-            if (c[i] instanceof JRadioButton) {
-                final JRadioButton rb = (JRadioButton)c[i];
-                if (rb.isSelected()) {
-                    final J2MEPlatform.J2MEProfile profile = name2profile.get(rb.getActionCommand());
+    private void saveClassPath() {
+        synchronized (lock) {
+            final StringBuffer classpath = new StringBuffer();
+            Component c[] = jPanelConfig.getComponents();
+            for (int i=0; i<c.length; i++) {
+                if (c[i] instanceof JRadioButton) {
+                    final JRadioButton rb = (JRadioButton)c[i];
+                    if (rb.isSelected()) {
+                        final J2MEPlatform.J2MEProfile profile = name2profile.get(rb.getActionCommand());
+                        if (profile != null) {
+                            if (classpath.length() > 0) classpath.append(':');
+                            classpath.append(profile.getClassPath());
+                        }
+                    }
+                }
+            }
+            c = jPanelProfile.getComponents();
+            for (int i=0; i<c.length; i++) {
+                if (c[i] instanceof JRadioButton) {
+                    final JRadioButton rb = (JRadioButton)c[i];
+                    if (rb.isSelected()) {
+                        final J2MEPlatform.J2MEProfile profile = name2profile.get(rb.getActionCommand());
+                        if (profile != null) {
+                            if (classpath.length() > 0) classpath.append(':');
+                            classpath.append(profile.getClassPath());
+                        }
+                    }
+                }
+            }
+            c = jPanelOptional.getComponents();
+            for (int i = 0 ; i < c.length - 1 ; i++) {
+                final JCheckBox cb = (JCheckBox)c[i];
+                if (cb.isSelected()) {
+                    final J2MEPlatform.J2MEProfile profile = name2profile.get(cb.getActionCommand());
                     if (profile != null) {
                         if (classpath.length() > 0) classpath.append(':');
                         classpath.append(profile.getClassPath());
                     }
                 }
             }
+
+            final J2MEPlatform.Device device = name2device.get(jComboDevice.getSelectedItem());
+
+            props.put(VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.PLATFORM_BOOTCLASSPATH, useDefault), device == null ? classpath.toString() : device.sortClasspath(classpath.toString()));
         }
-        c = jPanelProfile.getComponents();
-        for (int i=0; i<c.length; i++) {
-            if (c[i] instanceof JRadioButton) {
-                final JRadioButton rb = (JRadioButton)c[i];
-                if (rb.isSelected()) {
-                    final J2MEPlatform.J2MEProfile profile = name2profile.get(rb.getActionCommand());
-                    if (profile != null) {
-                        if (classpath.length() > 0) classpath.append(':');
-                        classpath.append(profile.getClassPath());
-                    }
-                }
-            }
-        }
-        c = jPanelOptional.getComponents();
-        for (int i = 0 ; i < c.length - 1 ; i++) {
-            final JCheckBox cb = (JCheckBox)c[i];
-            if (cb.isSelected()) {
-                final J2MEPlatform.J2MEProfile profile = name2profile.get(cb.getActionCommand());
-                if (profile != null) {
-                    if (classpath.length() > 0) classpath.append(':');
-                    classpath.append(profile.getClassPath());
-                }
-            }
-        }
-        
-        final J2MEPlatform.Device device = name2device.get(jComboDevice.getSelectedItem());
-        
-        props.put(VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.PLATFORM_BOOTCLASSPATH, useDefault), device == null ? classpath.toString() : device.sortClasspath(classpath.toString()));
     }
     
     /** This method is called from within the constructor to
