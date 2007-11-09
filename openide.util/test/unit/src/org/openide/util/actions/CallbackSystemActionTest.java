@@ -290,12 +290,71 @@ public class CallbackSystemActionTest extends NbTestCase {
             ActionsInfraHid.setActionMap(null);
         }
     }
+    
+    public void testSearchInMultipleMaps () throws Exception {
+        class CounterAction extends AbstractAction {
+            public int cntEnabled;
+            public int cntPerformed;
+            
+            public boolean isEnabled() {
+                cntEnabled++;
+                return true;
+            }
+            
+            public void actionPerformed(ActionEvent ev) {
+                cntPerformed++;
+            }
+        }
+        
+        CounterAction action1 = new CounterAction();
+        CounterAction action2 = new CounterAction();
+        
+        ActionMap actionMap1 = new ActionMap();
+        actionMap1.put(DefaultEditorKit.copyAction, action1);
+        
+        ActionMap actionMap2 = new ActionMap();
+        actionMap2.put(DefaultEditorKit.cutAction, action2);
+        
+        CopyAction copy = (CopyAction)CopyAction.get(CopyAction.class);
+        CutAction cut = (CutAction)CutAction.get(CutAction.class);
+        
+        ActionsInfraHid.setActionMaps(new ActionMap[] {actionMap1, actionMap2});
+        
+        try {
+            assertTrue("Action1 is enabled", copy.isEnabled());
+            assertTrue("Action2 is enabled", cut.isEnabled());
+            assertEquals("isEnabled called once", 1, action1.cntEnabled);
+            assertEquals("isEnabled called once", 1, action2.cntEnabled);
+            copy.setActionPerformer(null);
+            cut.setActionPerformer(null);
+            assertEquals("An enabled is currentlly called again", 2, action1.cntEnabled);
+            assertEquals("An enabled is currentlly called again", 2, action2.cntEnabled);
+        } finally {
+            ActionsInfraHid.setActionMap(null);
+        }
+    }
+    
     private static final class CopyAction extends CallbackSystemAction {
         public Object getActionMapKey() {
             return DefaultEditorKit.copyAction;
         }
         public String getName() {
             return "Copy";
+        }
+        public HelpCtx getHelpCtx() {
+            return null;
+        }
+        protected boolean asynchronous() {
+            return false;
+        }
+    }
+    
+    private static final class CutAction extends CallbackSystemAction {
+        public Object getActionMapKey() {
+            return DefaultEditorKit.cutAction;
+        }
+        public String getName() {
+            return "Cut";
         }
         public HelpCtx getHelpCtx() {
             return null;

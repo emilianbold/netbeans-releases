@@ -42,6 +42,7 @@
 package org.openide.util.actions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import javax.swing.ActionMap;
@@ -60,7 +61,7 @@ public class ActionsInfraHid implements ContextGlobalProvider {
     public ActionsInfraHid() {}
 
     private static final ActionMap EMPTY_MAP = new ActionMap();
-    private static ActionMap currentMap = EMPTY_MAP;
+    private static ActionMap[] currentMaps = new ActionMap[] { EMPTY_MAP };
 
     private static final AMLookup amLookup = new AMLookup();
     
@@ -79,12 +80,21 @@ public class ActionsInfraHid implements ContextGlobalProvider {
     }
 
     public static void setActionMap(ActionMap newMap) {
-        if (newMap == null) {
-            newMap = EMPTY_MAP;
+        setActionMaps(newMap == null ? null : new ActionMap[] { newMap });
+    }
+    
+    public static void setActionMaps(ActionMap... newMaps) {
+        if (newMaps == null) {
+            newMaps = new ActionMap[] { EMPTY_MAP };
         }
-        currentMap = newMap;
+        currentMaps = newMaps;
         amLookup.refresh();
-        Assert.assertEquals(Collections.singleton(currentMap), new HashSet(amResult.allInstances()));
+        checkMapsPropagated();
+    }
+
+    /** Checks if action maps are correctly propagated to the global context lookup result */
+    private static void checkMapsPropagated () {
+        Assert.assertEquals(Arrays.asList(currentMaps), new ArrayList(amResult.allInstances()));
     }
     
     private static final class AMLookup extends ProxyLookup {
@@ -94,7 +104,7 @@ public class ActionsInfraHid implements ContextGlobalProvider {
         public void refresh() {
             //System.err.println("AM.refresh; currentMap = " + currentMap);
             setLookups(new Lookup[] {
-                Lookups.singleton(currentMap),
+                Lookups.fixed(currentMaps),
             });
         }
     }

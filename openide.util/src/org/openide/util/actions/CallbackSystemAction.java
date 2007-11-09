@@ -52,6 +52,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -337,7 +338,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
     private static final class GlobalManager implements LookupListener {
         private static GlobalManager instance;
         private Lookup.Result<ActionMap> result;
-        private Reference<ActionMap> actionMap = new WeakReference<ActionMap>(null);
+        private List<Reference<ActionMap>> actionMaps = new ArrayList<Reference<ActionMap>>(2);
         private final ActionMap survive = new ActionMap();
 
         private GlobalManager() {
@@ -357,8 +358,15 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
         }
 
         public Action findGlobalAction(Object key, boolean surviveFocusChange) {
-            ActionMap map = actionMap.get();
-            Action a = (map == null) ? null : map.get(key);
+            // search action in all action maps from global context
+            Action a = null;
+            for (Reference<ActionMap> ref : actionMaps) {
+                ActionMap am = ref.get();
+                a = am == null ? null : am.get(key);
+                if (a != null) {
+                    break;
+                }
+            }
 
             if (surviveFocusChange) {
                 if (a == null) {
@@ -389,18 +397,34 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
 
         /** Change all that do not survive ActionMap change */
         public void resultChanged(org.openide.util.LookupEvent ev) {
-            ActionMap a = Utilities.actionsGlobalContext().lookup(ActionMap.class);
+            Collection<? extends ActionMap> ams = result.allInstances();
 
             if (err.isLoggable(Level.FINE)) {
-                err.fine("changed map : " + a); // NOI18N
-                err.fine("previous map: " + actionMap.get()); // NOI18N
+                err.fine("changed maps : " + ams); // NOI18N
+                err.fine("previous maps: " + actionMaps); // NOI18N
             }
 
-            if (a == actionMap.get()) {
-                return;
+            // do nothing if maps are actually the same
+            if (ams.size() == actionMaps.size()) {
+                boolean theSame = true;
+                int i = 0;
+                for (Iterator<? extends ActionMap> newMaps = ams.iterator(); newMaps.hasNext(); i++) {
+                    ActionMap oldMap = actionMaps.get(i).get();
+                    if (oldMap == null || oldMap != newMaps.next()) {
+                        theSame = false;
+                        break;
+                    }
+                }
+                if (theSame) {
+                    return;
+                }
             }
 
-            actionMap = new WeakReference<ActionMap>(a);
+            // update actionMaps
+            actionMaps.clear();
+            for (ActionMap actionMap : ams) {
+                actionMaps.add(new WeakReference<ActionMap>(actionMap));
+            }
 
             if (err.isLoggable(Level.FINE)) {
                 err.fine("clearActionPerformers"); // NOI18N
