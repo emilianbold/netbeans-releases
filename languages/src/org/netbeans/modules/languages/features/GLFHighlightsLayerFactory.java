@@ -28,8 +28,6 @@
 package org.netbeans.modules.languages.features;
 
 import javax.swing.text.Document;
-import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
-import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.ZOrder;
@@ -42,7 +40,6 @@ public class GLFHighlightsLayerFactory implements HighlightsLayerFactory {
 
     public HighlightsLayer[] createLayers (Context context) {
         Document document = context.getDocument ();
-        String mimeType = (String) document.getProperty ("mimeType");        
 //        try {
 //            if (LanguagesManager.getDefault ().getLanguage (mimeType).getParser () == null)
 //                return null;

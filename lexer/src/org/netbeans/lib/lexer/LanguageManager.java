@@ -132,6 +132,15 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
     
     public Language<?> findLanguage(String mimeType) {
         assert mimeType != null : "The mimeType parameter can't be null"; //NOI18N
+        
+        // XXX: This hack is here to normalize mime types used by
+        // Tools-Options -> Fonts & Colors for previewing changes done by users
+        if (mimeType.startsWith("test")) { //NOI18N
+            int idx = mimeType.indexOf('_'); //NOI18N
+            assert idx != -1 : "Invalid 'testXXX_' mimeType: " + mimeType; //NOI18N
+            mimeType = mimeType.substring(idx + 1);
+        }
+        
         synchronized(LOCK) {
             WeakReference<Language<?>> ref = langCache.get(mimeType);
             Language<?> lang = ref == null ? null : ref.get();

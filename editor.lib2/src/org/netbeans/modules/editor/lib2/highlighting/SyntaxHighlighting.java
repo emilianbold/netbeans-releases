@@ -149,19 +149,23 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
     // ----------------------------------------------------------------------
 
     private static void dumpSequence(TokenSequence<?> seq, StringBuilder sb) {
-        for(seq.moveStart(); seq.moveNext(); ) {
-            TokenSequence<?> emSeq = seq.embedded();
-            if (emSeq != null) {
-                dumpSequence(emSeq, sb);
-            } else {
-                Token<?> token = seq.token();
-                sb.append("<"); //NOI18N
-                sb.append(String.format("%3s", seq.offset())).append(", "); //NOI18N
-                sb.append(String.format("%3s", seq.offset() + token.length())).append(", "); //NOI18N
-                sb.append(String.format("%+3d", token.length())).append("> : "); //NOI18N
-                sb.append(tokenId(token.id(), true)).append(" : '"); //NOI18N
-                sb.append(tokenText(token));
-                sb.append("'\n"); //NOI18N
+        if (seq == null) {
+            sb.append("Inactive TokenHierarchy"); //NOI18N
+        } else {
+            for(seq.moveStart(); seq.moveNext(); ) {
+                TokenSequence<?> emSeq = seq.embedded();
+                if (emSeq != null) {
+                    dumpSequence(emSeq, sb);
+                } else {
+                    Token<?> token = seq.token();
+                    sb.append("<"); //NOI18N
+                    sb.append(String.format("%3s", seq.offset())).append(", "); //NOI18N
+                    sb.append(String.format("%3s", seq.offset() + token.length())).append(", "); //NOI18N
+                    sb.append(String.format("%+3d", token.length())).append("> : "); //NOI18N
+                    sb.append(tokenId(token.id(), true)).append(" : '"); //NOI18N
+                    sb.append(tokenText(token));
+                    sb.append("'\n"); //NOI18N
+                }
             }
         }
     }
@@ -255,12 +259,17 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             synchronized (SyntaxHighlighting.this) {
                 if (checkVersion()) {
                     if (sequences == null) {
+                        sequences = new ArrayList<TokenSequence<?>>();
+                        
                         // initialize
                         TokenSequence<?> seq = scanner.tokenSequence();
-                        seq.move(startOffset);
-                        sequences = new ArrayList<TokenSequence<?>>();
-                        sequences.add(seq);
-                        state = S_NORMAL;
+                        if (seq != null) {
+                            seq.move(startOffset);
+                            sequences.add(seq);
+                            state = S_NORMAL;
+                        } else {
+                            state = S_DONE;
+                        }
                     }
                 } else {
                     state = S_DONE;

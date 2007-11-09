@@ -469,24 +469,10 @@ public class ParserManagerImpl extends ParserManager {
     }
     
     private Language getLanguage (String mimeType) {
-        // [PENDING] workaround for internal mime type set by options for coloring preview
-        if (mimeType.startsWith("test")) { // NOI18N
-            int length = mimeType.length();
-            for (int x = 4; x < length; x++) {
-                char c = mimeType.charAt(x);
-                if (!(c >= '0' && c <= '9')) {
-                    if (x > 4 && c == '_' && x < length -1) {
-                        mimeType = mimeType.substring(x + 1);
-                    }
-                    break;
-                } // if
-            } // for
-        } // if
-        // end of workaround
         try {
             return LanguagesManager.getDefault ().getLanguage (mimeType);
         } catch (LanguageDefinitionNotFoundException ex) {
-            return Language.create (mimeType);
+            return Language.create (LanguagesManager.normalizeMimeType(mimeType));
         }
     }
     

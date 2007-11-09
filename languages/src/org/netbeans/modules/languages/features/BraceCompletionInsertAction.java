@@ -71,7 +71,6 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
         boolean overwrite
     ) throws BadLocationException {
         try {
-            String mimeType = (String) doc.getProperty ("mimeType");
             TokenHierarchy th = TokenHierarchy.get (doc);
             if (th == null) {
                 super.insertString (doc, dotPos, caret, str, overwrite);
@@ -88,7 +87,7 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
                 if (ts2 == null) break;
                 ts = ts2;
             }
-            mimeType = ts.language ().mimeType ();
+            String mimeType = ts.language ().mimeType ();
             Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
             List<Feature> completes = l.getFeatures ("COMPLETE");
             if (completes == null) {

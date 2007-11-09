@@ -252,29 +252,30 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
     public List<TokenSequence<?>> embeddedTokenSequences(
         int offset, boolean backwardBias
     ) {
-        TokenSequence<?> embedded = tokenSequence();
+        TokenSequence<?> seq = tokenSequence();
         List<TokenSequence<?>> sequences = new ArrayList<TokenSequence<?>>();
 
-        do {
-            TokenSequence<?> seq = embedded;
-            embedded = null;
-
+        while (seq != null) {
             seq.move(offset);
             if (seq.moveNext()) {
                 if (seq.offset() == offset && backwardBias) {
                     if (seq.movePrevious()) {
                         sequences.add(seq);
-                        embedded = seq.embedded();
+                        seq = seq.embedded();
+                    } else {
+                        seq = null;
                     }
                 } else {
                     sequences.add(seq);
-                    embedded = seq.embedded();
+                    seq = seq.embedded();
                 }
             } else if (backwardBias && seq.movePrevious()) {
                 sequences.add(seq);
-                embedded = seq.embedded();
+                seq = seq.embedded();
+            } else {
+                seq = null;
             }
-        } while (embedded != null);
+        }
         
         return sequences;
     }

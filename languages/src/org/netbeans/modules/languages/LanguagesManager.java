@@ -107,8 +107,19 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
     
     private Map<String,Language> mimeTypeToLanguage = new HashMap<String,Language> ();
     
+    // [PENDING, XXX, HACK] workaround for internal mime type set by options for coloring preview
+    public static String normalizeMimeType(String mimeType) {
+        if (mimeType.startsWith("test")) { //NOI18N
+            int idx = mimeType.indexOf('_'); //NOI18N
+            assert idx != -1 : "Invalid 'testXXX_' mimeType: " + mimeType; //NOI18N
+            mimeType = mimeType.substring(idx + 1);
+        }
+        return mimeType;
+    }
+    
     public synchronized Language getLanguage (String mimeType) 
     throws LanguageDefinitionNotFoundException {
+        mimeType = normalizeMimeType(mimeType);
 //        if (mimeType.equals (NBSLanguage.NBS_MIME_TYPE))
 //            return NBSLanguage.getNBSLanguage ();
         if (!mimeTypeToLanguage.containsKey (mimeType)) {

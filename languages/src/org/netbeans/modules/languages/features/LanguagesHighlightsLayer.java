@@ -63,13 +63,17 @@ class LanguagesHighlightsLayer extends AbstractHighlightsContainer {
     }
 
     public HighlightsSequence getHighlights (int startOffset, int endOffset) {
-        return new Highlights (document, startOffset, endOffset);
+        TokenSequence seq = TokenHierarchy.get (document).tokenSequence();
+        if (seq != null) {
+            return new Highlights (seq, startOffset, endOffset); //NOI18N
+        } else {
+            return HighlightsSequence.EMPTY;
+        }
     }
 
     
     private static class Highlights implements HighlightsSequence {
 
-        private Document            document;
         private int                 endOffset;
         private int                 startOffset1;
         private int                 endOffset1;
@@ -78,14 +82,12 @@ class LanguagesHighlightsLayer extends AbstractHighlightsContainer {
         private String              mimeType;
         
         
-        private Highlights (Document document, int startOffset, int endOffset) {
-            this.document = document;
+        private Highlights (TokenSequence tokenSequence, int startOffset, int endOffset) {
+            this.tokenSequence = tokenSequence;
+            this.mimeType = tokenSequence.language().mimeType();
             this.endOffset = endOffset;
             startOffset1 = startOffset;
             endOffset1 = startOffset;
-            TokenHierarchy tokenHierarchy = TokenHierarchy.get (document);
-            tokenSequence = tokenHierarchy.tokenSequence ();
-            mimeType = (String) document.getProperty ("mimeType");
         }
         
         public boolean moveNext () {
