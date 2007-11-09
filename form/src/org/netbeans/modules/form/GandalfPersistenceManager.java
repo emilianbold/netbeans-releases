@@ -3199,11 +3199,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     private void addFormSettings(Map auxValues) {
         FormSettings formSettings = formModel.getSettings();
-        Map settings = formSettings.allSettings();
-        Iterator iter = settings.entrySet().iterator();
+        Map<String,Object> settings = formSettings.allSettings();
+        Iterator<Map.Entry<String,Object>> iter = settings.entrySet().iterator();
         while (iter.hasNext()) {
-            Map.Entry entry = (Map.Entry)iter.next();
-            String key = (String)entry.getKey();
+            Map.Entry<String,Object> entry = iter.next();
+            String key = entry.getKey();
             if (!formSettings.isSessionSetting(key)) {
                 auxValues.put(FORM_SETTINGS_PREFIX + key, entry.getValue());
             }

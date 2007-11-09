@@ -53,7 +53,7 @@ public class FormSettings {
     /** Prefix for session settings. */
     private static final String SESSION_PREFIX = "Session_"; // NOI18N
     private FormModel formModel;
-    private Map settings = new TreeMap();
+    private Map<String,Object> settings = new TreeMap<String,Object>();
 
     FormSettings(FormModel formModel) {
         this.formModel = formModel;
@@ -268,7 +268,7 @@ public class FormSettings {
         return name.startsWith(SESSION_PREFIX);
     }
     
-    Map allSettings() {
+    Map<String,Object> allSettings() {
         return Collections.unmodifiableMap(settings);
     }
 
