@@ -605,7 +605,6 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
                     fireIconChange();
                     fireOpenedIconChange();
                     fireDisplayNameChange(null, null);
-                    project.getWebProjectProperties().save();
                 }
             }
             
