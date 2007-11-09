@@ -79,7 +79,7 @@ public class InPlaceEditLayer extends JPanel
     private FocusListener compFocusListener;
     private ActionListener compActionListener;
 
-    private ArrayList listeners;
+    private java.util.List<FinishListener> listeners;
 
     private Cursor defaultCursor;
 
@@ -307,6 +307,7 @@ public class InPlaceEditLayer extends JPanel
 
         // listening for layer resizing
         layerResizeListener = new ComponentAdapter() {
+            @Override
             public void componentResized(ComponentEvent e) {
                 if (InPlaceEditLayer.this.isVisible())
                     placeInPlaceField();
@@ -315,6 +316,7 @@ public class InPlaceEditLayer extends JPanel
 
         // listening for Escape and Ctrl+Enter
         compKeyListener = new KeyAdapter() {
+            @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
                     finishEditing(false);
@@ -326,6 +328,7 @@ public class InPlaceEditLayer extends JPanel
         
         // listening for focus lost
         compFocusListener = new FocusAdapter() {
+            @Override
             public void focusLost(FocusEvent event) {
                 finishEditing(true);
             }
@@ -576,6 +579,7 @@ public class InPlaceEditLayer extends JPanel
 
     // ----------------
 
+    @Override
     public void requestFocus() {
         if (editingTextComp != null) {
 //            System.out.println("bounds: "+editingTextComp.getBounds()
@@ -590,6 +594,7 @@ public class InPlaceEditLayer extends JPanel
         else super.requestFocus();
     }
 
+    @Override
     public boolean isOpaque() {
         return false;
     }
@@ -602,7 +607,7 @@ public class InPlaceEditLayer extends JPanel
 
     public synchronized void addFinishListener(FinishListener l) {
         if (listeners == null)
-            listeners = new ArrayList();
+            listeners = new ArrayList<FinishListener>();
         listeners.add(l);
     }
 
@@ -612,13 +617,13 @@ public class InPlaceEditLayer extends JPanel
     }
 
     private void fireEditingFinished() {
-        ArrayList targets;
+        java.util.List<FinishListener> targets;
         synchronized (this) {
             if (listeners == null) return;
-            targets = (ArrayList)listeners.clone();
+            targets = new ArrayList<FinishListener>(listeners);
         }
         for (int i=0, n=targets.size(); i < n; i++)
-            ((FinishListener)targets.get(i)).editingFinished(changeDone);
+            targets.get(i).editingFinished(changeDone);
     }
 
     // -----------
@@ -639,6 +644,7 @@ public class InPlaceEditLayer extends JPanel
             super(text);
         }
 
+        @Override
         protected void processKeyEvent(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_TAB || e.getKeyChar() == '\t') {
                 e.consume();
