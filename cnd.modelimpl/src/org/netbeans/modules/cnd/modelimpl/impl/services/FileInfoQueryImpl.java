@@ -27,22 +27,40 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
+import antlr.Token;
+import antlr.TokenStream;
+import antlr.TokenStreamException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindMacrosWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindUnusedBlocksWalker;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.openide.util.Exceptions;
 
 /**
  * implementaion of CsmFileInfoQuery
@@ -59,31 +77,30 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
     }
 
     private List<String> getIncludePaths(CsmFile file, boolean system) {
-            List<String> out = Collections.<String>emptyList();
+        List<String> out = Collections.<String>emptyList();
         if (file instanceof FileImpl) {
             NativeFileItem item = ProjectBase.getCompiledFileItem((FileImpl) file);
             if (item != null) {
-		if( item.getLanguage() == NativeFileItem.Language.C_HEADER ) {
-		    // It's an orphan (otherwise the getCompiledFileItem would return C or C++ item, not header).
+                if (item.getLanguage() == NativeFileItem.Language.C_HEADER) {
+                    // It's an orphan (otherwise the getCompiledFileItem would return C or C++ item, not header).
                     // For headers, NativeFileItem does NOT contain necessary information
                     // (whe parsing, we use DefaultFileItem for headers)
                     // so for headers, we should use project iformation instead
-		    NativeProject  nativeProject = item.getNativeProject();
-		    if( nativeProject != null ) {
+                    NativeProject nativeProject = item.getNativeProject();
+                    if (nativeProject != null) {
                         if (system) {
                             out = nativeProject.getSystemIncludePaths();
                         } else {
                             out = nativeProject.getUserIncludePaths();
                         }
-		    }
-		}
-		else {
+                    }
+                } else {
                     if (system) {
                         out = item.getSystemIncludePaths();
                     } else {
                         out = item.getUserIncludePaths();
                     }
-		}
+                }
             }
         }
         return out;
@@ -114,7 +131,7 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
             return false;
         }
         APT node = apt.getFirstChild();
-        while( node!=null ) {
+        while (node != null) {
             if (node.getType() == APT.Type.CONDITION_CONTAINER) {
                 return true;
             }
@@ -124,8 +141,8 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
         return false;
     }
 
-    public List<CsmOffsetable> getMacroUsages(CsmFile file) {
-        List<CsmOffsetable> out = new ArrayList<CsmOffsetable>();
+    public List<CsmReference> getMacroUsages(CsmFile file) {
+        List<CsmReference> out = Collections.<CsmReference>emptyList();
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
 
@@ -134,10 +151,60 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
                 if (apt != null) {
                     APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, fileImpl.getPreprocHandler());
                     walker.getTokenStream();
-                    out = walker.getBlocks();
+                    out = walker.getCollectedData();
                 }
             } catch (IOException ex) {
                 System.err.println("skip marking macros\nreason:" + ex.getMessage()); //NOI18N
+            }
+        }
+        return out;
+    }
+
+    @SuppressWarnings(value = "empty-statement")
+    public List<CsmReference> getClassFields(CsmFile file) {
+        List<CsmReference> out = new ArrayList<CsmReference>();
+        if (file instanceof FileImpl) {
+            FileImpl csmFile = (FileImpl) file;
+            TokenStream ts = csmFile.getTokenStream();
+            for (CsmOffsetableDeclaration element : csmFile.getDeclarations()) {
+                if (CsmKindUtilities.isMethod(element)) {
+                    CsmFunctionDefinition func = (CsmFunctionDefinition) element;
+                    CsmClass clazz = ((CsmMethod) func.getDeclaration()).getContainingClass();
+                    List<CsmMember> members = clazz.getMembers();
+                    Set<String> fields = new HashSet<String>();
+                    for (Iterator<CsmMember> it = members.iterator(); it.hasNext();) {
+                        CsmMember csmMember = it.next();
+                        if (CsmKindUtilities.isField(csmMember)) {
+                            fields.add(csmMember.getName());
+                        }
+                    }
+
+                    if (fields.size() > 0) {
+                        try {
+                            int offset = func.getBody().getStartOffset();
+                            for (Token next = ts.nextToken(); next != null && next.getType() != CPPTokenTypes.EOF && ((APTToken) next).getOffset() < offset; next = ts.nextToken());
+                            offset = func.getBody().getEndOffset();
+                            for (Token next = ts.nextToken(); next != null && next.getType() != CPPTokenTypes.EOF; next = ts.nextToken()) {
+                                APTToken token = (APTToken) next;
+                                if (fields.contains(next.getText())) {
+                                    CsmReference ref = CsmReferenceResolver.getDefault().findReference(csmFile, token.getOffset());
+                                    if (ref != null && ref.getReferencedObject() instanceof FieldImpl) {
+                                        FieldImpl fi = (FieldImpl) ref.getReferencedObject();
+                                        if (clazz.equals(fi.getContainingClass())) {
+                                            //out.add(Utils.createOffsetable(csmFile, token.getOffset(), token.getEndOffset()));
+                                            out.add(ref);
+                                        }
+                                    }
+                                }
+                                if (token.getOffset() >= offset) {
+                                    break;
+                                }
+                            }
+                        } catch (TokenStreamException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
             }
         }
         return out;

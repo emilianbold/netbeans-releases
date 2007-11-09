@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.openide.util.Lookup;
 
 /**
@@ -76,7 +77,16 @@ public abstract class CsmFileInfoQuery {
      */
     public abstract List<CsmOffsetable> getUnusedCodeBlocks(CsmFile file);
 
-    public abstract List<CsmOffsetable> getMacroUsages(CsmFile file);
+    /**
+     * @return list of macro's usages in the file
+     */
+    public abstract List<CsmReference> getMacroUsages(CsmFile file);
+
+    /**
+     * @return list of class fields usages in the method's body
+     */
+    public abstract List<CsmReference> getClassFields(CsmFile file);
+
     //
     // Implementation of the default query
     //
@@ -96,8 +106,12 @@ public abstract class CsmFileInfoQuery {
             return Collections.<CsmOffsetable>emptyList();
         }
 
-        public List<CsmOffsetable> getMacroUsages(CsmFile file) {
-            return Collections.<CsmOffsetable>emptyList();
+        public List<CsmReference> getMacroUsages(CsmFile file) {
+            return Collections.<CsmReference>emptyList();
+        }
+
+        public List<CsmReference> getClassFields(CsmFile file) {
+            return Collections.<CsmReference>emptyList();
         }
     } 
 }

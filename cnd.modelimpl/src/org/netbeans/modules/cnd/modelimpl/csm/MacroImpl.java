@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 
@@ -94,19 +95,34 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         this(macroName, macroParams, macroBody, null, macroPos);
     }
     
-    public MacroImpl(String macroName, List<String> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos) {
+    /**
+     * constructor to create system macro impl
+     */
+    private MacroImpl(String macroName, String macroBody, CsmFile unresolved) {
+        this(macroName, null, macroBody, unresolved, Utils.createOffsetable(unresolved, 0, 0), true);
+    }
+    
+    public static MacroImpl createSystemMacro(String macroName, String macroBody, CsmFile unresolved) {
+        return new MacroImpl(macroName, macroBody, unresolved);
+    }
+    
+    public MacroImpl(String macroName, List<String> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos, boolean system) {
         super(containingFile, macroPos);
         assert(macroName != null);
         assert(macroName.length() > 0);
         assert(macroBody != null);
         this.name = macroName;
-        this.system = false;
+        this.system = system;
         this.body = macroBody;
         if (macroParams != null) {
             this.params = Collections.unmodifiableList(macroParams);
         } else {
             this.params = null;
         }
+    }
+    
+    public MacroImpl(String macroName, List<String> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos) {
+        this(macroName, macroParams, macroBody, containingFile, macroPos, false);
     }
     
     public List<String> getParameters() {
