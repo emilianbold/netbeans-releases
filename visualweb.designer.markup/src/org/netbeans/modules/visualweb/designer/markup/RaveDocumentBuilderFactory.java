@@ -111,7 +111,11 @@ final class RaveDocumentBuilderFactory {
 //            Trace.trace("insync.markup", e);
             ex.printStackTrace();
         } finally {
-           System.setProperty(PROPERTY_NAME_DOCUMENT_BUILDER_FACTORY, oldValue);
+            if (oldValue == null) {
+                System.clearProperty(PROPERTY_NAME_DOCUMENT_BUILDER_FACTORY);
+            } else {
+                System.setProperty(PROPERTY_NAME_DOCUMENT_BUILDER_FACTORY, oldValue);
+            }
         }
     }
 
