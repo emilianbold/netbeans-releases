@@ -3,5 +3,5 @@ OpenIDE-Module: org.netbeans.modules.editor.bracesmatching/0
 OpenIDE-Module-Install: org/netbeans/modules/editor/bracesmatching/Installer.class
 OpenIDE-Module-Layer: org/netbeans/modules/editor/bracesmatching/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/editor/bracesmatching/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.3
+OpenIDE-Module-Specification-Version: 1.4
 AutoUpdate-Show-In-Client: false

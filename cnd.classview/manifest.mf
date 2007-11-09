@@ -4,6 +4,6 @@ OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Layer: org/netbeans/modules/cnd/classview/resources/layer.xml
 OpenIDE-Module-Install: org/netbeans/modules/cnd/classview/ClassViewInstaller.class
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/cnd/classview/resources/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Specification-Version: 1.3
 AutoUpdate-Show-In-Client: false
 
