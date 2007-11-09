@@ -981,8 +981,7 @@ public class MetaComponentCreator {
             }
             else if (LayoutSupportDelegate.class.isAssignableFrom(layoutClass)) {
                 // LayoutSupportDelegate -> use it directly
-                layoutDelegate = LayoutSupportRegistry.getRegistry(formModel)
-                                     .createSupportInstance(layoutClass);
+                layoutDelegate = LayoutSupportRegistry.createSupportInstance(layoutClass);
             }
         }
         catch (Exception ex) {
