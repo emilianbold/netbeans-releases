@@ -51,26 +51,15 @@ made subject to such option by the copyright holder.
     <target name="findbugs-init">
         <condition property="findbugs.downloaded">
             <and>
-                <available file="lib/annotations.jar"/>
-                <available file="lib/asm-3.0.jar"/>
-                <available file="lib/asm-analysis-3.0.jar"/>
-                <available file="lib/asm-commons-3.0.jar"/>
-                <available file="lib/asm-tree-3.0.jar"/>
-                <available file="lib/asm-util-3.0.jar"/>
-                <available file="lib/asm-xml-3.0.jar"/>
-                <available file="lib/bcel.jar"/>
-                <available file="lib/dom4j-full.jar"/>
                 <available file="lib/findbugs.jar"/>
-                <available file="lib/findbugs-ant.jar"/>
-
                 <available file="plugin/coreplugin.jar"/>
             </and>
         </condition>
         
-        <property name="lib.dir" value="lib"/>
-        <property name="plugin.dir" value="plugin"/>
-        <property name="build.dir" value="build"/>
-        <property name="source.zip" value="findbugs-1.2.1-source.zip"/>
+        <property name="lib.dir" location="lib"/>
+        <property name="plugin.dir" location="plugin"/>
+        <property name="build.dir" location="build"/>
+        <property name="source.zip" location="findbugs-1.2.1-source.zip"/>
     </target>
     
     <target name="findbugs" depends="findbugs-init,-init-proxy" unless="findbugs.downloaded">
@@ -114,7 +103,7 @@ made subject to such option by the copyright holder.
    
     <target name="clean" depends="findbugs-init">
         <delete dir="${lib.dir}"/>
-        <delete dir="plugin"/>
+        <delete dir="${plugin.dir}"/>
         <delete dir="${build.dir}"/>
         <delete file="${source.zip}"/>
     </target>
