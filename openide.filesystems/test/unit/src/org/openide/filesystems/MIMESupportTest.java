@@ -127,7 +127,7 @@ public class MIMESupportTest extends NbTestCase {
         };
         afs.list = new AbstractFileSystem.List() {
             public String[] children(String f) {
-                if (f.equals(""))testUn {
+                if (f.equals("")) {
                     return new String[] {"f"};
                 } else {
                     return null;
