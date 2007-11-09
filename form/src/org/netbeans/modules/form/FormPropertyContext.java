@@ -65,6 +65,9 @@ public interface FormPropertyContext {
      * Initializes property editor for a property - property editors are usually
      * constructed with no parameters, but often needs some context
      * (e.g. FormAwareEditor needs FormModel and FormProperty).
+     * 
+     * @param prEd property editor to initialize.
+     * @param property property.
      */
     public void initPropertyEditor(PropertyEditor prEd, FormProperty property);
 
