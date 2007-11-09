@@ -44,6 +44,7 @@ package org.netbeans.modules.java.source.usages;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -60,6 +61,8 @@ import java.util.regex.Pattern;
 import javax.lang.model.element.ElementKind;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
@@ -68,6 +71,7 @@ import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.DefaultSimilarity;
 import org.apache.lucene.search.Hit;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
@@ -686,7 +690,9 @@ class LuceneIndex extends Index {
     
     private synchronized IndexReader getReader () throws IOException {
         if (this.reader == null) {            
-            this.reader = IndexReader.open(this.directory);
+            //It's important that no Query will get access to original IndexReader
+            //any norms call to it will initialize the HashTable of norms: sizeof (byte) * maxDoc() * max(number of unique fields in document)
+            this.reader = new NoNormsReader(IndexReader.open(this.directory));
         }        
         return this.reader;
     }
@@ -716,6 +722,58 @@ class LuceneIndex extends Index {
         public void lowMemory(LowMemoryEvent event) {
             lowMemory.set(true);
         }        
+    }
+    
+    private static class NoNormsReader extends FilterIndexReader {
+        
+        
+        //@GuardedBy (this)
+        private byte[] norms;
+        
+        public NoNormsReader (final IndexReader reader) {
+            super (reader);
+        }
+
+        @Override
+        public byte[] norms(String field) throws IOException {
+            byte[] norms = fakeNorms ();
+            return norms;
+        }
+
+        @Override
+        public void norms(String field, byte[] norm, int offset) throws IOException {
+            byte[] norms = fakeNorms ();
+            System.arraycopy(norms, 0, norm, offset, norms.length);            
+        }
+
+        @Override
+        public boolean hasNorms(String field) throws IOException {            
+            return false;
+        }
+
+        @Override
+        protected void doSetNorm(int doc, String field, byte norm) throws CorruptIndexException, IOException {            
+            //Ignore
+        }
+
+        @Override
+        protected void doClose() throws IOException {
+            synchronized (this)  {
+                this.norms = null;
+            }
+            super.doClose();
+        }
+                                        
+        /**
+         * Expert: Fakes norms, norms are not needed for Netbeans index.
+         */
+        private synchronized byte[] fakeNorms() {
+            if (this.norms == null) {
+                this.norms = new byte[maxDoc()];
+                Arrays.fill(this.norms, DefaultSimilarity.encodeNorm(1.0f));
+            }
+            return this.norms;
+        }
     }
     
 }

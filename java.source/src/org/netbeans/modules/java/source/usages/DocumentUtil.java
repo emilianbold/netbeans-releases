@@ -309,22 +309,22 @@ class DocumentUtil {
         }
         caseInsensitiveName = simpleName.toLowerCase();         //XXX: I18N, Locale
         Document doc = new Document ();        
-        Field field = new Field (FIELD_BINARY_NAME,fileName,Field.Store.YES, Field.Index.UN_TOKENIZED);
+        Field field = new Field (FIELD_BINARY_NAME,fileName,Field.Store.YES, Field.Index.NO_NORMS);
         doc.add (field);
-        field = new Field (FIELD_PACKAGE_NAME,pkgName,Field.Store.YES, Field.Index.UN_TOKENIZED);
+        field = new Field (FIELD_PACKAGE_NAME,pkgName,Field.Store.YES, Field.Index.NO_NORMS);
         doc.add (field);
         field = new Field (FIELD_TIME_STAMP,DateTools.timeToString(timeStamp,DateTools.Resolution.MILLISECOND),Field.Store.YES,Field.Index.NO);
         doc.add (field);
-        field = new Field (FIELD_SIMPLE_NAME,simpleName, Field.Store.YES, Field.Index.UN_TOKENIZED);
+        field = new Field (FIELD_SIMPLE_NAME,simpleName, Field.Store.YES, Field.Index.NO_NORMS);
         doc.add (field);
-        field = new Field (FIELD_CASE_INSENSITIVE_NAME, caseInsensitiveName, Field.Store.YES, Field.Index.UN_TOKENIZED);
+        field = new Field (FIELD_CASE_INSENSITIVE_NAME, caseInsensitiveName, Field.Store.YES, Field.Index.NO_NORMS);
         doc.add (field);
         for (String reference : references) {
-            field = new Field (FIELD_REFERENCES,reference,Field.Store.YES,Field.Index.UN_TOKENIZED);
+            field = new Field (FIELD_REFERENCES,reference,Field.Store.YES,Field.Index.NO_NORMS);
             doc.add(field);
         }
         if (source != null) {
-            field = new Field (FIELD_SOURCE,source,Field.Store.YES,Field.Index.UN_TOKENIZED);
+            field = new Field (FIELD_SOURCE,source,Field.Store.YES,Field.Index.NO_NORMS);
             doc.add(field);
         }
         return doc;
@@ -332,7 +332,7 @@ class DocumentUtil {
     
     public static Document createRootTimeStampDocument (final long timeStamp) {
         Document doc = new Document ();
-        Field field = new Field (FIELD_RESOURCE_NAME, ROOT_NAME,Field.Store.YES, Field.Index.UN_TOKENIZED);
+        Field field = new Field (FIELD_RESOURCE_NAME, ROOT_NAME,Field.Store.YES, Field.Index.NO_NORMS);
         doc.add (field);        
         field = new Field (FIELD_TIME_STAMP,DateTools.timeToString(timeStamp,DateTools.Resolution.MILLISECOND),Field.Store.YES,Field.Index.NO);
         doc.add (field);
