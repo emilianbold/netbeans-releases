@@ -89,24 +89,30 @@ public class BackgroundImageUrlDialog { //extends URLPanel{
             fileChooser.addChoosableFileFilter(new ImageFilter()) ;
             if ( fileChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
                 File imageFile = fileChooser.getSelectedFile();
-                FileObject imageFO = FileUtil.toFileObject(imageFile);
-                if(imageFO == null) {
-                    //should not happen with Master FS
-                    //assert imageFile != null;
-                    LOGGER.log(Level.WARNING, null, new IllegalStateException("Cannot find FileObject for file " + imageFile.toURL()));
-                    return false;
+                File newImageFile = new File(currDir, imageFile.getName());
+                if (!(imageFile.equals(imageFile) && newImageFile.exists())) {
+
+                    FileObject imageFO = FileUtil.toFileObject(imageFile);
+                    if (imageFO == null) {
+                        //should not happen with Master FS
+                        //assert imageFile != null;
+                        LOGGER.log(Level.WARNING, null, new IllegalStateException("Cannot find FileObject for file " + imageFile.toURL()));
+                        return false;
+                    }
+
+                    FileObject currDirFO = FileUtil.toFileObject(currDir);
+                    if (currDirFO == null) {
+                        //should not happen with Master FS
+                        //assert imageFile != null;
+                        LOGGER.log(Level.WARNING, null, new IllegalStateException("Cannot find FileObject for file " + currDir.toURL()));
+                        return false;
+                    }
+
+                    FileObject newImageFO = imageFO.copy(currDirFO, imageFO.getName(), imageFO.getExt());
+                    imageUrl = newImageFO.getNameExt();
+                } else {
+                    imageUrl = newImageFile.getName();
                 }
-                
-                FileObject currDirFO = FileUtil.toFileObject(currDir);
-                if(currDirFO == null) {
-                    //should not happen with Master FS
-                    //assert imageFile != null;
-                    LOGGER.log(Level.WARNING, null, new IllegalStateException("Cannot find FileObject for file " + currDir.toURL()));
-                    return false;
-                }
-                
-                FileObject newImageFO = imageFO.copy(currDirFO, imageFO.getName(), imageFO.getExt());
-                imageUrl = newImageFO.getNameExt();
                 StringBuffer sb = new StringBuffer();
                 int len = imageUrl.length();
                 for (int i = 0; i < len; i++) {
