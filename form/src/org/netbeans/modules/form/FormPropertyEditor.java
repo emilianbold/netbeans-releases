@@ -65,7 +65,7 @@ public class FormPropertyEditor implements PropertyEditor,
     private boolean valueEdited;
 
     private FormProperty property;
-    private WeakReference propertyEnv;
+    private WeakReference<PropertyEnv> propertyEnv;
 
     private PropertyEditor[] allEditors;
     private PropertyEditor lastCurrentEditor;
@@ -95,7 +95,7 @@ public class FormPropertyEditor implements PropertyEditor,
     }
 
     PropertyEnv getPropertyEnv() {
-        return propertyEnv != null ? (PropertyEnv) propertyEnv.get() : null;
+        return propertyEnv != null ? propertyEnv.get() : null;
     }
 
     PropertyEditor getCurrentEditor() {
@@ -114,7 +114,7 @@ public class FormPropertyEditor implements PropertyEditor,
 
         // we run this as privileged to avoid security problems - because
         // the property change can be fired from untrusted property editor code
-        AccessController.doPrivileged(new PrivilegedAction() {
+        AccessController.doPrivileged(new PrivilegedAction<Object>() {
             public Object run() {
                 FormPropertyEditor.this.firePropertyChange();
                 return null;
@@ -127,7 +127,7 @@ public class FormPropertyEditor implements PropertyEditor,
 
     /**
      * Set(or change) the object that is to be edited.
-     * @param value The new target object to be edited.  Note that this
+     * @param newValue The new target object to be edited.  Note that this
      *     object should not be modified by the PropertyEditor, rather 
      *     the PropertyEditor should create a new object to hold any
      *     modified value.
@@ -241,6 +241,8 @@ public class FormPropertyEditor implements PropertyEditor,
      * as text.
      *
      * @param text  The string to be parsed.
+     * @throws java.lang.IllegalArgumentException when the specified text
+     * does not represent valid value.
      */
     public void setAsText(String text) throws java.lang.IllegalArgumentException {
         PropertyEditor prEd = property.getCurrentEditor();
@@ -430,8 +432,7 @@ public class FormPropertyEditor implements PropertyEditor,
      * Register a listener for the PropertyChange event.  The class will
      * fire a PropertyChange value whenever the value is updated.
      *
-     * @param listener  An object to be invoked when a PropertyChange
-     *		event is fired.
+     * @param l An object to be invoked when a PropertyChange event is fired.
      */
     public void addPropertyChangeListener(PropertyChangeListener l) {
         synchronized (this) {
@@ -444,7 +445,7 @@ public class FormPropertyEditor implements PropertyEditor,
     /**
      * Remove a listener for the PropertyChange event.
      *
-     * @param listener  The PropertyChange listener to be removed.
+     * @param l The PropertyChange listener to be removed.
      */
     public void removePropertyChangeListener(PropertyChangeListener l) {
         if (changeSupport != null)
@@ -465,9 +466,11 @@ public class FormPropertyEditor implements PropertyEditor,
     /** 
      * This method is called by the IDE to pass
      * the environment to the property editor.
+     * 
+     * @param env environment.
      */
     public void attachEnv(PropertyEnv env) {
-        propertyEnv = new WeakReference(env);
+        propertyEnv = new WeakReference<PropertyEnv>(env);
         PropertyEditor prEd = property.getCurrentEditor();
         if (prEd instanceof ExPropertyEditor)
             ((ExPropertyEditor)prEd).attachEnv(env);
@@ -477,11 +480,13 @@ public class FormPropertyEditor implements PropertyEditor,
     // delegating hashCode() and equals(Object) methods to modifiedEditor - for
     // PropertyPanel mapping property editors to PropertyEnv
 
+    @Override
     public int hashCode() {
         PropertyEditor prEd = property.getCurrentEditor();
         return prEd != null ? prEd.hashCode() : super.hashCode();
     }
 
+    @Override
     public boolean equals(Object obj) {
         return obj != null ? hashCode() == obj.hashCode() : false;
     }
