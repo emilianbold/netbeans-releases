@@ -43,6 +43,10 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
 
+    <folder name="WarmUp">
+        <file name="org-netbeans-modules-vmd-midp-java-MidpValidatorWarmUp.instance"/>
+    </folder>
+
     <folder name="Actions">
         <folder name="Tools">
             <file name="org-netbeans-modules-vmd-midp-palette-MidpPaletteManagerAction.instance"/>

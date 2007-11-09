@@ -81,7 +81,7 @@ import org.openide.util.WeakListeners;
  */
 public final class MidpJavaSupport implements Runnable, PropertyChangeListener {
 
-    private static HashMap<String, WeakReference<MidpJavaSupport>> instanceMap;
+    private static HashMap<String, MidpJavaSupport> instanceMap;
     private static RequestProcessor validationRP;
     
     private final ConcurrentLinkedQueue<String> validationQueue;
@@ -133,8 +133,6 @@ public final class MidpJavaSupport implements Runnable, PropertyChangeListener {
             boolean isValid = checkValidity(document.get(), fqnName);
             validationCache.put(fqnName, isValid);
         }
-
-//        fireResolved();
     }
 
     private void registerClassPathListener() {
@@ -178,25 +176,18 @@ public final class MidpJavaSupport implements Runnable, PropertyChangeListener {
         return sourceGroups != null && sourceGroups.length > 0 ? sourceGroups[0] : null;
     }
 
-//    private void fireResolved() {
-//        DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document.get());
-//        String projectID = context.getProjectID();
-//        String projectType = context.getProjectType();
-//        ComponentProducersResolvingRegistry.getDefault().fireProducersChanged(projectID, projectType);
-//    }
-
     // for classpath listener
     public void propertyChange(PropertyChangeEvent evt) {
-        validationCache.clear();
         updateCacheInternally();
-//        fireResolved();
     }
     
-    private void updateCacheInternally() {
+    void updateCacheInternally() {
         if (document.get() == null) {
             return;
         }
         
+        validationCache.clear();
+
         final String projectID = document.get().getDocumentInterface().getProjectID();
         final String projectType = document.get().getDocumentInterface().getProjectType();
         final List<ComponentProducer> producers = new ArrayList<ComponentProducer>();
@@ -279,16 +270,15 @@ public final class MidpJavaSupport implements Runnable, PropertyChangeListener {
      */
     public synchronized static MidpJavaSupport getCache(DesignDocument document) {
         if (instanceMap == null) {
-            instanceMap = new HashMap<String, WeakReference<MidpJavaSupport>>(1);
+            instanceMap = new HashMap<String, MidpJavaSupport>(1);
             validationRP = new RequestProcessor("VMD MIDP ClassPath validation"); // NOI18N
         }
 
         String projectID = document.getDocumentInterface().getProjectID();
-        WeakReference<MidpJavaSupport> reference = instanceMap.get(projectID);
-        MidpJavaSupport instance = reference != null ? reference.get() : null;
+        MidpJavaSupport instance = instanceMap.get(projectID);
         if (instance == null) {
             instance = new MidpJavaSupport(document);
-            instanceMap.put(projectID, new WeakReference<MidpJavaSupport>(instance));
+            instanceMap.put(projectID, instance);
         }
 
         return instance;
