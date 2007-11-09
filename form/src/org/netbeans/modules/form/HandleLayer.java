@@ -891,7 +891,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     }
                     parent = metacont;
                     if (metacont.getLayoutSupport() == null) { // new layout
-                        workingIds = new ArrayList(selectedComps.size());
+                        workingIds = new ArrayList<String>(selectedComps.size());
                     }
                 }
                 workingComps.add(metacomp);
@@ -2258,6 +2258,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             this.modifiers = modifiers;
             init();
         }
+
 
         @Override
         void init() {
