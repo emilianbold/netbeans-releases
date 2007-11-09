@@ -97,6 +97,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToOne;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -176,6 +177,22 @@ public class J2EEUtils {
 
         unit = ProviderUtil.buildPersistenceUnit(puName, provider, connection);
         unit.setTransactionType("RESOURCE_LOCAL"); // NOI18N
+        // Java Embedded DB, see issue 121391
+        if ("org.apache.derby.jdbc.EmbeddedDriver".equals(connection.getDriverClass())) { // NOI18N
+            // Make sure tables are created if they do not exist
+            ProviderUtil.setTableGeneration(unit, Provider.TABLE_GENERATION_CREATE, provider);
+            // Make sure the DB is created if it does not exist
+            if (!dbURL.contains(";create=true")) { // NOI18N
+                if (!dbURL.endsWith(";")) { // NOI18N
+                    dbURL += ";"; // NOI18N
+                }
+                dbURL += "create=true"; // NOI18N
+                Property prop = ProviderUtil.getProperty(unit, provider.getJdbcUrl());
+                if (prop != null) {
+                    prop.setValue(dbURL);
+                }
+            }
+        }
         ProviderUtil.addPersistenceUnit(unit, project);
 
         return unit;
