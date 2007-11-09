@@ -101,6 +101,8 @@ public class GoToDeclarationAction extends BaseAction {
             return false;
         int position = comp.getCaretPosition();
         ASTPath path = node.findPath(position);
+        if (path == null)
+            return false;
         DatabaseContext root = DatabaseManager.getRoot((ASTNode) path.getRoot());
         if (root == null)
             return false;
