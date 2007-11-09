@@ -171,30 +171,74 @@ public final class IncrementSpecificationVersions extends Task {
         switch (stickyLevel) {
             case 1: // trunk
                 if (manifest) {
-                    Matcher m2 = Pattern.compile("([0-9]+\\.)([0-9]+)").matcher(old);
-                    if (m2.matches()) {
-                        nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1);
+                    Matcher mC = Pattern.compile("([0-9]+\\.)([0-9]+)").matcher(old);
+                    Matcher mW1 = Pattern.compile("([0-9]+)").matcher(old);
+                    Matcher mW2 = Pattern.compile("([0-9]+\\.)([0-9]+)\\.([0-9\\.]+)").matcher(old);
+                    if (mC.matches()) {        // Correct e.g 1.0 -> 1.1
+                        nue = mC.group(1) + (Integer.parseInt(mC.group(2)) + 1);
+                    }
+                    else if ( mW1.matches() ) { // Wrong e.g 1 -> 1.1
+                        nue = mW1.group(1) + ".1";
+                    }
+                    else if ( mW2.matches() ) { // Wrong e.g 1.2.4.5.6.7 => 1.3
+                        nue = mW2.group(1) + (Integer.parseInt(mW2.group(2)) + 1);                        
                     }
                 } else {
-                    Matcher m2 = Pattern.compile("([0-9]+\\.)([0-9]+)(\\.0)").matcher(old);
-                    if (m2.matches()) {
-                        nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1) + m2.group(3);
+                    Matcher mC = Pattern.compile("([0-9]+\\.)([0-9]+)(\\.0)").matcher(old);
+                    Matcher mW1 = Pattern.compile("([0-9]+)").matcher(old);
+                    Matcher mW2 = Pattern.compile("([0-9]+\\.)([0-9]+)").matcher(old);
+                    Matcher mW3 = Pattern.compile("([0-9]+\\.)([0-9]+)\\.([0-9\\.]+)").matcher(old);
+                                        
+                    if (mC.matches()) {  // Correct 1.1.0 -> 1.2.0
+                        nue = mC.group(1) + (Integer.parseInt(mC.group(2)) + 1) + mC.group(3);
+                    }
+                    else if (mW1.matches() ) { // Wrong 1 -> 1.1.0
+                        nue = mW1.group(1) + ".1.0";
+                    }
+                    else if (mW2.matches() ) { // Wrong 1.1 -> 1.2.0
+                        nue = mW2.group(1) + (Integer.parseInt(mW2.group(2)) + 1) + ".0";
+                    }                    
+                    else if (mW3.matches() ) { // Wrong 1.2.3.4.5.6 -> 1.3.0
+                        nue = mW3.group(1) + (Integer.parseInt(mW3.group(2)) + 1) + ".0";
                     }
                 }
                 break;
             case 2: // branch
                 if (manifest) {
-                    Matcher m2 = Pattern.compile("([0-9]+\\.[0-9]+\\.)([0-9]+)").matcher(old);
-                    if (m2.matches()) {
-                        nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1);
-                    } else if (old.matches("[0-9]+\\.[0-9]+")) {
-                        nue = old + ".1";
+                    Matcher mC1 = Pattern.compile("([0-9]+\\.[0-9]+\\.)([0-9]+)").matcher(old);
+                    Matcher mC2 = Pattern.compile("([0-9]+\\.[0-9]+)").matcher(old);
+                    Matcher mW1 = Pattern.compile("([0-9]+)").matcher(old);
+                    Matcher mW2 = Pattern.compile("([0-9]+\\.[0-9]+\\.)([0-9]+)\\.([0-9\\.]+)").matcher(old);
+                    if (mC1.matches()) { // Correct 1.2.3 -> 1.2.4
+                        nue = mC1.group(1) + (Integer.parseInt(mC1.group(2)) + 1);
+                    } 
+                    else if (mC2.matches()) { // Correct 1.2 -> 1.2.1
+                        nue = mC2.group(1) + ".1";
                     }
+                    else if ( mW1.matches()) { // Wrong 1 -> 1.0.1
+                        nue = mW1.group(1) + ".0.1";
+                    }
+                    else if ( mW2.matches()) { // Wrong 1.2.3.4.5.6 -> 1.2.4
+                        nue = mW2.group(1) + (Integer.parseInt(mW2.group(2)) + 1);
+                    }
+                    
                 } else {
-                    Matcher m2 = Pattern.compile("([0-9]+\\.[0-9]+\\.)([0-9]+)").matcher(old);
-                    if (m2.matches()) {
-                        nue = m2.group(1) + (Integer.parseInt(m2.group(2)) + 1);
+                    Matcher mC = Pattern.compile("([0-9]+\\.[0-9]+\\.)([0-9]+)").matcher(old);
+                    Matcher mW1 = Pattern.compile("([0-9]+)").matcher(old);                    
+                    Matcher mW2 = Pattern.compile("([0-9]+\\.[0-9]+)").matcher(old);
+                    Matcher mW3 = Pattern.compile("([0-9]+\\.[0-9]+\\.)([0-9]+)\\.([0-9\\.]+)").matcher(old);                    
+                    if (mC.matches()) { // Correct 1.2.3 -> 1.2.4
+                        nue = mC.group(1) + (Integer.parseInt(mC.group(2)) + 1);
                     }
+                    else if ( mW1.matches()) { // Wrong 1 -> 1.0.1
+                        nue = mW1.group(1) + ".0.1";
+                    }
+                    else if ( mW2.matches()) { // Wrong 1.2 -> 1.2.1
+                        nue = mW2.group(1) + ".1";
+                    }
+                    else if ( mW3.matches()) { // Wrong 1.2.3.4.5.6 -> 1.2.4
+                        nue = mW3.group(1) + (Integer.parseInt(mW3.group(2)) + 1);
+                    }                    
                 }
                 break;
             default:
