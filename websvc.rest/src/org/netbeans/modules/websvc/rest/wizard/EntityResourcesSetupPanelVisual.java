@@ -283,7 +283,11 @@ private void resourcePackageComboBoxItemStateChanged(java.awt.event.ItemEvent ev
     
     public boolean valid(WizardDescriptor wizard) {
         AbstractPanel.clearErrorMessage(wizard);
-        if (! Util.isValidPackageName(getResourcePackage())) {
+        SourceGroup[] groups = SourceGroupSupport.getJavaSourceGroups(project);
+        
+        if (groups == null || groups.length < 1) {
+            AbstractPanel.setErrorMessage(wizard, "MSG_NoJavaSourceRoots");
+        } else if (! Util.isValidPackageName(getResourcePackage())) {
             AbstractPanel.setErrorMessage(wizard, "MSG_InvalidResourcePackageName");
             return false;
         } else if (! Util.isValidPackageName(getConverterPackage())) {
@@ -377,16 +381,18 @@ private void resourcePackageComboBoxItemStateChanged(java.awt.event.ItemEvent ev
     
     private void updateSourceGroupPackages() {
         SourceGroup sourceGroup = (SourceGroup)locationComboBox.getSelectedItem();
-        ComboBoxModel model = PackageView.createListView(sourceGroup);
-        if (model.getSize() > 0) {
-            model.setSelectedItem(model.getElementAt(0));
+        if (sourceGroup != null) {
+            ComboBoxModel model = PackageView.createListView(sourceGroup);
+            if (model.getSize() > 0) {
+                model.setSelectedItem(model.getElementAt(0));
+            }
+            resourcePackageComboBox.setModel(model);
+            model = PackageView.createListView(sourceGroup);
+            if (model.getSize() > 0) {
+                model.setSelectedItem(model.getElementAt(0));
+            }
+            converterPackageComboBox.setModel(model);
         }
-        resourcePackageComboBox.setModel(model);
-        model = PackageView.createListView(sourceGroup);
-        if (model.getSize() > 0) {
-            model.setSelectedItem(model.getElementAt(0));
-        }
-        converterPackageComboBox.setModel(model);
     }
     
     private void updatePreview() {

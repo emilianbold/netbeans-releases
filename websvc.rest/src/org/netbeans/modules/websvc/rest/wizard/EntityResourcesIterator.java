@@ -116,16 +116,10 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
  
     public void initialize(TemplateWizard wizard) {
         index = 0;
-        // obtaining target folder
-        Project project = Templates.getProject( wizard );
-        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
-        
         WizardDescriptor.Panel secondPanel = new EntitySelectionPanel(
                 NbBundle.getMessage(EntityResourcesIterator.class, "LBL_EntityClasses"), wizard);
         WizardDescriptor.Panel thirdPanel = new EntityResourcesSetupPanel(
                 NbBundle.getMessage(EntityResourcesIterator.class, "LBL_RestResourcesAndClasses"), wizard);
-        WizardDescriptor.Panel javaPanel = JavaTemplates.createPackageChooser(project, sourceGroups, secondPanel);
-        panels = new WizardDescriptor.Panel[] { javaPanel };
         panels = new WizardDescriptor.Panel[] { secondPanel, thirdPanel };
         String names[] = new String[] {
             NbBundle.getMessage(EntityResourcesIterator.class, "LBL_EntityClasses"),

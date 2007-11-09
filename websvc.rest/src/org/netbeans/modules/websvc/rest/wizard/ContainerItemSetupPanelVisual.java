@@ -531,8 +531,11 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
         String packageName = getPackage();
         String className = classTextField.getText().trim();
         String containerName = containerTextField.getText().trim();
+        SourceGroup[] groups = SourceGroupSupport.getJavaSourceGroups(project);
         
-        if (resourceName.length() == 0 || ! Utilities.isJavaIdentifier(resourceName)) {
+        if (groups == null || groups.length < 1) {
+            AbstractPanel.setErrorMessage(wizard, "MSG_NoJavaSourceRoots");
+        } else if (resourceName.length() == 0 || ! Utilities.isJavaIdentifier(resourceName)) {
             AbstractPanel.setErrorMessage(wizard, "MSG_InvalidResourceName");
             return false;
         } else if (className.length() == 0 || ! Utilities.isJavaIdentifier(className)) {
@@ -699,12 +702,14 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
 
     private void updateSourceGroupPackages() {
         SourceGroup sourceGroup = (SourceGroup)locationComboBox.getSelectedItem();
-        ComboBoxModel model = PackageView.createListView(sourceGroup);
-        if (model.getSelectedItem()!= null && model.getSelectedItem().toString().startsWith("META-INF")
-                && model.getSize() > 1) { // NOI18N
-            model.setSelectedItem(model.getElementAt(1));
+        if (sourceGroup != null) {
+            ComboBoxModel model = PackageView.createListView(sourceGroup);
+            if (model.getSelectedItem()!= null && model.getSelectedItem().toString().startsWith("META-INF")
+                    && model.getSize() > 1) { // NOI18N
+                model.setSelectedItem(model.getElementAt(1));
+            }
+            packageComboBox.setModel(model);
         }
-        packageComboBox.setModel(model);
     }
     
     static boolean isClientControlledPattern(WizardDescriptor settings) {

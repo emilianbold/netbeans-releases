@@ -162,6 +162,9 @@ public class SourceGroupSupport {
     }
 
     public static FileObject getFolderForPackage(SourceGroup sourceGroup, String pgkName, boolean create) throws IOException {
+        if (sourceGroup == null || pgkName == null) {
+            return null;
+        }
         String relativePkgName = pgkName.replace('.', '/');
         FileObject folder = sourceGroup.getRootFolder().getFileObject(relativePkgName);
         if (folder != null) {
@@ -201,7 +204,7 @@ public class SourceGroupSupport {
             return new ArrayList();
         }
         List result = new ArrayList();
-        List sourceRoots = getFileObjects(rootURLs);
+        List sourceRoots = getFileObjects(rootURLs, true);
         for (int i = 0; i < sourceRoots.size(); i++) {
             FileObject sourceRoot = (FileObject) sourceRoots.get(i);
             SourceGroup srcGroup = (SourceGroup) foldersToSourceGroupsMap.get(sourceRoot);
@@ -212,13 +215,13 @@ public class SourceGroupSupport {
         return result;
     }
 
-    private static List/*<FileObject>*/ getFileObjects(URL[] urls) {
+    private static List/*<FileObject>*/ getFileObjects(URL[] urls, boolean quiet) {
         List result = new ArrayList();
         for (int i = 0; i < urls.length; i++) {
             FileObject sourceRoot = URLMapper.findFileObject(urls[i]);
             if (sourceRoot != null) {
                 result.add(sourceRoot);
-            } else {
+            } else if (! quiet) {
                 ErrorManager.getDefault().notify(
                         ErrorManager.INFORMATIONAL,
                         new IllegalStateException("No FileObject found for the following URL: " + urls[i])); //NOI18N

@@ -82,17 +82,17 @@ public class WebRestSupportLookupProvider implements LookupProvider {
             protected void projectOpened() {
                 
                 final RestServicesModel wsModel = RestUtils.getRestServicesMetadataModel(prj);
-                if (wsModel == null) {
-                    throw new IllegalStateException("can't get model");
-                }
-                try {
-                    // make sure REST API jar is included in project compile classpath
-                    RestUtils.addRestApiJar(prj);
-                    new AntFilesHelper(restSupport).initRestBuildExtension();
-                            pcl = new RestServicesChangeListener(wsModel, prj);
-                            wsModel.addPropertyChangeListener(pcl);
-                } catch (java.io.IOException ex) {
-                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+                // note that some sample web project does not have java source root
+                if (wsModel != null) { 
+                    try {
+                        // make sure REST API jar is included in project compile classpath
+                        RestUtils.addRestApiJar(prj);
+                        new AntFilesHelper(restSupport).initRestBuildExtension();
+                                pcl = new RestServicesChangeListener(wsModel, prj);
+                                wsModel.addPropertyChangeListener(pcl);
+                    } catch (java.io.IOException ex) {
+                        Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+                    }
                 }
             }
             
