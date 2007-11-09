@@ -1,4 +1,4 @@
-/*
+ /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
@@ -42,6 +42,7 @@
 package org.netbeans.nbbuild;
 
 import org.netbeans.junit.NbTestCase;
+import static org.netbeans.nbbuild.IncrementSpecificationVersions.*;
 
 /** Test for increments of spec versions.
  *
@@ -59,16 +60,114 @@ public class IncrementSpecificationVersionsTest extends NbTestCase {
     protected void tearDown() throws Exception {
     }
 
-    public void testIncrement() {
-        String res;
-
-        assertIncrement("1.0", false, true, "1.1");
-        assertIncrement("1.0", true, true, "1.0.1");
-        assertIncrement("1.0", false, false, null);
-        assertIncrement("1.0", true, false, null);
-        assertIncrement("1.0.0", false, false, "1.1.0");
-        assertIncrement("1.0.0", true, false, "1.0.1");
+    
+    public void testIncrementTrunkManifest() throws Exception {        
+        boolean manifest = true;
+        int sticky = 1;
+        
+        assertEquals("1.1", increment("1.0", sticky, manifest));
+        assertEquals("1.2", increment("1.1", sticky, manifest));
+        assertEquals("2.3", increment("2.2", sticky, manifest));
+        assertEquals("3.12", increment("3.11", sticky, manifest));
+        assertEquals("203.215", increment("203.214", sticky, manifest));
+        
+        assertEquals("1.9", increment("1.8.1", sticky, manifest));
+        assertEquals("1.10", increment("1.9.1", sticky, manifest));        
+        assertEquals("1.1", increment("1.0", sticky, manifest));
+        assertEquals("1.7", increment("1.6", sticky, manifest));
+        assertEquals("2.4", increment("2.3.8.1", sticky, manifest));
+        assertEquals("2.4", increment("2.3.8.1.5", sticky, manifest));
+        assertEquals("2.4", increment("2.3.8.1.5.6", sticky, manifest));
+        
+        assertEquals("1.1", increment("1", sticky, manifest));
+        assertEquals("100.1", increment("100", sticky, manifest));
+                
     }
+    
+    public void testIncrementTrunk() throws Exception {
+        boolean manifest = false;
+        int sticky = 1;
+                
+        assertEquals("1.1.0", increment("1.0.0", sticky, manifest));
+        assertEquals("1.2.0", increment("1.1.0", sticky, manifest));
+        assertEquals("2.3.0", increment("2.2.0", sticky, manifest));
+        assertEquals("3.12.0", increment("3.11.0", sticky, manifest));
+        assertEquals("203.215.0", increment("203.214.0", sticky, manifest));
+
+        assertEquals("1.9.0", increment("1.8.1", sticky, manifest));
+        assertEquals("1.10.0", increment("1.9.1", sticky, manifest));        
+        assertEquals("1.1.0", increment("1.0", sticky, manifest));
+        assertEquals("1.7.0", increment("1.6", sticky, manifest));
+        assertEquals("2.4.0", increment("2.3.8.1", sticky, manifest));
+        assertEquals("2.4.0", increment("2.3.8.1.5", sticky, manifest));
+        assertEquals("2.4.0", increment("2.3.8.1.5.6", sticky, manifest));
+                
+        assertEquals("1.1.0", increment("1", sticky, manifest));
+        assertEquals("100.1.0", increment("100", sticky, manifest));
+    }
+
+    
+    public void testIncrementBranchManifest() throws Exception {
+        boolean manifest = true;
+        int sticky = 2;
+        
+        assertEquals("1.0.1", increment("1.0", sticky, manifest));
+        assertEquals("1.1.1", increment("1.1", sticky, manifest));
+        assertEquals("2.2.1", increment("2.2", sticky, manifest));
+        assertEquals("3.11.1", increment("3.11", sticky, manifest));
+        assertEquals("203.214.1", increment("203.214", sticky, manifest));
+        
+        assertEquals("1.0.5", increment("1.0.4", sticky, manifest));
+        assertEquals("1.1.7", increment("1.1.6", sticky, manifest));
+        assertEquals("2.2.8", increment("2.2.7", sticky, manifest));
+        assertEquals("3.11.10", increment("3.11.9", sticky, manifest));
+        assertEquals("203.214.1001", increment("203.214.1000", sticky, manifest));
+        
+        assertEquals("2.3.9", increment("2.3.8.1", sticky, manifest));
+        assertEquals("2.3.9", increment("2.3.8.1.5", sticky, manifest));
+        assertEquals("2.3.9", increment("2.3.8.1.5.6", sticky, manifest));
+                
+        assertEquals("1.0.1", increment("1", sticky, manifest));
+        assertEquals("100.0.1", increment("100", sticky, manifest));
+        
+    }
+
+    public void testIncrementBranch() throws Exception {
+        boolean manifest = false;
+        int sticky = 2;
+        
+        assertEquals("1.0.1", increment("1.0", sticky, manifest));
+        assertEquals("1.1.1", increment("1.1", sticky, manifest));
+        assertEquals("2.2.1", increment("2.2", sticky, manifest));
+        assertEquals("3.11.1", increment("3.11", sticky, manifest));
+        assertEquals("203.214.1", increment("203.214", sticky, manifest));
+                
+        assertEquals("1.0.1", increment("1.0.0", sticky, manifest));
+        assertEquals("1.1.1", increment("1.1.0", sticky, manifest));
+        assertEquals("2.2.1", increment("2.2.0", sticky, manifest));
+        assertEquals("3.11.1", increment("3.11.0", sticky, manifest));
+        assertEquals("203.214.1", increment("203.214.0", sticky, manifest));
+                
+        assertEquals("2.3.9", increment("2.3.8.1", sticky, manifest));
+        assertEquals("2.3.9", increment("2.3.8.1.5", sticky, manifest));
+        assertEquals("2.3.9", increment("2.3.8.1.5.6", sticky, manifest));
+                
+        assertEquals("1.0.1", increment("1", sticky, manifest));
+        assertEquals("100.0.1", increment("100", sticky, manifest));
+        
+    }
+    
+    // Old behavior
+//    public void testIncrement() {
+//        String res;
+//
+//        assertIncrement("1.0", false, true, "1.1");
+//        assertIncrement("1.0", true, true, "1.0.1");
+//        assertIncrement("1.0", false, false, null);
+//        assertIncrement("1.0", true, false, null);
+//        assertIncrement("1.0.0", false, false, "1.1.0");
+//        assertIncrement("1.0.0", true, false, "1.0.1");
+//    }
     
     public void testIncrementLevel4() {
         String res;
