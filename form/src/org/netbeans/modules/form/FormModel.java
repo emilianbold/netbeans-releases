@@ -126,6 +126,9 @@ public class FormModel
      * of the form class in source java file). It is used for initializing
      * the top meta component, and is also presented as the top component
      * in designer and inspector.
+     * 
+     * @param formClass form base class.
+     * @throws java.lang.Exception if anything goes wrong.
      */
     public void setFormBaseClass(Class<?> formClass) throws Exception {
         if (formBaseClass != null)
@@ -278,6 +281,8 @@ public class FormModel
     /**
      * Returns list of all components in the model. A new List instance is
      * created. The order of the components is random.
+     * 
+     * @return list of components in the model.
      */
     public java.util.List<RADComponent> getComponentList() {
         return new ArrayList<RADComponent>(idToComponents.values());
@@ -287,6 +292,8 @@ public class FormModel
      * Returns list of all components in the model. A new instance of list is
      * created and the components are added to the list in the traversal order
      * (used e.g. by code generator or persistence manager).
+     * 
+     * @return list of components in the model.
      */
     public java.util.List<RADComponent> getOrderedComponentList() {
         java.util.List<RADComponent> list = new ArrayList<RADComponent>(idToComponents.size());
@@ -297,6 +304,8 @@ public class FormModel
     /**
      * Returns an unmodifiable collection of all components in the model
      * in random order.
+     * 
+     * @return list of components in the model.
      */
     public Collection<RADComponent> getAllComponents() {
         return Collections.unmodifiableCollection(idToComponents.values());
@@ -370,7 +379,12 @@ public class FormModel
 
     /** Adds a new component to given (non-visual) container in the model. If
      * the container is not specified, the component is added to the
-     * "other components". */
+     * "other components".
+     * 
+     * @param metacomp component to add.
+     * @param parentContainer parent of the added component.
+     * @param newlyAdded is newly added?
+     */
     public void addComponent(RADComponent metacomp,
                              ComponentContainer parentContainer,
                              boolean newlyAdded)
@@ -392,7 +406,13 @@ public class FormModel
     }
 
     /** Adds a new visual component to given container managed by the old
-     * layout support. */
+     * layout support.
+     * 
+     * @param metacomp component to add.
+     * @param parentContainer parent of the added component.
+     * @param constraints layout constraints.
+     * @param newlyAdded is newly added?
+     */
     public void addVisualComponent(RADVisualComponent metacomp,
                                    RADVisualContainer parentContainer,
                                    Object constraints,
@@ -780,7 +800,13 @@ public class FormModel
     }
 
     /** Fires an event informing about changing layout manager of a container.
-     * An undoable edit is created and registered automatically. */
+     * An undoable edit is created and registered automatically.
+     * 
+     * @param metacont container whose layout has been changed.
+     * @param oldLayout old layout.
+     * @param newLayout new layout.
+     * @return event that has been fired.
+     */
     public FormModelEvent fireContainerLayoutExchanged(
                               RADVisualContainer metacont,
                               LayoutSupportDelegate oldLayout,
@@ -801,7 +827,14 @@ public class FormModel
     }
 
     /** Fires an event informing about changing a property of container layout.
-     * An undoable edit is created and registered automatically. */
+     * An undoable edit is created and registered automatically.
+     * 
+     * @param metacont container whose layout has been changed.
+     * @param propName name of the layout property.
+     * @param oldValue old value of the property.
+     * @param newValue new value of the property.
+     * @return event that has been fired.
+     */
     public FormModelEvent fireContainerLayoutChanged(
                               RADVisualContainer metacont,
                               String propName,
@@ -828,7 +861,14 @@ public class FormModel
     }
 
     /** Fires an event informing about changing a property of component layout
-     * constraints. An undoable edit is created and registered automatically. */
+     * constraints. An undoable edit is created and registered automatically.
+     * 
+     * @param metacomp component whose layout property has been changed.
+     * @param propName name of the layout property.
+     * @param oldValue old value of the property.
+     * @param newValue new value of the property.
+     * @return event that has been fired.
+     */
     public FormModelEvent fireComponentLayoutChanged(
                               RADVisualComponent metacomp,
                               String propName,
@@ -854,7 +894,12 @@ public class FormModel
     }
 
     /** Fires an event informing about adding a component to the form.
-     * An undoable edit is created and registered automatically. */
+     * An undoable edit is created and registered automatically.
+     * 
+     * @param metacomp component that has been added.
+     * @param addedNew is newly added?
+     * @return event that has been fired.
+     */
     public FormModelEvent fireComponentAdded(RADComponent metacomp,
                                              boolean addedNew)
     {
@@ -873,7 +918,15 @@ public class FormModel
     }
 
     /** Fires an event informing about removing a component from the form.
-     * An undoable edit is created and registered automatically. */
+     * An undoable edit is created and registered automatically.
+     * 
+     * @param metacomp component that has been removed.
+     * @param metacont container from which the component was removed.
+     * @param index index of the component in the container.
+     * @param removedFromModel determines whether the component has been
+     * removed from the model.
+     * @return event that has been fired.
+     */
     public FormModelEvent fireComponentRemoved(RADComponent metacomp,
                                                ComponentContainer metacont,
                                                int index,
@@ -894,7 +947,12 @@ public class FormModel
     }
 
     /** Fires an event informing about reordering components in a container.
-     * An undoable edit is created and registered automatically. */
+     * An undoable edit is created and registered automatically.
+     * 
+     * @param metacont container whose subcomponents has been reordered.
+     * @param perm permutation describing the change in order.
+     * @return event that has been fired.
+     */
     public FormModelEvent fireComponentsReordered(ComponentContainer metacont,
                                                   int[] perm)
     {
@@ -915,7 +973,13 @@ public class FormModel
     }
 
     /** Fires an event informing about changing a property of a component.
-     * An undoable edit is created and registered automatically. */
+     * An undoable edit is created and registered automatically.
+     * @param metacomp component whose property has been changed.
+     * @param propName name of the changed property.
+     * @param oldValue old value of the property.
+     * @param newValue new value of the property.
+     * @return event that has been fired.
+     */
     public FormModelEvent fireComponentPropertyChanged(RADComponent metacomp,
                                                        String propName,
                                                        Object oldValue,
@@ -960,7 +1024,14 @@ public class FormModel
     }
 
     /** Fires an event informing about changing a synthetic property of
-     * a component. An undoable edit is created and registered automatically. */
+     * a component. An undoable edit is created and registered automatically.
+     * 
+     * @param metacomp component whose synthetic property has been changed.
+     * @param propName name of the synthetic property that has been changed.
+     * @param oldValue old value of the property.
+     * @param newValue new value of the property.
+     * @return event that has been fired.
+     */
     public FormModelEvent fireSyntheticPropertyChanged(RADComponent metacomp,
                                                        String propName,
                                                        Object oldValue,
@@ -986,7 +1057,14 @@ public class FormModel
 
     /** Fires an event informing about attaching a new event to an event handler
      * (createdNew parameter indicates whether the event handler was created
-     * first). An undoable edit is created and registered automatically. */
+     * first). An undoable edit is created and registered automatically.
+     * 
+     * @param event event for which the handler was created.
+     * @param handler name of the event handler.
+     * @param bodyText body of the event handler.
+     * @param createdNew newly created event handler?
+     * @return event that has been fired.
+     */
     public FormModelEvent fireEventHandlerAdded(Event event,
                                                 String handler,
                                                 String bodyText,
@@ -1008,7 +1086,13 @@ public class FormModel
     /** Fires an event informing about detaching an event from event handler
      * (handlerDeleted parameter indicates whether the handler was deleted as
      * the last event was detached). An undoable edit is created and registered
-     * automatically. */
+     * automatically.
+     * 
+     * @param event event for which the handler was removed.
+     * @param handler removed event handler.
+     * @param handlerDeleted was deleted?
+     * @return event that has been fired.
+     */
     public FormModelEvent fireEventHandlerRemoved(Event event,
                                                   String handler,
                                                   boolean handlerDeleted)
@@ -1027,7 +1111,12 @@ public class FormModel
     }
 
     /** Fires an event informing about renaming an event handler. An undoable
-     * edit is created and registered automatically. */
+     * edit is created and registered automatically.
+     * 
+     * @param oldHandlerName old name of the event handler.
+     * @param newHandlerName new name of the event handler.
+     * @return event that has been fired.
+     */
     public FormModelEvent fireEventHandlerRenamed(String oldHandlerName,
                                                   String newHandlerName)
     {
@@ -1044,7 +1133,11 @@ public class FormModel
         return ev;
     }
 
-    /** Fires an event informing about general form change. */
+    /** Fires an event informing about general form change.
+     * 
+     * @param immediately determines whether the change should be fire immediately.
+     * @return event that has been fired.
+     */
     public FormModelEvent fireFormChanged(boolean immediately) {
         t("firing form change"); // NOI18N
 
