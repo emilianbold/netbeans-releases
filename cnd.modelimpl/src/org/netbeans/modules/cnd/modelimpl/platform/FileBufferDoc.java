@@ -97,6 +97,7 @@ public class FileBufferDoc extends AbstractFileBuffer {
         }
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         if (listeners.getListenerCount() == 0)
         {
@@ -117,6 +118,7 @@ public class FileBufferDoc extends AbstractFileBuffer {
         listeners.add(ChangeListener.class, listener);
     }
     
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         listeners.remove(ChangeListener.class, listener);
         if (listeners.getListenerCount() == 0)
