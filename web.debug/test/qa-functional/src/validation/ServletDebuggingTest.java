@@ -58,6 +58,7 @@ import org.netbeans.jellytools.modules.debugger.actions.StepOverAction;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.junit.NbTestSuite;
 
 /** Test of web application debugging. Manual test specification is here:
@@ -89,6 +90,7 @@ public class ServletDebuggingTest extends JellyTestCase {
     }
     
     /** Print test name and initialize status bar tracer. */
+    @Override
     public void setUp() {
         System.out.println("########  "+getName()+"  #######");
         stt = MainWindowOperator.getDefault().getStatusTextTracer();
@@ -102,6 +104,7 @@ public class ServletDebuggingTest extends JellyTestCase {
     }
     
     /** Stops status bar tracer. */
+    @Override
     public void tearDown() {
         stt.stop();
     }
@@ -144,6 +147,7 @@ public class ServletDebuggingTest extends JellyTestCase {
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/DivideServlet");
         stt.waitText("DivideServlet.java:"+line); //NOI18N
         // set sources from TestFreeformLibrary to be used for debugging
+        JemmyProperties.setCurrentTimeout("JMenuOperator.PushMenuTimeout", 60000);
         SourcesOperator so = SourcesOperator.invoke();
         so.useSource("TestFreeformLibrary"+File.separator+"src1", true); // NOI18N
         so.useSource("TestFreeformLibrary"+File.separator+"src2", true); // NOI18N
