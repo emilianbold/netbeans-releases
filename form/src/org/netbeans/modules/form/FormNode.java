@@ -166,7 +166,7 @@ public class FormNode extends AbstractNode implements FormCookie {
 
     // Special children class - to be implemented in FormNode descendants (if
     // they know their set of children nodes and can update them).
-    protected abstract static class FormNodeChildren extends Children.Keys {
+    protected abstract static class FormNodeChildren extends Children.Keys<Object> {
         protected void updateKeys() {}
     }
 
