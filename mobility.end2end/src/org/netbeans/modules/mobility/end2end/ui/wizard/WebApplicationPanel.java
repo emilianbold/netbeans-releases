@@ -1101,7 +1101,7 @@ final public class WebApplicationPanel extends JPanel
                 setText(item.getDisplayName());
                 setIcon(item.getIcon());
             } else {
-                setText(value.toString());
+                setText(value == null ? "" : value.toString()); //NOI18N
                 setIcon(null);
             }
             if (isSelected) {
