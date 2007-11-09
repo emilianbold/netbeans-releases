@@ -29,7 +29,7 @@
     <!-- ========= -->
 
     <target name="qa-functional-compiler">
-        <buildTests srcdir="qa-functional/src" compileexcludes="**/data/**">
+        <buildTests srcdir="qa-functional/src" compileexcludes="**/data/**, **/testwizard/**">
             <classpath>
                 <pathelement location="../../jemmy/builds/jemmy.jar"/>                    
                 <pathelement location="${xtest.home}/lib/junit.jar"/>                    

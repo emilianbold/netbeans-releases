@@ -376,7 +376,9 @@ public class Utils {
         System.setProperty("nbi.utils.log.to.console", "false");
         System.setProperty("user.home", data.getWorkDirCanonicalPath());
 
-        NbTestCase.assertNotNull("Determine build number", Utils.determineBuildNumber(data));
+        //there is no build nuber for RC1
+        //NbTestCase.assertNotNull("Determine build number", Utils.determineBuildNumber(data));
+        data.setBuildNumber(null);
         NbTestCase.assertEquals("Get installer", Utils.OK, Utils.getInstaller(data));
         NbTestCase.assertEquals("Extract bundle", Utils.OK, Utils.extractBundle(data));
         NbTestCase.assertEquals("Load class", Utils.OK, Utils.loadClasses(data));
