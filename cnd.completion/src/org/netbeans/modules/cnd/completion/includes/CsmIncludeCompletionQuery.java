@@ -110,14 +110,16 @@ public class CsmIncludeCompletionQuery {
         if (dir != null && dir.exists()) {
             File[] list = filtered ?  dir.listFiles(new MyFileFilter(HDataLoader.getInstance().getExtensions())) :
                                     dir.listFiles(new DefFileFilter());
-            String relFileName;
-            for (File curFile : list) {
-                relFileName = curFile.getName();
-                CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(
-                        substitutionOffset, relFileName, parentFolderPresentation, childSubDir,
-                        system, highPriority, curFile.isDirectory(), true);
-                if (!results.containsKey(relFileName)) {
-                    results.put(relFileName, item);
+            if (list != null) {
+                String relFileName;
+                for (File curFile : list) {
+                    relFileName = curFile.getName();
+                    CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(
+                            substitutionOffset, relFileName, parentFolderPresentation, childSubDir,
+                            system, highPriority, curFile.isDirectory(), true);
+                    if (!results.containsKey(relFileName)) {
+                        results.put(relFileName, item);
+                    }
                 }
             }
         }        
