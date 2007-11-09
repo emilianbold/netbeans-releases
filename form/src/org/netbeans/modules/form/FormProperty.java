@@ -202,17 +202,29 @@ public abstract class FormProperty extends Node.Property {
     }
 
     /** Gets the real value of this property directly from the target object.
+     * 
+     * @return real value value of this property directly from the target object.
+     * @throws java.lang.IllegalAccessException when there is an access problem.
+     * @throws java.lang.reflect.InvocationTargetException when there is an invocation problem.
      */
     public abstract Object getTargetValue() throws IllegalAccessException,
                                                    InvocationTargetException;
 
     /** Sets the real property value directly to the target object.
+     * 
+     * @param value 
+     * @throws java.lang.IllegalAccessException when there is an access problem.
+     * @throws java.lang.IllegalArgumentException when the specified value is not valid.
+     * @throws java.lang.reflect.InvocationTargetException when there is an invocation problem.
      */
     public abstract void setTargetValue(Object value) throws IllegalAccessException,
                                                       IllegalArgumentException,
                                                       InvocationTargetException;
 
     /** Gets the value of the property.
+     * 
+     * @throws java.lang.IllegalAccessException when there is an access problem.
+     * @throws java.lang.reflect.InvocationTargetException when there is an invocation problem.
      */
     public Object getValue() throws IllegalAccessException,
                                     InvocationTargetException {
@@ -227,6 +239,11 @@ public abstract class FormProperty extends Node.Property {
     }
 
     /** Sets the property value.
+     * 
+     * @param value property value.
+     * @throws java.lang.IllegalAccessException when there is an access problem.
+     * @throws java.lang.IllegalArgumentException when the specified value is not valid.
+     * @throws java.lang.reflect.InvocationTargetException when there is an invocation problem.
      */
     public void setValue(Object value) throws IllegalAccessException,
                                               IllegalArgumentException,
@@ -346,6 +363,10 @@ public abstract class FormProperty extends Node.Property {
     /** This method gets the real value of the property. This is a support
      * for special "design values" that hold additional information besides
      * the real value that can be set directly to target object.
+     * 
+     * @return real value of the property.
+     * @throws java.lang.IllegalAccessException when there is an access problem.
+     * @throws java.lang.reflect.InvocationTargetException when there is an invocation problem.
      */
     public final Object getRealValue() throws IllegalAccessException,
                                               InvocationTargetException {
@@ -355,6 +376,9 @@ public abstract class FormProperty extends Node.Property {
     /** This method "extracts" the real value from the given object.
      * FormDesignValue is recognized by default. Subclasses may override
      * this method to provide additional conversions.
+     * 
+     * @param value value that should be possibly extracted.
+     * @return real value.
      */
     protected Object getRealValue(Object value) {
         while (value instanceof FormDesignValue) {
@@ -391,6 +415,9 @@ public abstract class FormProperty extends Node.Property {
     }
 
     /** Restores the property to its default value.
+     * 
+     * @throws java.lang.IllegalAccessException when there is an access problem.
+     * @throws java.lang.reflect.InvocationTargetException when there is an invocation problem.
      */
     @Override
     public void restoreDefaultValue() throws IllegalAccessException,
@@ -449,6 +476,9 @@ public abstract class FormProperty extends Node.Property {
      * (If there is no cached value here, nothing is set to target object.)
      * This may be useful when target object was re-created and needs to be
      * initialized in accordance with current properties.
+     * 
+     * @throws java.lang.IllegalAccessException when there is an access problem.
+     * @throws java.lang.reflect.InvocationTargetException when there is an invocation problem.
      */
     public void reinstateTarget() throws IllegalAccessException,
                                          InvocationTargetException {
@@ -472,6 +502,9 @@ public abstract class FormProperty extends Node.Property {
      * object. This may be useful when property needs to be initialized
      * with existing target object. But this approach doesn't work well with
      * bound and derived properties...
+     * 
+     * @throws java.lang.IllegalAccessException when there is an access problem.
+     * @throws java.lang.reflect.InvocationTargetException when there is an invocation problem.
      */
     public void reinstateProperty() throws IllegalAccessException,
                                            InvocationTargetException {
@@ -520,6 +553,9 @@ public abstract class FormProperty extends Node.Property {
     /** Tests whether this property is marked as "changed". This method returns
      * true if the value of the property is different from the default value
      * and if it is accessible and replicable (readable and writeable property).
+     * 
+     * @return <code>true</code> if the property was changed,
+     * returns <code>false</code> otherwise.
      */
     public boolean isChanged() {
         if (valueChanged && valueSet) { // update the changed flag
@@ -533,6 +569,8 @@ public abstract class FormProperty extends Node.Property {
     }
 
     /** Sets explicitly the flag indicating changed property.
+     * 
+     * @param changed determines whether this property was changed.
      */
     public void setChanged(boolean changed) {
         valueChanged = changed;
@@ -566,6 +604,8 @@ public abstract class FormProperty extends Node.Property {
 
     /** Gets the currently selected property editor (from multiple editors
      * managed by FormPropertyEditor).
+     * 
+     * @return current property editor.
      */
     public final PropertyEditor getCurrentEditor() {
         if (currentEditor == null) {
@@ -578,6 +618,8 @@ public abstract class FormProperty extends Node.Property {
 
     /** Sets the current property editor that will be used for this property
      * by FormPropertyEditor.
+     * 
+     * @param newEditor current property editor.
      */
     public final void setCurrentEditor(PropertyEditor newEditor) {
         if (newEditor != currentEditor) {
@@ -601,6 +643,8 @@ public abstract class FormProperty extends Node.Property {
      * This editor is taken as default by FormPropertyEditor.
      * Subclasses should override this method if they provide a special
      * editor for this property.
+     * 
+     * @return property editor explicitly designated for this property.
      */
     public PropertyEditor getExpliciteEditor() {
         return null;
@@ -611,6 +655,8 @@ public abstract class FormProperty extends Node.Property {
 
     /** Gets the java code initializing the property value. It is obtained from
      * current property editor. Example: "Button 1"
+     * 
+     * @return initialization string.
      */
     public String getJavaInitializationString() {
         try {
@@ -669,13 +715,16 @@ public abstract class FormProperty extends Node.Property {
      * Gets the write method setting the property. 
      * Used by {@link JavaCodeGenerator}.
      *
-     */   
+     * @return write method.
+     */
     protected Method getWriteMethod() {
 	return null;
     }
     
     /** Gets the code to be generated before the property setter code
      * (on separate line).
+     * 
+     * @return pre-initialization code.
      */
     public String getPreCode() {
         return preCode;
@@ -683,6 +732,8 @@ public abstract class FormProperty extends Node.Property {
 
     /** Gets the code to be generated after the property setter code
      * (on separate line).
+     * 
+     * @return post-initialization code.
      */
     public String getPostCode() {
         return postCode;
@@ -690,6 +741,8 @@ public abstract class FormProperty extends Node.Property {
 
     /** Sets the code to be generated before the property setter code
      * (on separate line).
+     * 
+     * @param value pre-initialization code.
      */
     public void setPreCode(String value) {
         preCode = value;
@@ -697,6 +750,8 @@ public abstract class FormProperty extends Node.Property {
 
     /** Sets the code to be generated after the property setter code
      * (on separate line).
+     * 
+     * @param value post-initialization code.
      */
     public void setPostCode(String value) {
         postCode = value;
