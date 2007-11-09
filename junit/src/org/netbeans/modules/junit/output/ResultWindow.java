@@ -124,14 +124,15 @@ public final class ResultWindow extends TopComponent {
         accessibleContext.setAccessibleDescription(
                 NbBundle.getMessage(getClass(), "ACSD_TestResults"));   //NOI18N
     }
-    
+
     /**
      */
     void addDisplayComponent(Component displayComp) {
         assert EventQueue.isDispatchThread();
-        
+
         removeAll();
         addView(displayComp);
+        revalidate();
     }
     
     /**
