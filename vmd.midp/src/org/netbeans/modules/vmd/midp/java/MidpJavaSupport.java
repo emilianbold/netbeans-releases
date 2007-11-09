@@ -44,6 +44,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import java.util.Collection;
@@ -64,7 +65,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
+import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.Debug;
+import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.openide.filesystems.FileObject;
@@ -117,6 +120,10 @@ public final class MidpJavaSupport implements Runnable, PropertyChangeListener {
     }
 
     public void run() {
+        if (document.get() == null) {
+            return;
+        }
+        
         while (true) {
             if (validationQueue.isEmpty()) {
                 isValidationRunning.set(false);
@@ -131,6 +138,10 @@ public final class MidpJavaSupport implements Runnable, PropertyChangeListener {
     }
 
     private void registerClassPathListener() {
+        if (document.get() == null) {
+            return;
+        }
+        
         final ClasspathInfo info = getClasspathInfo(ProjectUtils.getProject(document.get()));
         if (info == null) {
             Debug.warning("Can't get ClasspathInfo for project"); // NOI18N
@@ -177,7 +188,43 @@ public final class MidpJavaSupport implements Runnable, PropertyChangeListener {
     // for classpath listener
     public void propertyChange(PropertyChangeEvent evt) {
         validationCache.clear();
+        updateCacheInternally();
 //        fireResolved();
+    }
+    
+    private void updateCacheInternally() {
+        if (document.get() == null) {
+            return;
+        }
+        
+        final String projectID = document.get().getDocumentInterface().getProjectID();
+        final String projectType = document.get().getDocumentInterface().getProjectType();
+        final List<ComponentProducer> producers = new ArrayList<ComponentProducer>();
+        
+        final DescriptorRegistry registry = DescriptorRegistry.getDescriptorRegistry(projectType, projectID);
+        registry.readAccess(new Runnable() {
+
+            public void run() {
+                producers.addAll(registry.getComponentProducers());
+            }
+        });
+        
+        final ClasspathInfo info = getClasspathInfo(ProjectUtils.getProject(document.get()));
+        if (info != null) {
+            try {
+                JavaSource.create(info).runWhenScanFinished(new Task<CompilationController>() {
+                    
+                    public void run(CompilationController cc) throws Exception {
+                        for (ComponentProducer componentProducer : producers) {
+                            componentProducer.checkValidity(document.get(), true);
+                        }
+                    }
+                }, true);
+            } catch (IOException ex) {
+                Debug.warning(ex);
+            }
+        }
+        
     }
 
     /**
