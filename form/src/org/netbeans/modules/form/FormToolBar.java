@@ -149,7 +149,7 @@ class FormToolBar extends JToolBar {
         JToolBar.Separator separator3 = new JToolBar.Separator();
         separator3.setOrientation(JSeparator.VERTICAL);
 
-        TestAction testAction = (TestAction) SystemAction.get(TestAction.class);
+        TestAction testAction = SystemAction.get(TestAction.class);
         JButton testButton = (JButton) testAction.getToolbarPresenter();
         testButton.addMouseListener(listener);
         initButton(testButton);
@@ -270,6 +270,7 @@ class FormToolBar extends JToolBar {
         menu.show(this, p.x, p.y);
     }
     
+    @Override
     public String getUIClassID() {
         // For GTK and Aqua look and feels, we provide a custom toolbar UI
         if (UIManager.get("Nb.Toolbar.ui") != null) { // NOI18N
@@ -310,7 +311,7 @@ class FormToolBar extends JToolBar {
             if (nodes.length == 0)
                 return false;
 
-            PaletteItem item = (PaletteItem) nodes[0].getCookie(PaletteItem.class);
+            PaletteItem item = nodes[0].getCookie(PaletteItem.class);
             PaletteUtils.selectItem( item );
             return true;
         }
@@ -325,6 +326,7 @@ class FormToolBar extends JToolBar {
         public void popupMenuCanceled(PopupMenuEvent e) {
         }
         
+        @Override
         public void mousePressed(MouseEvent e) {
             if (e.getSource() == paletteButton) {
                 showMenu = !paletteButton.isSelected();
@@ -332,6 +334,7 @@ class FormToolBar extends JToolBar {
         }
 
         /** Reacts on right mouse button up - showing toolbar's popup menu. */
+        @Override
         public void mouseReleased(MouseEvent e) {
             if (SwingUtilities.isRightMouseButton(e)
                   && formDesigner.getDesignerMode() == FormDesigner.MODE_SELECT)
