@@ -260,6 +260,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     }
 
     // RefactoringElementImplementation (registered via RefactoringElementsBag.addFileChange)
+    @Override
     public void undoChange() {
         if (previewElement != null && !previewElement.isEnabled()) {
             return;
