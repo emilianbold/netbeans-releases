@@ -395,9 +395,9 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             if (instance.rememberPassword() ) {
                 String password = instance.getPassword();
                 
-                LOGGER.log(Level.INFO, "Password is null, saving it as an empty string");
                 
                 if ( password == null ) {
+                    LOGGER.log(Level.INFO, "Password is null, saving it as an empty string");
                     password = "";
                 }
                 
