@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.form.ComponentChooserEditor;
 import org.netbeans.modules.form.FormEditor;
+import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.PropertyModifier;
 import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.RADProperty;
@@ -177,7 +178,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
             Object[] enumValues = new Object[3*names.length];
             for (int i=0; i<names.length; i++) {
                 enumValues[3*i] = enumValues[3*i+1] = names[i];
-                enumValues[3*i+2] = '\"' + names[i] + '\"';
+                enumValues[3*i+2] = '\"' + FormUtils.escapeCharactersInString(names[i]) + '\"';
             }
             return new EnumEditor(enumValues);
         }
