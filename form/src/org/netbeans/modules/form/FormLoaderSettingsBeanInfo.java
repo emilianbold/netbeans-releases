@@ -65,6 +65,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
     /** Descriptor of valid properties
      * @return array of properties
      */
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
             PropertyDescriptor[] desc = new PropertyDescriptor[] {
@@ -276,7 +277,12 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
         }
     }
 
-    /** Returns the FormLoaderSettings' icon */
+    /**
+     * Returns the FormLoaderSettings' icon.
+     * 
+     * @param type icon type.
+     */
+    @Override
     public Image getIcon(int type) {
         return Utilities.loadImage(
                    type == java.beans.BeanInfo.ICON_COLOR_16x16
@@ -284,6 +290,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                    iconURL : icon32URL);
     }
 
+    @Override
     public BeanDescriptor getBeanDescriptor() {
         BeanDescriptor retval = new BeanDescriptor(FormLoaderSettings.class , null );
         retval.setDisplayName(NbBundle.getMessage(FormLoaderSettings.class, "CTL_FormSettings")); // NOI18N
