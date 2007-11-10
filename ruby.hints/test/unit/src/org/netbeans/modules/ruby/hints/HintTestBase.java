@@ -331,6 +331,37 @@ public abstract class HintTestBase extends RubyTestBase {
     protected void findHints(NbTestCase test, Rule hint, String relFilePath, String caretLine) throws Exception {
         findHints(test, hint, relFilePath, null, caretLine);
     }
+    
+    protected void findHints(Rule hint, String relFilePath,
+            String selStartLine, String selEndLine) throws Exception {
+        FileObject fo = getTestFile(relFilePath);
+        String text = read(fo);
+
+        assert selStartLine != null;
+        assert selEndLine != null;
+        
+        int selStartOffset = -1;
+        int lineDelta = selStartLine.indexOf("^");
+        assertTrue(lineDelta != -1);
+        selStartLine = selStartLine.substring(0, lineDelta) + selStartLine.substring(lineDelta + 1);
+        int lineOffset = text.indexOf(selStartLine);
+        assertTrue(lineOffset != -1);
+
+        selStartOffset = lineOffset + lineDelta;
+        
+        int selEndOffset = -1;
+        lineDelta = selEndLine.indexOf("^");
+        assertTrue(lineDelta != -1);
+        selEndLine = selEndLine.substring(0, lineDelta) + selEndLine.substring(lineDelta + 1);
+        lineOffset = text.indexOf(selEndLine);
+        assertTrue(lineOffset != -1);
+
+        selEndOffset = lineOffset + lineDelta;
+
+        String caretLine = text.substring(selStartOffset, selEndOffset) + "^";
+        
+        findHints(this, hint, relFilePath, caretLine);
+    }
 
     // TODO - rename to "checkHints"
     protected void findHints(NbTestCase test, Rule hint, FileObject fileObject, String caretLine) throws Exception {
@@ -351,6 +382,37 @@ public abstract class HintTestBase extends RubyTestBase {
         } else {
             assertDescriptionMatches(relFilePath, annotatedSource, true, ".hints");
         }
+    }
+
+    protected void applyHint(NbTestCase test, Rule hint, String relFilePath,
+            String selStartLine, String selEndLine, String fixDesc) throws Exception {
+        FileObject fo = getTestFile(relFilePath);
+        String text = read(fo);
+
+        assert selStartLine != null;
+        assert selEndLine != null;
+        
+        int selStartOffset = -1;
+        int lineDelta = selStartLine.indexOf("^");
+        assertTrue(lineDelta != -1);
+        selStartLine = selStartLine.substring(0, lineDelta) + selStartLine.substring(lineDelta + 1);
+        int lineOffset = text.indexOf(selStartLine);
+        assertTrue(lineOffset != -1);
+
+        selStartOffset = lineOffset + lineDelta;
+        
+        int selEndOffset = -1;
+        lineDelta = selEndLine.indexOf("^");
+        assertTrue(lineDelta != -1);
+        selEndLine = selEndLine.substring(0, lineDelta) + selEndLine.substring(lineDelta + 1);
+        lineOffset = text.indexOf(selEndLine);
+        assertTrue(lineOffset != -1);
+
+        selEndOffset = lineOffset + lineDelta;
+
+        String caretLine = text.substring(selStartOffset, selEndOffset) + "^";
+        
+        applyHint(test, hint, relFilePath, caretLine, fixDesc);
     }
 
     protected void applyHint(NbTestCase test, Rule hint, String relFilePath,
