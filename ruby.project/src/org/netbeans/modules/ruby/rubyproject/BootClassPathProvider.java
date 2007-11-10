@@ -71,48 +71,29 @@ public class BootClassPathProvider implements ClassPathProvider {
     
     public ClassPath findClassPath(FileObject file, String type) {
         // See if the file is under the Ruby libraries
-        if (RubyInstallation.getInstance().isSystemFile(file)) {
-            return getRubyClassPaths(file, type);
+        FileObject systemRoot = RubyInstallation.getInstance().getSystemRoot(file);
+        if (systemRoot != null) {
+            return getRubyClassPaths(file, type, systemRoot);
         }
         
         return null;
     }
     
-    private ClassPath getRubyClassPaths(FileObject file, String type) {
-            // Default provider - do this for things like Ruby library files
-               synchronized (this) {
-                    ClassPath cp = null;
-                    if (file.isFolder()) {
-                        Reference ref = (Reference) this.sourceClassPathsCache.get (file);
-                        if (ref == null || (cp = (ClassPath)ref.get()) == null ) {
-                            cp = ClassPathSupport.createClassPath(new FileObject[] {file});
-                            this.sourceClassPathsCache.put(file, new WeakReference<ClassPath>(cp));
-                        }
-                    }
-                    else {
-                        //Reference ref = (Reference) this.sourceRootsCache.get (file);
-                        //FileObject sourceRoot = null;
-                        //if (ref == null || (sourceRoot = (FileObject)ref.get()) == null ) {
-                        //    sourceRoot = getRootForFile (file, TYPE_JAVA);
-                        //    if (sourceRoot == null) {
-                        //        return null;
-                        //    }
-                        //    this.sourceRootsCache.put (file, new WeakReference(sourceRoot));
-                        //}
-                        //if (!sourceRoot.isValid()) {
-                        //    this.sourceClasPathsCache.remove(sourceRoot);
-                        //}
-                        //else {
-                        //    ref = (Reference) this.sourceClasPathsCache.get(sourceRoot);
-                        //    if (ref == null || (cp = (ClassPath)ref.get()) == null ) {
-                        //        cp = ClassPathSupport.createClassPath(new FileObject[] {sourceRoot});
-                        //        this.sourceClasPathsCache.put (sourceRoot, new WeakReference(cp));
-                        //    }
-                        //}
-                        return null;
-                    }
-                    return cp;                                        
+    private ClassPath getRubyClassPaths(FileObject file, String type, FileObject systemRoot) {
+        // Default provider - do this for things like Ruby library files
+        synchronized (this) {
+            ClassPath cp = null;
+            if (!file.isFolder()) {
+                file = systemRoot;
+            }
+            if (file.isFolder()) {
+                Reference ref = (Reference) this.sourceClassPathsCache.get (file);
+                if (ref == null || (cp = (ClassPath)ref.get()) == null ) {
+                    cp = ClassPathSupport.createClassPath(new FileObject[] {file});
+                    this.sourceClassPathsCache.put(file, new WeakReference<ClassPath>(cp));
                 }
+            }
+            return cp;                                        
+        }
     }
-    
 }

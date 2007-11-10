@@ -773,11 +773,12 @@ public class RubyInstallation {
         return null;
     }
     
-    /** Return true iff the given file is a "system" file - e.g. it's part
+    /** Return non-null iff the given file is a "system" file - e.g. it's part
      * of the Ruby 1.8 libraries, or the Java support libraries, or the user's rubygems,
      * or something under $GEM_HOME...
+     * @return The actual root the in the system the file is under.
      */
-    public boolean isSystemFile(FileObject file) {
+    public FileObject getSystemRoot(FileObject file) {
         // See if the file is under the Ruby libraries
         FileObject rubyLibFo = getRubyLibFo();
         FileObject rubyStubs = getRubyStubs();
@@ -790,15 +791,15 @@ public class RubyInstallation {
 
         while (file != null) {
             if (file == rubyLibFo || file == rubyStubs || file == gemHome) {
-                return true;
+                return file;
             }
             
             file = file.getParent();
         }
 
-        return false;
+        return null;
     }
-
+    
     public String getRake() {
         if (rake == null) {
             rake = findGemExecutable("rake"); // NOI18N
