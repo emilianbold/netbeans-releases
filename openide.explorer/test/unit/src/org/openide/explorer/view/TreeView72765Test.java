@@ -81,7 +81,10 @@ public final class TreeView72765Test extends NbTestCase {
         return true;
     }
 
-
+    @Override
+    protected int timeOut() {
+        return 30000;
+    }
 
     public void testRedrawWhenOtherThreadHasChildrenLock() throws InterruptedException {
 
