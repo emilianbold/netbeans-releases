@@ -382,7 +382,10 @@ public final class JavaSource {
             EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
             
             if (!(ec instanceof CloneableEditorSupport)) {
-                return null;
+                //allow creation of JavaSource for .class files:
+                if (!("application/x-class-file".equals(FileUtil.getMIMEType(fileObject)) || "class".equals(fileObject.getExt()))) {
+                    return null;
+                }
             }
         } catch (FileStateInvalidException ex) {
             LOGGER.log(Level.FINE, null, ex);
