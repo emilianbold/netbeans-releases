@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.web.core.syntax;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -250,16 +249,8 @@ public class SimplifiedJSPServlet {
     }
     
     private void processIncludedFile(String filePath) {
-        // FileObject.getFileObject() doesn't handle .. in relative path
-        File file = new File(FileUtil.toFile(fobj.getParent()), filePath);
-        FileObject includedFile = null;
+        FileObject includedFile = JspUtils.getFileObject(doc, filePath);
         
-        try{
-             includedFile = FileUtil.toFileObject(file.getCanonicalFile());
-        } catch (IOException e){
-            //ignore, file name may be invalid
-        }
-
         if (includedFile != null && includedFile.canRead()) {
 
             try {

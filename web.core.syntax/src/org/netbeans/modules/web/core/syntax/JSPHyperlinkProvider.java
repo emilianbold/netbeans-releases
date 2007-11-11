@@ -46,7 +46,6 @@ import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
@@ -70,7 +69,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.web.core.syntax.completion.ELExpression;
 import org.openide.awt.StatusDisplayer;
@@ -374,7 +372,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
                         path = path.substring(path.indexOf('"') +1);
                         path = path.substring(0, path.indexOf('"'));
 
-                        fObj = getFileObject(bdoc, path);
+                        fObj = JspUtils.getFileObject(bdoc, path);
                         if (fObj != null) {
                             openInEditor(fObj);
                         } else {
@@ -390,54 +388,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             }
         });
     }
-    
-    
-    private FileObject getFileObject(Document doc, String path){
-        //Find out the file object from the document
-        DataObject dobj = NbEditorUtilities.getDataObject(doc);
-        FileObject fobj = (dobj != null) ? NbEditorUtilities.getDataObject(doc).getPrimaryFile(): null;
         
-        if (fobj != null){
-            return getFileObject(doc, fobj, path);
-        }
-        return null;
-    }
-    /**
-     * This method finds the file object according the path or null if the file object doesn't exist.
-     * @param doc Document, where user perform the hyperlink action.
-     * @param file
-     * @param path
-     * @return
-     */
-    private FileObject getFileObject(Document doc,FileObject file, String path){
-        if (path == null)       // it the path is null -> don't find it
-            return file;
-        path = path.trim();
-        FileObject find = file;
-        if (!file.isFolder())  // if the file is not folder, get the parent
-            find = file.getParent();
-        
-        if (path.charAt(0) == '/'){  // is the absolute path in the web module?
-            find = JspUtils.guessWebModuleRoot(doc, file);  // find the folder, where the absolut path starts
-            if (find == null)
-                return null;            // we are not able to find out the webmodule root
-            
-            path = path.substring(1);   // if we have folder, where the webmodule starts, the path can me relative to this folder
-        }
-        // find relative path to the folder
-        StringTokenizer st = new StringTokenizer(path, "/");
-        String token;
-        while (find != null && st.hasMoreTokens()) {
-            token = st.nextToken();
-            if ("..".equals(token))     // move to parent
-                find = find.getParent();
-            else if (!".".equals(token))        // if there is . - don't move
-                find = find.getFileObject(token);
-        }
-        return find;
-        
-    }
-    
     private String getTagName(String tagwithprefix){
         int index = tagwithprefix.indexOf(':');
         if (index > 0)
@@ -477,7 +428,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
                     if (libInfo != null){
                         TagFileInfo fileInfo = libInfo.getTagFile(getTagName(image));
                         if (fileInfo != null)
-                            return getFileObject(jspSup.getDocument(), fileInfo.getPath());
+                            return JspUtils.getFileObject(jspSup.getDocument(), fileInfo.getPath());
                     }
                 }
             }
