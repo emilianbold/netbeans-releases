@@ -53,7 +53,7 @@ import org.netbeans.api.project.Project;
 <pre>
 public class FooBarLogicalViewProvider implements LogicalViewProvider {
     public Node createLogicalView() {
-        return new FooBarRootNode(NodeFactorySupport.createCompositeChildren("Projects/org-foo-bar-project/Nodes");
+        return new FooBarRootNode(NodeFactorySupport.createCompositeChildren(myProject, "Projects/org-foo-bar-project/Nodes"));
     }
   
 }
