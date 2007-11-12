@@ -393,7 +393,7 @@ public class FormEditor {
     private PersistenceManager recognizeForm(FormDataObject formDO)
         throws PersistenceException
     {
-        Iterator it = PersistenceManager.getManagers();
+        Iterator<PersistenceManager> it = PersistenceManager.getManagers();
         if (!it.hasNext()) { // there's no PersistenceManager available
             PersistenceException ex = new PersistenceException(
                                       "No persistence manager registered"); // NOI18N
@@ -408,7 +408,7 @@ public class FormEditor {
         }
 
         do {
-            PersistenceManager pm = (PersistenceManager)it.next();
+            PersistenceManager pm = it.next();
             synchronized(pm) {
                 try {
                     if (pm.canLoadForm(formDO)) {

@@ -63,6 +63,8 @@ public abstract class PersistenceManager {
 
     /** This method is used to check if the persistence manager can read the
      * given form (if it understands the form file format).
+     * 
+     * @param formObject form data object representing the form.
      * @return true if this persistence manager can load the form
      * @exception PersistenceException if any unexpected problem occurred
      */
@@ -98,8 +100,8 @@ public abstract class PersistenceManager {
     // ------------
     // static registry [provisional only]
 
-    private static List managers;
-    private static List managersByName;
+    private static List<PersistenceManager> managers;
+    private static List<String> managersByName;
 
     public static void registerManager(PersistenceManager manager) {
         getManagersList().add(manager);
@@ -113,14 +115,14 @@ public abstract class PersistenceManager {
         getManagersNamesList().add(managerClassName);
     }
 
-    public static Iterator getManagers() {
+    public static Iterator<PersistenceManager> getManagers() {
         ClassLoader classLoader = null;
-        Iterator iter = getManagersNamesList().iterator();
+        Iterator<String> iter = getManagersNamesList().iterator();
         while (iter.hasNext()) { // create managers registered by name
             if (classLoader == null)
-                classLoader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+                classLoader = Lookup.getDefault().lookup(ClassLoader.class);
 
-            String pmClassName = (String) iter.next();
+            String pmClassName = iter.next();
             try {
                 PersistenceManager manager = (PersistenceManager)
                     classLoader.loadClass(pmClassName).newInstance();
@@ -138,17 +140,17 @@ public abstract class PersistenceManager {
         return getManagersList().iterator();
     }
 
-    private static List getManagersList() {
+    private static List<PersistenceManager> getManagersList() {
         if (managers == null) {
-            managers = new ArrayList();
+            managers = new ArrayList<PersistenceManager>();
             managers.add(new GandalfPersistenceManager());
         }
         return managers;
     }
 
-    private static List getManagersNamesList() {
+    private static List<String> getManagersNamesList() {
         if (managersByName == null)
-            managersByName = new ArrayList();
+            managersByName = new ArrayList<String>();
         return managersByName;
     }
 
