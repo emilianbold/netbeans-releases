@@ -1607,7 +1607,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
 
 
   <target name="print-selected-modules" depends="init-module-list" description="Prints list of modules to build in selected moduleconfig.">
-    <echo message="modules=${allmodules}"/>
+    <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="nbantext.jar"/>
+    <resolvelist name="modules.for.selected.list" list="${nb.clusters.list}"/>
+    <echo message="modules=${modules.for.selected.list}"/>
   </target>
 
   <target name="print-cvs-modules" depends="init-module-list" description="Prints list of CVS (top-level) modules required to build in selected moduleconfig.">
