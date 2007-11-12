@@ -67,6 +67,8 @@ import org.xml.sax.SAXException;
  */
 public class WLPluginProperties {
     
+    private static final Logger LOGGER = Logger.getLogger(WLPluginProperties.class.getName());
+    
     private static final boolean verboseRegistration =
             System.getProperty("netbeans.weblogic.registration") != null;
     
@@ -235,10 +237,14 @@ public class WLPluginProperties {
                     return implementationVersion.startsWith("9.") || implementationVersion.startsWith("10."); // NOI18N
                 }
             } finally {
-                jarInputStream.close();
+                try {
+                    jarInputStream.close();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINEST, null, ex);
+                }
             }
         } catch (IOException e) {
-            Logger.getLogger(WLPluginProperties.class.getName()).log(Level.FINE, null, e);
+            LOGGER.log(Level.FINE, null, e);
         }
         return false;
     }
