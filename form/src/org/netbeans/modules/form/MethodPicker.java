@@ -56,12 +56,18 @@ import org.openide.awt.Mnemonics;
 public class MethodPicker extends javax.swing.JPanel {
 
     static final long serialVersionUID =7355140527892160804L;
-    /** Initializes the Form */
+    /**
+     * Initializes the Form.
+     * 
+     * @param formModel form model.
+     * @param componentToSelect component whose methods should be displayed.
+     * @param requiredType required return type of the method.
+     */
     public MethodPicker(FormModel formModel, RADComponent componentToSelect, Class requiredType) {
         this.requiredType = requiredType;
         initComponents();
 
-        java.util.List componentsList = formModel.getComponentList();
+        java.util.List<RADComponent> componentsList = formModel.getComponentList();
         Collections.sort(componentsList, new ParametersPicker.ComponentComparator());
         components = new RADComponent[componentsList.size()];
         componentsList.toArray(components);
@@ -129,15 +135,6 @@ public class MethodPicker extends javax.swing.JPanel {
     // ----------------------------------------------------------------------------
     // private methods
 
-    private void addComponentsRecursively(ComponentContainer cont, Vector vect) {
-        RADComponent[] children = cont.getSubBeans();
-        for (int i = 0; i < children.length; i++) {
-            vect.addElement(children[i]);
-            if (children[i] instanceof ComponentContainer)
-                addComponentsRecursively((ComponentContainer)children[i], vect);
-        }
-    }
-
     private void updateMethodList() {
         RADComponent sel = getSelectedComponent();
         if (sel == null) {
@@ -149,7 +146,7 @@ public class MethodPicker extends javax.swing.JPanel {
 	
 	    descs = sel.getBeanInfo().getMethodDescriptors();	
 
-	    Map filtered = new HashMap();
+	    Map<String,MethodPickerItem> filtered = new HashMap<String,MethodPickerItem>();
 	    for (int i = 0; i < descs.length; i ++) {
 		if (requiredType.isAssignableFrom(descs[i].getMethod().getReturnType()) &&
 		    (descs[i].getMethod().getParameterTypes().length == 0)) // [FUTURE: - currently we allow only methods without params]
@@ -173,10 +170,9 @@ public class MethodPicker extends javax.swing.JPanel {
 	    filtered.values().toArray(items);
 	    
             // sort the methods by name
-            Arrays.sort(items, new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    return ((MethodPickerItem)o1).getMethodName()
-			    .compareTo(((MethodPickerItem)o2).getMethodName());
+            Arrays.sort(items, new Comparator<MethodPickerItem>() {
+                public int compare(MethodPickerItem o1, MethodPickerItem o2) {
+                    return o1.getMethodName().compareTo(o2.getMethodName());
                 }
             });
 
@@ -328,7 +324,7 @@ public class MethodPicker extends javax.swing.JPanel {
     }
     
     private RADComponent[] components;
-    private Class requiredType;
+    private Class<?> requiredType;
     private MethodPickerItem[] items;
     private RADComponent selectedComponent;
     private static Class[] NO_PARAMETERS = new Class[0];	
