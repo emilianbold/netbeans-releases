@@ -353,9 +353,9 @@ TestSupport.prototype = {
                     for(var j=0;j<len;j++) {
                         var param = qparams[j]
                         if(len == 1 || len-j == 1)
-                            p += param.name+"="+param.value;
+                            p += escape(param.name)+"="+escape(param.value);
                         else
-                            p += param.name+"="+param.value+"&";
+                            p += escape(param.name)+"="+escape(param.value)+"&";
                     }
                 }
             }
@@ -372,9 +372,9 @@ TestSupport.prototype = {
                     var paramName = newParamNames[j].value;
                     var paramValue = newParamValues[j].value;
                     if(len == 1 || len-j == 1)
-                        p += paramName+"="+paramValue;
+                        p += escape(paramName)+"="+escape(paramValue);
                     else
-                        p += paramName+"="+paramValue+"&";
+                        p += escape(paramName)+"="+escape(paramValue)+"&";
                 }
             }
         }
@@ -412,18 +412,18 @@ TestSupport.prototype = {
         }
 
         if(method == 'GET' && p.length > 0)
-            req+= "?"+escape(p);
+            req+= "?"+p;
         
         //process matrix parameters
         var mparams = document.forms[0].mparams;
         if(mparams != null) {
             if(mparams.length == undefined) {
-                req += escape(";"+mparams.name+"="+mparams.value);
+                req += ";"+escape(mparams.name)+"="+escape(mparams.value);
             } else {
                 var len = mparams.length;
                 for(var j=0;j<len;j++) {
                     var param = mparams[j]
-                    req += escape(";"+param.name+"="+param.value);
+                    req += ";"+escape(param.name)+"="+escape(param.value);
                 }
             }
         }
