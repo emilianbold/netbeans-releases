@@ -151,8 +151,8 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             //Make sure the scrollbar is updated *after* the document change
             //has been processed and the scrollbar model's maximum updated
             if (!enqueued) {
-                SwingUtilities.invokeLater(this);
                 enqueued = true;
+                SwingUtilities.invokeLater(this);
             }
         }
     }
