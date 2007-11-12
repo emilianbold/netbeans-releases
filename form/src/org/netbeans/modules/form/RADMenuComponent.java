@@ -59,11 +59,11 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     /** Map of possible combinations of menus in menus. Menu types (as Integer)
      * are mapped to supported (sub)menu types (as Class[]).
      */
-    static Map supportedMenus;
+    static Map<Integer,Class[]> supportedMenus;
 
     /** Initialization of supportedMenus map. */
     static {
-        supportedMenus = new HashMap();
+        supportedMenus = new HashMap<Integer,Class[]>();
         supportedMenus.put(new Integer(T_MENUBAR),
                            new Class[] { Menu.class });
         supportedMenus.put(new Integer(T_MENU),
@@ -95,7 +95,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     // -----------------------------------------------------------------------------
     // Private variables
 
-    private ArrayList subComponents;
+    private ArrayList<RADComponent> subComponents;
 
     // -----------------------------------------------------------------------------
     // Initialization
@@ -103,12 +103,12 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     /** Support for new types that can be created in this node.
      * @return array of new type operations that are allowed
      */
+    @Override
     public NewType[] getNewTypes() {
         if (isReadOnly())
             return RADComponent.NO_NEW_TYPES;
 
-        Class[] classes = (Class[])
-                          supportedMenus.get(new Integer(getMenuItemType()));
+        Class[] classes = supportedMenus.get(new Integer(getMenuItemType()));
 
         if (classes == null)
             return RADComponent.NO_NEW_TYPES;
@@ -121,8 +121,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     }
 
     public boolean canAddItem(Class itemType) {
-        Class[] classes = (Class[])
-                          supportedMenus.get(new Integer(getMenuItemType()));
+        Class[] classes = supportedMenus.get(new Integer(getMenuItemType()));
 
         if (classes != null)
             for (int i=0; i < classes.length; i++)
@@ -143,7 +142,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
 
     public void initSubComponents(RADComponent[] initComponents) {
         if (subComponents == null)
-            subComponents = new ArrayList(initComponents.length);
+            subComponents = new ArrayList<RADComponent>(initComponents.length);
         else {
             subComponents.clear();
             subComponents.ensureCapacity(initComponents.length);
@@ -161,7 +160,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     public void reorderSubComponents(int[] perm) {
         RADComponent[] components = new RADComponent[subComponents.size()];
         for (int i=0; i < perm.length; i++)
-            components[perm[i]] = (RADComponent) subComponents.get(i);
+            components[perm[i]] = subComponents.get(i);
 
         subComponents.clear();
         subComponents.addAll(Arrays.asList(components));
@@ -203,6 +202,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
          *
          * @return the name of the action
          */
+        @Override
         public String getName() {
             String s = item.getName();
 

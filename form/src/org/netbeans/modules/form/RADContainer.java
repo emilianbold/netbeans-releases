@@ -43,13 +43,14 @@
 package org.netbeans.modules.form;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
  * @author Ian Formanek
  */
 public class RADContainer extends RADComponent implements ComponentContainer {
-    private ArrayList subComponents;
+    private List<RADComponent> subComponents;
 
     public RADComponent[] getSubBeans() {
         RADComponent[] components = new RADComponent [subComponents.size()];
@@ -58,7 +59,7 @@ public class RADContainer extends RADComponent implements ComponentContainer {
     }
 
     public void initSubComponents(RADComponent[] initComponents) {
-        subComponents = new ArrayList(initComponents.length);
+        subComponents = new ArrayList<RADComponent>(initComponents.length);
         for (int i = 0; i < initComponents.length; i++) {
             subComponents.add(initComponents[i]);
             initComponents[i].setParentComponent(this);
@@ -68,7 +69,7 @@ public class RADContainer extends RADComponent implements ComponentContainer {
     public void reorderSubComponents(int[] perm) {
         RADComponent[] components = new RADComponent[subComponents.size()];
         for (int i=0; i < perm.length; i++)
-            components[perm[i]] = (RADComponent) subComponents.get(i);
+            components[perm[i]] = subComponents.get(i);
 
         subComponents.clear();
         subComponents.addAll(java.util.Arrays.asList(components));
