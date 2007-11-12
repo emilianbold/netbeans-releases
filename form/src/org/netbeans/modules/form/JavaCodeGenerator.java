@@ -205,7 +205,7 @@ class JavaCodeGenerator extends CodeGenerator {
     private int emptyLineCounter;
     private int emptyLineRequest;
 
-    private Map constructorProperties;
+    private Map<RADComponent, java.util.List<FormProperty>> constructorProperties;
     private Map<RADComponent, java.util.List<FormProperty>> parentDependentProperties;
     private Map<RADComponent, java.util.List<FormProperty>> childrenDependentProperties;
 
@@ -213,9 +213,9 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private static class PropertiesFilter implements FormProperty.Filter {
 		
-	private final java.util.List properties;
+	private final java.util.List<FormProperty> properties;
 	
-	public PropertiesFilter(java.util.List properties) {
+	public PropertiesFilter(java.util.List<FormProperty> properties) {
 	    this.properties = properties;
 	}
 	
@@ -265,10 +265,10 @@ class JavaCodeGenerator extends CodeGenerator {
      * global Java variable for every component
      * @param component The RADComponent for which the properties are to be obtained
      */
-
+    @Override
     public Node.Property[] getSyntheticProperties(final RADComponent component) {
         ResourceBundle bundle = FormUtils.getBundle();
-        java.util.List propList = new ArrayList();
+        java.util.List<Node.Property> propList = new ArrayList<Node.Property>();
         if (component == null) {
             propList.add(new VariablesModifierProperty());
             propList.add(new LocalVariablesProperty());
@@ -298,6 +298,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     return component.getName();
                 }
 
+                @Override
                 public boolean canWrite() {
                     return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
                 }
@@ -351,15 +352,18 @@ class JavaCodeGenerator extends CodeGenerator {
                     return new Integer(formModel.getSettings().getVariablesModifier());
                 }
 
+                @Override
                 public boolean supportsDefaultValue() {
                     return component.getAuxValue(AUX_VARIABLE_LOCAL) == null;
                 }
 
+                @Override
                 public Object getDefaultValue() {
                     return component.getAuxValue(AUX_VARIABLE_LOCAL) == null ?
                            new Integer(formModel.getSettings().getVariablesModifier()) : null;
                 }
 
+                @Override
                 protected void propertyValueChanged(Object old, Object current) {
                     super.propertyValueChanged(old, current);
                     if (isChangeFiring()) {
@@ -372,10 +376,12 @@ class JavaCodeGenerator extends CodeGenerator {
                     }
                 }
 
+                @Override
                 public boolean canWrite() {
                     return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
                 }
 
+                @Override
                 public PropertyEditor getExpliciteEditor() { // getPropertyEditor
                     Boolean local = (Boolean) component.getAuxValue(AUX_VARIABLE_LOCAL);
                     if (local == null)
@@ -424,14 +430,17 @@ class JavaCodeGenerator extends CodeGenerator {
                     return (value == null) ? "" : value; // NOI18N
                 }
 
+                @Override
                 public boolean supportsDefaultValue() {
                     return true;
                 }
 
+                @Override
                 public Object getDefaultValue() {
                     return ""; // NOI18N
                 }
 
+                @Override
                 protected void propertyValueChanged(Object old, Object current) {
                     super.propertyValueChanged(old, current);
                     if (isChangeFiring()) {
@@ -444,10 +453,12 @@ class JavaCodeGenerator extends CodeGenerator {
                     }
                 }
 
+                @Override
                 public boolean canWrite() {
                     return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
                 }
 
+                @Override
                 public PropertyEditor getExpliciteEditor() {
                     // PENDING replace by property editor that is able to determine
                     // formal type parameters of this class and can offer you
@@ -522,14 +533,17 @@ class JavaCodeGenerator extends CodeGenerator {
                     return Boolean.valueOf(formModel.getSettings().getVariablesLocal());
                 }
 
+                @Override
                 public boolean supportsDefaultValue() {
                     return true;
                 }
 
+                @Override
                 public Object getDefaultValue() {
                     return Boolean.valueOf(formModel.getSettings().getVariablesLocal());
                 }
 
+                @Override
                 protected void propertyValueChanged(Object old, Object current) {
                     super.propertyValueChanged(old, current);
                     if (isChangeFiring()) {
@@ -542,6 +556,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     }
                 }
 
+                @Override
                 public boolean canWrite() {
                     return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
                 }
@@ -572,14 +587,17 @@ class JavaCodeGenerator extends CodeGenerator {
                                Boolean.TRUE : Boolean.FALSE;
                     }
 
+                    @Override
                     public boolean canWrite() {
                         return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
                     }
 
+                    @Override
                     public boolean supportsDefaultValue() {
                         return true;
                     }
 
+                    @Override
                     public void restoreDefaultValue() {
                         setValue(null);
                     }
@@ -712,10 +730,12 @@ class JavaCodeGenerator extends CodeGenerator {
                     return value;
                 }
 
+                @Override
                 public boolean canWrite() {
                     return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
                 }
 
+                @Override
                 public PropertyEditor getPropertyEditor() {
                     return new CodeGenerateEditor(component);
                 }
@@ -757,6 +777,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     return value;
                 }
 
+                @Override
                 public boolean canWrite() {
                     return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
                 }
@@ -768,6 +789,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 bundle.getString("MSG_DesignerSize"), // NOI18N
                 bundle.getString("HINT_DesignerSize")) // NOI18N
             {
+                @Override
                 public void setValue(Object value) {
                     if (!(value instanceof Dimension))
                         throw new IllegalArgumentException();
@@ -820,10 +842,12 @@ class JavaCodeGenerator extends CodeGenerator {
                     return ""; // NOI18N
                 }
 
+                @Override
                 public boolean canWrite() {
                     return false;                    
                 }     
                 
+                @Override
                 public PropertyEditor getPropertyEditor() {
                     return new PropertyEditorSupport(){};
                 }
@@ -1407,9 +1431,9 @@ class JavaCodeGenerator extends CodeGenerator {
                 FormProperty[] props;
                 if (propNames.length > 0) {
                     if (constructorProperties == null)
-                        constructorProperties = new HashMap();
+                        constructorProperties = new HashMap<RADComponent, java.util.List<FormProperty>>();
 
-		    java.util.List usedProperties = new ArrayList(propNames.length);
+		    java.util.List<FormProperty> usedProperties = new ArrayList<FormProperty>(propNames.length);
                     props = new FormProperty[propNames.length];
 
                     for (int i=0; i < propNames.length; i++) {
@@ -1500,10 +1524,10 @@ class JavaCodeGenerator extends CodeGenerator {
         if (!comp.hasHiddenState() 
                 && (genType == null || VALUE_GENERATE_CODE.equals(genType)))
         {   // not serialized, generate properties
-	    java.util.List usedProperties = constructorProperties != null ? (java.util.List)constructorProperties.get(comp) : null;
-            Iterator it = comp.getBeanPropertiesIterator(new PropertiesFilter(usedProperties), false);
+	    java.util.List<FormProperty> usedProperties = constructorProperties != null ? constructorProperties.get(comp) : null;
+            Iterator<? extends FormProperty> it = comp.getBeanPropertiesIterator(new PropertiesFilter(usedProperties), false);
             while (it.hasNext()) {
-                FormProperty prop = (FormProperty) it.next();
+                FormProperty prop = it.next();
 
                 java.util.List<FormProperty> depPropList = null;
                 if (FormUtils.isMarkedParentDependentProperty(prop)) {
@@ -1511,11 +1535,11 @@ class JavaCodeGenerator extends CodeGenerator {
                     if (parentDependentProperties != null)
                         depPropList = parentDependentProperties.get(comp);
                     else {
-                        parentDependentProperties = new HashMap();
+                        parentDependentProperties = new HashMap<RADComponent,java.util.List<FormProperty>>();
                         depPropList = null;
                     }
                     if (depPropList == null) {
-                        depPropList = new LinkedList();
+                        depPropList = new LinkedList<FormProperty>();
                         parentDependentProperties.put(comp, depPropList);
                     }
                     depPropList.add(prop);
@@ -1525,11 +1549,11 @@ class JavaCodeGenerator extends CodeGenerator {
                     if (childrenDependentProperties != null)
                         depPropList = childrenDependentProperties.get(comp);
                     else {
-                        childrenDependentProperties = new HashMap();
+                        childrenDependentProperties = new HashMap<RADComponent,java.util.List<FormProperty>>();
                         depPropList = null;
                     }
                     if (depPropList == null) {
-                        depPropList = new LinkedList();
+                        depPropList = new LinkedList<FormProperty>();
                         childrenDependentProperties.put(comp, depPropList);
                     }
                     depPropList.add(prop);
@@ -1842,8 +1866,7 @@ class JavaCodeGenerator extends CodeGenerator {
         String contExprStr = getExpressionJavaString(contExpr, ""); // NOI18N
         CodeVariable contVar = cont.getCodeExpression().getVariable();
         String contVarName = (contVar == null) ? null : contVar.getName();
-        SwingLayoutCodeGenerator swingGenerator = getSwingGenerator();
-        swingGenerator.generateContainerLayout(
+        getSwingGenerator().generateContainerLayout(
             writer,
             layoutCont,
             contExprStr,
@@ -2149,9 +2172,9 @@ class JavaCodeGenerator extends CodeGenerator {
         if ((properties == null) || (properties.length == 0)) return;
 
 	CreationDescriptor.Creator creator = getPropertyCreator(propertyType, properties);
-	java.util.List creatorProperties = getCreatorProperties(creator, properties);
+	java.util.List<FormProperty> creatorProperties = getCreatorProperties(creator, properties);
 															
-	java.util.List remainingProperties = new ArrayList();		
+	java.util.List<FormProperty> remainingProperties = new ArrayList<FormProperty>();
 	if(properties !=null) {
 	    for (int i = 0; i < properties.length; i++) {
 		if( properties[i].isChanged() && 
@@ -2164,7 +2187,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
 	String propertyInitializationString = 
 		creator.getJavaCreationCode(
-		    (FormProperty[])creatorProperties.toArray(new FormProperty[creatorProperties.size()]), prop.getValueType(), null);
+		    creatorProperties.toArray(new FormProperty[creatorProperties.size()]), prop.getValueType(), null);
         if (codeData != null)
             propertyInitializationString = CUSTOM_CODE_MARK + propertyInitializationString + CUSTOM_CODE_MARK;
 
@@ -2179,11 +2202,11 @@ class JavaCodeGenerator extends CodeGenerator {
 	}
     }
 
-    private java.util.List getCreatorProperties(CreationDescriptor.Creator creator, FormProperty[] properties) {
+    private java.util.List<FormProperty> getCreatorProperties(CreationDescriptor.Creator creator, FormProperty[] properties) {
 	String[] propNames = creator.getPropertyNames();	
-	java.util.List creatorProperties; 
+	java.util.List<FormProperty> creatorProperties; 
 	if (propNames.length > 0) {
-	    creatorProperties = new ArrayList(propNames.length);		    
+	    creatorProperties = new ArrayList<FormProperty>(propNames.length);		    
 	    for (int i=0; i < propNames.length; i++) {
 		for (int j = 0; j < properties.length; j++) {
 		    if(properties[j].getName().equals(propNames[i])) {
@@ -2193,7 +2216,7 @@ class JavaCodeGenerator extends CodeGenerator {
 		}                        
 	    }
 	} else {
-	    creatorProperties = new ArrayList(0);
+	    creatorProperties = new ArrayList<FormProperty>(0);
 	}
 	return creatorProperties;
     }
@@ -2209,7 +2232,7 @@ class JavaCodeGenerator extends CodeGenerator {
 					      Class propertyType, 
 					      String setterVariable,
 					      String propertyInitializationString, 
-					      java.util.List remainingProperties,
+					      java.util.List<FormProperty> remainingProperties,
 					      CodeWriter initCodeWriter)
 	throws IOException					    
     {
@@ -2219,8 +2242,8 @@ class JavaCodeGenerator extends CodeGenerator {
 	initCodeWriter.write(javaStr);
 	initCodeWriter.write(";\n"); // NOI18N		    		
 
-	for (Iterator it = remainingProperties.iterator(); it.hasNext();) {
-	    generateProperty((FormProperty) it.next(), null, variableName + ".", initCodeWriter, null); // NOI18N 	
+	for (Iterator<FormProperty> it = remainingProperties.iterator(); it.hasNext();) {
+	    generateProperty(it.next(), null, variableName + ".", initCodeWriter, null); // NOI18N 	
 	}
 
 	generateSimpleSetterCode(prop,
@@ -2265,7 +2288,7 @@ class JavaCodeGenerator extends CodeGenerator {
         Writer writer = initCodeWriter.getWriter();
 
         EventSetDescriptor lastEventSetDesc = null;
-        java.util.List listenerEvents = null;
+        java.util.List<Event> listenerEvents = null;
 
         // we must deal somehow with the fact that for some (pathological)
         // events only anonymous innerclass listener can be generated
@@ -2306,7 +2329,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
             if (defaultMode == ANONYMOUS_INNERCLASSES || !event.isInCEDL()) {
                 if (listenerEvents == null)
-                    listenerEvents = new ArrayList();
+                    listenerEvents = new ArrayList<Event>();
                 listenerEvents.add(event);
             }
         }
@@ -2343,7 +2366,7 @@ class JavaCodeGenerator extends CodeGenerator {
     // (one component.addXXXListener() call)
     private void generateListenerAddCode(RADComponent comp,
                                          EventSetDescriptor eventSetDesc,
-                                         java.util.List eventList,
+                                         java.util.List<Event> eventList,
                                          int mode,
                                          Writer codeWriter)
         throws IOException
@@ -2371,7 +2394,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     codeWriter.write(getSourceClassName(adapterClass) + "() {\n"); // NOI18N
 
                     for (int i=0; i < eventList.size(); i++) {
-                        Event event = (Event) eventList.get(i);
+                        Event event = eventList.get(i);
                         String[] paramNames = generateListenerMethodHeader(
                                    null, event.getListenerMethod(), codeWriter);
                         generateEventHandlerCalls(event, paramNames, codeWriter, true);
@@ -2386,7 +2409,7 @@ class JavaCodeGenerator extends CodeGenerator {
                         Method m = methods[i];
                         Event event = null;
                         for (int j=0; j < eventList.size(); j++) {
-                            Event e = (Event) eventList.get(j);
+                            Event e = eventList.get(j);
                             if (m.equals(e.getListenerMethod())) {
                                 event = e;
                                 break;
@@ -2433,11 +2456,10 @@ class JavaCodeGenerator extends CodeGenerator {
     private void addFieldVariables(CodeWriter variablesWriter)
         throws IOException
     {
-        Iterator it = getSortedVariables(CodeVariable.FIELD,
-                                         CodeVariable.SCOPE_MASK);
+        Iterator<CodeVariable> it = getSortedVariables(CodeVariable.FIELD, CodeVariable.SCOPE_MASK);
 
         while (it.hasNext()) {
-            CodeVariable var = (CodeVariable) it.next();
+            CodeVariable var = it.next();
             RADComponent metacomp = codeVariableToRADComponent(var);
             if (metacomp != null)
                 generateComponentFieldVariable(metacomp, variablesWriter, null);
@@ -2465,7 +2487,7 @@ class JavaCodeGenerator extends CodeGenerator {
     private void addLocalVariables(Writer writer)
         throws IOException
     {
-        Iterator it = getSortedVariables(
+        Iterator<CodeVariable> it = getSortedVariables(
             CodeVariable.LOCAL | CodeVariable.EXPLICIT_DECLARATION,
             CodeVariable.SCOPE_MASK | CodeVariable.DECLARATION_MASK);
 
@@ -2473,7 +2495,7 @@ class JavaCodeGenerator extends CodeGenerator {
             generateEmptyLineIfNeeded(writer);
 
         while (it.hasNext()) {
-            CodeVariable var = (CodeVariable) it.next();
+            CodeVariable var = it.next();
             if (codeVariableToRADComponent(var) == null) {
                 // other than component variable (e.g. GridBagConstraints)
                 writer.write(var.getDeclaration().getJavaCodeString(null, null));
@@ -2562,9 +2584,9 @@ class JavaCodeGenerator extends CodeGenerator {
         emptyLineCounter = emptyLineRequest;
     }
 
-    private Iterator getSortedVariables(int type, int typeMask) {
+    private Iterator<CodeVariable> getSortedVariables(int type, int typeMask) {
         Collection allVariables = formModel.getCodeStructure().getAllVariables();
-        java.util.List variables = new ArrayList(allVariables.size());
+        java.util.List<CodeVariable> variables = new ArrayList<CodeVariable>(allVariables.size());
         Iterator it = allVariables.iterator();
         while (it.hasNext()) {
             CodeVariable var = (CodeVariable) it.next();
@@ -2573,10 +2595,9 @@ class JavaCodeGenerator extends CodeGenerator {
             if ((var.getType() &  typeMask) == (type & typeMask))
                 variables.add(var);
         }
-        Collections.sort(variables, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                return ((CodeVariable)o1).getName().compareTo(
-                        ((CodeVariable)o2).getName());
+        Collections.sort(variables, new Comparator<CodeVariable>() {
+            public int compare(CodeVariable o1, CodeVariable o2) {
+                return o1.getName().compareTo(o2.getName());
             }
         });
         return variables.iterator();
@@ -2710,9 +2731,9 @@ class JavaCodeGenerator extends CodeGenerator {
         boolean mainclass = formModel.getSettings().getListenerGenerationStyle() == CEDL_MAINCLASS;
 
         Class[] listenersToImplement = formEvents.getCEDLTypes();
-        Arrays.sort(listenersToImplement, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                return ((Class)o1).getName().compareTo(((Class)o2).getName());
+        Arrays.sort(listenersToImplement, new Comparator<Class>() {
+            public int compare(Class o1, Class o2) {
+                return o1.getName().compareTo(o2.getName());
             }
         });
 
@@ -2738,9 +2759,9 @@ class JavaCodeGenerator extends CodeGenerator {
                                           formModel.getFormBaseClass());
 
             Method[] methods = listenersToImplement[i].getMethods();
-            Arrays.sort(methods, new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    return ((Method)o1).getName().compareTo(((Method)o2).getName());
+            Arrays.sort(methods, new Comparator<Method>() {
+                public int compare(Method o1, Method o2) {
+                    return o1.getName().compareTo(o2.getName());
                 }
             });
 
@@ -3891,6 +3912,7 @@ class JavaCodeGenerator extends CodeGenerator {
             enableReplaceObject(true);
         }
 
+        @Override
         protected Object replaceObject(Object obj) throws IOException {
             if (obj.getClass().getName().startsWith("org.netbeans.") // NOI18N
                 || obj.getClass().getName().startsWith("org.openide.")) // NOI18N
@@ -3924,6 +3946,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
 
         /** @return names of the possible directions */
+        @Override
         public String[] getTags() {
             if (component.hasHiddenState()) {
                 return new String[] { serializeName } ;
@@ -3933,6 +3956,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
 
         /** @return text for the current value */
+        @Override
         public String getAsText() {
             Integer value =(Integer)getValue();
             if (value.equals(VALUE_SERIALIZE)) return serializeName;
@@ -3942,6 +3966,7 @@ class JavaCodeGenerator extends CodeGenerator {
         /** Setter.
          * @param str string equal to one value from directions array
          */
+        @Override
         public void setAsText(String str) {
             if (component.hasHiddenState()) {
                 setValue(VALUE_SERIALIZE);
@@ -4005,14 +4030,17 @@ class JavaCodeGenerator extends CodeGenerator {
             return value;
         }
 
+        @Override
         public boolean supportsDefaultValue () {
             return true;
         }
 
+        @Override
         public Object getDefaultValue() {
             return ""; // NOI18N
         }
 
+        @Override
         protected void propertyValueChanged(Object old, Object current) {
             super.propertyValueChanged(old, current);
             if (isChangeFiring()) {
@@ -4025,10 +4053,12 @@ class JavaCodeGenerator extends CodeGenerator {
             }
         }
 
+        @Override
         public PropertyEditor getExpliciteEditor() {
             return new CodeEditor();
         }
 
+        @Override
         public boolean canWrite() {
             return JavaCodeGenerator.this.canGenerate && !formModel.isReadOnly();
         }
@@ -4041,10 +4071,12 @@ class JavaCodeGenerator extends CodeGenerator {
             this.env = env;
         }
 
+        @Override
         public Component getCustomEditor() {
             return new CustomCodeEditor(this, env, FormEditor.createCodeEditorPane(formModel));
         }
 
+        @Override
         public boolean supportsCustomEditor() {
             return true;
         }
@@ -4087,23 +4119,28 @@ class JavaCodeGenerator extends CodeGenerator {
             return new Integer(formModel.getSettings().getVariablesModifier());
         }
 
+        @Override
         public boolean supportsDefaultValue() {
             return true;
         }
         
+        @Override
         public void restoreDefaultValue() {
             setValue(new Integer(FormLoaderSettings.getInstance().getVariablesModifier()));
         }
         
+        @Override
         public boolean isDefaultValue() {
             return (formModel.getSettings().getVariablesModifier() ==
                 FormLoaderSettings.getInstance().getVariablesModifier());
         }
         
+        @Override
         public boolean canWrite() {
             return JavaCodeGenerator.this.canGenerate && !JavaCodeGenerator.this.formModel.isReadOnly();
         }
         
+        @Override
         public PropertyEditor getPropertyEditor() {
             boolean local = formModel.getSettings().getVariablesLocal();
             return local ? new ModifierEditor(Modifier.FINAL) :
@@ -4161,19 +4198,23 @@ class JavaCodeGenerator extends CodeGenerator {
             return Boolean.valueOf(formModel.getSettings().getVariablesLocal());
         }
         
+        @Override
         public boolean supportsDefaultValue() {
             return true;
         }
         
+        @Override
         public void restoreDefaultValue() {
             setValue(Boolean.valueOf(FormLoaderSettings.getInstance().getVariablesLocal()));
         }
         
+        @Override
         public boolean isDefaultValue() {
             return (formModel.getSettings().getVariablesLocal() == 
                 FormLoaderSettings.getInstance().getVariablesLocal());
         }
         
+        @Override
         public boolean canWrite() {
             return JavaCodeGenerator.this.canGenerate && !JavaCodeGenerator.this.formModel.isReadOnly();
         }
@@ -4206,18 +4247,22 @@ class JavaCodeGenerator extends CodeGenerator {
             return Boolean.valueOf(formModel.getSettings().getGenerateMnemonicsCode());
         }
         
+        @Override
         public boolean canWrite() {
             return JavaCodeGenerator.this.canGenerate && !JavaCodeGenerator.this.formModel.isReadOnly();
         }
         
+        @Override
         public boolean supportsDefaultValue() {
             return true;
         }
         
+        @Override
         public void restoreDefaultValue() {
             setValue(Boolean.valueOf(FormLoaderSettings.getInstance().getGenerateMnemonicsCode()));
         }
         
+        @Override
         public boolean isDefaultValue() {
             return (formModel.getSettings().getGenerateMnemonicsCode() == 
                 FormLoaderSettings.getInstance().getGenerateMnemonicsCode());
@@ -4251,23 +4296,28 @@ class JavaCodeGenerator extends CodeGenerator {
             return new Integer(formModel.getSettings().getListenerGenerationStyle());
         }
 
+        @Override
         public boolean supportsDefaultValue() {
             return true;
         }
         
+        @Override
         public void restoreDefaultValue() {
             setValue(new Integer(FormLoaderSettings.getInstance().getListenerGenerationStyle()));
         }
         
+        @Override
         public boolean isDefaultValue() {
             return (formModel.getSettings().getListenerGenerationStyle() ==
                 FormLoaderSettings.getInstance().getListenerGenerationStyle());
         }
         
+        @Override
         public boolean canWrite() {
             return JavaCodeGenerator.this.canGenerate && !JavaCodeGenerator.this.formModel.isReadOnly();
         }
         
+        @Override
         public PropertyEditor getPropertyEditor() {
             return new FormLoaderSettingsBeanInfo.ListenerGenerationStyleEditor();
         }
@@ -4301,23 +4351,28 @@ class JavaCodeGenerator extends CodeGenerator {
             return new Integer(formModel.getSettings().getLayoutCodeTarget());
         }
 
+        @Override
         public boolean supportsDefaultValue() {
             return true;
         }
 
+        @Override
         public void restoreDefaultValue() {
             setValue(new Integer(FormLoaderSettings.getInstance().getLayoutCodeTarget()));
         }
 
+        @Override
         public boolean isDefaultValue() {
             return (formModel.getSettings().getLayoutCodeTarget() ==
                     FormLoaderSettings.getInstance().getLayoutCodeTarget());
         }
 
+        @Override
         public boolean canWrite() {
             return JavaCodeGenerator.this.canGenerate && !JavaCodeGenerator.this.formModel.isReadOnly();
         }
 
+        @Override
         public PropertyEditor getPropertyEditor() {
             return new FormLoaderSettingsBeanInfo.LayoutCodeTargetEditor(true);
         }

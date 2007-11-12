@@ -592,10 +592,10 @@ public class RADComponent {
         return knownBeanProperties != null ? knownBeanProperties : NO_PROPERTIES;
     }
 
-    public Iterator getBeanPropertiesIterator(FormProperty.Filter filter,
+    public Iterator<RADProperty> getBeanPropertiesIterator(FormProperty.Filter filter,
                                               boolean fromAll)
     {
-        return new PropertyIterator(
+        return new PropertyIterator<RADProperty>(
                    fromAll ? getAllBeanProperties() : getKnownBeanProperties(),
                    filter);
     }
@@ -1464,14 +1464,14 @@ public class RADComponent {
 
     // ----------
 
-    private static class PropertyIterator implements java.util.Iterator {
-        private FormProperty[] properties;
+    private static class PropertyIterator<T extends FormProperty> implements java.util.Iterator<T> {
+        private T[] properties;
         private FormProperty.Filter filter;
 
-        private FormProperty next;
+        private T next;
         private int index;
 
-        PropertyIterator(FormProperty[] properties,
+        PropertyIterator(T[] properties,
                          FormProperty.Filter filter)
         {
             this.properties = properties;
@@ -1484,11 +1484,11 @@ public class RADComponent {
             return next != null;
         }
 
-        public Object next() {
+        public T next() {
             if (next == null)
                 next = getNextProperty();
             if (next != null) {
-                Object prop = next;
+                T prop = next;
                 next = null;
                 return prop;
             }
@@ -1499,9 +1499,9 @@ public class RADComponent {
             throw new UnsupportedOperationException();
         }
 
-        private FormProperty getNextProperty() {
+        private T getNextProperty() {
             while (index < properties.length) {
-                FormProperty prop = properties[index++];
+                T prop = properties[index++];
                 if (filter.accept(prop))
                     return prop;
             }

@@ -688,11 +688,11 @@ public class MetaComponentCreator {
         java.util.List<RADProperty> sourceList = new ArrayList<RADProperty>();
         java.util.List<String> namesList = new ArrayList<String>();
 
-        Iterator it = sourceComp.getBeanPropertiesIterator(
+        Iterator<RADProperty> it = sourceComp.getBeanPropertiesIterator(
                                    ResourceSupport.COPIED_PROPERTY_FILTER,
                                    false);
         while (it.hasNext()) {
-            RADProperty prop = (RADProperty) it.next();
+            RADProperty prop = it.next();
             sourceList.add(prop);
             namesList.add(prop.getName());
         }
