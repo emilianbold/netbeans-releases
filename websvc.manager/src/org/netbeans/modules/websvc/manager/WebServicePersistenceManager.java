@@ -319,8 +319,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
                 if (!reloadIfExists || !partnerUrls.contains(url)) {
                     // Add a new web service
                     partnerUrls.add(url);
-                    WebServiceData wsData = new WebServiceData(url, url, newGroup.getId());
-                    wsData.setName(entry.getValue());
+                    WebServiceData wsData = new WebServiceData(url, newGroup.getId());
                     WebServiceListModel.getInstance().addWebService(wsData);
 
                     newGroup.add(wsData.getId(), true);
@@ -329,7 +328,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
                     WebServiceData existingData = null;
                     List<WebServiceData> wsDatas = WebServiceListModel.getInstance().getWebServiceSet();
                     for (WebServiceData wsData : wsDatas) {
-                        if (wsData.getOriginalWsdl().equals(url)) {
+                        if (wsData.getOriginalWsdlUrl().equals(url)) {
                             existingData = wsData;
                             break;
                         }
@@ -339,8 +338,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
                         WebServiceManager.getInstance().resetWebService(existingData);
                         existingData.setName(entry.getValue());
                     }else {
-                        WebServiceData wsData = new WebServiceData(url, url, newGroup.getId());
-                        wsData.setName(entry.getValue());
+                        WebServiceData wsData = new WebServiceData(url, newGroup.getId());
                         WebServiceListModel.getInstance().addWebService(wsData);
 
                         newGroup.add(wsData.getId(), true);

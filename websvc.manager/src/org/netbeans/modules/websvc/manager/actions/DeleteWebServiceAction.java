@@ -52,6 +52,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
 import java.io.IOException;
 import org.netbeans.modules.websvc.manager.WebServiceManager;
+import org.netbeans.modules.websvc.manager.model.WebServiceData;
 
 /**
  * This action will delete a web service from the server navigator
@@ -114,7 +115,8 @@ public class DeleteWebServiceAction extends NodeAction {
                         Runnable deleteTask = new Runnable() {
                             public void run() {
                                 try {
-                                    if (!WebServiceManager.getInstance().isCompiling(currentNode.getWebServiceData())) {
+                                    if (!currentNode.getWebServiceData().getState().equals(
+                                            WebServiceData.State.WSDL_SERVICE_COMPILING)) {
                                         currentNode.destroy();
                                     }
                                 } catch (IOException ioe) {

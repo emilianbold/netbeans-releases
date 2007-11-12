@@ -316,7 +316,7 @@ public class WebServiceListModel {
             Runnable run = new Runnable() {
                 public void run() {
             try {
-                WebServiceManager.getInstance().ensureWebServiceClientReady(target);
+                WebServiceManager.getInstance().addWebService(target, true);
             } catch (IOException ex) {
                 Logger.global.log(Level.INFO, ex.getLocalizedMessage(), ex);
             }

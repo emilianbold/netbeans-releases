@@ -98,8 +98,6 @@ public class WebServiceManagerTest extends NbTestCase {
                 testData.getLocalCatalogFile(), 
                 WebServiceListModel.DEFAULT_GROUP);
         
-        addToListModel(wsData, listModel);
-        
         WebServiceGroup defaultGroup = listModel.getWebServiceGroup(WebServiceListModel.DEFAULT_GROUP);
         
         assertEquals("WebServiceData stored in WebServiceListModel not retrieved", wsData, listModel.getWebService(wsData.getId()));
@@ -124,8 +122,6 @@ public class WebServiceManagerTest extends NbTestCase {
                 testData.getLocalCatalogFile(), 
                 WebServiceListModel.DEFAULT_GROUP);
         
-        addToListModel(wsData, listModel);
-        
         WebServiceGroup defaultGroup = listModel.getWebServiceGroup(WebServiceListModel.DEFAULT_GROUP);
         
         assertEquals("WebServiceData stored in WebServiceListModel not retrieved", wsData, listModel.getWebService(wsData.getId()));
@@ -138,24 +134,19 @@ public class WebServiceManagerTest extends NbTestCase {
         assertNull("WebServiceData not removed from list model", listModel.getWebService(wsData.getId()));
     }
     
-    private WebServiceData createWebServiceData(File wsdlFile, String original, String packageName, File catalog, String groupId) throws Exception {
-        URL wsdlUrl = wsdlFile.toURI().toURL();
-        WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlUrl);
-        WsdlModel model = wsdlModeler.getAndWaitForWsdlModel();
-        
-        WebServiceData wsData = new WebServiceData(model.getServices().get(0), wsdlFile.getAbsolutePath(), original, groupId);        
+    public WebServiceData createWebServiceData(File wsdlFile, String original, String packageName, File catalog, String groupId) throws Exception {
+        WebServiceData wsData = new WebServiceData(wsdlFile.getAbsolutePath(), original, groupId);
         
         wsData.setPackageName(packageName);
         wsData.setCatalog(catalog.getAbsolutePath());
+
+        WebServiceManager.getInstance().addWebService(wsData, false);
         
+        assertTrue("WebServiceData state not correct",
+                wsData.getState().equals(WebServiceData.State.WSDL_RETRIEVED));
         return wsData;
     }
-    
-    private void addToListModel(WebServiceData wsData, WebServiceListModel listModel) {
-        listModel.addWebService(wsData);
-        listModel.getWebServiceGroup(wsData.getGroupId()).add(wsData.getId());
-    }
-    
+        
     
     /**
      * Test of addWebService method, of class WebServiceManager.
@@ -164,6 +155,9 @@ public class WebServiceManagerTest extends NbTestCase {
     public void testAddWebService() throws Exception {
         System.out.println("addWebService");
 
+        File localWsdlFile = testData.getLocalWsdlFile();
+        File localOriginalWsdl = testData.getLocalOriginalWsdl();
+        
         String packageName = "websvc";
         String groupId = WebServiceListModel.DEFAULT_GROUP;
         URL wsdlUrl = localWsdlFile.toURI().toURL();
@@ -199,6 +193,8 @@ public class WebServiceManagerTest extends NbTestCase {
             }
         });
         
+        File localCatalogFile = testData.getLocalCatalogFile();
+        final int TIMEOUT = 30000;
         
         WsdlModelListenerImpl listener = new WsdlModelListenerImpl(localWsdlFile, originalWsdl, packageName, groupId, localCatalogFile);
         WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlUrl);

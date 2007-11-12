@@ -48,7 +48,7 @@ public class RefreshWebServiceAction extends NodeAction {
         nodes.length != 0) {
             for (int i = 0; i < nodes.length; i++) {
                 WebServiceData data = nodes[i].getLookup().lookup(WebServiceData.class);
-                if (data != null && !WebServiceManager.getInstance().isCompiling(data)) {
+                if (data != null && !data.getState().equals(WebServiceData.State.WSDL_SERVICE_COMPILING)) {
                     return true;
                 }
             }
@@ -87,7 +87,7 @@ public class RefreshWebServiceAction extends NodeAction {
                         Runnable refreshTask = new Runnable() {
                             public void run() {
                                 try {
-                                    if (!WebServiceManager.getInstance().isCompiling(wsData)) {
+                                    if (!wsData.getState().equals(WebServiceData.State.WSDL_SERVICE_COMPILING)) {
                                         WebServiceManager.getInstance().refreshWebService(wsData);
                                     }
                                 } catch (IOException ioe) {

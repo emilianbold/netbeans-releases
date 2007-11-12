@@ -119,7 +119,7 @@ public class DeleteWebServiceGroupAction extends NodeAction {
                                 for (String id : ids) {
                                     WebServiceData wsData = WebServiceListModel.getInstance().getWebService(id);
                                     if (wsData != null) {
-                                        if (WebServiceManager.getInstance().isCompiling(wsData)) {
+                                        if (wsData.getState().equals(WebServiceData.State.WSDL_SERVICE_COMPILING)) {
                                             return;
                                         }
                                     }

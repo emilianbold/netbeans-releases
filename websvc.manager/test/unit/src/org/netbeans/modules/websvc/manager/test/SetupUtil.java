@@ -29,17 +29,21 @@
 package org.netbeans.modules.websvc.manager.test;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.jar.Manifest;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.websvc.manager.WebServiceManager;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
+import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -60,8 +64,11 @@ import org.openide.util.NbCollections;
 public class SetupUtil {
     private static final String WORKDIR_SPACES = "user directory/config/WebServices";
     private static final String WORKDIR = "userdirectory/config/WebServices";
-    private static final String TEST_WSDL = "../resources/uszip.asmx.wsdl";
+    private static final String TEST_WSDL = "../resources/uszip-asmx-catalog/www.webservicemart.com/uszip.asmx.wsdl";
     private static final String TEST_CATALOG_DIR = "../resources/uszip-asmx-catalog";
+    
+    private static final String ENDORSED_REF = "modules/ext/jaxws21/api/jaxws-api.jar";
+    private static final String JAXWS_LIB_PROPERTY = "libs.jaxws21.classpath";
     
     public static SetupData commonSetUp(File workingDir) throws Exception {
         SetupData data = new SetupData();
@@ -81,13 +88,12 @@ public class SetupUtil {
         File wsdlFile = new File(SetupUtil.class.getResource(TEST_WSDL).toURI());
         File catalogDir = new File(SetupUtil.class.getResource(TEST_CATALOG_DIR).toURI());
         
-        copy(wsdlFile, websvcUserDir);
         copy(wsdlFile, workingDir);
         copy(catalogDir, websvcUserDir);
         
         System.getProperties().setProperty("netbeans.user", websvcUserDir.getParentFile().getParentFile().getAbsolutePath());
         
-        data.setLocalWsdlFile(new File(websvcUserDir, wsdlFile.getName()));
+        data.setLocalWsdlFile(new File(websvcUserDir, "uszip-asmx-catalog/www.webservicemart.com/uszip.asmx.wsdl"));
         data.setLocalCatalogFile(new File(websvcUserDir, catalogDir.getName() + "/catalog.xml"));
         data.setLocalOriginalWsdl(new File(workingDir, wsdlFile.getName()));
         
@@ -99,6 +105,9 @@ public class SetupUtil {
         
         InstalledFileLocatorImpl locator = (InstalledFileLocatorImpl)Lookup.getDefault().lookup(InstalledFileLocator.class);
         locator.setUserConfigRoot(websvcHome.getParentFile());
+        
+        File targetBuildProperties = new File(websvcUserDir.getParentFile().getParentFile(), "build.properties");
+        generatePropertiesFile(targetBuildProperties);
         
         return data;
     }
@@ -136,6 +145,41 @@ public class SetupUtil {
                 }
             }
         }
+    }
+    
+    private static void generatePropertiesFile(File target) throws IOException {
+        String separator = System.getProperty("path.separator");
+        File apiBase = InstalledFileLocator.getDefault().locate(ENDORSED_REF, null, true).getParentFile();
+        File jaxWsBase = apiBase.getParentFile();
+        
+        FileFilter jarFilter = new FileFilter() {
+            public boolean accept(File pathname) {
+                return pathname.isFile() && pathname.getName().endsWith(".jar");
+            }
+        };
+        
+        File[] apiJars = apiBase.listFiles(jarFilter);
+        File[] implJars = jaxWsBase.listFiles(jarFilter);
+        
+        Properties result = new Properties();
+        StringBuffer classpath = new StringBuffer();
+        
+        for (int i = 0; i < apiJars.length; i++) {
+            String pathElement = apiJars[i].getAbsolutePath() + separator;
+            classpath.append(pathElement);
+        }
+        
+        for (int i = 0; i < implJars.length; i++) {
+            classpath.append(implJars[i].getAbsolutePath());
+            if (i != implJars.length - 1) {
+                classpath.append(separator);
+            }
+        }
+        
+        result.setProperty(JAXWS_LIB_PROPERTY, classpath.toString());
+        
+        FileOutputStream fos = new FileOutputStream(target);
+        result.store(fos, "build.properties file");
     }
     
     public static final class TestRepository extends Repository {

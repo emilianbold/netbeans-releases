@@ -63,13 +63,19 @@ public class WebServiceData {
     /** Unique Web service id*/
     private String websvcId;
     
-    /** Web service URL (File) */
-    private String wsdlUrl;
-    private String originalWsdl;
+    /** Absolute path to web service definition file */
+    private String wsdlFile;
+    
+    /** The source WSDL URL */
+    private String originalWsdlUrl;
+    
+    /** The catalog file containing paths to the retrieved resources */
     private String catalog;
     
     /** Group ID to which this Web Service belogs */
     private String groupId;
+    
+    /** The java package name used for the generated code */
     private String packageName;
     
     /** WSDL Service Model this meta model wraps */
@@ -85,8 +91,15 @@ public class WebServiceData {
     private String wsName;
     private boolean jaxWsEnabled;
     private boolean jaxRpcEnabled;
+    
+    /** Removing this field. Use {@link #wsdlState} */
+    @Deprecated
     private boolean compiled;
     
+    /** The current state of the web service data */
+    private State wsdlState = State.WSDL_UNRETRIEVED;
+    
+    /** Flag indicating whether the WSDL has been retrieved and has not failed in being modeled */
     private boolean resolved;
     
     // File descriptors for each web service type
@@ -104,24 +117,30 @@ public class WebServiceData {
         this.resolved = true;
     }
     
-    public WebServiceData(String url, String originalWsdl, String groupId) {
+    public WebServiceData(String originalWsdlUrl, String groupId) {
+        this(null, originalWsdlUrl, groupId);
+        this.wsdlState = State.WSDL_UNRETRIEVED;
+    }
+    
+    public WebServiceData(String file, String originalWsdl, String groupId) {
         websvcId = WebServiceListModel.getInstance().getUniqueWebServiceId();
-        wsdlUrl = url;
+        wsdlFile = file;
         this.packageName = derivePackageName(originalWsdl, null);
         this.groupId = groupId;
         this.compiled = false;
-        this.originalWsdl = originalWsdl;
+        this.originalWsdlUrl = originalWsdl;
         this.resolved = true;
+        if (file != null) this.wsdlState = State.WSDL_RETRIEVED;
     }
     
-    public WebServiceData(WsdlService service, String url, String originalWsdl, String groupId){
-        this(url, originalWsdl, groupId);
+    public WebServiceData(WsdlService service, String wsdlFile, String originalWsdl, String groupId){
+        this(wsdlFile, originalWsdl, groupId);
         wsdlService = service;
         wsName = service.getName();
     }
     
     public WebServiceData(WebServiceData that) {
-        this(that.getURL(), that.getOriginalWsdl(), that.getGroupId());
+        this(that.getWsdlFile(), that.getOriginalWsdlUrl(), that.getGroupId());
         this.packageName = that.packageName;
         this.jaxWsDescriptor = that.jaxWsDescriptor;
         this.jaxWsDescriptorPath = that.jaxWsDescriptorPath;
@@ -132,10 +151,11 @@ public class WebServiceData {
         this.catalog = that.catalog;
         this.wsdlService = that.wsdlService;
         this.wsName = that.wsName;
+        this.wsdlState = that.wsdlState;
     }
     
     public boolean isReady() {
-        if (! new File(getURL()).isFile() || getCatalog() == null || ! new File(getCatalog()).isFile()) {
+        if (! new File(getWsdlFile()).isFile() || getCatalog() == null || ! new File(getCatalog()).isFile()) {
             return false;
         }
         
@@ -242,21 +262,52 @@ public class WebServiceData {
         groupId = id;
     }
     
-    public String getURL() {
-        return wsdlUrl;
+    public String getWsdlFile() {
+        return wsdlFile;
     }
     
+    public void setWsdlFile(String fileName) {
+        setModelDirty();
+        this.wsdlFile = fileName;
+    }
+    
+    /**
+     * 
+     * @return the WSDL file (absolute path)
+     * @deprecated use {@link #getWsdlFile()} instead
+     */
+    @Deprecated
+    public String getURL() {
+        return wsdlFile;
+    }
+    
+    /**
+     * 
+     * @param url the WSDL file
+     * @deprecated use {@link #setWsdlFile(String)} instead
+     */
+    @Deprecated
     public void setURL(String url) {
         setModelDirty();
-        wsdlUrl = url;
+        wsdlFile = url;
     }
     
+    public String getOriginalWsdlUrl() {
+        return originalWsdlUrl;
+    }
+    
+    public void setOriginalWsdlUrl(String originalWsdl) {
+        this.originalWsdlUrl = originalWsdl;
+    }
+    
+    @Deprecated
     public String getOriginalWsdl() {
-        return originalWsdl;
+        return originalWsdlUrl;
     }
     
+    @Deprecated
     public void setOriginalWsdl(String originalWsdl) {
-        this.originalWsdl = originalWsdl;
+        this.originalWsdlUrl = originalWsdl;
     }
     
     public void setPackageName(String inPackageName){
@@ -328,10 +379,28 @@ public class WebServiceData {
         jaxWsEnabled = b;
     }
     
+    public State getState() {
+        return wsdlState;
+    }
+    
+    public void setState(State state) {
+        boolean fireEvent = (!wsdlState.equals(State.WSDL_SERVICE_COMPILED) && 
+                state.equals(State.WSDL_SERVICE_COMPILED));
+        
+        this.wsdlState = state;
+        if (fireEvent) {
+            for (WebServiceDataListener listener : listeners) {
+                listener.webServiceCompiled(new WebServiceDataEvent(this));
+            }            
+        }
+    }
+    
+    @Deprecated
     public boolean isCompiled() {
         return compiled;
     }
 
+    @Deprecated
     public void setCompiled(boolean compiled) {
         boolean fireEvent = false;
         if (this.compiled == false && compiled == true) fireEvent = true;
@@ -367,4 +436,9 @@ public class WebServiceData {
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         propertyListeners.remove(listener);
     }
+    
+    public static enum State {
+        WSDL_UNRETRIEVED, WSDL_RETRIEVING, WSDL_RETRIEVED, WSDL_SERVICE_COMPILING, WSDL_SERVICE_COMPILED, WSDL_SERVICE_COMPILE_FAILED
+    }
+    
 }

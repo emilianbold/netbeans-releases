@@ -77,9 +77,26 @@ public class WebServiceNodeChildren extends Children.Keys<WsdlPort> implements W
     protected Node[] createNodes(WsdlPort key) {
         if (!wsData.isResolved()) {
             return new Node[0];
-        }else if (!wsData.isCompiled()) {
-            // start the compilation
-            WebServiceManager.getInstance().compileWebService(wsData);
+        }else if (!wsData.getState().equals(WebServiceData.State.WSDL_SERVICE_COMPILED)) {
+
+            final WebServiceManager manager = WebServiceManager.getInstance();
+            final WebServiceData data = wsData;
+            
+            if (!data.getState().equals(WebServiceData.State.WSDL_SERVICE_COMPILING)) {
+                Runnable compileThread = new Runnable() {
+                    public void run() {
+                        try {
+                            WebServiceManager.compileService(data);
+                        } finally {
+                            if (!data.getState().equals(WebServiceData.State.WSDL_SERVICE_COMPILED)) {
+                                manager.removeWebService(data);
+                            }
+                        }
+                    }
+                };
+                
+                manager.getRequestProcessor().post(compileThread);
+            }
             
             AbstractNode waitNode = new AbstractNode(Children.LEAF);
             waitNode.setName(NbBundle.getMessage(WebServiceGroupNodeChildren.class, "NODE_LOAD_MSG"));
