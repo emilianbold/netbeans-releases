@@ -42,6 +42,7 @@
 package org.netbeans.modules.editor;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
@@ -73,6 +74,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.editor.EditorUI;
 import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
 import org.netbeans.spi.editor.highlighting.HighlightAttributeValue;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
@@ -247,8 +249,8 @@ public class NbToolTip extends FileChangeAdapter {
                         doc.readLock();
                         try {
                             Point p = tts.getLastMouseEvent().getPoint();
-                            int offset = p.x >= 0 ? target.viewToModel(p) : -1;
-                            if (offset >= 0 && offset < Utilities.getRowEnd(doc, offset)) {
+                            int offset = getOffsetForPoint(p, target, doc);
+                            if (offset >= 0) {
                                 EditorKit kit = org.netbeans.editor.Utilities.getKit(target);
                                 if (kit instanceof NbEditorKit) {
                                     Object tooltipAttributeValue = null;
@@ -303,6 +305,25 @@ public class NbToolTip extends FileChangeAdapter {
                 }
             }
         }
+    }
+    
+    private static int getOffsetForPoint(Point p, JTextComponent c, BaseDocument doc) throws BadLocationException {
+        if (p.x >= 0 && p.y >= 0) {
+            int offset = c.viewToModel(p);
+            Rectangle r = c.modelToView(offset);
+            EditorUI eui = Utilities.getEditorUI(c);
+
+            // Check that p is on a line with text and not completely below text,
+            // ie. behind EOF.
+            if (eui != null && r.y == (p.y / eui.getLineHeight()) * eui.getLineHeight()) {
+                // Check that p is on a line with text before its EOL.
+                if (offset < Utilities.getRowEnd(doc, offset)) {
+                    return offset;
+                }
+            }
+        }
+        
+        return -1;
     }
         
     private static class Request implements Runnable, PropertyChangeListener, DocumentListener {
