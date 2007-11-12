@@ -120,7 +120,8 @@ public final class MidpJavaSupport implements Runnable, PropertyChangeListener {
     }
 
     public void run() {
-        if (document.get() == null) {
+        final DesignDocument doc = document.get();
+        if (doc == null) {
             return;
         }
         
@@ -130,17 +131,18 @@ public final class MidpJavaSupport implements Runnable, PropertyChangeListener {
                 break;
             }
             String fqnName = validationQueue.remove();
-            boolean isValid = checkValidity(document.get(), fqnName);
+            boolean isValid = checkValidity(doc, fqnName);
             validationCache.put(fqnName, isValid);
         }
     }
 
     private void registerClassPathListener() {
-        if (document.get() == null) {
+        final DesignDocument doc = document.get();
+        if (doc == null) {
             return;
         }
         
-        final ClasspathInfo info = getClasspathInfo(ProjectUtils.getProject(document.get()));
+        final ClasspathInfo info = getClasspathInfo(ProjectUtils.getProject(doc));
         if (info == null) {
             Debug.warning("Can't get ClasspathInfo for project"); // NOI18N
             return;
@@ -182,14 +184,15 @@ public final class MidpJavaSupport implements Runnable, PropertyChangeListener {
     }
     
     void updateCacheInternally() {
-        if (document.get() == null) {
+        final DesignDocument doc = document.get();
+        if (doc == null) {
             return;
         }
         
         validationCache.clear();
 
-        final String projectID = document.get().getDocumentInterface().getProjectID();
-        final String projectType = document.get().getDocumentInterface().getProjectType();
+        final String projectID = doc.getDocumentInterface().getProjectID();
+        final String projectType = doc.getDocumentInterface().getProjectType();
         final List<ComponentProducer> producers = new ArrayList<ComponentProducer>();
         
         final DescriptorRegistry registry = DescriptorRegistry.getDescriptorRegistry(projectType, projectID);
@@ -200,14 +203,14 @@ public final class MidpJavaSupport implements Runnable, PropertyChangeListener {
             }
         });
         
-        final ClasspathInfo info = getClasspathInfo(ProjectUtils.getProject(document.get()));
+        final ClasspathInfo info = getClasspathInfo(ProjectUtils.getProject(doc));
         if (info != null) {
             try {
                 JavaSource.create(info).runWhenScanFinished(new Task<CompilationController>() {
                     
                     public void run(CompilationController cc) throws Exception {
                         for (ComponentProducer componentProducer : producers) {
-                            componentProducer.checkValidity(document.get(), true);
+                            componentProducer.checkValidity(doc, true);
                         }
                     }
                 }, true);
