@@ -42,28 +42,28 @@
 
 package org.netbeans.modules.pdf;
 
-
 import java.awt.Image;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.SimpleBeanInfo;
-
 import org.openide.ErrorManager;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.Utilities;
 
 
-/** BeanInfo for <code>PDFDataLoader</code>.
+/**
+ * BeanInfo for {@code PDFDataLoader}.
  *
  * @author Jesse Glick
  */
 public class PDFDataLoaderBeanInfo extends SimpleBeanInfo {
 
-    /** Gets additional bean infos. Overrides superclass method. */
-    public BeanInfo[] getAdditionalBeanInfo () {
+    /** Gets additional bean infos. */
+    @Override
+    public BeanInfo[] getAdditionalBeanInfo() {
         try {
-            return new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
+            return new BeanInfo[] { Introspector.getBeanInfo(UniFileLoader.class) };
         } catch (IntrospectionException ie) {
             ErrorManager.getDefault().notify(ie);
             
@@ -71,8 +71,9 @@ public class PDFDataLoaderBeanInfo extends SimpleBeanInfo {
         }
     }
 
-    /** Gets icon. Overrides superclass method. */
-    public Image getIcon (int type) {
+    /** Gets icon. */
+    @Override
+    public Image getIcon(int type) {
         return Utilities.loadImage("org/netbeans/modules/pdf/PDFDataIcon.png"); // NOI18N
     }
 
