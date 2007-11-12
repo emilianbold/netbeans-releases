@@ -42,7 +42,6 @@
 package org.netbeans.modules.form;
 
 import java.awt.dnd.DropTargetDragEvent;
-import org.openide.nodes.Node;
 
 import org.netbeans.modules.form.palette.PaletteItem;
 
