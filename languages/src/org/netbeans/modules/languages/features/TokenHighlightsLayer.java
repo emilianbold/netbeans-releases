@@ -99,37 +99,40 @@ class TokenHighlightsLayer extends AbstractHighlightsContainer {
             attributeSet = new SimpleAttributeSet ();
             startOffset1 = endOffset1;
             TokenSequence ts = hierarchy.tokenSequence ();
-            
+            moveNext(ts);
+            return endOffset1 > startOffset1 && startOffset1 < endOffset;
+        }
+
+        private void moveNext(TokenSequence ts) {
             AttributeSet as = null;
             do {
-                do {
-                    ts.move (startOffset1);
-                    if (!ts.moveNext ())
-                        return endOffset1 > startOffset1;
-                    Token t = ts.token ();
-                    if (ts.language () == null)
-                        throw new NullPointerException ("ts.language()==null: TS " + ts + " : " + document.getProperty("mimeType"));
-//                    ASTToken stoken = ASTToken.create (
-//                        ts.language ().mimeType (),
-//                        t.id ().ordinal (),
-//                        t.text ().toString (),
-//                        ts.offset ()
-//                    );
-                    as = highlighting.get (ts.offset (), ts.offset () + t.length ());
-                    if (as != null) {
-                        attributeSet.addAttributes (as);
-                        endOffset1 = ts.offset () + t.length ();
-                    }
-                    TokenSequence ts1 = ts.embedded ();
-                    if (ts1 == null) break;
-                    ts = ts1;
-                } while (true);
-                if (endOffset1 > startOffset1)
-                    return true;
-                startOffset1 = ts.offset () + ts.token ().length ();
-                endOffset1 = startOffset1;
+                ts.move(startOffset1);
+                if (!ts.moveNext()) {
+                    return;
+                }
+                Token t = ts.token();
+                if (ts.language() == null)
+                    throw new NullPointerException ("ts.language()==null: TS " + ts + " : " + document.getProperty("mimeType"));
+                as = highlighting.get (ts.offset(), ts.offset() + t.length());
+                if (as != null) {
+                    attributeSet.addAttributes(as);
+                    endOffset1 = ts.offset() + t.length();
+                    return;
+                }
+                TokenSequence ts1 = ts.embedded();
+                if (ts1 != null) {
+                    moveNext(ts1);
+                }
+                if (endOffset1 > startOffset1) {
+                    return;
+                }
+                if (ts.token() != null) {
+                    startOffset1 = ts.offset() + ts.token().length();
+                    endOffset1 = startOffset1;
+                } else {
+                    return;
+                }
             } while (startOffset1 < endOffset);
-            return false;
         }
 
         public int getStartOffset () {
