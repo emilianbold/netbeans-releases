@@ -45,12 +45,15 @@ import java.io.File;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.*;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 
-/** Data object representing a PDF file.
+/**
+ * Data object representing a PDF file.
  * Only interesting feature is the {@link OpenCookie}
  * which lets you view it in e.g. Acrobat Reader or similar.
  * @author Jesse Glick
@@ -59,21 +62,25 @@ public class PDFDataObject extends MultiDataObject {
 
     private static final long serialVersionUID = -1073885636989804140L;
     
-    public PDFDataObject (FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
-        super (pf, loader);
-        CookieSet cookies = getCookieSet ();
+    public PDFDataObject(FileObject pf, MultiFileLoader loader)
+                                            throws DataObjectExistsException {
+        super(pf, loader);
+        CookieSet cookies = getCookieSet();
         // [PENDING] try also Java-implemented reader
-        File f = FileUtil.toFile (pf);
-        if (f != null)
-            cookies.add (new PDFOpenSupport (f));
+        File f = FileUtil.toFile(pf);
+        if (f != null) {
+            cookies.add(new PDFOpenSupport(f));
+        }
     }
 
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (PDFDataObject.class);
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(PDFDataObject.class);
     }
 
-    protected Node createNodeDelegate () {
-        return new PDFDataNode (this);
+    @Override
+    protected Node createNodeDelegate() {
+        return new PDFDataNode(this);
     }
 
 }
