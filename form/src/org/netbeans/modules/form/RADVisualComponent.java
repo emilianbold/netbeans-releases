@@ -67,7 +67,7 @@ public class RADVisualComponent extends RADComponent {
     // Private properties
 
     // [??]
-    private HashMap constraints = new HashMap();
+    private Map<String,LayoutConstraints> constraints = new HashMap<String,LayoutConstraints>();
 //    transient private RADVisualContainer parent;
 
     private Node.Property[] constraintsProperties;
@@ -186,22 +186,22 @@ public class RADVisualComponent extends RADComponent {
     public void setLayoutConstraints(Class layoutDelegateClass,
                                      LayoutConstraints constr)
     {
-        if (constr != null)
+        if (constr != null) {
             constraints.put(layoutDelegateClass.getName(), constr);
+        }
     }
 
     /** Gets component's constraints description for given layout-support class.
      */
     public LayoutConstraints getLayoutConstraints(Class layoutDelegateClass) {
-        return (LayoutConstraints)
-               constraints.get(layoutDelegateClass.getName());
+        return constraints.get(layoutDelegateClass.getName());
     }
 
-    HashMap getConstraintsMap() {
+    Map<String,LayoutConstraints> getConstraintsMap() {
         return constraints;
     }
 
-    void setConstraintsMap(Map map) {
+    void setConstraintsMap(Map<String,LayoutConstraints> map) {
         constraints.putAll(map);
     }
 

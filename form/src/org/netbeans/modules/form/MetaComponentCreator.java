@@ -732,15 +732,13 @@ public class MetaComponentCreator {
         if (sourceComp instanceof RADVisualComponent
             && newComp instanceof RADVisualComponent)
         {
-            Map constraints = ((RADVisualComponent)sourceComp).getConstraintsMap();
-            Map<Object,LayoutConstraints> newConstraints = new HashMap<Object,LayoutConstraints>();
+            Map<String,LayoutConstraints> constraints = ((RADVisualComponent)sourceComp).getConstraintsMap();
+            Map<String,LayoutConstraints> newConstraints = new HashMap<String,LayoutConstraints>();
 
-            for (it = constraints.entrySet().iterator(); it.hasNext(); ) {
-                Map.Entry entry = (Map.Entry)it.next();
-                Object layoutClassName = entry.getKey();
-                LayoutConstraints clonedConstr =
-                    ((LayoutConstraints)entry.getValue())
-                        .cloneConstraints();
+            for (Iterator<Map.Entry<String,LayoutConstraints>> it3 = constraints.entrySet().iterator(); it3.hasNext(); ) {
+                Map.Entry<String,LayoutConstraints> entry = it3.next();
+                String layoutClassName = entry.getKey();
+                LayoutConstraints clonedConstr = entry.getValue().cloneConstraints();
                 newConstraints.put(layoutClassName, clonedConstr);
             }
             ((RADVisualComponent)newComp).setConstraintsMap(newConstraints);
