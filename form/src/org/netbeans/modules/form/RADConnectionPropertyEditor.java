@@ -74,7 +74,11 @@ public class RADConnectionPropertyEditor
     private RADConnectionDesignValue designValue = null;
     private Object realValue = null;
 
-    /** Creates a new RADConnectionPropertyEditor */
+    /**
+     * Creates a new RADConnectionPropertyEditor
+     * 
+     * @param propertyType type of the property.
+     */
     public RADConnectionPropertyEditor(Class propertyType) {
         this.propertyType = propertyType;
         this.editorType = Type.FormConnection;
@@ -92,7 +96,9 @@ public class RADConnectionPropertyEditor
     /** If a property editor or customizer implements the FormAwareEditor
      * interface, this method is called immediately after the PropertyEditor
      * instance is created or the Customizer is obtained from getCustomizer().
+     * 
      * @param model  The FormModel representing data of opened form.
+     * @param prop property.
      */
     public void setContext(FormModel model, FormProperty prop) {
         formModel = model;
@@ -462,7 +468,7 @@ public class RADConnectionPropertyEditor
          * E.g. the ResourceBundle String would provide the real value
          * of the String from the resource bundle, so that the design-time
          * representation reflects the real code being generated.
-         * @param radComponent the radComponent in which this property is used
+         *
          * @return the real property value to be used during design-time
          */
         public Object getDesignValue() { //RADComponent radComponent) {
@@ -474,16 +480,14 @@ public class RADConnectionPropertyEditor
             switch (type) {
                 case TYPE_PROPERTY:
                     try {
-                        Object value = getProperty().getReadMethod().invoke(getRADComponent().getBeanInstance(), new Object[0]);
-                        return value;
+                        return getProperty().getReadMethod().invoke(getRADComponent().getBeanInstance(), new Object[0]);
                     } catch (Exception e) {
                         // in case of failure do not provide the value during design time
                         return FormDesignValue.IGNORED_VALUE;
                     }
                 case TYPE_METHOD:
                     try {
-                        Object value = getMethod().getMethod().invoke(getRADComponent().getBeanInstance(), new Object[0]);
-                        return value;
+                        return getMethod().getMethod().invoke(getRADComponent().getBeanInstance(), new Object[0]);
                     } catch (Exception e) {
                         // in case of failure do not provide the value during design time
                         return FormDesignValue.IGNORED_VALUE;
@@ -508,7 +512,10 @@ public class RADConnectionPropertyEditor
             return getName();
         }
 
-        /** Returns type of this connection design value.
+        /**
+         * Returns type of this connection design value.
+         * 
+         * @return type of this connection design value.
          */
         public int getType() {
             return type;
@@ -564,8 +571,9 @@ public class RADConnectionPropertyEditor
     /** Called to load property value from specified XML subtree. If succesfully loaded,
      * the value should be available via the getValue method.
      * An IOException should be thrown when the value cannot be restored from the specified XML element
+     * 
      * @param element the XML DOM element representing a subtree of XML from which the value should be loaded
-     * @exception IOException thrown when the value cannot be restored from the specified XML element
+     * @throws java.io.IOException thrown when the value cannot be restored from the specified XML element
      */
     public void readFromXML(org.w3c.dom.Node element) throws java.io.IOException {
         if (!XML_CONNECTION.equals(element.getNodeName())) {
