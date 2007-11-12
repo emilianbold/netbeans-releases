@@ -115,9 +115,13 @@ public class RADComponent {
     // -----------------------------------------------------------------------------
     // Constructors & Initialization
 
-    /** Called to initialize the component with specified FormModel.
+    /**
+     * Called to initialize the component with specified FormModel.
+     * 
      * @param formModel the FormModel of the form into which this component
-     * will be added 
+     * will be added
+     * @return <code>true</code> if the model was initialized,
+     * <code>false</code> otherwise.
      */
     public boolean initialize(FormModel formModel) {
         if (this.formModel == null) {
@@ -144,7 +148,10 @@ public class RADComponent {
     /** Initializes the bean instance represented by this meta component.
      * A default instance is created for the given bean class.
      * The meta component is fully initialized after this method returns.
+     * 
      * @param beanClass the bean class to be represented by this meta component
+     * @return initialized instance.
+     * @throws java.lang.Exception when the instance cannot be initialized.
      */
     public Object initInstance(Class<? extends Object> beanClass) throws Exception {
         if (beanClass == null)
@@ -198,6 +205,8 @@ public class RADComponent {
 
     /** Updates the bean instance - e.g. when setting a property requires
      * to create new instance of the bean.
+     * 
+     * @param beanInstance bean instance.
      */
     public void updateInstance(Object beanInstance) {
         if (this.beanInstance != null && this.beanClass == beanInstance.getClass())
@@ -212,13 +221,17 @@ public class RADComponent {
      * Called to create the instance of the bean. This method is called if the
      * initInstance method is used; using the setInstance method, the bean
      * instance is set directly.
-     * @return the instance of the bean that will be used during design time 
+     * 
+     * @return the instance of the bean that will be used during design time
+     * @throws java.lang.Exception when the instance cannot be created.
      */
     protected Object createBeanInstance() throws Exception {
         return CreationFactory.createDefaultInstance(beanClass);
     }
 
     /** Sets directly the bean instance. Can be overriden.
+     * 
+     * @param beanInstance bean instance.
      */
     protected void setBeanInstance(Object beanInstance) {
         if (beanClass == null) { // bean class not set yet
@@ -414,7 +427,8 @@ public class RADComponent {
     /** Setter for the name of the component - it is the name of the
      * component's node and the name of the variable declared for the component
      * in the generated code.
-     * @param value new name of the component
+     * 
+     * @param name new name of the component
      */
     public void setName(String name) {
         if (!needsVariableRename(name)) {
@@ -698,6 +712,8 @@ public class RADComponent {
     /**
      * Returns property of given name corresponding to a property or event.
      * Forces creation of all property objects.
+     * 
+     * @param name name of the property.
      * @return bean or event property
      */
     public Node.Property getPropertyByName(String name) {
@@ -728,6 +744,8 @@ public class RADComponent {
     /**
      * Returns bean properties of given names. Creates the properties if not
      * created yet, but does not force creation of all bean properties.
+     * 
+     * @param propNames property names.
      * @return array of properties corresponding to the names; may contain
      *         null if there is no property of given name
      */
@@ -1314,6 +1332,10 @@ public class RADComponent {
 
     /** Called to modify original bean properties obtained from BeanInfo.
      * Properties may be added, removed etc. - due to specific needs.
+     * 
+     * @param prefProps preferred properties.
+     * @param normalProps normal properties.
+     * @param expertProps expert properties.
      */
     protected void changePropertiesExplicitly(List<RADProperty> prefProps,
                                               List<RADProperty> normalProps,
