@@ -193,6 +193,9 @@
         <Component class="javax.swing.JTable" name="detailTable">
           <BindingProperties>
             <BindingProperty name="elements" source="masterTable" sourcePath="${selectedElement._joinCollection_}" target="detailTable" targetPath="elements">
+              <Property name="incompletePathValue" type="java.util.List" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                <ComponentRef name="null"/>
+              </Property>
               <!-- DETAIL_SUBBINDING_TEMPLATE -->
               <Subbinding sourcePath="${_fieldName_}">
                 <BindingParameter name="javax.swing.binding.ParameterKeys.COLUMN" value="_index_"/>
