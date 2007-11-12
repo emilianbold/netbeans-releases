@@ -155,6 +155,10 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
                 removeAnnotations(b);
                 breakpointToAnnotations.remove(b);
             }
+            if (b instanceof LineBreakpoint) {
+                LineBreakpoint lb = (LineBreakpoint) b;
+                LineTranslations.getTranslations().unregisterFromLineUpdates(lb);
+            }
         }
     }
 
