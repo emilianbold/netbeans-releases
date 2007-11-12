@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.highlight;
 
 import javax.swing.text.Document;
+import org.netbeans.modules.cnd.highlight.semantic.MarkOccurencesHighlighter;
 import org.netbeans.modules.cnd.highlight.semantic.ifdef.*;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
@@ -61,14 +62,38 @@ public class CppHighlightsLayerFactory implements HighlightsLayerFactory {
         }
         return ich;
     }
+
+    public static MarkOccurencesHighlighter getMarkOccurencesHighlighter(Document doc) {
+        MarkOccurencesHighlighter ich = (MarkOccurencesHighlighter)doc.getProperty(MarkOccurencesHighlighter.class);
+        if (ich == null)
+        {
+            doc.putProperty(MarkOccurencesHighlighter.class, ich = new MarkOccurencesHighlighter(doc));
+        }
+        return ich;
+    }
+
     public HighlightsLayer[] createLayers(Context context) {
-        return new HighlightsLayer[] {
-            HighlightsLayer.create(
+        // ugly temp code
+        return InactiveCodeHighlighter.USE_MORE_SEMANTIC ? 
+            new HighlightsLayer[] {
+                HighlightsLayer.create(
                     InactiveCodeHighlighter.class.getName(), 
                     ZOrder.SYNTAX_RACK.forPosition(2000),
                     true,
-                    getInactiveCodeHighlighter(context.getDocument()).getHighlightsBag())
-            };
+                    getInactiveCodeHighlighter(context.getDocument()).getHighlightsBag()),
+                HighlightsLayer.create(
+                    MarkOccurencesHighlighter.class.getName(), 
+                    ZOrder.CARET_RACK,
+                    true,
+                    getMarkOccurencesHighlighter(context.getDocument()).getHighlightsBag()),
+            } : 
+            new HighlightsLayer[] {    
+                HighlightsLayer.create(
+                    InactiveCodeHighlighter.class.getName(), 
+                    ZOrder.SYNTAX_RACK.forPosition(2000),
+                    true,
+                    getInactiveCodeHighlighter(context.getDocument()).getHighlightsBag())};
+
     }
 
 }
