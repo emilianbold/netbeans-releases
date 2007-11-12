@@ -73,10 +73,11 @@ public final class JavaIdentifiers {
      * Gets the fully qualified name for the given <code>fileObject</code>. If it
      * represents a java package, returns the name of the package (with dots as separators).
      *
-     * @param fileObject the file object whose FQN is to be get.
+     * @param fileObject the file object whose FQN is to be get; must not be null.
      * @return the FQN for the given file object or null.
      */
     public static String getQualifiedName(FileObject fileObject){
+        Parameters.notNull("fileObject", fileObject); //NO18N
         ClassPath classPath = ClassPath.getClassPath(fileObject, ClassPath.SOURCE);
         if (classPath != null) {
             return classPath.getResourceName(fileObject, '.', false);

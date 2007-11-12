@@ -60,6 +60,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Parameters;
 
 /**
  * This class consists of various static utility methods for working with 
@@ -77,11 +78,12 @@ public final class SourceGroups {
     /**
      * Gets the Java source groups of the given <code>project</code>.
      * 
-     * @param project the project whose source groups are to be get.
+     * @param project the project whose source groups to get; must not be null.
      * @return the Java source groups of the given <code>project</code>, 
      * <strong>excluding</strong> test source groups.
      */ 
     public static SourceGroup[] getJavaSourceGroups(Project project) {
+        Parameters.notNull("project", project); //NO18N
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
         Set<SourceGroup> testGroups = getTestSourceGroups(sourceGroups);
@@ -98,11 +100,13 @@ public final class SourceGroups {
      * Checks whether the folder identified by the given <code>packageName</code> is
      * writable or is in a writable parent directory but does not exist yet.
      * 
-     * @param sourceGroup
-     * @param packageName the package to check.
+     * @param sourceGroup the source group of the folder; must not be null.
+     * @param packageName the package to check; must not be null.
      * @return true if the folder is writable or can be created, false otherwise.
      */ 
     public static boolean isFolderWritable(SourceGroup sourceGroup, String packageName) {
+        Parameters.notNull("sourceGroup", sourceGroup); //NO18N
+        Parameters.notNull("packageName", packageName); //NO18N
         try {
             FileObject fo = getFolderForPackage(sourceGroup, packageName, false);
 
@@ -120,12 +124,14 @@ public final class SourceGroups {
     /**
      * Gets the <code>SourceGroup</code> of the given <code>folder</code>.
      * 
-     * @param sourceGroups the source groups to search.
-     * @param folder the folder whose source group is to be get.
+     * @param sourceGroups the source groups to search; must not be null.
+     * @param folder the folder whose source group is to be get; must not be null.
      * @return the source group containing the given <code>folder</code> or 
      * null if not found.
      */ 
     public static SourceGroup getFolderSourceGroup(SourceGroup[] sourceGroups, FileObject folder) {
+        Parameters.notNull("sourceGroups", sourceGroups); //NO18N
+        Parameters.notNull("folder", folder); //NO18N
         for (int i = 0; i < sourceGroups.length; i++) {
             if (FileUtil.isParentOf(sourceGroups[i].getRootFolder(), folder)) {
                 return sourceGroups[i];
@@ -137,11 +143,13 @@ public final class SourceGroups {
     /**
      * Converts the path of the given <code>folder</code> to a package name.
      * 
-     * @param sourceGroup the source group for the folder.
-     * @param folder the folder to convert.
+     * @param sourceGroup the source group for the folder; must not be null.
+     * @param folder the folder to convert; must not be null.
      * @return the package name of the given <code>folder</code>.
      */ 
     public static String getPackageForFolder(SourceGroup sourceGroup, FileObject folder) {
+        Parameters.notNull("sourceGroup", sourceGroup); //NO18N
+        Parameters.notNull("folder", folder); //NO18N
         String relative = FileUtil.getRelativePath(sourceGroup.getRootFolder(), folder);
         if (relative != null) {
             return relative.replace('/', '.'); // NOI18N
@@ -165,13 +173,16 @@ public final class SourceGroups {
     /**
      * Gets the folder representing the given <code>packageName</code>.
      * 
-     * @param sourceGroup the source group of the package.
-     * @param packageName the name of the package.
+     * @param sourceGroup the source group of the package; must not be null.
+     * @param packageName the name of the package; must not be null.
      * @param create specifies whether the folder should be created if it does not exist.
      * @return the folder representing the given package or null if it was not found.
      */
-    public static FileObject getFolderForPackage(SourceGroup sourceGroup, String pgkName, boolean create) throws IOException {
-        String relativePkgName = pgkName.replace('.', '/');
+    public static FileObject getFolderForPackage(SourceGroup sourceGroup, String packageName, boolean create) throws IOException {
+        Parameters.notNull("sourceGroup", sourceGroup); //NO18N
+        Parameters.notNull("packageName", packageName); //NO18N
+        
+        String relativePkgName = packageName.replace('.', '/');
         FileObject folder = sourceGroup.getRootFolder().getFileObject(relativePkgName);
         if (folder != null) {
             return folder;
@@ -185,11 +196,16 @@ public final class SourceGroups {
      * Gets the <code>SourceGroup</code> of the given <code>project</code> which contains the
      * given <code>fqClassName</code>.
      * 
-     * @param project the project
-     * @param fqClassName the fully qualified name of the class whose source group is to be get.
-     * @return the source group containing the given <code>fqClassName</code>.
+     * @param project the project; must not be null.
+     * @param fqClassName the fully qualified name of the class whose 
+     * source group to get; must not be empty or null.
+     * @return the source group containing the given <code>fqClassName</code> or <code>null</code>
+     * if the class was not found in the source groups of the project.
      */
     public static SourceGroup getClassSourceGroup(Project project, String fqClassName) {
+        Parameters.notNull("project", project); //NO18N
+        Parameters.notEmpty("fqClassName", fqClassName); //NO18N
+
         String classFile = fqClassName.replace('.', '/') + ".java"; // NOI18N
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         
