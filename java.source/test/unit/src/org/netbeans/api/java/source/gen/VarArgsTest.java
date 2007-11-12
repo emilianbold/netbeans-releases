@@ -87,7 +87,7 @@ public class VarArgsTest extends GeneratorTestMDRCompat {
             "\n" +
             "public class Test {\n" +
             "\n" +
-            "    void method(Object... a) {\n" +
+            "    void method(Object[] a,Object... varArg) {\n" +
             "    }\n" +
             "\n" +
             "}\n";
@@ -106,7 +106,8 @@ public class VarArgsTest extends GeneratorTestMDRCompat {
                 VariableTree parameter = method.getParameters().get(0);
                 long VARARGS = 1L<<34;
                 ModifiersTree newMods = make.Modifiers(VARARGS, Collections.<AnnotationTree>emptyList());
-                workingCopy.rewrite(parameter.getModifiers(), newMods);
+                VariableTree varArg = make.Variable(newMods, "varArg", make.Identifier("Object"), null);
+                workingCopy.rewrite(method, make.addMethodParameter(method, varArg));
             }
 
         };
