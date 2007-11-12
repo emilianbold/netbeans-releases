@@ -404,8 +404,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             authFields = true;
             proxyFields = true;
         } else if(selectedUrlString.startsWith("ssh")) {                        // NOI18N
-            repositoryPanel.tipLabel.setText(getSVNTunnelTip(selectedUrlString));
-            sshFields = true;
+            //repositoryPanel.tipLabel.setText(getSVNTunnelTip(selectedUrlString));
+            //sshFields = true;
         } else if(selectedUrlString.startsWith("file:")) {                      // NOI18N
             repositoryPanel.tipLabel.setText(LOCAL_URL_HELP);
         } else {
