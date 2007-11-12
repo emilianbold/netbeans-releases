@@ -239,9 +239,9 @@ public class EmbeddingUpdater implements SyntaxParserListener {
     private void createEmbedding(String mimeType, SyntaxElement.TagAttribute tagAttr) {
         if(tagAttr.getValue().charAt(0) == '\'' || tagAttr.getValue().charAt(0) == '"') {
             //cut off the qutation marks
-            createEmbedding(mimeType, tagAttr.getValueOffset(), tagAttr.getValueLength(), 1, 1);
+            createEmbedding(mimeType, tagAttr.getValueOffset(), tagAttr.getValueOffset() + tagAttr.getValueLength(), 1, 1);
         } else {
-            createEmbedding(mimeType, tagAttr.getValueOffset(), tagAttr.getValueLength(), 0, 0);
+            createEmbedding(mimeType, tagAttr.getValueOffset(), tagAttr.getValueOffset() + tagAttr.getValueOffset(), 0, 0);
         }
     }
     

@@ -133,7 +133,7 @@ public final class SyntaxParser {
 
     }
 
-    //---------------------------- public methods -------------------------------
+    //---------------------------- public methods ------------------------------
     public void addSyntaxParserListener(SyntaxParserListener spl) {
         listeners.add(spl);
     }
@@ -143,7 +143,18 @@ public final class SyntaxParser {
         listeners.remove(spl);
     }
     
-    //---------------------------- private methods -------------------------------
+    //----------------------- package private methods---------------------------
+    /** used by unit tests */
+    void forceParse() {
+        parserTask.cancel();
+        parse();
+    }
+    
+    List<SyntaxElement> elements() {
+        return parsedElements;
+    }
+    
+    //---------------------------- private methods -----------------------------
     private void restartParser() {
         if (!parserTask.isFinished()) {
             parserTask.cancel(); //removes the task from the queue AND INTERRUPTS the thread!
@@ -213,7 +224,7 @@ public final class SyntaxParser {
                         joinedValue.toString(), 
                         key.offset(hi), 
                         firstValuePart.offset(hi),
-                        lastValuePart.offset(hi) + lastValuePart.length());
+                        lastValuePart.offset(hi) + lastValuePart.length() - firstValuePart.offset(hi));
                 attributes.add(ta);
             }
         }
@@ -255,7 +266,7 @@ public final class SyntaxParser {
     private Map<Token, List<Token>> attribs = null;
 
     //PENDING: we do not handle incomplete tokens yet - should be added
-    public List<SyntaxElement> parseDocument() throws BadLocationException {
+    private List<SyntaxElement> parseDocument() throws BadLocationException {
         elements = new ArrayList<SyntaxElement>();
         List<TokenSequence<HTMLTokenId>> sequences = hi.tokenSequenceList(languagePath, 0, Integer.MAX_VALUE);
         state = S_INIT;

@@ -69,9 +69,9 @@ public class SyntaxElement {
     
     private Document document;
     
-    int offset;
-    int length;
-    int type;
+    private int offset;
+    private int length;
+    private int type;
     
     SyntaxElement( Document doc, int offset, int length, int type ) {
         this.offset = offset;
