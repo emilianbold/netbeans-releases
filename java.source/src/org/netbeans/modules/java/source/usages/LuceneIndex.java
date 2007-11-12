@@ -292,13 +292,21 @@ class LuceneIndex extends Index {
         final Iterator<Term> it = toSearch.iterator();        
         final ElementKind[] kindHolder = new ElementKind[1];
         Set<Integer> docNums = new TreeSet<Integer>();
+        int[] docs = new int[25];
+        int[] freq = new int [25];
+        int len;
         while (it.hasNext()) {
             if (cancel.get()) {
                 throw new InterruptedException ();
             }
             tds.seek(it.next());
-            while (tds.next()) {
-                docNums.add (tds.doc());
+            while ((len = tds.read(docs, freq))>0) {
+                for (int i = 0; i < len; i++) {
+                    docNums.add (docs[i]);
+                }
+                if (len < docs.length) {
+                    break;
+                }
             }
         }
         for (Integer docNum : docNums) {
