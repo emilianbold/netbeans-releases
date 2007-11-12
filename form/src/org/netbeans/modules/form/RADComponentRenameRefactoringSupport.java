@@ -60,7 +60,6 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -112,8 +111,8 @@ public class RADComponentRenameRefactoringSupport {
         
         @Override
         public Void visitClass(ClassTree t, Void v) {
-            List<Tree> members = (List<Tree>) t.getMembers();
-            Iterator<Tree> it = members.iterator();
+            List<? extends Tree> members = (List<? extends Tree>) t.getMembers();
+            Iterator<? extends Tree> it = members.iterator();
             while(it.hasNext()){
                 Tree tr = it.next();
                 if (tr.getKind() == Tree.Kind.VARIABLE) {
