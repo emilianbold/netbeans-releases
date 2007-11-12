@@ -68,6 +68,7 @@ public class PDFDataLoader extends UniFileLoader {
 
     
     /** Initizalized loader, i.e. its extension list. Overrides superclass method. */
+    @Override
     protected void initialize () {
         super.initialize();
 
@@ -82,6 +83,7 @@ public class PDFDataLoader extends UniFileLoader {
     }
     
     /** Gets default display name. Overrides superclass method. */
+    @Override
     protected String defaultDisplayName() {
         return NbBundle.getMessage (PDFDataLoader.class, "LBL_loaderName");
     }
@@ -92,6 +94,7 @@ public class PDFDataLoader extends UniFileLoader {
      *
      * @return  name of the context on layer files to read/write actions to
      */
+    @Override
     protected String actionsContext () {
         return "Loaders/application/pdf/Actions/";                      //NOI18N
     }
