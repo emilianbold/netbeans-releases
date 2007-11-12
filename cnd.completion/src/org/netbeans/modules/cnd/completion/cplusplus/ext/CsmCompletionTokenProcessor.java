@@ -601,9 +601,10 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
         CsmCompletionExpression constExp = null; // possibly assign constant into this exp
         String kwdType = CCTokenContext.isType(tokenID) ? curTokenText : null; // keyword constant type (used in conversions)
         
-        if (tokenID == null) { // invalid token-id
+        // clear stack on absent token or prerpocessor token
+        if (tokenID == null || tokenID.getCategory() == CCTokenContext.CPP) {
             errorState = true;
-
+            
         } else { // valid token-id
             int tokenNumID = tokenID.getNumericID();
             if (tokenContextPath.contains(CCTokenContext.contextPath)){
@@ -1835,6 +1836,18 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
     }
 
     public int eot(int offset) {
+        if (lastValidTokenID != null) {
+            // if space or comment occurs as last token
+            // add empty variable to save last position
+            switch (lastValidTokenID.getNumericID()) {
+                case CCTokenContext.WHITESPACE_ID:
+                case CCTokenContext.LINE_COMMENT_ID:
+                case CCTokenContext.BLOCK_COMMENT_ID:
+                    pushExp(CsmCompletionExpression.createEmptyVariable(
+                        bufferStartPos + bufferOffsetDelta + offset));
+                    break;
+            }
+        }        
         // Check for joins
         boolean reScan = true;
         while (reScan) {
