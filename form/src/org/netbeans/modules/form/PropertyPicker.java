@@ -58,19 +58,26 @@ public class PropertyPicker extends javax.swing.JPanel {
     public static final int OK = 1;
 
     static final long serialVersionUID =5689122601606238081L;
-    /** Initializes the Form */
+    
+    /**
+     * Initializes the Form.
+     * 
+     * @param formModel form model.
+     * @param componentToSelect component whose property should be selected.
+     * @param requiredType required type of the property.
+     */
     public PropertyPicker(FormModel formModel, RADComponent componentToSelect, Class requiredType) {
         this.requiredType = requiredType;
         initComponents();
 
-        java.util.List componentsList = formModel.getComponentList();
+        java.util.List<RADComponent> componentsList = formModel.getComponentList();
         Collections.sort(componentsList, new ParametersPicker.ComponentComparator());
         components = new RADComponent[componentsList.size()];
         componentsList.toArray(components);
 
         int selIndex = -1;
-        for (Iterator it = componentsList.iterator(); it.hasNext(); ) {
-            RADComponent radComp = (RADComponent) it.next();
+        for (Iterator<RADComponent> it = componentsList.iterator(); it.hasNext(); ) {
+            RADComponent radComp = it.next();
             if (componentToSelect != null && componentToSelect == radComp)
                 selIndex = componentsCombo.getItemCount();
             if (radComp == formModel.getTopRADComponent())
@@ -142,7 +149,7 @@ public class PropertyPicker extends javax.swing.JPanel {
             propertyList.repaint();
         } else {
             PropertyDescriptor[] descs = sel.getBeanInfo().getPropertyDescriptors();
-            Map filtered = new HashMap();
+            Map<String,PropertyPickerItem> filtered = new HashMap<String,PropertyPickerItem>();
             for (int i = 0; i < descs.length; i ++) {
                 if ((descs[i].getReadMethod() != null) &&       // filter out non-readable properties
                     (descs[i].getPropertyType() != null) &&  // indexed properties return null from getPropertyType
@@ -166,10 +173,9 @@ public class PropertyPicker extends javax.swing.JPanel {
             filtered.values().toArray(items);	    
 
             // sort the properties by name
-            Arrays.sort(items, new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    return ((PropertyPickerItem)o1).getPropertyName()
-			    .compareTo(((PropertyPickerItem)o2).getPropertyName());
+            Arrays.sort(items, new Comparator<PropertyPickerItem>() {
+                public int compare(PropertyPickerItem o1, PropertyPickerItem o2) {
+                    return o1.getPropertyName().compareTo(o2.getPropertyName());
                 }
             });
             
@@ -315,7 +321,7 @@ public class PropertyPicker extends javax.swing.JPanel {
     private boolean pickerValid = false;
 
     private RADComponent[] components;
-    private Class requiredType;
+    private Class<?> requiredType;
     private PropertyPickerItem[] items;
     private RADComponent selectedComponent;    
     private static Class[] NO_PARAMETERS = new Class[0];	
