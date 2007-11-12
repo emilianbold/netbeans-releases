@@ -205,6 +205,14 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         super.performTest("file.cc", 7, 1, "->");
     }     
 
+    public  void testCompletionAfterSpace() throws Exception {
+        super.performTest("file.cc", 7, 5, "A::                 f");
+    }
+    
+    public  void testCompletionAfterSpace2() throws Exception {
+        super.performTest("file.cc", 43, 5, "a    .     ");
+    }
+    
     public void testCompletionInEmptyUsrInclude() throws Exception {
         super.performTest("file.cc", 1, 1, "#include \"\"", -1);
     }
