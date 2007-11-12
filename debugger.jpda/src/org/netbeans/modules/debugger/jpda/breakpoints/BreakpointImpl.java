@@ -521,7 +521,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                 JPDABreakpointEvent ev;
                 synchronized (debugger.LOCK) {
                     StackFrame sf = thread.frame (0);
-                    result = evaluateConditionIn (condition, sf);
+                    result = evaluateConditionIn (condition, sf, 0);
                     ev = new JPDABreakpointEvent (
                         getBreakpoint (),
                         debugger,
@@ -587,7 +587,8 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
      */
     private boolean evaluateConditionIn (
         String condExpr, 
-        StackFrame frame
+        StackFrame frame,
+        int frameDepth
     ) throws ParseException, InvalidExpressionException {
         // 1) compile expression
         if ( compiledCondition == null || 
@@ -602,7 +603,8 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         // already synchronized (debugger.LOCK)
         com.sun.jdi.Value value = getDebugger ().evaluateIn (
             compiledCondition, 
-            frame
+            frame,
+            frameDepth
         );
         try {
             return ((com.sun.jdi.BooleanValue) value).booleanValue ();

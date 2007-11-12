@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,9 +41,15 @@
 
 package org.netbeans.modules.debugger.jpda.expr;
 
+import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.StackFrame;
+import com.sun.jdi.ThreadReference;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 
 import java.util.*;
+import javax.lang.model.element.TypeElement;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
@@ -60,11 +66,17 @@ public class EvaluationContext {
      * The runtime context of a JVM is represented by a stack frame.
      */
     private StackFrame frame;
+    private int frameDepth;
+    private ThreadReference thread;
     private List<String> sourceImports;
     private List<String> staticImports;
     private boolean canInvokeMethods;
     private Runnable methodInvokePreproc;
     private JPDADebuggerImpl debugger;
+    
+    private Trees trees;
+    private CompilationUnitTree compilationUnitTree;
+    private TreePath treePath;
 
     /**
      * Creates a new context in which to evaluate expresions.
@@ -73,13 +85,15 @@ public class EvaluationContext {
      * @param imports list of imports
      * @param staticImports list of static imports
      */
-    public EvaluationContext(StackFrame frame, List<String> imports, List<String> staticImports,
+    public EvaluationContext(StackFrame frame, int frameDepth,
+                             List<String> imports, List<String> staticImports,
                              boolean canInvokeMethods, Runnable methodInvokePreproc,
                              JPDADebuggerImpl debugger) {
         if (frame == null) throw new IllegalArgumentException("Frame argument must not be null");
         if (imports == null) throw new IllegalArgumentException("Imports argument must not be null");
         if (staticImports == null) throw new IllegalArgumentException("Static imports argument must not be null");
         this.frame = frame;
+        this.frameDepth = frameDepth;
         this.sourceImports = imports;
         this.staticImports = staticImports;
         this.canInvokeMethods = canInvokeMethods;
@@ -111,10 +125,40 @@ public class EvaluationContext {
         if (methodInvokePreproc != null) {
             methodInvokePreproc.run();
         }
+        thread = frame.thread();
+    }
+    
+    void methodInvokeDone() throws IncompatibleThreadStateException {
+        // Refresh the stack frame
+        frame = thread.frame(frameDepth);
     }
     
     JPDADebuggerImpl getDebugger() {
         return debugger;
+    }
+    
+    public void setTrees(Trees trees) {
+        this.trees = trees;
+    }
+    
+    Trees getTrees() {
+        return trees;
+    }
+    
+    public void setCompilationUnit(CompilationUnitTree compilationUnitTree) {
+        this.compilationUnitTree = compilationUnitTree;
+    }
+    
+    CompilationUnitTree getCompilationUnit() {
+        return compilationUnitTree;
+    }
+    
+    public void setTreePath(TreePath treePath) {
+        this.treePath = treePath;
+    }
+    
+    TreePath getTreePath() {
+        return treePath;
     }
     
 }

@@ -42,6 +42,7 @@
 package org.netbeans.modules.debugger.jpda.projects;
 
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Scope;
@@ -78,8 +79,12 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.TreeVisitor;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.Trees;
 
 import javax.lang.model.util.Elements;
 import javax.lang.model.element.Element;
@@ -119,7 +124,10 @@ import org.openide.windows.TopComponent;
 
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.WorkingCopy;
 
 import org.netbeans.editor.JumpList;
 import org.netbeans.spi.debugger.jpda.EditorContext;
@@ -1051,6 +1059,7 @@ public class EditorContextImpl extends EditorContext {
         try {
             doc = ec.openDocument();
         } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
             return "";
         }
         try {
@@ -1079,7 +1088,7 @@ public class EditorContextImpl extends EditorContext {
             }, true);
             return result[0];
         } catch (IOException ioex) {
-            //XXX: log the exception?
+            ErrorManager.getDefault().notify(ioex);
             return "";
         } catch (IndexOutOfBoundsException ioobex) {
             //XXX: log the exception?
@@ -1129,6 +1138,7 @@ public class EditorContextImpl extends EditorContext {
         try {
             doc = ec.openDocument();
         } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
             return null;
         }
         final int offset = findLineOffset(doc, (int) lineNumber);
@@ -1337,6 +1347,7 @@ public class EditorContextImpl extends EditorContext {
         try {
             doc = ec.openDocument();
         } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
             return null;
         }
         final int offset = findLineOffset(doc, methodLineNumber);
@@ -1411,6 +1422,7 @@ public class EditorContextImpl extends EditorContext {
                 }
             }, true);
         } catch (IOException ioex) {
+            ErrorManager.getDefault().notify(ioex);
             return new String [0];
         }
         return imports.toArray(new String[0]);
@@ -1427,6 +1439,125 @@ public class EditorContextImpl extends EditorContext {
          */
     }
     
+    /**
+     * Parse the expression into AST tree and traverse is via the provided visitor.
+     *
+     * @return the visitor value or <code>null</code>.
+     */
+    public static <R,D> R parseExpression(final String expression, String url, final int line,
+                                          final TreePathScanner<R,D> visitor, final D context) {
+        FileObject fo;
+        try {
+            fo = URLMapper.findFileObject(new URL(url));
+        } catch (MalformedURLException ex) {
+            return null;
+        }
+        if (fo == null) return null;
+        DataObject dataObject;
+        try {
+            dataObject = DataObject.find(fo);
+        } catch (DataObjectNotFoundException donfex) {
+            return null;
+        }
+        if (dataObject == null) return null;
+        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
+        if (js == null) return null;
+        final R[] retValue = (R[]) new Object[] { null };
+        try {
+            js.runUserActionTask(new Task<CompilationController>() {
+                public void run(CompilationController ci) throws Exception {
+                    if (ci.toPhase(Phase.PARSED).compareTo(Phase.PARSED) < 0)
+                        return;
+                    int offset = findLineOffset((StyledDocument) ci.getDocument(), line);
+                    Scope scope = ci.getTreeUtilities().scopeFor(offset);
+                    Element clazz = scope.getEnclosingClass();
+                    if (clazz == null) {
+                        return ;
+                    }
+                    SourcePositions[] sourcePtr = new SourcePositions[] { null };
+                    Tree tree = ci.getTreeUtilities().parseExpression(
+                            expression,
+                            sourcePtr
+                    );
+                    ci.getTreeUtilities().attributeTree(tree, scope);
+                    try {
+                        //context.setTrees(ci.getTrees());
+                        java.lang.reflect.Method setTreesMethod =
+                                context.getClass().getMethod("setTrees", new Class[] { Trees.class });
+                        setTreesMethod.invoke(context, ci.getTrees());
+                    } catch (Exception ex) {}
+                    try {
+                        //context.setCompilationUnit(ci.getCompilationUnit());
+                        java.lang.reflect.Method setCompilationUnitMethod =
+                                context.getClass().getMethod("setCompilationUnit", new Class[] { CompilationUnitTree.class });
+                        setCompilationUnitMethod.invoke(context, ci.getCompilationUnit());
+                    } catch (Exception ex) {}
+                    TreePath treePath;
+                    try {
+                        //context.setTrees(ci.getTrees());
+                        java.lang.reflect.Method setTreePathMethod =
+                                context.getClass().getMethod("setTreePath", new Class[] { TreePath.class });
+                        treePath = ci.getTreeUtilities().pathFor(offset);
+                        treePath = new TreePath(treePath, tree);
+                        setTreePathMethod.invoke(context, treePath);
+                    } catch (Exception ex) { return;}
+                    retValue[0] = visitor.scan(treePath, context);
+                    //retValue[0] = tree.accept(visitor, context);
+                }
+            }, true);
+            /*
+            js.runModificationTask(new Task<WorkingCopy>() {
+                public void run(WorkingCopy wc) throws Exception {
+                    if (wc.toPhase(Phase.PARSED).compareTo(Phase.PARSED) < 0)
+                        return;
+                    int offset = findLineOffset((StyledDocument) wc.getDocument(), line);
+                    Scope scope = wc.getTreeUtilities().scopeFor(offset);
+                    Element clazz = scope.getEnclosingClass();
+                    if (clazz == null) {
+                        return ;
+                    }
+                    ExpressionTree expressionTree = wc.getTreeUtilities().parseExpression(
+                            expression,
+                            new SourcePositions[] { wc.getTrees().getSourcePositions() }
+                    );
+                    wc.getTreeUtilities().attributeTree(expressionTree, scope);
+                    TreeMaker tm = wc.getTreeMaker();
+                    ExpressionStatementTree est = tm.ExpressionStatement(expressionTree);
+                    addStatement(tm, wc.getTrees(), wc.getTreeUtilities().pathFor(offset), offset, est);
+                    //wc.rewrite(est, est);
+                }
+            });
+             */
+            return retValue[0];
+        } catch (IOException ioex) {
+            ErrorManager.getDefault().notify(ioex);
+            return null;
+        }
+    }
+    /*
+    private static void addStatement(TreeMaker tm, Trees trees, TreePath positionPath, int offset, StatementTree statement) {
+        SourcePositions sourcePositions = trees.getSourcePositions();
+        CompilationUnitTree root = positionPath.getCompilationUnit();
+        Tree newTree = null;
+        for (java.util.Iterator<Tree> it = positionPath.iterator(); it.hasNext(); ) {
+            Tree element = it.next();
+            if (element.getKind() == Tree.Kind.BLOCK && newTree == null) {
+                BlockTree block = (BlockTree) element;
+                List<? extends StatementTree> statements = block.getStatements();
+                int index = 0;
+                for (StatementTree st : statements) {
+                    if (sourcePositions.getStartPosition(root, st) >= offset) {
+                        break;
+                    }
+                    index++;
+                }
+                newTree = tm.insertBlockStatement(block, index, statement);
+            } else {
+                
+            }
+        }
+    }
+    */
     /**
      * Adds a property change listener.
      *

@@ -41,6 +41,9 @@
 package org.netbeans.modules.debugger.jpda;
 
 import com.sun.jdi.AbsentInformationException;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TreeVisitor;
+import com.sun.source.util.TreePathScanner;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
@@ -83,6 +86,59 @@ public class EditorContextBridge {
                 );
         }
         return context;
+    }
+
+    /**
+     * Returns the parsed expression tree or <code>null</code>.
+     *
+     * @return the parsed expression tree or <code>null</code>
+     *
+    public static Tree getExpressionTree(final String expression, String url, final int line) {
+        // TODO: return getContext ().getExpressionTree ();
+        try {
+            return (Tree) getContext ().getClass().getMethod("getExpressionTree", new Class[] { String.class, String.class, Integer.TYPE }).
+                invoke(getContext(), new Object[] { expression, url, line });
+        } catch (java.lang.reflect.InvocationTargetException itex) {
+            Throwable tex = itex.getTargetException();
+            if (tex instanceof RuntimeException) {
+                throw (RuntimeException) tex;
+            } else {
+                ErrorManager.getDefault().notify(tex);
+                return null;
+            }
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ex);
+            return null;
+        }
+    }
+     */
+    
+    /**
+     * Parse the expression into AST tree and traverse is via the provided visitor.
+     *
+     * @return the visitor value or <code>null</code>.
+     */
+    public static <R,D> R parseExpression(String expression, String url, final int line,
+                                          TreePathScanner<R,D> visitor, D context) {
+        
+        // TODO: return getContext ().parseExpression ();
+        try {
+            return (R) getContext ().getClass().getMethod(
+                    "parseExpression",
+                    new Class[] { String.class, String.class, Integer.TYPE, TreePathScanner.class, Object.class }).
+                        invoke(getContext(), new Object[] { expression, url, line, visitor, context });
+        } catch (java.lang.reflect.InvocationTargetException itex) {
+            Throwable tex = itex.getTargetException();
+            if (tex instanceof RuntimeException) {
+                throw (RuntimeException) tex;
+            } else {
+                ErrorManager.getDefault().notify(tex);
+                return null;
+            }
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ex);
+            return null;
+        }
     }
 
     
