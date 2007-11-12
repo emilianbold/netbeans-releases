@@ -55,8 +55,8 @@ import org.openide.filesystems.FileObject;
 public class PersistenceObjectRegistry
 {
 
-    private static Map _nameToClassname = new HashMap();
-    private static Map _classToPrimaryName = new HashMap();
+    private static Map<String,String> _nameToClassname = new HashMap<String,String>();
+    private static Map<String,String> _classToPrimaryName = new HashMap<String,String>();
 
     private PersistenceObjectRegistry() {
     }
@@ -89,7 +89,7 @@ public class PersistenceObjectRegistry
         throws ClassNotFoundException
     {
         name = Utilities.translate(name);
-        String classname =(String) _nameToClassname.get(name);
+        String classname = _nameToClassname.get(name);
         if (classname == null)
             classname = name;
         return FormUtils.loadClass(classname, form);
@@ -104,13 +104,13 @@ public class PersistenceObjectRegistry
     }
 
     static String getPrimaryName(String className) {
-        String name = (String) _classToPrimaryName.get(className);
+        String name = _classToPrimaryName.get(className);
         return name != null ? name : className;
     }
 
     static String getClassName(String primaryName) {
         primaryName = Utilities.translate(primaryName);
-        String classname = (String) _nameToClassname.get(primaryName);
+        String classname = _nameToClassname.get(primaryName);
         return classname != null ? classname : primaryName;
     }
 }
