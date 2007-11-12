@@ -43,7 +43,7 @@ package org.netbeans.editor.ext.html;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.editor.ext.html.parser.SyntaxElement;
+import org.netbeans.editor.ext.html.SyntaxElement;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;

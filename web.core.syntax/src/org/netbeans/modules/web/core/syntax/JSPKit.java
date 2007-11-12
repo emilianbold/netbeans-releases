@@ -79,6 +79,7 @@ import org.netbeans.editor.BaseKit.InsertBreakAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
 import org.netbeans.editor.ext.html.HTMLLexerFormatter;
+import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.web.core.syntax.formatting.JSPLexerFormatter;
 import org.netbeans.spi.lexer.MutableTextInput;
@@ -258,7 +259,10 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
                 ELDrawLayerFactory.EL_LAYER_VISIBILITY);
         
         //listen on the HTML parser and create javascript and css embeddings
-        SyntaxParser.get(doc).addSyntaxParserListener(new EmbeddingUpdater(doc));
+        LanguagePath jspLP = LanguagePath.get(JspTokenId.language());
+        LanguagePath htmlLP = LanguagePath.get(jspLP, HTMLTokenId.language());
+        
+        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(new EmbeddingUpdater(doc));
         //initialize JSP embedding updater
         //just a prototype - better disable it for 6.0
         //JspColoringUpdater.init(doc);

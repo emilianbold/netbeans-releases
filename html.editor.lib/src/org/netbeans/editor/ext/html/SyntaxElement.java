@@ -40,7 +40,7 @@
  */
 
 
-package org.netbeans.editor.ext.html.parser;
+package org.netbeans.editor.ext.html;
 
 
 import org.netbeans.editor.ext.html.*;
@@ -49,11 +49,15 @@ import javax.swing.text.*;
 import org.netbeans.editor.ext.*;
 import org.openide.ErrorManager;
 
-/**
- * Represents a semantic element of html code.
+/**This class is used during the analysis of the HTML code.
+ *
+ * It is an element of the dynamically created chain of other SyntaxElements.
+ * The access to it is done through the HTMLSyntaxSupport, which also takes
+ * care of dynamically extending it when needed.
  *
  * @author  Petr Nejedly
  * @author  Marek.Fukala@Sun.com
+ * @version 1.0
  */
 public class SyntaxElement {
     
@@ -63,49 +67,73 @@ public class SyntaxElement {
     public static final int TYPE_TEXT = 3;
     public static final int TYPE_TAG = 4;
     public static final int TYPE_ENDTAG = 5;
+    public static final int TYPE_SCRIPT = 6;
+    public static final int TYPE_STYLE = 7;
+    public static final int TYPE_UNKNOWN = 8; //superordinate language piece (JSP,PHP,...)
     
     public static final String[] TYPE_NAMES =
             new String[]{"comment","declaration","error","text","tag","endtag","script","style","unknown"};
     
-    private Document document;
+    private SyntaxElement previous;
+    private SyntaxElement next;
+    private HTMLSyntaxSupport sup;
     
     int offset;
     int length;
     int type;
     
-    SyntaxElement( Document doc, int offset, int length, int type ) {
-        this.offset = offset;
-        this.length = length;
+    /** Creates new SyntaxElement */
+    public SyntaxElement(HTMLSyntaxSupport sup, int from, int to, int type ) {
+        this.offset = from;
+        this.length = to-from;
         this.type = type;
-        this.document = doc;
+        this.sup = sup;
     }
     
-    public int offset() {
+    public int getElementOffset() {
         return offset;
     }
     
-    public int length() {
+    public int getElementLength() {
         return length;
     }
     
-    public int type() {
+    public int getType() {
         return type;
     }
     
-    public String text() {
+    
+    public String getText() {
         try {
-            return document.getText(offset(), length());
+            return sup.getDocument().getText(getElementOffset(), getElementLength());
         }catch(BadLocationException ble) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ble);
         }
         return null;
     }
+    
+    public SyntaxElement getPrevious() throws BadLocationException {
+        if( previous == null ) {
+            previous = sup.getPreviousElement( offset );
+            if( previous != null ) previous.next = this;
+        }
+        return previous;
+    }
 
-    @Override
+    public SyntaxElement getNext() throws BadLocationException {
+        if( next == null ) {
+            next = sup.getNextElement( offset+length );
+            if( next != null ) next.previous = this;
+        }
+        return next;
+    }
+
+    
     public String toString() {
-        String textContent = type() == TYPE_TEXT ? text() : "";
+        String textContent = getType() == TYPE_TEXT ? getText() : "";
         return "Element(" +TYPE_NAMES[type]+")[" + offset + "," + (offset+length-1) + "] \"" + textContent + ""; // NOI18N
     }
+    
     
     /**
      * Declaration models SGML declaration with emphasis on &lt;!DOCTYPE
@@ -130,11 +158,11 @@ public class SyntaxElement {
          * @param doctypeFile system identifier for this DOCTYPE, if available.
          *  null otherwise.
          */
-        public Declaration( Document document, int from, int to,
+        public Declaration( HTMLSyntaxSupport sup, int from, int to,
                 String doctypeRootElement,
                 String doctypePI, String doctypeFile
                 ) {
-            super( document, from, to, TYPE_DECLARATION );
+            super( sup, from, to, TYPE_DECLARATION );
             root = doctypeRootElement;
             publicID = doctypePI;
             file = doctypeFile;
@@ -170,8 +198,8 @@ public class SyntaxElement {
     public static class Named extends SyntaxElement {
         String name;
         
-        public Named( Document document, int from, int to, int type, String name ) {
-            super( document, from, to, type );
+        public Named( HTMLSyntaxSupport sup, int from, int to, int type, String name ) {
+            super( sup, from, to, type );
             this.name = name;
         }
         
@@ -184,25 +212,22 @@ public class SyntaxElement {
     }
     
     
-    public static class Tag extends org.netbeans.editor.ext.html.parser.SyntaxElement.Named {
+    public static class Tag extends org.netbeans.editor.ext.html.SyntaxElement.Named {
         private List<TagAttribute> attribs;
-        private boolean empty, openTag;
-                
-        public Tag( Document document, int from, int length, String name, List attribs, boolean openTag, boolean isEmpty ) {
-            super( document, from, length, openTag ? TYPE_TAG : TYPE_ENDTAG, name );
+        private boolean empty = false;
+        
+        public Tag(HTMLSyntaxSupport sup, int from, int to, String name, List<TagAttribute> attribs) {
+            this(sup, from, to, name, attribs, false);
+        }
+        
+        public Tag(HTMLSyntaxSupport sup, int from, int to, String name, List attribs, boolean isEmpty ) {
+            super( sup, from, to, TYPE_TAG, name );
             this.attribs = attribs;
-            this.openTag = openTag;
             this.empty = isEmpty;
         }
         
         public boolean isEmpty() {
             return empty;
-        }
-        
-        /** @return true if the tag represents an open tag, false if the tag is a close tag.
-         */
-        public boolean isOpenTag() {
-            return openTag;
         }
         
         public List<TagAttribute> getAttributes() {
@@ -233,7 +258,7 @@ public class SyntaxElement {
             
             ret.append( "}" );      //NOI18N
             if(isEmpty()) ret.append(" (EMPTY TAG)");
-           
+            
             return ret.toString();
         }
     }
@@ -241,14 +266,13 @@ public class SyntaxElement {
     public static class TagAttribute {
         
         private String name, value;
-        private int nameOffset, valueOffset, valueLength;
+        private int nameOffset, valueOffset;
         
-        TagAttribute(String name, String value, int nameOffset, int valueOffset, int valueLength) {
+        public TagAttribute(String name, String value, int nameOffset, int valueOffset) {
             this.name = name;
             this.value = value;
             this.nameOffset = nameOffset;
             this.valueOffset = valueOffset;
-            this.valueLength = valueLength;
         }
         
         public String getName() {
@@ -261,10 +285,6 @@ public class SyntaxElement {
         
         public String getValue() {
             return value;
-        }
-        
-        public int getValueLength() {
-            return valueLength;
         }
         
         void setValue(String value) {

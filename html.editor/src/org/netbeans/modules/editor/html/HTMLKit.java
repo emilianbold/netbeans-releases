@@ -76,6 +76,7 @@ import org.netbeans.editor.ext.*;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.html.*;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
+import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
 import org.netbeans.modules.languages.dataobject.LanguagesEditorKit;
@@ -127,7 +128,8 @@ public class HTMLKit extends LanguagesEditorKit implements org.openide.util.Help
         }
         
         //listen on the HTML parser and recolor after changes
-        SyntaxParser.get(doc).addSyntaxParserListener(new EmbeddingUpdater(doc));
+        LanguagePath htmlLP = LanguagePath.get(HTMLTokenId.language());
+        SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(new EmbeddingUpdater(doc));
     }
     
     
