@@ -564,7 +564,7 @@ public class TomcatManager implements DeploymentManager {
      * @param deplPlan Server specific data
      * @throws IllegalStateException when TomcatManager is disconnected
      * @return Object that reports about deployment progress
-     */    
+     */ 
     public ProgressObject distribute (Target[] targets, InputStream is, InputStream deplPlan) 
     throws IllegalStateException {
         if (!isConnected ()) {

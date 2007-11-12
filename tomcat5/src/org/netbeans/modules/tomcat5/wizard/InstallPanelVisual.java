@@ -76,7 +76,7 @@ import org.openide.util.RequestProcessor;
  */
 class InstallPanelVisual extends javax.swing.JPanel {
     
-    private final String SERVER_XML = "conf/server.xml"; // NOI18N
+    private static final String SERVER_XML = "conf/server.xml"; // NOI18N
     
     private final List listeners = new ArrayList();
     private final TomcatVersion tomcatVersion;

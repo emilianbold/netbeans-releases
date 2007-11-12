@@ -381,7 +381,6 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
      * authorized and therefore list of target modules could not been retrieved
      */
     TargetModuleID[] list (Target t, int state) throws IllegalStateException {
-        this.tmId = tmId;
         command = "list"; // NOI18N
         run ();
         if (!authorized) {

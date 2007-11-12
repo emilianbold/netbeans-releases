@@ -79,6 +79,8 @@ import org.openide.filesystems.URLMapper;
  */
 public class MonitorSupport {
 
+    private static final Logger LOGGER = Logger.getLogger(MonitorSupport.class.getName());
+    
     // monitor module enable status data
     public static final String MONITOR_ENABLED_PROPERTY_NAME = "monitor_enabled"; // NOI18N
     private static final String MONITOR_MODULE_NAME="org.netbeans.modules.web.monitor"; //NOI18N    
@@ -324,7 +326,9 @@ public class MonitorSupport {
                 init.setParamName(MONITOR_INTERNALPORT_PARAM_NAME);
                 init.setParamValue(correctParamValue);
                 myFilter.addInitParam(init);
-            } catch (ClassNotFoundException ex){}
+            } catch (ClassNotFoundException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+            }
             return true;
         }
         else {

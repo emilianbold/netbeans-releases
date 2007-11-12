@@ -574,7 +574,7 @@ public class TomcatProperties {
         if (val != null) {
             try {
                 int timeout = Integer.parseInt(val);
-                if (timeout >= 1 && timeout <= Integer.MAX_VALUE) {
+                if (timeout >= 1) {
                     return timeout;
                 }
             } catch (NumberFormatException nfe) {

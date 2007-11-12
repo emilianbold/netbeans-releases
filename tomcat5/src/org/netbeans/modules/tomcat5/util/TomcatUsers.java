@@ -95,8 +95,10 @@ public class TomcatUsers {
         }
         // add roles
         String roles = userElement.getAttribute("roles"); // NOI18N
-        StringBuilder newRoles = (roles != null) ? new StringBuilder(roles.trim()) 
-                                                 : new StringBuilder();
+        if (roles == null) {
+            roles = ""; // NOI18N
+        }
+        StringBuilder newRoles = new StringBuilder(roles.trim());
         if (!hasRole(roles, "manager")) { // NOI18N
             if (newRoles.length() > 0 && !newRoles.toString().endsWith(",")) { // NOI18N
                 newRoles.append(',');

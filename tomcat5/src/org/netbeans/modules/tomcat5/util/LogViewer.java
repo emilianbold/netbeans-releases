@@ -145,7 +145,6 @@ public class LogViewer extends Thread {
         }
         this.isTimestamped = isTimestamped;
         this.takeFocus = takeFocus;
-        this.catalinaWorkDir = catalinaWorkDir;
         this.webAppContext = webAppContext;
         logSupport = new ContextLogSupport(catalinaWorkDir, webAppContext);
         setDaemon(true);

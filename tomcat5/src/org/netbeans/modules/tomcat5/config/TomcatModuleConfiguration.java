@@ -100,10 +100,10 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
     private final TomcatVersion tomcatVersion;
     
     private DataObject contextDataObject;
-    private File contextXml;
+    private final File contextXml;
     private Context context;
     
-    private final String ATTR_PATH = "path"; // NOI18N
+    private static final String ATTR_PATH = "path"; // NOI18N
     
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.tomcat5"); // NOI18N
     
@@ -111,7 +111,7 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
     public TomcatModuleConfiguration(J2eeModule j2eeModule, TomcatVersion tomcatVersion) {
         this.j2eeModule = j2eeModule;
         this.tomcatVersion = tomcatVersion;
-        contextXml = j2eeModule.getDeploymentConfigurationFile("META-INF/context.xml"); // NOI18N
+        this.contextXml = j2eeModule.getDeploymentConfigurationFile("META-INF/context.xml"); // NOI18N
         init(contextXml);
     }
     
@@ -122,7 +122,7 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
      * @param contextXml context.xml file.
      */
     private void init(File contextXml) {
-        this.contextXml = contextXml;
+        //this.contextXml = contextXml;
         try {
             getContext();
         } catch (ConfigurationException e) {
@@ -365,7 +365,9 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
         if (evt.getPropertyName() == DataObject.PROP_MODIFIED &&
                 evt.getNewValue() == Boolean.FALSE) {
             // dataobject has been modified, context graph is out of sync
-            context = null;
+            synchronized (this) {
+                context = null;
+            }
         }
     }
         
@@ -454,7 +456,10 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
                     cookie.save();
                 }
             }
-            context = newContext;
+            
+            synchronized (this) {
+                context = newContext;
+            }
         } catch (BadLocationException e) {
             String msg = NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_ContextXmlWriteFail", contextXml.getPath());
             throw new ConfigurationException(msg, e);

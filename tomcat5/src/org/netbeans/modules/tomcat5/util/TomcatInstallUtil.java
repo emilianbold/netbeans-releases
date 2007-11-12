@@ -48,6 +48,7 @@
 package org.netbeans.modules.tomcat5.util;
 
 import java.io.*;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.tomcat5.config.gen.Engine;
@@ -60,7 +61,6 @@ import org.openide.loaders.*;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 
-import org.netbeans.modules.tomcat5.TomcatFactory;
 
 import org.w3c.dom.Document;
 import org.apache.xml.serialize.*;
@@ -107,7 +107,6 @@ public class TomcatInstallUtil {
         Service service = server.getService(0);
 
         int defCon = -1;
-        boolean[] connectors = service.getConnector();
         String port;
         for (int i=0; i<service.sizeConnector(); i++) {
             String protocol = service.getAttributeValue(PROP_CONNECTOR, i, ATTR_PROTOCOL);
@@ -413,9 +412,11 @@ public class TomcatInstallUtil {
     
     public static String generatePassword(int length) {
 	int ran2 = 0;
-	String pwd = "";
+        Random random = new Random();
+	StringBuilder pwd = new StringBuilder();
 	for (int i = 0; i < length; i++) {
-            ran2 = (int)(Math.random()*61);
+            //ran2 = (int)(Math.random()*61);
+            ran2 = random.nextInt(61);
             if (ran2 < 10) {
                 ran2 += 48;
             } else {
@@ -426,9 +427,9 @@ public class TomcatInstallUtil {
                 }
             }
             char c = (char) ran2;
-            pwd += c;
+            pwd.append(c);
 	}
-        return pwd;
+        return pwd.toString();
     }
 
 }

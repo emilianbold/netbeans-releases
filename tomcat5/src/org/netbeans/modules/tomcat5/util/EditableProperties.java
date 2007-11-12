@@ -589,7 +589,7 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
         }
         
         private String mergeLines(List/*<String>*/ lines) {
-            String line = "";
+            StringBuilder line = new StringBuilder();
             Iterator it = lines.iterator();
             while (it.hasNext()) {
                 String l = trimLeft((String)it.next());
@@ -598,9 +598,9 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
                     assert l.endsWith("\\") : lines;
                     l = l.substring(0, l.length()-1);
                 }
-                line += l;
+                line.append(l);
             }
-            return line;
+            return line.toString();
         }
         
         private void splitKeyValue(String line) {

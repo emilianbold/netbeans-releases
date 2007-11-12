@@ -194,7 +194,7 @@ public class AddInstanceIterator implements WizardDescriptor.InstantiatingIterat
 
     private void setContentSelectedIndex(JComponent component) {
         if (component.getClientProperty(PROP_CONTENT_SELECTED_INDEX) == null) {
-            component.putClientProperty(PROP_CONTENT_SELECTED_INDEX, new Integer(0));
+            component.putClientProperty(PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(0));
         }
     }
 

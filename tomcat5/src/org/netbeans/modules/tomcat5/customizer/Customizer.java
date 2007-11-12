@@ -44,8 +44,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.tomcat5.TomcatManager;
 
 /**
@@ -55,16 +53,10 @@ import org.netbeans.modules.tomcat5.TomcatManager;
  */
 public class Customizer extends JTabbedPane {
 
-    private static final String CLASSPATH = J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH;
-    private static final String SOURCES = J2eeLibraryTypeProvider.VOLUME_TYPE_SRC;
-    private static final String JAVADOC = J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC;
-
-    private TomcatManager manager;
-    private J2eePlatformImpl platform;
+    private final TomcatManager manager;
 
     public Customizer(TomcatManager aManager) {
         manager = aManager;
-        platform = manager.getTomcatPlatform();
         initComponents ();
     }
 
