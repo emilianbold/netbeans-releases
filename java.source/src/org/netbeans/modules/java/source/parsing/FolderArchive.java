@@ -43,13 +43,19 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -57,12 +63,27 @@ import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementa
  */
 public class FolderArchive implements Archive {
 
+    private static final Logger LOG = Logger.getLogger(FolderArchive.class.getName());
+    
     final File root;
+    final Charset encoding;
 
     /** Creates a new instance of FolderArchive */
     public FolderArchive (final File root) {
         assert root != null;
         this.root = root;
+        
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "creating FolderArchive for {0}", root.getAbsolutePath());
+        }
+        
+        FileObject file = FileUtil.toFileObject(root);
+        
+        if (file != null) {
+            encoding = FileEncodingQuery.getEncoding(file);
+        } else {
+            encoding = null;
+        }
     }
 
     public Iterable<JavaFileObject> getFiles(String folderName, ClassPath.Entry entry, Set<JavaFileObject.Kind> kinds, JavaFileFilterImplementation filter) throws IOException {
@@ -80,7 +101,7 @@ public class FolderArchive implements Archive {
                         if (f.isFile()) {
                             if (entry == null || entry.includes(f.toURI().toURL())) {
                                 if (kinds == null || kinds.contains(FileObjects.getKind(FileObjects.getExtension(f.getName())))) {
-                                    result.add(FileObjects.fileFileObject(f,this.root,filter));
+                                    result.add(FileObjects.fileFileObject(f,this.root,filter, encoding));
                                 }
                             }
                         }
