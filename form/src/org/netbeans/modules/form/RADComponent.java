@@ -559,7 +559,7 @@ public class RADComponent {
 
     /** @return the map of all component's aux value-pairs of <String, Object>
      */
-    public Map getAuxValues() {
+    public Map<String,Object> getAuxValues() {
         return auxValues;
     }
 

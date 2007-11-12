@@ -713,11 +713,11 @@ public class MetaComponentCreator {
             formModel.fireComponentPropertyChanged(newComp, null, null, null);
 
         // 4th - copy aux values
-        Map auxValues = sourceComp.getAuxValues();
+        Map<String,Object> auxValues = sourceComp.getAuxValues();
         if (auxValues != null) {
-            for (it = auxValues.entrySet().iterator(); it.hasNext(); ) {
-                Map.Entry entry = (Map.Entry)it.next();
-                String auxName = (String)entry.getKey();
+            for (Iterator<Map.Entry<String,Object>> it2 = auxValues.entrySet().iterator(); it2.hasNext(); ) {
+                Map.Entry<String,Object> entry = it2.next();
+                String auxName = entry.getKey();
                 Object auxValue = entry.getValue();
                 try {
                     newComp.setAuxValue(auxName,

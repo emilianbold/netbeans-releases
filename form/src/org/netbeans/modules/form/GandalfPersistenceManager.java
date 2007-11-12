@@ -3197,7 +3197,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
     }
 
-    private void addFormSettings(Map auxValues) {
+    private void addFormSettings(Map<String,Object> auxValues) {
         FormSettings formSettings = formModel.getSettings();
         Map<String,Object> settings = formSettings.allSettings();
         Iterator<Map.Entry<String,Object>> iter = settings.entrySet().iterator();
@@ -3718,10 +3718,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
         saveEvents(component.getKnownEvents(), buf, indent);
 
         // 5. Aux Values
-        Map auxValues = component.getAuxValues();
+        Map<String,Object> auxValues = component.getAuxValues();
         // Form settings are stored as a part of AuxValues of top-level container
         if (component == formModel.getTopRADComponent()) {
-            auxValues = (auxValues == null) ? new TreeMap() : new TreeMap(auxValues);
+            auxValues = (auxValues == null) ? new TreeMap<String,Object>() : new TreeMap<String,Object>(auxValues);
             addFormSettings(auxValues);
         }
         if (auxValues != null && auxValues.size() > 0) {
@@ -4387,10 +4387,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
     }
 
-    private void saveAuxValues(Map auxValues, StringBuffer buf, String indent) {
-        for (Iterator it = auxValues.entrySet().iterator(); it.hasNext();) {
-            Map.Entry entry = (Map.Entry)it.next();
-            String valueName = (String)entry.getKey();
+    private void saveAuxValues(Map<String,Object> auxValues, StringBuffer buf, String indent) {
+        for (Iterator<Map.Entry<String,Object>> it = auxValues.entrySet().iterator(); it.hasNext();) {
+            Map.Entry<String,Object> entry = it.next();
+            String valueName = entry.getKey();
             Object value = entry.getValue();
             if (value == null) continue; // such values are not saved
             String valueType = value.getClass().getName();
