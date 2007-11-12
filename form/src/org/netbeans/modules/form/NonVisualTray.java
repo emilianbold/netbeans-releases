@@ -115,6 +115,7 @@ public class NonVisualTray extends JPanel implements ExplorerManager.Provider {
             setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         }
         
+        @Override
         public Dimension getPreferredSize() {
             Dimension dim = super.getPreferredSize();
             return new Dimension(1, (int)dim.getHeight());
@@ -192,7 +193,7 @@ public class NonVisualTray extends JPanel implements ExplorerManager.Provider {
                     }
                 } else {
                     Node[] nodes = (Node[])evt.getNewValue();
-                    ArrayList list = new ArrayList();
+                    java.util.List<Node> list = new ArrayList<Node>();
                     Node node = ((NonVisualNode)manager.getRootContext()).getOriginal();
                     for (int i=0; i<nodes.length; i++) {
                         if (node == nodes[i].getParentNode()) {
@@ -200,7 +201,7 @@ public class NonVisualTray extends JPanel implements ExplorerManager.Provider {
                         }
                     }
                     try {
-                        manager.setSelectedNodes((Node[])list.toArray(new Node[list.size()]));
+                        manager.setSelectedNodes(list.toArray(new Node[list.size()]));
                     } catch (PropertyVetoException pvex) {}
                 }
             }
@@ -243,6 +244,7 @@ public class NonVisualTray extends JPanel implements ExplorerManager.Provider {
          *
          * @return a replacement for the original subnode.
          */
+        @Override
         protected Node copyNode(Node node) {
             return new NonVisualNode(node);
         }
@@ -280,6 +282,7 @@ public class NonVisualTray extends JPanel implements ExplorerManager.Provider {
          *
          * @return short description of the node.
          */
+        @Override
         public String getShortDescription() {
             return getName();
         }
@@ -289,6 +292,7 @@ public class NonVisualTray extends JPanel implements ExplorerManager.Provider {
          *
          * @return the original node.
          */
+        @Override
         protected Node getOriginal() {
             return super.getOriginal();
         }
@@ -299,20 +303,21 @@ public class NonVisualTray extends JPanel implements ExplorerManager.Provider {
          * @param context determines whether context actions should be returned.
          * @return actions of the node.
          */
+        @Override
         public Action[] getActions(boolean context) {
             java.util.List forbiddenActions = Arrays.asList(new Class[] {
                 MoveUpAction.class,
                 MoveDownAction.class
             });
             Action[] actions = getOriginal().getActions(context);
-            ArrayList actionList = new ArrayList(Arrays.asList(actions));
+            java.util.List<Action> actionList = new ArrayList<Action>(Arrays.asList(actions));
             for (int i=0; i<actions.length; i++) {
                 Action action = actions[i];
                 if ((action != null) && (forbiddenActions.contains(action.getClass()))) {
                     actionList.remove(action);
                 }
             }
-            return (Action[])actionList.toArray(new Action[actionList.size()]);
+            return actionList.toArray(new Action[actionList.size()]);
         }
         
     }
