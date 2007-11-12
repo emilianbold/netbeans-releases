@@ -184,25 +184,6 @@ public final class LibraryManager {
         return res;
     }
     
-    public FileImpl findFileInProjects(ProjectBase baseProject, File searchFor) {
-        baseProject.ensureFilesCreated();
-        FileImpl file = baseProject.getFile(searchFor);
-        if (file == null) {
-            Set<ProjectBase> set = new HashSet<ProjectBase>();
-            for (CsmProject prj : baseProject.getLibraries()) {
-                ProjectBase projectBase = ((ProjectBase)prj);
-
-                projectBase.ensureFilesCreated();
-                ProjectBase res = searchInProjectFiles(projectBase, searchFor, set);
-                if (res != null) {
-                    file = res.getFile(searchFor);
-                    break;
-                }
-            }
-        }
-        return file;
-    }
-    
     private ProjectBase searchInProjectFiles(ProjectBase baseProject, File searchFor){
         return searchInProjectFiles(baseProject, searchFor, new HashSet<ProjectBase>());
     }

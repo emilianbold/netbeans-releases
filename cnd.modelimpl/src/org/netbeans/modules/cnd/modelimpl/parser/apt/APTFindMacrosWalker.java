@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.LibraryManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -230,11 +229,14 @@ class MacroReference extends OffsetableBase implements CsmReference {
     }
 
     private CsmFile getTargetFile() {
-        CsmFile target = UIDCsmConverter.UIDtoFile(mi.targetFile);
+        CsmFile current = UIDCsmConverter.UIDtoFile(mi.targetFile);
         if (mi.includePath != null) {
-            target = LibraryManager.getInstance().findFileInProjects((ProjectBase) target.getProject(), new File(mi.includePath));
-        }
-        return target;
+            ProjectBase targetPrj = ((ProjectBase)current.getProject()).findFileProject(mi.includePath); 
+            if (targetPrj != null) {
+                return targetPrj.getFile(new File(mi.includePath));
+            }
+        } 
+        return current;
     }
 
     public CsmObject getOwner() {
