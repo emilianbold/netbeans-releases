@@ -2071,7 +2071,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             if (exp != null) {
                 exPath = new TreePath(exPath, exp);
-                if (exp.getKind() == Tree.Kind.PRIMITIVE_TYPE || et.getKind() == Tree.Kind.ARRAY_TYPE || et.getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
+                if (exp.getKind() == Tree.Kind.PRIMITIVE_TYPE || exp.getKind() == Tree.Kind.ARRAY_TYPE || exp.getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
                     localResult(env);
                     addValueKeywords(env);
                     return;
