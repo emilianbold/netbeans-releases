@@ -95,7 +95,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
      
     private Set<ProxyClassLoader> parentSet = new HashSet<ProxyClassLoader>(); 
      
-    private static Map<String,Boolean> sclPackages = new HashMap<String,Boolean>();  
+    private static Map<String,Boolean> sclPackages = Collections.synchronizedMap(new HashMap<String,Boolean>());  
     
    
     /** Create a multi-parented classloader.
