@@ -177,7 +177,8 @@ big {font-size: x-large}
 small {font-size: x-small}
 
 table { border-color: gray; }
-tr { text-align: left }
+/* XXX #121595 It seems it shouldn't be here.
+tr { text-align: left }*/
 td, th, tr {
     border-color: gray;
     vertical-align: inherit;
