@@ -75,9 +75,9 @@ import org.openide.util.NbBundle;
  */
 public class MessageDestinationSupport {
     
-    public static String MSG_DEST_RESOURCE_NAME_JB4 = "jboss4-netbeans-destinations-service.xml"; // NOI18N
+    public static final String MSG_DEST_RESOURCE_NAME_JB4 = "jboss4-netbeans-destinations-service.xml"; // NOI18N
     // TODO JBoss 5 format support
-    public static String MSG_DEST_RESOURCE_NAME_JB5 = "jboss5-netbeans-destinations-service.xml"; // NOI18N
+    public static final String MSG_DEST_RESOURCE_NAME_JB5 = "jboss5-netbeans-destinations-service.xml"; // NOI18N
     
     public static final String CONN_FACTORY_JNDI_NAME_JB4 = "ConnectionFactory"; // NOI18N
 
@@ -251,7 +251,7 @@ public class MessageDestinationSupport {
             throw new ConfigurationException(msg, ioe);
         } catch (BadLocationException ble) {
             // this should not occur, just log it if it happens
-            Logger.getLogger("global").log(Level.INFO, ble.toString());
+            Logger.getLogger("global").log(Level.INFO, null, ble);
         } catch (RuntimeException e) {
             Server oldDestinationServiceModel = getMessageDestinationModel();
             if (oldDestinationServiceModel == null) {

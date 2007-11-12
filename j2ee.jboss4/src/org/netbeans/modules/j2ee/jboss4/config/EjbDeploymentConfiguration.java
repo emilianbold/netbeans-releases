@@ -212,7 +212,6 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
      * Listen to jboss.xml document changes.
      */
     public void propertyChange(PropertyChangeEvent evt) {
-        Object newValue = evt.getNewValue();
         if (evt.getPropertyName() == DataObject.PROP_MODIFIED &&
             evt.getNewValue() == Boolean.FALSE) {
             if (evt.getSource() == deploymentDescriptorDO) { // dataobject has been modified, jboss graph is out of sync

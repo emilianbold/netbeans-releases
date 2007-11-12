@@ -256,13 +256,12 @@ final class JbossDataSourceRefModifier {
 
         //no message-driven tag yet (msgDrivens.length == 0) or 
         //there are MDBs in beans map which were not found among the existing ones (those were not removed)
-        for (Iterator it = beans.keySet().iterator(); it.hasNext(); ) {
-            String ejbName = (String)it.next();
+        for (Iterator it = beans.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry entry = (Map.Entry) it.next();
             MessageDriven mdb = new MessageDriven();
-            mdb.setEjbName(ejbName);
-            String msgDestination = (String)beans.get(ejbName);
-            mdb.setDestinationJndiName(msgDestination);
-                
+            mdb.setEjbName((String) entry.getKey());
+            mdb.setDestinationJndiName((String) entry.getValue());
+
             //add the new mdb to enterprise-beans
             eb.addMessageDriven(mdb);
 

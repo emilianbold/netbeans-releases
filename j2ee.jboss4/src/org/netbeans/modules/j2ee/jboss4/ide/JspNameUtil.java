@@ -41,13 +41,14 @@
 
 package org.netbeans.modules.j2ee.jboss4.ide;
 
+import java.util.Arrays;
 import java.util.Vector;
 
 /** Various utilities copied over from org.apache.jasper.JspUtil.
  */
 public class JspNameUtil {
     
-    private static final String javaKeywords[] = {
+    private static final String JAVA_KEYWORDS[] = {
         "abstract", "boolean", "break", "byte", "case",
         "catch", "char", "class", "const", "continue",
         "default", "do", "double", "else", "extends",
@@ -158,21 +159,7 @@ public class JspNameUtil {
      * Test whether the argument is a Java keyword
      */
     public static boolean isJavaKeyword(String key) {
-        int i = 0;
-        int j = javaKeywords.length;
-        while (i < j) {
-            int k = (i+j)/2;
-            int result = javaKeywords[k].compareTo(key);
-            if (result == 0) {
-                return true;
-            }
-            if (result < 0) {
-                i = k+1;
-            } else {
-                j = k;
-            }
-        }
-        return false;
+        return Arrays.binarySearch(JAVA_KEYWORDS, key) >= 0;
     }
     
 }

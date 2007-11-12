@@ -638,17 +638,18 @@ public final class CustomizerSupport {
             String message = null;
             String approveButtonName = null;
             String approveButtonNameMne = null;
-            if (this.type == SOURCES) {
+            if (SOURCES.equals(this.type)) {
                 title = NbBundle.getMessage (CustomizerSupport.class,"TXT_OpenSources");
                 message = NbBundle.getMessage (CustomizerSupport.class,"TXT_Sources");
                 approveButtonName = NbBundle.getMessage (CustomizerSupport.class,"TXT_OpenSources");
                 approveButtonNameMne = NbBundle.getMessage (CustomizerSupport.class,"MNE_OpenSources");
-            }
-            else if (this.type == JAVADOC) {
+            } else if (JAVADOC.equals(this.type)) {
                 title = NbBundle.getMessage (CustomizerSupport.class,"TXT_OpenJavadoc");
                 message = NbBundle.getMessage (CustomizerSupport.class,"TXT_Javadoc");
                 approveButtonName = NbBundle.getMessage (CustomizerSupport.class,"TXT_OpenJavadoc");
                 approveButtonNameMne = NbBundle.getMessage (CustomizerSupport.class,"MNE_OpenJavadoc");
+            } else {
+                throw new IllegalStateException("Can't add element for classpath"); // NOI18N
             }
             chooser.setDialogTitle(title);
             chooser.setApproveButtonText(approveButtonName);

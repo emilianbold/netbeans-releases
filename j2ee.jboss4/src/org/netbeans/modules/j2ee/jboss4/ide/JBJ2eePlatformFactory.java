@@ -178,7 +178,7 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             if (libraries == null) {
                 initLibraries();
             }
-            return libraries;
+            return libraries.clone();
         }
     
         public void notifyLibrariesChanged() {
@@ -276,13 +276,17 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
         private static boolean containsService(FileObject serviceFO, String serviceName, String serviceImplName) {
             try {
                 BufferedReader br = new BufferedReader(new InputStreamReader(serviceFO.getInputStream()));
-                String line;
-                while ((line = br.readLine()) != null) {
-                    int ci = line.indexOf('#');
-                    if (ci >= 0) line = line.substring(0, ci);
-                    if (line.trim().equals(serviceImplName)) {
-                        return true;
+                try {
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        int ci = line.indexOf('#');
+                        if (ci >= 0) line = line.substring(0, ci);
+                        if (line.trim().equals(serviceImplName)) {
+                            return true;
+                        }
                     }
+                } finally {
+                    br.close();
                 }
             } 
             catch (Exception ex) {

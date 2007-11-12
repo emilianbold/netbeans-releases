@@ -48,9 +48,9 @@ import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 
-/** 
+/**
  * Progress event support
- * 
+ *
  * @author sherold
  */
 public final class ProgressEventSupport {
@@ -58,35 +58,33 @@ public final class ProgressEventSupport {
     private final Object eventSource;
     private final List<ProgressListener> listeners = new CopyOnWriteArrayList<ProgressListener>();
     private DeploymentStatus status;
-    private TargetModuleID targetModuleID;
-    
-    
+
+
     public ProgressEventSupport(Object eventSource) {
         if (eventSource == null) {
             throw new NullPointerException();
         }
         this.eventSource = eventSource;
     }
-    
+
     public void addProgressListener(ProgressListener progressListener) {
         listeners.add(progressListener);
     }
-    
+
     public void removeProgressListener(ProgressListener progressListener) {
         listeners.remove(progressListener);
     }
 
     public void fireProgressEvent(TargetModuleID targetModuleID, DeploymentStatus status) {
-	synchronized (this) {
+        synchronized (this) {
             this.status = status;
-            this.targetModuleID = targetModuleID;
-	}
-	ProgressEvent evt = new ProgressEvent(eventSource, targetModuleID, status);
+        }
+        ProgressEvent evt = new ProgressEvent(eventSource, targetModuleID, status);
         for (ProgressListener listener : listeners) {
             listener.handleProgressEvent(evt);
         }
     }
-    
+
     public synchronized DeploymentStatus getDeploymentStatus() {
         return status;
     }

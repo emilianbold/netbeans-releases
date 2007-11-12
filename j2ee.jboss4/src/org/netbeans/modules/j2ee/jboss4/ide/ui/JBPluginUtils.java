@@ -185,7 +185,6 @@ public class JBPluginUtils {
         //  String domainListFile = File.separator+"common"+File.separator+"nodemanager"+File.separator+"nodemanager.domains";  // NOI18N
 
         File serverDirectory = new File(serverLocation);
-        Version version = getServerVersion(serverDirectory);
 
         if (isGoodJBServerLocation(serverDirectory)) {
            File file = new File(serverLocation + File.separator + "server");  // NOI18N

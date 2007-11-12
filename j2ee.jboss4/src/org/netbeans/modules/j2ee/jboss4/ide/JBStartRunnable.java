@@ -237,7 +237,6 @@ class JBStartRunnable implements Runnable {
         final String serverLocation = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
         final String serverRunFileName = serverLocation + (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH);
         if (!new File(serverRunFileName).exists()){
-            final String serverName = ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
             fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED_FNF"));//NOI18N
             return null;
         }

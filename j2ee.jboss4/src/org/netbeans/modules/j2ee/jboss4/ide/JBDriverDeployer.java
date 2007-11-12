@@ -185,7 +185,6 @@ public class JBDriverDeployer implements JDBCDriverDeployer {
         
         /** Returns a classpath where the JDBC drivers could be placed */
         private Collection<File> getJDBCDriverClasspath() {
-            Collection<File> result = new ArrayList<File>();
             JBProperties properties = manager.getProperties();
             return Arrays.asList(properties.getLibsDir().listFiles());
         }
