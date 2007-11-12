@@ -72,6 +72,7 @@ public class EnumTest extends GeneratorTest {
 //        suite.addTest(new EnumTest("testRenameConstantContainingBody1"));
 //        suite.addTest(new EnumTest("testRenameConstantContainingBody2"));
 //        suite.addTest(new EnumTest("testRenameConstantContainingBody3"));
+//        suite.addTest(new EnumTest("testConstantAddition"));
         return suite;
     }
 
@@ -832,6 +833,54 @@ public class EnumTest extends GeneratorTest {
                 // VALUE1 -> VALUE_F
                 VariableTree vt = (VariableTree) clazz.getMembers().get(2);
                 workingCopy.rewrite(vt, make.setLabel(vt, "VALUE22"));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testConstantAddition() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
+            "public enum Test {\n" +
+            "    A, B, C;\n" +
+            "    \n" +
+            "    public void enumMethod() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.*;\n" +
+            "\n" +
+            "public enum Test {\n" +
+            "    A, D, B, C;\n" +
+            "    \n" +
+            "    public void enumMethod() {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                //int mods = java.lang.reflect.Modifier.PUBLIC | java.lang.reflect.Modifier.FINAL | java.lang.reflect.Modifier.STATIC;
+                int mods =  1<<14;
+                ModifiersTree modifiers = make.Modifiers(mods, Collections.<AnnotationTree>emptyList());
+                VariableTree newConstant = make.Variable(modifiers, "D", make.Identifier("Test"), null);
+                workingCopy.rewrite(clazz, make.insertClassMember(clazz, 2, newConstant));
             }
 
         };
