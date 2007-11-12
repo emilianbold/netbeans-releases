@@ -183,7 +183,7 @@ public class WLDeploymentManager implements DeploymentManager {
     }
 
     public boolean isLocal () {
-        return new Boolean(getInstanceProperties().getProperty(WLPluginProperties.IS_LOCAL_ATTR)).booleanValue();
+        return Boolean.valueOf(getInstanceProperties().getProperty(WLPluginProperties.IS_LOCAL_ATTR)).booleanValue();
     }
     /**
      * Returns the InstanceProperties object for the current server instance
@@ -695,7 +695,7 @@ public class WLDeploymentManager implements DeploymentManager {
         }
 
         public ClientConfiguration getClientConfiguration(TargetModuleID targetModuleID) {
-            return getClientConfiguration(targetModuleID);
+            return original.getClientConfiguration(targetModuleID);
         }
 
         public boolean isCancelSupported() {

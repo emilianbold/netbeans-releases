@@ -81,9 +81,7 @@ public class WLDeployer implements ProgressObject, Runnable {
 
     private final String uri;
 
-    private Target[] target;
     private File file;
-    private File file2;
 
     private TargetModuleID module_id;
 
@@ -142,10 +140,7 @@ public class WLDeployer implements ProgressObject, Runnable {
             Logger.getLogger("global").log(Level.INFO, null, e);
         }
 
-
-        this.target = target;
         this.file = file;
-        this.file2 = file2;
         this.module_id = module_id;
         fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(WLDeployer.class, "MSG_DEPLOYING", file.getAbsolutePath())));
         RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);

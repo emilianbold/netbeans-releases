@@ -122,7 +122,7 @@ public class ServerPropertiesPanel extends javax.swing.JPanel implements WizardD
         // set the required properties, so that the panel appear correct in
         // the steps
         putClientProperty("WizardPanel_contentData", steps); // NOI18N
-        putClientProperty("WizardPanel_contentSelectedIndex", new Integer(index)); // NOI18N
+        putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(index)); // NOI18N
 
         // register the supplied listener
         addChangeListener(listener);

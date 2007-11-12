@@ -58,9 +58,7 @@ public class URLWait {
      * @return true if non error response was obtained
      */
     public static boolean waitForUrlReady(URL url, int timeout) {
-        boolean success = false;
         String host = url.getHost();
-        int port = url.getPort();
         try {
             InetAddress.getByName(host);
         }

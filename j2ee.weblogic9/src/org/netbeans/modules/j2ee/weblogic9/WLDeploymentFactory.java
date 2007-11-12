@@ -81,8 +81,6 @@ public class WLDeploymentFactory implements DeploymentFactory {
      */
     private static WLDeploymentFactory instance;
 
-    private DeploymentFactory wlFactory = null;
-
     private static final WeakHashMap<InstanceProperties, WLDeploymentManager> managerCache =
             new WeakHashMap<InstanceProperties, WLDeploymentManager>();
 

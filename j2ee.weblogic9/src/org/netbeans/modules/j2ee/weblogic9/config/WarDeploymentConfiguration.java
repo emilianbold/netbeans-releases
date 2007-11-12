@@ -125,7 +125,9 @@ public class WarDeploymentConfiguration implements ModuleConfiguration,
         if (evt.getPropertyName() == DataObject.PROP_MODIFIED &&
                 evt.getNewValue() == Boolean.FALSE) {
             // dataobject has been modified, webLogicWebApp graph is out of sync
-            webLogicWebApp = null;
+            synchronized (this) {
+                webLogicWebApp = null;
+            }
         }
     }
    
@@ -232,7 +234,9 @@ public class WarDeploymentConfiguration implements ModuleConfiguration,
                     cookie.save();
                 }
             }
-            webLogicWebApp = newWeblogicWebApp;
+            synchronized (this) {
+                webLogicWebApp = newWeblogicWebApp;
+            }
         } catch (BadLocationException ble) {
             // this should not occur, just log it if it happens
             Exceptions.printStackTrace(ble);

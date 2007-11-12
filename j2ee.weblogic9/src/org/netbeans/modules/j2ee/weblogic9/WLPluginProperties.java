@@ -224,19 +224,25 @@ public class WLPluginProperties {
             return false;
         }
         try {
-            JarInputStream jarInputStream = new JarInputStream(new BufferedInputStream(new FileInputStream(weblogicJar)));
-            Manifest manifest = jarInputStream.getManifest();
-            String implementationVersion = manifest.getMainAttributes().getValue("Implementation-Version"); // NOI18N
-            if (implementationVersion != null) { // NOI18N
-                implementationVersion = implementationVersion.trim();
-                return implementationVersion.startsWith("9.") || implementationVersion.startsWith("10."); // NOI18N
+            JarInputStream jarInputStream = new JarInputStream(new BufferedInputStream(
+                    new FileInputStream(weblogicJar)));
+            try {
+                Manifest manifest = jarInputStream.getManifest();
+                String implementationVersion = manifest.getMainAttributes()
+                        .getValue("Implementation-Version"); // NOI18N
+                if (implementationVersion != null) { // NOI18N
+                    implementationVersion = implementationVersion.trim();
+                    return implementationVersion.startsWith("9.") || implementationVersion.startsWith("10."); // NOI18N
+                }
+            } finally {
+                jarInputStream.close();
             }
         } catch (IOException e) {
             Logger.getLogger(WLPluginProperties.class.getName()).log(Level.FINE, null, e);
         }
         return false;
     }
-    
+
     public static String getWeblogicDomainVersion(String domainRoot) {
         // Domain config file
         File config = new File(domainRoot, CONFIG_XML);
