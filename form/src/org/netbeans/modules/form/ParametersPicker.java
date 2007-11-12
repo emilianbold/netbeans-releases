@@ -65,7 +65,12 @@ public class ParametersPicker extends javax.swing.JPanel {
     
     private boolean previousValue = false;
         
-    /** Initializes the Form */
+    /**
+     * Initializes the Form.
+     * 
+     * @param formModel form model.
+     * @param requiredType type of the parameter.
+     */
     public ParametersPicker(FormModel formModel, Class requiredType) {
         this.formModel = formModel;
         this.requiredType = requiredType;
@@ -97,7 +102,7 @@ public class ParametersPicker extends javax.swing.JPanel {
 
         beansList = new ArrayList<RADComponent>();
         for (RADComponent radComp : formModel.getAllComponents()) {
-            if (requiredType.isAssignableFrom(radComp.getBeanClass()))
+            if (this.requiredType.isAssignableFrom(radComp.getBeanClass()))
                 beansList.add(radComp);
         }
         if (beansList.size() > 0) {
@@ -232,7 +237,7 @@ public class ParametersPicker extends javax.swing.JPanel {
 
     /** Get the customized property value.
      * @return the property value
-     * @exception InvalidStateException when the custom property editor does not contain a valid property value
+     * @exception IllegalStateException when the custom property editor does not contain a valid property value
      *(and thus it should not be set)
      */
     public Object getPropertyValue() throws IllegalStateException {
@@ -331,7 +336,7 @@ public class ParametersPicker extends javax.swing.JPanel {
 
     public synchronized void addChangeListener(ChangeListener l) {
         if (listeners == null)
-            listeners = new ArrayList();
+            listeners = new ArrayList<ChangeListener>();
         listeners.add(l);
     }
 
@@ -344,10 +349,10 @@ public class ParametersPicker extends javax.swing.JPanel {
     private synchronized void fireStateChange() {
         if (listeners == null)
             return;
-        ArrayList list =(ArrayList)listeners.clone();
+        List<ChangeListener> list = new ArrayList<ChangeListener>(listeners);
         ChangeEvent evt = new ChangeEvent(this);
-        for (Iterator it = list.iterator(); it.hasNext();)
-            ((ChangeListener)it.next()).stateChanged(evt);
+        for (Iterator<ChangeListener> it = list.iterator(); it.hasNext();)
+            it.next().stateChanged(evt);
     }
 
     /** This method is called from within the constructor to
@@ -698,11 +703,11 @@ public class ParametersPicker extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private FormModel formModel;
-    private Class requiredType;
+    private Class<?> requiredType;
 
     private PropertyPicker propertyPicker;
 
-    private ArrayList listeners;
+    private List<ChangeListener> listeners;
     private RADComponent selectedComponent;
     private PropertyDescriptor selectedProperty;
     private MethodDescriptor selectedMethod;
