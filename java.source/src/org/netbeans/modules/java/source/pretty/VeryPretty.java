@@ -73,6 +73,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 
+import sun.security.x509.KeyIdentifier;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 
 /** Prints out a tree as an indented Java source program.
@@ -517,8 +518,11 @@ public final class VeryPretty extends JCTree.Visitor {
             printFlags(tree.mods.flags);
             if ((tree.mods.flags & VARARGS) != 0) {
                 // Variable arity method. Expecting  ArrayType, print ... instead of [].
-                // todo  (#pf): should we check the array type to prevent CCE?
-                printExpr(((JCArrayTypeTree) tree.vartype).elemtype);
+                if (Kind.ARRAY_TYPE == tree.vartype.getKind()) {
+                    printExpr(((JCArrayTypeTree) tree.vartype).elemtype);
+                } else {
+                    printExpr(tree.vartype);
+                }
                 print("...");
             } else {
                 print(tree.vartype);
