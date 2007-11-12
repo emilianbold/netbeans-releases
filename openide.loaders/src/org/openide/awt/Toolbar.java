@@ -53,7 +53,6 @@ import java.util.Arrays;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TooManyListenersException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -206,6 +205,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     }
     
 
+    @Override
     public void paint( Graphics g ) {
         super.paint( g );
         if( -1 != dropTargetButtonIndex ) {
@@ -312,7 +312,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             if( t.isDataFlavorSupported( actionDataFlavor ) ) {
                 o = t.getTransferData( actionDataFlavor );
                 if( o instanceof Node ) {
-                    DataObject dobj = (DataObject)((Node)o).getLookup().lookup( DataObject.class );
+                    DataObject dobj = ((Node)o).getLookup().lookup( DataObject.class );
                     return addButton( dobj, dropTargetButtonIndex-1, insertBefore );
                 }
             } else {
@@ -359,24 +359,28 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         private Cursor dragMoveCursor = DragSource.DefaultMoveDrop;
         private Cursor dragNoDropCursor = DragSource.DefaultMoveNoDrop;
         private Cursor dragRemoveCursor = Utilities.createCustomCursor( Toolbar.this, Utilities.loadImage( "org/openide/loaders/delete.gif"), "NO_ACTION_MOVE" );
+        private Map<Component, DragGestureRecognizer> recognizers = new HashMap<Component, DragGestureRecognizer>();
         
         public DnDSupport() {
             dragSource.addDragSourceMotionListener(this);
         }
         
         public void register(Component c) {
-            dgr = dragSource.createDefaultDragGestureRecognizer(c, DnDConstants.ACTION_MOVE, this);
-            if (dgr != this.dgr) {
-                this.dgr = dgr;
-                try {
-                    dgr.addDragGestureListener(this);
-                } catch (TooManyListenersException e) {
-                    //do nothing
-                }
+            DragGestureRecognizer dgr = recognizers.get( c );
+            if( null == dgr ) {
+                dgr = dragSource.createDefaultDragGestureRecognizer(c, DnDConstants.ACTION_MOVE, this);
+                recognizers.put( c, dgr );
             }
         }
-        DragGestureRecognizer dgr = null;
 
+        public void unregister(Component c) {
+            DragGestureRecognizer dgr = recognizers.get( c );
+            if( null != dgr ) {
+                dgr.removeDragGestureListener( this );
+                recognizers.remove( c );
+            }
+        }
+        
         public void dragEnter(DragSourceDragEvent e) {
             //handled in dragMouseMoved
         }
@@ -611,16 +615,19 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         return processor;
     }    
     
+    @Override
     public void addNotify() {
         super.addNotify();
         waitFinished();
     }
     
+    @Override
     public Component[] getComponents () {
         waitFinished ();
         return super.getComponents ();
     }
     
+    @Override
     public void setVisible(boolean b) {
 	super.setVisible(b);
 	waitFinished();	
@@ -629,6 +636,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     private static final Insets emptyInsets = new Insets(1,1,1,1);
     /** Overridden to set focusable to false for any AbstractButton
      * subclasses which are added */
+    @Override
     protected void addImpl(Component c, Object constraints, int idx) {
         //issue 39896, after opening dialog from toolbar button, focus
         //remains on toolbar button.  Does not create an accessibility issue - 
@@ -660,7 +668,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             getDnd().register(c);
         }
     }
-    
+
     /**
      * Create a new <code>Toolbar</code>.
      * @param name a <code>String</code> containing the associated name
@@ -721,6 +729,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         getAccessibleContext().setAccessibleDescription(getName());
     }
 
+    @Override
     public String getUIClassID() {
         if (UIManager.get("Nb.Toolbar.ui") != null) { //NOI18N
             return "Nb.Toolbar.ui"; //NOI18N
@@ -729,6 +738,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
     }
     
+    @Override
     public Dimension getPreferredSize() {
         String lfid = UIManager.getLookAndFeel().getID();
         int minheight;
@@ -764,7 +774,11 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     }
 
     /** Removes all ACTION components. */
+    @Override
     public void removeAll () {
+        for( int i=0; i<getComponentCount(); i++ ) {
+            getDnd().unregister( getComponent(i) );
+        }
         super.removeAll();
         addGrip();
     }
@@ -874,11 +888,13 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         private Point startPoint = null;
 
         /** Invoked when a mouse button has been pressed on a component. */
+        @Override
         public void mousePressed (MouseEvent e) {
             startPoint = e.getPoint();
         }
 
         /** Invoked when a mouse button has been released on a component. */
+        @Override
         public void mouseReleased (MouseEvent e) {
             if (dragging) {
                 
@@ -893,6 +909,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
 
         /** Invoked when a mouse button is pressed on a component and then dragged. */
+        @Override
         public void mouseDragged (MouseEvent e) {
             int m = e.getModifiers();
             int type = DnDEvent.DND_ONE;
@@ -946,6 +963,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
          * Full name of the data folder's primary file separated by dots.
          * @return the name
          */
+        @Override
         public String instanceName () {
             return Toolbar.this.getClass().getName();
         }
@@ -954,6 +972,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
          * Returns the root class of all objects.
          * @return Object.class
          */
+        @Override
         public Class instanceClass ()
         throws java.io.IOException, ClassNotFoundException {
             return Toolbar.this.getClass();
@@ -962,6 +981,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         /** If no instance cookie, tries to create execution action on the
          * data object.
          */
+        @Override
         protected InstanceCookie acceptDataObject (DataObject dob) {
             InstanceCookie ic = super.acceptDataObject (dob);
             if (ic == null) {
@@ -977,6 +997,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         
     private Map<Object, Object> cookiesToObjects = new HashMap<Object, Object>();
     
+        @Override
     protected Object instanceForCookie (DataObject obj, InstanceCookie cookie)
     throws IOException, ClassNotFoundException {
         Object result = super.instanceForCookie(obj, cookie);
@@ -990,6 +1011,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
          * @param cookie an <code>InstanceCookie</code> to test
          * @return true if the cookie can provide accepted instances
          */
+        @Override
         protected InstanceCookie acceptCookie (InstanceCookie cookie)
         throws java.io.IOException, ClassNotFoundException {
             boolean is;
@@ -1014,6 +1036,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
          * @param df a <code>DataFolder</code> to create the cookie for
          * @return a <code>Toolbar.Folder</code> for the specified folder
          */
+        @Override
         protected InstanceCookie acceptFolder(DataFolder df) {
             return null; // PENDING new Toolbar.Folder(df);
         }
@@ -1097,6 +1120,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
 
         /** Recreate the instance in AWT thread.
         */
+        @Override
         protected Task postCreationTask (Runnable run) {
             return new AWTTask (run);
         }
@@ -1129,6 +1153,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
 
         /** Paint bumps to specific Graphics. */
+        @Override
         public void paint (Graphics g) {
             Dimension size = this.getSize ();
             int height = size.height - BOTGAP;
@@ -1151,15 +1176,18 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
 
         /** @return minimum size */
+        @Override
         public Dimension getMinimumSize () {
             return dim;
         }
 
         /** @return preferred size */
+        @Override
         public Dimension getPreferredSize () {
             return this.getMinimumSize ();
         }
 
+        @Override
         public Dimension getMaximumSize () {
             return max;
         }
@@ -1262,15 +1290,18 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
 
         /** @return minimum size */
+        @Override
         public Dimension getMinimumSize () {
             return dim;
         }
 
         /** @return preferred size */
+        @Override
         public Dimension getPreferredSize () {
             return new Dimension(WIDTH,Toolbar.this.getHeight() - BOTGAP - TOPGAP);
         }
 
+        @Override
         public Dimension getMaximumSize () {
             return max;
         }
@@ -1304,6 +1335,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             this.setToolTipText (Toolbar.this.getDisplayName());
         }
         
+        @Override
         public void paintComponent (Graphics g) {
             super.paintComponent(g);
             java.awt.Graphics2D g2d = (Graphics2D) g;
@@ -1329,15 +1361,18 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
         
         /** @return minimum size */
+        @Override
         public Dimension getMinimumSize () {
             return dim;
         }
         
         /** @return preferred size */
+        @Override
         public Dimension getPreferredSize () {
             return this.getMinimumSize ();
         }
         
+        @Override
         public Dimension getMaximumSize () {
             return max;
         }
@@ -1358,6 +1393,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         return hintsMap;
     }
 
+    @Override
     public void setUI(javax.swing.plaf.ToolBarUI ui) {
         super.setUI(ui);
         if( null != backingFolder && null != processor ) {
@@ -1381,6 +1417,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             this.setToolTipText (Toolbar.this.getDisplayName());
         }
         
+        @Override
         public void paintComponent (Graphics g) {
             super.paintComponent(g);
             int x = 3;
@@ -1441,15 +1478,18 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
         
         /** @return minimum size */
-        public Dimension getMinimumSize () {
+        @Override
+        public Dimension getMinimumSize() {
             return dim;
         }
         
         /** @return preferred size */
+        @Override
         public Dimension getPreferredSize () {
             return this.getMinimumSize ();
         }
         
+        @Override
         public Dimension getMaximumSize () {
             return max;
         }
@@ -1505,6 +1545,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
 
         /** Paint grip to specific Graphics. */
+        @Override
         public void paint (Graphics g) {
             Dimension size = this.getSize();
             int top = VGAP;
@@ -1519,15 +1560,18 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
 
         /** @return minimum size */
+        @Override
         public Dimension getMinimumSize () {
             return dim;
         }
 
         /** @return preferred size */
+        @Override
         public Dimension getPreferredSize () {
             return this.getMinimumSize();
         }
         
+        @Override
         public Dimension getMaximumSize () {
             return max;
         }
@@ -1599,6 +1643,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     private static class DefaultIconButton extends JButton {
         private Icon unknownIcon;
         
+        @Override
         public Icon getIcon() {
             Icon retValue = super.getIcon();
             if( null == retValue && (null == getText() || getText().length() == 0 ) ) {
