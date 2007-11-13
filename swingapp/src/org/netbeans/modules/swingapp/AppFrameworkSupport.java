@@ -49,9 +49,6 @@ import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import com.sun.source.tree.ClassTree;
@@ -130,21 +127,6 @@ class AppFrameworkSupport {
         }
         return true;
     }
-    
-//    /**
-//     * Adds the app framework library to project classpath.
-//     * @param fileInProject some source file contained in the project
-//     */
-//    static boolean updateProjectClassPath(FileObject fileInProject) {
-//        Library lib = LibraryManager.getDefault().getLibrary("swing-app-framework"); // NOI18N
-//        try {
-//            ProjectClassPathModifier.addLibraries(new Library[] { lib }, fileInProject, ClassPath.EXECUTE);
-//            return true;
-//        } catch (IOException ex) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-//            return false;
-//        }
-//    }
 
     static String getApplicationCode(FileObject srcFile) {
         String appClsName = getApplicationClassName(srcFile);
