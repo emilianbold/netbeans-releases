@@ -60,8 +60,6 @@ import org.openide.filesystems.FileUtil;
 
 class AppProjectGenerator {
 
-//    private static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2se-project/3"; // NOI18N
-
     private AppProjectGenerator() {}
 
     static FileObject createProjectFromTemplate(FileObject zippedTemplate,
@@ -81,18 +79,6 @@ class AppProjectGenerator {
         }
 
         unzip(zippedTemplate, projectFolderFO, toReplace, replaceWith);
-        // [revisit private properties]
-//                    //update private properties
-//                    File privateProperties = createPrivateProperties (prjLoc);
-//                    //No need to load the properties the file is empty
-//                    Properties p = new Properties ();                    
-//                    p.put ("javadoc.preview","true");   //NOI18N
-//                    FileOutputStream out = new FileOutputStream (privateProperties);
-//                    try {
-//                        p.store(out,null);                    
-//                    } finally {
-//                        out.close ();
-//                    }
         projectFolderFO.refresh(false);
         return projectFolderFO;
     }
@@ -114,40 +100,6 @@ class AppProjectGenerator {
                 replacer.write(fileName.getBytes());
                 replacer.close();
                 fileName = baos.toString("UTF-8"); // NOI18N
-//                String[] pathElements = fileName.split("/"); // NOI18N
-//                boolean anySubst = false;
-//
-//                for (int i=0; i < pathElements.length; i++) {
-//                    String pathEl = pathElements[i];
-//                    String extension = ""; // NOI18N
-//                    if (!entry.isDirectory() && i+1 == pathElements.length) {
-//                        int dot = pathEl.lastIndexOf('.'); // NOI18N
-//                        if (dot >= 0) {
-//                            extension = pathEl.substring(dot);
-//                            pathEl = pathEl.substring(0, dot);
-//                        }
-//                    }
-//
-//                    for (int j=0; j < toReplace.length; j++) {
-//                        if (pathEl.equals(toReplace[j])) {
-//                            pathEl = entry.isDirectory() ?
-//                                     replaceWith[j].replace('.', '/') : replaceWith[j]; // NOI18N
-//                            pathElements[i] = pathEl + extension;
-//                            anySubst = true;
-//                            break;
-//                        }
-//                    }
-//                }
-//
-//                if (anySubst) {
-//                    StringBuilder buf = new StringBuilder(fileName.length());
-//                    for (int i=0; i < pathElements.length; i++) {
-//                        buf.append(pathElements[i]);
-//                        if (i+1 < pathElements.length)
-//                            buf.append("/"); // NOI18N
-//                    }
-//                    fileName = buf.toString();
-//                }
 
                 if (entry.isDirectory()) {
                     FileUtil.createFolder(targetFolder, fileName);
@@ -206,19 +158,6 @@ class AppProjectGenerator {
         catch (IOException ex) {} // should not happen
         return projectFolder.getFileObject(templFileName);
     }
-
-//    private static File createPrivateProperties (FileObject fo) throws IOException {
-//        String[] nameElements = AntProjectHelper.PRIVATE_PROPERTIES_PATH.split("/");
-//        for (int i=0; i<nameElements.length-1; i++) {
-//            FileObject tmp = fo.getFileObject (nameElements[i]);
-//            if (tmp == null) {
-//                tmp = fo.createFolder(nameElements[i]);
-//            }
-//            fo = tmp;
-//        }
-//        fo = fo.createData(nameElements[nameElements.length-1]);
-//        return FileUtil.toFile(fo);
-//    }
 
     /**
      * Replaces given strings in the content written to the underlying stream.
@@ -329,11 +268,13 @@ class AppProjectGenerator {
             }
         }
 
+        @Override
         public void flush() throws IOException {
             writePendingBytes();
             output.flush();
         }
 
+        @Override
         public void close() throws IOException {
             writePendingBytes();
             output.close();
