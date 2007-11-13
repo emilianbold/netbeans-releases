@@ -438,11 +438,13 @@ final class ResultView extends TopComponent {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void requestFocus() {
         tree.requestFocus();
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public boolean requestFocusInWindow() {
         return tree.requestFocusInWindow();
     }
