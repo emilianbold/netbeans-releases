@@ -313,7 +313,7 @@ class LuceneIndex extends Index {
             if (cancel.get()) {
                 throw new InterruptedException ();
             }
-            final Document doc = in.document(docNum);
+            final Document doc = in.document(docNum, DocumentUtil.declaredTypesFieldSelector());
             final String binaryName = DocumentUtil.getBinaryName(doc, kindHolder);
             result.add (convertor.convert(kindHolder[0],binaryName));
         }        
@@ -379,7 +379,7 @@ class LuceneIndex extends Index {
                 throw new InterruptedException ();
             }
             if (!in.isDeleted(i)) {
-                final Document doc = in.document(i);
+                final Document doc = in.document(i, DocumentUtil.declaredTypesFieldSelector());
                 if (doc != null) {
                     String binaryName = DocumentUtil.getBinaryName (doc, kindHolder);
                     if (binaryName == null) {
@@ -732,6 +732,9 @@ class LuceneIndex extends Index {
         }        
     }
     
+    /**
+     * Expert: Bypass read of norms 
+     */
     private static class NoNormsReader extends FilterIndexReader {
         
         

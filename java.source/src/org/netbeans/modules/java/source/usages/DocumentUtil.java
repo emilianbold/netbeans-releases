@@ -50,6 +50,8 @@ import javax.lang.model.element.ElementKind;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.FieldSelector;
+import org.apache.lucene.document.FieldSelectorResult;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -429,5 +431,28 @@ class DocumentUtil {
         }
     }       
     
+    
+    public static FieldSelector declaredTypesFieldSelector () {
+        return new DeclaredTypesFieldSelector();
+    }
+    
+    /**
+     * Expert: Bypass load of non needed fields of document
+     */
+    private static class DeclaredTypesFieldSelector implements FieldSelector {
+        
+        private final Term pkgName = new Term (FIELD_PACKAGE_NAME,"");          //NOI18N
+        private final Term binaryName = new Term (FIELD_BINARY_NAME,"");        //NOI18N
+
+        public FieldSelectorResult accept(final String fieldName) {
+            if (fieldName == pkgName.field() || fieldName == binaryName.field()) {
+                return FieldSelectorResult.LOAD;
+            }
+            else {
+                return FieldSelectorResult.NO_LOAD;
+            }
+        }
+        
+    }
     
 }
