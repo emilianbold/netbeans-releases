@@ -9782,8 +9782,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
                         m_ContextMenuManager.setContextObject(contextObj);
                         if (Utilities.isUnix() || Utilities.isMac())
                         {
-                            selectAndFireEvents((TSGraphObject) contextObj, true,
-                                    true);
+                            selectAndFireEvents((TSGraphObject) contextObj, true, false);
                         }
                     }
                 } else if ((e == null) && (selected != null))
