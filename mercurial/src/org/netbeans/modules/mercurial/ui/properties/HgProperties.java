@@ -156,12 +156,7 @@ public class HgProperties implements ActionListener, DocumentListener {
     }
     
     protected String getPropertyName() {
-        Object selectedItem = panel.comboName.getSelectedObjects()[0];
-        if (selectedItem != null) {
-            return panel.comboName.getEditor().getItem().toString().trim();
-        } else {
-            return selectedItem.toString().trim();
-        }
+        return ((String)panel.comboName.getSelectedItem()).trim();
     }
     
     protected void refreshProperties() {        
@@ -284,7 +279,7 @@ public class HgProperties implements ActionListener, DocumentListener {
     private void validateUserInput(DocumentEvent event) {
         
         Document doc = event.getDocument();
-        String name = panel.comboName.getEditor().getItem().toString().trim();
+        String name = ((String)panel.comboName.getSelectedItem()).trim();
         String value = panel.txtAreaValue.getText().trim();
         
         if (name.length() == 0 || value.length() == 0 || name.indexOf(" ") > 0) { // NOI18N
