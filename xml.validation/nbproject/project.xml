@@ -126,6 +126,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.editors.api</friend>
                 <friend>org.netbeans.modules.bpel.search</friend>
+                <friend>org.netbeans.modules.compapp.casaeditor</friend>
                 <friend>org.netbeans.modules.iep.editor</friend>
                 <friend>org.netbeans.modules.script.core</friend>
                 <friend>org.netbeans.modules.workflow.editor</friend>
