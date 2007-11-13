@@ -45,6 +45,8 @@ import java.io.IOException;
 import javax.swing.JButton;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.openide.util.Exceptions;
+import org.openide.util.MutexException;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -53,7 +55,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Mutex;
@@ -141,7 +142,7 @@ public class UpdateHelper {
                             saveUpdate ();
                             helper.putProperties(path,props);
                         } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify (ioe);
+                            Exceptions.printStackTrace(ioe);
                         }
                     }
                 }
@@ -188,7 +189,7 @@ public class UpdateHelper {
                         saveUpdate ();
                         helper.putPrimaryConfigurationData(element, shared);
                     } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
+                        Exceptions.printStackTrace(ioe);
                     }
                 }
             }
@@ -209,31 +210,52 @@ public class UpdateHelper {
      * If the user agrees with an update the project is updated.
      * @return true if the metadata are of current version or updated
      */
-    public boolean requestSave () throws IOException{
-        if (isCurrent()) {
-            return true;
+    public boolean requestSave () throws IOException {
+        try {
+            return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+                public Boolean run() throws IOException {
+                    if (isCurrent()) {
+                        return Boolean.TRUE;
+                    }
+                    if (!canUpdate()) {
+                        return Boolean.FALSE;
+                    }
+                    saveUpdate();
+                    return Boolean.TRUE;
+                }
+            }).booleanValue();
+            
+        } catch (MutexException ex) {
+            Exception inner = ex.getException();
+            if (inner instanceof IOException) {
+                throw (IOException) inner;
+            }
+            else {
+                throw (RuntimeException) inner;
+            }
         }
-        if (!canUpdate()) {
-            return false;
-        }
-        saveUpdate ();
-        return true;
     }
 
     /**
      * Returns true if the project is of current version.
      * @return true if the project is of current version, otherwise false.
      */
-    public synchronized boolean isCurrent () {
-        if (this.isCurrent == null) {
-            if ((this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/1",true) != null) || 
-                (this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/2",true) != null)) {
-                this.isCurrent = Boolean.FALSE;
-            } else {
-                this.isCurrent = Boolean.TRUE;
+    public boolean isCurrent () {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
+            public Boolean run() {
+                synchronized (this) {
+                    if (isCurrent == null) {
+                        if ((cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/1",true) != null) || 
+                        (cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/2",true) != null)) {
+                            isCurrent = Boolean.FALSE;
+                        } else {
+                            isCurrent = Boolean.TRUE;
+                        }
+                    }
+                    return isCurrent;
+                }
             }
-        }
-        return isCurrent.booleanValue();
+        }).booleanValue();        
     }
 
     private boolean canUpdate () {

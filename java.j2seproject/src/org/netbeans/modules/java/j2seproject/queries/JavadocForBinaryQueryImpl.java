@@ -43,10 +43,7 @@ package org.netbeans.modules.java.j2seproject.queries;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.ArrayList;
-import javax.swing.event.ChangeEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import java.net.URL;
 import java.net.MalformedURLException;
@@ -55,6 +52,7 @@ import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 /**
@@ -79,33 +77,52 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
             
             private final ChangeSupport changeSupport = new ChangeSupport(this);
             private URL[] result;
+            private long eventId;
             
             public R () {
                 JavadocForBinaryQueryImpl.this.evaluator.addPropertyChangeListener (WeakListeners.propertyChange(this,JavadocForBinaryQueryImpl.this.evaluator));
             }
             
-            public synchronized URL[] getRoots() {
-                if (this.result == null) {
-                    String javadocDir = evaluator.getProperty(PROP_JAVADOC_DIR);
-                    if (javadocDir != null) {
-                        File f = helper.resolveFile(javadocDir);
-                        try {
-                            URL url = f.toURI().toURL();
-                            if (!f.exists()) {
-                                assert !url.toExternalForm().endsWith("/") : f; // NOI18N
-                                url = new URL(url.toExternalForm() + "/"); // NOI18N
-                            }
-                            this.result = new URL[] {url};
-                        } catch (MalformedURLException e) {
-                            this.result = new URL[0];
-                            ErrorManager.getDefault().notify(e);
+            public  URL[] getRoots() {
+                long _eventId;
+                synchronized (this) {
+                    if (this.result != null) {
+                        return this.result;
+                    }
+                    _eventId = eventId;
+                }
+                URL[] _result;
+                String javadocDir = evaluator.getProperty(PROP_JAVADOC_DIR);
+                if (javadocDir != null) {
+                    File f = helper.resolveFile(javadocDir);
+                    try {
+                        URL url = f.toURI().toURL();
+                        if (!f.exists()) {
+                            assert !url.toExternalForm().endsWith("/") : f; // NOI18N
+                            url = new URL(url.toExternalForm() + "/"); // NOI18N
                         }
+                        _result = new URL[] {url};
+                    } catch (MalformedURLException e) {
+                        _result = new URL[0];
+                        Exceptions.printStackTrace(e);
+                    }
+                }
+                else {
+                    _result = new URL[0];
+                }
+                synchronized (this) {
+                    if (_eventId == eventId) {
+                        if (this.result == null) {
+                            this.result = _result;
+                        }
+                        return this.result;
                     }
                     else {
-                        this.result = new URL[0];
-                    }                
+                        return _result;
+                    }
+                    
                 }
-                return this.result;
+                
             }
             public void addChangeListener(final ChangeListener l) {
                 assert l != null;
@@ -120,6 +137,7 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
                 if (PROP_JAVADOC_DIR.equals(event.getPropertyName())) {
                     synchronized (this) {
                         result = null;
+                        eventId++;
                     }
                     this.changeSupport.fireChange ();
                 }
@@ -149,7 +167,7 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
                         binaryRoot.toExternalForm().startsWith(url.toExternalForm());
             }
         } catch (MalformedURLException malformedURL) {
-            ErrorManager.getDefault().notify(malformedURL);
+            Exceptions.printStackTrace(malformedURL);
         }
         return false;
     }
