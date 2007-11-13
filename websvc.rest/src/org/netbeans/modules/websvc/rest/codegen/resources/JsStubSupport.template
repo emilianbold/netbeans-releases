@@ -32,7 +32,16 @@ var rjsSupport = {
         return xmlHttpReq;
      },
 
-     open : function(method, url, mimeType, paramLen, async) {
+     open : function(method, url2, mimeType, paramLen, async) {
+
+        //add timestamp to make url unique in case of IE7
+        var url = url2;
+        var timestamp = new Date().getTime();
+        if(url.indexOf("?") != -1)
+            url = url+"&timestamp="+timestamp;
+        else
+            url = url+"?timestamp="+timestamp;
+
         var xmlHttpReq = this.getHttpRequest();
         if(xmlHttpReq == null) {
             this.debug('Error: Cannot create XMLHttpRequest');
@@ -61,6 +70,11 @@ var rjsSupport = {
                 xmlHttpReq.setRequestHeader("Connection", "close");
             }
         }
+        //For cache control on IE7
+        xmlHttpReq.setRequestHeader("Cache-Control", "no-cache");
+        xmlHttpReq.setRequestHeader("Pragma", "no-cache");
+        xmlHttpReq.setRequestHeader("Expires", "-1");
+
         return xmlHttpReq;
     },
 

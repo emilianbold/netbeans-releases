@@ -70,10 +70,10 @@ function getHttpRequest() {
     return xmlHttpReq;
  }
   
- function open2(method, url, mimeType, paramLen, async) {
+ function open2(method, url2, mimeType, paramLen, async) {
     
     //add timestamp to make url unique in case of IE7
-    var url = req;
+    var url = url2;
     var timestamp = new Date().getTime();
     if(url.indexOf("?") != -1)
         url = url+"&timestamp="+timestamp;
