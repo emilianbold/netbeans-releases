@@ -48,16 +48,6 @@ made subject to such option by the copyright holder.
     <import file="../../nbbuild/templates/xtest.xml"/>
 
     <!-- default testtypes, attributes used when no value is supplied from command line -->
-    <property name="xtest.testtype" value="qa-functional"/>
-    <property name="xtest.attribs" value="validation"/>
-    <!--<property name="xtest.debug.port" value="8765"/>-->
-
-    <!-- Run developers' unit tests -->
-    <target name="devu">
-        <antcall target="all">
-            <param name="xtest.testtype" value="unit"/>
-            <param name="xtest.attribs" value="stable"/>
-        </antcall>
-    </target>
-    
+    <property name="xtest.testtype" value="unit"/>
+    <property name="xtest.attribs" value="stable"/>
 </project>

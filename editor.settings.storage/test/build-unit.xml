@@ -44,10 +44,4 @@ made subject to such option by the copyright holder.
 
 <project name="editor/settings/storage/test-unit" basedir="." default="all">
     <import file="../../../../nbbuild/templates/xtest-unit.xml"/>
-
-    <!-- ========= -->
-    <!-- Compilers -->
-    <!-- ========= -->
-
-
 </project>

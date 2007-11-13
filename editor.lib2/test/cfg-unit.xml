@@ -96,9 +96,9 @@ made subject to such option by the copyright holder.
         <testset dir="unit/src"/>
     </testbag>
 
-    <executor name="code" antfile="build.xml" target="run-unit-test" default="true"/>
-    <executor name="code-noJIT" antfile="build.xml" target="run-unit-test-noJIT" />
+    <executor name="code" antfile="build-unit.xml" target="run-unit-test" default="true"/>
+    <executor name="code-noJIT" antfile="build-unit.xml" target="run-unit-test-noJIT" />
     
-    <compiler name="unit-compiler" antfile="build.xml" target="default-compiler" default="true"/>
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     
 </mconfig>

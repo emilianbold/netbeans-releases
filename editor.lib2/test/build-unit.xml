@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
 <!--
+
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
 Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
@@ -42,42 +42,29 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<!--
-  These classes are excluded by default (defined in build.xml):
-    "**/*Suite.class"
-    "**/*$$*.class"
-    "**/data/**"
-    "**/hidden/**"
-    "**/*Hidden.*"
-    "**/*Hid.*"
--->
+<project name="editor/options/test-unit" basedir="." default="all">
+    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
 
-<mconfig name="editor codetemplates unit test config">
+    <!-- Build lexer tests -->
+    <target name="build-lexer-tests">
+        <!--  Cannot use
+              <ant dir="../../openide/text/test" target="buildtests" inheritall="false"/>
+              because inheritAll="false" doesn't work for all properties. -->
+        <java classname="org.apache.tools.ant.Main" classpath="${java.class.path}" fork="true">
+            <arg value="-f"/>
+            <arg value="../../../lexer/test/build.xml"/>
+            <arg value="-Dxtest.testtype=unit"/>
+            <arg value="-Dxtest.attribs=stable"/>
+            <arg value="buildtests"/>
+        </java>
+    </target>
+    
+    <target name="default-compiler" depends="build-lexer-tests,xtest-unit.default-compiler"/>
 
-    <testbag testattribs="stable" executor="code" name="testbag_1">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="**/**Test.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="failing" executor="code" name="testbag_2">
-        <testset dir="unit/src">
-            <patternset>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <!-- If you want to use this testbag you *must* provide xtest.includes property, -->
-    <!-- (either on cmd line or in the script) to explicitly define which test       -->
-    <!-- you want to run. This will run *only* tests from unit/src folder !!!        -->
-    <testbag testattribs="empty" executor="code" name="testbag_empty">
-        <testset dir="unit/src"/>
-    </testbag>
+    <target name="run-unit-test-noJIT">
+        <antcall target="run-unit-test">
+            <param name="xtest.jvm.args" value="-Xint" />
+        </antcall>
+    </target>
 
-    <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
-    
-    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
-    
-</mconfig>
+</project>

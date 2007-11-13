@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
 <!--
+
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
 Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
@@ -42,42 +42,6 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<!--
-  These classes are excluded by default (defined in build.xml):
-    "**/*Suite.class"
-    "**/*$$*.class"
-    "**/data/**"
-    "**/hidden/**"
-    "**/*Hidden.*"
-    "**/*Hid.*"
--->
-
-<mconfig name="editor codetemplates unit test config">
-
-    <testbag testattribs="stable" executor="code" name="testbag_1">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="**/**Test.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="failing" executor="code" name="testbag_2">
-        <testset dir="unit/src">
-            <patternset>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <!-- If you want to use this testbag you *must* provide xtest.includes property, -->
-    <!-- (either on cmd line or in the script) to explicitly define which test       -->
-    <!-- you want to run. This will run *only* tests from unit/src folder !!!        -->
-    <testbag testattribs="empty" executor="code" name="testbag_empty">
-        <testset dir="unit/src"/>
-    </testbag>
-
-    <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
-    
-    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
-    
-</mconfig>
+<project name="editor/options/test-unit" basedir="." default="all">
+    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+</project>

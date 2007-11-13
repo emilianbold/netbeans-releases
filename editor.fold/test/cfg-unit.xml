@@ -84,8 +84,8 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
+    <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
     
-    <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     
 </mconfig>
