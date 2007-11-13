@@ -192,17 +192,24 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     private ExecutionResults runJDKInstallerWindows(File location, File installer, File logFile, Progress progress) throws InstallationException {
         progress.setDetail(PROGRESS_DETAIL_RUNNING_JDK_INSTALLER);
-        
+        final File tempDir;
         try {
+            tempDir = FileUtils.createTempFile(
+                    SystemUtils.getTempDirectory(), true, true);
             SystemUtils.setEnvironmentVariable("TEMP",
-                    SystemUtils.getTempDirectory().getAbsolutePath(),
+                    tempDir.getAbsolutePath(),
                     EnvironmentScope.PROCESS,
                     false);
             SystemUtils.setEnvironmentVariable("TMP",
-                    SystemUtils.getTempDirectory().getAbsolutePath(),
+                    tempDir.getAbsolutePath(),
                     EnvironmentScope.PROCESS,
                     false);
+            LogManager.log("... tempdir : " + tempDir);
         } catch (NativeException e) {
+            throw new InstallationException(
+                    ResourceUtils.getString(ConfigurationLogic.class,
+                    ERROR_INSTALL_JDK_ERROR_KEY),e);
+        } catch (IOException e) {
             throw new InstallationException(
                     ResourceUtils.getString(ConfigurationLogic.class,
                     ERROR_INSTALL_JDK_ERROR_KEY),e);
@@ -219,7 +226,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "/s",
             "/v" + loggingOption + installLocationOption};
         
-        ProgressThread progressThread = new ProgressThread(progress,location,getJDKinstallationSize());
+        ProgressThread progressThread = new ProgressThread(progress,
+                new File[] {location, tempDir},
+                getJDKinstallationSize()  + getProduct().getDownloadSize());
         try {
             progressThread.start();
             return SystemUtils.executeCommand(location, commands);
@@ -254,7 +263,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         " < " + yesFile.getAbsolutePath() +
                         loggingOption
             };
-            ProgressThread progressThread = new ProgressThread(progress,location, getJDKinstallationSize());
+            ProgressThread progressThread = new ProgressThread(progress,
+                    new File [] {location}, getJDKinstallationSize());
             try {
                 progressThread.start();
                 results = SystemUtils.executeCommand(location, commands);
@@ -317,8 +327,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final File location = new File(parseString("$E{ProgramFiles}"),
                 "Java\\jre" + getProduct().getVersion().toJdkStyle());
         LogManager.log("... JRE installation location (default) : " + location);
-        
-        try {
+        try {             
             SystemUtils.setEnvironmentVariable("TEMP",
                     SystemUtils.getTempDirectory().getAbsolutePath(),
                     EnvironmentScope.PROCESS,
@@ -327,13 +336,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     SystemUtils.getTempDirectory().getAbsolutePath(),
                     EnvironmentScope.PROCESS,
                     false);
-            
         }  catch (NativeException e) {
             throw new InstallationException(
                     ResourceUtils.getString(ConfigurationLogic.class,
                     ERROR_INSTALL_JRE_ERROR_KEY),e);
-        }
-        ProgressThread progressThread = new ProgressThread(progress,location, getJREinstallationSize());
+        } 
+        ProgressThread progressThread = new ProgressThread( progress,
+                new File [] {location}, 
+                getJREinstallationSize());
         try {
             progressThread.start();
             return SystemUtils.executeCommand(command);
@@ -343,7 +353,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     ERROR_INSTALL_JRE_ERROR_KEY),e);
         } finally {
             progressThread.finish();
-        }        
+        }
     }
     private void addUninsallationJVM(ExecutionResults results, File location) {
         if(results!=null && results.getErrorCode()==0 && location!=null) {
@@ -500,22 +510,24 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         return null;
     }
     class ProgressThread extends NbiThread {
-        private File directory ;
+        private File [] directories ;
         private long deltaSize = 0;
         private long initialSize = 0L;
         private Progress progress;
         private final Object LOCK = new Object();
         private boolean loop = false;
         
-        public ProgressThread(Progress progress, File directory, final long maxDeltaSize) {
+        public ProgressThread(Progress progress, File [] directories, final long maxDeltaSize) {
             LogManager.log("... new ProgressThread created");
-            this.directory = directory;
-            if(directory.exists()) {
-                initialSize = FileUtils.getSize(directory);
+            this.directories = directories;
+            for(File directory : directories) {
+                if(directory.exists()) {
+                    initialSize += FileUtils.getSize(directory);
+                }
             }
             this.deltaSize = maxDeltaSize;
             this.progress = progress;
-            LogManager.log("... directory : " + directory);
+            LogManager.log("... directories : " + directories);
             LogManager.log("...   initial : " + initialSize);
             LogManager.log("...     delta : " + deltaSize);
         }
@@ -525,60 +537,71 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             try {
                 synchronized (LOCK) {
                     loop = true;
-                }                
+                }
                 while (isRunning()) {
-                    try {                         
-                        if (directory.exists()) {                            
+                    try {
+                        boolean update = false;
+                        for(File directory : directories) {
+                            if (directory.exists()) {
+                                update = true;
+                            }
+                        }
+                        if(update) {
                             updateProgressBar();
-                        }                               
-                        Thread.currentThread().sleep(sleepTime);                        
-                    } catch (InterruptedException ex) {                        
+                        }
+                        Thread.currentThread().sleep(sleepTime);
+                    } catch (InterruptedException ex) {
                         LogManager.log(ex);
                         break;
-                    } catch (Exception ex) {                        
+                    } catch (Exception ex) {
                         LogManager.log(ex);
                         break;
                     }
                 }
-            }  finally {                                
-                synchronized (LOCK) {                    
-                    LOCK.notify();                    
+            }  finally {
+                synchronized (LOCK) {
+                    LOCK.notify();
                 }
             }
             progress.setPercentage(Progress.COMPLETE);
             LogManager.log("... progress thread finished");
         }
-        public void finish() {            
-            if(!isRunning()) return;            
+        public void finish() {
+            if(!isRunning()) return;
             synchronized (LOCK) {
                 loop = false;
-            }                        
-            synchronized (LOCK) {                
-                try {                                        
-                    LOCK.wait();                                      
+            }
+            synchronized (LOCK) {
+                try {
+                    LOCK.wait();
                 } catch (InterruptedException e){
-                    LogManager.log(e);                    
+                    LogManager.log(e);
                 }
-            }            
+            }
         }
-        private boolean isRunning() {                        
+        private boolean isRunning() {
             boolean result;
-            synchronized (LOCK) {                                
+            synchronized (LOCK) {
                 result = loop;
-            }                        
+            }
             return result;
         }
         private void updateProgressBar() {
-            LogManager.log("... get directory size");
-            long size = FileUtils.getSize(directory);
-            LogManager.log("... size : " + size);
+            //LogManager.log("... get directory size");
+            long size = 0;
+            for(File directory : directories) {
+                if(directory.exists()) {
+                    size+=FileUtils.getSize(directory);
+                }
+            }
+            //LogManager.log("... size : " + size);
             long d = progress.COMPLETE * (size - initialSize) / deltaSize;
-            LogManager.log(".... real progress : " + d);
+            //LogManager.log(".... real progress : " + d);
             d = progress.getPercentage() + (d  - progress.getPercentage() + 1) / 2;
-            LogManager.log("... bound progress : " + d);
+            //LogManager.log("... bound progress : " + d);
             d = (d<0) ? 0 : (d > progress.COMPLETE ? progress.COMPLETE : d);
             if(((int)d) > progress.getPercentage()) {
-                LogManager.log("..... set progress : " + d);
+                //LogManager.log("..... set progress : " + d);
                 progress.setPercentage(d);
             }
         }
