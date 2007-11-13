@@ -487,7 +487,7 @@ final class DesignResourceMap extends ResourceMap {
             for (String bundleName : getBundleNames()) {
                 DataObject dobj = ResourceUtils.getPropertiesDataObject(sourceFile, bundleName, false);
                 if (dobj != null) {
-                    SaveCookie save = (SaveCookie) dobj.getCookie(SaveCookie.class);
+                    SaveCookie save = dobj.getCookie(SaveCookie.class);
                     if (save != null) {
                         try {
                             save.save();
@@ -538,6 +538,7 @@ final class DesignResourceMap extends ResourceMap {
     // ResourceMap methods - implementing our own way of obtaining string values
     // for keys (using BundleStructure)
 
+    @Override
     protected boolean containsResourceKey(String key) {
         if (key == EVALUATING_KEY && evaluateStringValue != null)
             return true;
@@ -550,6 +551,7 @@ final class DesignResourceMap extends ResourceMap {
         return false;
     }
 
+    @Override
     protected Object getResource(String key) {
         if (key == EVALUATING_KEY)
             return evaluateStringValue;
@@ -565,6 +567,7 @@ final class DesignResourceMap extends ResourceMap {
         return null;
     }
 
+    @Override
     protected void putResource(String key, Object value) {
         // this is noop - we don't want to cache computed resource values
     }
