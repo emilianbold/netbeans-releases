@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.swingapp.actiontable;
 
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
 import org.netbeans.modules.swingapp.*;
