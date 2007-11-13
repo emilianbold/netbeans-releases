@@ -351,6 +351,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
             private void maybeShowPopup(MouseEvent e) {
                 if (e.isPopupTrigger()) {
+                    e.consume();
                     createPopup().show(e.getComponent(),
                                e.getX(), e.getY());
                 }
