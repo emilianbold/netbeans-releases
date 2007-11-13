@@ -63,9 +63,6 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
-import org.netbeans.modules.xml.xam.spi.Validation;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.openide.util.WeakListeners;
 
 
@@ -151,7 +148,8 @@ public class AXIModelImpl extends AXIModel {
      * model was mutated inside a transaction. Else, true if the listeners have
      * accumulated events.
      */
-    protected boolean needsSync() {
+    @Override
+    protected synchronized boolean needsSync() {
         if(isForceSync)
             return true;
         if(!isAXIDocumentInitialized())
