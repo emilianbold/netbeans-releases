@@ -46,15 +46,12 @@ import com.sun.data.provider.TableCursorListener;
 import com.sun.data.provider.TableCursorVetoException;
 import com.sun.data.provider.TableDataListener;
 import com.sun.data.provider.TableDataProvider;
-import com.sun.data.provider.TransactionalDataListener;
-import com.sun.data.provider.TransactionalDataProvider;
 import com.sun.data.provider.impl.IndexRowKey;
-import com.sun.data.provider.impl.ObjectListDataProvider;
+import com.sun.data.provider.impl.ObjectArrayDataProvider;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
@@ -63,8 +60,33 @@ import org.netbeans.junit.NbTestCase;
  *
  * @author winstonp
  */
-public class ObjectListDataProviderTest extends NbTestCase {
+public class ObjectArrayDataProviderTest extends NbTestCase {
 
+    public ObjectArrayDataProviderTest(String testName) {
+        super(testName);
+
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        beans = new TestBean[5];
+        for (int i = 0; i < beans.length; i++) {
+            beans[i] = new TestBean("test" + i);
+        }
+        dp = new ObjectArrayDataProvider(beans, true);
+
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        dp = null;
+        beans = null;
+        listener = null;
+        tdcListener = null;
+        tdpListener = null;
+    }
     // ------------------------------------------------------ Instance Variables
     /**
      * <p>The beans being wrapped by the {@link DataProvider} under test.
@@ -73,11 +95,7 @@ public class ObjectListDataProviderTest extends NbTestCase {
     /**
      * <p>The {@link DataProvider} instance under test.
      */
-    private ObjectListDataProvider dp = null;
-    /**
-     * <p>List representation of beans being wrapped.</p>
-     */
-    private List list = null;
+    private ObjectArrayDataProvider dp = null;
     /**
      * <p>Event listener for event testing.</p>
      */
@@ -145,33 +163,8 @@ public class ObjectListDataProviderTest extends NbTestCase {
         new Update("public2", new Integer(55555)),
     };
 
-    public ObjectListDataProviderTest(String testName) {
-        super(testName);
-        new ObjectListDataProvider();
-    }
+    
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        beans = new TestBean[5];
-        list = new ArrayList();
-        for (int i = 0; i < beans.length; i++) {
-            beans[i] = new TestBean("test" + i);
-            list.add(beans[i]);
-        }
-        dp = new ObjectListDataProvider(list, true);
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        dp = null;
-        beans = null;
-        list = null;
-        listener = null;
-        tdcListener = null;
-        tdpListener = null;
-    }
 
     // ------------------------------------------------- Individual Test Methods
     /**
@@ -194,46 +187,6 @@ public class ObjectListDataProviderTest extends NbTestCase {
                     dp.isReadOnly(fieldKey),
                     dp.isReadOnly(fieldId));
         }
-
-    }
-
-    /**
-     * <p>Check for events related to row appending.</p>
-     */
-    public void testEventsAppend() {
-
-        // Register listener we will need
-        MyTransactionalListener tListener = new MyTransactionalListener();
-        dp.addTransactionalDataListener(tListener);
-
-        // Append a row and allow the DP to create an instance
-        assertTrue(dp.canAppendRow());
-        RowKey rk1 = dp.appendRow();
-        assertNull(dp.getValue("id", rk1));
-        dp.setValue("id", rk1, "testA");
-        assertEquals("testA", dp.getValue("id", rk1));
-
-        // Append a row that is a specific object instance
-        assertTrue(dp.canAppendRow());
-        TestBean beanB = new TestBean("testB");
-        RowKey rk2 = dp.appendRow(beanB);
-
-        // Commit the results and validate the event history
-        dp.commitChanges();
-        assertEquals("rowAdded/RowKey[5]//" +
-                "FieldKey[id]/RowKey[5]/null/testA//" +
-                "FieldKey[id]/null/testA//" +
-                "rowAdded/RowKey[6]//" +
-                "changesCommitted//",
-                tListener.getLog());
-
-    // Validate the remaining beans
-        /*
-    assertEquals(beans.length - 2, list.size());
-    assertEquals("test0", ((TestBean) list.get(0)).getId());
-    assertEquals("test2", ((TestBean) list.get(1)).getId());
-    assertEquals("test4", ((TestBean) list.get(2)).getId());
-     */
 
     }
 
@@ -333,164 +286,13 @@ public class ObjectListDataProviderTest extends NbTestCase {
 
         // We should get a provider change event too
         tdpListener.clear();
-        dp.setList(dp.getList());
+        dp.setArray(dp.getArray());
         assertEquals("providerChanged//", tdpListener.getLog());
 
         // Deregister the old listener and verify that it worked
         dp.removeTableDataListener(tdpListener);
         listeners = dp.getTableDataListeners();
         assertEquals(0, listeners.length);
-
-    }
-
-    /**
-     * <p>Check for events related to row insertion.</p>
-     */
-    public void testEventsInsert() {
-
-        // FIXME - inserts are not currently supported.  When they are,
-        // the processing in commitChanges() will need to interleave the
-        // deletes and inserts so that references to the pre-commit
-        // row keys are not messed up
-        assertTrue(!dp.canInsertRow(dp.getCursorRow()));
-
-    }
-
-    /**
-     * <p>Check for events related to row removal -- ascending ordering.</p>
-     */
-    public void testEventsRemovesAscending() {
-
-        // Register listener we will need
-        MyTransactionalListener tListener = new MyTransactionalListener();
-        dp.addTransactionalDataListener(tListener);
-
-        // Remove the rows at indexes 1 and 3, and commit the changes
-        RowKey rk = null;
-        rk = dp.findFirst("id", "test1");
-        assertNotNull(rk);
-        assertTrue(dp.canRemoveRow(rk));
-        dp.removeRow(rk);
-        rk = dp.findFirst("id", "test3");
-        assertNotNull(rk);
-        assertTrue(dp.canRemoveRow(rk));
-        dp.removeRow(rk);
-        dp.commitChanges();
-
-        // Validate the event history
-        assertEquals("rowRemoved/RowKey[1]//" +
-                "rowRemoved/RowKey[3]//" +
-                "changesCommitted//",
-                tListener.getLog());
-
-        // Validate the remaining beans
-        assertEquals(beans.length - 2, list.size());
-        assertEquals("test0", ((TestBean) list.get(0)).getId());
-        assertEquals("test2", ((TestBean) list.get(1)).getId());
-        assertEquals("test4", ((TestBean) list.get(2)).getId());
-
-    }
-
-    /**
-     * <p>Check for events related to row removal -- descending ordering.</p>
-     */
-    public void testEventsRemovesDescending() {
-
-        // Register listener we will need
-        MyTransactionalListener tListener = new MyTransactionalListener();
-        dp.addTransactionalDataListener(tListener);
-
-        // Remove the rows at indexes 3 and 1, and commit the changes
-        RowKey rk = null;
-        rk = dp.findFirst("id", "test3");
-        assertNotNull(rk);
-        assertTrue(dp.canRemoveRow(rk));
-        dp.removeRow(rk);
-        rk = dp.findFirst("id", "test1");
-        assertNotNull(rk);
-        assertTrue(dp.canRemoveRow(rk));
-        dp.removeRow(rk);
-        dp.commitChanges();
-
-        // Validate the event history
-        assertEquals("rowRemoved/RowKey[3]//" +
-                "rowRemoved/RowKey[1]//" +
-                "changesCommitted//",
-                tListener.getLog());
-
-        // Validate the remaining beans
-        assertEquals(beans.length - 2, list.size());
-        assertEquals("test0", ((TestBean) list.get(0)).getId());
-        assertEquals("test2", ((TestBean) list.get(1)).getId());
-        assertEquals("test4", ((TestBean) list.get(2)).getId());
-
-    }
-
-    /**
-     * <p>Check for transactional updates to existing rows.</p>
-     */
-    public void testEventsUpdates() {
-
-        // Register listeners we will need for verification
-        TableDataListener aListener = new MyDataListener();
-        MyTransactionalListener tListener = new MyTransactionalListener();
-        dp.addTableDataListener(aListener);
-        TableDataListener aListeners[] = dp.getTableDataListeners();
-        assertEquals(1, aListeners.length);
-        assertTrue(aListener == aListeners[0]);
-        dp.addTransactionalDataListener(tListener);
-        aListeners = dp.getTableDataListeners();
-        assertEquals(2, aListeners.length);
-        assertTrue(aListener == aListeners[0]);
-        assertTrue(tListener == aListeners[1]);
-        TransactionalDataListener tListeners[] = dp.getTransactionalDataListeners();
-        assertEquals(1, tListeners.length);
-        assertTrue(tListener == tListeners[0]);
-
-        // Perform an update, check for event and new value showing
-        dp.cursorFirst();
-        dp.setValue(dp.getFieldKey("intProperty"),
-                new Integer(23432)); // Change, so event expected
-        assertEquals("FieldKey[intProperty]/RowKey[0]/1234/23432//" + // Row-specific event
-                "FieldKey[intProperty]/1234/23432//", // Row-independent event
-                tListener.getLog());
-        assertEquals(new Integer(23432),
-                (Integer) dp.getValue(dp.getFieldKey("intProperty")));
-
-        // Fake an update, check for no event and no change in value showing
-        tListener.clear();
-        dp.setValue(dp.getFieldKey("intProperty"),
-                new Integer(23432)); // Change, so event expected
-        assertEquals("", tListener.getLog());
-        assertEquals(new Integer(23432),
-                (Integer) dp.getValue(dp.getFieldKey("intProperty")));
-
-        // Revert and ensure that old value shows again
-        tListener.clear();
-        dp.revertChanges();
-        assertEquals("changesReverted//",
-                tListener.getLog());
-        assertEquals(new Integer(1234),
-                (Integer) dp.getValue(dp.getFieldKey("intProperty")));
-
-        // Make a change, commit, and ensure revert does not erase it
-        tListener.clear();
-        dp.setValue(dp.getFieldKey("intProperty"),
-                new Integer(43234)); // Change, so event expected
-        assertEquals("FieldKey[intProperty]/RowKey[0]/1234/43234//" + // Row-specific event
-                "FieldKey[intProperty]/1234/43234//", // Row-independent event
-                tListener.getLog());
-        assertEquals(new Integer(43234),
-                (Integer) dp.getValue(dp.getFieldKey("intProperty")));
-        tListener.clear();
-        dp.commitChanges();
-        assertEquals(new Integer(43234),
-                (Integer) dp.getValue(dp.getFieldKey("intProperty")));
-        dp.revertChanges();
-        assertEquals(new Integer(43234),
-                (Integer) dp.getValue(dp.getFieldKey("intProperty")));
-        assertEquals("changesCommitted//changesReverted//",
-                tListener.getLog());
 
     }
 
@@ -530,7 +332,7 @@ public class ObjectListDataProviderTest extends NbTestCase {
      */
     public void testNoFields() {
 
-        dp = new ObjectListDataProvider(list, false);
+        dp = new ObjectArrayDataProvider(beans, false);
         try {
             dp.getFieldKey("public1");
             fail("Should have thrown IllegalArgumentException");
@@ -585,7 +387,7 @@ public class ObjectListDataProviderTest extends NbTestCase {
         oos.close();
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         ObjectInputStream ois = new ObjectInputStream(bais);
-        dp = (ObjectListDataProvider) ois.readObject();
+        dp = (ObjectArrayDataProvider) ois.readObject();
         ois.close();
 
         testPristine();
@@ -828,49 +630,6 @@ public class ObjectListDataProviderTest extends NbTestCase {
 
         public void rowRemoved(TableDataProvider dp, RowKey rk) {
             log += "rowRemoved/" + rk + "//";
-        }
-
-        public void valueChanged(TableDataProvider dp, FieldKey fk, RowKey rk, Object oldValue, Object newValue) {
-            log += fk + "/" + rk + "/" + oldValue + "/" + newValue + "//";
-        }
-    }
-
-    // Private class to represent a TransactionalDataProvider event listener
-    class MyTransactionalListener implements TransactionalDataListener, TableDataListener {
-
-        String log = "";
-
-        public String getLog() {
-            return this.log;
-        }
-
-        public void clear() {
-            this.log = "";
-        }
-
-        public void changesCommitted(TransactionalDataProvider tdp) {
-            log += "changesCommitted//";
-        }
-
-        public void changesReverted(TransactionalDataProvider tdp) {
-            log += "changesReverted//";
-        }
-
-        public void providerChanged(DataProvider dp) {
-            log += "providerChanged//";
-        }
-
-        public void rowAdded(TableDataProvider dp, RowKey rk) {
-            log += "rowAdded/" + rk + "//";
-        }
-
-        public void rowRemoved(TableDataProvider dp, RowKey rk) {
-            log += "rowRemoved/" + rk + "//";
-        }
-
-        public void valueChanged(DataProvider dp, FieldKey fk, Object oldValue,
-                Object newValue) {
-            log += fk + "/" + oldValue + "/" + newValue + "//";
         }
 
         public void valueChanged(TableDataProvider dp, FieldKey fk, RowKey rk, Object oldValue, Object newValue) {
