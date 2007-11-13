@@ -111,16 +111,22 @@ public final class JavadocForBinaryImpl implements JavadocForBinaryQueryImplemen
                     }
                 }
             }
-            return new JavadocForBinaryQuery.Result() {
-                public URL[] getRoots() {
-                    return candidates.toArray(new URL[candidates.size()]);
-                }
-                public void addChangeListener(ChangeListener l) {}
-                public void removeChangeListener(ChangeListener l) {}
-            };
+            return new R(candidates.toArray(new URL[candidates.size()]));
         } catch (MalformedURLException e) {
             throw new AssertionError(e);
         }
     }
-    
+
+    private static final class R implements JavadocForBinaryQuery.Result {
+        private final URL[] roots;
+        public R(URL[] roots) {
+            this.roots = roots;
+        }
+        public URL[] getRoots() {
+            return roots;
+        }
+        public void addChangeListener(ChangeListener l) {}
+        public void removeChangeListener(ChangeListener l) {}
+    }
+
 }
