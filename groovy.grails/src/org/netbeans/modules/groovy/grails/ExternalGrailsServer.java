@@ -36,7 +36,6 @@ import org.openide.windows.InputOutput;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.GrailsServerState;
 import java.util.concurrent.CountDownLatch;
-import java.io.BufferedReader;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.File;
@@ -50,6 +49,8 @@ public class ExternalGrailsServer implements GrailsServer{
 
     CountDownLatch outputReady = new CountDownLatch(1);
     GrailsServerRunnable gsr;
+    String cwdName;
+    ExecutionEngine engine = ExecutionEngine.getDefault();
     
     private  final Logger LOG = Logger.getLogger(ExternalGrailsServer.class.getName());
     
@@ -74,6 +75,10 @@ public class ExternalGrailsServer implements GrailsServer{
     
     
     public Process runCommand(Project prj, String cmd, InputOutput io, String dirName) {
+        
+        if(prj != null) {
+            cwdName = File.separator + prj.getProjectDirectory().getPath();
+            }
                 
         if(cmd.startsWith("create-app")) {
             // in this case we don't have a Project yet, therefore i should be null
@@ -88,62 +93,54 @@ public class ExternalGrailsServer implements GrailsServer{
             gsr = new GrailsServerRunnable(outputReady, workDir, "create-app " + newDir);
             new Thread(gsr).start();
 
-            try {
-                outputReady.await();
-                } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                        }
-        
+            waitForOutput();
             }
+         if(cmd.startsWith("create-domain-class")) {
+
+            assert io ==  null;
+            
+            gsr = new GrailsServerRunnable(outputReady, cwdName, cmd);
+            new Thread(gsr).start();
+
+            waitForOutput();
+            }       
         else if(cmd.startsWith("run-app")) {
 
-                String tabName = "Grails Server for: " + prj.getProjectDirectory().getName();
-                
-                ExecutionEngine engine = ExecutionEngine.getDefault();
+            String tabName = "Grails Server for: " + prj.getProjectDirectory().getName();
 
-                String cwdName = File.separator + prj.getProjectDirectory().getPath();
-                
-                gsr = new GrailsServerRunnable(outputReady, cwdName, cmd);
-                ExecutorTask exTask = engine.execute(tabName, gsr, io);
+            gsr = new GrailsServerRunnable(outputReady, cwdName, cmd);
+            ExecutorTask exTask = engine.execute(tabName, gsr, io);
 
-                try {
-                    outputReady.await();
-                    } catch (InterruptedException ex) {
-                            Exceptions.printStackTrace(ex);
-                            }
+            waitForOutput();
 
-                GrailsServerState serverState = prj.getLookup().lookup(GrailsServerState.class);
+            GrailsServerState serverState = prj.getLookup().lookup(GrailsServerState.class);
 
-                if (serverState != null) {
-                    serverState.setRunning(true);
-                    serverState.setExTask(exTask);
-                    exTask.addTaskListener(serverState);
-                    }
-                else {
-                    LOG.log(Level.WARNING, "Could not get serverState through lookup");
-                    }
+            if (serverState != null) {
+                serverState.setRunning(true);
+                serverState.setExTask(exTask);
+                exTask.addTaskListener(serverState);
+                }
+            else {
+                LOG.log(Level.WARNING, "Could not get serverState through lookup");
+                }
         }
         else if(cmd.startsWith("shell")) {
 
-                // String tabName = "Grails Shell for: " + prj.getProjectDirectory().getName();
-                
-                ExecutionEngine engine = ExecutionEngine.getDefault();
-                
-                String cwdName = File.separator + prj.getProjectDirectory().getPath();
-                
-                gsr = new GrailsServerRunnable(outputReady, cwdName, cmd);
-                new Thread(gsr).start();
+            gsr = new GrailsServerRunnable(outputReady, cwdName, cmd);
+            new Thread(gsr).start();
 
-                try {
-                    outputReady.await();
-                    } catch (InterruptedException ex) {
-                            Exceptions.printStackTrace(ex);
-                            }
-
-
+            waitForOutput();
         }
         
         return gsr.getProcess();
     }
-
+    
+    void waitForOutput(){
+        try {
+            outputReady.await();
+            } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                    }
+        
+        }
 }

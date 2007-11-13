@@ -74,6 +74,9 @@ import org.netbeans.modules.groovy.grailsproject.actions.*;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import java.io.File;
 import java.util.logging.Logger;
+import org.netbeans.modules.groovy.grailsproject.GrailsProject;
+
+
 
 /**
  * 
@@ -85,9 +88,12 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
     private final SourceGroup g;
     private SourceCategory category = SourceCategory.NONE;
     private final Logger LOG = Logger.getLogger(TreeRootNode.class.getName());
+    GrailsProject project;
 
-    public TreeRootNode(SourceGroup g) {
+    public TreeRootNode(SourceGroup g, GrailsProject project) {
         this(DataFolder.findFolder(g.getRootFolder()), g);
+        
+        this.project = project;
 
         int lastSlash = g.getName().lastIndexOf(File.separator);
         String dirName = g.getName().substring(lastSlash + 1);
@@ -140,7 +146,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 result.add(new NewControllerAction());
                 break;
             case DOMAIN:
-                result.add(new NewDomainAction());
+                result.add(new NewDomainAction(project));
                 break;
             case MESSAGES:
                 result.add(new NewMessageAction());

@@ -122,7 +122,7 @@ public class SourceNodeFactory implements NodeFactory {
         }
         
         public Node node(SourceGroupKey key) {
-            return new TreeRootNode(key.group);
+            return new TreeRootNode(key.group, project);
         }
         
         public void addNotify() {
