@@ -110,7 +110,7 @@ public class HgProjectUtils {
     }
     
     public static String getProjectName( final File root ) {
-        if(root == null) return null;
+        if(root == null || !root.isDirectory()) return null;
         final ProjectManager projectManager = ProjectManager.getDefault();
         FileObject rootFileObj = FileUtil.toFileObject(FileUtil.normalizeFile(root));
         // This can happen if the root is "ssh://<something>"
