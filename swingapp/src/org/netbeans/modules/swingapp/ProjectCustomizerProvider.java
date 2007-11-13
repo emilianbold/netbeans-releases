@@ -86,7 +86,7 @@ public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCat
         if (AppFrameworkSupport.isApplicationProject(project)) {
             cat = ProjectCustomizer.Category.create(CAT_NAME,
                     NbBundle.getMessage(ProjectCustomizerProvider.class, "CTL_ProjectCustomizerCategoryTitle"), // NOI18N
-                    null, null);
+                    null, (ProjectCustomizer.Category[])null);
             cat.setOkButtonListener(new SaveListener(project));
             // we need the save listener even if the panel is not created
             // (to get the possibly changed common application properties)
