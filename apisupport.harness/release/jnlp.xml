@@ -385,10 +385,16 @@ made subject to such option by the copyright holder.
         <condition property="run.javaws" value="${nbjdk.home}/javaws/javaws">
             <available file="${nbjdk.home}/javaws/javaws"/>
         </condition>
+        <condition property="run.javaws" value="${nbjdk.home}\jre\bin\javaws.exe">
+            <available file="${nbjdk.home}\jre\bin\javaws.exe"/>
+        </condition>
+        <condition property="run.javaws" value="${nbjdk.home}\bin\javaws.exe">
+            <available file="${nbjdk.home}\bin\javaws.exe"/>
+        </condition>
         <property name="run.javaws" value="javaws"/>
         <property name="run.args" value=""/>
         <exec executable="${run.javaws}">
-            <!-- XXX 1.5+: <arg value="-wait"/> -->
+            <arg value="-wait"/>
             <arg file="${build.jnlp.local.dir}/master.jnlp"/>
             <env key="JAVAWS_VM_ARGS" value="${run.args}"/>
         </exec>
