@@ -44,6 +44,8 @@ package org.netbeans.modules.languages.features;
 
 import java.awt.Component;
 import java.awt.Image;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.Iterator;
 import javax.swing.JComponent;
 import javax.swing.event.CaretEvent;
@@ -303,7 +305,7 @@ public class LanguagesNavigator implements NavigatorPanel {
         }
     }
         
-    class Listener implements MouseListener {
+    class Listener implements MouseListener, KeyListener {
         
         public void mouseClicked (MouseEvent ev) {
             if (ev.getClickCount () != 2) return;
@@ -322,6 +324,20 @@ public class LanguagesNavigator implements NavigatorPanel {
         public void mousePressed (MouseEvent e) {
         }
         public void mouseReleased (MouseEvent e) {
+        }
+
+        public void keyTyped(KeyEvent e) {
+            TreePath path = tree.getSelectionPath();
+            if (path == null) return;
+            Object node = path.getLastPathComponent ();
+            LanguagesNavigatorModel model = (LanguagesNavigatorModel) tree.getModel ();
+            model.show (node);
+        }
+
+        public void keyPressed(KeyEvent e) {
+        }
+
+        public void keyReleased(KeyEvent e) {
         }
     }
     
