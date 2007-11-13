@@ -44,11 +44,15 @@ package org.netbeans.modules.navigator;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.text.DefaultEditorKit;
 import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
@@ -413,6 +417,19 @@ public class NavigatorTCTest extends NbTestCase {
                 + "activated nodes: " + Arrays.toString(actNodes) +"\n"
                 + "explorer view selected nodes: " + Arrays.toString(selNodes),
                 Arrays.equals(actNodes, selNodes));
+
+        // test if action map can be found in NavigatorTC lookup
+        Collection<? extends ActionMap> result = navTC.getLookup().lookupResult(ActionMap.class).allInstances();
+        boolean found = false;
+        for (Iterator<? extends ActionMap> it = result.iterator(); it.hasNext();) {
+            ActionMap map = it.next();
+            Action a = map.get(DefaultEditorKit.copyAction);
+            if (a != null) {
+                found = true;
+                assertSame("Different action instance the expected", a, copyAction);
+            }
+        }
+        assertTrue("Action " + DefaultEditorKit.copyAction + " not found in action map", found);
         
         // cleanup
         ic.remove(explorerHint);

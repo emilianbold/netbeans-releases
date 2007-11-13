@@ -118,8 +118,8 @@ public final class NavigatorTC extends TopComponent {
 
         // empty initially
         setToEmpty();
-    }
-
+            }
+        
     /** Singleton accessor, finds instance in winsys structures */
     public static final NavigatorTC getInstance () {
         NavigatorTC navTC = (NavigatorTC)WindowManager.getDefault().
@@ -238,12 +238,20 @@ public final class NavigatorTC extends TopComponent {
     /** Overriden to pass focus directly into content panel */
     @SuppressWarnings("deprecation")
     public boolean requestFocusInWindow () {
-        super.requestFocusInWindow();
-        boolean result = false;
         if (selectedPanel != null) {
-            result = selectedPanel.getComponent().requestFocusInWindow();
+            return selectedPanel.getComponent().requestFocusInWindow();
+        } else {
+            return super.requestFocusInWindow();
         }
-        return result;
+    }
+
+    @Override
+    public void requestFocus() {
+        if (selectedPanel != null) {
+            selectedPanel.getComponent().requestFocus();
+        } else {
+            super.requestFocus();
+        }
     }
 
     /** Defines nagivator Help ID */
