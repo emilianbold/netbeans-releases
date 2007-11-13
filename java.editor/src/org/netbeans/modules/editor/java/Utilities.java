@@ -78,6 +78,8 @@ public class Utilities {
     private static final String UNKNOWN = "<unknown>"; //NOI18N
 
     private static boolean caseSensitive = true;
+    private static boolean showDeprecatedMembers = true;
+    
     private static SettingsChangeListener settingsListener = new SettingsListener();
     private static boolean inited;
     
@@ -130,6 +132,16 @@ public class Utilities {
         lazyInit();
         caseSensitive = b;
     }
+
+    public static boolean isShowDeprecatedMembers() {
+        lazyInit();
+        return showDeprecatedMembers;
+    }
+
+    public static void setShowDeprecatedMembers(boolean b) {
+        lazyInit();
+        showDeprecatedMembers = b;
+    }
     
     private static void lazyInit() {
         if (!inited) {
@@ -138,6 +150,9 @@ public class Utilities {
             setCaseSensitive(SettingsUtil.getBoolean(JavaKit.class,
                     ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
                     ExtSettingsDefaults.defaultCompletionCaseSensitive));
+            setShowDeprecatedMembers(SettingsUtil.getBoolean(JavaKit.class,
+                    ExtSettingsNames.SHOW_DEPRECATED_MEMBERS,
+                    ExtSettingsDefaults.defaultShowDeprecatedMembers));
         }
     }
 
@@ -440,6 +455,9 @@ public class Utilities {
             setCaseSensitive(SettingsUtil.getBoolean(JavaKit.class,
                     ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
                     ExtSettingsDefaults.defaultCompletionCaseSensitive));
+            setShowDeprecatedMembers(SettingsUtil.getBoolean(JavaKit.class,
+                    ExtSettingsNames.SHOW_DEPRECATED_MEMBERS,
+                    ExtSettingsDefaults.defaultShowDeprecatedMembers));
         }
     }
 

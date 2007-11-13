@@ -51,6 +51,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.util.Elements;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.Task;
@@ -109,7 +110,8 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
                         Scope scope = controller.getTrees().getScope(controller.getTreeUtilities().pathFor(substitutionOffset));
                         if (!isAnnonInner()) {
                             TypeElement e = handle.resolve(controller);
-                            if (e != null && controller.getTrees().isAccessible(scope, e)) {
+                            Elements elements = controller.getElements();
+                            if (e != null && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && controller.getTrees().isAccessible(scope, e)) {
                                 if (isOfKind(e, kinds))
                                     delegate = JavaCompletionItem.createTypeItem(e, (DeclaredType)e.asType(), substitutionOffset, true, controller.getElements().isDeprecated(e), insideNew, false);
                             }
