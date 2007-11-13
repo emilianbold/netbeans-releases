@@ -122,15 +122,15 @@ public class ProxyAction implements Action, ResourceValue, Serializable {
         putValue(Action.SHORT_DESCRIPTION, getResource("shortDescription", String.class)); // NOI18N
         putValue(Action.ACCELERATOR_KEY, getResource("accelerator", KeyStroke.class)); // NOI18N
         Object icon = getResource("icon", Icon.class); // NOI18N
-        Object iconString = getResource("icon",String.class);
+        Object iconString = getResource("icon",String.class); // NOI18N
         Object smallIcon = getResource("smallIcon", Icon.class); // NOI18N
-        Object smallIconString = getResource("smallIcon",String.class);
+        Object smallIconString = getResource("smallIcon",String.class); // NOI18N
         
         putValue(Action.SMALL_ICON, smallIcon != null ? smallIcon : icon);
-        putValue(Action.SMALL_ICON+".IconName",smallIcon != null ? smallIconString : iconString);
+        putValue(Action.SMALL_ICON+".IconName",smallIcon != null ? smallIconString : iconString); // NOI18N
         
         putValue(ActionPropertyEditorPanel.LARGE_ICON_KEY, getResource("largeIcon", Icon.class)); // NOI18N
-        putValue(ActionPropertyEditorPanel.LARGE_ICON_KEY+".IconName", getResource("largeIcon",String.class));
+        putValue(ActionPropertyEditorPanel.LARGE_ICON_KEY+".IconName", getResource("largeIcon",String.class)); // NOI18N
 
         String blockPrefix = getId() + ".BlockingDialog."; // NOI18N
         putValue("BlockingDialog.message",getResource(blockPrefix, "optionPane.message", String.class)); // NOI18N
@@ -143,7 +143,7 @@ public class ProxyAction implements Action, ResourceValue, Serializable {
     }
     
     private Object getResource(String name, Class valueType) {
-        return getResource(getId() + ".Action.", name, valueType);
+        return getResource(getId() + ".Action.", name, valueType); // NOI18N
     }
 
     private Object getResource(String prefix, String name, Class valueType) {
@@ -206,6 +206,7 @@ public class ProxyAction implements Action, ResourceValue, Serializable {
         this.classname = classname;
     }
     
+    @Override
     public String toString() {
         return (id!=null) ? id : "no action set";
     }
