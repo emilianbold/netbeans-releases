@@ -238,7 +238,7 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
     }
 
     private static FileObject fileFromNode(Node n) {
-        DataObject dobj = (DataObject) n.getCookie(DataObject.class);
+        DataObject dobj = n.getCookie(DataObject.class);
         return dobj != null ? dobj.getPrimaryFile() : null;
     }
 
