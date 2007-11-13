@@ -42,7 +42,6 @@
 package org.netbeans.modules.swingapp;
 
 import java.awt.BorderLayout;
-import org.netbeans.modules.form.FormUtils;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -80,6 +79,7 @@ public class GlobalActionTable extends TopComponent {
     
     /** Overriden to explicitely set persistence type of GlobalActionTable
      * to PERSISTENCE_ALWAYS */
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
@@ -99,17 +99,21 @@ public class GlobalActionTable extends TopComponent {
         add(panel,"Center"); //NOI18N
     }
     
+    @Override
     protected void componentActivated() {
     }
     
+    @Override
     protected void componentDeactivated() {
     }
     
+    @Override
     protected String preferredID() {
         return getClass().getName();
     }
 
     /** Replaces this in object stream. */
+    @Override
     public Object writeReplace() {
         return new ResolvableHelper();
     }
