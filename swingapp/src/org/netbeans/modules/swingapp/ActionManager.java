@@ -129,7 +129,6 @@ public class ActionManager {
     private static Map<ActionManager, Project> reverseams;
     
     private static ActionManager emptyActionManager = new ActionManager(null);
-    private static final boolean DEBUG = false;
 
     public static synchronized ActionManager getActionManager(FileObject fileInProject) {
         if(ams == null) {
@@ -198,7 +197,7 @@ public class ActionManager {
     public static boolean clearClosedProjects(Project[] openProjects) {
         boolean updated = false;
         Set<Project> known = getKnownProjects();
-        known = new HashSet(known);
+        known = new HashSet<Project>(known);
         Set<Project> newSet = new HashSet<Project>();
         for(Project p : openProjects) {
             if(!known.contains(p)) {
@@ -368,15 +367,12 @@ public class ActionManager {
         }
         return am.getActions(AppFrameworkSupport.getClassNameForFile(sourceFile), false);
     }
-    
-    
-    
 
     void jumpToActionSource(ProxyAction action) {
         FileObject sourceFile = getFileForClass(action.getClassname());
         try {
-            Integer result = (Integer) new ActionMethodTask(sourceFile, action.getMethodName()) {
-                Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
+            Integer result = new ActionMethodTask<Integer>(sourceFile, action.getMethodName()) {
+                Integer run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                     return (int) controller.getTrees().getSourcePositions().getStartPosition(
                             controller.getCompilationUnit(), methodTree);
                 }
@@ -411,7 +407,6 @@ public class ActionManager {
             }
 
             if (lineObj == null) {
-                p("the line is still null"); //log
                 Toolkit.getDefaultToolkit().beep();
             } else {
                 lineObj.show(Line.SHOW_GOTO);
@@ -424,8 +419,8 @@ public class ActionManager {
     boolean isExistingMethod(String className, String methodName) {
         FileObject sourceFile = getFileForClass(className);
         try {
-            Object result = new ActionMethodTask(sourceFile, methodName) {
-                Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
+            Boolean result = new ActionMethodTask<Boolean>(sourceFile, methodName) {
+                Boolean run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                     return true;
                 }
             }.execute();
@@ -542,8 +537,8 @@ public class ActionManager {
                     ec.openDocument();
                 }
                 Document doc = ec.getDocument();
-                Integer methodEndPosition = (Integer) new ActionMethodTask(sourceFile, action.getMethodName()) {
-                    Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
+                Integer methodEndPosition = new ActionMethodTask<Integer>(sourceFile, action.getMethodName()) {
+                    Integer run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                         return (int) controller.getTrees().getSourcePositions().getEndPosition(
                                 controller.getCompilationUnit(), methodTree);
                     }
@@ -581,8 +576,8 @@ public class ActionManager {
     private String getNonExistingTaskName(String className, final String taskName) {
         FileObject sourceFile = getFileForClass(className);
         try {
-            Object result = new ClassTask(sourceFile) {
-                Object run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
+            String result = new ClassTask<String>(sourceFile) {
+                String run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
                     for (TypeElement el: ElementFilter.typesIn(classElement.getEnclosedElements())) {
                         if (el.getSimpleName().toString().equals(taskName)) {
                             return null;
@@ -592,7 +587,7 @@ public class ActionManager {
                     return taskName;
                 }
             }.execute();
-            return (String) result;
+            return result;
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return taskName;
@@ -706,11 +701,6 @@ public class ActionManager {
         }
     }
     
-    
-    
-    
-    
-    
     public void addNewAction(ProxyAction act) {
         List<ProxyAction> list = actions.get(act.getClassname());
         if( list == null) {
@@ -722,25 +712,11 @@ public class ActionManager {
         fireStructureChanged();
     }
     
-    private void safeRemove(List<ProxyAction> actions, ProxyAction act) {
-        ProxyAction found = null;
-        for(ProxyAction a : actionList) {
-            if(actionsMatch(a, act)) {
-                found = a;
-            }
-        }
-        if(found != null) {
-            actions.remove(found);
-        }
-    }
-
     //returns true if the action was found and replaced
     private boolean safeReplace(List<ProxyAction> actions, ProxyAction action) {
         for(int i=0; i<actionList.size(); i++) {
             ProxyAction target = actionList.get(i);
-            p("special remove: testing: " + target + " " + target.getId() + " " + target.getClassname());
             if(actionsMatch(action, target)) {
-                p("special remove matched!");
                 actionList.remove(target);
                 actionList.add(i,action);
                 return true;
@@ -749,21 +725,11 @@ public class ActionManager {
         return false;
     }
     
-    private static void p(String s) {
-        if(DEBUG) {
-            System.out.println(s);
-        }
-    }
-    
     public void updateAction(ProxyAction action) {
-        p("updating: " + action + " " + action.getId() + " " + action.getClassname() + " " + action.getKey());
         List<ProxyAction> actions = getActions(action.getClassname(), false);
-        p("got some actions for it");
         boolean replaced = false;
         for(ProxyAction a : actions) {
-            p("testing against action: " + a + " " + a.getId()  + " " + action.getClassname());
             if(a.getId().equals(action.getId())) {
-                p("they are equal");
                 //actions.remove(a);
                 // do a replace instead of a remove
                 int n = actions.indexOf(a);
@@ -775,9 +741,7 @@ public class ActionManager {
                 //safeRemove(actionList,a);
                 for(int i=0; i<actionList.size(); i++) {
                     ProxyAction target = actionList.get(i);
-                    p("special remove: testing: " + target + " " + target.getId() + " " + target.getClassname());
                     if(actionsMatch(action, target)) {
-                        p("special remove matched!");
                         actionList.remove(target);
                         actionList.add(i,action);
                     }
@@ -952,8 +916,8 @@ public class ActionManager {
 
             // generate Task impl class if does not already exist
             if (newTaskName != null) {
-                Integer methodEndPosition = (Integer) new ActionMethodTask(sourceFile, action.getMethodName()) {
-                    Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
+                Integer methodEndPosition = new ActionMethodTask<Integer>(sourceFile, action.getMethodName()) {
+                    Integer run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                         return (int) controller.getTrees().getSourcePositions().getEndPosition(
                                 controller.getCompilationUnit(), methodTree);
                     }
@@ -991,7 +955,6 @@ public class ActionManager {
     
     private static boolean findBooleanProperty(String enabledProperty, FileObject sourceFile) {
         List<String> props = findBooleanProperties(sourceFile);
-        boolean found = false;
         for(String prop : props) {
             if(prop.equals(enabledProperty)) {
                 return true;
@@ -1002,10 +965,9 @@ public class ActionManager {
 
     //this code should switch to the propery java code generation infrastructure in the future
     private static boolean generatePropertyGetterAndSetter(String propertyName, FileObject sourceFile) {
-        p("generating a property for: " + propertyName);
         try {
             DataObject dobj = DataObject.find(sourceFile);
-            EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+            EditorCookie ec = dobj.getCookie(EditorCookie.class);
             if (ec == null) {
                 return false;
             }
@@ -1021,8 +983,8 @@ public class ActionManager {
                 pos = ((FormEditorSupport)ec).getVariablesSection().getStartPosition().getOffset();
             } else {
                 // in general java source add at the end of the class
-                Integer result = (Integer) new ClassTask(sourceFile) {
-                    Object run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
+                Integer result = new ClassTask<Integer>(sourceFile) {
+                    Integer run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
                         return (int) controller.getTrees().getSourcePositions().getEndPosition(
                                 controller.getCompilationUnit(), classTree);
                     }
@@ -1040,8 +1002,6 @@ public class ActionManager {
             return false;
         }        
     }
-    
-    
     
     private static String getPropertyGetterAndSetterBodyText(String prop) {
         StringBuilder buf = new StringBuilder();
@@ -1106,8 +1066,8 @@ public class ActionManager {
     }
 
     private static int[] getAnnotationPositions(ProxyAction action, FileObject sourceFile) throws IOException {
-        return (int[]) new ActionMethodTask(sourceFile, action.getMethodName()) {
-            Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
+        return new ActionMethodTask<int[]>(sourceFile, action.getMethodName()) {
+            int[] run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                 CompilationUnitTree cut = controller.getCompilationUnit();
                 Trees trees = controller.getTrees();
                 ModifiersTree modifiers = methodTree.getModifiers();
@@ -1127,37 +1087,6 @@ public class ActionManager {
         }.execute();
     }
 
-    private static String getAnnotationCode(ProxyAction action) {
-        StringBuilder buf = new StringBuilder();
-        buf.append("@org.jdesktop.application.Action"); // NOI18N
-        boolean anyAttr = false;
-        for (String attrName : ProxyAction.getAnnotationAttributeNames()) {
-            if (action.isAnnotationAttributeSet(attrName)) {
-                Object value = action.getAnnotationAttributeValue(attrName);
-                if (!anyAttr) {
-                    buf.append("("); // NOI18N
-                    anyAttr = true;
-                } else {
-                    buf.append(", "); // NOI18N
-                }
-                buf.append(attrName);
-                buf.append("="); // NOI18N
-                if (value instanceof ProxyAction.BlockingType) {
-                    buf.append(org.jdesktop.application.Task.BlockingScope.class.getCanonicalName());
-                    buf.append(".").append(value); // NOI18N
-                } else {
-                    buf.append("\""); // NOI18N
-                    buf.append(value);
-                    buf.append("\""); // NOI18N
-                }
-            }
-        }
-        if (anyAttr) {
-            buf.append(")"); // NOI18N
-        }
-        return buf.toString();
-    }
-    
     public void deleteAction(ProxyAction action) {
         String defClass = action.getClassname();
         FileObject file = getFileForClass(defClass);
@@ -1225,7 +1154,7 @@ public class ActionManager {
                 return;
             }
             DataObject dobj = DataObject.find(sourceFile);
-            EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+            EditorCookie ec = dobj.getCookie(EditorCookie.class);
             if (ec == null) {
                 return;
             }
@@ -1243,42 +1172,6 @@ public class ActionManager {
                 endPos = lineEnd;
             }
             doc.remove(startPos, endPos-startPos);
-/*            JavaSource js = JavaSource.forFileObject(sourceFile);
-            ModificationResult result = js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                public void cancel() {
-                }
-                public void run(WorkingCopy workingCopy) throws Exception {
-                    workingCopy.toPhase(JavaSource.Phase.RESOLVED);
-                    CompilationUnitTree cut = workingCopy.getCompilationUnit();
-                    for (Tree t: cut.getTypeDecls()) {
-                        if (t.getKind() == Tree.Kind.CLASS) {
-                            ClassTree classT = (ClassTree) t;
-                            if (sourceFile.getName().equals(classT.getSimpleName().toString())) {
-                                TreePath classTPath = workingCopy.getTrees().getPath(cut, classT);
-                                TypeElement classEl = (TypeElement) workingCopy.getTrees().getElement(classTPath);
-                                for (ExecutableElement el : ElementFilter.methodsIn(classEl.getEnclosedElements())) {
-                                    if (el.getSimpleName().toString().equals(action.getId())
-                                            && el.getModifiers().contains(Modifier.PUBLIC)) {
-                                        ModifiersTree modifiers = workingCopy.getTrees().getTree(el)
-                                                .getModifiers();
-                                        for (AnnotationTree at : modifiers.getAnnotations()) {
-                                            TypeElement annEl = (TypeElement) workingCopy.getTrees().getElement(
-                                                    workingCopy.getTrees().getPath(cut, at.getAnnotationType()));
-                                            if (annEl.getQualifiedName().toString().equals("org.jdesktop.application.Action")) { // NOI18N
-                                                TreeMaker make = workingCopy.getTreeMaker();
-                                                ModifiersTree newModif = make.removeModifiersAnnotation(modifiers, at);
-                                                workingCopy.rewrite(modifiers, newModif);
-                                                return;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            result.commit(); */
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
@@ -1307,11 +1200,6 @@ public class ActionManager {
         fireActionChanged(act);
     }
     
-    
-    
-    
-    
-    
     private static Project getProject(final FileObject fileInProject) {
         Project project = FileOwnerQuery.getOwner(fileInProject);
         return project;
@@ -1331,8 +1219,8 @@ public class ActionManager {
     private static void getActionsFromFile(FileObject sourceFile,
             Map<String, List<ProxyAction>> classNameToActions) {
         try {
-            List<ProxyAction> result = (List<ProxyAction>) new ClassTask(sourceFile) {
-                Object run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
+            List<ProxyAction> result = new ClassTask<List<ProxyAction>>(sourceFile) {
+                List<ProxyAction> run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
                     // collect the superclasses (e.g. to get actions also from the base Application class)
                     List<TypeElement> classList = new LinkedList<TypeElement>();
                     Tree superT = classTree.getExtendsClause();
@@ -1393,8 +1281,8 @@ public class ActionManager {
 
     static List<String> findBooleanProperties(FileObject fo) {
         try {
-            return (List<String>)new ClassTask(fo) {
-                Object run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
+            return new ClassTask<List<String>>(fo) {
+                List<String> run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
                     List<String> props = new java.util.ArrayList<String>();
                     // loop through the methods in this class
                     for(ExecutableElement el : ElementFilter.methodsIn(classElement.getEnclosedElements())) {
@@ -1417,7 +1305,7 @@ public class ActionManager {
     
     static void initActionFromSource(final ProxyAction action, FileObject sourceFile) {
         try {
-            new ActionMethodTask(sourceFile, action.getMethodName()) {
+            new ActionMethodTask<Object>(sourceFile, action.getMethodName()) {
                 Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                     org.jdesktop.application.Action ann = methodElement.getAnnotation(org.jdesktop.application.Action.class);
                     if (ann != null) {
@@ -1536,34 +1424,27 @@ public class ActionManager {
         });
     }
     
-    private void dumpContents() {
-        p("actionList:");//log
-        for(ProxyAction a : this.actionList) {
-            p("action = " + a + " " + a.hashCode());//log
-        }
-    }
-    
     // -----
     // helper classes for java source analysis tasks
     
     /**
      * Task for analysing structure of class of give source file.
      */
-    abstract static class ClassTask implements CancellableTask<CompilationController> {
+    abstract static class ClassTask<T> implements CancellableTask<CompilationController> {
         FileObject sourceFile;
         
-        private Object result;
+        private T result;
         
         ClassTask(FileObject sourceFile) {
             this.sourceFile = sourceFile;
         }
         
-        Object execute() throws IOException {
+        T execute() throws IOException {
             JavaSource.forFileObject(sourceFile).runUserActionTask(this, true);
             return result;
         }
         
-        abstract Object run(CompilationController controller, ClassTree classTree, TypeElement classElement);
+        abstract T run(CompilationController controller, ClassTree classTree, TypeElement classElement);
         
         // CancellableTask
         public void cancel() {
@@ -1589,7 +1470,7 @@ public class ActionManager {
     /**
      * Task for analysing an action method of given source file and method name.
      */
-    abstract static class ActionMethodTask extends ClassTask {
+    abstract static class ActionMethodTask<T> extends ClassTask<T> {
         String methodName;
         
         ActionMethodTask(FileObject sourceFile, String methodName) {
@@ -1597,7 +1478,7 @@ public class ActionManager {
             this.methodName = methodName;
         }
         
-        Object run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
+        T run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
             for (ExecutableElement el : ElementFilter.methodsIn(classElement.getEnclosedElements())) {
                 if (el.getSimpleName().toString().equals(methodName)
                         && el.getModifiers().contains(Modifier.PUBLIC)) {
@@ -1608,7 +1489,7 @@ public class ActionManager {
             return null;
         }
         
-        abstract Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement);
+        abstract T run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement);
     }
     
     
@@ -1626,7 +1507,7 @@ public class ActionManager {
             public void formChanged(FormModelEvent[] events) {
                 if(events != null) {
                     for(FormModelEvent e : events) {
-                        if(e.getChangeType() == e.FORM_TO_BE_CLOSED) {
+                        if(e.getChangeType() == FormModelEvent.FORM_TO_BE_CLOSED) {
                             ActionManager am = ActionManager.getActionManager(sourceFile);
                             if(am != null) {
                                 am.removeAllBoundComponents(e.getFormModel());
