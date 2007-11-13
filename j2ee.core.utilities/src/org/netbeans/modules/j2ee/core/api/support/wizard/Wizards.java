@@ -29,6 +29,7 @@ package org.netbeans.modules.j2ee.core.api.support.wizard;
 
 import javax.swing.JComponent;
 import org.openide.WizardDescriptor;
+import org.openide.util.Parameters;
 
 /**
  * This class consists of static utility methods for manipulating wizards.
@@ -42,9 +43,19 @@ public final class Wizards {
     }
     
     /**
-     * Merges the given <code>steps</code> into the given <code>panels</code>.
-     */ 
+     * Merges the given <code>steps</code> with the given <code>panels</code> into
+     * the given <code>wizard</code>. If the wizard has existing steps, the new steps
+     * will be added after them.
+     * 
+     * @param wizard the wizard to which to merge; must not be null.
+     * @param panels the panels to merge; must not be null.
+     * @param steps the steps to merge; must not be null.
+     */
     public static void mergeSteps(WizardDescriptor wizard, WizardDescriptor.Panel[] panels, String[] steps) {
+        Parameters.notNull("wizard", wizard); //NO18N
+        Parameters.notNull("panels", panels); //NO18N
+        Parameters.notNull("steps", steps); //NO18N
+        
         Object prop = wizard.getProperty(WIZARD_PANEL_CONTENT_DATA);
         String[] beforeSteps;
         int offset;
