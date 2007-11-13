@@ -527,7 +527,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             }
             this.deltaSize = maxDeltaSize;
             this.progress = progress;
-            LogManager.log("... directories : " + directories);
+            LogManager.log("... directories : " + StringUtils.asString(directories));
             LogManager.log("...   initial : " + initialSize);
             LogManager.log("...     delta : " + deltaSize);
         }
