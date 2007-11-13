@@ -286,16 +286,13 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         return contentPane.getCancelButton();
     }
     
-    // protected ////////////////////////////////////////////////////////////////////
+    // private ////////////////////////////////////////////////////////////////////
     /**
      * Initializes and lays out the Swing components for the container frame. This
      * method also sets some frame properties which will be required at runtime,
      * such as size, position, etc.
-     */
-    @Override
-    protected void initComponents() {
-        super.initComponents();
-        
+     */    
+    private void initComponents() {
         try {
             setDefaultCloseOperation(NbiFrame.DO_NOTHING_ON_CLOSE);
             addWindowListener(new WindowAdapter() {
@@ -304,7 +301,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                         if (currentUi != null) {
                             currentUi.evaluateCancelButtonClick();
                         }
-                    }
+                    } 
                 }
             });
         } catch (SecurityException e) {

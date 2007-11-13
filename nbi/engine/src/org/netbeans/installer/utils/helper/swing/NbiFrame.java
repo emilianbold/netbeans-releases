@@ -183,7 +183,7 @@ public class NbiFrame extends JFrame {
     }
     
     // protected ////////////////////////////////////////////////////////////////////
-    protected void initComponents() {
+    private void initComponents() {
         // the frame itself
         try {
             setDefaultCloseOperation(EXIT_ON_CLOSE);
