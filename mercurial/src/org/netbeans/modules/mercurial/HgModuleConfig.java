@@ -194,6 +194,8 @@ public class HgModuleConfig {
         if (name.length() == 0) return true;
         File file = new File(name, "hg"); // NOI18N
         // I would like to call canExecute but that requires Java SE 6.
+        if(file.exists() && file.isFile()) return true;
+        file = new File(name, "hg.exe"); // NOI18N
         return file.exists() && file.isFile();
     }
 
