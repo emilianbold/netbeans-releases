@@ -74,6 +74,7 @@ public class GroupParserTest extends NbTestCase {
         return suite;
     }
 
+    @Override
     protected void setUp () throws Exception {
     }
     
