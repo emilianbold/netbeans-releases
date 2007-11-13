@@ -375,7 +375,7 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
         return new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 AuxiliaryConfiguration aux = Util.getAuxiliaryConfiguration(projectHelper);
-                List l = WebProjectGenerator.getWebmodules(projectHelper, aux);
+                List<WebProjectGenerator.WebModule> l = WebProjectGenerator.getWebmodules(projectHelper, aux);
                 if (l != null){
                     WebProjectGenerator.WebModule wm = (WebProjectGenerator.WebModule)l.get(0);
                     wm.classpath = getClasspath();

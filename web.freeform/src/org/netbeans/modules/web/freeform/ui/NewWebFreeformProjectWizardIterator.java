@@ -59,6 +59,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.ant.freeform.spi.TargetDescriptor;
 import org.netbeans.modules.ant.freeform.spi.support.NewFreeformProjectSupport;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.java.freeform.spi.support.NewJavaFreeformProjectSupport;
@@ -69,6 +70,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -94,18 +96,18 @@ public class NewWebFreeformProjectWizardIterator implements WizardDescriptor.Ins
     }
     
     private WizardDescriptor.Panel[] createPanels () {
-        List l = new ArrayList();
-        List extraTargets = new ArrayList();
+        List<WizardDescriptor.Panel> l = new ArrayList<WizardDescriptor.Panel>();
+        List<TargetDescriptor> extraTargets = new ArrayList<TargetDescriptor>();
         extraTargets.add(WebProjectNature.getExtraTarget());
         l.add(NewFreeformProjectSupport.createBasicProjectInfoWizardPanel());
         l.add(NewFreeformProjectSupport.createTargetMappingWizardPanel(extraTargets));
         l.add(new WebLocationsWizardPanel());
         l.addAll(Arrays.asList(NewJavaFreeformProjectSupport.createJavaPanels()));
         l.add(new WebClasspathWizardPanel());
-        return (WizardDescriptor.Panel[])l.toArray(new WizardDescriptor.Panel[l.size()]);
+        return l.toArray(new WizardDescriptor.Panel[l.size()]);
     }
     
-    public Set/*<FileObject>*/ instantiate () throws IOException {
+    public Set<FileObject> instantiate () throws IOException {
         final WizardDescriptor wiz = this.wiz;
         final IOException[] ioe = new IOException[1];
         ProjectManager.mutex().writeAccess(new Runnable() {
@@ -115,20 +117,21 @@ public class NewWebFreeformProjectWizardIterator implements WizardDescriptor.Ins
                     NewFreeformProjectSupport.instantiateTargetMappingWizardPanel(helper, wiz);
                     NewJavaFreeformProjectSupport.instantiateJavaPanels(helper, wiz);
                     
-                    List webSources = (List)wiz.getProperty(PROP_WEB_SOURCE_FOLDERS);
-                    List webInf = (List)wiz.getProperty(PROP_WEB_INF_FOLDER);
+                    @SuppressWarnings("unchecked")
+                    List<String> webSources = (List<String>)wiz.getProperty(PROP_WEB_SOURCE_FOLDERS);
+                    @SuppressWarnings("unchecked")
+                    List<String> webInf = (List<String>)wiz.getProperty(PROP_WEB_INF_FOLDER);
                     AuxiliaryConfiguration aux = Util.getAuxiliaryConfiguration(helper);
                     WebProjectGenerator.putWebSourceFolder(helper, webSources);
                     WebProjectGenerator.putWebInfFolder(helper, webInf);
         
-                    List webModules = (List) wiz.getProperty(PROP_WEB_WEBMODULES);
+                    @SuppressWarnings("unchecked")
+                    List<WebProjectGenerator.WebModule> webModules = (List<WebProjectGenerator.WebModule>) wiz.getProperty(PROP_WEB_WEBMODULES);
                     if (webModules != null) {
                         // Save the web classpath for the web module
                         String webClasspath = (String)wiz.getProperty(NewWebFreeformProjectWizardIterator.PROP_WEB_CLASSPATH);
                         Iterator iter = webModules.iterator();
-                        WebProjectGenerator.WebModule wm;
-                        while(iter.hasNext()){
-                            wm = (WebProjectGenerator.WebModule)iter.next();
+                        for (WebProjectGenerator.WebModule wm : webModules) {
                             wm.classpath = webClasspath;
                         }
                         WebProjectGenerator.putWebModules (helper, aux, webModules);
@@ -145,7 +148,7 @@ public class NewWebFreeformProjectWizardIterator implements WizardDescriptor.Ins
             throw ioe[0];
         }
         File nbProjectFolder = (File)wiz.getProperty(NewFreeformProjectSupport.PROP_PROJECT_FOLDER);
-        Set resultSet = new HashSet();
+        Set<FileObject> resultSet = new HashSet<FileObject>();
         resultSet.add(FileUtil.toFileObject(nbProjectFolder));
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(nbProjectFolder));
         if (p != null) {
@@ -170,14 +173,14 @@ public class NewWebFreeformProjectWizardIterator implements WizardDescriptor.Ins
         index = 0;
         panels = createPanels();
         
-        List l = new ArrayList();
+        List<String> l = new ArrayList<String>();
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
             assert c instanceof JComponent;
             JComponent jc = (JComponent)c;
             l.add(jc.getName());
         }
-        String[] steps = (String[])l.toArray(new String[l.size()]);
+        String[] steps = l.toArray(new String[l.size()]);
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
             assert c instanceof JComponent;

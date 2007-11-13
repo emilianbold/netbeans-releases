@@ -70,7 +70,7 @@ public class WebClasspathCategoryProvider implements ProjectCustomizer.Composite
         assert aux != null;
         if (LookupProviderImpl.isMyProject(aux)) {
             Category cat = ProjectCustomizer.Category.create("WebClasspath", //NOI18N
-                    NbBundle.getMessage(WebClasspathPanel.class, "LBL_ProjectCustomizer_Category_Classpath"), null, null);
+                    NbBundle.getMessage(WebClasspathPanel.class, "LBL_ProjectCustomizer_Category_Classpath"), null, (Category[])null);
             return cat;
         }
         return null;

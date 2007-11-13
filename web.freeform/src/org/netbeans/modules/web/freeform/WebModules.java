@@ -73,6 +73,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -206,7 +207,7 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
 
     private FileObject [] getSources () {
         SourceGroup sg [] = ProjectUtils.getSources (project).getSourceGroups (JavaProjectConstants.SOURCES_TYPE_JAVA);
-        Set srcRootSet = new HashSet ();
+        Set<FileObject> srcRootSet = new HashSet<FileObject>();
         for (int i = 0; i < sg.length; i++) {
             URL entry; 
             try {
@@ -243,7 +244,7 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
             return null;
         }
         String[] path = PropertyUtils.tokenizePath(cpEval);
-        Set entries = new HashSet();
+        Set<File> entries = new HashSet<File>();
         for (int i = 0; i < path.length; i++) {
             entries.add(helper.resolveFile(path[i]));
         }
@@ -256,8 +257,7 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         }
         URL[] pathURL = new URL[entries.size()];
         int i = 0;
-        for (Iterator it = entries.iterator(); it.hasNext();) {
-            File entryFile = (File)it.next();
+        for (File entryFile : entries) {
             URL entry;
             try {
                 entry = entryFile.toURI().toURL();
@@ -307,9 +307,13 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
             this.j2eeSpec = j2eeSpec;
             this.contextPath = (contextPath == null ? "" : contextPath);
             this.sourcesFOs = sourcesFOs;
-            this.webClassPath = (classPath ==  null ? ClassPathSupport.createClassPath(Collections.EMPTY_LIST) : classPath);
+            this.webClassPath = (classPath ==  null ? 
+                ClassPathSupport.createClassPath(Collections.<PathResourceImplementation>emptyList()) :
+                classPath);
             this.webInf = webInf;
-            javaSourcesClassPath = (sourcesFOs == null ? ClassPathSupport.createClassPath(Collections.EMPTY_LIST): ClassPathSupport.createClassPath(sourcesFOs)); 
+            javaSourcesClassPath = (sourcesFOs == null ? 
+                ClassPathSupport.createClassPath(Collections.<PathResourceImplementation>emptyList()) :
+                ClassPathSupport.createClassPath(sourcesFOs)); 
         }
         
         boolean contains (FileObject fo) {
@@ -406,6 +410,7 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
             return webInf;
         }
         
+        @Deprecated
         public FileObject[] getJavaSources() {
             return sourcesFOs;
         }

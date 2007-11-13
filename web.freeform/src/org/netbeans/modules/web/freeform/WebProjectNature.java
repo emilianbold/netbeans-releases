@@ -71,8 +71,8 @@ public class WebProjectNature implements ProjectNature {
   
     public WebProjectNature() {}
     
-    public List getExtraTargets(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {
-        ArrayList l = new ArrayList();
+    public List<TargetDescriptor> getExtraTargets(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {
+        ArrayList<TargetDescriptor> l = new ArrayList<TargetDescriptor>();
         if (!LookupProviderImpl.isMyProject(aux)) {
             return l;
         }
@@ -84,8 +84,8 @@ public class WebProjectNature implements ProjectNature {
         return new HashSet<String>(Arrays.asList(SCHEMA_1, SCHEMA_2));
     }
 
-    public Set/*<String>*/ getSourceFolderViewStyles() {
-        return Collections.EMPTY_SET;
+    public Set<String> getSourceFolderViewStyles() {
+        return Collections.<String>emptySet();
     }
     
     public Node createSourceFolderView(Project project, FileObject folder, String includes, String excludes, String style, String name, String displayName) throws IllegalArgumentException {

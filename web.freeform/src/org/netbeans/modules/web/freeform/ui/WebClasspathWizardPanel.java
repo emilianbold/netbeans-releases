@@ -81,7 +81,7 @@ public class WebClasspathWizardPanel implements WizardDescriptor.Panel {
         return true;
     }
 
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -93,13 +93,13 @@ public class WebClasspathWizardPanel implements WizardDescriptor.Panel {
         }
     }
     protected final void fireChangeEvent() {
-        Iterator it;
+        Set<ChangeListener> listenersCopy;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            listenersCopy = new HashSet<ChangeListener>(listeners);
         }
         ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+        for (ChangeListener l : listenersCopy) {
+            l.stateChanged(ev);
         }
     }
 

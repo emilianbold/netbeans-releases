@@ -93,7 +93,7 @@ public class WebLocationsWizardPanel implements WizardDescriptor.Panel {
         return true;
     }
 
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -105,13 +105,13 @@ public class WebLocationsWizardPanel implements WizardDescriptor.Panel {
         }
     }
     protected final void fireChangeEvent() {
-        Iterator it;
+        Set<ChangeListener> listenersCopy;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            listenersCopy = new HashSet<ChangeListener>(listeners);
         }
         ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+        for (ChangeListener l : listenersCopy) {
+            l.stateChanged(ev);
         }
     }
 
@@ -162,7 +162,7 @@ public class WebLocationsWizardPanel implements WizardDescriptor.Panel {
         wizardDescriptor = (WizardDescriptor) settings;
         wizardDescriptor.putProperty(NewWebFreeformProjectWizardIterator.PROP_WEB_WEBMODULES, component.getWebModules());
         
-        List l = component.getJavaSrcFolder();
+        List<String> l = component.getJavaSrcFolder();
         wizardDescriptor.putProperty(NewJavaFreeformProjectSupport.PROP_EXTRA_JAVA_SOURCE_FOLDERS, l);
         
         wizardDescriptor.putProperty(NewWebFreeformProjectWizardIterator.PROP_WEB_SOURCE_FOLDERS, component.getWebSrcFolder());

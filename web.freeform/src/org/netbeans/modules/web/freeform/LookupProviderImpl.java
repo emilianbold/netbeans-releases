@@ -215,7 +215,7 @@ public class LookupProviderImpl implements LookupProvider {
     public static final class WebClasspath implements AntProjectListener, PropertyChangeListener {
         
         private ClassPath registeredCP[] = new ClassPath[0];
-        private List/*<FileObject>*/ registeredRoots = Collections.EMPTY_LIST;
+        private List<FileObject> registeredRoots = Collections.<FileObject>emptyList();
         
         private PropertyEvaluator evaluator;
         private AuxiliaryConfiguration aux;
@@ -236,8 +236,8 @@ public class LookupProviderImpl implements LookupProvider {
         
         public void prjOpened() {
             registeredRoots = getWebRoots(aux, project, evaluator);
-            FileObject fos[] = new FileObject[registeredRoots.size()];
-            ClassPath cp = ClassPathSupport.createClassPath((FileObject[]) registeredRoots.toArray(fos));
+            FileObject fos[] = registeredRoots.toArray(new FileObject[registeredRoots.size()]);
+            ClassPath cp = ClassPathSupport.createClassPath(fos);
             registeredCP = new ClassPath[] { cp };
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, registeredCP);
             prjClosed = false;
@@ -247,7 +247,7 @@ public class LookupProviderImpl implements LookupProvider {
             if (!registeredRoots.isEmpty()) {
                 GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, registeredCP);
             }
-            registeredRoots = Collections.EMPTY_LIST;
+            registeredRoots = Collections.<FileObject>emptyList();
             prjClosed = true;
         }
         
@@ -273,11 +273,11 @@ public class LookupProviderImpl implements LookupProvider {
         
         private synchronized void updateClasspath() {
             if (!prjClosed) {
-                List newRoots = getWebRoots(aux, project, evaluator);
+                List<FileObject> newRoots = getWebRoots(aux, project, evaluator);
                 if (newRoots != null
                         &&  !newRoots.equals(registeredRoots)) {
-                    FileObject fos[] = new FileObject[newRoots.size()];
-                    ClassPath cp = ClassPathSupport.createClassPath((FileObject[]) newRoots.toArray(fos));
+                    FileObject fos[] = newRoots.toArray(new FileObject[newRoots.size()]);
+                    ClassPath cp = ClassPathSupport.createClassPath(fos);
                     GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, registeredCP);
                     registeredCP = new ClassPath[] { cp };
                     registeredRoots = newRoots;
@@ -287,16 +287,14 @@ public class LookupProviderImpl implements LookupProvider {
             }
         }
         
-        private List/*<FileObject>*/ getWebRoots(AuxiliaryConfiguration aux, Project proj, PropertyEvaluator evaluator) {
+        private List<FileObject> getWebRoots(AuxiliaryConfiguration aux, Project proj, PropertyEvaluator evaluator) {
             Element web = aux.getConfigurationFragment(WebProjectNature.EL_WEB, WebProjectNature.NS_WEB_2, true); // NOI18N
             if (web == null) {
                 return null;
             }
-            List webModules = Util.findSubElements(web);
-            Iterator it = webModules.iterator();
-            List/*<FileObject>*/ roots = new ArrayList();
-            while (it.hasNext()) {
-                Element webModulesEl = (Element) it.next();
+            List<Element> webModules = Util.findSubElements(web);
+            List<FileObject> roots = new ArrayList<FileObject>();
+            for (Element webModulesEl : webModules) {
                 assert webModulesEl.getLocalName().equals("web-module") : webModulesEl; // NOI18N
                 roots.add(FileUtil.toFileObject(getFile(webModulesEl, "doc-root", proj, evaluator))); // NOI18N
             }

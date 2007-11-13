@@ -310,8 +310,8 @@ private void jButtonWebInfActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         return chooser;
     }
 
-    protected List getWebModules() {
-        ArrayList l = new ArrayList();
+    protected List<WebProjectGenerator.WebModule> getWebModules() {
+        ArrayList<WebProjectGenerator.WebModule> l = new ArrayList<WebProjectGenerator.WebModule>();
 
         WebProjectGenerator.WebModule wm = new WebProjectGenerator.WebModule ();
         wm.docRoot = getRelativeLocation(getWebPagesLocation());
@@ -331,8 +331,8 @@ private void jButtonWebInfActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         return l;
     }
 
-    protected List getJavaSrcFolder() {
-        ArrayList l = new ArrayList();
+    protected List<String> getJavaSrcFolder() {
+        ArrayList<String> l = new ArrayList<String>();
         File sourceLoc = getSrcPackagesLocation();
         l.add(getRelativeLocation(sourceLoc));
         l.add(sourceLoc.getName());
@@ -342,8 +342,8 @@ private void jButtonWebInfActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     /**
      * @return list of pairs [relative path, display name]
      */
-    protected List getWebSrcFolder() {
-        ArrayList l = new ArrayList();
+    protected List<String> getWebSrcFolder() {
+        ArrayList<String> l = new ArrayList<String>();
         final File webLocation = getWebPagesLocation();
         l.add(getRelativeLocation(webLocation));
         l.add(webLocation.getName());
@@ -353,8 +353,8 @@ private void jButtonWebInfActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     /**
      * @return list of pairs [relative path, display name]
      */
-    protected List getWebInfFolder() {
-        ArrayList l = new ArrayList();
+    protected List<String> getWebInfFolder() {
+        ArrayList<String> l = new ArrayList<String>();
         final File webInfLocation = getWebInfLocation();
         l.add(getRelativeLocation(webInfLocation));
         l.add(webInfLocation.getName());

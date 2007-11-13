@@ -66,7 +66,7 @@ public class WebLocationsCategoryProvider implements ProjectCustomizer.Composite
         assert aux != null;
         if (LookupProviderImpl.isMyProject(aux)) {
             Category cat = ProjectCustomizer.Category.create("WebLocations", //NOI18N
-                    NbBundle.getMessage(WebLocationsPanel.class, "LBL_ProjectCustomizer_Category_Web"), null, null);
+                    NbBundle.getMessage(WebLocationsPanel.class, "LBL_ProjectCustomizer_Category_Web"), null, (Category[])null);
             return cat;
         }
         return null;
