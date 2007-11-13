@@ -90,8 +90,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
-import org.openide.windows.TopComponentGroup;
-import org.openide.windows.WindowManager;
 
 /**
  * The GlobalActionPanel is a dockable top component which lets the user see all actions
@@ -99,7 +97,6 @@ import org.openide.windows.WindowManager;
  * @author  joshua.marinacci@sun.com
  */
 public class GlobalActionPanel extends javax.swing.JPanel {
-    private static final boolean DEBUG = false;
     private ActionManager actionManager;
     
     private ActionManager.ActionChangedListener actChangeListener = new ActionManager.ActionChangedListener() {
@@ -134,6 +131,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         actionTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         
         actionTable.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 if(e.getClickCount() == 2) {
                     editSelectedAction();
@@ -156,6 +154,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         });
         
         boundComponentList.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 if(e.getClickCount() == 2) {
                     jumpToSelectedComponent();
@@ -164,6 +163,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         });
         
         projectCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component comp = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
                 JLabel label = (JLabel) comp;
@@ -177,6 +177,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         projectCombo.setModel(new DefaultComboBoxModel());
         
         classCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component comp = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
                 JLabel label = (JLabel)comp;
@@ -204,6 +205,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         
         //renderer for the list of components attached to the selected action
         boundComponentList.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component comp = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
                 JLabel label = (JLabel) comp;
@@ -279,45 +281,12 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         this();
         actionManager = ActionManager.getActionManager(fo);
         actionManager.rescan();
-        
-        /* //jmarinacci: used by the TreeTableView.
-           //I'm leaving it here in case we need to go back to it.
-        JFrame frame = new JFrame("Test frame");
-        ProxyActionNode[]  nds = new ProxyActionNode[4];
-        for(int i=0; i<nds.length; i++) {
-            nds[i] = new ProxyActionNode();
-        }
-         
-        Node.Property[] props = new Node.Property[4];
-        props[0] = new PrototypeProperty("methodName","Method Name", String.class);
-        props[0].setValue("ComparableColumnTTV",Boolean.TRUE);
-        props[1] = new PrototypeProperty("classname","Class Name", String.class);
-        props[1].setValue("ComparableColumnTTV",Boolean.TRUE);
-        props[2] = new PrototypeProperty("id","ID", String.class);
-        props[2].setValue("ComparableColumnTTV",Boolean.TRUE);
-        props[3] = new PrototypeProperty("task","Task", String.class);
-        props[3].setValue("ComparableColumnTTV",Boolean.TRUE);
-        TreeTableView ttv = new TreeTableView();
-        ttv.setRootVisible(false);
-        ttv.setProperties(props);
-         
-         
-        List<ProxyAction> acts = am.getAllActions();
-        JPanel panel = new ProxyActionManager(acts);
-        panel.setLayout(new BorderLayout());
-        panel.add(ttv,"Center");
-        frame.setLayout(new BorderLayout());
-        frame.add(panel,"Center");
-        frame.pack();
-        frame.setSize(500,500);
-        frame.setVisible(true);*/
-        
     }
     
     private void reloadClassesCombo() {
         Object item = classCombo.getSelectedItem();
         Collection<String> classes = actionManager.getAllClasses();
-        List classesPlusAll = new ArrayList(classes.size()+1);
+        List<String> classesPlusAll = new ArrayList<String>(classes.size()+1);
         classesPlusAll.add(0,SHOW_ALL_CLASSES);
         classesPlusAll.addAll(classes);
         classCombo.setModel(new DefaultComboBoxModel(classesPlusAll.toArray()));
@@ -587,7 +556,6 @@ public class GlobalActionPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     
 private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewSourceButtonActionPerformed
-    // TODO add your handling code here:
     viewsourceSelectedAction();
 }//GEN-LAST:event_viewSourceButtonActionPerformed
 
@@ -595,7 +563,6 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         if(projectCombo.getSelectedItem() != null) {
             setSelectedProject((Project)projectCombo.getSelectedItem());
         }
-        // TODO add your handling code here:
     }//GEN-LAST:event_projectComboActionPerformed
     
     private void editActionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editActionButtonActionPerformed
@@ -728,17 +695,6 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
                 d.setVisible(true);
             }
         }
-        
-        /*if(panel.isInputIsValid()) {
-            ProxyAction act = new ProxyAction(panel.getSelectedClassName(),
-                    panel.getMethodText());
-            act.setTaskEnabled(panel.isAsynchronous());
-            act.setAppWide(false); // joshy: hack. make it properly be app wide if in the app class
-         
-            actionManager.createActionMethod(act);
-            actionManager.addNewAction(act);
-            reloadTable();
-        }*/
     }//GEN-LAST:event_newActionButtonActionPerformed
     
     private void classComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_classComboActionPerformed
@@ -760,7 +716,6 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         }
         
         actionTable.setModel(new TableSorter(new FilteredTableModel(realModel),actionTable.getTableHeader()));
-//        actionTable.setModel(realModel);
         filterTable();
         
         // reconfigure the column widths and positions
@@ -776,31 +731,6 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     
     // rescan for actions, reload the class combo, and call reloadTable();
     public void refresh() {
-        /*
-        // get the current active top component
-        WindowManager wm = WindowManager.getDefault();
-        TopComponent activeTC = wm.getRegistry().getActivated();
-        if(activeTC==null) {
-            return;
-        }
-         
-        // get the file object of the current form
-        FormEditorSupport fes = FormEditorSupport.getFormEditor(activeTC);
-        System.out.println("form ed support = " + fes);
-        if(fes == null) { return; }
-        FileObject fo = fes.getFormDataObject().getFormFile();
-        System.out.println("fo = " + fo);
-        actionManager = ActionManager.getActionManager(fo);
-         
-        // watch for changes
-        actionManager.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                reloadTable();
-                reloadClassesCombo();
-            }
-        });
-         */
-        
         // rescan the actions
         if(true) {
             actionManager.rescan();
@@ -875,13 +805,7 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     
     private PropertyChangeListener topcompsListener;
     
-    private static void p(String s) {
-        if(DEBUG) {
-            System.out.println(s);
-        }
-    }
     private void switchedToTopComponent(TopComponent active) {
-        p("switched to top component called. active = " + active);//log
         if(active == null) { return; }
         FormEditorSupport fes = FormEditorSupport.getFormEditor(active);
         if(fes == null) { return; }
@@ -890,7 +814,6 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         if(!AppFrameworkSupport.isFrameworkEnabledProject(fo)) {
             return;
         }
-        
 
         // refresh everything if the action manager changed
         if(actionManager != ActionManager.getActionManager(fo)) {
@@ -907,7 +830,6 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         }
     }
     
-    
     private void attachTopComponentsListener() {
         if (topcompsListener != null) {
             return;
@@ -918,50 +840,7 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
                 if (TopComponent.Registry.PROP_ACTIVATED.equals(
                         ev.getPropertyName())) {   // activated TopComponent has changed
                     TopComponent active = TopComponent.getRegistry().getActivated();
-                    //p("the top component changed");
                     switchedToTopComponent(active);
-                    /*
-                    if (getSelectedElementType(active) != -1) { // it is our multiview
-                        FormEditorSupport fes = getFormEditor(active);
-                        if (fes != null) {
-                            fes.multiviewTC = (CloneableTopComponent) active;
-                            FormDesigner designer = (FormDesigner)active.getClientProperty("formDesigner"); // NOI18N
-                            if (designer != null)
-                                fes.getFormEditor().setFormDesigner(designer);
-                        }
-                    }
-                    checkFormGroupVisibility();                    */
-                } else if (TopComponent.Registry.PROP_OPENED.equals(
-                        ev.getPropertyName())) {   // set of opened TopComponents has changed - hasn't some
-                    // of our views been closed?
-                    //p("set of top components changed ");
-                    /*
-                    CloneableTopComponent closedTC = null;
-                    Set oldSet = (Set) ev.getOldValue();
-                    Set newSet = (Set) ev.getNewValue();
-                    if (newSet.size() < oldSet.size()) {
-                        Iterator it = oldSet.iterator();
-                        while (it.hasNext()) {
-                            Object o = it.next();
-                            if (!newSet.contains(o)) {
-                                if (o instanceof CloneableTopComponent)
-                                    closedTC = (CloneableTopComponent) o;
-                                break;
-                            }
-                        }
-                    }
-                    if (getSelectedElementType(closedTC) != -1) { // it is our multiview
-                        FormEditorSupport fes = getFormEditor(closedTC);
-                        if (fes != null)
-                            fes.multiViewClosed(closedTC);
-                    }
-                    TopComponent active = TopComponent.getRegistry().getActivated();
-                    if (active!=null && getSelectedElementType(active) != -1) { // it is our multiview
-                        FormEditorSupport fes = getFormEditor(active);
-                        if (fes != null) {
-                            fes.updateMVTCDisplayName();
-                        }
-                    }                    */
                 }
             }
         };
@@ -982,19 +861,6 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         Project[] open = OpenProjects.getDefault().getOpenProjects();
         if(ActionManager.clearClosedProjects(open)) {
             reloadProjectsCombo();
-        }
-    }
-    
-    private void detachTopComponentsListener() {
-        if (topcompsListener != null) {
-            TopComponent.getRegistry()
-                    .removePropertyChangeListener(topcompsListener);
-            topcompsListener = null;
-            
-            TopComponentGroup group = WindowManager.getDefault()
-                    .findTopComponentGroup("form"); // NOI18N
-            if (group != null)
-                group.close();
         }
     }
     
@@ -1050,13 +916,6 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
                                      false, false, 0, i);
                 cellWidth = comp.getPreferredSize().width;
                 cellWidth+=5; // a little extra space to make it look better
-            }
-
-            if (DEBUG) {
-                System.out.println("Initializing width of column " //log
-                                   + i + ". "
-                                   + "headerWidth = " + headerWidth
-                                   + "; cellWidth = " + cellWidth);
             }
 
             column.setPreferredWidth(Math.max(headerWidth, cellWidth));
