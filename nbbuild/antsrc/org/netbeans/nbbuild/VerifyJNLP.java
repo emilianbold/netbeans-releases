@@ -166,7 +166,7 @@ public class VerifyJNLP extends Task {
                         if (el.getTagName().equals("icon")) {
                             // jnlp.xml in harness generates <icon href="${app.icon}"/> optimistically.
                             // Does not seem to be a problem if it is missing.
-                            log(jnlp + ": no such file " + f, Project.MSG_WARN);
+                            log(jnlp + ": warning: no such file " + f, Project.MSG_WARN);
                         } else {
                             throw new BuildException("JNLP validation error\n" + jnlp + ": no such file " + f);
                         }
