@@ -174,6 +174,7 @@ public interface ResourceService {
      *        modified
      * @param localeSuffix the locale variant to be updated (localization suffix
      *        including the initial underscore, e.g. _cs_CZ)
+     * @throws java.io.IOException when there is a problem with updating.
      */
     void update(ResourceValue oldValue, ResourceValue newValue,
                 FileObject srcFile, String localeSuffix)
