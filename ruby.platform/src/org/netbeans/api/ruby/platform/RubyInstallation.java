@@ -260,6 +260,12 @@ public class RubyInstallation {
                 } else {
                     f = new File(dir, "ruby"); // NOI18N
                     // Don't include /usr/bin/ruby on the Mac - it's no good
+                    // Source: http://developer.apple.com/tools/rubyonrails.html
+                    //   "The version of Ruby that shipped on Mac OS X Tiger prior to 
+                    //    v10.4.6 did not work well with Rails.   If you're running 
+                    //    an earlier version of Tiger, you'll need to either upgrade 
+                    //    to 10.4.6 or upgrade your copy of Ruby to version 1.8.4 or 
+                    //    later using the open source distribution."
                     if (Utilities.isMac() && "/usr/bin/ruby".equals(f.getPath())) { // NOI18N
                         String version = System.getProperty("os.version"); // NOI18N
                         if (version == null || version.startsWith("10.4")) { // Only a problem on Tiger // NOI18N
