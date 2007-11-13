@@ -51,6 +51,7 @@ import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -335,6 +336,7 @@ public class CommitAction extends AbstractAction {
                 }
             }
             HgCommand.doCommit(repository, commitCandidates, message);
+            HgRepositoryContextCache.setHasHistory(ctx);
 
             if (commitCandidates.size() == 1) {
                 HgUtils.outputMercurialTab(

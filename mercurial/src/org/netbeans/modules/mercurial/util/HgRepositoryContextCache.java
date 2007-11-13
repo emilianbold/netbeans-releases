@@ -78,6 +78,11 @@ public class HgRepositoryContextCache {
         
     }
         
+    public static void setHasHistory(VCSContext ctx) {
+        historyCtxRootFiles = ctx.getRootFiles();
+        hasHistory = true;
+    }
+
     public static void resetPullDefault() {
         pullCtxRootFiles = null;
     }
