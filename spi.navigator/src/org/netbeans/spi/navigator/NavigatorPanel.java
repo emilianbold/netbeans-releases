@@ -99,12 +99,20 @@ public interface NavigatorPanel {
     
     
     /** Returns Lookup that will be integrated into Lookup of Navigator UI
-     * TopComponent. Allows clients for example to specify activated Node
-     * of Navigator UI TopComponent when this panel is active.<p></p>
+     * TopComponent. Allows clients to achieve several things:<p></p>
+     * 
+     * 1) Specify activated Node of Navigator UI TopComponent when this panel is active.<br></br>
+     * If returned lookup contains Nodes, they will act as activated nodes of 
+     * Navigator UI TopComponent (navigator window).<br></br>
      * 
      * Method may return null, signalizing that default mechanism should be enabled.
      * Default mechanism chooses first Node from Utilities.actionsGlobalContext()
-     * (current system-wide activated Node) as activated Node for Navigator's TopComponent.  
+     * (current system-wide activated Node) as activated Node for Navigator's TopComponent.
+     * <p></p>
+     * 
+     * 2) Enable support for Toolbar or main menu global actions in NavigatorPanel.<br></br>
+     * ActionMap contained in this Lookup will be part of Utilities.actionsGlobalContext()
+     * when Navigator UI TopComponent (navigator window) is active in the system. 
      *   
      * @return Lookup instance or null
      */
