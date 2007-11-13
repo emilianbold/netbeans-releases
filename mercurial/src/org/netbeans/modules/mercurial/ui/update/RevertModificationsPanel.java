@@ -81,7 +81,6 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
     }
 
     public String getSelectedRevision() {
-        int index = revisionsComboBox.getSelectedIndex();
         String revStr = (String) revisionsComboBox.getSelectedItem();
         revStr = revStr.substring(0, revStr.indexOf(" ")); // NOI18N
         return revStr;
