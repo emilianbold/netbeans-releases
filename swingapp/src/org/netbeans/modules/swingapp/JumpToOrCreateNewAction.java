@@ -127,6 +127,7 @@ public class JumpToOrCreateNewAction extends NodeAction {
         }
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
