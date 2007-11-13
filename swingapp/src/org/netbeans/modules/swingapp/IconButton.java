@@ -50,7 +50,6 @@ import java.awt.Shape;
 import java.awt.geom.Arc2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
-import java.awt.geom.Rectangle2D;
 import javax.swing.JButton;
 
 /**
@@ -68,6 +67,7 @@ public class IconButton extends JButton {
         this.iconText = iconText;
     }
     
+    @Override
     protected void paintComponent(Graphics g) {
         if(this.getIcon() == null) {
             Graphics2D g2  = (Graphics2D) g.create();
@@ -80,14 +80,7 @@ public class IconButton extends JButton {
             float in = 2;
             Shape rect = generateSeamlessRoundRect(in,in,(float)getWidth()-in*2,(float)getHeight()-in*2,12f);
             g2.draw(rect);
-            
-            String str = iconText;
-            Rectangle2D bounds = g2.getFont().getStringBounds(str,g2.getFontRenderContext());
-            /*
-            g2.drawString(str,
-                    (float)(getWidth()-bounds.getWidth())/2,
-                    (float)((getHeight()-bounds.getHeight())/2 - bounds.getY()));*/
-            
+            g2.getFont().getStringBounds(iconText,g2.getFontRenderContext());
             g2.dispose();
         } else {
             super.paintComponent(g);
