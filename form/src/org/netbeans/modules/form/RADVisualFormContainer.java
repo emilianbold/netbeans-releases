@@ -83,6 +83,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
      * non-null value, as the top-level component does not have a variable
      * @return current value of the Name property
      */
+    @Override
     public String getName() {
         return FormUtils.getBundleString("CTL_FormTopContainerName"); // NOI18N
     }
@@ -92,6 +93,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
      * variable declaration for holding the instance of the component
      * @param value new value of the Name property
      */
+    @Override
     public void setName(String value) {
         // noop in forms
     }
@@ -252,6 +254,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     // ------------------------------------------------------------------------------
     // End of form synthetic properties
 
+    @Override
     protected Node.Property[] createSyntheticProperties() {
         java.util.ResourceBundle bundle = FormUtils.getBundle();
 
@@ -274,11 +277,13 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                     getNodeReference().fireComponentPropertySetsChange();
             }
 
+            @Override
             public boolean canWrite() {
                 return !isReadOnly();
             }
 
             /** Editor for alignment */
+            @Override
             public java.beans.PropertyEditor getPropertyEditor() {
                 return new SizePolicyEditor();
             }
@@ -302,6 +307,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                 setFormSize((Dimension)val);
             }
 
+            @Override
             public boolean canWrite() {
                 return !isReadOnly()
                        && getFormSizePolicy() == GEN_BOUNDS
@@ -326,6 +332,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                 setFormPosition((Point)val);
             }
 
+            @Override
             public boolean canWrite() {
                 return !isReadOnly()
                         && getFormSizePolicy() == GEN_BOUNDS
@@ -353,6 +360,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                     getNodeReference().fireComponentPropertySetsChange();
             }
 
+            @Override
             public boolean canWrite() {
                 return !isReadOnly()
                         && getFormSizePolicy() == GEN_BOUNDS
@@ -379,6 +387,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                     getNodeReference().fireComponentPropertySetsChange();
             }
 
+            @Override
             public boolean canWrite() {
                 return !isReadOnly() && getFormSizePolicy() == GEN_BOUNDS;
             }
@@ -403,6 +412,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                     getNodeReference().fireComponentPropertySetsChange();
             }
 
+            @Override
             public boolean canWrite() {
                 return !isReadOnly() && getFormSizePolicy() == GEN_BOUNDS;
             }
@@ -421,6 +431,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                 return getDesignerSize();
             }
 
+            @Override
             public void setValue(Object val)
                 throws IllegalAccessException, IllegalArgumentException,
                        java.lang.reflect.InvocationTargetException
@@ -431,7 +442,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             }
         };
 
-        java.util.List propList = new java.util.ArrayList();
+        java.util.List<Node.Property> propList = new java.util.ArrayList<Node.Property>();
 
         propList.add(JavaCodeGenerator.createBeanClassNameProperty(this));
 
@@ -482,6 +493,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         return windowContentDimensionDiff;
     }
 
+    @Override
     void setNodeReference(RADComponentNode node) {
         super.setNodeReference(node);
         if (node != null) {
@@ -514,11 +526,13 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         };
 
         /** @return names of the possible directions */
+        @Override
         public String[] getTags() {
             return names;
         }
 
         /** @return text for the current value */
+        @Override
         public String getAsText() {
             int value =((Integer)getValue()).intValue();
             return names[value];
@@ -527,6 +541,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         /** Setter.
          * @param str string equal to one value from directions array
          */
+        @Override
         public void setAsText(String str) {
             if (names[0].equals(str))
                 setValue(new Integer(0));
