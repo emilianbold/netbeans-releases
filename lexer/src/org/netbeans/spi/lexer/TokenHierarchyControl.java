@@ -41,7 +41,6 @@
 
 package org.netbeans.spi.lexer;
 
-import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
@@ -55,28 +54,14 @@ import org.netbeans.lib.lexer.TokenHierarchyOperation;
 
 public final class TokenHierarchyControl<I> {
 
-    private MutableTextInput<I> input;
-
     private TokenHierarchyOperation<I,?> operation;
 
     TokenHierarchyControl(MutableTextInput<I> input) {
-        this.input = input;
+        this.operation = new TokenHierarchyOperation<I,TokenId>(input);
     }
     
-    private <T extends TokenId> void init() {
-        Language<?> language = input.language();
-        if (language != null) {
-            this.operation = new TokenHierarchyOperation<I,T>(input);
-        }
-    }
-    
-    public synchronized TokenHierarchy<I> tokenHierarchy() {
-        if (operation == null) {
-            init();
-        }
-        return (operation != null)
-            ? operation.tokenHierarchy()
-            : null;
+    public TokenHierarchy<I> tokenHierarchy() {
+        return operation.tokenHierarchy();
     }
     
     /**
@@ -95,9 +80,7 @@ public final class TokenHierarchyControl<I> {
     public void textModified(int offset,
     int removedLength, CharSequence removedText,
     int insertedLength) {
-        if (operation != null) {
-            operation.textModified(offset, removedLength, removedText, insertedLength);
-        }
+        operation.textModified(offset, removedLength, removedText, insertedLength);
     }
 
     /**
@@ -105,13 +88,11 @@ public final class TokenHierarchyControl<I> {
      * so that there will be no tokens.
      */
     public void setActive(boolean active) {
-        if (operation != null) {
-            operation.setActive(active);
-        }
+        operation.setActive(active);
     }
     
     public boolean isActive() {
-        return (operation != null) ? operation.isActive() : false;
+        return operation.isActive();
     }
 
     /**
