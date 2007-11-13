@@ -48,22 +48,21 @@ import javax.swing.KeyStroke;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.swingapp.*;
 import org.openide.util.NbBundle;
-// End of variables declaration                   
 
 public class ActionTableModel extends AbstractTableModel {
     
     private static String getLocalizedString(String key) {
-        return NbBundle.getMessage(ActionTableModel.class, "ActionTableModel."+key);
+        return NbBundle.getMessage(ActionTableModel.class, "ActionTableModel."+key); // NOI18N
     }
     
     final String[] columnNames = new String[]{
-        getLocalizedString("header.name"),
-        getLocalizedString("header.text"),
-        getLocalizedString("header.accelerator"),
-        getLocalizedString("header.class"),
-        getLocalizedString("header.method"),
-        getLocalizedString("header.icon"),
-        getLocalizedString("header.task") 
+        getLocalizedString("header.name"), // NOI18N
+        getLocalizedString("header.text"), // NOI18N
+        getLocalizedString("header.accelerator"), // NOI18N
+        getLocalizedString("header.class"), // NOI18N
+        getLocalizedString("header.method"), // NOI18N
+        getLocalizedString("header.icon"), // NOI18N
+        getLocalizedString("header.task")  // NOI18N
     };
     final Class[] columnClasses = new Class[] {
         String.class, String.class, String.class, 
@@ -82,6 +81,7 @@ public class ActionTableModel extends AbstractTableModel {
         this.actions = actions;
     }
     
+    @Override
     public Class<?> getColumnClass(int columnIndex) {
         return columnClasses[columnIndex];
     }
@@ -90,6 +90,7 @@ public class ActionTableModel extends AbstractTableModel {
         return columnClasses.length;
     }
     
+    @Override
     public String getColumnName(int columnIndex) {
         return columnNames[columnIndex];
     }
@@ -118,17 +119,14 @@ public class ActionTableModel extends AbstractTableModel {
             if ((key.getModifiers()  & InputEvent.ALT_DOWN_MASK) > 0) { sb.append("Alt-"); }
             if ((key.getModifiers()  & InputEvent.CTRL_DOWN_MASK) > 0) { sb.append("Ctrl-"); }
             if ((key.getModifiers()  & InputEvent.SHIFT_DOWN_MASK) > 0) { sb.append("Shift-"); }
-            //sb.append(key.getKeyChar());
-            //sb.append(key.getKeyCode());
             sb.append(KeyEvent.getKeyText(key.getKeyCode()));
-            //sb.append(":"+key.toString());
             return sb.toString();
         }
         if (columnIndex == 3) {
             return act.getClassname();
         }
         if (columnIndex == METHOD_COLUMN) {
-            return act.getMethodName() + "()";
+            return act.getMethodName() + "()"; // NOI18N
         }
         if (columnIndex == ICON_COLUMN) {
             int iconCount = 0;
@@ -141,15 +139,17 @@ public class ActionTableModel extends AbstractTableModel {
             return Boolean.valueOf(act.isTaskEnabled());
         }
         if (columnIndex == 7) {
-            return "--";
+            return "--"; // NOI18N
         }
-        return "asdf";
+        return "asdf"; // NOI18N
     }
     
+    @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         return false;
     }
     
+    @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
     }
     
