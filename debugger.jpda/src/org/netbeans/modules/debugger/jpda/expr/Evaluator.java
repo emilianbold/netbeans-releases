@@ -885,6 +885,13 @@ public class Evaluator implements JavaParserVisitor {
                     loggerMethod.fine("FINISHED: "+method.instanceContext+"."+method.method+" ("+method.args+") in thread "+frameThread);
                 }
                 try {
+                    evaluationContext.methodInvokeDone();
+                } catch (IncompatibleThreadStateException itsex) {
+                    InvalidExpressionException ieex = new InvalidExpressionException (itsex);
+                    ieex.initCause(itsex);
+                    throw new IllegalStateException(ieex);
+                }
+                try {
                     frame = frameThread.frame(frameIndex);
                 } catch (IncompatibleThreadStateException e) {
                     Assert.error(node, "callException", e, ctx);
@@ -934,6 +941,13 @@ public class Evaluator implements JavaParserVisitor {
                 Assert.error(node, "calleeException", e, ctx);
             }
             finally {
+                try {
+                    evaluationContext.methodInvokeDone();
+                } catch (IncompatibleThreadStateException itsex) {
+                    InvalidExpressionException ieex = new InvalidExpressionException (itsex);
+                    ieex.initCause(itsex);
+                    throw new IllegalStateException(ieex);
+                }
                 try {
                     frame = frameThread.frame(frameIndex);
                 } catch (IncompatibleThreadStateException e) {
@@ -1344,6 +1358,13 @@ public class Evaluator implements JavaParserVisitor {
         } finally {
             if (loggerMethod.isLoggable(Level.FINE)) {
                 loggerMethod.fine("FINISHED: "+reference+"."+toCall+" () in thread "+frameThread);
+            }
+            try {
+                evaluationContext.methodInvokeDone();
+            } catch (IncompatibleThreadStateException itsex) {
+                InvalidExpressionException ieex = new InvalidExpressionException (itsex);
+                ieex.initCause(itsex);
+                throw new IllegalStateException(ieex);
             }
             try {
                 frame = frameThread.frame(frameIndex);
