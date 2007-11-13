@@ -50,6 +50,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 public class IconTableCellRenderer extends DefaultTableCellRenderer {
     
+    @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         Component comp = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         JLabel label = (JLabel) comp;
