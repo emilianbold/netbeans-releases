@@ -42,23 +42,5 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="editor/mimelookup/impl/test/unit" basedir="." default="all">
-
     <import file="../../../../nbbuild/templates/xtest-unit.xml"/>
-
-    <!-- ========= -->
-    <!-- Compilers -->
-    <!-- ========= -->
-    
-    <target name="unit-compiler">
-        <antcall target="default-compiler" /> <!-- xtest-unit. -->
-    </target>
-    
-    <!-- ========= -->
-    <!-- Executors -->
-    <!-- ========= -->
-
-    <target name="runcodetest">
-        <antcall target="run-unit-test-nodist" />
-    </target>
-
 </project>

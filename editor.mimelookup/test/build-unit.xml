@@ -58,11 +58,11 @@ made subject to such option by the copyright holder.
     <!-- ========= -->
 
     <target name="runcodetest">
-        <antcall target="run-unit-test-nodist" />
+        <antcall target="run-unit-test" />
     </target>
 
     <target name="runmemorytest" depends="init">
-        <antcall target="run-unit-test-nodist" >
+        <antcall target="run-unit-test" >
             <param name="xtest.jvm.args" value="-Xms1m -Xmx1m"/>
         </antcall>
     </target>
