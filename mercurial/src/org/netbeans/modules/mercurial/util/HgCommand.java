@@ -180,6 +180,7 @@ public class HgCommand {
     private final static String HG_HEADS_CMD = "heads"; // NOI18N
     
     private static final String HG_NO_REPOSITORY_ERR = "There is no Mercurial repository here"; // NOI18N
+    private static final String HG_NO_RESPONSE_ERR = "no suitable response from remote hg!"; // NOI18N
     private static final String HG_NOT_REPOSITORY_ERR = "does not appear to be an hg repository"; // NOI18N
     private static final String HG_REPOSITORY = "repository"; // NOI18N
     private static final String HG_NOT_FOUND_ERR = "not found!"; // NOI18N
@@ -840,10 +841,14 @@ public class HgCommand {
         command.add(target);
 
         List<String> list = exec(command);
-        if (!list.isEmpty() && isErrorNoRepository(list.get(0))){
-            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
-        }else if (!list.isEmpty() && isErrorAbort(list.get(0))){
-            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))){
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
+            }else if (isErrorNoResponse(list.get(list.size() -1))){
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_RESPONSE_ERR"));
+            }else if (isErrorAbort(list.get(list.size() -1))){
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
+            }
         }
         return list;
     }
@@ -2028,6 +2033,10 @@ public class HgCommand {
 
     private static boolean isErrorNoSuchFile(String msg) {
         return msg.indexOf(HG_NO_SUCH_FILE_ERR) > -1;                               // NOI18N
+    }
+
+    private static boolean isErrorNoResponse(String msg) {
+        return msg.indexOf(HG_NO_RESPONSE_ERR) > -1;                               // NOI18N
     }
 
     public static void createConflictFile(String path) {
