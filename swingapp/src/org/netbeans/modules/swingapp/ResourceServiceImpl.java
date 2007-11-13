@@ -285,6 +285,6 @@ public class ResourceServiceImpl implements ResourceService {
             }
             return list;
         }
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 }
