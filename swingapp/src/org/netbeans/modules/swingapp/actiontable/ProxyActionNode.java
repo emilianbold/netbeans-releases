@@ -51,7 +51,7 @@ import org.openide.util.Lookup;
 public class ProxyActionNode extends AbstractNode {
     
     public ProxyActionNode() {
-        super(Children.LEAF);//new ProxyActionChildren());
+        super(Children.LEAF);
         setDisplayName("Root");
     }
     
@@ -63,37 +63,38 @@ public class ProxyActionNode extends AbstractNode {
         super(children,lk);
     }
     
+    @Override
     protected Sheet createSheet() {
         Sheet sheet = Sheet.createDefault();
-        Sheet.Set set = sheet.createPropertiesSet();
+        Sheet.Set set = Sheet.createPropertiesSet();
         ProxyAction act = getLookup().lookup(ProxyAction.class);
         try {
             Property prop;
-            prop = new PropertySupport.Reflection(act, String.class, "getMethodName",null) {
+            prop = new PropertySupport.Reflection<String>(act, String.class, "getMethodName",null) { // NOI18N
+                @Override
                 public boolean canWrite() {
                     return false;
                 }
             };
-            prop.setName("methodName");
+            prop.setName("methodName"); // NOI18N
             
             prop = new PropertySupport.ReadOnly("methodName",String.class,"Method Name","A Method Name") {
                 public Object getValue() {
                     return "asdf";
                 }
             };
-           
             
             set.put(prop);
-            prop = new PropertySupport.Reflection(act, String.class, "getClassname",null);
-            prop.setName("classname");
+            prop = new PropertySupport.Reflection<String>(act, String.class, "getClassname",null); // NOI18N
+            prop.setName("classname"); // NOI18N
             set.put(prop);
             
-            prop = new PropertySupport.Reflection(act, String.class, "getId",null);
-            prop.setName("id");
+            prop = new PropertySupport.Reflection<String>(act, String.class, "getId",null); // NOI18N
+            prop.setName("id"); // NOI18N
             set.put(prop);
             
-            prop = new PropertySupport.Reflection(act, Boolean.class, "isTaskEnabled",null);
-            prop.setName("task");
+            prop = new PropertySupport.Reflection<Boolean>(act, Boolean.class, "isTaskEnabled",null); // NOI18N
+            prop.setName("task"); // NOI18N
             set.put(prop);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -103,4 +104,3 @@ public class ProxyActionNode extends AbstractNode {
     }
     
 }
-
