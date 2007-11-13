@@ -71,6 +71,15 @@ function getHttpRequest() {
  }
   
  function open2(method, url, mimeType, paramLen, async) {
+    
+    //add timestamp to make url unique in case of IE7
+    var url = req;
+    var timestamp = new Date().getTime();
+    if(url.indexOf("?") != -1)
+        url = url+"&timestamp="+timestamp;
+    else
+        url = url+"?timestamp="+timestamp;
+    
     var xmlHttpReq = getHttpRequest();
     if(xmlHttpReq == null) {
     	//alert('Error: Cannot create XMLHttpRequest');
@@ -99,6 +108,11 @@ function getHttpRequest() {
             xmlHttpReq.setRequestHeader("Connection", "close");
         }
     }
+    //For cache control on IE7
+    xmlHttpReq.setRequestHeader("Cache-Control", "no-cache");
+    xmlHttpReq.setRequestHeader("Pragma", "no-cache");
+    xmlHttpReq.setRequestHeader("Expires", "-1");
+    
     return xmlHttpReq;
 }
 
