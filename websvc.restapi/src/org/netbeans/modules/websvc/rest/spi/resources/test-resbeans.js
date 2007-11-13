@@ -432,6 +432,13 @@ TestSupport.prototype = {
         this.currentMethod = method;
         this.currentMimeType = mimetype;
         
+        //add timestamp to make url unique in case of IE7
+        var timestamp = new Date().getTime();
+        if(req.indexOf("?") != -1)
+            req = req+"&timestamp="+timestamp;
+        else
+            req = req+"?timestamp="+timestamp;
+        
         var c = '';
         if(method == 'POST') {
             c = this.xhr.post(req, mimetype, params);
@@ -1259,6 +1266,12 @@ XHR.prototype = {
                 xmlHttpReq.setRequestHeader("Connection", "close");
             }
         }
+        
+        //For cache control on IE7
+        xmlHttpReq.setRequestHeader("Cache-Control", "no-cache");
+        xmlHttpReq.setRequestHeader("Pragma", "no-cache");
+        xmlHttpReq.setRequestHeader("Expires", "-1");
+        
         ts.currentValidUrl = url;
         return xmlHttpReq;
     },
