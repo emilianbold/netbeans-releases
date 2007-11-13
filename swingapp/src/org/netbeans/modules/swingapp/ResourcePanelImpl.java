@@ -93,6 +93,7 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
         // prevent whole property window from closing when Enter is pressed in
         // the combo editor; select the typed key instead
         keyCombo.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
+            @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     e.consume();
@@ -591,6 +592,7 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
         SwingUtilities.convertPointToScreen(p, this);
         win.setLocation(p.x, p.y);
         win.addKeyListener(new KeyAdapter() {
+            @Override
             public void keyPressed(KeyEvent ev) {
                 win.setVisible(false);
                 win.dispose();
@@ -598,12 +600,14 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
             }
         });
         win.addFocusListener(new FocusAdapter() {
+            @Override
             public void focusLost(FocusEvent ev) {
                 win.setVisible(false);
                 win.dispose();
             }
         });
         tooltip.addMouseListener(new MouseAdapter() {
+            @Override
             public void mousePressed(MouseEvent ev) {
                 win.setVisible(false);
                 win.dispose();

@@ -305,6 +305,7 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
             }
         }
 
+        @Override
         public void undoChange() {
             if (!refElement.isEnabled()) {
                 return;
@@ -401,6 +402,7 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
             }
         }
 
+        @Override
         public void undoChange() {
             if (!refElement.isEnabled()) {
                 return;
