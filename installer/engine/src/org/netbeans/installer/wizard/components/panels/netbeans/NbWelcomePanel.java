@@ -43,11 +43,12 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
@@ -104,11 +105,16 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         type = BundleType.getType(
                 System.getProperty(WELCOME_PAGE_TYPE_PROPERTY));
         
-        String header = DEFAULT_WELCOME_TEXT_HEADER +
-                ResourceUtils.getString(NbWelcomePanel.class,
-                WELCOME_TEXT_HEADER_APPENDING_PROPERTY + "." + type );
+        setProperty(WELCOME_TEXT_HEADER_PROPERTY,
+                (type.isJDKBundle() ?
+                    DEFAULT_WELCOME_TEXT_HEADER_JDK :
+                    DEFAULT_WELCOME_TEXT_HEADER ));
         
-        setProperty(WELCOME_TEXT_HEADER_PROPERTY, header);
+        setProperty(WELCOME_TEXT_DETAILS_PROPERTY,
+                ResourceUtils.getString(NbWelcomePanel.class,
+                WELCOME_TEXT_HEADER_APPENDING_PROPERTY + "." + type ));
+        
+        
         setProperty(WELCOME_TEXT_GROUP_TEMPLATE_PROPERTY,
                 DEFAULT_WELCOME_TEXT_GROUP_TEMPLATE);
         setProperty(WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE_PROPERTY,
@@ -240,35 +246,33 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     if(tp.equals(BundleType.CUSTOMIZE) || tp.equals(BundleType.CUSTOMIZE_JDK)) {
                         product.setStatus(Status.NOT_INSTALLED);
                     }
-                } else if(product.getUid().equals("jdk") &&
-                        (product.getStatus() == Status.TO_BE_INSTALLED)){
-                    // check if jdk/jre is already installed
-                    final File jdk = JavaUtils.findJDKHome(product.getVersion());
-                    final File jre = JavaUtils.findJreHome(product.getVersion());
-                    if(jdk!=null) {
-                        product.setStatus(Status.NOT_INSTALLED);
-                        product.setVisible(false);
-                        setProperty(JDK_INSTALLED_TEXT_PROPERTY,
-                                StringUtils.format(DEFAULT_JDK_INSTALLED_TEXT, product.getDisplayName(),
-                                jdk));
-                        
-                    } else if(jre!=null) {
-                        setProperty(JRE_INSTALLED_TEXT_PROPERTY,
-                                StringUtils.format(DEFAULT_JRE_INSTALLED_TEXT, product.getVersion().toJdkStyle(), jre));
-                        product.setStatus(Status.NOT_INSTALLED);
-                        product.setVisible(false);
-                    } else {
-                        // do not allow installation under non-admin user on windows
-                        try {
-                            if(SystemUtils.isWindows() && !SystemUtils.isCurrentUserAdmin()) {
-                                product.setStatus(Status.NOT_INSTALLED);
-                                product.setVisible(false);
-                                setProperty(JDK_UNSUFFICIENT_PERMISSIONS_PROPERTY,
-                                        DEFAULT_JDK_UNSUFFICIENT_PERMISSIONS_TEXT);
+                } else if(type.isJDKBundle() && product.getUid().equals("jdk")) { // current checking product in global registry is jdk
+                    if(product.getStatus() == Status.TO_BE_INSTALLED){
+                        // check if jdk is already installed                        
+                        if(JavaUtils.findJDKHome(product.getVersion())!=null) {
+                            product.setStatus(Status.NOT_INSTALLED);
+                            product.setVisible(false);
+                            setProperty(JDK_INSTALLED_TEXT_PROPERTY,
+                                    StringUtils.format(DEFAULT_JDK_INSTALLED_TEXT, product.getDisplayName()));
+                        } else {
+                            // do not allow installation under non-admin user on windows
+                            try {
+                                if(SystemUtils.isWindows() && !SystemUtils.isCurrentUserAdmin()) {
+                                    product.setStatus(Status.NOT_INSTALLED);
+                                    product.setVisible(false);
+                                    setProperty(JDK_UNSUFFICIENT_PERMISSIONS_PROPERTY,
+                                            DEFAULT_JDK_UNSUFFICIENT_PERMISSIONS_TEXT);
+                                }
+                            } catch (NativeException e){
+                                LogManager.log(e);
                             }
-                        } catch (NativeException e){
-                            LogManager.log(e);
                         }
+                    } else if(product.getStatus() == Status.INSTALLED && //installed
+                            bundledRegistry.getProduct(
+                            product.getUid(),product.getVersion())!=null){ //and it is the same product
+                        setProperty(JDK_INSTALLED_TEXT_PROPERTY,
+                                StringUtils.format(DEFAULT_JDK_INSTALLED_TEXT,
+                                product.getDisplayName()));
                     }
                 }
             }
@@ -307,6 +311,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         protected NbWelcomePanel panel;
         
         private NbiTextPane textPane;
+        private NbiTextPane detailsTextPane;
+        private NbiLabel detailsWarningIconLabel;
         private NbiTextPane textScrollPane;
         private NbiScrollPane scrollPane;
         private NbiButton customizeButton;
@@ -352,38 +358,42 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         @Override
         protected void initialize() {
             StringBuilder welcomeText = new StringBuilder();
-            String header = null;
+            String header = StringUtils.format(panel.getProperty(WELCOME_TEXT_HEADER_PROPERTY));
             if(type.isJDKBundle()) {
-                for (RegistryNode node: registryNodes) {
-                    if (node instanceof Product) {
-                        Product product = (Product) node;
-                        if (product.getUid().equals("jdk") &&
-                                product.getStatus() == Status.TO_BE_INSTALLED) {
-                            header = StringUtils.format(panel.getProperty(WELCOME_TEXT_HEADER_PROPERTY),
-                                    product.getDisplayName());
-                            break;
-                        }
-                    }
+                for(Product product : panel.getBundledRegistry().getProducts("jdk")) {
+                    header = StringUtils.format(header, product.getDisplayName());
+                    break;
                 }
-            }
-            if(header==null) {
-                header = panel.getProperty(WELCOME_TEXT_HEADER_PROPERTY);
             }
             
             welcomeText.append(header);
-            
-            if(panel.getProperty(JDK_INSTALLED_TEXT_PROPERTY)!=null) {
-                welcomeText.append(panel.getProperty(JDK_INSTALLED_TEXT_PROPERTY));
-            } else if(panel.getProperty(JRE_INSTALLED_TEXT_PROPERTY)!=null) {
-                welcomeText.append(panel.getProperty(JRE_INSTALLED_TEXT_PROPERTY));
-            } else if(panel.getProperty(JDK_UNSUFFICIENT_PERMISSIONS_PROPERTY)!=null) {
-                welcomeText.append(panel.getProperty(JDK_UNSUFFICIENT_PERMISSIONS_PROPERTY));
-            }
-            
             welcomeText.append(panel.getProperty(WELCOME_TEXT_FOOTER_PROPERTY));
             textPane.setContentType(
                     panel.getProperty(TEXT_PANE_CONTENT_TYPE_PROPERTY));
             textPane.setText(welcomeText);
+            StringBuilder detailsText = new StringBuilder(
+                    panel.getProperty(WELCOME_TEXT_OPENTAG_PROPERTY));
+            boolean warningIcon = false;
+            if(panel.getProperty(JDK_INSTALLED_TEXT_PROPERTY)!=null) {
+                detailsText.append(panel.getProperty(JDK_INSTALLED_TEXT_PROPERTY));
+                warningIcon = true;
+            } else if(panel.getProperty(JDK_UNSUFFICIENT_PERMISSIONS_PROPERTY)!=null) {
+                detailsText.append(panel.getProperty(JDK_UNSUFFICIENT_PERMISSIONS_PROPERTY));
+                warningIcon = true;
+            } else {
+                detailsText.append(panel.getProperty(WELCOME_TEXT_DETAILS_PROPERTY));
+            }
+            detailsTextPane.setContentType(
+                    panel.getProperty(TEXT_PANE_CONTENT_TYPE_PROPERTY));
+            
+            detailsTextPane.setText(detailsText.toString());
+            if(warningIcon) {
+                detailsWarningIconLabel.setIcon(new ImageIcon(
+                        getClass().getClassLoader().getResource(WARNING_ICON)));
+            } else {
+                detailsWarningIconLabel.setVisible(false);                
+            }
+            
             
             everythingIsInstalled = true;
             welcomeText = new StringBuilder(
@@ -436,7 +446,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             customizeButton.setText(
                     panel.getProperty(CUSTOMIZE_BUTTON_TEXT_PROPERTY));
             
-            updateSizes();           
+            updateSizes();
             
             super.initialize();
         }
@@ -521,10 +531,14 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             textScrollPane.setOpaque(true);
             textScrollPane.setBackground(Color.WHITE);
             
+            detailsTextPane = new NbiTextPane();
+            detailsTextPane.setOpaque(true);
+            detailsTextPane.setBackground(Color.WHITE);
+            
             // scrollPane ////////////////////////////////////////////////////
-            scrollPane = new NbiScrollPane(textScrollPane);    
-            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);                        
-            scrollPane.setViewportBorder(new EmptyBorder(new Insets(0, 0, 0, 0)));     
+            scrollPane = new NbiScrollPane(textScrollPane);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            scrollPane.setViewportBorder(new EmptyBorder(new Insets(0, 0, 0, 0)));
             scrollPane.setBorder(new EmptyBorder(new Insets(0, 0, 0, 0)));
             
             // customizeButton //////////////////////////////////////////////////////
@@ -564,14 +578,30 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     GridBagConstraints.VERTICAL,          // fill
                     new Insets(0, 0, 0, 0),           // padding
                     0, 0));                           // padx, pady - ???
-            //textPane.setBorder(new LineBorder(Color.GREEN));
             add(textPane, new GridBagConstraints(
                     1, dy++,                             // x, y
-                    3, 1,                             // width, height
+                    4, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,        // anchor
                     GridBagConstraints.HORIZONTAL,          // fill
                     new Insets(10, 11, 11, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            detailsWarningIconLabel = new NbiLabel();
+            add(detailsWarningIconLabel, new GridBagConstraints(
+                    1, dy,                             // x, y
+                    1, 1,                             // width, height
+                    0.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.NORTHWEST,        // anchor
+                    GridBagConstraints.NONE,          // fill
+                    new Insets(2, 11, 0, 0),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(detailsTextPane, new GridBagConstraints(
+                    2, dy++,                             // x, y
+                    3, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.WEST,        // anchor
+                    GridBagConstraints.HORIZONTAL,          // fill
+                    new Insets(2, 11, 0, 11),        // padding
                     0, 0));                           // padx, pady - ???
             NbiTextPane separatorPane =  new NbiTextPane();
             BundleType type = BundleType.getType(
@@ -579,7 +609,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             if(!type.equals(BundleType.JAVAEE) && !type.equals(BundleType.JAVAEE_JDK)) {
                 add(scrollPane, new GridBagConstraints(
                         1, dy++,                           // x, y
-                        3, 1,                              // width, height
+                        4, 1,                              // width, height
                         1.0, 10.0,                         // weight-x, weight-y
                         GridBagConstraints.LINE_START,     // anchor
                         GridBagConstraints.BOTH,           // fill
@@ -625,10 +655,10 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                                 
                                 //chBox.setPreferredSize(new Dimension(chBox.getPreferredSize().width,
                                 //        chBox.getPreferredSize().height-2));
-                                chBox.setBorder(new EmptyBorder(0,0,0,0));                               
+                                chBox.setBorder(new EmptyBorder(0,0,0,0));
                                 add(chBox,new GridBagConstraints(
                                         1, dy++,                             // x, y
-                                        3, 1,                             // width, height
+                                        4, 1,                             // width, height
                                         1.0, 0.0,                         // weight-x, weight-y
                                         GridBagConstraints.LINE_START,        // anchor
                                         GridBagConstraints.HORIZONTAL,          // fill
@@ -652,33 +682,33 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 }
                 add(separatorPane , new GridBagConstraints(
                         1, dy++,                             // x, y
-                        3, 1,                                // width, height
+                        4, 1,                                // width, height
                         1.0, 2.0,                            // weight-x, weight-y
                         GridBagConstraints.LINE_START,       // anchor
                         GridBagConstraints.BOTH,             // fill
                         new Insets(0, 0, 0, 0),              // padding
                         0, 0));                              // padx, pady - ???
-            }           
+            }
             add(customizeButton, new GridBagConstraints(
                     1, dy,                            // x, y
-                    1, 1,                             // width, height
+                    2, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.NONE,          // fill
                     new Insets(10, 11, 0, 0),         // padding
                     0, 0));                           // padx, pady - ???
-            separatorPane =  new NbiTextPane();        
+            separatorPane =  new NbiTextPane();
             add(separatorPane , new GridBagConstraints(
-                    2, dy,                            // x, y
+                    3, dy,                            // x, y
                     1, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.CENTER,        // anchor
                     GridBagConstraints.BOTH,          // fill
                     new Insets(0, 0, 0, 0),           // padding
-                    0, 0));                           // padx, pady - ???       
+                    0, 0));                           // padx, pady - ???
             
             add(installationSizeLabel, new GridBagConstraints(
-                    3, dy,                            // x, y
+                    4, dy,                            // x, y
                     1, 1,                             // width, height
                     0.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.EAST,          // anchor
@@ -688,7 +718,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             
             // move error label after the left welcome image
             Component errorLabel = getComponent(0);
-            getLayout().removeLayoutComponent(errorLabel);      
+            getLayout().removeLayoutComponent(errorLabel);
             add(errorLabel, new GridBagConstraints(
                     1, 99,                             // x, y
                     99, 1,                             // width, height
@@ -813,6 +843,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             "text.pane.content.type"; // NOI18N
     public static final String WELCOME_TEXT_HEADER_PROPERTY =
             "welcome.text.header"; // NOI18N
+    public static final String WELCOME_TEXT_DETAILS_PROPERTY =
+            "welcome.text.details"; // NOI18N
     public static final String WELCOME_TEXT_GROUP_TEMPLATE_PROPERTY =
             "welcome.text.group.template"; // NOI18N
     public static final String WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE_PROPERTY =
@@ -830,8 +862,6 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     
     public static final String JDK_INSTALLED_TEXT_PROPERTY =
             "jdk.already.installed.text";
-    public static final String JRE_INSTALLED_TEXT_PROPERTY =
-            "jre.already.installed.text";
     public static final String JDK_UNSUFFICIENT_PERMISSIONS_PROPERTY =
             "jdk.unsufficient.permissions";
     
@@ -841,6 +871,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public static final String DEFAULT_WELCOME_TEXT_HEADER =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.welcome.text.header"); // NOI18N
+    public static final String DEFAULT_WELCOME_TEXT_HEADER_JDK =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.welcome.text.header.jdk"); // NOI18N
     public static final String WELCOME_TEXT_HEADER_APPENDING_PROPERTY =
             "NWP.welcome.text.header"; // NOI18N
     
@@ -872,9 +905,6 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public static final String DEFAULT_JDK_INSTALLED_TEXT =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.jdk.installed.text"); // NOI18N
-    public static final String DEFAULT_JRE_INSTALLED_TEXT =
-            ResourceUtils.getString(NbWelcomePanel.class,
-            "NWP.jre.installed.text"); // NOI18N
     public static final String DEFAULT_JDK_UNSUFFICIENT_PERMISSIONS_TEXT =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.welcome.admin.warning.text");//NOI18N
