@@ -93,7 +93,7 @@ import org.openide.xml.XMLUtil;
  */
 class PlatformNode extends AbstractNode implements ChangeListener {
 
-    private static final String PLATFORM_ICON = "org/netbeans/modules/web/project/ui/resources/platform";    //NOI18N
+    private static final String PLATFORM_ICON = "org/netbeans/modules/web/project/ui/resources/platform.gif";    //NOI18N
     private static final String ARCHIVE_ICON = "org/netbeans/modules/web/project/ui/resources/jar.gif"; //NOI18N
 
     private final PlatformProvider pp;
@@ -102,7 +102,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         super (new PlatformContentChildren (), Lookups.singleton (new JavadocProvider(pp)));        
         this.pp = pp;
         this.pp.addChangeListener(this);
-        setIconBase(PLATFORM_ICON);
+        setIconBaseWithExtension(PLATFORM_ICON);
     }
 
     public String getName () {

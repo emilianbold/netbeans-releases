@@ -164,7 +164,7 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         if (cpExtender != null) {
             try {
                 AntArtifactChooser.ArtifactItem artifactItems[] = new AntArtifactChooser.ArtifactItem [1];
-                artifactItems[0] = new AntArtifactChooser.ArtifactItem(moduleJarTarget, moduleJarTarget.getArtifactLocation());
+                artifactItems[0] = new AntArtifactChooser.ArtifactItem(moduleJarTarget, moduleJarTarget.getArtifactLocations()[0]);
                 cpExtender.addAntArtifacts(WebProjectProperties.JAVAC_CLASSPATH, artifactItems, WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
