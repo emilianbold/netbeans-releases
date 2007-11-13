@@ -99,7 +99,7 @@ public class AcceleratorKeyListener implements KeyListener {
             panel.controlCheckbox.setSelected((keyStroke.getModifiers() & InputEvent.CTRL_DOWN_MASK) > 0);
             panel.altCheckbox.setSelected((keyStroke.getModifiers() & InputEvent.ALT_DOWN_MASK) > 0);
             panel.metaCheckbox.setSelected((keyStroke.getModifiers() & InputEvent.META_DOWN_MASK) > 0);
-        };
+        }
     }
     
     public KeyStroke getCurrentKeyStroke() {
@@ -143,7 +143,7 @@ public class AcceleratorKeyListener implements KeyListener {
     private String toString(KeyEvent ke) {
         keyStroke = KeyStroke.getKeyStrokeForEvent(ke);
         currentKeyCode = ke.getKeyCode();
-        return ke.getKeyText(currentKeyCode);
+        return KeyEvent.getKeyText(currentKeyCode);
     }
     
 }
