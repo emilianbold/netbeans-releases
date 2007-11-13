@@ -60,10 +60,13 @@ import com.sun.tools.javadoc.JavadocMemberEnter;
 import com.sun.tools.javadoc.Messager;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -119,6 +122,7 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
+import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavadocEnv;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -2316,32 +2320,71 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
     }
     
+    private static final int MAX_DUMPS = 255;
+    
     /**
-     * Dumps the source code to the log. Used for parser debugging.
+     * Dumps the source code to the file. Used for parser debugging. Only a limited number
+     * of dump files is used. If the last file exists, this method doesn't dump anything.
      *
      * @param  info  CompilationInfo for which the error occurred.
-     * @param  exc  exception to write to log
+     * @param  exc  exception to write to the end of dump file
      */
     private static void dumpSource(CompilationInfo info, Throwable exc) {
+        String userDir = System.getProperty("netbeans.user");
+        if (userDir == null) {
+            return;
+        }
+        String dumpDir =  userDir + "/var/log/"; //NOI18N
         String src = info.getText();
         FileObject file = info.getFileObject();
         String fileName = FileUtil.getFileDisplayName(file);
-        StringWriter sw = new StringWriter();
-        PrintWriter writer = new PrintWriter(sw);
-        writer.printf("An error occurred during parsing of %s. Please report a bug against java/source with this stack trace.\n", fileName);
-        writer.println(src);
-        writer.println("----- Classpath: ---------------------------------------------"); // NOI18N
+        String origName = file.getName();
+        File f = new File(dumpDir + origName + ".dump"); // NOI18N
+        boolean dumpSucceeded = false;
+        int i = 1;
+        while (i < MAX_DUMPS) {
+            if (!f.exists())
+                break;
+            f = new File(dumpDir + origName + '_' + i + ".dump"); // NOI18N
+            i++;
+        }
+        if (!f.exists()) {
+            try {
+                OutputStream os = new FileOutputStream(f);
+                PrintWriter writer = new PrintWriter(new OutputStreamWriter(os, "UTF-8")); // NOI18N
+                try {
+                    writer.println(src);
+                    writer.println("----- Classpath: ---------------------------------------------"); // NOI18N
+                    
+                    final ClassPath bootPath   = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
+                    final ClassPath classPath  = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
+                    final ClassPath sourcePath = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE);
 
-        final ClassPath bootPath   = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
-        final ClassPath classPath  = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
-        final ClassPath sourcePath = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE);
-
-        writer.println("bootPath: " + (bootPath != null ? bootPath.toString() : "null"));
-        writer.println("classPath: " + (classPath != null ? classPath.toString() : "null"));
-        writer.print("sourcePath: " + (sourcePath != null ? sourcePath.toString() : "null"));
-        writer.flush();
-        writer.close();
-        LOGGER.log(Level.SEVERE, null, new AssertionError(sw.toString()).initCause(exc));
+                    writer.println("bootPath: " + (bootPath != null ? bootPath.toString() : "null"));
+                    writer.println("classPath: " + (classPath != null ? classPath.toString() : "null"));
+                    writer.println("sourcePath: " + (sourcePath != null ? sourcePath.toString() : "null"));
+                    
+                    writer.println("----- Original exception ---------------------------------------------"); // NOI18N
+                    exc.printStackTrace(writer);
+                } finally {
+                    writer.close();
+                    dumpSucceeded = true;
+                }
+            } catch (IOException ioe) {
+                LOGGER.log(Level.INFO, "Error when writing parser dump file!", ioe); // NOI18N
+            }
+        }
+        if (dumpSucceeded) {
+            Throwable t = Exceptions.attachMessage(exc, "An error occurred during parsing of \'" + fileName + "\'. Please report a bug against java/source and attach dump file '"  // NOI18N
+                    + f.getAbsolutePath() + "'."); // NOI18N
+            Exceptions.printStackTrace(t);
+        } else {
+            LOGGER.log(Level.WARNING,
+                    "Dump could not be written. Either dump file could not " + // NOI18N
+                    "be created or all dump files were already used. Please " + // NOI18N
+                    "check that you have write permission to '" + dumpDir + "' and " + // NOI18N
+                    "clean all *.dump files in that directory."); // NOI18N
+        }
     }
     
     private static final class DevNullWriter extends Writer {

@@ -62,7 +62,6 @@ import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -72,7 +71,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URI;
@@ -3097,39 +3095,68 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         return instance;
     }        
     
+    private static final int MAX_DUMPS = 255;
+    
     /**
-     * Dumps the source code and stack trace to the log.
+     * Dumps the source code to the file. Used for parser debugging. Only a limited number
+     * of dump files is used. If the last file exists, this method doesn't dump anything.
      *
      * @param  info  CompilationInfo for which the error occurred.
-     * @param  exc  exception to write to log
+     * @param  exc  exception to write to the end of dump file
      */
     public static void couplingAbort(CouplingAbort a, JavaFileObject source) {
+        String dumpDir = System.getProperty("netbeans.user") + "/var/log/"; //NOI18N
         JavaFileObject classSource = a.getClassFile();
         String uri = classSource != null ? classSource.toUri().toASCIIString() : "<unknown>";
-        StringWriter sw = new StringWriter();
-        try {
-            PrintWriter writer = new PrintWriter(sw);
-            writer.printf("Coupling error: class file %s, source file %s\n", uri, source.toUri().toASCIIString());
-            writer.println("----- Sig file content: -------------------------------------------"); // NOI18N
-            if (classSource == null) {
-                writer.println("no content"); //NOI18N
-            } else {
-                if (classSource.getName().toLowerCase().endsWith(".sig")) { // NOI18N
-                    writer.println(classSource.getCharContent(true));
-                } else {
-                    writer.println("not a sig file"); // NOI18N
-                }
-            }
-            writer.println("----- Source file content: ----------------------------------------"); // NOI18N
-            writer.println(source.getCharContent(true));
-            writer.println("----- Tree: -------------------------------------------------------"); // NOI18N
-            writer.print(a.getTree().toString());
-            writer.flush();
-            writer.close();
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+        String origName = classSource != null ? classSource.getName() : "unknown";
+        File f = new File(dumpDir + origName + ".dump"); // NOI18N
+        boolean dumpSucceeded = false;
+        int i = 1;
+        while (i < MAX_DUMPS) {
+            if (!f.exists())
+                break;
+            f = new File(dumpDir + origName + '_' + i + ".dump"); // NOI18N
+            i++;
         }
-        LOGGER.log(Level.INFO, null, new AssertionError(sw.toString()).initCause(a));
+        if (!f.exists()) {
+            try {
+                OutputStream os = new FileOutputStream(f);
+                PrintWriter writer = new PrintWriter(new OutputStreamWriter(os, "UTF-8")); // NOI18N
+                try {
+                    writer.println(String.format("Coupling error: class file %s, source file %s", uri, source.toUri().toASCIIString()));
+                    writer.println("----- Sig file content: -------------------------------------------"); // NOI18N
+                    if (classSource == null) {
+                        writer.println("no content"); //NOI18N
+                    } else {
+                        if (classSource.getName().toLowerCase().endsWith(".sig")) { // NOI18N
+                            writer.println(classSource.getCharContent(true));
+                        } else {
+                            writer.println("not a sig file"); // NOI18N
+                        }
+                    }
+                    writer.println("----- Source file content: ----------------------------------------"); // NOI18N
+                    writer.println(source.getCharContent(true));
+                    writer.println("----- Tree: -------------------------------------------------------"); // NOI18N
+                    writer.println(a.getTree().toString());
+                    writer.println("----- Coupling Error: ---------------------------------------------"); // NOI18N
+                    a.printStackTrace(writer);
+                } finally {
+                    writer.close();
+                    dumpSucceeded = true;
+                }
+            } catch (IOException ioe) {
+                LOGGER.log(Level.INFO, "Error when writing coupling dump file!", ioe); // NOI18N
+            }
+        }
+        if (dumpSucceeded) {
+            LOGGER.log(Level.SEVERE, "Coupling error: class file {0}, source file {1}", new Object[] {uri, source.toUri().toASCIIString()});
+        } else {
+            LOGGER.log(Level.WARNING,
+                    "Dump could not be written. Either dump file could not " + // NOI18N
+                    "be created or all dump files were already used. Please " + // NOI18N
+                    "check that you have write permission to '" + dumpDir + "' and " + // NOI18N
+                    "clean all *.dump files in that directory."); // NOI18N
+        }
     }
     
 }
