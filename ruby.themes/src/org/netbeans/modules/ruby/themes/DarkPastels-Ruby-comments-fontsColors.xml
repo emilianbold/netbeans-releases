@@ -41,20 +41,22 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
-
 <fontscolors>
-    <fontcolor default="comment" foreColor="gray" name="block-comment"/>
-    <fontcolor default="default" foreColor="ffbf9221" name="sgml-declaration"/>
-    <fontcolor default="whitespace" name="ws"/>
-    <fontcolor default="default" foreColor="ffccffcc" name="value"/>
-    <fontcolor default="identifier" foreColor="ff6699ff" name="argument"/>
-    <fontcolor default="default" name="text"/>
-    <fontcolor default="default" foreColor="ff99ccff" name="tag"/>
-    <fontcolor default="char" foreColor="ffffcc66" name="character"/>
-    <fontcolor default="comment" foreColor="gray" name="sgml-comment"/>
-    <fontcolor default="operator" foreColor="ff66ccff" name="operator"/>
-    <fontcolor bgColor="red" default="error" foreColor="white" name="error"/>
-    <fontcolor name="css-embedded" default="default"/>
-    <fontcolor name="javascript-embedded" default="default"/>
-    
+    <fontcolor foreColor="ffdbdb93" name="COMMENT_TODO">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="default" foreColor="blue" name="COMMENT_LINK" underline="blue"/>
+    <fontcolor default="comment" name="COMMENT_TEXT"/>
+    <fontcolor default="default" name="COMMENT_BOLD">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="default" name="COMMENT_ITALIC">
+        <font style="italic"/>
+    </fontcolor>
+    <fontcolor default="comment" foreColor="ffccffcc" name="COMMENT_RDOC">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="comment" name="COMMENT_HTMLTAG">
+        <font style="bold"/>
+    </fontcolor>
 </fontscolors>

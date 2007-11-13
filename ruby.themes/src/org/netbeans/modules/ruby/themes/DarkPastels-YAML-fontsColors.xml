@@ -41,20 +41,13 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
-
 <fontscolors>
-    <fontcolor default="comment" foreColor="gray" name="block-comment"/>
-    <fontcolor default="default" foreColor="ffbf9221" name="sgml-declaration"/>
-    <fontcolor default="whitespace" name="ws"/>
-    <fontcolor default="default" foreColor="ffccffcc" name="value"/>
-    <fontcolor default="identifier" foreColor="ff6699ff" name="argument"/>
-    <fontcolor default="default" name="text"/>
-    <fontcolor default="default" foreColor="ff99ccff" name="tag"/>
-    <fontcolor default="char" foreColor="ffffcc66" name="character"/>
-    <fontcolor default="comment" foreColor="gray" name="sgml-comment"/>
-    <fontcolor default="operator" foreColor="ff66ccff" name="operator"/>
-    <fontcolor bgColor="red" default="error" foreColor="white" name="error"/>
-    <fontcolor name="css-embedded" default="default"/>
-    <fontcolor name="javascript-embedded" default="default"/>
-    
+    <fontcolor default="keyword" name="key">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="default" name="value"/>
+    <fontcolor default="whitespace" name="whitespace"/>
+    <fontcolor default="comment" name="comment"/>
+    <fontcolor foreColor="ffccffcc" name="sequence"/>
+    <fontcolor default="error" name="error"/>
 </fontscolors>

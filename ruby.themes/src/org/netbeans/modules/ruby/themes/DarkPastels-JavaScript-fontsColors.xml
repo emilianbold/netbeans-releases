@@ -41,20 +41,22 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
-
 <fontscolors>
-    <fontcolor default="comment" foreColor="gray" name="block-comment"/>
-    <fontcolor default="default" foreColor="ffbf9221" name="sgml-declaration"/>
-    <fontcolor default="whitespace" name="ws"/>
-    <fontcolor default="default" foreColor="ffccffcc" name="value"/>
-    <fontcolor default="identifier" foreColor="ff6699ff" name="argument"/>
-    <fontcolor default="default" name="text"/>
-    <fontcolor default="default" foreColor="ff99ccff" name="tag"/>
-    <fontcolor default="char" foreColor="ffffcc66" name="character"/>
-    <fontcolor default="comment" foreColor="gray" name="sgml-comment"/>
-    <fontcolor default="operator" foreColor="ff66ccff" name="operator"/>
-    <fontcolor bgColor="red" default="error" foreColor="white" name="error"/>
-    <fontcolor name="css-embedded" default="default"/>
-    <fontcolor name="javascript-embedded" default="default"/>
-    
+    <fontcolor default="keyword" name="js_keyword"/>
+    <fontcolor default="separator" name="js_separator"/>
+    <fontcolor default="identifier" name="js_identifier"/>
+    <fontcolor default="comment" name="js_line_comment"/>
+    <fontcolor default="error" name="error"/>
+    <fontcolor default="number" name="js_number"/>
+    <fontcolor foreColor="ffffff99" name="js_regularExpression">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="whitespace" name="js_whitespace"/>
+    <fontcolor default="comment" name="js_comment"/>
+    <fontcolor default="string" name="s_p">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="js_operator"/>
+    <fontcolor default="string" name="js_string"/>
+    <fontcolor default="string" name="s_string"/>
 </fontscolors>

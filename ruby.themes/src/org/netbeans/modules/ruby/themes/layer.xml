@@ -85,7 +85,55 @@ Microsystems, Inc. All Rights Reserved.
                     </folder>
                 </folder>
             </folder>
+
+            <folder name="javascript">
+                <folder name="FontsColors">
+                    <folder name="DarkPastels">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-javascript-token-colorings.xml" url="DarkPastels-JavaScript-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
             
+            <folder name="x-yaml">
+                <folder name="FontsColors">
+                    <folder name="DarkPastels">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-yaml-token-colorings.xml" url="DarkPastels-YAML-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+
+            <folder name="x-css">
+                <folder name="FontsColors">
+                    <folder name="DarkPastels">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-css-token-colorings.xml" url="DarkPastels-CSS-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+
+            <folder name="x-css-inlined">
+                <folder name="FontsColors">
+                    <folder name="DarkPastels">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-css-token-colorings.xml" url="DarkPastels-CSS-inline-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+
             <folder name="x-ruby">
                 <folder name="FontsColors">
                     <folder name="DarkPastels">
@@ -101,7 +149,7 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="FontsColors">
                     <folder name="DarkPastels">
                         <folder name="Defaults">
-                            <file name="org-netbeans-modules-editor-x-ruby-comment-token-colorings.xml" url="blank.xml"/>
+                            <file name="org-netbeans-modules-editor-x-ruby-comment-token-colorings.xml" url="DarkPastels-Ruby-comments-fontsColors.xml"/>
                         </folder>
                     </folder>
                 </folder>
