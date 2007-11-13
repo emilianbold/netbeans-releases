@@ -50,9 +50,9 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author joshy
+ * @author Joshua Marinacci, Jan Stola
  */
-public class ProxyActionChildren extends Children.Keys {
+public class ProxyActionChildren extends Children.Keys<ProxyAction> {
     private List<ProxyAction> acts = new ArrayList<ProxyAction>();
     ProxyActionChildren() {
         
@@ -60,17 +60,13 @@ public class ProxyActionChildren extends Children.Keys {
     ProxyActionChildren(List<ProxyAction> acts) {
         this.acts = acts;
     }
+    @Override
     protected void addNotify() {
-        ProxyAction[] acts = new ProxyAction[this.acts.size()];
-        for(int i=0; i<acts.length; i++) {
-            acts[i] = this.acts.get(i);
-        }
-        setKeys(acts);
+        setKeys(acts.toArray(new ProxyAction[acts.size()]));
     }
-    protected Node[] createNodes(Object key) {
-        ProxyAction act = (ProxyAction) key;
+    protected Node[] createNodes(ProxyAction key) {
         AbstractNode result = new ProxyActionNode(Lookups.singleton(key));
-        result.setDisplayName(act.getId());
+        result.setDisplayName(key.getId());
         return new Node[] {result};
     }
     
