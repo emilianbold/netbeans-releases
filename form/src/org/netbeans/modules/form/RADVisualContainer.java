@@ -55,7 +55,7 @@ import org.openide.ErrorManager;
 
 
 public class RADVisualContainer extends RADVisualComponent implements ComponentContainer {
-    private ArrayList<RADVisualComponent> subComponents = new ArrayList(10);
+    private ArrayList<RADVisualComponent> subComponents = new ArrayList<RADVisualComponent>(10);
     private LayoutSupportManager layoutSupport; // = new LayoutSupportManager();
     private LayoutNode layoutNode; // [move to LayoutSupportManager?]
 
@@ -65,19 +65,9 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     private boolean noContainerDelegate;
 
     private static Map<MenuType, Class[]> supportedMenus;
-//    public boolean initialize(FormModel formModel) {
-//        if (super.initialize(formModel)) {
-//            if (getBeanClass() != null)
-//                layoutSupport.initialize(this, formModel.getCodeStructure());
-//            return true;
-//        }
-//        return false;
-//    }
 
+    @Override
     protected void setBeanInstance(Object beanInstance) {
-//        if (layoutSupport != null && layoutSupport.getLayoutDelegate() != null)
-//            layoutSupport.clearPrimaryContainer();
-
         containerDelegateGetter = null;
         noContainerDelegate = false;
 
@@ -87,6 +77,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
             layoutSupport = new LayoutSupportManager(this, getFormModel().getCodeStructure());
     }
 
+    @Override
     void setInModel(boolean in) {
         boolean alreadyIn = isInModel();
         super.setInModel(in);
@@ -167,19 +158,15 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         }
     }
 
-//    public boolean hasOldLayoutSupport() {
-//        return layoutSupport != null;
-//    }
-
     public boolean hasDedicatedLayoutSupport() {
         return layoutSupport != null && layoutSupport.isDedicated();
     }
 
     /**
+     * @param container container.
      * @return The JavaBean visual container represented by this
      * RADVisualComponent
      */
-    
     public Container getContainerDelegate(Object container) {
         if (container instanceof RootPaneContainer
                 && container.getClass().getName().startsWith("javax.swing.")) // NOI18N
@@ -255,7 +242,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
             // this is a menu container accepting certain types of menus
             Class[] possibleClasses = getPossibleSubmenus(getMenuType(getBeanClass()));
             if (possibleClasses != null) {
-                for (Class cls : possibleClasses) {
+                for (Class<?> cls : possibleClasses) {
                     if (cls.isAssignableFrom(compClass)) {
                         return true;
                     }
@@ -320,7 +307,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     }
 
     public RADVisualComponent getSubComponent(int index) {
-        return (RADVisualComponent) subComponents.get(index);
+        return subComponents.get(index);
     }
 
     // the following methods implement ComponentContainer interface
@@ -341,7 +328,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
     public void initSubComponents(RADComponent[] initComponents) {
         if (subComponents == null)
-            subComponents = new ArrayList(initComponents.length);
+            subComponents = new ArrayList<RADVisualComponent>(initComponents.length);
         else {
             subComponents.clear();
             subComponents.ensureCapacity(initComponents.length);
