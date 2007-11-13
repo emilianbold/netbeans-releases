@@ -181,7 +181,11 @@ public class RADVisualComponent extends RADComponent {
     // -----------------------------------------------------------------------------
     // Layout constraints management
 
-    /** Sets component's constraints description for given layout-support class. 
+    /**
+     * Sets component's constraints description for given layout-support class. 
+     * 
+     * @param layoutDelegateClass class of the layout delegate these constraints belong to.
+     * @param constr layout constraints.
      */
     public void setLayoutConstraints(Class layoutDelegateClass,
                                      LayoutConstraints constr)
@@ -191,7 +195,11 @@ public class RADVisualComponent extends RADComponent {
         }
     }
 
-    /** Gets component's constraints description for given layout-support class.
+    /**
+     * Gets component's constraints description for given layout-support class.
+     * 
+     * @param layoutDelegateClass class of the layout delegate.
+     * @return layout constraints for the given layout delegate.
      */
     public LayoutConstraints getLayoutConstraints(Class layoutDelegateClass) {
         return constraints.get(layoutDelegateClass.getName());
@@ -291,6 +299,7 @@ public class RADVisualComponent extends RADComponent {
 //            catch (IntrospectionException ex) {} // should not happen
     } */
 
+    @Override
     protected void clearProperties() {
         super.clearProperties();
         constraintsProperties = null;
@@ -494,12 +503,15 @@ public class RADVisualComponent extends RADComponent {
                         public void setTargetValue(Object value) {
                             accName = (String) value;
                         }
+                        @Override
                         public boolean supportsDefaultValue () {
                             return true;
                         }
+                        @Override
                         public Object getDefaultValue() {
                             return getAccessibleContext().getAccessibleName();
                         }
+                        @Override
                         public void restoreDefaultValue()
                             throws IllegalAccessException,
                                    java.lang.reflect.InvocationTargetException
@@ -507,6 +519,7 @@ public class RADVisualComponent extends RADComponent {
                             super.restoreDefaultValue();
                             accName = BeanSupport.NO_VALUE;
                         }
+                        @Override
                         String getPartialSetterCode(String javaInitStr) {
                             return "getAccessibleContext().setAccessibleName(" // NOI18N
                                    + javaInitStr + ")"; // NOI18N
@@ -526,9 +539,11 @@ public class RADVisualComponent extends RADComponent {
                         public void setTargetValue(Object value) {
                             accDescription = (String) value;
                         }
+                        @Override
                         public boolean supportsDefaultValue () {
                             return true;
                         }
+                        @Override
                         public Object getDefaultValue() {
                             AccessibleContext context = getAccessibleContext();
                             Object bean = getBeanInstance();
@@ -543,6 +558,7 @@ public class RADVisualComponent extends RADComponent {
                             }
                             return context.getAccessibleDescription();
                         }
+                        @Override
                         public void restoreDefaultValue()
                             throws IllegalAccessException,
                                    java.lang.reflect.InvocationTargetException
@@ -550,6 +566,7 @@ public class RADVisualComponent extends RADComponent {
                             super.restoreDefaultValue();
                             accDescription = BeanSupport.NO_VALUE;
                         }
+                        @Override
                         String getPartialSetterCode(String javaInitStr) {
                             return
                               "getAccessibleContext().setAccessibleDescription(" // NOI18N
@@ -570,9 +587,11 @@ public class RADVisualComponent extends RADComponent {
                         public void setTargetValue(Object value) {
                             accParent = value;
                         }
+                        @Override
                         public boolean supportsDefaultValue () {
                             return true;
                         }
+                        @Override
                         public Object getDefaultValue() {
                             Object acP = getAccessibleContext()
                                              .getAccessibleParent();
@@ -587,6 +606,7 @@ public class RADVisualComponent extends RADComponent {
                             }
                             return acP;
                         }
+                        @Override
                         public void restoreDefaultValue()
                             throws IllegalAccessException,
                                    java.lang.reflect.InvocationTargetException
@@ -594,9 +614,11 @@ public class RADVisualComponent extends RADComponent {
                             super.restoreDefaultValue();
                             accParent = BeanSupport.NO_VALUE;
                         }
+                        @Override
                         public PropertyEditor getExpliciteEditor() {
                             return new AccessibleParentEditor();
                         }
+                        @Override
                         String getPartialSetterCode(String javaInitStr) {
                             return javaInitStr == null ? null :
                                 "getAccessibleContext().setAccessibleParent(" // NOI18N
@@ -672,26 +694,32 @@ public class RADVisualComponent extends RADComponent {
             return new Integer(size);
         }
 
+        @Override
         public boolean supportsDefaultValue() {
             return true;
         }
         
+        @Override
         public void restoreDefaultValue() {
             setValue(new Integer(LayoutConstants.NOT_EXPLICITLY_DEFINED));
         }
         
+        @Override
         public boolean isDefaultValue() {
             return ((Integer)getValue()).intValue() == LayoutConstants.NOT_EXPLICITLY_DEFINED;
         }
         
+        @Override
         public PropertyEditor getPropertyEditor() {
             return new PropertyEditorSupport() {
                 private String notExplicitelyDefined = FormUtils.getBundleString("VALUE_SizeNotExplicitelyDefined"); // NOI18N
                 
+                @Override
                 public String[] getTags() {
                     return new String[] {notExplicitelyDefined};
                 }
 
+                @Override
                 public String getAsText() {
                     Integer value = (Integer)getValue();
                     if (value.intValue() == LayoutConstants.NOT_EXPLICITLY_DEFINED) {
@@ -701,6 +729,7 @@ public class RADVisualComponent extends RADComponent {
                     }
                 }
 
+                @Override
                 public void setAsText(String str) {
                     if (notExplicitelyDefined.equals(str)) {
                         setValue(new Integer(LayoutConstants.NOT_EXPLICITLY_DEFINED));
@@ -714,6 +743,7 @@ public class RADVisualComponent extends RADComponent {
             };
         }
 
+        @Override
         public boolean canWrite() {
             return !isReadOnly();
         }
@@ -776,18 +806,22 @@ public class RADVisualComponent extends RADComponent {
             return Boolean.valueOf((max != pref) && (max != LayoutConstants.USE_PREFERRED_SIZE));
         }
 
+        @Override
         public boolean supportsDefaultValue() {
             return true;
         }
         
+        @Override
         public void restoreDefaultValue() {
             setValue(Boolean.FALSE);
         }
         
+        @Override
         public boolean isDefaultValue() {
             return getValue().equals(Boolean.FALSE);
         }
 
+        @Override
         public boolean canWrite() {
             return !isReadOnly();
         }
