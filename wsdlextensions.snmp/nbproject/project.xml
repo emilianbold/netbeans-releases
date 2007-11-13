@@ -4,7 +4,6 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-suite-project/1">
             <name>snmp</name>
-			<code-name-base>org.netbeans.modules.wsdlextensions.snmp</code-name-base>
         </data>
     </configuration>
 </project>
