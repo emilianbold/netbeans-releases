@@ -82,14 +82,17 @@ public class FilteredTableModel extends AbstractTableModel {
         return model.getColumnCount();
     }
     
+    @Override
     public String getColumnName(int columnIndex) {
         return model.getColumnName(columnIndex);
     }
     
+    @Override
     public Class<?> getColumnClass(int columnIndex) {
         return model.getColumnClass(columnIndex);
     }
     
+    @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         // do nothing, editing not supported
         return false;
@@ -99,6 +102,7 @@ public class FilteredTableModel extends AbstractTableModel {
         return rows.get(rowIndex).get(columnIndex);
     }
     
+    @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         // do nothing, editing not supported
     }
@@ -131,7 +135,7 @@ public class FilteredTableModel extends AbstractTableModel {
     
     private boolean filter(String string) {
         //if the filter is empty then let it pass
-        if(filterString == null || "".equals(filterString)) {
+        if(filterString == null || "".equals(filterString)) { // NOI18N
             return true;
         }
         
