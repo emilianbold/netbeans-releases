@@ -51,8 +51,8 @@ import java.io.ObjectOutput;
 
 /**
  *
- * Test component for PersistenceHandlerTest.
- *
+ * Test component with persistence type PERSISTENCE_ALWAYS and it is singleton.
+ * 
  * @author  Marek Slama
  *
  */

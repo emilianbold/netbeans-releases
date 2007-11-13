@@ -41,66 +41,185 @@
 
 package org.netbeans.core.windows;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
+import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
+import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /** 
- * Test PersistenceHandler functionality.
+ * Test saving of TopComponent of different persistence type.
+ * TopComponent is saved according to persistence type and TC state opened/closed.
  * 
  * @author Marek Slama
  * 
  */
 public class TopComponentCreationTest extends NbTestCase {
 
+    private static boolean loaded = false;
+    
     public TopComponentCreationTest (String name) {
         super (name);
     }
     
     public static Test suite() {
-        TestSuite suite = new NbTestSuite(PersistenceHandlerTest.class);
+        TestSuite suite = new NbTestSuite(TopComponentCreationTest.class);
         
         return suite;
     }
-
+    
+    @Override
+    protected void setUp () throws Exception {
+        if (!loaded) {
+            //Load just once for all tests in this class
+            Lookup.getDefault().lookup(ModuleInfo.class);
+            PersistenceHandler.getDefault().load();
+            loaded = true;
+        }
+    }
+    
+    @Override
     protected boolean runInEQ () {
         return true;
     }
     
     /**
-     * Make sure that closed TCs are not deserialized during saving window system ie. also
-     * during IDE exit. Test creates test TC and overwrites method readExternal. This method
-     * should not be called.
+     * Test saving of TopComponent with persistence type
+     * TopComponent.PERSISTENCE_ALWAYS.
      */
-    public void testSaveWindowSystem () throws Exception {
-        Lookup.getDefault().lookup(ModuleInfo.class);
-        IDEInitializer.addLayers
-        (new String [] {"org/netbeans/core/windows/resources/layer-PersistenceHandlerTest.xml"});
+    public void testSavePersistentTopComponent () throws Exception {
+        WindowManager wm = WindowManager.getDefault();
         
-        //Verify that test layer was added to default filesystem
-        assertNotNull(Repository.getDefault().getDefaultFileSystem().findResource
-        ("Windows2/Modes/editor/component00.wstcref"));
+        Mode m = wm.findMode("explorer");
+        assertNotNull("Mode explorer must be present", m);
         
-        PersistenceHandler.getDefault().load();
-                
-        //Check that test TopComponent is not instantiated before
-        assertFalse
-        ("Closed TopComponent was instantiated before window system save but it should not.",
-         Component00.wasDeserialized());
+        TopComponent tc = Component00.getDefault();
+        m.dockInto(tc);
+        tc.open();
         
+        String res = "Windows2Local/Modes/explorer/"
+        + wm.findTopComponentID(tc) + ".wstcref";
+        //Check that persistent, opened TC is saved ie. wstcref file is created
         PersistenceHandler.getDefault().save();
+        //Check wstcref file was created
+        assertNotNull
+        (Repository.getDefault().getDefaultFileSystem().findResource(res));
+        deleteLocalData();
+        //Check wstcref file was deleted
+        assertNull
+        (Repository.getDefault().getDefaultFileSystem().findResource(res));
         
-        //Check if test TopComponent was instantiated
-        assertFalse
-        ("Closed TopComponent was instantiated during window system save but it should not.",
-         Component00.wasDeserialized());
+        //Check that persistent, closed TC is saved ie. wstcref file is created
+        tc.close();
+        PersistenceHandler.getDefault().save();        
+        //Check wstcref file was created
+        assertNotNull
+        (Repository.getDefault().getDefaultFileSystem().findResource(res));
+        deleteLocalData();
+        //Check wstcref file was deleted
+        assertNull
+        (Repository.getDefault().getDefaultFileSystem().findResource(res));
+    }
+    
+    /**
+     * Test saving of TopComponent with persistence type
+     * TopComponent.PERSISTENCE_ONLY_OPENED.
+     */
+    public void testSavePersistentOnlyOpenedTopComponent () throws Exception {
+        WindowManager wm = WindowManager.getDefault();
         
-        IDEInitializer.removeLayers();
+        Mode m = wm.findMode("explorer");
+        assertNotNull("Mode explorer must be present", m);
+        
+        TopComponent tc = new Component01();
+        m.dockInto(tc);
+        tc.open();
+        
+        String res = "Windows2Local/Modes/explorer/"
+        + wm.findTopComponentID(tc) + ".wstcref";
+        
+        //Check that persistent only opened, opened TC is saved ie. wstcref file is created
+        PersistenceHandler.getDefault().save();
+        //Check wstcref file was created
+        assertNotNull
+        (Repository.getDefault().getDefaultFileSystem().findResource(res));
+        deleteLocalData();
+        //Check wstcref file was deleted
+        assertNull
+        (Repository.getDefault().getDefaultFileSystem().findResource(res));
+        
+        //Check that persistent only opened, closed TC is NOT saved ie. wstcref file is NOT created
+        tc.close();
+        PersistenceHandler.getDefault().save();        
+        //Check wstcref file was not created
+        assertNull
+        (Repository.getDefault().getDefaultFileSystem().findResource(res));
+        deleteLocalData();
+    }
+    /**
+     * Test saving of TopComponent with persistence type
+     * TopComponent.PERSISTENCE_NEVER.
+     */
+    public void testSavePersistentNeverTopComponent () throws Exception {
+        WindowManager wm = WindowManager.getDefault();
+        
+        Mode m = wm.findMode("explorer");
+        assertNotNull("Mode explorer must be present", m);
+        
+        TopComponent tc = new Component02();
+        m.dockInto(tc);
+        tc.open();
+        
+        String res = "Windows2Local/Modes/explorer/"
+        + wm.findTopComponentID(tc) + ".wstcref";
+        
+        //Check that non persistent, opened TC is NOT saved ie. wstcref file is NOT created
+        PersistenceHandler.getDefault().save();
+        //Check wstcref file was not created
+        assertNull
+        (Repository.getDefault().getDefaultFileSystem().findResource(res));
+        deleteLocalData();
+        
+        //Check that non persistent, closed TC is NOT saved ie. wstcref file is NOT created
+        tc.close();
+        PersistenceHandler.getDefault().save();        
+        //Check wstcref file was not created
+        assertNull
+        (Repository.getDefault().getDefaultFileSystem().findResource(res));
+        deleteLocalData();
+    }
+    
+    /** 
+     * Clean folder Windows2Local with custom data created when winsys is saved.
+     */
+    private void deleteLocalData () {
+        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+        FileObject rootFolder = fs.getRoot().getFileObject( PersistenceManager.ROOT_LOCAL_FOLDER );
+        if (rootFolder != null) {
+            try {
+                for (FileObject fo : rootFolder.getChildren()) {
+                    if (PersistenceManager.COMPS_FOLDER.equals(fo.getName())) {
+                        continue; //do not delete settings files
+                    }
+                    fo.delete();
+                }
+            } catch (IOException exc) {
+                Logger.getLogger(this.getClass().getName()).log
+                (Level.INFO, "Cannot delete local data:", exc);
+            }
+        }
     }
     
 }
