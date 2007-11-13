@@ -38,7 +38,7 @@
 # made subject to such option by the copyright holder.
 
 
-SELECTION ( ["a"-"z" "A"-"Z" "0"-"9" "_" "$" "@" "&" ":" "!" "?" "="] )
+SELECTION ( [":" "$" "@" "&"]? ["a"-"z" "A"-"Z" "0"-"9" "_" ]* ["!" "?" "="]? )
 
 ######### grammar
 
