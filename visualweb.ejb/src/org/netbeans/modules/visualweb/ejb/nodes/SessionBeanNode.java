@@ -203,7 +203,7 @@ public class SessionBeanNode extends AbstractNode implements Node.Cookie {
     }
 
     public boolean canCut() {
-        return true;
+        return false;
     }
 
     public Transferable clipboardCopy() {

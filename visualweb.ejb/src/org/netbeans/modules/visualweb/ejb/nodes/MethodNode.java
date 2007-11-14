@@ -346,7 +346,7 @@ public class MethodNode extends AbstractNode implements Node.Cookie {
     }
 
     public boolean canCut() {
-        return isMethodDroppable();
+        return false;
     }
 
     private boolean isMethodDroppable() {
