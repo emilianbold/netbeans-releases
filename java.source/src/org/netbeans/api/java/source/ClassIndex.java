@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.classpath.GlobalSourcePath;
 import org.netbeans.modules.java.source.usages.ClassIndexFactory;
@@ -364,24 +365,31 @@ public final class ClassIndex {
     //Private methods
     
     
-    private synchronized void reset (final boolean source, final boolean deps) {
-        if (source) {            
-            for (ClassIndexImpl impl : sourceIndeces) {
-                impl.removeClassIndexImplListener(spiListener);
+    private  void reset (final boolean source, final boolean deps) {
+        ProjectManager.mutex().readAccess(new Runnable() {
+
+            public void run() {
+                synchronized (ClassIndex.this) {
+                    if (source) {            
+                        for (ClassIndexImpl impl : sourceIndeces) {
+                            impl.removeClassIndexImplListener(spiListener);
+                        }
+                        sourceIndeces.clear();
+                        oldSources.clear();
+                        createQueriesForRoots (sourcePath, true, sourceIndeces, oldSources);
+                    }
+                    if (deps) {
+                        for (ClassIndexImpl impl : depsIndeces) {
+                            impl.removeClassIndexImplListener(spiListener);
+                        }
+                        depsIndeces.clear();
+                        oldDeps.clear();
+                        createQueriesForRoots (bootPath, false, depsIndeces,  oldDeps);                
+                        createQueriesForRoots (classPath, false, depsIndeces, oldDeps);	    
+                    }
+                }
             }
-            this.sourceIndeces.clear();
-            this.oldSources.clear();
-            createQueriesForRoots (this.sourcePath, true, this.sourceIndeces, this.oldSources);
-        }
-        if (deps) {
-            for (ClassIndexImpl impl : depsIndeces) {
-                impl.removeClassIndexImplListener(spiListener);
-            }
-            this.depsIndeces.clear();
-            this.oldDeps.clear();
-            createQueriesForRoots (this.bootPath, false, this.depsIndeces,  this.oldDeps);                
-            createQueriesForRoots (this.classPath, false, this.depsIndeces, this.oldDeps);	    
-        }
+        } );        
     }
     
     private synchronized Iterable<? extends ClassIndexImpl> getQueries (final Set<SearchScope> scope) {        
