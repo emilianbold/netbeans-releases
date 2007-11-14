@@ -734,13 +734,6 @@ public class CommentsTest extends GeneratorTest {
             " * @author jp159440\n" +
             " */\n" +
             "public class Class1 extends ClassA{\n" +
-            "                \n" +
-            "    /**\n" +
-            "     * a\n" +
-            "     * @param x b\n" +
-            "     * @return c\n" +
-            "     * @throws java.io.IOException d\n" +
-            "     */\n" +
             "}\n" +
             "\n";
 
