@@ -148,8 +148,7 @@ public class AXIModelImpl extends AXIModel {
      * model was mutated inside a transaction. Else, true if the listeners have
      * accumulated events.
      */
-    @Override
-    protected synchronized boolean needsSync() {
+    protected boolean needsSync() {
         if(isForceSync)
             return true;
         if(!isAXIDocumentInitialized())
