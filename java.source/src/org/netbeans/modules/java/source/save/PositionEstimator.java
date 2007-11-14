@@ -1010,7 +1010,7 @@ public abstract class PositionEstimator {
                     sectionStart = seq.offset();
                     break;
                 } else if (JavaTokenId.BLOCK_COMMENT == token.id() || JavaTokenId.JAVADOC_COMMENT == token.id()) {
-                    break;
+                    continue;
                 } else if (JavaTokenId.WHITESPACE == token.id()) {
                     int indexOf = token.text().toString().indexOf('\n');
                     if (indexOf > -1) {
