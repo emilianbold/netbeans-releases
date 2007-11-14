@@ -54,6 +54,7 @@ import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.NbUtilities;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.railsprojects.ui.wizards.PanelOptionsVisual;
 import org.netbeans.modules.ruby.rubyproject.RakeTargetsAction;
 import org.netbeans.modules.ruby.rubyproject.execution.DirectoryFileLocator;
@@ -111,6 +112,14 @@ public class RailsProjectGenerator {
             boolean runThroughRuby = RubyInstallation.getInstance().getVersion("rails") != null; // NOI18N
             ExecutionDescriptor desc = null;
             String displayName = NbBundle.getMessage(RailsProjectGenerator.class, "GenerateRails");
+            
+            boolean modifyRunThroughRuby = Boolean.getBoolean("roman.checkfix");
+            if (modifyRunThroughRuby) {
+                FileObject rails = FileUtil.toFileObject(new File(RubyInstallation.getInstance().getRails()));
+                if (rails != null) {
+                    runThroughRuby = RubyUtils.isRubyFile(rails);
+                }
+            }
 
             String railsDbArg = null;
             if (database != null) {
