@@ -185,6 +185,7 @@ public class HgModuleConfig {
     }
 
     public Boolean isUserNameValid(String name) {
+        if (userName == null) getUserName();
         if (name.equals(userName)) return true;
         if (name.length() == 0) return true;
         return HgMail.isUserNameValid(name);
