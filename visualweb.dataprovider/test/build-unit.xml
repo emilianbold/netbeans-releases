@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="org.netbeans.modules.visualweb.dataprovider/test-unit" basedir="." default="all">
-    <property name="xtest.file_appserver.properties" location="${basedir}/unit/app_server_sun.properties"/>
+    <property name="xtest.file_appserver.properties" location="${basedir}/unit/as.properties"/>
     <property name="xtest.file_database.properties" location="${basedir}/unit/db_derby.properties"/>
     <loadproperties srcfile="${xtest.file_appserver.properties}" />
     <loadproperties srcfile="${xtest.file_database.properties}" />
