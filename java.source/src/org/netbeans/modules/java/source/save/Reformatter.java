@@ -762,11 +762,11 @@ public class Reformatter implements ReformatTask {
                 if (id == null)
                     break;
                 if (id == AT) {
-                    rollback(index, c, d);
-                    lastBlankLines = lbl;
-                    lastBlankLinesTokenIndex = lblti;
-                    lastBlankLinesDiff = lbld;
                     if (annotations.hasNext()) {
+                        rollback(index, c, d);
+                        lastBlankLines = lbl;
+                        lastBlankLinesTokenIndex = lblti;
+                        lastBlankLinesDiff = lbld;
                         if (isForVariable) {
                             scan(annotations.next(), p);
                         } else {
