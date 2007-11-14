@@ -177,11 +177,11 @@ public class PushAction extends AbstractAction {
                 if (toPrjName == null) {
                     HgUtils.outputMercurialTabInRed(
                                 NbBundle.getMessage(PushAction.class,
-                                "MSG_PUSH_TO_NONAME", pushPath)); // NOI18N
+                                "MSG_PUSH_TO_NONAME", bLocalPush? HgUtils.stripDoubleSlash(pushPath): pushPath)); // NOI18N
                 } else {
                     HgUtils.outputMercurialTabInRed(
                                 NbBundle.getMessage(PushAction.class,
-                                "MSG_PUSH_TO", toPrjName, pushPath)); // NOI18N
+                                "MSG_PUSH_TO", toPrjName, bLocalPush? HgUtils.stripDoubleSlash(pushPath): pushPath)); // NOI18N
                 }
                 HgUtils.outputMercurialTabInRed(
                             NbBundle.getMessage(PushAction.class,
@@ -191,7 +191,6 @@ public class PushAction extends AbstractAction {
                 boolean bConfirmMerge = false;
                 // Push does not do an Update of the target Working Dir
                 if(!bMergeNeeded){
-                    HgUtils.outputMercurialTab(""); // NOI18N
                     if (bNoChanges) {
                         return;
                     }
@@ -205,11 +204,11 @@ public class PushAction extends AbstractAction {
                         if (toPrjName != null) {
                             HgUtils.outputMercurialTabInRed(
                                         NbBundle.getMessage(PushAction.class,
-                                        "MSG_PUSH_UPDATE_DONE", toPrjName, pushPath)); // NOI18N
+                                        "MSG_PUSH_UPDATE_DONE", toPrjName, HgUtils.stripDoubleSlash(pushPath))); // NOI18N
                         } else {
                             HgUtils.outputMercurialTabInRed(
                                         NbBundle.getMessage(PushAction.class,
-                                        "MSG_PUSH_UPDATE_DONE_NONAME", pushPath)); // NOI18N
+                                        "MSG_PUSH_UPDATE_DONE_NONAME", HgUtils.stripDoubleSlash(pushPath))); // NOI18N
                         }
                         boolean bOutStandingUncommittedMerges = HgCommand.isMergeAbortUncommittedMsg(list.get(list.size() -1));
                         if (bOutStandingUncommittedMerges) {

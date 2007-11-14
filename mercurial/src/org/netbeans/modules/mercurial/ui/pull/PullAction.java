@@ -248,10 +248,10 @@ public class PullAction extends AbstractAction {
                 HgUtils.outputMercurialTab(list);
                 if (fromPrjName != null) {
                     HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
-                            PullAction.class, "MSG_PULL_FROM", fromPrjName, pullPath)); // NOI18N
+                            PullAction.class, "MSG_PULL_FROM", fromPrjName, HgUtils.stripDoubleSlash(pullPath))); // NOI18N
                 } else {
                     HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
-                            PullAction.class, "MSG_PULL_FROM_NONAME", pullPath)); // NOI18N
+                            PullAction.class, "MSG_PULL_FROM_NONAME", HgUtils.stripDoubleSlash(pullPath))); // NOI18N
                 }
                 HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
                         PullAction.class, "MSG_PULL_TO", toPrjName, root)); // NOI18N

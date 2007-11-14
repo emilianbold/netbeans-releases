@@ -49,6 +49,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -69,30 +70,30 @@ import org.netbeans.modules.mercurial.ui.status.SyncFileNode;
 import org.openide.util.NbBundle;
 
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataShadow;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.windows.OutputEvent;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
-import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.MissingResourceException;
 import java.util.logging.Level;
 import javax.swing.JOptionPane;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.openide.awt.HtmlBrowser;
+import org.openide.util.Utilities;
+import org.openide.windows.OutputListener;
 
 /**
  *
@@ -144,6 +145,18 @@ public class HgUtils {
     }
     
 
+    /**
+     * stripDoubleSlash - converts '\\' to '\' in path on Windows
+     *
+     * @param String path to convert
+     * @return String converted path
+     */
+    public static String stripDoubleSlash(String path){
+        if(Utilities.isWindows()){                       
+            return path.replace("\\\\", "\\");
+        }
+        return path;
+    }
     /**
      * isLocallyAdded - checks to see if this file has been Locally Added to Hg
      *
@@ -812,7 +825,7 @@ itor tabs #66700).
      /**
      * Print msg to Mercurial Output Tab
      *
-     * @param list to print out
+     * @param String msg to print out
      * 
      */
      public static void outputMercurialTab(String msg){
@@ -829,7 +842,7 @@ itor tabs #66700).
     /**
      * Print msg to Mercurial Output Tab in Red
      *
-     * @param list to print out
+     * @param String msg to print out
      * 
      */
      public static void outputMercurialTabInRed(String msg){
@@ -842,6 +855,38 @@ itor tabs #66700).
         out.println(msg);
         out.close();
     }
+
+    /**
+     * Print URL to Mercurial Output Tab as an active Hyperlink
+     *
+     * @param String sURL to print out
+     * 
+     */
+     public static void outputMercurialTabLink(final String sURL){
+         if (sURL == null) return;
+         
+         try {
+             InputOutput io = IOProvider.getDefault().getIO(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE, false);
+             io.select();
+             OutputWriter out = io.getOut();
+
+             OutputListener listener = new OutputListener() {
+                         public void outputLineAction(OutputEvent ev) {
+                             try {
+                                 HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(sURL));
+                             } catch (IOException ex) {
+                             // Ignore
+                             }
+                         }
+                         public void outputLineSelected(OutputEvent ev) {}
+                         public void outputLineCleared(OutputEvent ev) {}
+                     };
+             out.println(sURL, listener, true);
+             out.close();
+         } catch (IOException ex) {
+         // Ignore
+         }
+     }
 
     /**
      * Select and Clear Mercurial Output Tab

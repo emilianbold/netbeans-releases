@@ -64,6 +64,7 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Utilities;
 
 
 /**
@@ -170,6 +171,7 @@ public class HgCommand {
     private static final String HG_MERGE_MULTIPLE_HEADS_ERR = "abort: repo has "; // NOI18N
     private static final String HG_MERGE_UNCOMMITTED_ERR = "abort: outstanding uncommitted merges"; // NOI18N
 
+    private static final String HG_MERGE_UNAVAILABLE_ERR = "is not recognized as an internal or external command";
 
     private static final String HG_NO_CHANGES_ERR = "no changes found"; // NOI18N
     private final static String HG_CREATE_NEW_BRANCH_ERR = "abort: push creates new remote branches!"; // NOI18N
@@ -1942,13 +1944,16 @@ public class HgCommand {
     }
     
     public static boolean isMergeConflictMsg(String msg) {
-        String system = System.getProperty("os.name");                      // NOI18N)
-        if(msg.indexOf("Windows") > -1 || msg.indexOf("windows") > -1 ) {   // NOI18N)
+        if(Utilities.isWindows() ) {   
             return (msg.indexOf(HG_MERGE_CONFLICT_WIN1_ERR) > -1) &&        // NOI18N
                     (msg.indexOf(HG_MERGE_CONFLICT_WIN2_ERR) > -1);         // NOI18N
         }else{
             return msg.indexOf(HG_MERGE_CONFLICT_ERR) > -1;                 // NOI18N
         }       
+    }
+
+    public static boolean isMergeUnavailableMsg(String msg) {
+        return msg.indexOf(HG_MERGE_UNAVAILABLE_ERR) > -1;                 // NOI18N
     }
 
     public static boolean isMergeAbortMultipleHeadsMsg(String msg) {

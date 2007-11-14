@@ -55,6 +55,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.mercurial.HgProgressSupport;
+import org.openide.util.Utilities;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -85,8 +86,8 @@ public class MergeAction extends AbstractAction {
         final File root = HgUtils.getRootFile(context);
         if(root != null && !HgCommand.isMergeRequired(root)){
             JOptionPane.showMessageDialog(null,
-                NbBundle.getMessage(MergeAction.class,"MSG_NOTHING_TO_MERGE"),
-                NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE"),
+                NbBundle.getMessage(MergeAction.class,"MSG_NOTHING_TO_MERGE"),// NOI18N
+                NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE"),// NOI18N
                 JOptionPane.INFORMATION_MESSAGE);
             return;
         }
@@ -143,8 +144,8 @@ public class MergeAction extends AbstractAction {
                     HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class,
                             "MSG_MERGE_FAILED")); // NOI18N
                     JOptionPane.showMessageDialog(null,
-                        NbBundle.getMessage(MergeAction.class,"MSG_MERGE_UNCOMMITTED"),
-                        NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE"),
+                        NbBundle.getMessage(MergeAction.class,"MSG_MERGE_UNCOMMITTED"), // NOI18N
+                        NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE"), // NOI18N
                         JOptionPane.WARNING_MESSAGE);
                     break;
                 }            
@@ -157,10 +158,30 @@ public class MergeAction extends AbstractAction {
                 }
                 if (HgCommand.isMergeConflictMsg(line)) {
                     bConflicts = true;
-                    String filepath = line.substring(HgCommand.HG_MERGE_CONFLICT_ERR.length());
+                    String filepath = null;
+                    if(Utilities.isWindows()){
+                        filepath = line.substring(
+                            HgCommand.HG_MERGE_CONFLICT_WIN1_ERR.length(),
+                            line.length() - HgCommand.HG_MERGE_CONFLICT_WIN2_ERR.length()
+                            ).trim().replace("/", "\\"); // NOI18N
+                        filepath = root.getAbsolutePath() + File.separator + filepath;
+                    }else{
+                        filepath = line.substring(HgCommand.HG_MERGE_CONFLICT_ERR.length());
+                    }
                     HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_CONFLICT", filepath)); // NOI18N
                     HgCommand.createConflictFile(filepath);
                 }
+                
+                if (HgCommand.isMergeUnavailableMsg(line)){ 
+                        JOptionPane.showMessageDialog(null, 
+                                NbBundle.getMessage(MergeAction.class, "MSG_MERGE_UNAVAILABLE"), // NOI18N
+                                NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE"), // NOI18N
+                                JOptionPane.WARNING_MESSAGE);
+                        HgUtils.outputMercurialTabInRed(
+                                NbBundle.getMessage(MergeAction.class, "MSG_MERGE_INFO"));// NOI18N            
+                        HgUtils.outputMercurialTabLink(
+                                NbBundle.getMessage(MergeAction.class, "MSG_MERGE_INFO_URL")); // NOI18N 
+                }            
             }
                   
             if (bConflicts) {
