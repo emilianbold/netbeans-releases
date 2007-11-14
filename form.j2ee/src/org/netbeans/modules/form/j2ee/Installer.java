@@ -86,7 +86,7 @@ public class Installer extends ModuleInstall {
             };
             CreationFactory.registerDescriptor(cd);
         }
-        cd.addCreator(new QueryResultListCreator(), new Object[] {null, false});
+        cd.addCreator(new QueryResultListCreator(), new Object[] {null, false, false});
     }
     
 }

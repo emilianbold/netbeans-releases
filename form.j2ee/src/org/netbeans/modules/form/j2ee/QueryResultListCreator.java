@@ -56,11 +56,11 @@ import org.netbeans.modules.form.codestructure.CodeExpressionOrigin;
  */
 class QueryResultListCreator implements CreationDescriptor.Creator {
     /** Parameter types. */
-    private Class[] paramTypes = new Class[] {String.class, boolean.class};
+    private Class[] paramTypes = new Class[] {String.class, boolean.class, boolean.class};
     /** Exception types. */
     private Class[] exTypes = new Class[0];
     /** Property names. */
-    private String[] propNames = new String[] {"query", "observable"}; // NOI18N
+    private String[] propNames = new String[] {"query", "observable", "modifiableWrapper"}; // NOI18N
     
     /**
      * Returns number of parameters of the creator.
@@ -68,7 +68,7 @@ class QueryResultListCreator implements CreationDescriptor.Creator {
      * @return number of parameters of the creator.
      */
     public int getParameterCount() {
-        return 2;
+        return propNames.length;
     }
     
     /**
@@ -126,10 +126,11 @@ class QueryResultListCreator implements CreationDescriptor.Creator {
      * @return creation code that reflects values of the given properties.
      */
     public String getJavaCreationCode(FormProperty[] props, Class expressionType, String genericTypes) {
-        assert (props.length == 2);
+        assert (props.length == propNames.length);
         
         String query = null;
         Object observableValue = null;
+        Object modifiableValue = null;
         for (int i=0; i<props.length; i++) {
             String propName = props[i].getName();
             if (propNames[0].equals(propName)) {
@@ -137,6 +138,12 @@ class QueryResultListCreator implements CreationDescriptor.Creator {
             } else if (propNames[1].equals(propName)) {
                 try {
                     observableValue = props[i].getRealValue();
+                } catch (Exception ex) {
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
+                }
+            } else if (propNames[2].equals(propName)) {
+                try {
+                    modifiableValue = props[i].getRealValue();
                 } catch (Exception ex) {
                     Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
@@ -150,12 +157,19 @@ class QueryResultListCreator implements CreationDescriptor.Creator {
         if (observable) {
             sb.append("org.jdesktop.observablecollections.ObservableCollections.observableList("); // NOI18N
         }
+        boolean modifiable = Boolean.TRUE.equals(modifiableValue);
+        if (modifiable) {
+            sb.append("new java.util.LinkedList("); // NOI18N
+        }
         if ("null".equals("" + query)) { // NOI18N
             sb.append("((javax.persistence.Query)null)");  // NOI18N
         } else {
             sb.append(query);
         }
         sb.append(".getResultList()"); // NOI18N
+        if (modifiable) {
+            sb.append(')');
+        }
         if (observable) {
             sb.append(')');
         }

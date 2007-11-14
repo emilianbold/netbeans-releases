@@ -111,6 +111,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
             expertProps.clear();
             try {
                 prefProps.add(new QueryBeanProperty(metacomp, true));
+                expertProps.add(new ModifiableWrapperProperty(metacomp));
                 expertProps.add(new ObservableProperty(metacomp));
             } catch (Exception ex) {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
@@ -500,6 +501,45 @@ public class J2EEPropertyModifier implements PropertyModifier {
             super(comp, new FakePropertyDescriptor("observable", boolean.class)); // NOI18N
             setAccessType(DETACHED_READ | DETACHED_WRITE);
             setShortDescription(NbBundle.getMessage(ObservableProperty.class, "HINT_ObservableProperty")); // NOI18N
+        }
+
+        /**
+         * Determines whether the property supports default value or not.
+         *
+         * @return <code>true</code> if the property supports default value,
+         * returns <code>false</code> otherwise.
+         */
+        @Override
+        public boolean supportsDefaultValue() {
+            return true;
+        }
+
+        /**
+         * Returns the default value of the property.
+         *
+         * @return the default value of the property.
+         */
+        @Override
+        public Object getDefaultValue() {
+            return Boolean.FALSE;
+        }
+
+    }
+
+    /**
+     * Modifiable wrapper property of query result list.
+     */
+    static class ModifiableWrapperProperty extends RADProperty {
+        
+        /**
+         * Creates <code>ModifiableWrapperProperty</code> for the given component.
+         *
+         * @param comp component representing query result list.
+         */
+        ModifiableWrapperProperty(RADComponent comp) throws IntrospectionException {
+            super(comp, new FakePropertyDescriptor("modifiableWrapper", boolean.class)); // NOI18N
+            setAccessType(DETACHED_READ | DETACHED_WRITE);
+            setShortDescription(NbBundle.getMessage(ModifiableWrapperProperty.class, "HINT_ModifiableWrapper")); // NOI18N
         }
 
         /**
