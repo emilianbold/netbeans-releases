@@ -199,13 +199,13 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
                 //find most embedded token sequence on the specified offset
                 while(true) {
                     sequence.move (offset - 1);
-                    sequence.moveNext ();
+                    if (!sequence.moveNext ()) break;
                     TokenSequence embedded = sequence.embedded ();
                     if (embedded == null) break;
                     sequence = embedded;
                 }
                 Token token = sequence.token ();
-                String tokenType = token.id ().name ();
+                String tokenType = token != null ? token.id ().name () : ""; // NOI18N
                 String mimeType = sequence.language ().mimeType ();
                 Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
                 List<Feature> features = l.getFeatures (CompletionProviderImpl.COMPLETION, tokenType);
@@ -332,7 +332,9 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
                 //find most embedded token sequence on the specified offset
                 while(true) {
                     sequence.move (offset - 1);
-                    sequence.moveNext ();
+                    if (!sequence.moveNext()) {
+                        return ""; // NOI18N
+                    }
                     TokenSequence embedded = sequence.embedded ();
                     if (embedded == null) break;
                     sequence = embedded;
