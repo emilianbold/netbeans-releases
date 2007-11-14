@@ -186,6 +186,9 @@ public class AutoupdateCheckScheduler {
                 UpdateUnit unit = element.getUpdateUnit ();
                 if (oc.canBeAdded (unit, element)) {
                     OperationInfo<InstallSupport> operationInfo = oc.add (element);
+                    if (operationInfo == null) {
+                        continue;
+                    }
                     oc.add (operationInfo.getRequiredElements ());
                     Collection<String> brokenDeps = new HashSet<String> ();
                     for (OperationInfo<InstallSupport> info : oc.listAll ()) {
