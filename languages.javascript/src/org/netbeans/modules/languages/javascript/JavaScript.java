@@ -205,11 +205,11 @@ public class JavaScript {
         ListIterator<ASTItem> it = path.listIterator ();
         while (it.hasNext ()) {
             ASTItem item = it.next ();
-            if ((item instanceof ASTNode) &&
-                ((ASTNode) item).getNT ().equals ("FunctionDeclaration")
-            )
+            if ((item instanceof ASTNode) && ((ASTNode) item).getNT ().equals ("FunctionDeclaration") &&
+                ((ASTNode) item).getNode ("FunctionName") == null) {
                 return null;
-        }
+            }
+        } // while
         return ((ASTNode) path.getLeaf ()).getNode ("VariableName").getAsText ();
     }
     
@@ -272,18 +272,21 @@ public class JavaScript {
             ASTItem item = it.next ();
             if (!(item instanceof ASTNode)) continue;
             ASTNode n = (ASTNode) item;
-            if (n.getNT ().equals ("ObjectLiteral"))
+            if (n.getNT ().equals ("ObjectLiteral")) {
                 return null;
-            if (n.getNT ().equals ("FunctionDeclaration") &&
-                n != path.getLeaf ()
-            )
+            }
+            if (n.getNT ().equals ("FunctionDeclaration") && n != path.getLeaf () &&
+                    n.getNode ("FunctionName") == null) {
                 return null;
-        }
+            }
+        } // while
         
         ASTNode node = (ASTNode) path.getLeaf ();
         String name = null;
         ASTNode nameNode = node.getNode ("FunctionName");
-        if (nameNode == null) return null;
+        if (nameNode == null) {
+            return null;
+        }
         name = nameNode.getAsText ();
         ASTNode parametersNode = node.getNode ("FormalParameterList");
         return name + " (" + getParametersAsText (parametersNode) + ")";

@@ -459,7 +459,7 @@ class LanguagesNavigatorModel implements TreeModel {
             Iterator<ASTItem> it = item.getChildren ().iterator ();
             while (it.hasNext ()) {
                 if (model != null && model.cancel ()) {
-                    System.out.println("cancelled");
+                    //S ystem.out.println("cancelled");
                     return;
                 }
                 ASTItem item2 = it.next ();
@@ -496,7 +496,7 @@ class LanguagesNavigatorModel implements TreeModel {
             String icon = (String) navigator.getValue ("icon", context);
             if (icon == null)
                 icon = "org/netbeans/modules/languages/resources/node.gif";
-            boolean isLeaf = navigator.getBoolean ("tooltip", context, false);
+            boolean isLeaf = navigator.getBoolean ("isLeaf", context, false);
             return new ASTNavigatorNode (
                 document,
                 item,

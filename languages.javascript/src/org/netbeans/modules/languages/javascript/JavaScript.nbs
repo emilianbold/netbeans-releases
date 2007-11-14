@@ -370,7 +370,6 @@ BRACE "[:]"
 NAVIGATOR:FunctionDeclaration: {
     display_name: org.netbeans.modules.languages.javascript.JavaScript.functionName;
     icon: "/org/netbeans/modules/languages/resources/method.gif";
-    isLeaf: "true";
 }
 
 NAVIGATOR:VariableDeclaration: {
