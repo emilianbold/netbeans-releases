@@ -102,7 +102,10 @@ public class StreamInputThread extends Thread {
                 
                 }
         } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+            // if we are getting a java.io.IOException: Broken pipe
+            // this is most likely caused while shutting down the InputOutput tab.
+            // therefore we ignore this for now.
+            // Exceptions.printStackTrace(ioe);
         }
     }
 }
