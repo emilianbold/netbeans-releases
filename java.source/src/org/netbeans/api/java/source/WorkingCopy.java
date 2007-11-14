@@ -384,7 +384,7 @@ public class WorkingCopy extends CompilationController {
                 fillImports = false;
             }
 
-            diffs.addAll(new CasualDiff().diff(getContext(), this, path, (JCTree) brandNew, userInfo));
+            diffs.addAll(CasualDiff.diff(getContext(), this, path, (JCTree) brandNew, userInfo));
         }
         
         if (fillImports) {

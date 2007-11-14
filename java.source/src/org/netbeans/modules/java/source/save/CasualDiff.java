@@ -90,10 +90,6 @@ public class CasualDiff {
     // such variable should not provide new line at the end.
     private boolean parameterPrint = false;
     
-    /** provided for test only */
-    public CasualDiff() {
-    }
-
     protected CasualDiff(Context context, WorkingCopy workingCopy) {
         diffs = new ListBuffer<Diff>();
         comments = CommentHandlerService.instance(context);
