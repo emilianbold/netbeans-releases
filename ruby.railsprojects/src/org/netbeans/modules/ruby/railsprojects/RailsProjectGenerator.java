@@ -109,17 +109,11 @@ public class RailsProjectGenerator {
         
         // Run Rails to generate the appliation skeleton
         if (create) {
-            boolean runThroughRuby = RubyInstallation.getInstance().getVersion("rails") != null; // NOI18N
+            FileObject rails = FileUtil.toFileObject(new File(RubyInstallation.getInstance().getRails()));
+            boolean runThroughRuby = rails != null ? RubyUtils.isRubyFile(rails) : false;
+
             ExecutionDescriptor desc = null;
             String displayName = NbBundle.getMessage(RailsProjectGenerator.class, "GenerateRails");
-            
-            boolean modifyRunThroughRuby = Boolean.getBoolean("roman.checkfix");
-            if (modifyRunThroughRuby) {
-                FileObject rails = FileUtil.toFileObject(new File(RubyInstallation.getInstance().getRails()));
-                if (rails != null) {
-                    runThroughRuby = RubyUtils.isRubyFile(rails);
-                }
-            }
 
             String railsDbArg = null;
             if (database != null) {

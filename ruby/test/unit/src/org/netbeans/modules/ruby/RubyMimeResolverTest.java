@@ -78,6 +78,8 @@ public class RubyMimeResolverTest extends TestCase {
         assertTrue(!checkValidHeader("#! /usr/b\nin/ruby"));
         assertTrue(!checkValidHeader("#/usr/bin/ruby"));
         assertTrue(!checkValidHeader("# !C:\\programs\\ruby.foo"));
+        assertTrue(checkValidHeader("#!/usr/bin/ruby"));
+        assertTrue(checkValidHeader("#!/Users/tor/dev/ruby/install/ruby-1.8.5/bin/ruby\n"));
 
         assertTrue(checkValidHeader("#!/usr/bin/env ruby"));
         assertTrue(checkValidHeader("#!/usr/bin/env jruby"));
