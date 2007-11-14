@@ -115,7 +115,9 @@ public class LanguagesNavigator implements NavigatorPanel {
             ToolTipManager.sharedInstance ().registerComponent (tree);
             tree.setRootVisible (false);
             tree.setShowsRootHandles (true);
-            tree.addMouseListener (new Listener ());
+            Listener listener = new Listener ();
+            tree.addMouseListener(listener);
+            tree.addKeyListener(listener);
             tree.setToggleClickCount(Integer.MAX_VALUE); // [PENDING]
             tree.setModel (new LanguagesNavigatorModel ());
             tree.setCellRenderer (new Renderer ());
@@ -327,14 +329,15 @@ public class LanguagesNavigator implements NavigatorPanel {
         }
 
         public void keyTyped(KeyEvent e) {
+        }
+
+        public void keyPressed(KeyEvent e) {
+            if (e.getKeyCode() != 10) return; // ENTER pressed?
             TreePath path = tree.getSelectionPath();
             if (path == null) return;
             Object node = path.getLastPathComponent ();
             LanguagesNavigatorModel model = (LanguagesNavigatorModel) tree.getModel ();
             model.show (node);
-        }
-
-        public void keyPressed(KeyEvent e) {
         }
 
         public void keyReleased(KeyEvent e) {
