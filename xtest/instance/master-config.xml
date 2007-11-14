@@ -143,7 +143,10 @@ made subject to such option by the copyright holder.
         <module name="openide/execution" testtypes="unit" attributes="stable"/>
         <module name="core/execution" testtypes="unit" attributes="stable"/>
         
-        
+         <!-- Visual Web team -->
+        <module name="visualweb/designer" testtypes="unit" attributes="stable"/>
+
+
         <module name="ide/launcher/upgrade" testtypes="unit" attributes="stable" />
         <module name="apisupport/project" testtypes ="unit" attributes="stable"/>
         <module name="apisupport/samples/feedreader-sample-ui" testtypes ="unit" attributes="stable"/>
