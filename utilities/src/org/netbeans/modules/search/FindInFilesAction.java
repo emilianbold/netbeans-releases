@@ -44,6 +44,7 @@ package org.netbeans.modules.search;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.ref.Reference;
@@ -64,7 +65,6 @@ import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
-import org.openide.util.actions.SystemAction;
 import org.openidex.search.SearchType;
 import static java.util.logging.Level.FINER;
 
@@ -508,13 +508,21 @@ public class FindInFilesAction extends CallableSystemAction
 
             synchronized (getLock()) {
                 if (support != null) {
-                    final boolean wasEnabled = enabled;
-                    final boolean newEnabled = searchScopeRegistry.hasApplicableSearchScope();
-                    enabled = newEnabled;
+
+                    boolean wasEnabled = enabled;
+                    enabled = searchScopeRegistry.hasApplicableSearchScope();
+
+                    /* notify the listeners: */
+                    final PropertyChangeEvent newEvent
+                            = new PropertyChangeEvent(this, PROP_ENABLED,
+                                                      wasEnabled, enabled);
+                    final PropertyChangeListener[] listeners
+                            = support.getPropertyChangeListeners();
                     Mutex.EVENT.writeAccess(new Runnable() {
                         public void run() {
-                            support.firePropertyChange(SystemAction.PROP_ENABLED,
-                                                       wasEnabled, newEnabled);
+                            for (PropertyChangeListener l : listeners) {
+                                l.propertyChange(newEvent);
+                            }
                         }
                     });
                 }
