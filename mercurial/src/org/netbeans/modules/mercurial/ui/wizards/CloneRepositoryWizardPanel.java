@@ -280,13 +280,15 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
                     HttpURLConnection con = (HttpURLConnection) url.openConnection();
                     // Note: valid repository returns con.getContentLength() = -1
                     // so no way to reliably test if this url exists, without using hg
-                    if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                        invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class,
-                               "MSG_Progress_Clone_CannotAccess_Err");
+                    if (con != null){
+                        if (con.getResponseCode() != HttpURLConnection.HTTP_OK){
+                            invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class,
+                                    "MSG_Progress_Clone_CannotAccess_Err");
+                            con.disconnect();
+                            return;
+                        }
                         con.disconnect();
-                        return;
-                     }
-                     con.disconnect();
+                    }
                  }
             } catch (java.lang.IllegalArgumentException ex) {
                  invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class,

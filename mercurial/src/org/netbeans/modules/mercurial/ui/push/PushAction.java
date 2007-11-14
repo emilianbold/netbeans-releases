@@ -193,10 +193,6 @@ public class PushAction extends AbstractAction {
                 if(!bMergeNeeded){
                     HgUtils.outputMercurialTab(""); // NOI18N
                     if (bNoChanges) {
-                        HgUtils.outputMercurialTabInRed(
-                                NbBundle.getMessage(PushAction.class,
-                                "MSG_PUSH_DONE")); // NOI18N
-                        HgUtils.outputMercurialTab(""); // NOI18N
                         return;
                     }
                     if (!bLocalPush) {

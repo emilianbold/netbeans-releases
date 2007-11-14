@@ -40,10 +40,12 @@
  */
 package org.netbeans.modules.mercurial.ui.clone;
 
+import java.io.IOException;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.FileWriter;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -62,6 +64,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  * Clone action for mercurial: 
@@ -201,6 +204,29 @@ public class CloneAction extends AbstractAction {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
                 }finally {
+                    //#121581: Work around for ini4j bug on Windows not handling single '\' correctly
+                    // hg clone creates the default hgrc, we just overwrite it's contents with 
+                    // default path contianing '\\'
+                    if(isLocalClone && Utilities.isWindows()){                       
+                        File f = new File(cloneFolder.getAbsolutePath() + File.separator + ".hg", "hgrc");
+                        if(f.isFile() && f.canWrite()){
+                            FileWriter fw = null;
+                            try {
+                                fw = new FileWriter(f);
+                                fw.write("[paths]\n");
+                                fw.write("default = " + source.replace("\\", "\\\\") + "\n");
+                            } catch (IOException ex) {
+                                // Ignore
+                            } finally {
+                                try {
+                                    fw.close();
+                                } catch (IOException ex) {
+                                    // Ignore
+                                }
+                            }
+                        }
+                    }
+
                     HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
                     HgUtils.outputMercurialTab(""); // NOI18N
                 }
