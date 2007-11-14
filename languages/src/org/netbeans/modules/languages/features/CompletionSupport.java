@@ -43,7 +43,6 @@ package org.netbeans.modules.languages.features;
 
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -233,7 +232,7 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
         } catch (BadLocationException ex) {
             ErrorManager.getDefault ().notify (ex);
         } catch (LanguageDefinitionNotFoundException ex) {
-            ErrorManager.getDefault ().notify (ex);
+            // ignore the exception
         }
         Completion.get ().hideAll ();
     }

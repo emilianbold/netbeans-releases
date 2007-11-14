@@ -45,6 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -111,6 +112,9 @@ public class BraceCompletionDeleteAction extends ExtDeleteCharAction {
                     return;
                 }
             }
+        } catch (LanguageDefinitionNotFoundException ex) {
+            // ignore the exception
+            super.charBackspaced (doc, dotPos, caret, ch);
         } catch (ParseException ex) {
             ErrorManager.getDefault ().notify (ex);
         }
