@@ -81,6 +81,7 @@ public class CommentsTest extends GeneratorTest {
 //        suite.addTest(new CommentsTest("testCopyDoc100829_2"));
 //        suite.addTest(new CommentsTest("testCopyDoc100829_3"));
 //        suite.addTest(new CommentsTest("testCopyDoc100829_4"));
+//        suite.addTest(new CommentsTest("testRemoveMethodWithComment"));
         return suite;
     }
 
@@ -676,7 +677,91 @@ public class CommentsTest extends GeneratorTest {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
+    /**
+     * http://www.netbeans.org/issues/show_bug.cgi?id=121898
+     */
+    public void testRemoveMethodWithComment() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "\n" +
+            "\n" +
+            "/*\n" +
+            " * To change this template, choose Tools | Templates\n" +
+            " * and open the template in the editor.\n" +
+            " */\n" +
+            "\n" +
+            "package javaapplication11;\n" +
+            "\n" +
+            "import java.io.IOException;\n" +
+            "\n" +
+            "/**\n" +
+            " *\n" +
+            " * @author jp159440\n" +
+            " */\n" +
+            "public class Class1 extends ClassA{\n" +
+            "                \n" +
+            "    /**\n" +
+            "     * a\n" +
+            "     * @param x b\n" +
+            "     * @return c\n" +
+            "     * @throws java.io.IOException d\n" +
+            "     */\n" +
+            "    public int method(int x) throws IOException {\n" +
+            "        \n" +
+            "        return 1;        \n" +
+            "    }\n" +
+            "\n" +
+            "    \n" +
+            "    \n" +
+            "}\n" +
+            "\n"
+            );
+        String golden =
+            "\n" +
+            "\n" +
+            "/*\n" +
+            " * To change this template, choose Tools | Templates\n" +
+            " * and open the template in the editor.\n" +
+            " */\n" +
+            "\n" +
+            "package javaapplication11;\n" +
+            "\n" +
+            "import java.io.IOException;\n" +
+            "\n" +
+            "/**\n" +
+            " *\n" +
+            " * @author jp159440\n" +
+            " */\n" +
+            "public class Class1 extends ClassA{\n" +
+            "                \n" +
+            "    /**\n" +
+            "     * a\n" +
+            "     * @param x b\n" +
+            "     * @return c\n" +
+            "     * @throws java.io.IOException d\n" +
+            "     */\n" +
+            "}\n" +
+            "\n";
+
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                workingCopy.rewrite(clazz, make.removeClassMember(clazz, 1));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
     String getGoldenPckg() {
         return "";
     }
