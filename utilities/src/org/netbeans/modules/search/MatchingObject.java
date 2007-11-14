@@ -60,6 +60,8 @@ import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.openide.filesystems.FileLock;
@@ -67,6 +69,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+import static java.util.logging.Level.FINER;
+import static java.util.logging.Level.FINEST;
+import static java.util.logging.Level.SEVERE;
 
 /**
  * Data structure holding a reference to the found object and information
@@ -77,6 +82,8 @@ import org.openide.util.NbBundle;
  */
 final class MatchingObject implements PropertyChangeListener {
     
+    /** */
+    private final Logger LOG = Logger.getLogger(getClass().getName());
     /** */
     private final ResultModel resultModel;
     /** */
@@ -556,17 +563,28 @@ final class MatchingObject implements PropertyChangeListener {
      * @author  Marian Petras
      */
     private InvalidityStatus getInvalidityStatus() {
+        log(FINER, "getInvalidityStatus()");                            //NOI18N
         File f = getFile();
         if (!f.exists()) {
+            log(FINEST, " - DELETED");
             return InvalidityStatus.DELETED;
         }
         
         if (f.isDirectory()) {
+            log(FINEST, " - BECAME_DIR");
             return InvalidityStatus.BECAME_DIR;
         }
         
         long stamp = f.lastModified();
         if (stamp > resultModel.getCreationTime()) {
+            log(SEVERE, "file's timestamp changed since start of the search");
+            if (LOG.isLoggable(FINEST)) {
+                final java.util.Calendar cal = java.util.Calendar.getInstance();
+                cal.setTimeInMillis(stamp);
+                log(FINEST, " - file stamp:           " + stamp + " (" + cal.getTime() + ')');
+                cal.setTimeInMillis(resultModel.getCreationTime());
+                log(FINEST, " - result model created: " + resultModel.getCreationTime() + " (" + cal.getTime() + ')');
+            }
             return InvalidityStatus.CHANGED;
         }
         
@@ -645,6 +663,11 @@ final class MatchingObject implements PropertyChangeListener {
                                                           lineEndOffset)
                                       : content.substring(currLineOffset);
                     if (!fileLine.equals(textDetail.getLineText())) {
+                        log(SEVERE, "file line differs from the expected line");
+                        if (LOG.isLoggable(FINEST)) {
+                            log(SEVERE, " - expected line: \"" + textDetail.getLineText() + '"');
+                            log(SEVERE, " - file line:     \"" + fileLine + '"');
+                        }
                         return InvalidityStatus.CHANGED;
                     }
                 }
@@ -658,6 +681,17 @@ final class MatchingObject implements PropertyChangeListener {
                 .equals(textDetail.getLineText().substring(
                                 textDetail.getColumn() - 1,
                                 textDetail.getColumn() - 1 + matchLength))) {
+                log(SEVERE, "file match part differs from the expected match");
+                if (LOG.isLoggable(FINEST)) {
+                    log(SEVERE, " - expected line: \""
+                                + textDetail.getLineText().substring(
+                                        textDetail.getColumn() - 1,
+                                        textDetail.getColumn() - 1 + matchLength)
+                                + '"');
+                    log(SEVERE, " - file line:     \""
+                                + content.substring(matchOffset, matchEndOffset)
+                                + '"');
+                }
                 return InvalidityStatus.CHANGED;
             }
             
@@ -762,6 +796,18 @@ final class MatchingObject implements PropertyChangeListener {
 	}
 	out.flip();
 	return out;
+    }
+
+    /**
+     *
+     */
+    private void log(Level logLevel, String msg) {
+        String id = (object instanceof DataObject)
+                    ? ((DataObject) object).getName()
+                    : object.toString();
+        if (LOG.isLoggable(logLevel)) {
+            LOG.log(logLevel, id + ": " + msg);                         //NO1I8N:w
+        }
     }
     
     /** Returns name of this node.
