@@ -103,6 +103,10 @@ public class PropertiesAction extends AbstractAction {
         panel.putClientProperty("DialogDescriptor", dd); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.pack();
+        panel.btnRemove.setVisible(false);
+        org.openide.awt.Mnemonics.setLocalizedText(panel.btnAdd, org.openide.util.NbBundle.getMessage(PropertiesAction.class, "CTL_Properties_Action_Modify"));
+        panel.btnAdd.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PropertiesAction.class, "ACSN_Properties_Action_Modify")); // NOI18N
+        panel.btnAdd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesAction.class, "ACSD_Properties_Action_Modify")); 
         dialog.setVisible(true);
         if (dd.getValue() == okButton) {
             hgProperties.setProperties();
