@@ -112,9 +112,27 @@ public class DataProviderDesignInfoWriter extends java.io.PrintWriter {
         println( "        } else {" );
         println( "            ctxs = new DesignContext[0];" );
         println( "         }" );
-        println( "        DesignContext[] contexts = new DesignContext[ctxs.length + 1];" );
-        println( "        contexts[0] = designBean.getDesignContext();" );
-        println( "        System.arraycopy(ctxs, 0, contexts, 1, ctxs.length);" );
+        
+        // fix duplicate beans in customizer when dropping DataProvider onto a Session/Request/Application bean
+        println( "" );
+        println( "        boolean duplicate = false;");
+        println( "        DesignContext currentDesignContext = designBean.getDesignContext();");
+        println( "        for ( int i = 0; i < ctxs.length; i++) {");
+        println( "            if (ctxs[i] == currentDesignContext) {");
+        println( "                duplicate = true;");
+        println( "                break;");
+        println( "            }");
+        println( "        }");
+        println( "        DesignContext[] contexts;");
+        println( "        if (duplicate) {");
+        println( "            contexts = ctxs;");
+        println( "        }else {");
+        println( "            contexts = new DesignContext[ctxs.length + 1];" );
+        println( "            contexts[0] = designBean.getDesignContext();" );
+        println( "            System.arraycopy(ctxs, 0, contexts, 1, ctxs.length);" );
+        println( "        }");
+        println( "" );
+        
         println( "        for( int i = 0; i < contexts.length; i ++ ) {" );
         println( "            DesignBean[] beans = contexts[i].getBeansOfType( " + clientWrapperName + ".class );" );
         println( "            for( int bi = 0; bi < beans.length; bi ++ ) {" );

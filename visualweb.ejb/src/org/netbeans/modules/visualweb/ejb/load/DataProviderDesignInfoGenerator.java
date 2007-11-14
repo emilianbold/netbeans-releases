@@ -171,9 +171,27 @@ public class DataProviderDesignInfoGenerator {
             out.println( "        } else {" );
             out.println( "            ctxs = new DesignContext[0];" );
             out.println( "        }" );
-            out.println( "        DesignContext[] contexts = new DesignContext[ctxs.length + 1];" );
-            out.println( "        contexts[0] = designBean.getDesignContext();" );
-            out.println( "        System.arraycopy(ctxs, 0, contexts, 1, ctxs.length);" );
+            
+            // fix duplicate beans in customizer when dropping DataProvider onto a Session/Request/Application bean
+            out.println("");
+            out.println("        boolean duplicate = false;");
+            out.println("        DesignContext currentDesignContext = designBean.getDesignContext();");
+            out.println("        for ( int i = 0; i < ctxs.length; i++) {");
+            out.println("            if (ctxs[i] == currentDesignContext) {");
+            out.println("                duplicate = true;");
+            out.println("                break;");
+            out.println("            }");
+            out.println("        }");
+            out.println("        DesignContext[] contexts;");
+            out.println("        if (duplicate) {");
+            out.println("            contexts = ctxs;");
+            out.println("        }else {");
+            out.println("            contexts = new DesignContext[ctxs.length + 1];");
+            out.println("            contexts[0] = designBean.getDesignContext();");
+            out.println("            System.arraycopy(ctxs, 0, contexts, 1, ctxs.length);");
+            out.println("        }");
+            out.println("");
+            
             out.println( "        for( int i = 0; i < contexts.length; i ++ ) {" );
             out.println( "            DesignBean[] beans = contexts[i].getBeansOfType( " + fullPackageWrapperClassName + ".class );" );
             out.println( "            for( int bi = 0; bi < beans.length; bi ++ ) { " );
