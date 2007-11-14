@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
     <testbag testattribs="stable" executor="unit-executor" name="visualweb/dataprovider/runtime">
         <testset dir="unit/src">
             <patternset>
-                <!--include name="**/*Test.class"/-->
+                <include name="**/*Test.class">
 <exclude name="**/CachedRowSetDataProviderTest.class"/>
             </patternset>
         </testset>
