@@ -303,7 +303,7 @@ public class HgProperties implements ActionListener, DocumentListener {
                 final String hgPropertyValue = hgPropertiesNodes[propTable.getModelIndex(rows[0])].getValue(); 
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        panel.comboName.getEditor().setItem(hgPropertyName);
+                        panel.comboName.setSelectedItem(hgPropertyName);
                         panel.txtAreaValue.setText(hgPropertyValue);
                     }
                 });
