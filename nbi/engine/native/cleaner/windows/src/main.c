@@ -357,19 +357,18 @@ void removeItselfUsingCmd() {
         }
         hTempFile = CreateFileA(tempFile, GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);        
         if (hTempFile != INVALID_HANDLE_VALUE) {
+            char * command = LocalAlloc(LPTR, sizeof(char) * (lstrlenA(tempFile) + lstrlenA(currentFile) + 6));
             DWORD bytesNumber = 0 ;
             STARTUPINFO si;
             PROCESS_INFORMATION pi;   
             
-            char * strings [7] = {":Repeat\ndel \"", 
-                                currentFile,
-                                "\"\nif exist \"",
-                                currentFile,
-                                "\" goto Repeat\ndel \"",
-                                tempFile,
-                                "\""
+            char * strings [4] = {
+                ":Repeat\n",
+                "del %1\n",
+                "if exist %1 goto Repeat\n",
+                "del %0\n",                
             };
-            for(i=0;i<7;i++) {
+            for(i=0;i<4;i++) {
                 WriteFile(hTempFile, strings[i], lstrlenA(strings[i]), &bytesNumber, NULL);
             }
             
@@ -378,8 +377,22 @@ void removeItselfUsingCmd() {
             ZERO( &si, sizeof(si) );
             si.cb = sizeof(si);
             ZERO( &pi, sizeof(pi) );
-            CreateProcess(0, tempFile, 0, 0, FALSE, CREATE_NO_WINDOW | IDLE_PRIORITY_CLASS, 0, 0, &si, &pi);
-            
+            index=0;
+            command [index++]= '"';
+            for(i=0;i<lstrlenA(tempFile);i++) {
+                command [index++] = tempFile[i];
+            }
+            command[index++]= '"';
+            command[index++]= ' ';
+            command[index++]= '"';
+            for(i=0;i<lstrlenA(currentFile);i++) {
+                command [index++] = currentFile[i];
+            }
+            command[index++]= '"';
+            command[index++]= 0;
+
+            CreateProcess(0, command, 0, 0, FALSE, CREATE_NO_WINDOW | IDLE_PRIORITY_CLASS, 0, 0, &si, &pi);
+            LocalFree(command);
             CloseHandle( pi.hProcess );
             CloseHandle( pi.hThread );            
         }
