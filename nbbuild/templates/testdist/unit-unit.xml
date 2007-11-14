@@ -44,6 +44,7 @@ made subject to such option by the copyright holder.
     <target name="init-unit">
        <property name="extra.test.libs" location="../../../extralibs"/>
        <property name="test.dist.dir" location="../../.."/>
+       <property name="test.unit.timeout" value="600000"/>
        <property name="test.unit.results.dir" location="../../results"/>
        <property name="test.unit.classes.dir" location="../../classes"/>
        <property name="java.home.parent" location="${java.home}/.."/> 
@@ -80,7 +81,11 @@ made subject to such option by the copyright holder.
          
      </target>
      <target name="do-test" unless="wrong.classpath">
-        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}" tempdir="${test.unit.results.dir}">
+        <junit 
+            showoutput="true" fork="true" failureproperty="tests.failed" 
+            errorproperty="tests.failed" filtertrace="${test.filter.trace}" 
+            tempdir="${test.unit.results.dir}" timeout="${test.unit.timeout}"
+        >
             <batchtest todir="${test.unit.results.dir}">
                 <fileset dir="${test.unit.classes.dir}">
                     <include name="**/*Test.class"/>
