@@ -255,7 +255,8 @@ public final class OperationContainer<Support> {
      * Adds <code>updateElement</code>
      * @param updateUnit
      * @param updateElement
-     * @return instance of {@link OperationInfo}&lt;Support&gt;
+     * @return instance of {@link OperationInfo}&lt;Support&gt; or
+     * <code>null</code> if the <code>UpdateElement</code> is already present in the container
      */
     public OperationInfo<Support> add(UpdateUnit updateUnit,UpdateElement updateElement) {
         //UpdateUnit updateUnit = UpdateManagerImpl.getInstance().getUpdateUnit(updateElement.getCodeName());
@@ -265,7 +266,8 @@ public final class OperationContainer<Support> {
     /**
      * Adds <code>updateElement</code>
      * @param updateElement
-     * @return instance of {@link OperationInfo}&lt;Support&gt;
+     * @return instance of {@link OperationInfo}&lt;Support&gt; or
+     * <code>null</code> if the <code>UpdateElement</code> is already present in the container
      */
     public OperationInfo<Support> add(UpdateElement updateElement) {
         UpdateUnit updateUnit = updateElement.getUpdateUnit ();
