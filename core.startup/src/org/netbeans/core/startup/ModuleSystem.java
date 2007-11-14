@@ -196,13 +196,17 @@ public final class ModuleSystem {
                     continue;
                 }
                 URL jarURL = FileUtil.getArchiveFile(manifestUrl);
+                if (jarURL != null && jarURL.getProtocol().equals("file") &&
+                        /* #121777 */ jarURL.getPath().startsWith("/")) {
+                    LOG.log(Level.FINE, "Considering JAR: {0}", jarURL);
                 try {
-                    if (jarURL != null && jarURL.getProtocol().equals("file") && ignoredJars.contains(new File(jarURL.toURI()))) {
+                        if (ignoredJars.contains(new File(jarURL.toURI()))) {
                         LOG.log(Level.FINE, "ignoring JDK/JRE manifest: {0}", manifestUrl);
                         continue MANIFESTS;
                     }
                 } catch (URISyntaxException x) {
                     Exceptions.printStackTrace(x);
+                }
                 }
                 LOG.log(Level.FINE, "Checking boot manifest: {0}", manifestUrl);
                 

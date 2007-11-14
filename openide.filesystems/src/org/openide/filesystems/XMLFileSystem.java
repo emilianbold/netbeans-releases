@@ -67,6 +67,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
@@ -1041,8 +1043,12 @@ public final class XMLFileSystem extends AbstractFileSystem {
                 }
                 
                 if ("file".equals(protocol)) { //NOI18N
-                    File f = new File(URI.create(url.toExternalForm()));
-                    retval = (f.exists()) ? new Date(f.lastModified()) : null;
+                    try {
+                        File f = new File(URI.create(url.toExternalForm()));
+                        retval = (f.exists()) ? new Date(f.lastModified()) : null;
+                    } catch (IllegalArgumentException x) {
+                        Logger.getLogger(XMLFileSystem.class.getName()).log(Level.FINE, "#121777: " + url, x);
+                    }
                 } else /* #96928 */ if (!NETWORK_PROTOCOLS.contains(protocol)) {
                     retval = timeFromDateHeaderField(url);
                 }
