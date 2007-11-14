@@ -38,7 +38,19 @@ import org.openide.filesystems.FileObject;
  */
 public class HighlightsLayerFactoryImpl implements HighlightsLayerFactory {
 
-    private static final boolean DEBUG_MODE = Boolean.getBoolean("org.netbeans.modules.java.debug.enable");
+    private static final boolean DEBUG_MODE;
+    
+    static {
+        boolean value = false;
+        
+        if (Boolean.getBoolean("org.netbeans.modules.java.debug.enable")) {
+            value = true;
+        } else {
+            assert value = true;
+        }
+        
+        DEBUG_MODE = value;
+    }
     
     public HighlightsLayer[] createLayers(Context context) {
         if (!DEBUG_MODE) {
