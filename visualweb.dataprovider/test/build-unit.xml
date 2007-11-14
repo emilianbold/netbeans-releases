@@ -42,6 +42,20 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="org.netbeans.modules.visualweb.dataprovider/test-unit" basedir="." default="all">
-	<import file="../../../../nbbuild/templates/xtest-unit.xml"/>    
+    <property name="xtest.file_appserver.properties" location="${basedir}/unit/app_server_sun.properties"/>
+    <property name="xtest.file_database.properties" location="${basedir}/unit/db_derby.properties"/>
+    <loadproperties srcfile="${xtest.file_appserver.properties}" />
+    <loadproperties srcfile="${xtest.file_database.properties}" />
+    <!-- -->
+    <echo message="xtest.file_appserver.properties = ${xtest.file_appserver.properties}"/>
+    <echo message="path_SunAppServer = ${path_SunAppServer}"/>
+    <echo message="path_Tomcat = ${path_Tomcat}"/>
+    <echo message="path_JBoss = ${path_JBoss}"/>
+    <echo message="server_settings = ${server_settings}"/>
+    <echo message="database_settings = ${database_settings}"/>
+    <echo message=" "/>
+    <echo message="Pause..."/>
+    <sleep seconds="1"/>
+    <import file="../../../../nbbuild/templates/xtest-unit.xml"/>    
 </project>
 
