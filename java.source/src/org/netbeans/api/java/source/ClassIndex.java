@@ -90,12 +90,16 @@ public final class ClassIndex {
     private final ClassPath sourcePath;
 
     //INV: Never null
+    //@GuardedBy (this)
     private final Set<URL> oldSources;
     //INV: Never null
+    //@GuardedBy (this)
     private final Set<URL> oldDeps;    
     //INV: Never null
+    //@GuardedBy (this)
     private final Set<ClassIndexImpl> sourceIndeces;
     //INV: Never null
+    //@GuardedBy (this)
     private final Set<ClassIndexImpl> depsIndeces;
     
     private final List<ClassIndexListener> listeners = new CopyOnWriteArrayList<ClassIndexListener>();
@@ -209,11 +213,8 @@ public final class ClassIndex {
         manager.addClassIndexManagerListener(WeakListeners.create(ClassIndexManagerListener.class, (ClassIndexManagerListener) this.spiListener, manager));
         this.bootPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.bootPath));
         this.classPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.classPath));
-        this.sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.sourcePath));
-                
-        createQueriesForRoots (this.sourcePath, true, this.sourceIndeces, oldSources);                
-        createQueriesForRoots (this.bootPath, false, this.depsIndeces, oldDeps);                
-        createQueriesForRoots (this.classPath, false, this.depsIndeces, oldDeps);	    
+        this.sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.sourcePath));                
+        reset (true, true);	    
     }
     
     
@@ -608,14 +609,26 @@ public final class ClassIndex {
                 boolean dirtyDeps = false;
                 try {
                     Object source = evt.getSource();                
-                    if (source == ClassIndex.this.sourcePath) {                        
-                        dirtySource = containsNewRoot(sourcePath, oldSources, newRoots, false);                        
+                    if (source == ClassIndex.this.sourcePath) {
+                        Set<URL> copy;
+                        synchronized (ClassIndex.this) {
+                            copy = new HashSet<URL>(oldSources);
+                        }
+                        dirtySource = containsNewRoot(sourcePath, copy, newRoots, false);                        
                     }                
                     else if (source == ClassIndex.this.classPath) {
-                        dirtyDeps = containsNewRoot(classPath, oldDeps, newRoots, true);                        
+                        Set<URL> copy;
+                        synchronized (ClassIndex.this) {
+                            copy = new HashSet<URL>(oldDeps);
+                        }
+                        dirtyDeps = containsNewRoot(classPath, copy, newRoots, true);                        
                     }
                     else if (source == ClassIndex.this.bootPath) {
-                        dirtyDeps = containsNewRoot(bootPath, oldDeps, newRoots, true);
+                        Set<URL> copy;
+                        synchronized (ClassIndex.this) {
+                            copy = new HashSet<URL>(oldDeps);
+                        }
+                        dirtyDeps = containsNewRoot(bootPath, copy, newRoots, true);
                     }
                     
                     if (dirtySource || dirtyDeps) {                        
