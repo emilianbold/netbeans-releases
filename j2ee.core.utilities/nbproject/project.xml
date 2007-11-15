@@ -143,6 +143,7 @@
                 <friend>org.netbeans.modules.j2ee.persistence</friend>
                 <package>org.netbeans.modules.j2ee.core.api.support</package>
                 <package>org.netbeans.modules.j2ee.core.api.support.java</package>
+                <package>org.netbeans.modules.j2ee.core.api.support.progress</package>
                 <package>org.netbeans.modules.j2ee.core.api.support.wizard</package>
             </friend-packages>
         </data>
