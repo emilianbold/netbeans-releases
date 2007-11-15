@@ -58,22 +58,24 @@ public class RepositoryConnection {
     private String username;
     private String password;
     private String externalCommand;
+    private boolean savePassword;
     
     private HgURL hgUrl;
     
     public RepositoryConnection(RepositoryConnection rc) {
-        this(rc.url, rc.username, rc.password, rc.externalCommand);
+        this(rc.url, rc.username, rc.password, rc.externalCommand, rc.savePassword);
     }
     
     public RepositoryConnection(String url) {
-        this(url, null, null, null);
+        this(url, null, null, null, false);
     }
             
-    public RepositoryConnection(String url, String username, String password, String externalCommand) {
+    public RepositoryConnection(String url, String username, String password, String externalCommand, boolean savePassword) {
         this.setUrl(url);
         this.setUsername(username);
         this.setPassword(password);
-        this.setExternalCommand(externalCommand);                
+        this.setExternalCommand(externalCommand);
+        this.savePassword = savePassword;
     }
 
     public String getUrl() {
@@ -91,7 +93,11 @@ public class RepositoryConnection {
     public String getExternalCommand() {
         return externalCommand == null ? "" : externalCommand; // NOI18N
     }
-    
+
+    public boolean getSavePassword() {
+        return savePassword;
+    }
+
     public HgURL getHgUrl() throws MalformedURLException {
         if(hgUrl == null) {
             parseUrlString(url);
@@ -136,6 +142,10 @@ public class RepositoryConnection {
 
     void setExternalCommand(String externalCommand) {
         this.externalCommand = externalCommand;
+    }
+
+    void setSavePassword(boolean savePassword) {
+        this.savePassword = savePassword;
     }
 
     public String toString() {
@@ -217,6 +227,7 @@ public class RepositoryConnection {
         //String password     = l > 2 && !fields[2].equals("") ? Scrambler.getInstance().descramble(fields[2]) : null; // NOI18N
         String password     = null;
         String extCmd       = l > 3 && !fields[3].equals("") ? fields[3] : null; // NOI18N
-        return new RepositoryConnection(url, username, password, extCmd);        
+        boolean save        = l > 4 && !fields[4].equals("") ? Boolean.parseBoolean(fields[4]) : true;
+        return new RepositoryConnection(url, username, password, extCmd, save);        
     }
 }

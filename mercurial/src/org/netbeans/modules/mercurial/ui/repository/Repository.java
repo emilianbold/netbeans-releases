@@ -134,7 +134,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         // retrieve the dialog size for the largest configuration
         updateVisibility("svn+");                                                                       // NOI18N
         maxNeededSize = repositoryPanel.getPreferredSize();
-        
+
+        repositoryPanel.savePasswordCheckBox.setSelected(HgModuleConfig.getDefault().getSavePassword());
         refreshUrlHistory();
     }
     
@@ -155,7 +156,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             onProxyConfiguration();
         } else if(e.getSource() == repositoryPanel.removeButton) {
             onRemoveClick();
-        }  
+        } else if(e.getSource() == repositoryPanel.savePasswordCheckBox) {
+            onSavePasswordChange();
+        }
     }
     
     private void onProxyConfiguration() {
@@ -176,6 +179,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         
         repositoryPanel.userTextField.getDocument().addDocumentListener(this);
         repositoryPanel.tunnelCommandTextField.getDocument().addDocumentListener(this);
+        repositoryPanel.savePasswordCheckBox.addActionListener(this);
         
         repositoryPanel.urlComboBox.addItemListener(this);
         
@@ -237,6 +241,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         repositoryPanel.userPasswordField.setEditable(editable);
         repositoryPanel.userTextField.setEditable(editable);        
         repositoryPanel.proxySettingsButton.setEnabled(editable);        
+        //repositoryPanel.savePasswordCheckBox.setEnabled(editable);        
     }
     
     public void storeConfigValues() {
@@ -325,6 +330,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         repositoryPanel.proxySettingsButton.setEnabled(valid);
         repositoryPanel.userPasswordField.setEnabled(valid);
         repositoryPanel.userTextField.setEnabled(valid);
+        //repositoryPanel.savePasswordCheckBox.setEnabled(valid);
 
         repositoryPanel.removeButton.setEnabled(rc != null && rc.getUrl().length() > 0);
     }
@@ -365,6 +371,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             editedrc.setUsername(repositoryPanel.userTextField.getText());
             editedrc.setPassword(new String(repositoryPanel.userPasswordField.getPassword()));
             editedrc.setExternalCommand(repositoryPanel.tunnelCommandTextField.getText());                                               
+            editedrc.setSavePassword(repositoryPanel.savePasswordCheckBox.isSelected());
         }
         message = "";                                                                                   // NOI18N
         updateVisibility();
@@ -414,21 +421,18 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             }));
         }
 
-        //repositoryPanel.userPasswordField.setVisible(authFields);
-        //repositoryPanel.passwordLabel.setVisible(authFields);          
-        //repositoryPanel.userTextField.setVisible(authFields);          
-        //repositoryPanel.leaveBlankLabel.setVisible(authFields);        
-        //repositoryPanel.userLabel.setVisible(authFields);             
+        repositoryPanel.userPasswordField.setVisible(authFields);
+        repositoryPanel.passwordLabel.setVisible(authFields);          
+        repositoryPanel.userTextField.setVisible(authFields);          
+        repositoryPanel.leaveBlankLabel.setVisible(authFields);        
+        repositoryPanel.userLabel.setVisible(authFields);             
+        //repositoryPanel.savePasswordCheckBox.setVisible(authFields);             
         repositoryPanel.proxySettingsButton.setVisible(proxyFields && ((modeMask & FLAG_SHOW_PROXY) != 0));        
         //repositoryPanel.tunnelCommandTextField.setVisible(sshFields);        
         //repositoryPanel.tunnelCommandLabel.setVisible(sshFields);        
         //repositoryPanel.tunnelLabel.setVisible(sshFields);        
         //repositoryPanel.tunnelHelpLabel.setVisible(sshFields);       
-        repositoryPanel.userPasswordField.setVisible(false);
-        repositoryPanel.passwordLabel.setVisible(false);          
-        repositoryPanel.userTextField.setVisible(false);          
-        repositoryPanel.leaveBlankLabel.setVisible(false);        
-        repositoryPanel.userLabel.setVisible(false);             
+        repositoryPanel.savePasswordCheckBox.setVisible(false);             
         repositoryPanel.tunnelCommandTextField.setVisible(false);        
         repositoryPanel.tunnelCommandLabel.setVisible(false);        
         repositoryPanel.tunnelLabel.setVisible(false);        
@@ -501,6 +505,10 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         return getEditedRC();        
     }
     
+    public boolean savePassword() {
+        return repositoryPanel.savePasswordCheckBox.isSelected();
+    }
+
     private void onUsernameChange() {
         RepositoryConnection rc = getSelectedRC();
         if (rc != null) {
@@ -530,6 +538,20 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             remove(rc);                                                                
         }        
     }    
+
+    private void onSavePasswordChange() {
+        Runnable awt = new Runnable() {
+            public void run() {
+                RepositoryConnection rc = getSelectedRC();
+                if (rc != null) {
+                    rc.setSavePassword(repositoryPanel.savePasswordCheckBox.isSelected());
+                }
+                validateHgUrl();
+            }
+        };
+        SwingUtilities.invokeLater(awt);
+    }
+
 
     public RepositoryPanel getPanel() {
         return repositoryPanel;
@@ -604,6 +626,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         repositoryPanel.userTextField.setText(rc.getUsername());
         repositoryPanel.userPasswordField.setText(rc.getPassword());        
         repositoryPanel.tunnelCommandTextField.setText(rc.getExternalCommand());           
+        repositoryPanel.savePasswordCheckBox.setSelected(rc.getSavePassword());
     } 
 
     public void setTipVisible(Boolean flag) {        

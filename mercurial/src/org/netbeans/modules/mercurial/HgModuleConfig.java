@@ -74,7 +74,9 @@ public class HgModuleConfig {
     public static final String KEY_EXECUTABLE_BINARY        = "hgExecBinary";                              // NOI18N
     public static final String KEY_EXPORT_FILENAME          = "hgExportFilename";                          // NOI18N
     public static final String KEY_ANNOTATION_FORMAT        = "annotationFormat";                           // NOI18N
-            
+    public static final String SAVE_PASSWORD                = "savePassword";
+                            // NOI18N
+
     private static final String RECENT_URL = "repository.recentURL";                                        // NOI18N
     private static final String SHOW_CLONE_COMPLETED = "cloneCompleted.showCloneCompleted";        // NOI18N  
 
@@ -262,6 +264,14 @@ public class HgModuleConfig {
 
     public void setAnnotationFormat(String annotationFormat) {
         getPreferences().put(KEY_ANNOTATION_FORMAT, annotationFormat);        
+    }
+
+    public boolean getSavePassword() {
+        return getPreferences().getBoolean(SAVE_PASSWORD, true);
+    }
+
+    public void setSavePassword(boolean bl) {
+        getPreferences().putBoolean(SAVE_PASSWORD, bl);
     }
 
     public void setShowCloneCompleted(boolean bl) {
