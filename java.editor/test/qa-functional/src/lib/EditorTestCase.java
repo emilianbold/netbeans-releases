@@ -77,7 +77,7 @@ public class EditorTestCase extends JellyTestCase {
     private static final int OPENED_PROJECT_ACCESS_TIMEOUT = 1000;
     
     /** Default name of project is used if not specified in openProject method. */
-    private String defaultProjectName = "editor_test";
+    private String defaultProjectName = "java_editor_test";
     private String defaultSamplePackage = "test";
     private String defaultSampleName = "sample1";
 
