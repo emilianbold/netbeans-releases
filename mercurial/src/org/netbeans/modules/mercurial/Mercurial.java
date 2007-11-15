@@ -339,5 +339,11 @@ public class Mercurial {
         }
         return rp;
     }
+    
+    public void clearRequestProcessor(String url) {
+        if(processorsToUrl != null & url != null) {
+             processorsToUrl.remove(url);
+        }
+    }
 
 }

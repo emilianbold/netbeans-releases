@@ -149,7 +149,7 @@ public class FileStatusCache {
 
         Set<File> roots = context.getRootFiles();
         Set<File> exclusions = context.getExclusions();
-        Set<File> setAllFiles = allFiles.keySet();
+        Set<File> setAllFiles = (Set<File>) allFiles.keySet();
         boolean bExclusions = exclusions != null && exclusions.size() > 0;
         boolean bContainsFile = false;
         
