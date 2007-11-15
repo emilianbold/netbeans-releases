@@ -136,6 +136,7 @@ public final class InsertModuleAllTargets extends Task {
             for (ModuleListParser.Entry entry : mlp.findAll()) {
                 String path = entry.getNetbeansOrgPath();
                 assert path != null : entry;
+                if (path == null) continue;
                 entries.put(path, entry);
             }
            
@@ -158,6 +159,7 @@ public final class InsertModuleAllTargets extends Task {
                     }
                     String otherPath = other.getNetbeansOrgPath();
                     assert otherPath != null : other;
+                    if (otherPath == null) continue; // Do not add the all-module dependency for module which is in the binaries
                     String otherCluster = clustersOfModules.get(otherPath);
                     if (myCluster == null || otherCluster == null || myCluster.equals(otherCluster)) {
                         namedDeps.append(",all-");

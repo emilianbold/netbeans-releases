@@ -658,6 +658,7 @@ final class ModuleListParser {
     }
     
     private static Entry scanStandaloneSource(Hashtable<String,String> properties, Project project) throws IOException {
+        if (properties.get("project") == null) return null; //Not a standalone module
         File basedir = new File(properties.get("project"));
         Entry entry = STANDALONE_SCAN_CACHE.get(basedir);
         if (entry == null) {
@@ -718,19 +719,22 @@ final class ModuleListParser {
                 entries = scanBinaries(properties, project);
                 // module itself has to be added because it doesn't have to be in binaries
                     Entry e = scanStandaloneSource(properties, project);
+                    if (e != null) {
                     // xtest gets module jar and cluster from binaries
-                    if (e.clusterName == null && xtest) {
-                         Entry oldEntry = entries.get(e.getCnb());
-                         if (oldEntry != null) {
-                             e = new Entry(e.getCnb(),oldEntry.getJar(),
-                                          e.getClassPathExtensions(),e.sourceLocation,
-                                          e.netbeansOrgPath,e.buildPrerequisites,
-                                          oldEntry.getClusterName(),
-                                          e.runtimeDependencies,
-                                          e.getTestDependencies());  
-                         }
-                    }
-                    entries.put(e.getCnb(), e);
+                        if (e.clusterName == null && xtest) {
+                            Entry oldEntry = entries.get(e.getCnb());
+                            if (oldEntry != null) {
+                                 e = new Entry(e.getCnb(),oldEntry.getJar(),
+                                              e.getClassPathExtensions(),e.sourceLocation,
+                                              e.netbeansOrgPath,e.buildPrerequisites,
+                                              oldEntry.getClusterName(),
+                                              e.runtimeDependencies,
+                                              e.getTestDependencies());  
+                             }
+                        }
+                        entries.put(e.getCnb(), e);
+                   }
+                   entries.putAll(scanNetBeansOrgSources(new File(nball), properties, project));
             } else {
                 entries = scanNetBeansOrgSources(new File(nball), properties, project);
             }
