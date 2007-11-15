@@ -44,22 +44,19 @@ made subject to such option by the copyright holder.
 <project name="org.netbeans.modules.visualweb.dataprovider/test-unit" basedir="." default="all">
     <import file="../../../../nbbuild/templates/xtest-unit.xml"/>    
 
-    <property name="xtest.file_appserver.properties" location="${basedir}/unit/as.properties"/>
-    <property name="xtest.file_database.properties" location="${basedir}/unit/db_derby.properties"/>
+    <property name="xtest.file_appserver.properties" location="../../../test/data/DefaultDeploymentTargets.properties"/>
     <loadproperties srcfile="${xtest.file_appserver.properties}" />
-    <loadproperties srcfile="${xtest.file_database.properties}" />
     <!-- -->
     <echo message="xtest.file_appserver.properties = ${xtest.file_appserver.properties}"/>
-    <echo message="path_SunAppServer = ${path_SunAppServer}"/>
+    <echo message="path_SunAppServer = ${deployment.target.path.GlassFish V2}"/>
     <echo message="path_Tomcat = ${path_Tomcat}"/>
     <echo message="path_JBoss = ${path_JBoss}"/>
     <echo message="server_settings = ${server_settings}"/>
-    <echo message="database_settings = ${database_settings}"/>
     <echo message=" "/>
     <echo message="Pause..."/>
     <sleep seconds="1"/>
 
-<property name="derby.libdir" location="${path_SunAppServer}/javadb/lib"/>
+<property name="derby.libdir" location="${deployment.target.path.GlassFish V2}/javadb/lib"/>
 <property name="derby.libfile" value="derby.jar"/>
 <property name="dataprovider.libdir" value="../../../../nbbuild/netbeans/visualweb1/modules/ext"/>
 <property name="dataprovider.libfile" value="dataprovider.jar"/>
