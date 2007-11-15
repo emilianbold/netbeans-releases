@@ -199,8 +199,8 @@ public class CommonDDAccess {
 	Method getter;
 	Object result;
 	try {
-	    getter = c.getMethod("get" + getNameForMethod((CommonDDBean)parent,beanProperty), null); //NOI18N
-	    result = getter.invoke(parent, null);
+	    getter = c.getMethod("get" + getNameForMethod((CommonDDBean)parent,beanProperty)); //NOI18N
+	    result = getter.invoke(parent);
 	    if (result == null) {
 		return null;
 	    } else if (result instanceof BaseBean) {
@@ -211,8 +211,8 @@ public class CommonDDAccess {
                     Class c1 = beans[i].getClass();
                     Method getter1;
                     Object result1;
-                    getter1 = c1.getMethod("get" + nameProperty, null); //NOI18N
-                    result1 = getter1.invoke(beans[i], null);
+                    getter1 = c1.getMethod("get" + nameProperty); //NOI18N
+                    result1 = getter1.invoke(beans[i]);
                     if (result1 instanceof String) {
                         if (value.equals((String)result1)) {
                             return beans[i];
