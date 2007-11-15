@@ -672,7 +672,7 @@ public class ReferenceHelperTest extends NbTestCase {
         assertNotNull("ref added", r.getRawReference("proj2", "dojar"));                
         EditableProperties privateProps = h.getProperties (AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         String refval = privateProps.getProperty("project.proj2");        
-        assertEquals("reference correctly stored into private.properties", FileUtil.toFile(sisterprojdir).getAbsolutePath(), refval);        
+        assertNull("reference correctly stored into private.properties", refval);        
         EditableProperties projectProps = h.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
         refval = projectProps.getProperty("project.proj2");        
         assertEquals("reference correctly stored into project.properties", "../proj2", refval);        
@@ -732,9 +732,7 @@ public class ReferenceHelperTest extends NbTestCase {
         refval = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
         assertEquals("Reference was not correctly evaluated from project.properties", "../j a r s/m y l i b.jar", refval);
         refval = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
-        assertEquals("Reference was not correctly evaluated from private.properties", f.getAbsolutePath(), refval);
-        
-        assertEquals("Reference was not correctly evaluated", f, h.resolveFile(refval));
+        assertNull("Reference was not correctly evaluated from private.properties",  refval);        
         collocatedLib = scratch.createFolder("jars2").createData("m y l i b.jar");
         f = FileUtil.toFile(collocatedLib);
         ref = r.createForeignFileReference(f, "jar");
@@ -744,7 +742,7 @@ public class ReferenceHelperTest extends NbTestCase {
         refval = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));        
         assertEquals("Reference was not correctly evaluated form project.properties", "../jars2/m y l i b.jar", refval);        
         refval = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));        
-        assertEquals("Reference was not correctly evaluated from private.properties", f.getAbsolutePath(), refval);                        
+        assertNull("Reference was not correctly evaluated from private.properties", refval);                        
         collocatedLib = scratch.createFolder("jars3").createData("m y l i b.jar");
         f = FileUtil.toFile(collocatedLib);
         ref = r.createForeignFileReference(f, "jar");
@@ -754,7 +752,7 @@ public class ReferenceHelperTest extends NbTestCase {
         refval = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
         assertEquals("Reference was not correctly evaluated from project.properties", "../jars3/m y l i b.jar", refval);
         refval = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
-        assertEquals("Reference was not correctly evaluated from private.properties", f.getAbsolutePath(), refval);
+        assertNull("Reference was not correctly evaluated from private.properties", refval);
         
         assertTrue("Reference was not removed", r.destroyReference(ref));
         assertFalse("There should not be any reference", r.destroyReference(ref));

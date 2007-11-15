@@ -338,11 +338,9 @@ public final class ReferenceHelper {
             assert relativePath != null : "These dirs are not really collocated: " + base + " & " + path;
             values = new String[] {
                 relativePath,
-                path.getAbsolutePath()
             };            
             propertiesFiles = new String[] {
                 AntProjectHelper.PROJECT_PROPERTIES_PATH,
-                AntProjectHelper.PRIVATE_PROPERTIES_PATH,
             };
         } else {                        
             // use an absolute path.

@@ -76,7 +76,7 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         "nbproject/build-impl.xml",
         "nbproject/project.xml",
         "nbproject/project.properties",
-        "nbproject/private/private.properties",
+//        "nbproject/private/private.properties",       no private.properties are created when project and source roots are collocated
     };
 
     private static final String[] createdProperties = {
