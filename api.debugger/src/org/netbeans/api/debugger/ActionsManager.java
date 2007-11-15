@@ -451,6 +451,7 @@ public final class ActionsManager {
     }
     
     private synchronized void destroyIn () {
+        if (lazyListeners == null) return ;
         int i, k = lazyListeners.size ();
         for (i = 0; i < k; i++) {
             LazyActionsManagerListener l = (LazyActionsManagerListener)
