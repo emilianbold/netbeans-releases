@@ -241,6 +241,12 @@ introduced by support for multiple source roots. -jglick
                     </and>
                 </condition>
                 <property name="javadoc.encoding.used" value="${{source.encoding}}"/>
+                <condition property="javac.compilerargs.jaxws" value="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'" else="">
+                    <and>
+                        <isset property="jaxws.endorsed.dir"/>
+                        <available file="nbproject/jaxws-build.xml"/>
+                    </and>
+                </condition>
             </target>
             
             <target name="-post-init">
@@ -311,10 +317,6 @@ introduced by support for multiple source roots. -jglick
                         <xsl:attribute name="name">debug</xsl:attribute>
                         <xsl:attribute name="default">${javac.debug}</xsl:attribute>
                     </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">javac.compilerargs.jaxws</xsl:attribute>
-                        <xsl:attribute name="default"></xsl:attribute>
-                    </attribute>
                     <element>
                         <xsl:attribute name="name">customize</xsl:attribute>
                         <xsl:attribute name="optional">true</xsl:attribute>
@@ -339,7 +341,7 @@ introduced by support for multiple source roots. -jglick
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
-                            <compilerarg line="${{javac.compilerargs}} @{{javac.compilerargs.jaxws}}"/>
+                            <compilerarg line="${{javac.compilerargs}} ${{javac.compilerargs.jaxws}}"/>
                             <customize/>
                         </javac>
                     </sequential>
