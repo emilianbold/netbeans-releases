@@ -57,16 +57,18 @@ import org.openide.util.HelpCtx;
  * and <code>WizardDescriptor.FinishablePanel</code>. It will not delegate
  * methods in other subinterfaces of <code>WizardDescriptor.Panel</code>.</p>
  *
+ * @param  <Data> the type of the object representing the wizard state.
+ *
  * @author Andrei Badea
  */
-public class DelegatingWizardDescriptorPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
+public class DelegatingWizardDescriptorPanel<Data> implements WizardDescriptor.FinishablePanel<Data> {
 
-    private final WizardDescriptor.Panel delegate;
+    private final WizardDescriptor.Panel<Data> delegate;
 
     private WizardDescriptor wizardDescriptor;
     private Project project;
 
-    public DelegatingWizardDescriptorPanel(WizardDescriptor.Panel delegate) {
+    public DelegatingWizardDescriptorPanel(WizardDescriptor.Panel<Data> delegate) {
         this.delegate = delegate;
     }
 
@@ -78,7 +80,7 @@ public class DelegatingWizardDescriptorPanel implements WizardDescriptor.Panel, 
         return delegate.getHelp();
     }
 
-    public void readSettings(Object settings) {
+    public void readSettings(Data settings) {
         if (wizardDescriptor == null) {
             wizardDescriptor = (WizardDescriptor)settings;
             project = Templates.getProject((WizardDescriptor)settings);
@@ -86,7 +88,7 @@ public class DelegatingWizardDescriptorPanel implements WizardDescriptor.Panel, 
         delegate.readSettings(settings);
     }
 
-    public void storeSettings(Object settings) {
+    public void storeSettings(Data settings) {
         delegate.storeSettings(settings);
     }
 
