@@ -397,10 +397,20 @@ public final class PersistenceManager implements PropertyChangeListener {
             removeTopComponentForDataObject((DataObject)obj);
         }
     }
+
+    /** Just a method to wrap up all calls to TopComponent.getPersistenceType(),
+     * so we can do some tricks with the return value in future.
+     * 
+     * @param tc top component to find persistence type for
+     * @return the type
+     */
+    private static int persistenceType(TopComponent tc) {
+        return tc.getPersistenceType();
+    }
     
     // XXX helper method
     public boolean isTopComponentPersistentWhenClosed(TopComponent tc) {
-        int persistenceType = tc.getPersistenceType();
+        int persistenceType = persistenceType(tc);
         if (persistenceType == TopComponent.PERSISTENCE_ALWAYS) {
             return true;
         } else {
@@ -522,7 +532,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                     synchronized(LOCK_IDS) {
                         topComponent2IDMap.put(tc, stringId);
                         id2TopComponentMap.put(stringId, new TopComponentReference(tc,stringId));
-                        if (tc.getPersistenceType() == TopComponent.PERSISTENCE_ONLY_OPENED) {
+                        if (persistenceType(tc) == TopComponent.PERSISTENCE_ONLY_OPENED) {
                             topComponentPersistentOnlyOpenedID.add(stringId);
                         }
                         dataobjectToTopComponentMap.put(dob, stringId);
@@ -684,7 +694,7 @@ public final class PersistenceManager implements PropertyChangeListener {
      * persistent when opened.
      */
     private boolean isTopComponentProbablyPersistent (TopComponent tc) {
-        int persistenceType = tc.getPersistenceType();
+        int persistenceType = persistenceType(tc);
         if (TopComponent.PERSISTENCE_NEVER == persistenceType) {
             return false;
         }
@@ -698,7 +708,7 @@ public final class PersistenceManager implements PropertyChangeListener {
      * otherwise - top component's property exists saying "don't make me persistent"
      */
     public boolean isTopComponentPersistent (TopComponent tc) {
-        int persistenceType = tc.getPersistenceType();
+        int persistenceType = persistenceType(tc);
         if ((TopComponent.PERSISTENCE_NEVER == persistenceType)
         || ((TopComponent.PERSISTENCE_ONLY_OPENED == persistenceType) && !tc.isOpened())) {
             return false;
@@ -936,7 +946,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             topComponent2IDMap.put(tc, srcName);
             id2TopComponentMap.put(srcName, new PersistenceManager.TopComponentReference(tc,srcName));
             globalIDSet.add(srcName.toUpperCase(Locale.ENGLISH));
-            if (tc.getPersistenceType() == TopComponent.PERSISTENCE_ONLY_OPENED) {
+            if (persistenceType(tc) == TopComponent.PERSISTENCE_ONLY_OPENED) {
                 topComponentPersistentOnlyOpenedID.add(srcName);
             }
         }
