@@ -9745,7 +9745,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
         boolean retVal = true;
         if (e != null)
         {
-            retVal = e.isPopupTrigger();
+            retVal = e.isPopupTrigger() || contextMenuTriggered;
         }
 
         ADGraphWindow graphWindow = getGraphWindow();
@@ -9889,6 +9889,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
         }
     }
 
+    private static boolean contextMenuTriggered = false;
     private class MouseHandler extends MouseAdapter
     {
 
@@ -9904,9 +9905,9 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
         {
             //if I was editing something on drawing area, need to commit that
             saveEditCompartment();
-
             requestFocus();
-            showPopupMenu(event);
+            contextMenuTriggered = event.isPopupTrigger();
+            //showPopupMenu(event);
         }
 
         @Override
@@ -9916,6 +9917,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
             // down and some will show it on the mouse up.
             showPopupMenu(event);
         }
+        
 //      public boolean showAccessiblePopupMenu()
 //      {
 //          return showPopupMenu(null);
@@ -12847,6 +12849,11 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
         ETList<IETGraphObject> selGraphNodes = 
             GetHelper.getSelectedNodes((ETGraph)getGraph());
 
+        if (selGraphNodes == null) 
+        {
+            return false;
+        }
+        
         Set<IPresentationElement> containedElems = 
             new HashSet<IPresentationElement>();
 
