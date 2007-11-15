@@ -100,6 +100,7 @@ PropertyChangeListener, KeyListener, CaretListener {
             = "abbrev-ignore-modification"; // NOI18N
 
     private static final String COMPLETION_VISIBLE = "completion-visible"; // NOI18N
+    private static final String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; //NOI18N
 
     private static final String SURROUND_WITH = NbBundle.getMessage(SurroundWithFix.class, "TXT_SurroundWithHint_Label"); //NOI18N
     private static final int SURROUND_WITH_DELAY = 250;
@@ -250,7 +251,7 @@ PropertyChangeListener, KeyListener, CaretListener {
         if (abbrevEndPosition != null && component != null
             && component.getCaretPosition() == abbrevEndPosition.getOffset()
             && !isAbbrevDisabled()
-        ) {
+            && !Boolean.TRUE.equals(doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY))) {
             Document doc = component.getDocument();
             CodeTemplateManagerOperation operation = CodeTemplateManagerOperation.get(doc);
             KeyStroke expandKeyStroke = operation.getExpansionKey();
