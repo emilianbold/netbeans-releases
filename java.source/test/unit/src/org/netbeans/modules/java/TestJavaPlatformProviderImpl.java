@@ -152,7 +152,7 @@ public class TestJavaPlatformProviderImpl implements JavaPlatformProvider {
         }
 
         public Collection getInstallFolders() {
-            throw new UnsupportedOperationException();
+            return Collections.emptyList();
         }
 
         public FileObject findTool(String toolName) {
