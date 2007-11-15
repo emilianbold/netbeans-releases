@@ -41,14 +41,19 @@
 
 package org.netbeans.modules.java;
 
+import java.net.URL;
+import java.util.logging.Logger;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -57,6 +62,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
     
@@ -90,19 +96,17 @@ public final class ClassDataObject extends MultiDataObject {
                     cp = ClassPath.getClassPath(fo, ClassPath.EXECUTE);
                     if (cp != null) {
                         binaryRoot = cp.findOwnerRoot(fo);
-                        resourceName = cp.getResourceName(fo,'/',false);  //NOI18N
+                        resourceName = cp.getResourceName(fo,'.',false);  //NOI18N
                     }
                 } else if (binaryRoot != null) {
-                    resourceName = cp.getResourceName(fo,'/',false);  //NOI18N
-                }
-                FileObject[] sourceRoots = null;
-                if (binaryRoot != null) {
-                    sourceRoots = SourceForBinaryQuery.findSourceRoots(binaryRoot.getURL()).getRoots();
+                    resourceName = cp.getResourceName(fo,'.',false);  //NOI18N
                 }
                 FileObject resource = null;
-                if (sourceRoots != null && sourceRoots.length>0) {
-                    cp = ClassPathSupport.createClassPath(sourceRoots);
-                    resource = cp.findResource(resourceName+ ".java"); //NOI18N
+                if (binaryRoot != null) {
+                    //Todo: Ideally it should do the same as ElementOpen.open () but it will require a copy of it because of the reverese module dep.
+                    final ElementHandle<TypeElement> handle = ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, resourceName.replace('/', '.'));
+                    final ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[0]),cp,ClassPathSupport.createClassPath(new URL[0]));
+                    resource = SourceUtils.getFile(handle, cpInfo);
                 }
                 if (resource !=null ) {
                     DataObject sourceFile = DataObject.find(resource);
@@ -110,7 +114,7 @@ public final class ClassDataObject extends MultiDataObject {
                     if (oc != null) {
                         oc.open();
                     } else {
-                        ErrorManager.getDefault().log("SourceFile: "+FileUtil.getFileDisplayName (resource) +" has no OpenCookie"); //NOI18N
+                        Logger.getLogger(ClassDataObject.class.getName()).warning("SourceFile: "+FileUtil.getFileDisplayName (resource) +" has no OpenCookie"); //NOI18N
                     }
                 } else {
                     if (resourceName == null)
@@ -118,10 +122,8 @@ public final class ClassDataObject extends MultiDataObject {
                     StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ClassDataObject.class,"TXT_NoSources",
                             resourceName.replace('/','.'))); //NOI18N
                 }
-            } catch (FileStateInvalidException e) {
-                ErrorManager.getDefault().notify(e);
             } catch (DataObjectNotFoundException nf) {
-                ErrorManager.getDefault().notify(nf);
+                Exceptions.printStackTrace(nf);
             }
         }
     }
