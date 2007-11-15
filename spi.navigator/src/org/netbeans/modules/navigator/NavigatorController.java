@@ -524,9 +524,21 @@ public final class NavigatorController implements LookupListener, ActionListener
     
     public void nodeDestroyed(NodeEvent ev) {
         if (EventQueue.isDispatchThread()) {
-            run();
+            forceUpdate();
         } else {
-            EventQueue.invokeLater(this);
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    forceUpdate();
+                }
+            });
+        }
+    }
+
+    /** Forces navigator content update.
+     * Does nothing in case navigator TC is active */
+    private void forceUpdate () {
+        if (!navigatorTC.equals(WindowManager.getDefault().getRegistry().getActivated())) {
+            updateContext(true);
         }
     }
     
