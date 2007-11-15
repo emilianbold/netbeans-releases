@@ -62,7 +62,7 @@ public class RubyMimeResolver extends MIMEResolver {
     public static final String RUBY_MIME_TYPE = "text/x-ruby"; // application/x-ruby is also used a fair bit.
     
     /** Number of bytes to sniff from the file headers */
-    private static final int HEADER_LENGTH = 40;
+    static final int HEADER_LENGTH = 40;
     
     public RubyMimeResolver() {
     }
@@ -104,111 +104,6 @@ public class RubyMimeResolver extends MIMEResolver {
         return null;
     }
     
-    public static boolean isRubyHeader(byte[] header) {
-        int max = header.length;
-        
-        if ((max < 2) || (header[0] != '#') || (header[1] != '!')) {
-            return false;
-        }
-        
-        // See if we have either
-        // #!/usr/bin/ruby
-        // or some variation of that, e.g.
-        // #! C:\programs\ruby.exe
-        // or the env variety
-        // #!/usr/bin/env ruby
-        // or some variety of that
-        
-        // Skip spaces
-        int index = 2;
-        
-        while ((index < max) && (header[index] == ' ')) {
-            index++;
-        }
-        
-        // Look for the end of the path
-        while ((index < max) && (header[index] != '\n') && (header[index] != ' ')) {
-            index++;
-        }
-        
-        index--;
-        
-        // Back up and see what the last word was
-        while ((index >= 2) && (header[index] != '/') && (header[index] != '\\') &&
-                (header[index] != ' ')) {
-            index--;
-        }
-        
-        index++;
-        
-        // See if it's "ruby", "jruby", or "env" ?
-        if ((((index + 3) < max) && (header[index] == 'r') && (header[index + 1] == 'u') &&
-                (header[index + 2] == 'b') && (header[index + 3] == 'y')) ||
-                (((index + 4) < max) && (header[index] == 'j') && (header[index + 1] == 'r') &&
-                (header[index + 2] == 'u') && (header[index + 3] == 'b') &&
-                (header[index + 4] == 'y'))) {
-            // It's ruby or jruby
-            // See if the suffix is okay
-            if (header[index] == 'j') {
-                index += 5;
-            } else {
-                index += 4;
-            }
-            
-            if ((index >= max) || (header[index] == '\n') || (header[index] == ' ')) {
-                return true;
-            }
-            
-            if ((header[index] == '.') && ((index + 3) < max) && (header[index + 1] == 'e') &&
-                    (header[index + 2] == 'x') && (header[index + 3] == 'e')) {
-                return true;
-            }
-            
-            return false;
-        } else if (((index + 2) < max) && (header[index] == 'e') && (header[index + 1] == 'n') &&
-                (header[index + 2] == 'v')) {
-            index += 3;
-            
-            // It's env
-            if ((header[index] == ' ') ||
-                    ((header[index] == '.') && ((index + 4) < max) && (header[index + 1] == 'e') &&
-                    (header[index + 2] == 'x') && (header[index + 3] == 'e') &&
-                    (header[index + 4] == ' '))) {
-                // Find the next space and look for ruby or jruby
-                if (header[index] == '.') {
-                    index += 4;
-                }
-                
-                while ((index < max) && (header[index] == ' ')) {
-                    index++;
-                }
-                
-                // Make sure we have "ruby" or "jruby" (or ruby.exe)?
-                if ((((index + 3) < max) && (header[index] == 'r') && (header[index + 1] == 'u') &&
-                        (header[index + 2] == 'b') && (header[index + 3] == 'y')) ||
-                        (((index + 4) < max) && (header[index] == 'j') &&
-                        (header[index + 1] == 'r') && (header[index + 2] == 'u') &&
-                        (header[index + 3] == 'b') && (header[index + 4] == 'y'))) {
-                    // Ensure that nothing FOLLOWS ruby or jruby
-                    if (header[index] == 'j') {
-                        index += 5;
-                    } else {
-                        index += 4;
-                    }
-                    
-                    if ((index == max) || (header[index] == '\n') || (header[index] == ' ') ||
-                            ((header[index] == '.') && ((index + 3) < max) &&
-                            (header[index + 1] == 'e') && (header[index + 2] == 'x') &&
-                            (header[index + 3] == 'e'))) {
-                        return true;
-                    }
-                }
-            }
-        }
-        
-        return false;
-    }
-    
     private byte[] readHeader(FileObject fo) {
         // See if it looks like a Ruby file based on the shebang line
         byte[] header = new byte[HEADER_LENGTH];
@@ -245,4 +140,36 @@ public class RubyMimeResolver extends MIMEResolver {
         
         return header;
     }    
+
+    public static boolean isRubyHeader(byte[] header) {
+        int max = header.length;
+        
+        if ((max < 2) || (header[0] != '#') || (header[1] != '!')) {
+            return false;
+        }
+        
+        // See if the first line contains the word "ruby" (but not as a path component)
+        find:
+        for (int index = 0; index < max - 3; index++) {
+            byte b = header[index];
+            if (b == '\n') {
+                break;
+            }
+            if (b == 'r' && (header[index + 1] == 'u') &&
+                    (header[index + 2] == 'b') && (header[index + 3] == 'y')) {
+                // No slash/backslash before the end of the line or next word
+                for (int j = index+4; j < max; j++) {
+                    byte c = header[j];
+                    if (c == ' ' || c == '\n') {
+                        break;
+                    } else if (c == '/' || c == '\\') {
+                        continue find;
+                    }
+                }
+                return true;
+            }
+        }
+        
+        return false;
+    }
 }

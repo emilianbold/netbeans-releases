@@ -55,13 +55,16 @@ public class RubyMimeResolverTest extends TestCase {
     }
 
     private boolean checkValidHeader(String header) {
-        byte[] h = header.getBytes();
+        String truncated = header.length() > RubyMimeResolver.HEADER_LENGTH ?
+            header.substring(0, RubyMimeResolver.HEADER_LENGTH) : header;
+        byte[] h = truncated.getBytes();
 
         return RubyMimeResolver.isRubyHeader(h);
     }
 
     public void testRubyHeader() {
         assertTrue(checkValidHeader("#!/usr/bin/ruby"));
+        assertTrue(checkValidHeader("#!/usr/bin/ruby1.8"));
         assertTrue(checkValidHeader("#!/usr/bin/jruby"));
         assertTrue(checkValidHeader("#! /usr/bin/ruby"));
         assertTrue(checkValidHeader("#! /usr/bin/ruby\n"));
@@ -69,27 +72,21 @@ public class RubyMimeResolverTest extends TestCase {
         assertTrue(checkValidHeader("#! /usr/bin/ruby.exe "));
         assertTrue(checkValidHeader("#!C:\\programs\\ruby.exe"));
         assertTrue(checkValidHeader("#!C:\\programs\\ruby.exe"));
+        assertTrue(checkValidHeader("#!/Users/tor/dev/ruby/install/ruby-1.8.5/bin/ruby\n"));
+        assertTrue(checkValidHeader("#!/space/ruby/ruby-1.8.6-p110/bin/ruby1.8.6-p110"));
+        assertTrue(checkValidHeader("#!/usr/bin/env jruby -J-Xmx512M"));
+        assertTrue(checkValidHeader("#!/usr/bin/env ruby"));
+        assertTrue(checkValidHeader("#!/usr/bin/env jruby"));
+        assertTrue(checkValidHeader("#!/usr/bin/env.exe jruby"));
+
         assertTrue(!checkValidHeader("# !C:\\programs\\ruby.exe"));
-        assertTrue(!checkValidHeader("#!/usr/bin/jjruby"));
-        assertTrue(!checkValidHeader("#!/usr/bin/rubyy"));
+        assertTrue(!checkValidHeader("#!/bin/sh"));
+        assertTrue(!checkValidHeader("#!/bin/rubystuff/bin/ksh"));
         assertTrue(!checkValidHeader("#!/usr/bin/rub"));
         assertTrue(!checkValidHeader("#!/usr/bin/"));
         assertTrue(!checkValidHeader("#! /usr/bin/rub\ny"));
         assertTrue(!checkValidHeader("#! /usr/b\nin/ruby"));
         assertTrue(!checkValidHeader("#/usr/bin/ruby"));
-        assertTrue(!checkValidHeader("# !C:\\programs\\ruby.foo"));
-        assertTrue(checkValidHeader("#!/usr/bin/ruby"));
-        assertTrue(checkValidHeader("#!/Users/tor/dev/ruby/install/ruby-1.8.5/bin/ruby\n"));
-
-        assertTrue(checkValidHeader("#!/usr/bin/env ruby"));
-        assertTrue(checkValidHeader("#!/usr/bin/env jruby"));
-        assertTrue(checkValidHeader("#!/usr/bin/env.exe jruby"));
         assertTrue(!checkValidHeader("#!/usr/bin/env.exe jrub"));
-        assertTrue(!checkValidHeader("#!/usr/bin/env.exe rubyy"));
-        assertTrue(!checkValidHeader("#!/usr/bin/env.txt ruby"));
-        assertTrue(!checkValidHeader("#/usr/bin/env.exe jruby"));
-        assertTrue(!checkValidHeader("#!/usr/bin/env.exejruby"));
-
-        // TODO - what about case? Is "Env" legal on Windows?
     }    
 }
