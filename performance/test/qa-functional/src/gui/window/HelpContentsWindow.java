@@ -56,13 +56,13 @@ public class HelpContentsWindow extends org.netbeans.performance.test.utilities.
     /** Creates a new instance of HelpContentsWindow */
     public HelpContentsWindow(String testName) {
         super(testName);
-        expectedTime = 8945; // 4.1 : 5475, N/A, 8945, 8790, 5062, 6229
+        expectedTime = 1000; // 4.1 : 5475, N/A, 8945, 8790, 5062, 6229
     }
     
     /** Creates a new instance of HelpContentsWindow */
     public HelpContentsWindow(String testName, String performanceDataName) {
         super(testName,performanceDataName);
-        expectedTime = 8945; // 4.1 : 5475, N/A, 8945, 8790, 5062, 6229
+        expectedTime = 1000; // 4.1 : 5475, N/A, 8945, 8790, 5062, 6229
     }
     
     public void prepare() {
