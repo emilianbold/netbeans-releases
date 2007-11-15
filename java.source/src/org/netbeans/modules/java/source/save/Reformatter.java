@@ -702,9 +702,9 @@ public class Reformatter implements ReformatTask {
             }
             Tree init = node.getDefaultValue();
             if (init != null) {
-                spaces(cs.spaceAroundAssignOps() ? 1 : 0);
-                accept(EQ);
-                spaces(cs.spaceAroundAssignOps() ? 1 : 0);
+                spaces(1, true);
+                accept(DEFAULT);
+                space();
                 scan(init, p);
             }
             indent = old;
