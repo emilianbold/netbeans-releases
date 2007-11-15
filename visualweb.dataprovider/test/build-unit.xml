@@ -42,6 +42,8 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="org.netbeans.modules.visualweb.dataprovider/test-unit" basedir="." default="all">
+    <import file="../../../../nbbuild/templates/xtest-unit.xml"/>    
+
     <property name="xtest.file_appserver.properties" location="${basedir}/unit/as.properties"/>
     <property name="xtest.file_database.properties" location="${basedir}/unit/db_derby.properties"/>
     <loadproperties srcfile="${xtest.file_appserver.properties}" />
@@ -56,6 +58,58 @@ made subject to such option by the copyright holder.
     <echo message=" "/>
     <echo message="Pause..."/>
     <sleep seconds="1"/>
-    <import file="../../../../nbbuild/templates/xtest-unit.xml"/>    
+
+<property name="derby.libdir" location="${path_SunAppServer}/javadb/lib"/>
+<property name="derby.libfile" value="derby.jar"/>
+<property name="dataprovider.libdir" value="../../../../nbbuild/netbeans/visualweb1/modules/ext"/>
+<property name="dataprovider.libfile" value="dataprovider.jar"/>
+<property name="rowset.libdir" value="../../../../nbbuild/netbeans/visualweb1/modules/ext"/>
+<property name="rowset.libfile" value="sqlx.jar"/>
+
+<path id="derby_jar_path">
+   <pathelement location="${derby.libdir}/${derby.libfile}"/>
+</path>
+
+<path id="dataprovider_jar_path">
+   <pathelement location="${dataprovider.libdir}/${dataprovider.libfile}"/>
+</path>
+
+<path id="rowset_jar_path">
+   <pathelement location="${rowset.libdir}/${rowset.libfile}"/>
+</path>
+
+<path id="required_jars">
+   <path refid="derby_jar_path"/>
+   <path refid="dataprovider_jar_path"/>
+   <path refid="rowset_jar_path"/>
+</path>
+
+    
+
+   <!-- ========= -->
+   <!-- Compilers -->
+   <!-- ========= -->
+   <target name="unit-compiler" depends="init">
+       <buildTests srcDir="unit/src" compileExcludes="**/data/**">
+           <classpath>
+               <path refid="required_jars"/>
+           </classpath>
+       </buildTests>
+   </target>
+
+
+   <!-- ========= -->
+   <!-- Executors -->
+   <!-- ========= -->
+
+   <!-- This target executes tests inside IDE. It is defined in default-build-qa-functional.xml.
+        If you need to customize it, you can uncomment the following and override it.-->
+   <target name="run-jvm-test" depends="init,unit-compiler">
+       <executeTests pluginName="jvm">
+           <classpath>
+               <path refid="required_jars"/>
+           </classpath>
+       </executeTests>
+   </target>
 </project>
 
