@@ -42,6 +42,7 @@
 package org.netbeans.lib.lexer;
 
 import java.io.Reader;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -457,20 +458,6 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         }
     }
 
-    private Language<T> language() {
-        TokenList<T> tl = rootTokenList();
-        Language<?> l;
-        if (tl != null) {
-            l = rootTokenList.languagePath().topLanguage();
-        } else {
-            assert (mutableTextInput != null);
-            l = LexerSpiPackageAccessor.get().language(mutableTextInput);
-        }
-        @SuppressWarnings("unchecked")
-        Language<T> language = (Language<T>)l;
-        return language;
-    }
-    
     public Set<LanguagePath> languagePaths() {
         activateIfPossible();
         Set<LanguagePath> lps;
@@ -478,7 +465,12 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             lps = languagePaths;
         }
         if (lps == null) {
-            LanguageOperation<T> langOp = LexerApiPackageAccessor.get().languageOperation(language());
+            Language<?> lang = (rootTokenList != null)
+                    ? rootTokenList.languagePath().topLanguage()
+                    : null;
+            if (lang == null) // Language not inited yet
+                return Collections.emptySet();
+            LanguageOperation<?> langOp = LexerApiPackageAccessor.get().languageOperation(lang);
             @SuppressWarnings("unchecked")
             Set<LanguagePath> clps = (Set<LanguagePath>)
                     ((HashSet<LanguagePath>)langOp.languagePaths()).clone();
