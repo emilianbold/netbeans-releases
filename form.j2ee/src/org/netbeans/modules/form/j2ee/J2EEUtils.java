@@ -525,7 +525,11 @@ public class J2EEUtils {
         List<String> tableNames = new LinkedList<String>();
         tableNames.add(tableName);
         if (relatedTableNames != null) {
-            tableNames.addAll(Arrays.asList(relatedTableNames));
+            List<String> relatedTables = Arrays.asList(relatedTableNames);
+            if (relatedTables.contains(tableName)) {
+                tableNames.remove(tableName);
+            }
+            tableNames.addAll(relatedTables);
         }
         J2EEUtils.generateEntityClass(project, location, packageName, connection, tableNames, unit);
         // PENDING ugly workaround for the fact that the generated entity is not immediately
