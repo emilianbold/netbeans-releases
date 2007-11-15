@@ -239,15 +239,8 @@ public class AppClientProjectGenerator {
                     }
 
                     if (testFolders.length == 0) {
-                        String testLoc = NbBundle.getMessage(AppClientProjectGenerator.class,"TXT_DefaultTestFolderName");
-                        projectDir.createFolder(testLoc);
-                        String propName = "test.src.dir"; // NOI18N
-                        Element root = doc.createElementNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-                        root.setAttribute("id",propName);   //NOI18N
-                        root.setAttribute("name",NbBundle.getMessage(AppClientProjectGenerator.class, "NAME_test.src.dir"));
-                        testRoots.appendChild(root);
                         EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        props.put(propName,testLoc);
+                        props.put("test.src.dir", ""); // NOI18N
                         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
                     } else {
                         for (int i=0; i<testFolders.length; i++) {
