@@ -18,11 +18,11 @@
             </folder>
         </folder>
         
-        <!-- for testing purpose,
+        <!-- TODO: move me to a new "JBI Redelivery Extension" module -->
         <folder name="RedeliveryExtension">
             <attr name="xsdFileName" stringvalue="config-ext.xsd" />
-            <attr name="extensionType" stringvalue="endpoint" />
-            <attr name="extensionTarget" stringvalue="sun-http-binding" />
+            <attr name="extensionType" stringvalue="connection" />
+            <attr name="extensionTarget" stringvalue="all" />
             <attr name="prefix" stringvalue="redelivery" />
             <attr name="namespace" stringvalue="http://www.sun.com/jbi/descriptor/redelivery"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.namebeans.modules.compapp.configextension.Bundle" />
@@ -47,7 +47,7 @@
                     <attr name="description" stringvalue="Maximum redelivery wait time (mil seconds)"/>
                 </file>
             </folder>
-        </folder>-->
+        </folder>
     </folder>
     
 </filesystem>
