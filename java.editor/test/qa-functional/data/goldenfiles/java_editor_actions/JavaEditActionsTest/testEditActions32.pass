@@ -3,7 +3,7 @@ package editor_actions.EditActionsTest;
 public class testEditActions {
 
     /** test  mode */
-    public testEditActions() {
+    public void testEditActions() {
     }
 
     public String getString() {

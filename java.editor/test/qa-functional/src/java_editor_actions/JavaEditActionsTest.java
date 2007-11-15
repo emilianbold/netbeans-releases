@@ -75,7 +75,7 @@ public class JavaEditActionsTest extends JavaEditorActionsTest {
         super(testMethodName);
     }
 
-    public void XtestEditActions() {
+    public void testEditActions() {
         resetCounter();
         openDefaultProject();
         openDefaultSampleFile();
@@ -450,7 +450,7 @@ public class JavaEditActionsTest extends JavaEditorActionsTest {
         }
     }
 
-    public void XtestLineTools() {
+    public void testLineTools() {
         resetCounter();
         openDefaultProject();
         openDefaultSampleFile();

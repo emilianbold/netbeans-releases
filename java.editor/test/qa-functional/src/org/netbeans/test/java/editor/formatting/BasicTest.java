@@ -151,6 +151,12 @@ public class BasicTest extends EditorTestCase{
         oper.txtEditorPane().typeText("Hello");        
         oper.pushEndKey();
     }
+
+    private void doReformat() {
+        String sourceMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Source"); // NOI18N
+        String reformat = Bundle.getStringTrimmed("org.netbeans.modules.editor.Bundle", "format_main_menu_item");
+        new Action(sourceMenu + "|" + reformat, null).perform();
+    }
     
     private void end() {
         oper.pushEndKey();
@@ -191,9 +197,7 @@ public class BasicTest extends EditorTestCase{
     }
     
     public void testReformat() {
-        String sourceMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Source"); // NOI18N
-        String reformat = Bundle.getStringTrimmed("org.netbeans.modules.editor.Bundle", "format_main_menu_item");
-        new Action(sourceMenu+"|"+reformat, null).perform();
+        doReformat();
     }
     
     /**
@@ -201,9 +205,19 @@ public class BasicTest extends EditorTestCase{
      * testReformat2.java, testReformat.pass
      */ 
     public void testReformat2() {
-        String sourceMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Source"); // NOI18N
-        String reformat = Bundle.getStringTrimmed("org.netbeans.modules.editor.Bundle", "format_main_menu_item");
-        new Action(sourceMenu+"|"+reformat, null).perform();
+        doReformat();
+    }
+    
+    public void testReformatAnnotation() {
+        doReformat();
+    }
+    
+    public void testReformatIncompleteStatement() {
+        doReformat();
+    }
+    
+    public void testReformatIncompleteStatement2() {
+        doReformat();
     }
     
     public static void main(String[] args) {
