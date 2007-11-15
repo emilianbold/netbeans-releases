@@ -3,6 +3,3 @@ OpenIDE-Module: org.netbeans.modules.groovy.support
 OpenIDE-Module-Layer: org/netbeans/modules/groovy/support/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/groovy/support/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
-
-Name: org/netbeans/modules/groovy/support/GroovyLoader.class
-OpenIDE-Module-Class: Loader

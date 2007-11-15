@@ -6,6 +6,15 @@
             <code-name-base>org.netbeans.modules.groovy.editor</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.api.gsf</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>0.42</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.languages</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -14,8 +23,21 @@
                         <specification-version>1.11</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.lexer</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.25</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <public-packages/>
+            <class-path-extension>
+                <runtime-relative-path>ext/antlr.jar</runtime-relative-path>
+                <binary-origin>../../../lexer/external/antlr-2.7.1.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>

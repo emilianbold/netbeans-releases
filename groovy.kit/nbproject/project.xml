@@ -8,12 +8,11 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.groovy.editor</code-name-base>
                     <run-dependency>
-                        <specification-version>1.3</specification-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.groovy.grails</code-name-base>
-                    <build-prerequisite/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>

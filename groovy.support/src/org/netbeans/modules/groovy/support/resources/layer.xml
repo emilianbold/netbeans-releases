@@ -7,14 +7,13 @@
         </folder>
         <file name="org-netbeans-modules-groovy-support-options-GroovyOptionsCategory.instance"/>
     </folder>
-    <folder name="Editors">
+    <folder name="Loaders">
         <folder name="text">
             <folder name="x-groovy">
-                <folder name="Toolbars">
-                    <folder name="Default">
-                        <file name="org-netbeans-modules-groovy-support-common-RunScriptAction.instance"/>
-                        <attr name="org-netbeans-modules-groovy-support-common-RunScriptAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
-                    </folder>
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-groovy-support-RunScriptAction.instance">
+                        <attr name="position" intvalue="150"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
