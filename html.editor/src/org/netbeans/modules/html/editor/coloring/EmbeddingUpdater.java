@@ -241,7 +241,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
             //cut off the qutation marks
             createEmbedding(mimeType, tagAttr.getValueOffset(), tagAttr.getValueOffset() + tagAttr.getValueLength(), 1, 1);
         } else {
-            createEmbedding(mimeType, tagAttr.getValueOffset(), tagAttr.getValueOffset() + tagAttr.getValueOffset(), 0, 0);
+            createEmbedding(mimeType, tagAttr.getValueOffset(), tagAttr.getValueOffset() + tagAttr.getValueLength(), 0, 0);
         }
     }
     
