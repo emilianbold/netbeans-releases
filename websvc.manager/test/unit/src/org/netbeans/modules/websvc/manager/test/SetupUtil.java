@@ -43,7 +43,6 @@ import java.util.jar.Manifest;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.websvc.manager.WebServiceManager;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
-import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -64,8 +63,10 @@ import org.openide.util.NbCollections;
 public class SetupUtil {
     private static final String WORKDIR_SPACES = "user directory/config/WebServices";
     private static final String WORKDIR = "userdirectory/config/WebServices";
-    private static final String TEST_WSDL = "../resources/uszip-asmx-catalog/www.webservicemart.com/uszip.asmx.wsdl";
-    private static final String TEST_CATALOG_DIR = "../resources/uszip-asmx-catalog";
+    private static final String TEST_WSDL = "/org/netbeans/modules/websvc/manager/resources/uszip-asmx-catalog/www.webservicemart.com/uszip.asmx.wsdl";
+    private static final String TEST_CATALOG = "/org/netbeans/modules/websvc/manager/resources/uszip-asmx-catalog/catalog.xml";
+    private static final String CATALOG_FILE = "uszip-asmx-catalog/catalog.xml";
+    private static final String WSDL_FILE = "uszip-asmx-catalog/www.webservicemart.com/uszip.asmx.wsdl";
     
     private static final String ENDORSED_REF = "modules/ext/jaxws21/api/jaxws-api.jar";
     private static final String JAXWS_LIB_PROPERTY = "libs.jaxws21.classpath";
@@ -85,16 +86,18 @@ public class SetupUtil {
         File websvcUserDir = new File(WebServiceManager.WEBSVC_HOME);
         websvcUserDir.mkdirs();
         
-        File wsdlFile = new File(SetupUtil.class.getResource(TEST_WSDL).toURI());
-        File catalogDir = new File(SetupUtil.class.getResource(TEST_CATALOG_DIR).toURI());
+        File wsdlFile = new File(websvcUserDir, WSDL_FILE);
+        File catalogFile = new File(websvcUserDir, CATALOG_FILE);
+
+        retrieveURL(wsdlFile, SetupUtil.class.getResource(TEST_WSDL));
+        retrieveURL(catalogFile, SetupUtil.class.getResource(TEST_CATALOG));
         
         copy(wsdlFile, workingDir);
-        copy(catalogDir, websvcUserDir);
         
         System.getProperties().setProperty("netbeans.user", websvcUserDir.getParentFile().getParentFile().getAbsolutePath());
         
-        data.setLocalWsdlFile(new File(websvcUserDir, "uszip-asmx-catalog/www.webservicemart.com/uszip.asmx.wsdl"));
-        data.setLocalCatalogFile(new File(websvcUserDir, catalogDir.getName() + "/catalog.xml"));
+        data.setLocalWsdlFile(wsdlFile);
+        data.setLocalCatalogFile(catalogFile);
         data.setLocalOriginalWsdl(new File(workingDir, wsdlFile.getName()));
         
         MainFS fs = new MainFS();
@@ -145,6 +148,21 @@ public class SetupUtil {
                 }
             }
         }
+    }
+    
+    public static void retrieveURL(File targetFile, URL url) throws IOException {
+        targetFile.getParentFile().mkdirs();
+        FileOutputStream fos = new FileOutputStream(targetFile);
+        byte[] readBuffer = new byte[1024];
+        
+        InputStream is = url.openStream();
+        int bytesRead = 0;
+        while ( (bytesRead = is.read(readBuffer, 0, 1024)) > 0) {
+            fos.write(readBuffer, 0, bytesRead);
+        }
+        fos.flush();
+        fos.close();
+        is.close();
     }
     
     private static void generatePropertiesFile(File target) throws IOException {
