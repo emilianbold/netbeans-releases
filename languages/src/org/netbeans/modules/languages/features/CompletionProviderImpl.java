@@ -65,7 +65,6 @@ import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.languages.Context;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -409,16 +408,20 @@ public class CompletionProviderImpl implements CompletionProvider {
             }
             try {
                 if (fileObject != null) {
+                    String mimeType = language.getMimeType();
                     Map<FileObject,List<DatabaseDefinition>> globals = Index.getGlobalItems (fileObject, true);
                     Iterator<FileObject> it1 = globals.keySet ().iterator ();
                     while (it1.hasNext()) {
-                        FileObject fileObject =  it1.next();
-                        List<DatabaseDefinition> l = globals.get (fileObject);
+                        FileObject fo = it1.next();
+                        if (!mimeType.equals(fo.getMIMEType())) {
+                            continue;
+                        }
+                        List<DatabaseDefinition> l = globals.get (fo);
                         Iterator<DatabaseDefinition> it2 = l.iterator ();
                         while (it2.hasNext()) {
                             DatabaseDefinition definition =  it2.next();
                             if (names.contains (definition.getName ())) continue;
-                            CompletionSupport cs = createCompletionItem (definition, fileObject.getNameExt (), start);
+                            CompletionSupport cs = createCompletionItem (definition, fo.getNameExt (), start);
                             items.add (cs);
                             if (definition.getName ().startsWith (start))
                                 resultSet.addItem (cs);
