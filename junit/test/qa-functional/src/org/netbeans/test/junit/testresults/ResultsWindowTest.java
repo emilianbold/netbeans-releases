@@ -46,11 +46,11 @@ public class ResultsWindowTest extends NbTestCase {
         Node n = Utilities.openFile(Utilities.TEST_PACKAGES_PATH +
                 "|" + TEST_PACKAGE_NAME + "|" + Utilities.TEST_CLASS_NAME);
 
-        Utilities.takeANap(2000);
+        Utilities.takeANap(5000);
         JPopupMenuOperator jpmo = n.callPopup();
-        Utilities.takeANap(1000);
+        Utilities.takeANap(5000);
         jpmo.pushMenu(Utilities.RUN_FILE);
-        Utilities.takeANap(7000);
+        Utilities.takeANap(9000);
         ResultWindowOperator rwo = new ResultWindowOperator();
         assertTrue("Junit Output window should be visible", rwo.isVisible());
         rwo.close(); //close it
