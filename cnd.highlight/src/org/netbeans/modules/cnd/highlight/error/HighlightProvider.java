@@ -231,10 +231,12 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
         }
         Set<CsmFile> opened = new HashSet<CsmFile>();
         for (JTextComponent component : panes) {
-            Document doc = component.getDocument();
-            CsmFile file = CsmUtilities.getCsmFile(doc, false);
-            if (file != null && file.isParsed()) {
-                opened.add(file);
+            if (component.isShowing()) {
+                Document doc = component.getDocument();
+                CsmFile file = CsmUtilities.getCsmFile(doc, false);
+                if (file != null && file.isParsed()) {
+                    opened.add(file);
+                }
             }
         }
         List<CsmFile> toDelete = new ArrayList<CsmFile>();
@@ -268,11 +270,13 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
 
     private void checkNodes(List<? extends JTextComponent> panes){
         for (JTextComponent component : panes) {
-            Document doc = component.getDocument();
-            CsmFile file = CsmUtilities.getCsmFile(doc, false);
-            if (file != null && file.isParsed()) {
-                //if (TRACE_ANNOTATIONS)  System.out.println("Activate node: "+file.getName()); // NOI18N
-                checkFile(file);
+            if (component.isShowing()) {
+                Document doc = component.getDocument();
+                CsmFile file = CsmUtilities.getCsmFile(doc, false);
+                if (file != null && file.isParsed()) {
+                    //if (TRACE_ANNOTATIONS)  System.out.println("Activate node: "+file.getName()); // NOI18N
+                    checkFile(file);
+                }
             }
         }
     }
