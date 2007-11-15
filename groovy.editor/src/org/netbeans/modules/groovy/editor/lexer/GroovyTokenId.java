@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.gsf.GsfTokenId;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -61,6 +62,13 @@ public class GroovyTokenId extends GsfTokenId {
 
     public static final int ERROR_INT = 221;
     
+    public static final GsfTokenId QUOTED_STRING_LITERAL = new GsfTokenId("QUOTED_STRING_LITERAL", null, "string");
+    public static final GsfTokenId QUOTED_STRING_END = new GsfTokenId("QUOTED_STRING_END", null, "string");
+    public static final GsfTokenId QUOTED_STRING_BEGIN = new GsfTokenId("QUOTED_STRING_BEGIN", null, "string");
+    public static final GsfTokenId EMBEDDED_GROOVY = new GsfTokenId("EMBEDDED_GROOVY", null, "default");
+    
+    public static TokenId NONUNARY_OP;
+
     // <editor-fold defaultstate="collapsed" desc="Tokens">
     public static final GsfTokenId ABSTRACT = new GsfTokenId("ABSTRACT", null, "keyword");
     public static final GsfTokenId ANNOTATION_ARRAY_INIT = new GsfTokenId("ANNOTATION_ARRAY_INIT", null, "annotation");
