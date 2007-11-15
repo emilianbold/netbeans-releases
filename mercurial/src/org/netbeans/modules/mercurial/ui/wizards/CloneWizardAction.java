@@ -99,6 +99,8 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
             final String repository = (String) wizardDescriptor.getProperty("repository"); // NOI18N
+            final String username = (String) wizardDescriptor.getProperty("username"); // NOI18N
+            final String password = (String) wizardDescriptor.getProperty("password"); // NOI18N
             final String directory = (String) wizardDescriptor.getProperty("directory"); // NOI18N
             final String cloneName = (String) wizardDescriptor.getProperty("cloneName"); // NOI18N
             File cloneFile = new File(directory, cloneName);

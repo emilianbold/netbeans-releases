@@ -216,6 +216,8 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
     public void storeSettings(Object settings) {
         if (settings instanceof WizardDescriptor) {
             ((WizardDescriptor) settings).putProperty("repository", repository.getSelectedRC().getUrl()); // NOI18N
+            ((WizardDescriptor) settings).putProperty("username", repository.getSelectedRC().getUsername()); // NOI18N
+            ((WizardDescriptor) settings).putProperty("password", repository.getSelectedRC().getPassword()); // NOI18N
         }
     }
 
