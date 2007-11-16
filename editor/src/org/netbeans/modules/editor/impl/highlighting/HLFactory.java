@@ -80,7 +80,7 @@ public final class HLFactory implements HighlightsLayerFactory {
             new ComposedTextHighlighting(c, d, mimeType)
         ));
         
-        if (TokenHierarchy.get(context.getDocument()) == null) {
+        if (!TokenHierarchy.get(context.getDocument()).isActive()) {
             // There is no lexer yet, we will use this layer for backwards compatibility
             layers.add(HighlightsLayer.create(
                 NonLexerSyntaxHighlighting.LAYER_TYPE_ID, 

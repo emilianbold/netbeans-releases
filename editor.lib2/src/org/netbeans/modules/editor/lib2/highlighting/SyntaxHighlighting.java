@@ -106,12 +106,10 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         synchronized (this) {
             if (hierarchy == null) {
                 hierarchy = TokenHierarchy.get(document);
-                if (hierarchy != null) {
-                    hierarchy.addTokenHierarchyListener(WeakListeners.create(TokenHierarchyListener.class, this, hierarchy));
-                }
+                hierarchy.addTokenHierarchyListener(WeakListeners.create(TokenHierarchyListener.class, this, hierarchy));
             }
 
-            if (hierarchy != null) {
+            if (hierarchy.isActive()) {
                 return new HSImpl(version, hierarchy, startOffset, endOffset);
             } else {
                 return HighlightsSequence.EMPTY;
