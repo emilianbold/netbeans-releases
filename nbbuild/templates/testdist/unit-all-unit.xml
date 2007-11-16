@@ -53,12 +53,14 @@ made subject to such option by the copyright holder.
         <!-- only for these module on runtime classpath -->
         <property name="test.required.modules" value=""/>
         <property name="test.dist.dir" location=".."/>
+        <property name="test.dist.timeout" value="600000"/>
         
         <testdistfilter harness="junit" testlistproperty="unit.modules.list" attribs="${xtest.attribs}" testdistdir=".." requiredmodules="${test.required.modules}"/>
         <property name="extra.test.libs" location="../extralibs"/>
         <property name="test.unit.results.dir" location="results"/>
         <subant buildpath="${unit.modules.list}" antfile="unit-unit.xml" >
             <property name="test.disable.fails" value="true"/>
+            <property name="test.unit.timeout" value="${test.dist.timeout}"/>
         </subant>    
         <mkdir dir="${test.unit.results.dir}"/>
         <junitreport todir="${test.unit.results.dir}">
