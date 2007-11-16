@@ -231,7 +231,7 @@ public final class ProgressSupport {
          * will run all enabled background actions, stopping as the first event thread one.
          */
         private void invokeNextActionsOfSameKind() {
-            boolean isEventThread = SwingUtilities.isEventDispatchThread();
+            boolean isBackground = !SwingUtilities.isEventDispatchThread();
 
             while (!cancelled) {
                 int currentActionIndex = nextActionIndex.get();
@@ -249,14 +249,14 @@ public final class ProgressSupport {
                 }
 
                 // The current action is not of the current kind, finish.
-                if (currentAction.getRunInEventThread() != isEventThread) {
+                if (currentAction.isBackground() != isBackground) {
                     break;
                 }
 
                 LOGGER.log(Level.FINE, "Running " + currentAction);
 
                 // Only enable/disable the cancel button for background actions.
-                if (!isEventThread) {
+                if (isBackground) {
                     final boolean cancelEnabled = currentAction instanceof Cancellable;
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
@@ -288,11 +288,11 @@ public final class ProgressSupport {
                 return;
             }
 
-            // There is no guarantee that the current action is background or that it
+            // There is no guarantee that the current action is a background one or that it
             // implements Cancellable (maybe the action before it did and the user clicked Cancel
             // just before it finished). If it doesn't we can't do better than
             // just ignore the Cancel request.
-            if (!action.isEnabled() || action.getRunInEventThread() || !(action instanceof Cancellable)) {
+            if (!action.isEnabled() || !action.isBackground() || !(action instanceof Cancellable)) {
                 return;
             }
 
@@ -363,7 +363,7 @@ public final class ProgressSupport {
          * Returns true if the action should be run in the EDT and
          * false otherwise.
          */
-        public boolean getRunInEventThread();
+        public boolean isBackground();
 
         /**
          * Returns true if the actions is enabled (should be run). This is
@@ -391,8 +391,8 @@ public final class ProgressSupport {
      */
     public static abstract class EventThreadAction implements Action {
 
-        public final boolean getRunInEventThread() {
-            return true;
+        public final boolean isBackground() {
+            return false;
         }
 
         public boolean isEnabled() {
@@ -406,8 +406,8 @@ public final class ProgressSupport {
      */
     public static abstract class BackgroundAction implements Action {
 
-        public final boolean getRunInEventThread() {
-            return false;
+        public final boolean isBackground() {
+            return true;
         }
 
         public boolean isEnabled() {

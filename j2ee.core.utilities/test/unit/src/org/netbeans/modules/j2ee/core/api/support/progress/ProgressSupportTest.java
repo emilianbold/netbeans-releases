@@ -357,8 +357,8 @@ public class ProgressSupportTest extends NbTestCase {
                 return true;
             }
 
-            public boolean getRunInEventThread() {
-                return false;
+            public boolean isBackground() {
+                return true;
             }
 
             public boolean cancel() {
@@ -401,8 +401,8 @@ public class ProgressSupportTest extends NbTestCase {
                 return true;
             }
 
-            public boolean getRunInEventThread() {
-                return false;
+            public boolean isBackground() {
+                return true;
             }
 
             public boolean cancel() {
@@ -444,8 +444,8 @@ public class ProgressSupportTest extends NbTestCase {
                 return true;
             }
 
-            public boolean getRunInEventThread() {
-                return false;
+            public boolean isBackground() {
+                return true;
             }
 
             public boolean cancel() {
@@ -514,8 +514,8 @@ public class ProgressSupportTest extends NbTestCase {
                 return true;
             }
 
-            public boolean getRunInEventThread() {
-                return false;
+            public boolean isBackground() {
+                return true;
             }
 
             public boolean cancel() {
