@@ -420,12 +420,13 @@ implements DocumentListener, KeyListener {
     
     public void tabAction(ActionEvent evt, Action origAction) {
         checkNotifyParameterUpdate();
-
-        if (editableMasters.size() > 1) {
+        if (!isManagedInsert(component.getCaretPosition())) {
+            origAction.actionPerformed(evt);
+        } else if (editableMasters.size() > 1) {
             activeMasterIndex++;
             activeMasterIndex %= editableMasters.size();
             tabUpdate();
-            }
+        }
     }
     
     public void shiftTabAction(ActionEvent evt) {
