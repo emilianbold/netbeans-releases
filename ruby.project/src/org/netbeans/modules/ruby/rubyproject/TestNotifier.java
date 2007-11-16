@@ -50,8 +50,8 @@ import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.SettingsDefaults;
 import org.netbeans.editor.StatusBar;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer;
-import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer.ActionText;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.ActionText;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 

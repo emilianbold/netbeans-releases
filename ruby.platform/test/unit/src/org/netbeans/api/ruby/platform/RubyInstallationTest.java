@@ -44,12 +44,11 @@ package org.netbeans.api.ruby.platform;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
-import org.netbeans.junit.NbTestCase;
 
 /**
  * @author Tor Norbye
  */
-public class RubyInstallationTest extends NbTestCase {
+public class RubyInstallationTest extends RubyTestBase {
 
     public RubyInstallationTest(String testName) {
         super(testName);
@@ -80,7 +79,7 @@ public class RubyInstallationTest extends NbTestCase {
     }
 
     public void testChooseGems() throws Exception {
-        RubyInstallation ri = setUpRubyWithGems();
+        RubyInstallation ri = setUpRubyInstallationWithGems();
         
         String gemLibs = ri.getRubyLibGemDir();
         File specs = new File(new File(ri.getRubyLibGemDir()), "specifications");
@@ -126,24 +125,24 @@ public class RubyInstallationTest extends NbTestCase {
     }
 
     public void testFindGemExecutableInRubyBin() throws Exception {
-        RubyInstallation ri = setUpRubyWithGems();
+        RubyInstallation ri = setUpRubyInstallationWithGems();
         touch("rdebug-ide", ri.getRubyBin());
         assertNotNull(ri.findGemExecutable("rdebug-ide"));
     }
 
     public void testFindGemExecutableInGemRepo() throws Exception {
-        RubyInstallation ri = setUpRubyWithGems();
+        RubyInstallation ri = setUpRubyInstallationWithGems();
         touch("rdebug-ide", new File(ri.getRubyLibGemDir(), "bin").getPath());
         assertNotNull(ri.findGemExecutable("rdebug-ide"));
     }
 
     public void testFindRDoc() throws Exception {
-        RubyInstallation ri = setUpRubyWithGems();
+        RubyInstallation ri = setUpRubyInstallationWithGems();
         assertNotNull("rdoc found", ri.getRDoc());
     }
 
     public void testFindRDocWithSuffix() throws Exception {
-        RubyInstallation ri = setUpRubyWithGems(false, "1.8.6-p110");
+        RubyInstallation ri = setUpRubyInstallation(false, "1.8.6-p110");
         assertNotNull("rdoc found", ri.getRDoc());
     }
 
@@ -151,55 +150,10 @@ public class RubyInstallationTest extends NbTestCase {
         File gemRepo = new File(getWorkDir(), "gemrepo");
         File gemRepoBinF = new File(gemRepo, "bin");
         gemRepoBinF.mkdirs();
-        RubyInstallation ri = setUpRubyWithGems(false);
+        RubyInstallation ri = setUpRubyInstallation();
         RubyInstallation.TEST_GEM_HOME = gemRepo.getAbsolutePath();
         touch("rdebug-ide", gemRepoBinF.getAbsolutePath());
         assertNotNull(ri.findGemExecutable("rdebug-ide"));
-    }
-
-    private RubyInstallation setUpRubyWithGems() throws Exception {
-        return setUpRubyWithGems(true);
-    }
-
-    private RubyInstallation setUpRubyWithGems(boolean rubygemsRepo) throws Exception {
-        return setUpRubyWithGems(rubygemsRepo, "");
-        
-    }
-    
-    private RubyInstallation setUpRubyWithGems(final boolean rubygemsRepo, final String suffix) throws Exception {
-        // Ensure that $GEM_HOME isn't picked up
-        // I can't do this:
-        //  System.getenv().remove("GEM_HOME");
-        // because the environment variable map is unmodifiable. So instead
-        // side effect to ensure that the GEM_HOME check isn't run
-        RubyInstallation.TEST_GEM_HOME = ""; // non null but also invalid dir, will bypass $GEM_HOME lookup
-        
-        File home = getWorkDir();
-
-        // Build a fake ruby structure
-        File bin = new File(home, "bin");
-        bin.mkdirs();
-        File ruby = new File(bin, "ruby" + suffix);
-        ruby.createNewFile();
-        File rdoc = new File(bin, "rdoc" + suffix);
-        rdoc.createNewFile();
-
-        if (rubygemsRepo) {
-            // Build a fake rubygems repository
-            File lib = new File(home, "lib");
-            File rubyLib = new File(lib, "ruby");
-            File gems = new File(rubyLib, "gems");
-            String version = "1.8";
-            File ruby18Libs = new File(rubyLib, version);
-            ruby18Libs.mkdirs();
-            File gemLibs = new File(gems, version + File.separator + "gems");
-            gemLibs.mkdirs();
-            File specs = new File(gems, version + File.separator + "specifications");
-            specs.mkdirs();
-            File gembin = new File(gems, version + File.separator + "bin");
-            gembin.mkdirs();
-        }
-        return new RubyInstallation(ruby.getAbsolutePath());
     }
 
     private String touch(String path, String dir) throws IOException {
@@ -207,4 +161,17 @@ public class RubyInstallationTest extends NbTestCase {
         f.createNewFile();
         return f.getAbsolutePath();
     }
+
+    private RubyInstallation setUpRubyInstallationWithGems() throws Exception {
+        return new RubyInstallation(setUpRubyWithGems().getAbsolutePath());
+    }
+
+    private RubyInstallation setUpRubyInstallation() throws Exception {
+        return new RubyInstallation(setUpRuby().getAbsolutePath());
+    }
+
+    private RubyInstallation setUpRubyInstallation(final boolean withGems, final String suffix) throws Exception {
+        return new RubyInstallation(setUpRuby(withGems, suffix).getAbsolutePath());
+    }
+
 }

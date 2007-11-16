@@ -40,8 +40,8 @@
 package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
-import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
-import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 

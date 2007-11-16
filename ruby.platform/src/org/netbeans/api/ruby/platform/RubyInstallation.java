@@ -40,6 +40,7 @@
  */
 package org.netbeans.api.ruby.platform;
 
+import org.netbeans.modules.ruby.platform.Util;
 import java.awt.Dialog;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

@@ -46,15 +46,14 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 
 import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
-import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
-import org.netbeans.modules.ruby.rubyproject.execution.FileLocator;
-import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-
 
 /**
  * Various methods for supporting RSpec execution

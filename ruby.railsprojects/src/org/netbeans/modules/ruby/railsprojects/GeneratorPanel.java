@@ -58,7 +58,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.RubyUtils;
-import org.netbeans.modules.ruby.rubyproject.gems.GemAction;
+import org.netbeans.modules.ruby.platform.gems.GemAction;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

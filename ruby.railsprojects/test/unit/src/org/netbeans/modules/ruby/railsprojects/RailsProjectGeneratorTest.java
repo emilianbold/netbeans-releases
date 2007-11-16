@@ -42,8 +42,8 @@
 package org.netbeans.modules.ruby.railsprojects;
 
 import junit.framework.TestCase;
-import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer.FileLocation;
-import org.netbeans.modules.ruby.rubyproject.execution.RegexpOutputRecognizer;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
+import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
 
 /**
  * @author Tor Norbye

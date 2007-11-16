@@ -42,9 +42,9 @@
 package org.netbeans.modules.ruby.rubyproject;
 
 import junit.framework.TestCase;
+import org.netbeans.modules.ruby.platform.Util;
 
 /**
- *
  * @author Tor Norbye
  */
 public class UtilTest extends TestCase {

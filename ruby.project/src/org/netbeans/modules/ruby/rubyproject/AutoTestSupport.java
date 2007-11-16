@@ -43,12 +43,11 @@ package org.netbeans.modules.ruby.rubyproject;
 import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
-import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-
 
 /**
  * Various methods for supporting AutoTest execution

@@ -42,18 +42,12 @@
 package org.netbeans.modules.ruby.rubyproject.ui.wizards;
 
 
-import java.awt.Color;
 import java.awt.Component;
-import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.event.ListSelectionListener;
@@ -64,11 +58,8 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubySourceRootsUi;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.ruby.rubyproject.ui.FoldersListSettings;
 
 
 /**
@@ -319,7 +310,7 @@ public final class FolderList extends javax.swing.JPanel {
     }
     
     private static class Renderer extends DefaultListCellRenderer {
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public @Override Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             File f = (File) value;
             Project p = FileOwnerQuery.getOwner(f.toURI());
             String message = f.getAbsolutePath();            

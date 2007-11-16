@@ -111,11 +111,12 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.ruby.javaint</friend>
+                <friend>org.netbeans.modules.ruby.kit</friend>
+                <friend>org.netbeans.modules.ruby.platform</friend>
                 <friend>org.netbeans.modules.ruby.project</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
-                <friend>org.netbeans.modules.ruby.kit</friend>
                 <friend>org.netbeans.modules.ruby.rspec</friend>
-                <friend>org.netbeans.modules.ruby.javaint</friend>
                 <package>org.netbeans.modules.ruby.api.project.rake</package>
                 <package>org.netbeans.modules.ruby.spi.project.rake</package>
                 <package>org.netbeans.modules.ruby.spi.project.support.rake</package>

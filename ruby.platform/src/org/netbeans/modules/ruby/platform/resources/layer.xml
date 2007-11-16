@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="Ruby">
+            <file name="org-netbeans-modules-ruby-platform-RubyPlatformAction.instance"/>
+            <file name="org-netbeans-modules-ruby-platform-gems-GemAction.instance"/>
+                        
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="Tools">
+            <file name="org-netbeans-modules-ruby-platform-RubyPlatformAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Ruby/org-netbeans-modules-ruby-platform-RubyPlatformAction.instance"/>
+                <attr name="position" intvalue="450"/>
+            </file>
+            <file name="org-netbeans-modules-ruby-platform-gems-GemAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Ruby/org-netbeans-modules-ruby-platform-gems-GemAction.instance"/>
+                <attr name="position" intvalue="600"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>

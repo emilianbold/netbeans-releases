@@ -51,7 +51,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.ruby.debugger.RubySession.State;
 import org.netbeans.modules.ruby.debugger.model.CallSite;
 import org.netbeans.modules.ruby.debugger.ui.CallStackAnnotation;
-import org.netbeans.modules.ruby.rubyproject.execution.FileLocator;
+import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.spi.debugger.SessionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

@@ -45,21 +45,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -73,44 +67,6 @@ import org.w3c.dom.Text;
 public class Util {
     
     private Util() {}
-    
-    /** Return true iff the given line seems to be colored using ANSI terminal escape codes */
-    public static boolean containsAnsiColors(String line) {
-        // RSpec will color output with ANSI color sequence terminal escapes
-        return line.indexOf("\033[") != -1; // NOI18N
-    }
-    
-    /**
-     * Remove ANSI terminal escape codes from a line.
-     */
-    public static String stripAnsiColors(String line) {
-        StringBuilder sb = new StringBuilder(line.length());
-        int index = 0;
-        int max = line.length();
-        while (index < max) {
-            int nextEscape = line.indexOf("\033[", index);
-            if (nextEscape == -1) {
-                nextEscape = line.length();
-            }
-            
-            for (int n = (nextEscape == -1) ? max : nextEscape; index < n; index++) {
-                sb.append(line.charAt(index));
-            }
-
-            if (nextEscape != -1) {
-                for (; index < max; index++) {
-                    char c = line.charAt(index);
-                    if (c == 'm') {
-                        index++;
-                        break;
-                    }
-                }
-            }
-        }
-
-        return sb.toString();
-    }
-
     
     // XXX XML methods copied from ant/project... make a general API of these instead?
     

@@ -58,12 +58,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
-import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.MainClassWarning;
@@ -472,7 +472,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             }
             
             RSpecSupport rspec = new RSpecSupport(project);
-            if (rspec.isRSpecInstalled() && rspec.isSpecFile(file)) {
+            if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
                 rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,
@@ -642,7 +642,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             boolean isDebug = COMMAND_DEBUG_TEST_SINGLE.equals(command);
 
             RSpecSupport rspec = new RSpecSupport(project);
-            if (rspec.isRSpecInstalled() && rspec.isSpecFile(file)) {
+            if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
                 rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,
                        isDebug);
                 return;
