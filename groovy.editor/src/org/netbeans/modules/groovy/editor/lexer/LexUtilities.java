@@ -86,7 +86,7 @@ public class LexUtilities {
     private static final Set<TokenId> INDENT_WORDS = new HashSet<TokenId>();
 
     static {
-        END_PAIRS.add(GroovyTokenId.LCURLY);
+        END_PAIRS.add(GroovyTokenId.LBRACE);
         INDENT_WORDS.addAll(END_PAIRS);
         INDENT_WORDS.add(GroovyTokenId.COLON);
     }
@@ -350,7 +350,7 @@ public class LexUtilities {
                 }
 
                 balance--;
-            } else if (id == GroovyTokenId.RCURLY) {
+            } else if (id == GroovyTokenId.RBRACE) {
                 balance++;
             }
         }
@@ -367,7 +367,7 @@ public class LexUtilities {
 
             if (isBeginToken(id, doc, ts)) {
                 balance--;
-            } else if (id == GroovyTokenId.RCURLY) {
+            } else if (id == GroovyTokenId.RBRACE) {
                 if (balance == 0) {
                     return new OffsetRange(ts.offset(), ts.offset() + token.length());
                 }
@@ -471,7 +471,7 @@ public class LexUtilities {
 
                 if (isBeginToken(id, doc, ts)) {
                     balance++;
-                } else if (id == GroovyTokenId.RCURLY) {
+                } else if (id == GroovyTokenId.RBRACE) {
                     balance--;
                 }
             } while (ts.moveNext() && (ts.offset() <= end));

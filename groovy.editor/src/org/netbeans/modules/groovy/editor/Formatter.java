@@ -157,7 +157,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         } else if (includeKeywords) {
             if (LexUtilities.isBeginToken(id, doc, ts)) {
                 return 1;
-            } else if (id == GroovyTokenId.RCURLY) {
+            } else if (id == GroovyTokenId.RBRACE) {
                 return -1;
             }
         }
@@ -350,7 +350,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             // If the line starts with an end-marker, such as "end", "}", "]", etc.,
             // find the corresponding opening marker, and indent the line to the same
             // offset as the beginning of that line.
-            return (LexUtilities.isIndentToken(id) && !LexUtilities.isBeginToken(id, doc, offset)) || id == GroovyTokenId.RCURLY ||
+            return (LexUtilities.isIndentToken(id) && !LexUtilities.isBeginToken(id, doc, offset)) ||
                 id == GroovyTokenId.RBRACE || id == GroovyTokenId.RBRACKET || id == GroovyTokenId.RPAREN;
         }
         
@@ -410,7 +410,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                 token = LexUtilities.getToken(doc, Utilities.getRowFirstNonWhite(doc, offset));
                 if (token != null) {
                     id = token.id();
-                    if (id == GroovyTokenId.LCURLY || id == GroovyTokenId.ANY_KEYWORD && token.text().toString().equals("alias")) { // NOI18N
+                    if (id == GroovyTokenId.LBRACE || id == GroovyTokenId.ANY_KEYWORD && token.text().toString().equals("alias")) { // NOI18N
                         return false;
                     }
                 }

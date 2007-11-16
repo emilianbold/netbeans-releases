@@ -140,8 +140,6 @@ public class GroovyTokenId extends GsfTokenId {
     public static final GsfTokenId LABELED_ARG = new GsfTokenId("LABELED_ARG", null, "default");
     public static final GsfTokenId LABELED_STAT = new GsfTokenId("LABELED_STAT", null, "default");
     public static final GsfTokenId LAND = new GsfTokenId("LAND", null, "operator");
-    public static final GsfTokenId LBRACK = new GsfTokenId("LBRACK", null, "operator");
-    public static final GsfTokenId LCURLY = new GsfTokenId("LCURLY", null, "operator");
     public static final GsfTokenId LE = new GsfTokenId("LE", null, "operator");
     public static final GsfTokenId LETTER = new GsfTokenId("LETTER", null, "default");
     public static final GsfTokenId LIST_CONSTRUCTOR = new GsfTokenId("LIST_CONSTRUCTOR", null, "default");
@@ -232,8 +230,6 @@ public class GroovyTokenId extends GsfTokenId {
     public static final GsfTokenId QUESTION = new GsfTokenId("QUESTION", null, "operator");
     public static final GsfTokenId RANGE_EXCLUSIVE = new GsfTokenId("RANGE_EXCLUSIVE", null, "operator");
     public static final GsfTokenId RANGE_INCLUSIVE = new GsfTokenId("RANGE_INCLUSIVE", null, "operator");
-    public static final GsfTokenId RBRACK = new GsfTokenId("RBRACK", null, "operator");
-    public static final GsfTokenId RCURLY = new GsfTokenId("RCURLY", null, "operator");
     public static final GsfTokenId REGEX_FIND = new GsfTokenId("REGEX_FIND", null, "operator");
     public static final GsfTokenId REGEX_MATCH = new GsfTokenId("REGEX_MATCH", null, "operator");
     public static final GsfTokenId REGEXP_CTOR_END = new GsfTokenId("REGEXP_CTOR_END", null, "default");
@@ -393,8 +389,8 @@ public class GroovyTokenId extends GsfTokenId {
         types.add(LABELED_ARG);
         types.add(LABELED_STAT);
         types.add(LAND);
-        types.add(LBRACK);
-        types.add(LCURLY);
+        types.add(LBRACE);
+        types.add(LBRACKET);
         types.add(LE);
         types.add(LETTER);
         types.add(LIST_CONSTRUCTOR);
@@ -485,8 +481,8 @@ public class GroovyTokenId extends GsfTokenId {
         types.add(QUESTION);
         types.add(RANGE_EXCLUSIVE);
         types.add(RANGE_INCLUSIVE);
-        types.add(RBRACK);
-        types.add(RCURLY);
+        types.add(RBRACE);
+        types.add(RBRACKET);
         types.add(REGEX_FIND);
         types.add(REGEX_MATCH);
         types.add(REGEXP_CTOR_END);
@@ -687,9 +683,9 @@ public class GroovyTokenId extends GsfTokenId {
             case GroovyTokenTypes.LAND:
                     return GroovyTokenId.LAND;
             case GroovyTokenTypes.LBRACK:
-                    return GroovyTokenId.LBRACK;
+                    return GroovyTokenId.LBRACKET;
             case GroovyTokenTypes.LCURLY:
-                    return GroovyTokenId.LCURLY;
+                    return GroovyTokenId.LBRACE;
             case GroovyTokenTypes.LE:
                     return GroovyTokenId.LE;
             case GroovyTokenTypes.LETTER:
@@ -870,10 +866,10 @@ public class GroovyTokenId extends GsfTokenId {
                     return GroovyTokenId.RANGE_EXCLUSIVE;
             case GroovyTokenTypes.RANGE_INCLUSIVE:
                     return GroovyTokenId.RANGE_INCLUSIVE;
-            case GroovyTokenTypes.RBRACK:
-                    return GroovyTokenId.RBRACK;
             case GroovyTokenTypes.RCURLY:
-                    return GroovyTokenId.RCURLY;
+                    return GroovyTokenId.RBRACE;
+            case GroovyTokenTypes.RBRACK:
+                    return GroovyTokenId.RBRACKET;
             case GroovyTokenTypes.REGEX_FIND:
                     return GroovyTokenId.REGEX_FIND;
             case GroovyTokenTypes.REGEX_MATCH:
