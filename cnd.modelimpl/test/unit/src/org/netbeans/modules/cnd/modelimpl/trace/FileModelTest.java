@@ -197,6 +197,10 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("ppExpressionAndEmptyBodyMacro.cc"); //NOI18N
     }
     
+    public void testExprAfterIf() throws Exception {
+        performTest("lparenAfterPPKwds.cc"); // NOI18N
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     

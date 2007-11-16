@@ -1,0 +1,18 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE lparenAfterPPKwds.cc
+Includes:
+    <no includes>
+Macros:
+    <no macros>
+VARIABLE d [9:1/91-9:7/97]  TYPE: int TEXT=int  [9:1/91-9:4/94]  INIT: null  SCOPE: $Global$ 
+
+========== Dumping model of PROJECT DummyProject
+VARIABLE d [9:1/91-9:7/97]  TYPE: int TEXT=int  [9:1/91-9:4/94]  INIT: null  SCOPE: $Global$ 
+
