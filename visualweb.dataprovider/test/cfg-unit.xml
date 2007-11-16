@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 
 <mconfig name="struts">
 
-    <testbag testattribs="stable" executor="jvm-executor" name="visualweb/dataprovider/runtime">
+    <testbag testattribs="stable" executor="unit-executor" name="visualweb/dataprovider/runtime">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
@@ -53,5 +53,4 @@ made subject to such option by the copyright holder.
     </testbag>
     <compiler name="default-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
     <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
-    <executor name="jvm-executor" antfile="build-unit.xml" target="run-jvm-test"/>
 </mconfig>
