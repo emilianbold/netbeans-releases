@@ -113,7 +113,7 @@ public class RADMenuItemComponent extends RADComponent {
     }
 
     @Override
-    public Object cloneBeanInstance(java.util.Collection relativeProperties) {
+    public Object cloneBeanInstance(java.util.Collection<RADProperty> relativeProperties) {
         if (type == T_SEPARATOR)
             return null; // don't clone artificial org.netbeans.modules.form.Separator
         return super.cloneBeanInstance(relativeProperties);

@@ -175,7 +175,7 @@ public class VisualReplicator {
             return null;
 
         Object clone;
-        ArrayList relativeProperties = new ArrayList();
+        java.util.List<RADProperty> relativeProperties = new ArrayList<RADProperty>();
 
         try {
             // clone the whole visual hierarchy recursively 
@@ -630,7 +630,7 @@ public class VisualReplicator {
 
     // recursive method
     private Object cloneComponent(RADComponent metacomp,
-                                  java.util.List relativeProperties)
+                                  java.util.List<RADProperty> relativeProperties)
         throws Exception
     {
         Object clone = null; // cloned instance to return
@@ -893,9 +893,9 @@ public class VisualReplicator {
     // -------
 
     // method for setting "relative" component properties additionaly
-    private void copyRelativeProperties(java.util.List relativeProperties) {
+    private void copyRelativeProperties(java.util.List<RADProperty> relativeProperties) {
         for (int i=0; i < relativeProperties.size(); i++) {
-            RADProperty property = (RADProperty) relativeProperties.get(i);
+            RADProperty property = relativeProperties.get(i);
             try {
                 Object value = property.getValue();
                 if (value instanceof RADComponent.ComponentReference)

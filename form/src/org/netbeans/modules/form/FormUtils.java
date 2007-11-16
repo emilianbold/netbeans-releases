@@ -58,7 +58,6 @@ import javax.swing.KeyStroke;
 import javax.swing.ListModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.plaf.ComponentUI;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.text.Keymap;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.java.source.ui.DialogBinding;
@@ -66,7 +65,6 @@ import org.netbeans.editor.ActionFactory;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtCaret;
-import org.netbeans.modules.form.editors2.TableModelEditor;
 
 import org.openide.ErrorManager;
 import org.openide.util.*;
@@ -466,6 +464,11 @@ public class FormUtils
     /** Utility method that tries to clone an object. Objects of explicitly
      * specified types are constructed directly, other are serialized and
      * deserialized (if not serializable exception is thrown).
+     * 
+     * @param o object to clone.
+     * @param formModel form model.
+     * @return cloned of the given object.
+     * @throws java.lang.CloneNotSupportedException when cloning was unsuccessful.
      */
     public static Object cloneObject(Object o, FormModel formModel) throws CloneNotSupportedException {
         if (o == null) return null;
@@ -541,6 +544,12 @@ public class FormUtils
      * First - if it is serializable, then it is copied using serialization.
      * If not serializable, then all properties (taken from BeanInfo) are
      * copied (property values cloned recursively).
+     * 
+     * @param bean bean to clone.
+     * @param bInfo bean info.
+     * @param formModel form model.
+     * @return clone of the given bean.
+     * @throws java.lang.CloneNotSupportedException when cloning was unsuccessful.
      */
     public static Object cloneBeanInstance(Object bean, BeanInfo bInfo, FormModel formModel)
         throws CloneNotSupportedException
@@ -634,6 +643,7 @@ public class FormUtils
          * its client properties. The marker keeps track of whether it was
          * serialized or not.
          */
+        @Override
         protected Object replaceObject(Object obj) throws IOException {
             if (obj instanceof JComponent) {
                 JComponent comp = (JComponent) obj;
@@ -723,6 +733,10 @@ public class FormUtils
      * DISABLE_CHANGE_FIRING (to disable firing of changes in target properties),
      * PASS_DESIGN_VALUES (to pass the same FormDesignValue instances if they
      *                     cannot or should not be copied),
+     * 
+     * @param sourceProperties properties to copy values from.
+     * @param targetProperties properties to copy values to.
+     * @param mode see the description above.
      */
     public static void copyProperties(Node.Property[] sourceProperties,
                                       Node.Property[] targetProperties,
@@ -822,13 +836,13 @@ public class FormUtils
 
     public static void copyPropertiesToBean(RADProperty[] props,
                                             Object targetBean,
-                                            Collection relativeProperties) {
+                                            Collection<RADProperty> relativeProperties) {
         copyPropertiesToBean(Arrays.asList(props).iterator(), targetBean, relativeProperties);
     }
 
     public static void copyPropertiesToBean(Iterator<RADProperty> props,
                                             Object targetBean,
-                                            Collection relativeProperties)
+                                            Collection<RADProperty> relativeProperties)
     {
         while (props.hasNext()) {
             RADProperty prop = props.next();
@@ -971,7 +985,11 @@ public class FormUtils
 //        return isContainer;
     }
 
-    /** @return 1 if the class is explicitly specified as container in BeanInfo;
+    /**
+     * Determines whether instances of the given class can serve as containers.
+     * 
+     * @param beanClass class to check.
+     * @return 1 if the class is explicitly specified as container in BeanInfo;
      *          0 if the class is explicitly enumerated in forbiddenContainers
      *          or specified as non-container in its BeanInfo;
      *          -1 if the class is not forbidden nor specified in BeanInfo at all
@@ -1074,12 +1092,12 @@ public class FormUtils
     static Object[] getPropertiesCategoryClsf(Class beanClass,
                                               BeanDescriptor beanDescriptor)
     {
-        ArrayList reClsf = null;
+        List<Object> reClsf = null;
 //        Class beanClass = beanInfo.getBeanDescriptor().getBeanClass();
 
         // some magic with JComponents first...
         if (javax.swing.JComponent.class.isAssignableFrom(beanClass)) {
-            reClsf = new ArrayList(8);
+            reClsf = new ArrayList<Object>(8);
             Object isContainerValue = beanDescriptor.getValue("isContainer"); // NOI18N
             if (isContainerValue == null || Boolean.TRUE.equals(isContainerValue)) {
                 reClsf.add("font"); // NOI18N
@@ -1148,6 +1166,8 @@ public class FormUtils
      * Finds out if given property can hold text with <html> prefix. Basically
      * it must be a text property of a Swing component. Used by String property
      * editor.
+     * 
+     * @param property property to check.
      * @return true if the property can hold <html> text
      */
     public static boolean isHTMLTextProperty(Node.Property property) {
@@ -1165,10 +1185,10 @@ public class FormUtils
 
     private static Object[] collectPropertiesClsf(Class beanClass,
                                                   Object[][] table,
-                                                  java.util.List list)
+                                                  java.util.List<Object> list)
     {
         // Set of names of super classes of the bean and interfaces implemented by the bean.
-        Set superClasses = superClasses(beanClass);
+        Set<String> superClasses = superClasses(beanClass);
 
         for (int i=0; i < table.length; i++) {
             Object[] clsf = table[i];
@@ -1184,7 +1204,7 @@ public class FormUtils
                          && superClasses.contains(refClass)
                          && beanClass.getName().startsWith("javax.swing."))) { // NOI18N
                 if (list == null)
-                    list = new ArrayList(8);
+                    list = new ArrayList<Object>(8);
                 for (int j=2; j < clsf.length; j++)
                     list.add(clsf[j]);
             }
@@ -1269,7 +1289,11 @@ public class FormUtils
 
     // -----
 
-    /** @return a formatted name of specified method
+    /**
+     * Utility method that returns name of the method.
+     * 
+     * @param desc descriptor of the method.
+     * @return a formatted name of specified method
      */
     public static String getMethodName(MethodDescriptor desc) {                
         return getMethodName(desc.getName(), desc.getMethod().getParameterTypes());
@@ -1292,10 +1316,10 @@ public class FormUtils
     }
 
     static void sortProperties(Node.Property[] properties) {
-        Arrays.sort(properties, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                String n1 =((Node.Property)o1).getDisplayName();
-                String n2 =((Node.Property)o2).getDisplayName();
+        Arrays.sort(properties, new Comparator<Node.Property>() {
+            public int compare(Node.Property o1, Node.Property o2) {
+                String n1 = o1.getDisplayName();
+                String n2 = o2.getDisplayName();
                 return n1.compareTo(n2);
             }
         });
@@ -1336,9 +1360,9 @@ public class FormUtils
     
     private static Object[] collectPropertiesOrder(Class beanClass, Object[][] table) {
         // Set of names of super classes of the bean and interfaces implemented by the bean.
-        Set superClasses = superClasses(beanClass);
+        Set<String> superClasses = superClasses(beanClass);
 
-        java.util.List list = new LinkedList();
+        java.util.List<Object> list = new LinkedList<Object>();
         for (int i=0; i < table.length; i++) {
             Object[] order = table[i];
             String refClass = (String)order[0];
@@ -1371,8 +1395,11 @@ public class FormUtils
      * editor. The class might be either a support class being part of the IDE,
      * or a user class defined externally (by a project classpath).
      * There are also separate loadSystemClass for loading a module class only.
+     * 
      * @param name String name of the class
      * @param formFile FileObject representing the form file as part of a project
+     * @return loaded class.
+     * @throws java.lang.ClassNotFoundException if there is a problem with class loading.
      */
     public static Class loadClass(String name, FileObject formFile)
         throws ClassNotFoundException
@@ -1390,10 +1417,13 @@ public class FormUtils
 
     /** Loads a class using IDE system class loader. Usable for form module
      * support classes, property editors, etc.
+     * 
+     * @param name name of the class to load.
+     * @return loaded class.
+     * @throws java.lang.ClassNotFoundException if there is a problem with class loading.
      */
     public static Class loadSystemClass(String name) throws ClassNotFoundException {
-        ClassLoader loader = (ClassLoader)
-                                 Lookup.getDefault().lookup(ClassLoader.class);
+        ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
         if (loader == null)
             throw new ClassNotFoundException();
 
@@ -1412,6 +1442,7 @@ public class FormUtils
             classLoader = loader;
         }
 
+        @Override
         protected Class resolveClass(ObjectStreamClass streamCls)
             throws IOException, ClassNotFoundException
         {
@@ -1436,8 +1467,7 @@ public class FormUtils
 
         List<RADComponent> components = new ArrayList<RADComponent>();
         for (int i=0; i<nodes.length; i++) {
-            RADComponentCookie radCookie =
-                (RADComponentCookie) nodes[i].getCookie(RADComponentCookie.class);
+            RADComponentCookie radCookie = nodes[i].getCookie(RADComponentCookie.class);
             if (radCookie != null) {
                 RADComponent metacomp = radCookie.getRADComponent();
                 if ((metacomp instanceof RADVisualComponent)) {
@@ -1473,8 +1503,8 @@ public class FormUtils
         return false;
     }
     
-    private static Set superClasses(Class beanClass) {
-        Set superClasses = new HashSet();
+    private static Set<String> superClasses(Class beanClass) {
+        Set<String> superClasses = new HashSet<String>();
         Class[] infaces = beanClass.getInterfaces();
         for (int i=0; i<infaces.length; i++) {
             superClasses.add(infaces[i].getName());

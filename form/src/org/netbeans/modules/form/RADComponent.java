@@ -349,7 +349,7 @@ public class RADComponent {
         return false;
     }
 
-    public Object cloneBeanInstance(Collection relativeProperties) {
+    public Object cloneBeanInstance(Collection<RADProperty> relativeProperties) {
         Object clone;
         try {
             clone = createBeanInstance();
