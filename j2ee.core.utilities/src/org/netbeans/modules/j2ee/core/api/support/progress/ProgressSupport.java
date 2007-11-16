@@ -60,7 +60,7 @@ import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
 /**
- * A class providing support for running event thread (in the event dispathing
+ * A class providing support for running event thread (in the event dispatching
  * thread) and background (in a background thread) actions. Multiple
  * actions can be posted at the same time, switching between event thread and
  * background ones as needed. The actions are run sequentially -- one at most one action
@@ -70,7 +70,7 @@ import org.openide.util.RequestProcessor;
  * For that just create an {@link #BackgroundAction} and send it to the {@link #invoke} method.</p>
  *
  * <p>A more complex use case is mixing actions: first you need to run an background
- * action, the an event thread one (but in certain cases only) and then another
+ * action, then an event thread one (but in certain cases only) and then another
  * background one, showing and hiding the progress panel as necessary.</p>
  *
  * @author Andrei Badea
@@ -344,9 +344,6 @@ public final class ProgressSupport {
             handle.progress(workunit);
         }
 
-        /**
-         * Used in tests.
-         */
         ProgressPanel getPanel() {
             return panel;
         }
