@@ -134,10 +134,14 @@ public class FacesContainer {
         } finally {
             // XXX #6460001. Hack. By this time the startup shouldn't be getting back, otherwise it would cause issues later.
             if (!NB_STARTUP_SAX_FACTORY.equals(origSaxProperty)) {
-                System.setProperty(SYS_PROP_SAX_PARSER_FACTORY, origSaxProperty);
+                if(origSaxProperty != null) {
+                    System.setProperty(SYS_PROP_SAX_PARSER_FACTORY, origSaxProperty);
+                }
             }
             if (!NB_STARTUP_DOM_FACTORY.equals(origDomProperty)) {
-                System.setProperty(SYS_PROP_DOM_PARSER_FACTORY, origDomProperty);
+                if(origDomProperty != null) {
+                    System.setProperty(SYS_PROP_DOM_PARSER_FACTORY, origDomProperty);
+                }
             }
         }
     }
