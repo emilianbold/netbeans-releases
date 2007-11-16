@@ -66,6 +66,7 @@ import org.netbeans.modules.visualweb.api.designer.DomProvider.DomRange;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.InlineEditorSupport;
 import org.netbeans.modules.visualweb.api.designer.DomProviderService;
 import org.netbeans.modules.visualweb.css2.CssBox;
+import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.spi.designer.Decoration;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.nodes.Node;
@@ -99,7 +100,7 @@ public class WebFormTest extends NbTestCase {
         System.out.println("createWebForm");
         DomProvider domProvider = Util.createDomProvider();
         WebForm webForm = WebForm.createWebForm(domProvider);
-        assertNotNull(webForm);
+        assertNotNull("Null webForm for domProvider, domProvider=" + domProvider, webForm); // NOI18N
     }
 
 //    /**
@@ -297,20 +298,26 @@ public class WebFormTest extends NbTestCase {
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail("The test case is a prototype.");
 //    }
-//
-//    /**
-//     * Test of getHtmlBody method, of class WebForm.
-//     */
-//    public void testGetHtmlBody() {
-//        System.out.println("getHtmlBody");
-//        WebForm instance = null;
-//        Element expResult = null;
-//        Element result = instance.getHtmlBody();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
+
+    /**
+     * Test of getHtmlBody method, of class WebForm.
+     */
+    public void testGetHtmlBody() {
+        System.out.println("getHtmlBody");
+        DomProvider domProvider = Util.createDomProvider();
+        WebForm webForm = WebForm.createWebForm(domProvider);
+        assertNotNull("Null WebForm instance for domProvider, domProvider=" + domProvider, webForm); // NOI18N
+        Element body = webForm.getHtmlBody();
+        assertNotNull("Null body elment for webForm, webForm=" + webForm, body); // NOI18N
+        String tagName = body.getTagName();
+        assertEquals("Incorrect body element, it was tagName=" // NOI18N
+                + tagName
+                + ", expected=" // NOI18N
+                + HtmlTag.BODY.name,
+            body.getTagName(),
+            HtmlTag.BODY.name);
+    }
+
 //    /**
 //     * Test of setPaneGrid method, of class WebForm.
 //     */
