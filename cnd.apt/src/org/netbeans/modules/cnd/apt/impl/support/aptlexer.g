@@ -709,10 +709,10 @@ PREPROC_DIRECTIVE :
                     | ("define" PostPPKwdChar) => "define" { $setType(DEFINE); setAfterDefine(true); }
                     | ("ifdef" PostPPKwdChar) => "ifdef" { $setType(IFDEF); }
                     | ("ifndef" PostPPKwdChar) => "ifndef" { $setType(IFNDEF); }
-                    | ("if" PostPPKwdChar) =>  "if"   { $setType(IF); }
+                    | ("if" PostIfChar) =>  "if"   { $setType(IF); }
                     | ("undef" PostPPKwdChar) => "undef"  { $setType(UNDEF);  }
-                    | ("elif" PostPPKwdChar) => "elif"  { $setType(ELIF);  }
-                    | ("elseif" PostPPKwdChar) => "elseif"  { $setType(ELIF);  }
+                    | ("elif" PostIfChar) => "elif"  { $setType(ELIF);  }
+                    | ("elseif" PostIfChar) => "elseif"  { $setType(ELIF);  }
                     | ("else" PostPPKwdChar) =>  "else" { $setType(ELSE); }
                     | ("endif" PostPPKwdChar) => "endif" { $setType(ENDIF); }
                     | ("pragma" PostPPKwdChar) => "pragma" { $setType(PRAGMA); } DirectiveBody
@@ -922,10 +922,13 @@ Identifier
         ;
 
 protected
-PostPPKwdChar: Space | EndOfLine | { LA(1) == EOF_CHAR}? ;
+PostPPKwdChar: Space | '/' | '\\' | EndOfLine | { LA(1) == EOF_CHAR}? ;
 
 protected
 PostInclChar: PostPPKwdChar | '\"' | '<' ;
+
+protected
+PostIfChar: PostPPKwdChar | '(';
 
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //!! ALL NEW RULES MUST BE ADDED BEFORE THIS LINE !!
