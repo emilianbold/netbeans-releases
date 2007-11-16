@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -718,23 +718,22 @@ final class ModuleListParser {
             if (properties.get("scan.binaries") != null || xtest) {
                 entries = scanBinaries(properties, project);
                 // module itself has to be added because it doesn't have to be in binaries
-                    Entry e = scanStandaloneSource(properties, project);
-                    if (e != null) {
+                Entry e = scanStandaloneSource(properties, project);
+                if (e != null) {
                     // xtest gets module jar and cluster from binaries
-                        if (e.clusterName == null && xtest) {
-                            Entry oldEntry = entries.get(e.getCnb());
-                            if (oldEntry != null) {
-                                 e = new Entry(e.getCnb(),oldEntry.getJar(),
-                                              e.getClassPathExtensions(),e.sourceLocation,
-                                              e.netbeansOrgPath,e.buildPrerequisites,
-                                              oldEntry.getClusterName(),
-                                              e.runtimeDependencies,
-                                              e.getTestDependencies());  
-                             }
+                    if (e.clusterName == null && xtest) {
+                        Entry oldEntry = entries.get(e.getCnb());
+                        if (oldEntry != null) {
+                            e = new Entry(e.getCnb(), oldEntry.getJar(),
+                                    e.getClassPathExtensions(), e.sourceLocation,
+                                    e.netbeansOrgPath, e.buildPrerequisites,
+                                    oldEntry.getClusterName(),
+                                    e.runtimeDependencies,
+                                    e.getTestDependencies());
                         }
-                        entries.put(e.getCnb(), e);
-                   }
-                   entries.putAll(scanNetBeansOrgSources(new File(nball), properties, project));
+                    }
+                    entries.put(e.getCnb(), e);
+                }
             } else {
                 entries = scanNetBeansOrgSources(new File(nball), properties, project);
             }
