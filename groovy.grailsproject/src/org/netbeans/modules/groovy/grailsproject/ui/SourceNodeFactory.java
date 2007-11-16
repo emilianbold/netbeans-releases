@@ -97,9 +97,11 @@ public class SourceNodeFactory implements NodeFactory {
             for (FileObject fileObject : projectDir.getChildren()) {
                 if ("grails-app".equals(fileObject.getName())) { // NO18N
                     for (FileObject grailsAppChild : fileObject.getChildren()) {
-                        SourceGroup[] groups = sources.getSourceGroups("grails-app/" + grailsAppChild.getName());
-                        for(SourceGroup sourceGroup : groups) {
-                            result.add(new SourceGroupKey(sourceGroup));
+                        if (grailsAppChild.isFolder()) {
+                            SourceGroup[] groups = sources.getSourceGroups("grails-app/" + grailsAppChild.getName());
+                            for(SourceGroup sourceGroup : groups) {
+                                result.add(new SourceGroupKey(sourceGroup));
+                            }
                         }
                     }
                 } else if (fileObject.isFolder()) {
