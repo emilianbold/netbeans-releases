@@ -74,7 +74,7 @@ public final class JavaIdentifiers {
             return false;
         }
         
-        String[] tokens = packageName.split("[.]"); //NOI18N
+        String[] tokens = packageName.split("\\."); //NOI18N
         if (tokens.length == 0) {
             return Utilities.isJavaIdentifier(packageName);
         }
