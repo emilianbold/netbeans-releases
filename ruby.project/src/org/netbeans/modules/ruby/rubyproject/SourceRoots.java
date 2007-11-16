@@ -264,7 +264,7 @@ public final class SourceRoots {
                         }
                         Element cfgEl = helper.getPrimaryConfigurationData(true);
                         NodeList nl = cfgEl.getElementsByTagNameNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE, elementName);
-                        assert nl.getLength() == 1 : "Illegal project.xml"; //NOI18N
+                        assert nl.getLength() == 1 : "Illegal project.xml. Expected exactly one <" + elementName + '>'; //NOI18N
                         Element ownerElement = (Element) nl.item(0);
                         //Remove all old roots
                         NodeList rootsNodes = ownerElement.getElementsByTagNameNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root");    //NOI18N
