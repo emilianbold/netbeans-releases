@@ -498,16 +498,17 @@ public class LineBox extends ContainerBox {
                 // LengthManager is doing a 0.5 factor of the font
                 // height to compute EXS anyway!
                 
-                // XXX #6344561 The computation didn't work for images, only for text.
-                // TODO How it should be done correct way, study the spec (CSS2 10.8.1).
-                if(box instanceof ImageBox) {
-                    int y = (baseLine / 2) - (box.getHeight() / 2);
-                    box.setY(y);
-                } else {
+                if (isTextualBox(box)) {
 //                    int pex = (int)CssLookup.getFontSize(element, DesignerSetings.getInstance().getDefaultFontSize()) / 2;
 //                    int pex = (int)CssProvider.getValueService().getFontSizeForElement(element, DesignerSettings.getInstance().getDefaultFontSize()) / 2;
                     int pex = (int)CssProvider.getValueService().getFontSizeForElement(element, webform.getDefaultFontSize()) / 2;
                     int y = baseLine - (box.getHeight() / 2) - pex;
+                    box.setY(y);
+                } else {
+                    // XXX #122162 It seems it doesn't work for all non-textual boxes.
+////                     XXX #6344561 The computation didn't work for images, only for text.
+////                     TODO How it should be done correct way, study the spec (CSS2 10.8.1).
+                    int y = (baseLine / 2) - (box.getHeight() / 2);
                     box.setY(y);
                 }
             } else {
@@ -554,6 +555,14 @@ public class LineBox extends ContainerBox {
         }
 
         return height;
+    }
+    
+    private static boolean isTextualBox(CssBox box) {
+        if (box == null) {
+            return false;
+        }
+        BoxType boxType = box.getBoxType();
+        return boxType == BoxType.TEXT || boxType == BoxType.SPACE || boxType == BoxType.LINEBREAK;
     }
 
     protected void paintBackground(Graphics g, int px, int py) {
