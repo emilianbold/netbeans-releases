@@ -43,6 +43,11 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.Formatter"/>
                 </file>
 
+                <file name="bracket.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.BracketCompletion"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.BracketCompleter"/>
+                </file>
+
             </folder>
         </folder>
     </folder>
