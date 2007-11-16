@@ -734,6 +734,10 @@ final class ModuleListParser {
                     }
                     entries.put(e.getCnb(), e);
                 }
+                if (!xtest) {
+                    // to allow building of depend modules on top of binary
+                    entries.putAll(scanNetBeansOrgSources(new File(nball), properties, project));
+                }
             } else {
                 entries = scanNetBeansOrgSources(new File(nball), properties, project);
             }
