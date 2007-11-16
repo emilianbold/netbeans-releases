@@ -46,4 +46,15 @@ made subject to such option by the copyright holder.
     <fontcolor name="cc-highlighting-inactive" foreColor="969696" default="default">
         <font style="plain"/>
     </fontcolor>
+    <fontcolor name="cc-highlighting-macros-user" foreColor="006900" default="default">
+        <font style="plain"/>
+    </fontcolor>
+    <fontcolor name="cc-highlighting-macros-system" foreColor="969600" default="default">
+        <font style="plain"/>
+    </fontcolor>
+    <fontcolor name="cc-highlighting-class-fields" foreColor="AFAF00" default="default">
+        <font style="plain"/>
+    </fontcolor>
+    <fontcolor name="cc-highlighting-mark-occurences" bgColor="ECEBA3" default="default">
+    </fontcolor>
 </fontscolors>
