@@ -77,8 +77,8 @@ import org.openide.util.datatransfer.ExTransferable;
  * @author quynguyen
  */
 public class DesignerWebServiceTransferManager implements WebServiceTransferManager {
-    private static DataFlavor FLAVOR_METHOD_DISPLAY_ITEM;
-    private static DataFlavor FLAVOR_PORT_DISPLAY_ITEM;
+    static DataFlavor FLAVOR_METHOD_DISPLAY_ITEM;
+    static DataFlavor FLAVOR_PORT_DISPLAY_ITEM;
     
     
     static {
@@ -220,7 +220,7 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
     }
     
     
-    private static class PortBeanCreateInfo implements BeanCreateInfo {
+    static class PortBeanCreateInfo implements BeanCreateInfo {
         private final WebServiceData wsData;
         private final WsdlPort port;
         
@@ -283,7 +283,7 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
     } // End of MethodBeanCreateInfo.
     
     
-    private static class MethodBeanCreateInfo implements BeanCreateInfo {
+    static class MethodBeanCreateInfo implements BeanCreateInfo {
         private WebServiceData wsData;
         private WsdlPort port;
         private JavaMethod javaMethod;
