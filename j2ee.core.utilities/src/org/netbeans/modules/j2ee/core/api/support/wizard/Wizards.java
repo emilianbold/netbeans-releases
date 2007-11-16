@@ -65,9 +65,9 @@ public final class Wizards {
      * @param steps the steps to merge; must not be null.
      */
     public static void mergeSteps(WizardDescriptor wizard, WizardDescriptor.Panel[] panels, String[] steps) {
-        Parameters.notNull("wizard", wizard); //NO18N
-        Parameters.notNull("panels", panels); //NO18N
-        Parameters.notNull("steps", steps); //NO18N
+        Parameters.notNull("wizard", wizard); //NOI18N
+        Parameters.notNull("panels", panels); //NOI18N
+        Parameters.notNull("steps", steps); //NOI18N
         
         Object prop = wizard.getProperty(WIZARD_PANEL_CONTENT_DATA);
         String[] beforeSteps;

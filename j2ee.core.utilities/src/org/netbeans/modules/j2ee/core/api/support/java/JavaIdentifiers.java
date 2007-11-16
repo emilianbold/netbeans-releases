@@ -65,7 +65,7 @@ public final class JavaIdentifiers {
      * name, false otherwise.
      */
     public static boolean isValidPackageName(String packageName) {
-        Parameters.notNull("packageName", packageName); //NO18N
+        Parameters.notNull("packageName", packageName); //NOI18N
 
         if ("".equals(packageName)) {
             return true;
@@ -74,9 +74,9 @@ public final class JavaIdentifiers {
             return false;
         }
         
-        String[] tokens = packageName.split("[.]"); //NO18N
+        String[] tokens = packageName.split("[.]"); //NOI18N
         if (tokens.length == 0) {
-            return Utilities.isJavaIdentifier(packageName); //NO18N
+            return Utilities.isJavaIdentifier(packageName);
         }
         for(String token : tokens) {
             if (!Utilities.isJavaIdentifier(token)) {
@@ -94,7 +94,7 @@ public final class JavaIdentifiers {
      * @return the FQN for the given file object or null.
      */
     public static String getQualifiedName(FileObject fileObject){
-        Parameters.notNull("fileObject", fileObject); //NO18N
+        Parameters.notNull("fileObject", fileObject); //NOI18N
         ClassPath classPath = ClassPath.getClassPath(fileObject, ClassPath.SOURCE);
         if (classPath != null) {
             return classPath.getResourceName(fileObject, '.', false);
@@ -113,7 +113,7 @@ public final class JavaIdentifiers {
      */
     public static String unqualify(String fqn){
         checkFQN(fqn); 
-        int lastDot = fqn.lastIndexOf("."); //NO18N
+        int lastDot = fqn.lastIndexOf("."); //NOI18N
         if (lastDot < 0){
             return fqn;
         }
@@ -130,7 +130,7 @@ public final class JavaIdentifiers {
      * a valid fully qualified name.
      */
     public static String getPackageName(String fqn) {
-        checkFQN(fqn); //NO18N
+        checkFQN(fqn);
         int lastDot = fqn.lastIndexOf("."); // NOI18N
         if (lastDot < 0){
             return "";
@@ -139,9 +139,9 @@ public final class JavaIdentifiers {
     }
     
     private static void checkFQN(String fqn){
-        Parameters.notEmpty("fqn", fqn); //NO18N
+        Parameters.notEmpty("fqn", fqn); //NOI18N
         if (!isValidPackageName(fqn)){
-            throw new IllegalArgumentException("The given fqn [" + fqn + "] does not represent a fully qualified class name"); //NO18N
+            throw new IllegalArgumentException("The given fqn [" + fqn + "] does not represent a fully qualified class name"); //NOI18N
         }
     }
     

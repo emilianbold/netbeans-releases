@@ -83,7 +83,7 @@ public final class SourceGroups {
      * <strong>excluding</strong> test source groups.
      */ 
     public static SourceGroup[] getJavaSourceGroups(Project project) {
-        Parameters.notNull("project", project); //NO18N
+        Parameters.notNull("project", project); //NOI18N
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
         Set<SourceGroup> testGroups = getTestSourceGroups(sourceGroups);
@@ -105,8 +105,8 @@ public final class SourceGroups {
      * @return true if the folder is writable or can be created, false otherwise.
      */ 
     public static boolean isFolderWritable(SourceGroup sourceGroup, String packageName) {
-        Parameters.notNull("sourceGroup", sourceGroup); //NO18N
-        Parameters.notNull("packageName", packageName); //NO18N
+        Parameters.notNull("sourceGroup", sourceGroup); //NOI18N
+        Parameters.notNull("packageName", packageName); //NOI18N
         try {
             FileObject fo = getFolderForPackage(sourceGroup, packageName, false);
 
@@ -130,8 +130,8 @@ public final class SourceGroups {
      * null if not found.
      */ 
     public static SourceGroup getFolderSourceGroup(SourceGroup[] sourceGroups, FileObject folder) {
-        Parameters.notNull("sourceGroups", sourceGroups); //NO18N
-        Parameters.notNull("folder", folder); //NO18N
+        Parameters.notNull("sourceGroups", sourceGroups); //NOI18N
+        Parameters.notNull("folder", folder); //NOI18N
         for (int i = 0; i < sourceGroups.length; i++) {
             if (FileUtil.isParentOf(sourceGroups[i].getRootFolder(), folder)) {
                 return sourceGroups[i];
@@ -148,8 +148,8 @@ public final class SourceGroups {
      * @return the package name of the given <code>folder</code>.
      */ 
     public static String getPackageForFolder(SourceGroup sourceGroup, FileObject folder) {
-        Parameters.notNull("sourceGroup", sourceGroup); //NO18N
-        Parameters.notNull("folder", folder); //NO18N
+        Parameters.notNull("sourceGroup", sourceGroup); //NOI18N
+        Parameters.notNull("folder", folder); //NOI18N
         String relative = FileUtil.getRelativePath(sourceGroup.getRootFolder(), folder);
         if (relative != null) {
             return relative.replace('/', '.'); // NOI18N
@@ -179,8 +179,8 @@ public final class SourceGroups {
      * @return the folder representing the given package or null if it was not found.
      */
     public static FileObject getFolderForPackage(SourceGroup sourceGroup, String packageName, boolean create) throws IOException {
-        Parameters.notNull("sourceGroup", sourceGroup); //NO18N
-        Parameters.notNull("packageName", packageName); //NO18N
+        Parameters.notNull("sourceGroup", sourceGroup); //NOI18N
+        Parameters.notNull("packageName", packageName); //NOI18N
         
         String relativePkgName = packageName.replace('.', '/');
         FileObject folder = sourceGroup.getRootFolder().getFileObject(relativePkgName);
@@ -193,7 +193,7 @@ public final class SourceGroups {
     }
 
     /**
-     * Gets the <code>SourceGroup</code> of the given <code>project</code> which contains the
+     * Gets the {@link SourceGroup} of the given <code>project</code> which contains the
      * given <code>fqClassName</code>.
      * 
      * @param project the project; must not be null.
@@ -203,8 +203,8 @@ public final class SourceGroups {
      * if the class was not found in the source groups of the project.
      */
     public static SourceGroup getClassSourceGroup(Project project, String fqClassName) {
-        Parameters.notNull("project", project); //NO18N
-        Parameters.notEmpty("fqClassName", fqClassName); //NO18N
+        Parameters.notNull("project", project); //NOI18N
+        Parameters.notEmpty("fqClassName", fqClassName); //NOI18N
 
         String classFile = fqClassName.replace('.', '/') + ".java"; // NOI18N
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
