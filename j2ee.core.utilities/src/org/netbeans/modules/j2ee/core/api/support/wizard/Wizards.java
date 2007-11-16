@@ -46,6 +46,8 @@ import org.openide.util.Parameters;
 
 /**
  * This class consists of static utility methods for manipulating wizards.
+ * 
+ * @author Erno Mononen
  */
 public final class Wizards {
 
@@ -98,7 +100,7 @@ public final class Wizards {
                 step = component.getName();
             }
             component.putClientProperty(WIZARD_PANEL_CONTENT_DATA, resultSteps);
-            component.putClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX, new Integer(i));
+            component.putClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
             component.getAccessibleContext().setAccessibleDescription(step);
             resultSteps[i + offset] = step;
         }
