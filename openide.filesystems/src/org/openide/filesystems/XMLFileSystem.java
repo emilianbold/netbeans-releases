@@ -70,6 +70,7 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
@@ -345,6 +346,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
             refreshChildrenInAtomicAction((AbstractFolder) getRoot(), rootElem);
         } catch (IOException iox) {
             urlsToXml = origUrls;
+            Exceptions.attachMessage(iox, Arrays.toString(urls));
             throw iox;
         } catch (Exception e) {
             throw (IOException) new IOException(act + ": " + e.toString()).initCause(e); // NOI18N
