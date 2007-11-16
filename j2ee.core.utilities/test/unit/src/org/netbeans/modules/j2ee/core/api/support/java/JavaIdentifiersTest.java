@@ -46,7 +46,7 @@ import junit.framework.TestCase;
  * @author Erno Mononen
  */
 public class JavaIdentifiersTest extends TestCase {
-    
+
     public JavaIdentifiersTest(String testName) {
         super(testName);
     }
@@ -56,9 +56,13 @@ public class JavaIdentifiersTest extends TestCase {
         assertTrue(JavaIdentifiers.isValidPackageName("foo"));
         assertTrue(JavaIdentifiers.isValidPackageName("foo.bar"));
         assertTrue(JavaIdentifiers.isValidPackageName("fooBar"));
-        
+
         assertFalse(JavaIdentifiers.isValidPackageName(".foo"));
         assertFalse(JavaIdentifiers.isValidPackageName("foo-bar"));
+        assertFalse(JavaIdentifiers.isValidPackageName("."));
+        assertFalse(JavaIdentifiers.isValidPackageName(".foo"));
+        assertFalse(JavaIdentifiers.isValidPackageName("foo.bar."));
+        assertFalse(JavaIdentifiers.isValidPackageName("foo. .bar"));
         assertFalse(JavaIdentifiers.isValidPackageName(" "));
         assertFalse(JavaIdentifiers.isValidPackageName("public"));
         assertFalse(JavaIdentifiers.isValidPackageName("int"));
@@ -67,21 +71,27 @@ public class JavaIdentifiersTest extends TestCase {
     public void testUnqualify() {
         assertEquals("Foo", JavaIdentifiers.unqualify("Foo"));
         assertEquals("Baz", JavaIdentifiers.unqualify("foo.bar.Baz"));
-        try{
-            JavaIdentifiers.unqualify("foo.");
+        assertInvalidFQN("foo.");
+        assertInvalidFQN(".");
+        assertInvalidFQN(".foo.");
+        assertInvalidFQN(".foo.Bar");
+    }
+
+    private void assertInvalidFQN(String fqn) {
+        try {
+            JavaIdentifiers.unqualify(fqn);
             fail();
-        } catch (IllegalArgumentException expected){
+        } catch (IllegalArgumentException expected) {
         }
     }
 
     public void testGetPackageName() {
         assertEquals("", JavaIdentifiers.getPackageName("Bop"));
         assertEquals("foo.bar.baz", JavaIdentifiers.getPackageName("foo.bar.baz.Bop"));
-        try{
+        try {
             JavaIdentifiers.getPackageName("foo.bar.");
             fail();
-        } catch (IllegalArgumentException expected){
+        } catch (IllegalArgumentException expected) {
         }
     }
-
 }

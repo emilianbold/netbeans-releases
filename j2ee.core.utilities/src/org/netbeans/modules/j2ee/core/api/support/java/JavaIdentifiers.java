@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.j2ee.core.api.support.java;
 
-import java.util.StringTokenizer;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
@@ -49,6 +48,8 @@ import org.openide.util.Utilities;
 /**
  * This class consists of static utility methods for working
  * with Java identifiers.
+ * 
+ * @author Erno Mononen
  */
 public final class JavaIdentifiers {
 
@@ -65,16 +66,19 @@ public final class JavaIdentifiers {
      */
     public static boolean isValidPackageName(String packageName) {
         Parameters.notNull("packageName", packageName); //NO18N
-        
-        if (packageName.length() > 0 && packageName.charAt(0) == '.') {// NOI18N
+
+        if ("".equals(packageName)) {
+            return true;
+        }
+        if (packageName.startsWith(".") || packageName.endsWith(".")) {// NOI18N
             return false;
         }
-        StringTokenizer tukac = new StringTokenizer(packageName, "."); // NOI18N
-        while (tukac.hasMoreTokens()) {
-            String token = tukac.nextToken();
-            if ("".equals(token)) {// NOI18N
-                return false;
-            }
+        
+        String[] tokens = packageName.split("[.]"); //NO18N
+        if (tokens.length == 0) {
+            return Utilities.isJavaIdentifier(packageName); //NO18N
+        }
+        for(String token : tokens) {
             if (!Utilities.isJavaIdentifier(token)) {
                 return false;
             }
@@ -108,8 +112,8 @@ public final class JavaIdentifiers {
      * a valid fully qualified name.
      */
     public static String unqualify(String fqn){
-        isValidFQN(fqn); //NO18N
-        int lastDot = fqn.lastIndexOf(".");
+        checkFQN(fqn); 
+        int lastDot = fqn.lastIndexOf("."); //NO18N
         if (lastDot < 0){
             return fqn;
         }
@@ -126,7 +130,7 @@ public final class JavaIdentifiers {
      * a valid fully qualified name.
      */
     public static String getPackageName(String fqn) {
-        isValidFQN(fqn); //NO18N
+        checkFQN(fqn); //NO18N
         int lastDot = fqn.lastIndexOf("."); // NOI18N
         if (lastDot < 0){
             return "";
@@ -134,11 +138,11 @@ public final class JavaIdentifiers {
         return fqn.substring(0, lastDot);
     }
     
-    private static void isValidFQN(String fqn){
+    private static void checkFQN(String fqn){
         Parameters.notEmpty("fqn", fqn); //NO18N
-        if (fqn.lastIndexOf(".") == fqn.length() -1){
+        if (!isValidPackageName(fqn)){
             throw new IllegalArgumentException("The given fqn [" + fqn + "] does not represent a fully qualified class name"); //NO18N
         }
     }
-
+    
 }
