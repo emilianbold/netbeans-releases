@@ -523,25 +523,17 @@ public final class NavigatorController implements LookupListener, ActionListener
     /****** NodeListener implementation *****/
     
     public void nodeDestroyed(NodeEvent ev) {
+        // #121944: don't react on node destroy when we are active 
+        if (navigatorTC.equals(WindowManager.getDefault().getRegistry().getActivated())) {
+            return;
+        }
         if (EventQueue.isDispatchThread()) {
-            forceUpdate();
+            run();
         } else {
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    forceUpdate();
-                }
-            });
+            EventQueue.invokeLater(this);
         }
     }
 
-    /** Forces navigator content update.
-     * Does nothing in case navigator TC is active */
-    private void forceUpdate () {
-        if (!navigatorTC.equals(WindowManager.getDefault().getRegistry().getActivated())) {
-            updateContext(true);
-        }
-    }
-    
     public void childrenAdded(NodeMemberEvent ev) {
         // no operation
     }
