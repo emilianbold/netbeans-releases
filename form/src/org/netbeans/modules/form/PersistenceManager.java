@@ -81,7 +81,7 @@ public abstract class PersistenceManager {
      */
     public abstract void loadForm(FormDataObject formObject,
                                   FormModel formModel,
-                                  List nonfatalErrors)
+                                  List<Throwable> nonfatalErrors)
         throws PersistenceException;
 
     /** This method saves the form to given data object.
@@ -94,7 +94,7 @@ public abstract class PersistenceManager {
      */
     public abstract void saveForm(FormDataObject formObject,
                                   FormModel formModel,
-                                  List nonfatalErrors)
+                                  List<Throwable> nonfatalErrors)
         throws PersistenceException;
 
     // ------------

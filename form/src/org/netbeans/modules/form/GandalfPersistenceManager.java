@@ -205,13 +205,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private ConnectedProperties connectedProperties;
 
     // XML persistence of code structure
-    private Map expressions; // map of expressions/IDs already saved/loaded
+    private Map<Object,Object> expressions; // map of expressions/IDs already saved/loaded
     private int lastExpId; // CodeExpression ID counter (for saving)
-    private Map savedVariables; // set of code variables already saved
+    private Set<CodeVariable> savedVariables; // set of code variables already saved
     private boolean codeFlow = true; // we can save/load either code flow
                                      // or static code structure
-
-    private String formatVersion; // format version for saving the form file
 
     private Boolean newLayout; // whether a new layout support was loaded
     
@@ -254,7 +252,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
      */
     public void loadForm(FormDataObject formObject,
                          FormModel formModel,
-                         List nonfatalErrors)
+                         List<Throwable> nonfatalErrors)
         throws PersistenceException
     {
         loadForm(formObject.getFormEntry().getFile(), 
@@ -264,17 +262,19 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
     
     /** This method loads the form from given data object.
+     * 
      * @param formFile form file corresponding to java file
-     * @param javafile java file
+     * @param javaFile java file
      * @param formModel FormModel to be filled with loaded data
      * @param nonfatalErrors List to be filled with errors occurred during
      *        loading which are not fatal (but should be reported)
+     * @return form model of the loaded form.
      * @exception PersistenceException if some fatal problem occurred which
      *            prevents loading the form
      */
     public FormModel loadForm(FileObject formFile, FileObject javaFile,
                          FormModel formModel,
-                         List nonfatalErrors)
+                         List<Throwable> nonfatalErrors)
         throws PersistenceException
     {
         this.formFile = formFile;                
@@ -370,7 +370,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 if (declaredSuperclassName != null) {
                     Class designClass = getFormDesignClass(declaredSuperclassName);
                     if (designClass == null) {
-                        Class superclass = FormUtils.loadClass(declaredSuperclassName, formFile);
+                        Class<?> superclass = FormUtils.loadClass(declaredSuperclassName, formFile);
                         designClass = getFormDesignClass(superclass);
                         if (designClass == null) {
                             formBaseClass = checkDeclaredSuperclass(superclass, formInfoName);
@@ -708,7 +708,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
 
         // first load the component class
-        Class compClass = null;
+        Class<?> compClass = null;
         Throwable compEx = null;
         try {
             compClass = PersistenceObjectRegistry.loadClass(className, formFile);
@@ -2675,7 +2675,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             String propName = nameNode.getNodeValue();
             Node.Property [] props = metacomp.getSyntheticProperties();
             Node.Property property = null;
-            Class expectedPropertyType = null;
+            Class<?> expectedPropertyType = null;
             for (int j=0; j < props.length; j++) {
                 if (props[j].getName().equals(propName)) {
                     property = props[j];
@@ -3053,7 +3053,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
      */
     public void saveForm(FormDataObject formObject,
                          FormModel formModel,
-                         List nonfatalErrors)
+                         List<Throwable> nonfatalErrors)
         throws PersistenceException
     {
         FileObject formFile = formObject.getFormEntry().getFile();
@@ -3080,11 +3080,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
         this.formFile = formFile;
         this.formModel = formModel;
         this.nonfatalErrors = nonfatalErrors;
-
-        // start with the lowest version; if there is nothing in the
-        // form that requires higher format version, then the form file
-        // is compatible with NB 3.2
-        formatVersion = NB32_VERSION;
 
         RADComponent topComp = formModel.getTopRADComponent();
         RADVisualFormContainer formCont =
@@ -3142,7 +3137,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 //                raiseFormatVersion(NB33_VERSION);
         } else {
             // Form settings of bean form
-            Map auxValues = new TreeMap();
+            Map<String,Object> auxValues = new TreeMap<String,Object>();
             addFormSettings(auxValues);
             buf.append(ONE_INDENT); addElementOpen(buf, XML_AUX_VALUES);
             saveAuxValues(auxValues, buf, ONE_INDENT + ONE_INDENT);
@@ -4530,7 +4525,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                   StringBuffer buf, String indent)
     {
         buf.append(indent);
-        if (getVariablesMap().get(var) != null) {
+        if (getVariableSet().contains(var)) {
             addLeafElementOpenAttr(buf,
                                    XML_CODE_VARIABLE,
                                    new String[] { ATTR_VAR_NAME },
@@ -4547,7 +4542,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                Integer.toString(var.getType()),
                                var.getDeclaredType().getName() });
 
-            getVariablesMap().put(var, var);
+            getVariableSet().add(var);
         }
     }
 
@@ -5289,15 +5284,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     // -------
 
-    private Map getExpressionsMap() {
+    private Map<Object/*String or CodeExpression*/,Object/*String or CodeExpression*/> getExpressionsMap() {
         if (expressions == null)
-            expressions = new HashMap(100);
+            expressions = new HashMap<Object,Object>(100);
         return expressions;
     }
 
-    private Map getVariablesMap() {
+    private Set<CodeVariable> getVariableSet() {
         if (savedVariables == null)
-            savedVariables = new HashMap(50);
+            savedVariables = new HashSet<CodeVariable>(50);
         return savedVariables;
     }
 
@@ -5588,6 +5583,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * <LI> Class
      * <LI> String
      * <LI> Integer, Short, Byte, Long, Float, Double, Boolean, Character </UL>
+     * 
+     * @param value value to encode.
      * @return String containing encoded value or null if specified object is not of supported type
      */
     public static String encodePrimitiveValue(Object value) {
@@ -5618,9 +5615,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     /** Decodes a value from String containing textual representation of
      * serialized stream.
+     * 
+     * @param strValue value to decode.
      * @return decoded object
      * @exception IOException thrown if an error occurres during deserializing
      *            the object
+     * @throws java.lang.ClassNotFoundException if the corresponding class cannot be loaded.
      */
     public Object decodeValue(String strValue)
         throws IOException, ClassNotFoundException
@@ -5648,7 +5648,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
 
     /** Encodes specified value to a String containing textual representation of serialized stream.
+     * 
+     * @param value value to encode.
      * @return String containing textual representation of the serialized object
+     * @throws java.io.IOException when some problem occurs during encoding.
      */
     public static String encodeValue(Object value) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
