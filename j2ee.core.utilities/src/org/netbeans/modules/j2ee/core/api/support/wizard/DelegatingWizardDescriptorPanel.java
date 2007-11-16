@@ -75,7 +75,7 @@ public class DelegatingWizardDescriptorPanel<Data> implements WizardDescriptor.F
      * @param delegate the panel to wrap; must not be null.
      */
     public DelegatingWizardDescriptorPanel(WizardDescriptor.Panel<Data> delegate) {
-        Parameters.notNull("delegate", delegate);
+        Parameters.notNull("delegate", delegate); //NO18N
         this.delegate = delegate;
     }
 
