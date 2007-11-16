@@ -27,17 +27,28 @@
  */
 package org.netbeans.modules.visualweb.insync.models;
 
-import junit.framework.*;
+import com.sun.rave.designtime.DesignContext;
+import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.visualweb.insync.InsyncTestBase;
+import org.netbeans.modules.visualweb.insync.Model;
+import org.netbeans.modules.visualweb.insync.ModelSet;
+import org.netbeans.modules.visualweb.insync.ModelSetsListener;
+import org.netbeans.modules.visualweb.insync.live.LiveUnit;
+import org.netbeans.modules.visualweb.jsfsupport.container.FacesContainer;
+import org.netbeans.modules.web.project.WebProject;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author sc32560
  */
 public class FacesModelSetTest extends InsyncTestBase {
+    static Project project = null;
     public FacesModelSetTest(String testName) {
         super(testName);
     }
@@ -61,19 +72,99 @@ public class FacesModelSetTest extends InsyncTestBase {
         super.tearDown();
     }   
     
-    //    /**
-//     * Test of startModeling method, of class FacesModelSet.
-//     */
-//    public void testStartModeling() {
-//        System.out.println("startModeling");
-//        FileObject file = null;
-//        FacesModelSet expResult = null;
-//        FacesModelSet result = FacesModelSet.startModeling(file);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
+    int getBeansCount() {
+        return getPageBeans().length + getNonPageBeansCount();
+    }
+    
+    int getNonPageBeansCount() {
+        return getRequestBeans().length + 
+               getSessionBeans().length + 
+               getApplicationBeans().length;
+    }
+    
+    String[] getBeanNames() {
+        String[] str = new String[getBeansCount()];
+        int i = 0;
+        for(String s : getPageBeans()) {
+            str[i++] = s;
+        }
+        for (String s : getRequestBeans()) {
+            str[i++] = s;
+        }
+        for (String s : getSessionBeans()) {
+            str[i++] = s;
+        }    
+        for (String s : getApplicationBeans()) {
+            str[i++] = s;
+        }         
+        return str;
+    }
+    
+    FileObject getFirstPageBeanJavaFile() {
+        FileObject[] roots = ((WebProject)getProject()).getSourceRoots().getRoots();
+        for(FileObject f : roots) {
+            FileObject result = findFileObject(f, getPageBeans()[0]);
+            if(result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+    
+    FileObject findFileObject(FileObject f, String name) {
+        FileObject result = null;
+        if(f.isFolder()) {
+            for(FileObject child : f.getChildren()) {
+                result = findFileObject(child, name);
+                if(result != null) {
+                    return result;
+                }
+            }
+        }else {
+            if(name.equals(f.getName())) {
+                result = f;
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * Test of startModeling method, of class FacesModelSet.
+     */
+    public void testStartModeling() {
+        System.out.println("startModeling");
+        FileObject f = getProject().getProjectDirectory();
+        final Object syncObject = new Object();
+        ModelSet.addModelSetsListener(
+            new ModelSetsListener() {
+                public void modelSetAdded(ModelSet modelSet) {
+                    Project project = modelSet.getProject();
+                    if (project == getProject()) {
+                        ModelSet.removeModelSetsListener(this);
+                        synchronized(syncObject){
+                            syncObject.notify();
+                        }
+                    }
+                }
+                public void modelSetRemoved(ModelSet modelSet) {
+                }
+        });
+            
+        FacesModelSet result = null;
+        synchronized(syncObject) {
+            result = FacesModelSet.startModeling(f);
+            assertNull(result);
+            try {
+                syncObject.wait();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            //Try again, it should work
+            result = FacesModelSet.startModeling(f);
+            assertNotNull(result);
+        }
+    }
+
     /**
      * Test of getInstance method, of class FacesModelSet.
      */
@@ -81,104 +172,160 @@ public class FacesModelSetTest extends InsyncTestBase {
     public void testGetInstance() {
         System.out.println("getInstance");
         FileObject file = getProject().getProjectDirectory();
-        FacesModelSet expResult = null;
         FacesModelSet result = FacesModelSet.getInstance(file);
         assertNotNull(result);
-        assert (result.getModels().length == 4);
+        //Test subsequent get instance returns the same object reference
+        FacesModelSet result1 = FacesModelSet.getInstance(file);
+        assertSame(result, result1);
+    }
+
+    /**
+     * Test of getFacesModels method, of class FacesModelSet.
+     */
+    public void testGetFacesModels() {
+        System.out.println("getFacesModels");
+        FacesModelSet instance = createFacesModelSet();
+        FacesModel[] result = instance.getFacesModels();
+        assertNotNull(result);
+        assertEquals(getBeansCount(), result.length);
     }
     
-    //
-//    /**
-//     * Test of getFacesModelIfAvailable method, of class FacesModelSet.
-//     */
-//    public void testGetFacesModelIfAvailable() {
-//        System.out.println("getFacesModelIfAvailable");
-//        FileObject fileObject = null;
-//        FacesModel expResult = null;
-//        FacesModel result = FacesModelSet.getFacesModelIfAvailable(fileObject);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of destroy method, of class FacesModelSet.
-//     */
-//    public void testDestroy() {
-//        System.out.println("destroy");
-//        FacesModelSet instance = null;
-//        instance.destroy();
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of getFacesContainer method, of class FacesModelSet.
-//     */
-//    public void testGetFacesContainer() {
-//        System.out.println("getFacesContainer");
-//        FacesModelSet instance = null;
-//        FacesContainer expResult = null;
-//        FacesContainer result = instance.getFacesContainer();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of getFacesConfigModel method, of class FacesModelSet.
-//     */
-//    public void testGetFacesConfigModel() {
-//        System.out.println("getFacesConfigModel");
-//        FacesModelSet instance = null;
-//        FacesConfigModel expResult = null;
-//        FacesConfigModel result = instance.getFacesConfigModel();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of getFacesModels method, of class FacesModelSet.
-//     */
-//    public void testGetFacesModels() {
-//        System.out.println("getFacesModels");
-//        FacesModelSet instance = null;
-//        FacesModel[] expResult = null;
-//        FacesModel[] result = instance.getFacesModels();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of getModel method, of class FacesModelSet.
-//     */
-//    public void testGetModel() {
-//        System.out.println("getModel");
-//        FileObject file = null;
-//        FacesModelSet instance = null;
-//        Model expResult = null;
-//        Model result = instance.getModel(file);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of getFacesModel method, of class FacesModelSet.
-//     */
-//    public void testGetFacesModel() {
-//        System.out.println("getFacesModel");
-//        FileObject file = null;
-//        FacesModelSet instance = null;
-//        FacesModel expResult = null;
-//        FacesModel result = instance.getFacesModel(file);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
+    /**
+     * Test of findDesignContext method, of class FacesModelSet.
+     */
+    public void testFindDesignContext() {
+        System.out.println("findDesignContext");
+        FacesModelSet instance = createFacesModelSet();
+        for(String beanName : getBeanNames()) {
+            DesignContext dc = instance.findDesignContext(beanName);
+            assertNotNull(dc);
+        }
+    }
+    
+    /**
+     * Test of getDesignContexts method, of class FacesModelSet.
+     */
+    public void testGetDesignContexts() {
+        System.out.println("getDesignContexts");
+        FacesModelSet instance = createFacesModelSet();
+        DesignContext[] dcs = instance.getDesignContexts();
+        assertNotNull(dcs);
+        assertEquals(dcs.length, getBeansCount());
+    }
+    
+    /**
+     * Test of getFacesModelIfAvailable method, of class FacesModelSet.
+     */
+    public void testGetFacesModelIfAvailable() {
+        System.out.println("getFacesModelIfAvailable");
+        FileObject f = getFirstPageBeanJavaFile();
+        FacesModel result = FacesModelSet.getFacesModelIfAvailable(f);
+        assertNull(result);
+        FacesModelSet instance = createFacesModelSet();
+        instance.syncAll();
+        result = FacesModelSet.getFacesModelIfAvailable(f);
+        assertNotNull(result);        
+    }
+
+    /**
+     * Test of destroy method, of class FacesModelSet.
+     */
+    public void testDestroy() {
+        System.out.println("destroy");
+        FacesModelSet instance = createFacesModelSet();
+        instance.syncAll();
+        assertEquals(instance.getFacesModels().length, getBeansCount());
+        assertEquals(instance.getDesignContexts().length, getBeansCount());
+        instance.destroy();
+        assertEquals(instance.getFacesModels().length, 0);
+        assertEquals(instance.getDesignContexts().length, 0);
+    }
+
+    /**
+     * Test of getFacesContainer method, of class FacesModelSet.
+     */
+    public void testGetFacesContainer() {
+        System.out.println("getFacesContainer");
+        FacesModelSet instance = createFacesModelSet();
+        FacesContainer result = instance.getFacesContainer();
+        assertNotNull(result);
+    }
+
+    /**
+     * Test of getFacesConfigModel method, of class FacesModelSet.
+     */
+    public void testGetFacesConfigModel() {
+        System.out.println("getFacesConfigModel");
+        FacesModelSet instance = createFacesModelSet();
+        FacesConfigModel result = instance.getFacesConfigModel();
+        assertNotNull(result);
+        //result.getFile() should return the default config file
+        assertEquals(result.getFile().getName(), getFacesConfigs()[0]);
+    }
+
+    /**
+     * Test of findDesignContexts method, of class FacesModelSet.
+     */
+    public void testFindDesignContexts() {
+        System.out.println("findDesignContexts");
+        FacesModelSet instance = createFacesModelSet();
+        String[] scopes = {"request", "session", "application"};        
+        DesignContext[] result = instance.findDesignContexts(scopes);
+        assertEquals(result.length, getNonPageBeansCount());
+    }    
+    
+
+    /**
+     * Test of getModel method, of class FacesModelSet.
+     */
+    public void testGetModel() {
+        System.out.println("getModel");
+        FacesModelSet instance = createFacesModelSet();
+        FacesModel[] models = instance.getFacesModels();
+        FileObject file = models[0].getFile();
+        
+        Model result = instance.getModel(file);
+        assertEquals(models[0], result);
+        
+        file = models[0].getJavaFile();
+        if(file != null) {
+            result = instance.getModel(file);
+            assertEquals(models[0], result);         
+        }
+
+        file = models[0].getMarkupFile();
+        if(file != null) {
+           result = instance.getModel(file);
+            assertEquals(models[0], result);              
+        }
+    }
+    
+
+    /**
+     * Test of getFacesModel method, of class FacesModelSet.
+     */
+    public void testGetFacesModel() {
+        System.out.println("getFacesModel");
+        FacesModelSet instance = createFacesModelSet();
+        FacesModel[] models = instance.getFacesModels();
+        FileObject file = models[0].getFile();
+        
+        Model result = instance.getFacesModel(file);
+        assertEquals(models[0], result);
+        
+        file = models[0].getJavaFile();
+        if(file != null) {
+            result = instance.getFacesModel(file);
+            assertEquals(models[0], result);         
+        }
+
+        file = models[0].getMarkupFile();
+        if(file != null) {
+           result = instance.getFacesModel(file);
+            assertEquals(models[0], result);              
+        }
+    }
+
 //    /**
 //     * Test of updateBeanElReferences method, of class FacesModelSet.
 //     */
@@ -243,59 +390,17 @@ public class FacesModelSetTest extends InsyncTestBase {
 //        fail("The test case is a prototype.");
 //    }
 //
-//    /**
-//     * Test of getContextClassLoader method, of class FacesModelSet.
-//     */
-//    public void testGetContextClassLoader() {
-//        System.out.println("getContextClassLoader");
-//        FacesModelSet instance = null;
-//        ClassLoader expResult = null;
-//        ClassLoader result = instance.getContextClassLoader();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
+    /**
+     * Test of getContextClassLoader method, of class FacesModelSet.
+     */
+    public void testGetContextClassLoader() {
+        System.out.println("getContextClassLoader");
+        FacesModelSet instance = createFacesModelSet();
+        ClassLoader result = instance.getContextClassLoader();
+        assertNotNull(result);
+    }
 //
-//    /**
-//     * Test of getDesignContexts method, of class FacesModelSet.
-//     */
-//    public void testGetDesignContexts() {
-//        System.out.println("getDesignContexts");
-//        FacesModelSet instance = null;
-//        DesignContext[] expResult = null;
-//        DesignContext[] result = instance.getDesignContexts();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
 //
-//    /**
-//     * Test of findDesignContext method, of class FacesModelSet.
-//     */
-//    public void testFindDesignContext() {
-//        System.out.println("findDesignContext");
-//        String beanName = "";
-//        FacesModelSet instance = null;
-//        DesignContext expResult = null;
-//        DesignContext result = instance.findDesignContext(beanName);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of findDesignContexts method, of class FacesModelSet.
-//     */
-//    public void testFindDesignContexts() {
-//        System.out.println("findDesignContexts");
-//        String[] scopes = null;
-//        FacesModelSet instance = null;
-//        DesignContext[] expResult = null;
-//        DesignContext[] result = instance.findDesignContexts(scopes);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
 //
 //    /**
 //     * Test of createDesignContext method, of class FacesModelSet.
@@ -313,34 +418,23 @@ public class FacesModelSetTest extends InsyncTestBase {
 //        fail("The test case is a prototype.");
 //    }
 //
-//    /**
-//     * Test of removeUnits method, of class FacesModelSet.
-//     */
-//    public void testRemoveUnits() {
-//        System.out.println("removeUnits");
-//        SourceUnit[] units = null;
-//        FacesModelSet instance = null;
-//        boolean expResult = false;
-//        boolean result = instance.removeUnits(units);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of removeDesignContext method, of class FacesModelSet.
-//     */
-//    public void testRemoveDesignContext() {
-//        System.out.println("removeDesignContext");
-//        DesignContext context = null;
-//        FacesModelSet instance = null;
-//        boolean expResult = false;
-//        boolean result = instance.removeDesignContext(context);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
+    /**
+     * Test of removeDesignContext method, of class FacesModelSet.
+     */
+    public void testRemoveDesignContext() {
+        System.out.println("removeDesignContext");
+        FacesModelSet instance = createFacesModelSet();
+        DesignContext[] contexts = instance.getDesignContexts();
+        LiveUnit lu = (LiveUnit)contexts[0];
+        String beanName = lu.getModel().getBeanName();
+        instance.syncAll();
+        assertNotNull(instance.facesConfigModel.getManagedBean(beanName));
+        instance.removeDesignContext(lu);
+        assertEquals(contexts.length-1, instance.getDesignContexts().length);
+        assertNull(instance.facesConfigModel.getManagedBean(beanName));
+        
+    }
+
 //    /**
 //     * Test of getResources method, of class FacesModelSet.
 //     */
@@ -385,18 +479,15 @@ public class FacesModelSetTest extends InsyncTestBase {
 //        fail("The test case is a prototype.");
 //    }
 //
-//    /**
-//     * Test of getProjectDirectory method, of class FacesModelSet.
-//     */
-//    public void testGetProjectDirectory() {
-//        System.out.println("getProjectDirectory");
-//        FacesModelSet instance = null;
-//        FileObject expResult = null;
-//        FileObject result = instance.getProjectDirectory();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
+    /**
+     * Test of getProjectDirectory method, of class FacesModelSet.
+     */
+    public void testGetProjectDirectory() {
+        System.out.println("getProjectDirectory");
+        FacesModelSet instance = createFacesModelSet();
+        FileObject result = instance.getProjectDirectory();
+        assertEquals(result, getProject().getProjectDirectory());
+    }
 //
 //    /**
 //     * Test of getDocumentDirectory method, of class FacesModelSet.
@@ -723,17 +814,16 @@ public class FacesModelSetTest extends InsyncTestBase {
 //        fail("The test case is a prototype.");
 //    }
 //
-//    /**
-//     * Test of removeModel method, of class FacesModelSet.
-//     */
-//    public void testRemoveModel() {
-//        System.out.println("removeModel");
-//        Model model = null;
-//        FacesModelSet instance = null;
-//        instance.removeModel(model);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
+    /**
+     * Test of removeModel method, of class FacesModelSet.
+     */
+    public void testRemoveModel() {
+        System.out.println("removeModel");
+        FacesModelSet instance = createFacesModelSet();
+        FacesModel[] models = instance.getFacesModels();
+        instance.removeModel(models[0]);
+        assertEquals(models.length-1, instance.getFacesModels().length);
+    }
 //
 //    /**
 //     * Test of getJavaRootFolder method, of class FacesModelSet.
@@ -789,15 +879,20 @@ public class FacesModelSetTest extends InsyncTestBase {
 //        fail("The test case is a prototype.");
 //    }
 //
-//    /**
-//     * Test of syncAll method, of class FacesModelSet.
-//     */
-//    public void testSyncAll() {
-//        System.out.println("syncAll");
-//        FacesModelSet instance = null;
-//        instance.syncAll();
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
+    /**
+     * Test of syncAll method, of class FacesModelSet.
+     */
+    public void testSyncAll() {
+        System.out.println("syncAll");
+        FacesModelSet instance = createFacesModelSet();
+        FacesModel[] models = instance.getFacesModels();
+        for(FacesModel model : models) {
+            assertNull(model.getLiveUnit());
+        }
+        instance.syncAll();
+        for(FacesModel model : models) {
+            assertNotNull(model.getLiveUnit());
+        }
+    }
 
 }
