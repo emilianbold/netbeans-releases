@@ -383,6 +383,16 @@ public class SharedUtils {
                 throw new CannotRefactorException(problem.getMessage());
             problem = problem.getNext();
         }
+        
+        //save the file before refactoring..
+        Referenceable obj = refactoring.getRefactoringSource().lookup(Referenceable.class);
+        if(obj == null)
+            return;
+        Set<Model> all = new HashSet<Model>();
+        if(obj instanceof Model)
+            RefactoringUtil.saveTargetFile((Model)obj, all);
+        else if(obj instanceof Nameable)
+            RefactoringUtil.saveTargetFile(((Nameable)obj).getModel(), all);
         session.doRefactoring(true);
     }
      
