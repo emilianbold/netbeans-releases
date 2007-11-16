@@ -110,12 +110,6 @@ final class GroovyLexer implements Lexer<GsfTokenId> {
             if (antlrToken != null) {
                 int intId = antlrToken.getType();
 
-                // this wasn't in original coyote lexer
-                // without this len was counted as -1 and thrown exception
-                if (intId == GroovyTokenTypes.EOF) {
-                    return null;
-                }
-
                 int len = lexerInput.readLength() - myCharBuffer.getExtraCharCount();
                 if ( antlrToken.getText() != null ) {
                     len = Math.max( len, antlrToken.getText().length() );
@@ -129,6 +123,12 @@ final class GroovyLexer implements Lexer<GsfTokenId> {
 
                 if ( scanner.stringCtorState != 0) {
                     intId = GroovyTokenTypes.STRING_LITERAL;
+                }
+
+                // this wasn't in original coyote lexer
+                // without this len was counted as -1 and thrown exception
+                if (intId == GroovyTokenTypes.EOF) {
+                    return null;
                 }
 
                 return createToken(intId, len);
@@ -158,6 +158,16 @@ final class GroovyLexer implements Lexer<GsfTokenId> {
             
             scanner.resetText();
             
+            return createToken(GroovyTokenId.ERROR_INT, tokenLength);
+        } catch (GroovyScanner.NoViableAltForCharException nvafe) {
+            int len = lexerInput.readLength() - myCharBuffer.getExtraCharCount();
+            int tokenLength = lexerInput.readLength();
+            scanner.resetText();
+            while (len < tokenLength) {
+                scannerConsumeChar();
+                len++;
+            }
+            scanner.resetText();
             return createToken(GroovyTokenId.ERROR_INT, tokenLength);
         }
     }
