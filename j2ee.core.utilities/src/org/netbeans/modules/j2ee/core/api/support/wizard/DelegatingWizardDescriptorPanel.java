@@ -47,6 +47,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.Parameters;
 
 /**
  * A <code>WizardDescriptor.Panel</code> which delegates to another panel.
@@ -68,18 +69,33 @@ public class DelegatingWizardDescriptorPanel<Data> implements WizardDescriptor.F
     private WizardDescriptor wizardDescriptor;
     private Project project;
 
+    /**
+     * Create a new instance of DelegatingWizardDescriptorPanel.
+     * 
+     * @param delegate the panel to wrap; must not be null.
+     */
     public DelegatingWizardDescriptorPanel(WizardDescriptor.Panel<Data> delegate) {
+        Parameters.notNull("delegate", delegate);
         this.delegate = delegate;
     }
 
+    /**
+     * @see org.openide.WizardDescriptor.Panel#getComponent()
+     */
     public Component getComponent() {
         return delegate.getComponent();
     }
 
+    /**
+     * @see org.openide.WizardDescriptor.Panel#getHelp()
+     */
     public HelpCtx getHelp() {
         return delegate.getHelp();
     }
 
+    /**
+     * @see org.openide.WizardDescriptor.Panel#readSettings(Object)
+     */
     public void readSettings(Data settings) {
         if (wizardDescriptor == null) {
             wizardDescriptor = (WizardDescriptor)settings;
@@ -88,22 +104,39 @@ public class DelegatingWizardDescriptorPanel<Data> implements WizardDescriptor.F
         delegate.readSettings(settings);
     }
 
+    /**
+     * @see org.openide.WizardDescriptor.Panel#storeSettings(Object)
+     */
     public void storeSettings(Data settings) {
         delegate.storeSettings(settings);
     }
 
+    /**
+     * @see org.openide.WizardDescriptor.Panel#isValid()
+     */
     public boolean isValid() {
         return delegate.isValid();
     }
 
+    /**
+     * @see org.openide.WizardDescriptor.Panel#addChangeListener(ChangeListener)
+     */
     public void addChangeListener(ChangeListener l) {
         delegate.addChangeListener(l);
     }
 
+    /**
+     * @see org.openide.WizardDescriptor.Panel#removeListener(ChangeListener)
+     */
     public void removeChangeListener(ChangeListener l) {
         delegate.removeChangeListener(l);
     }
 
+    /**
+     * @return true if the wrapped panel is a <code>FinishablePanel</code>
+     * and is finish panel, false otherwise.
+     * @see org.openide.WizardDescriptor.FinishablePanel#isFinishPanel()
+     */
     public boolean isFinishPanel() {
         if (delegate instanceof WizardDescriptor.FinishablePanel) {
             return ((WizardDescriptor.FinishablePanel)delegate).isFinishPanel();
@@ -111,10 +144,17 @@ public class DelegatingWizardDescriptorPanel<Data> implements WizardDescriptor.F
         return false;
     }
 
+    /**
+     * @return the wizard descriptor passed to this panel or null 
+     * if none was passed.
+     */
     protected WizardDescriptor getWizardDescriptor() {
         return wizardDescriptor;
     }
 
+    /**
+     * @return the project in which the panel is invoked, possibly null.
+     */
     protected Project getProject() {
         return project;
     }
