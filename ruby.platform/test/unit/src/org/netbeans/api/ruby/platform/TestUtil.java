@@ -66,5 +66,8 @@ public final class TestUtil {
         return FileUtil.toFileObject(getXTestJRubyHome());
     }
     
+    public static String getXTestJRubyPath() {
+        return new File(new File(getXTestJRubyHome(), "bin"), "jruby").getAbsolutePath();
+    }
 
 }

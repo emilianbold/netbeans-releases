@@ -61,6 +61,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.plaf.UIResource;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 
@@ -129,9 +130,14 @@ public final class PlatformComponentFactory {
             if (nbPlafs.length > 0) {
                 selectedPlaf = nbPlafs[0];
             }
+            String path = RubyInstallation.getInstance().getRuby();
+            RubyPlatform platform = RubyPlatformManager.getPlatformByPath(path);
+            if (platform != null) {
+                setSelectedItem(platform);
+            }
         }
 
-        public RubyPlatformListModel(RubyPlatform initiallySelected) {
+        public RubyPlatformListModel(final RubyPlatform initiallySelected) {
             nbPlafs = getSortedPlatforms(initiallySelected);
             selectedPlaf = initiallySelected;
         }

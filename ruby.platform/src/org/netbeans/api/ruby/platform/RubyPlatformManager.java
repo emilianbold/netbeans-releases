@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
@@ -125,6 +126,21 @@ public final class RubyPlatformManager {
         for (RubyPlatform p : getPlatformsInternal()) {
             if (p.getID().equals(id)) {
                 return p;
+            }
+        }
+        return null;
+    }
+
+    public static synchronized RubyPlatform getPlatformByPath(String path) {
+        for (RubyPlatform p : getPlatformsInternal()) {
+            try {
+                File current = new File(p.getInterpreter()).getCanonicalFile();
+                File toFind = new File(path).getCanonicalFile();
+                if (current.equals(toFind)) {
+                    return p;
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
             }
         }
         return null;

@@ -75,6 +75,15 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
         assertEquals("platform removed", 1, RubyPlatformManager.getPlatforms().size());
     }
     
+    public void testGetPlatformByPath() throws Exception {
+        File rubyF = setUpRuby();
+        RubyPlatform ruby = RubyPlatformManager.addPlatform(rubyF, "ruby");
+        RubyPlatform alsoRuby = RubyPlatformManager.getPlatformByPath(ruby.getInterpreter());
+        assertSame("found by path", ruby, alsoRuby);
+        RubyPlatform jruby = RubyPlatformManager.getPlatformByPath(TestUtil.getXTestJRubyPath());
+        assertSame("found by path", RubyPlatformManager.getDefaultPlatform(), jruby);
+    }
+    
 //    public void testGems() {
 //        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
 //        GemManager gm = jruby.getGemManager();
