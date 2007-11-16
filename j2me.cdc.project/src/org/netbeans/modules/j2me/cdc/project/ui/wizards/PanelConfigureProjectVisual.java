@@ -62,6 +62,8 @@ public class PanelConfigureProjectVisual extends JPanel {
     
     private int type;
     
+    final static private String WIZARD_TYPE="cdc-wizard-type";
+    
     /** Creates new form PanelInitProject */
     public PanelConfigureProjectVisual( PanelConfigureProject panel, int type, String preferredName ) {
         this.panel = panel;
@@ -94,7 +96,7 @@ public class PanelConfigureProjectVisual extends JPanel {
     }
     
     void read (WizardDescriptor d) {
-        Integer lastType = (Integer) d.getProperty("wizard-type");  //NOI18N        
+        Integer lastType = (Integer) d.getProperty(WIZARD_TYPE);  //NOI18N        
         if (lastType == null || lastType.intValue() != this.type) {
             //bugfix #46387 The type of project changed, reset values to defaults
             d.putProperty ("name", null);
@@ -106,7 +108,7 @@ public class PanelConfigureProjectVisual extends JPanel {
     }
     
     void store( WizardDescriptor d ) {
-        d.putProperty("wizard-type", new Integer(this.type));   //NOI18N
+        d.putProperty(WIZARD_TYPE, new Integer(this.type));   //NOI18N
         projectLocationPanel.store( d );
         optionsPanel.store( d );        
     }
