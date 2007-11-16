@@ -779,13 +779,8 @@ public class JspLexer implements Lexer<JspTokenId> {
                 case ISI_SCRIPTLET:
                     switch(actChar) {
                         case '%':
-                            if (input.readLength() == 1) {
                                 lexerState = ISP_SCRIPTLET_PC;
                                 break;
-                            } else {
-                                input.backup(1);
-                                return scriptletToken(JspTokenId.SCRIPTLET, lexerStateJspScriptlet);
-                            }
                         case '<':
                             //may be end of scriptlet section in JSP document
                             CharSequence tagName = getPossibleTagName();
@@ -816,19 +811,12 @@ public class JspLexer implements Lexer<JspTokenId> {
                                 lexerStateJspScriptlet = INIT;
                                 return token(JspTokenId.SYMBOL2);
                             } else {
-                                //XXX Looks like following code never gets called
-                                //the preceeeding text begore %> is already returned in
-                                //ISI_SCRIPTLET state
-                                //
-                                //Possibly remove after 6.0
-                                
                                 //return the scriptlet content
                                 input.backup(2); // backup '%>' we will read JUST them again
                                 lexerState = ISI_SCRIPTLET;
                                 int lxs = lexerStateJspScriptlet;
                                 lexerStateJspScriptlet = INIT;
                                 return scriptletToken(JspTokenId.SCRIPTLET, lxs);
-                                //XXX<<<
                             }
                         default:
                             lexerState = ISI_SCRIPTLET;
@@ -1135,10 +1123,8 @@ public class JspLexer implements Lexer<JspTokenId> {
             case ISI_EL:
                 lexerState = INIT;
                 return token(JspTokenId.EL);
-            case ISP_SCRIPTLET_PC:
-                lexerState = INIT;
-                return token(JspTokenId.SYMBOL2);
             case ISI_SCRIPTLET:
+            case ISP_SCRIPTLET_PC:
                 lexerState = INIT;
                 return scriptletToken(JspTokenId.SCRIPTLET, lexerStateJspScriptlet);
             default:
