@@ -102,7 +102,9 @@ public final class SourceGroups {
      * 
      * @param sourceGroup the source group of the folder; must not be null.
      * @param packageName the package to check; must not be null.
-     * @return true if the folder is writable or can be created, false otherwise.
+     * @return true if the folder is writable or can be created (i.e. the parent 
+     * folder, or the root folder of the given <code>sourceGroup</code> if there is no other 
+     * parent for the folder, is writable), false otherwise.
      */ 
     public static boolean isFolderWritable(SourceGroup sourceGroup, String packageName) {
         Parameters.notNull("sourceGroup", sourceGroup); //NOI18N
@@ -114,7 +116,7 @@ public final class SourceGroups {
                 packageName = packageName.substring(0, packageName.lastIndexOf('.'));
                 fo = getFolderForPackage(sourceGroup, packageName, false);
             }
-            return ((fo == null) || fo.canWrite());
+            return fo == null ? sourceGroup.getRootFolder().canWrite() : fo.canWrite();
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
             return false;

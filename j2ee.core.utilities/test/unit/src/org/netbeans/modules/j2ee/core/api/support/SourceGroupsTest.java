@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.j2ee.core.api.support;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
@@ -68,6 +70,12 @@ public class SourceGroupsTest extends NbTestCase {
         TestUtilities.setCacheFolder(getWorkDir());
         FileObject projectPath = FileUtil.toFileObject(new File(getDataDir(), JAVA_APP_NAME));
         javaApp = ProjectManager.getDefault().findProject(projectPath);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        clearWorkDir();
     }
 
     public void testGetClassSourceGroup() throws Exception{
@@ -104,19 +112,67 @@ public class SourceGroupsTest extends NbTestCase {
         assertEquals(getJavaAppSourceRoot(), javaSGs[0].getRootFolder());
     }
     
+    public void testIsFolderWritable() throws Exception {
+        SourceGroup[] javaSGs = SourceGroups.getJavaSourceGroups(javaApp);
+        assertTrue(SourceGroups.isFolderWritable(javaSGs[0], "should.not.exist"));
+        
+        File notWritableRoot = new File(getWorkDir(), "cantwrite");
+        notWritableRoot.mkdir();
+        notWritableRoot.setReadOnly();
+        SourceGroup notWritable = new SourceGroupImpl(notWritableRoot);
+        assertFalse(SourceGroups.isFolderWritable(notWritable, "should.not.exist"));
+    }
+
     public void testGetPackageForFolder() throws Exception {
         SourceGroup[] javaSGs = SourceGroups.getJavaSourceGroups(javaApp);
         FileObject folder = javaApp.getProjectDirectory().getFileObject("src/foo/bar/baz");
         String packageName =  SourceGroups.getPackageForFolder(javaSGs[0], folder);
-        
+
         assertEquals("foo.bar.baz", packageName);
 
         // default package
         packageName =  SourceGroups.getPackageForFolder(javaSGs[0], getJavaAppSourceRoot());
         assertEquals("", packageName);
     }
-    
+
     private FileObject getJavaAppSourceRoot(){
         return javaApp.getProjectDirectory().getFileObject("/src");
+    }
+    
+    private static class SourceGroupImpl implements SourceGroup{
+        private final File root;
+
+        public SourceGroupImpl(File root) {
+            this.root = root;
+        }
+
+        public FileObject getRootFolder() {
+            return FileUtil.toFileObject(root);
+        }
+
+        public String getName() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public String getDisplayName() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Icon getIcon(boolean opened) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean contains(FileObject file) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
     }
 }
