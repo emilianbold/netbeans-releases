@@ -263,7 +263,7 @@ private void proxyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 private void sslButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sslButtonActionPerformed
     Runnable asyncCompletionTask = new InstallationComplete();
     Gem gem = new Gem("jruby-openssl", null, null); // NOI18N
-    new GemManager().install(new Gem[] { gem }, this, null, false, false, null, true, true, asyncCompletionTask);
+    new GemManager().install(new Gem[] { gem }, this, false, false, null, true, true, asyncCompletionTask);
     
 }//GEN-LAST:event_sslButtonActionPerformed
 
@@ -283,9 +283,9 @@ private void railsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     Gem[] gems = new Gem[] { rails, jdbc };
     if (RubyInstallation.getInstance().isValidRails((false))) {
         // Already installed: update
-        new GemManager().update(gems, this, null, false, false, true, asyncCompletionTask);
+        new GemManager().update(gems, this, false, false, true, asyncCompletionTask);
     } else {
-        new GemManager().install(gems, this, null, false, false, null, true, true, asyncCompletionTask);
+        new GemManager().install(gems, this, false, false, null, true, true, asyncCompletionTask);
     }
 }//GEN-LAST:event_railsButtonActionPerformed
     

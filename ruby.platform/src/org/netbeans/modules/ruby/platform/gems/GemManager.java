@@ -219,7 +219,7 @@ public final class GemManager {
         
         String[] args = argList.toArray(new String[argList.size()]);
         List<String> lines = new ArrayList<String>(3000);
-        boolean ok = gemRunner("list", null, false, null, null, null, null, null, lines, args); // NOI18N
+        boolean ok = gemRunner("list", null, null, lines, args); // NOI18N
         
         if (ok) {
             parseGemList(lines, localList, remoteList);
@@ -373,9 +373,7 @@ public final class GemManager {
             public void run() {
                 try {
                     boolean succeeded =
-                            gemRunner(command, progressHandle, interactive, description,
-                            successMessage, failureMessage, progress, processHolder, lines,
-                            commandArgs);
+                            gemRunner(command, progress, processHolder, lines, commandArgs);
                     
                     closeButton.setEnabled(true);
                     cancelButton.setEnabled(false);
@@ -410,10 +408,8 @@ public final class GemManager {
         }
     }
     
-    private boolean gemRunner(String command, ProgressHandle progressHandle, boolean interactive,
-            String description, String successMessage, String failureMessage,
-            GemProgressPanel progressPanel, Process[] processHolder, List<String> lines,
-            String... commandArgs) {
+    private boolean gemRunner(String command, GemProgressPanel progressPanel,
+            Process[] processHolder, List<String> lines, String... commandArgs) {
         String gemProblem = GemManager.getGemProblem();
         if (gemProblem != null) {
             NotifyDescriptor nd = new NotifyDescriptor.Message(gemProblem, NotifyDescriptor.Message.ERROR_MESSAGE);
@@ -570,7 +566,7 @@ public final class GemManager {
                 RubyInstallation.getInstance().recomputeRoots();
             }
         };
-        new GemManager().install(gems, null, null, rdoc, ri, null, true, true, installationComplete);
+        new GemManager().install(gems, null, rdoc, ri, null, true, true, installationComplete);
     }
 
     /**
@@ -588,8 +584,8 @@ public final class GemManager {
      * @param ri If true, generate ri data as part of the installation
      * @param version If non null, install the specified version rather than the latest available version
      */
-    public boolean install(Gem[] gems, Component parent, ProgressHandle progressHandle,
-            boolean rdoc, boolean ri, String version, boolean includeDeps, boolean asynchronous,
+    public boolean install(Gem[] gems, Component parent, boolean rdoc, boolean ri,
+            String version, boolean includeDeps, boolean asynchronous,
             Runnable asyncCompletionTask) {
         // Install the given gem
         List<String> argList = new ArrayList<String>();
@@ -633,9 +629,7 @@ public final class GemManager {
             
             return false;
         } else {
-            boolean ok =
-                    gemRunner(gemCmd, progressHandle, true, title, success, failure, null, null, null,
-                    args);
+            boolean ok = gemRunner(gemCmd, null, null, null, args);
             
             return ok;
         }
@@ -653,8 +647,7 @@ public final class GemManager {
      *    gem output). If the exit code is normal, the completion task will be run at the end.
      * @param asyncCompletionTask If asynchronous is true and the gem task completes normally, this task will be run at the end.
      */
-    public boolean uninstall(Gem[] gems, Component parent, ProgressHandle progressHandle,
-            boolean asynchronous, Runnable asyncCompletionTask) {
+    public boolean uninstall(Gem[] gems, Component parent, boolean asynchronous, Runnable asyncCompletionTask) {
         // Install the given gem
         List<String> argList = new ArrayList<String>();
         
@@ -688,8 +681,7 @@ public final class GemManager {
             for (Gem gem : gems) {
                 args[nameIndex] = gem.getName();
                 
-                if (!gemRunner(gemCmd, progressHandle, true, title, success, failure, null, null,
-                        null, args)) {
+                if (!gemRunner(gemCmd, null, null, null, args)) {
                     ok = false;
                 }
             }
@@ -711,8 +703,8 @@ public final class GemManager {
      *    gem output). If the exit code is normal, the completion task will be run at the end.
      * @param asyncCompletionTask If asynchronous is true and the gem task completes normally, this task will be run at the end.
      */
-    public boolean update(Gem[] gems, Component parent, ProgressHandle progressHandle,
-            boolean rdoc, boolean ri, boolean asynchronous, Runnable asyncCompletionTask) {
+    public boolean update(Gem[] gems, Component parent, boolean rdoc,
+            boolean ri, boolean asynchronous, Runnable asyncCompletionTask) {
         // Install the given gem
         List<String> argList = new ArrayList<String>();
         
@@ -746,10 +738,7 @@ public final class GemManager {
             
             return false;
         } else {
-            boolean ok =
-                    gemRunner(gemCmd, progressHandle, true, title, success, failure, null, null, null,
-                    args);
-            
+            boolean ok = gemRunner(gemCmd, null, null, null, args);
             return ok;
         }
     }

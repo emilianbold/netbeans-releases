@@ -816,7 +816,7 @@ public class GemPanel extends javax.swing.JPanel implements Runnable {
                     Gem gem = new Gem(panel.getGemName(), null, null);
                     // XXX Do I really need to refresh it right way?
                     GemListRefresher completionTask = new GemListRefresher(newList, INSTALLED_TAB_INDEX);
-                    boolean changed = gemManager.install(new Gem[] { gem }, this, null, false, false, panel.getVersion(), 
+                    boolean changed = gemManager.install(new Gem[] { gem }, this, false, false, panel.getVersion(), 
                             panel.getIncludeDepencies(), true, completionTask);
                     installedModified = installedModified || changed;
                 }
@@ -831,7 +831,7 @@ public class GemPanel extends javax.swing.JPanel implements Runnable {
 
     private void updateAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateAllButtonActionPerformed
         Runnable completionTask = new GemListRefresher(installedList, INSTALLED_TAB_INDEX);
-        gemManager.update(null, this, null, false, false, true, completionTask);
+        gemManager.update(null, this, false, false, true, completionTask);
         installedModified = true; 
     }//GEN-LAST:event_updateAllButtonActionPerformed
 
@@ -850,7 +850,7 @@ public class GemPanel extends javax.swing.JPanel implements Runnable {
         }
         if (gems.size() > 0) {
             Runnable completionTask = new GemListRefresher(updatedList, INSTALLED_TAB_INDEX);
-            gemManager.update(gems.toArray(new Gem[gems.size()]), this, null, false, false, true, completionTask);
+            gemManager.update(gems.toArray(new Gem[gems.size()]), this, false, false, true, completionTask);
             installedModified = true;
         }
     }//GEN-LAST:event_updateButtonActionPerformed
@@ -870,7 +870,7 @@ public class GemPanel extends javax.swing.JPanel implements Runnable {
         }
         if (gems.size() > 0) {
             Runnable completionTask = new GemListRefresher(installedList, INSTALLED_TAB_INDEX);
-            gemManager.uninstall(gems.toArray(new Gem[gems.size()]), this, null, true, completionTask);
+            gemManager.uninstall(gems.toArray(new Gem[gems.size()]), this, true, completionTask);
             installedModified = true;
         }
     }//GEN-LAST:event_uninstallButtonActionPerformed
