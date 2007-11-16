@@ -255,6 +255,8 @@ public class RubyElementCtx {
                         kind = ElementKind.CONSTANT;
                     }
                 }
+            } else if (node instanceof ConstDeclNode) {
+                kind = ElementKind.CONSTANT;
             } else if (node instanceof GlobalVarNode || node instanceof GlobalAsgnNode) {
                 kind = ElementKind.GLOBAL;
             } else if (node instanceof InstVarNode || node instanceof InstAsgnNode ||
