@@ -46,6 +46,8 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -55,13 +57,15 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.j2ee.core.utilities.ProgressPanel;
 import org.openide.util.Cancellable;
 import org.openide.util.Mutex;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
 /**
  * A class providing support for running synchronous (in the event dispathing
  * thread) and asynchronous (outside the EDT) actions. Multiple
- * actions can be run at the same time, switching between synchronous and
- * asynchronous ones. A progress panel is displayed for asynchronous actions.
+ * actions can be posted at the same time, switching between synchronous and
+ * asynchronous ones as needed. The actions are run sequentially -- one at most one action
+ * may be running at any moment in time. A progress panel is displayed for asynchronous actions.
  *
  * <p>A typical use case is running an asynchronous action with a progress dialog.
  * For that just create an {@link #AsynchronouosAction} and send it to the {@link #invoke} method.</p>
@@ -69,62 +73,56 @@ import org.openide.util.RequestProcessor;
  * <p>A more complex use case is mixing actions: first you need to run an asynchronous
  * action, the a synchronous one (but in certain cases only) and then another
  * asynchronous one, showing and hiding the progress panel as necessary.</p>
- * 
+ *
  * @author Andrei Badea
  */
 public final class ProgressSupport {
 
-    // PENDING it may be worth to split Action into:
-    // - final class ActionDescriptor containing the enabled and runInEventThread properties
-    //   (or consider using/extending org.openide.util.Task instead if possible -- maybe not, since it runs Runnable's)
-    // - interface Action containing invoke(Context actionContext)
-
-    // PENDING should use own RequestProcessor, not the default one
-
     private static final Logger LOGGER = Logger.getLogger(ProgressSupport.class.getName()); // NOI18N
 
-    // not private because used in tests
-    ActionInvoker actionInvoker;
-
-    public ProgressSupport() {
+    private ProgressSupport() {
     }
 
-    public void invoke(Collection<? extends Action> actions) {
+    /**
+     * Invokes the actions without allowing them to be cancelled.
+     *
+     * @param  actions the actions to invoke; never null.
+     */
+    public static void invoke(Collection<? extends Action> actions) {
         invoke(actions, false);
     }
 
     /**
-     * Returns true if all actions were invoked, false otherwise
-     * (e.g. if the invocation was cancelled).
+     * Invokes the actions while possibly allowing them to be cancelled and returns
+     * the cancellation status.
+     *
+     * @param  actions the action to invoke; never null.
+     * @param  cancellable true whether to allow cancellable actions to be cancelled,
+     *         false otherwise.
+     * @return true if the actions were not cancelled, false otherwise.
      */
-    public boolean invoke(Collection<? extends Action> actions, boolean cancellable) {
+    public static boolean invoke(Collection<? extends Action> actions, boolean cancellable) {
+        Parameters.notNull("actions", actions); // NOI18N
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("This method must be called in the event thread."); // NOI18N
         }
-        if (this.actionInvoker != null) {
-            throw new IllegalStateException("The invoke() method is running."); // NOI18N
-        }
 
-        actionInvoker = new ActionInvoker(new ArrayList<Action>(actions), cancellable);
-        boolean success;
-
-        try {
-            success = actionInvoker.invoke();
-        } finally {
-            actionInvoker = null;
-        }
-
-        return success;
+        return new ActionInvoker(new ArrayList<Action>(actions), cancellable).invoke();
     }
 
+    /**
+     * The class that actually invokes the actions.
+     */
     private static final class ActionInvoker implements ActionListener {
 
+        private final RequestProcessor rp = new RequestProcessor("ProgressSupport", 1); // NOI18N
         private final List<Action> actions;
         private final boolean cancellable;
 
-        private Context actionContext;
-        private int currentActionIndex;
-        private boolean cancelled;
+        private volatile Context actionContext;
+        private AtomicInteger nextActionIndex = new AtomicInteger();
+        private volatile Action currentAction;
+        private volatile boolean cancelled;
 
         public ActionInvoker(List<Action> actions, boolean cancellable) {
             this.actions = actions;
@@ -132,8 +130,7 @@ public final class ProgressSupport {
         }
 
         /**
-         * Returns true if all actions were invoked, false otherwise
-         * (e.g. if the invocation was cancelled).
+         * Returns true if the invocation was not cancelled, false otherwise.
          */
         public boolean invoke() {
             assert SwingUtilities.isEventDispatchThread();
@@ -147,66 +144,73 @@ public final class ProgressSupport {
             progressHandle.start();
             progressHandle.switchToIndeterminate();
 
-            actionContext = new Context(new Progress(progressPanel, progressHandle));
+            actionContext = new Context(progressPanel, progressHandle);
 
-            // exceptions[0] contains the exception, if any, thrown by an action invocation
+            // Contains the exception, if any, thrown by an action invocation
             // in either EDT or the RP thread
-            final Throwable[] exceptions = new Throwable[1];
+            final AtomicReference<Throwable> exceptionRef = new AtomicReference<Throwable>();
+
+            // The RequestProcessor task for asynchronous actions
+            RequestProcessor.Task task = rp.create(new Runnable() {
+                public void run() {
+                    try {
+                        invokeNextActionsOfSameKind();
+                    } catch (Throwable t) {
+                        exceptionRef.set(t);
+                    } finally {
+                        // We are done running asynchronous actions, so we must close the progress panel
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                progressPanel.close();
+                            }
+                        });
+                    }
+                }
+            });
 
             try {
-
-                RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
-                    public void run() {
-                        try {
-                            invokeActionsUntilThreadSwitch();
-                        } catch (Throwable t) {
-                            exceptions[0] = t;
-                        } finally {
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    progressPanel.close();
-                                }
-                            });
-                        }
-                    }
-                });
-
+                // True if we are running synchronous actions in this round, false otherwise.
                 boolean runInEDT = true;
 
-                for (;;) {
+                // Every round of the loop invokes a bunch of actions. The first
+                // round invokes synchronous ones, stopping at the first asynchronous one.
+                // The second invokes asynchronous ones, stopping at the first synchronous one.
+                // The third invokes synchronous ones, etc.
+                // This avoids hiding/showing the progress panel after/before each
+                // asynchronous action.
+                while (nextActionIndex.get() < actions.size() && !cancelled) {
+                    if (runInEDT) {
+                        try {
+                            invokeNextActionsOfSameKind();
+                        } catch (Throwable t) {
+                            exceptionRef.set(t);
+                        }
+                    } else {
+                        // The equivalent of invokeNextActionsOfSameKind() above, but in the background
+                        // and under the progress panel.
 
-                    if (currentActionIndex >= actions.size() || cancelled) {
-                        break;
+                        // Schedule the RP task for asychronous actions. The task
+                        // also sets exceptionRef if an exception occured.
+                        task.schedule(0);
+
+                        // Open the progress panel. It will be closed at the end of the task for
+                        // asynchronous actions. Therefore the call will block and will return when
+                        // the RP task's run() method returns.
+                        progressPanel.open(progressComponent);
+
+                        // The RP might be still running (e.g. preempted by the AWT thread
+                        // thread just after the SW.invokeLater()).
+                        task.waitFinished();
                     }
 
-                    try {
-                        if (!runInEDT) {
-                            // the action at currentActionIndex is an asynchronous one
-                            // must be run outside EDT
-                            task.schedule(0);
-                            progressPanel.open(progressComponent);
-                        }
-
-                        invokeActionsUntilThreadSwitch();
-
-                        if (!runInEDT) {
-                            // the RP might be still running (e.g. preempted by the AWT thread
-                            // thread just after the SW.invokeLater())
-                            // also ensures correct visibility of the fields
-                            // modified by the RP thread
-                            task.waitFinished();
-                        }
-                    } catch (Throwable t) {
-                        exceptions[0] = t;
-                    }
-
-                    if (exceptions[0] != null) {
-                        if (exceptions[0] instanceof RuntimeException) {
-                            throw (RuntimeException)exceptions[0];
+                    Throwable exception = exceptionRef.get();
+                    if (exception != null) {
+                        if (exception instanceof RuntimeException) {
+                            throw (RuntimeException)exception;
                         } else {
-                            RuntimeException exception = new RuntimeException(exceptions[0].getMessage());
-                            exception.initCause(exceptions[0]);
-                            throw exception;
+                            RuntimeException re = new RuntimeException(exception.getMessage());
+                            re.initCause(exception);
+                            throw re;
                         }
                     }
 
@@ -219,129 +223,115 @@ public final class ProgressSupport {
             return !cancelled;
         }
 
-        private void invokeActionsUntilThreadSwitch() {
+        /**
+         * Invokes the next actions of the same kind (all synchronous or all asynchronous),
+         * starting with nextActionIndex, while skipping disabled actions. That is,
+         * when called in the EDT it will run all enabled synchronous actions,
+         * stopping at the first asynchronous one. When called in a RP thread, it
+         * will run all enabled asynchronous actions, stopping as the first synchronous one.
+         */
+        private void invokeNextActionsOfSameKind() {
             boolean isEventThread = SwingUtilities.isEventDispatchThread();
 
-            for (;;) {
-
-                synchronized (this) {
-                    // synchronized because cancelled can be set at any time
-                    // by actionPerformed() in the EDT
-                    if (cancelled) {
-                        break;
-                    }
-                }
-
+            while (!cancelled) {
+                int currentActionIndex = nextActionIndex.get();
                 if (currentActionIndex >= actions.size()) {
                     break;
                 }
 
-                Action action = actions.get(currentActionIndex);
-                if (!action.isEnabled()) {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "Skipping " + action); // NOI18N
-                    }
-                    synchronized (this) {
-                        // synchronizd for the AWT thread to be able to read it
-                        // in actionPerformed()
-                        currentActionIndex++;
-                    }
+                currentAction = actions.get(currentActionIndex);
+
+                // Skip the action if disabled.
+                if (!currentAction.isEnabled()) {
+                    nextActionIndex.incrementAndGet();
+                    LOGGER.log(Level.FINE, "Skipping " + currentAction);
                     continue;
                 }
 
-                if (action.getRunInEventThread() != isEventThread) {
+                // The current action is not of the current kind, finish.
+                if (currentAction.getRunInEventThread() != isEventThread) {
                     break;
                 }
 
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Running " + action);
-                }
+                LOGGER.log(Level.FINE, "Running " + currentAction);
 
-                // only enable/disable the cancel button for async actions
+                // Only enable/disable the cancel button for asynchronous actions.
                 if (!isEventThread) {
-                    final boolean cancelEnabled = action instanceof Cancellable;
+                    final boolean cancelEnabled = currentAction instanceof Cancellable;
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            actionContext.getProgress().getPanel().setCancelEnabled(cancelEnabled);
+                            actionContext.getPanel().setCancelEnabled(cancelEnabled);
                         }
                     });
                 }
 
-                action.run(actionContext);
+                currentAction.run(actionContext);
 
-                synchronized (this) {
-                    // synchronizd for the AWT thread to be able to read it
-                    // in actionPerformed()
-                    currentActionIndex++;
-                }
+                nextActionIndex.incrementAndGet();
             }
 
         }
 
+        /**
+         * Invoked when the Cancel button is pressed in the progress dialog.
+         */
         public void actionPerformed(ActionEvent event) {
-            synchronized (this) {
+            // Just in case the user managed to click Cancel twice.
+            if (cancelled) {
+                return;
+            }
 
-                // just in case the user managed to click Cancel twice
-                if (cancelled) {
-                    return;
-                }
+            Action action = currentAction;
 
-                // all actions could have been invoked by now
-                if (currentActionIndex >= actions.size()) {
-                    return;
-                }
+            // All actions could have been invoked by now.
+            if (action == null) {
+                return;
+            }
 
-                Action currentAction = actions.get(currentActionIndex);
+            // There is no guarantee that the current action is asynchronous or that it
+            // implements Cancellable (maybe the action before it did and the user clicked Cancel
+            // just before it finished). If it doesn't we can't do better than
+            // just ignore the Cancel request.
+            if (!action.isEnabled() || action.getRunInEventThread() || !(action instanceof Cancellable)) {
+                return;
+            }
 
-                // there is no guarantee that currentAction is asynchronous or that it
-                // implements Cancellable (maybe the action before it did and the user clicked Cancel
-                // just before it finished). If it doesn't we can't do better than
-                // just ignore the Cancel request.
-                if (!currentAction.getRunInEventThread() && currentAction instanceof Cancellable) {
-                    // calling cancel() in the EDT although the action was async
-                    cancelled = ((Cancellable)currentAction).cancel();
-                    if (cancelled) {
-                        actionContext.getProgress().getPanel().setCancelEnabled(false);
-                    }
-                }
+            cancelled = ((Cancellable)action).cancel();
+            if (cancelled) {
+                actionContext.getPanel().setCancelEnabled(false);
             }
         }
     }
 
     /**
-     * This class encapsulates the context in which the actions are run.
-     * It can be used to obtain a {@link Progress} instance.
+     * Encapsulates the "context" the action is it run under. Currently contains
+     * methods for controlling the progress bar in the progress dialog
+     * for asynchronous actions.
      */
     public static final class Context {
-
-        private final Progress progress;
-
-        public Context(Progress progress) {
-            this.progress = progress;
-        }
-
-        public Progress getProgress() {
-            return progress;
-        }
-    }
-
-    /**
-     * This class is used to give information about the progress of the actions.
-     */
-    public static final class Progress {
 
         private final ProgressPanel panel;
         private final ProgressHandle handle;
 
-        private Progress(ProgressPanel panel, ProgressHandle handle) {
+        private Context(ProgressPanel panel, ProgressHandle handle) {
             this.panel = panel;
             this.handle = handle;
         }
 
+        /**
+         * Switches the progress bar to a determinate one.
+         *
+         * @param workunits a definite number of complete units of work out of the total
+         */
         public void switchToDeterminate(int workunits) {
             handle.switchToDeterminate(workunits);
         }
 
+        /**
+         * 
+         * 
+         * @param message
+         */
         public void progress(final String message) {
             Mutex.EVENT.readAccess(new Runnable() {
                 public void run() {
@@ -364,8 +354,8 @@ public final class ProgressSupport {
     }
 
     /**
-     * Describes an action. See also {@link Synchronous} and
-     * {@link Asynchronous}.
+     * Describes an action. See also {@link SynchronousAction} and
+     * {@link AsynchronousAction}.
      */
     public interface Action {
 
@@ -401,7 +391,7 @@ public final class ProgressSupport {
      */
     public static abstract class SynchronousAction implements Action {
 
-        public boolean getRunInEventThread() {
+        public final boolean getRunInEventThread() {
             return true;
         }
 
@@ -416,7 +406,7 @@ public final class ProgressSupport {
      */
     public static abstract class AsynchronousAction implements Action {
 
-        public boolean getRunInEventThread() {
+        public final boolean getRunInEventThread() {
             return false;
         }
 

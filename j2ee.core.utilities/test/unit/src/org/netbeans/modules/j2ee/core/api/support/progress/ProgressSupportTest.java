@@ -75,7 +75,6 @@ public class ProgressSupportTest extends NbTestCase {
     }
 
     public void testInvoke() {
-        final ProgressSupport progressSupport = new ProgressSupport();
         List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
 
         // incremented each time an action is invoked
@@ -92,7 +91,7 @@ public class ProgressSupportTest extends NbTestCase {
                 correctThreadCount.addAndGet(isEventDispatchThread());
                 correctPanelStateCount.addAndGet(Mutex.EVENT.readAccess(new Mutex.Action<Integer>() {
                     public Integer run() {
-                        return isClosed(actionContext.getProgress().getPanel());
+                        return isClosed(actionContext.getPanel());
                     }
                 }));
                 invokeCount.incrementAndGet();
@@ -104,7 +103,7 @@ public class ProgressSupportTest extends NbTestCase {
                 correctThreadCount.addAndGet(isEventDispatchThread());
                 correctPanelStateCount.addAndGet(Mutex.EVENT.readAccess(new Mutex.Action<Integer>() {
                     public Integer run() {
-                        return isClosed(actionContext.getProgress().getPanel());
+                        return isClosed(actionContext.getPanel());
                     }
                 }));
                 invokeCount.incrementAndGet();
@@ -113,12 +112,12 @@ public class ProgressSupportTest extends NbTestCase {
 
         actions.add(new ProgressSupport.AsynchronousAction() {
             public void run(final ProgressSupport.Context actionContext) {
-                actionContext.getProgress().progress("Testing an asynchronous action.");
+                actionContext.progress("Testing an asynchronous action.");
 
                 correctThreadCount.addAndGet(isNotEventDispatchThread());
                 correctPanelStateCount.addAndGet(Mutex.EVENT.readAccess(new Mutex.Action<Integer>() {
                     public Integer run() {
-                        return isOpen(actionContext.getProgress().getPanel());
+                        return isOpen(actionContext.getPanel());
                     }
                 }));
                 invokeCount.incrementAndGet();
@@ -131,12 +130,12 @@ public class ProgressSupportTest extends NbTestCase {
 
         actions.add(new ProgressSupport.AsynchronousAction() {
             public void run(final ProgressSupport.Context actionContext) {
-                actionContext.getProgress().progress("Testing the second asynchronous action.");
+                actionContext.progress("Testing the second asynchronous action.");
 
                 correctThreadCount.addAndGet(isNotEventDispatchThread());
                 correctPanelStateCount.addAndGet(Mutex.EVENT.readAccess(new Mutex.Action<Integer>() {
                     public Integer run() {
-                        return isOpen(actionContext.getProgress().getPanel());
+                        return isOpen(actionContext.getPanel());
                     }
                 }));
                 invokeCount.incrementAndGet();
@@ -152,7 +151,7 @@ public class ProgressSupportTest extends NbTestCase {
                 correctThreadCount.addAndGet(isEventDispatchThread());
                 correctPanelStateCount.addAndGet(Mutex.EVENT.readAccess(new Mutex.Action<Integer>() {
                     public Integer run() {
-                        return isClosed(actionContext.getProgress().getPanel());
+                        return isClosed(actionContext.getPanel());
                     }
                 }));
                 invokeCount.incrementAndGet();
@@ -161,12 +160,12 @@ public class ProgressSupportTest extends NbTestCase {
 
         actions.add(new ProgressSupport.AsynchronousAction() {
             public void run(final ProgressSupport.Context actionContext) {
-                actionContext.getProgress().progress("Testing the third asynchronous action.");
+                actionContext.progress("Testing the third asynchronous action.");
 
                 correctThreadCount.addAndGet(isNotEventDispatchThread());
                 correctPanelStateCount.addAndGet(Mutex.EVENT.readAccess(new Mutex.Action<Integer>() {
                     public Integer run() {
-                        return isOpen(actionContext.getProgress().getPanel());
+                        return isOpen(actionContext.getPanel());
                     }
                 }));
                 invokeCount.incrementAndGet();
@@ -177,12 +176,12 @@ public class ProgressSupportTest extends NbTestCase {
             }
         });
 
-        progressSupport.invoke(actions);
+        ProgressSupport.invoke(actions);
         assertEquals(6, invokeCount.get());
         assertEquals(6, correctThreadCount.get());
         assertEquals(6, correctPanelStateCount.get());
 
-        progressSupport.invoke(actions);
+        ProgressSupport.invoke(actions);
         assertEquals(12, invokeCount.get());
         assertEquals(12, correctThreadCount.get());
         assertEquals(12, correctPanelStateCount.get());
@@ -205,29 +204,27 @@ public class ProgressSupportTest extends NbTestCase {
     }
 
     public void testProgressMessage() {
-        ProgressSupport erp = new ProgressSupport();
         List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
 
         final AtomicReference<String> progressMessage = new AtomicReference<String>();
 
         actions.add(new ProgressSupport.AsynchronousAction() {
             public void run(final ProgressSupport.Context actionContext) {
-                actionContext.getProgress().progress("Progress message");
+                actionContext.progress("Progress message");
 
                 progressMessage.set(Mutex.EVENT.readAccess(new Mutex.Action<String>() {
                     public String run() {
-                        return actionContext.getProgress().getPanel().getText();
+                        return actionContext.getPanel().getText();
                     }
                 }));
             }
         });
 
-        erp.invoke(actions);
+        ProgressSupport.invoke(actions);
         assertEquals("Progress message", progressMessage.get());
     }
 
     public void testDisabledActionDoesNotCauseAnInfiniteLoop() {
-        ProgressSupport erp = new ProgressSupport();
         List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
 
         final CountDownLatch sync = new CountDownLatch(1);
@@ -258,11 +255,10 @@ public class ProgressSupportTest extends NbTestCase {
             }
         });
 
-        erp.invoke(actions);
+        ProgressSupport.invoke(actions);
     }
 
     public void testExceptionInSyncActionPropagates() {
-        ProgressSupport erp = new ProgressSupport();
         List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
 
         actions.add(new ProgressSupport.SynchronousAction() {
@@ -272,26 +268,23 @@ public class ProgressSupportTest extends NbTestCase {
         });
 
         try {
-            erp.invoke(actions);
+            ProgressSupport.invoke(actions);
             fail("Should throw RuntimeException");
         } catch (RuntimeException e) {
         }
-
-        assertNull(erp.actionInvoker);
     }
 
     public void testExceptionInAsyncActionPropagatesAndProgressPanelCloses() {
-        final ProgressSupport erp = new ProgressSupport();
         List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
 
         final AtomicReference<ProgressPanel> progressPanel = new AtomicReference<ProgressPanel>();
 
         actions.add(new ProgressSupport.AsynchronousAction() {
             public void run(final ProgressSupport.Context actionContext) {
-                actionContext.getProgress().progress("Asynchronous");
+                actionContext.progress("Asynchronous");
 
                 // get the panel
-                progressPanel.set(actionContext.getProgress().getPanel());
+                progressPanel.set(actionContext.getPanel());
 
                 // and simulate an error
                 throw new AssertionError("Error");
@@ -299,19 +292,16 @@ public class ProgressSupportTest extends NbTestCase {
         });
 
         try {
-            erp.invoke(actions);
+            ProgressSupport.invoke(actions);
             fail("Should throw RuntimeException");
         } catch (RuntimeException e) {
             assertTrue(e.getCause() instanceof AssertionError);
         }
 
         assertFalse(progressPanel.get().isOpen());
-
-        assertNull(erp.actionInvoker);
     }
 
     public void testNoCancelButtonWhenNonCancellableInvocation() {
-        ProgressSupport erp = new ProgressSupport();
         List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
 
         final AtomicBoolean cancelVisible = new AtomicBoolean();
@@ -320,18 +310,17 @@ public class ProgressSupportTest extends NbTestCase {
             public void run(final ProgressSupport.Context actionContext) {
                 cancelVisible.set(Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
                     public Boolean run() {
-                        return actionContext.getProgress().getPanel().isCancelVisible();
+                        return actionContext.getPanel().isCancelVisible();
                     }
                 }));
             }
         });
 
-        erp.invoke(actions);
+        ProgressSupport.invoke(actions);
         assertFalse(cancelVisible.get());
     }
 
     public void testCancelButtonWhenCancellableInvocation() {
-        ProgressSupport erp = new ProgressSupport();
         List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
 
         final AtomicBoolean cancelVisible1 = new AtomicBoolean();
@@ -343,7 +332,7 @@ public class ProgressSupportTest extends NbTestCase {
             public void run(final ProgressSupport.Context actionContext) {
                 Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
                     public Object run() {
-                        ProgressPanel progressPanel = actionContext.getProgress().getPanel();
+                        ProgressPanel progressPanel = actionContext.getPanel();
                         cancelVisible1.set(progressPanel.isCancelVisible());
                         cancelEnabled1.set(progressPanel.isCancelEnabled());
                         return null;
@@ -356,7 +345,7 @@ public class ProgressSupportTest extends NbTestCase {
             public void run(final ProgressSupport.Context actionContext) {
                 Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
                     public Object run() {
-                        ProgressPanel progressPanel = actionContext.getProgress().getPanel();
+                        ProgressPanel progressPanel = actionContext.getPanel();
                         cancelVisible2.set(progressPanel.isCancelVisible());
                         cancelEnabled2.set(progressPanel.isCancelEnabled());
                         return null;
@@ -379,7 +368,7 @@ public class ProgressSupportTest extends NbTestCase {
 
         // the actions are cancellable, thus the cancel button is always visible
         // invoke() should return true, meaning all actions were invoked
-        assertTrue(erp.invoke(actions, true));
+        assertTrue(ProgressSupport.invoke(actions, true));
 
         // the first action was not cancellable
         assertTrue(cancelVisible1.get());
@@ -391,7 +380,6 @@ public class ProgressSupportTest extends NbTestCase {
     }
 
     public void testCancelWorks() {
-        ProgressSupport erp = new ProgressSupport();
         List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
 
         final AtomicBoolean secondActionInvoked = new AtomicBoolean();
@@ -402,7 +390,7 @@ public class ProgressSupportTest extends NbTestCase {
             public void run(final ProgressSupport.Context actionContext) {
                 Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
                     public Object run() {
-                        actionContext.getProgress().getPanel().getCancelButton().doClick();
+                        actionContext.getPanel().getCancelButton().doClick();
                         return null;
                     }
                 });
@@ -430,14 +418,13 @@ public class ProgressSupportTest extends NbTestCase {
             }
         });
 
-        assertFalse(erp.invoke(actions, true));
+        assertFalse(ProgressSupport.invoke(actions, true));
         assertFalse(secondActionInvoked.get());
         assertTrue(cancelInvokedInEDT.get());
         assertTrue(cancelInvoked.get());
     }
 
     public void testNoCancelWhenTheCancelMethodReturnsFalse() {
-        ProgressSupport erp = new ProgressSupport();
         List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
 
         final AtomicBoolean secondActionInvoked = new AtomicBoolean();
@@ -446,7 +433,7 @@ public class ProgressSupportTest extends NbTestCase {
             public void run(final ProgressSupport.Context actionContext) {
                 Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
                     public Object run() {
-                        actionContext.getProgress().getPanel().getCancelButton().doClick();
+                        actionContext.getPanel().getCancelButton().doClick();
                         return null;
                     }
                 });
@@ -472,12 +459,11 @@ public class ProgressSupportTest extends NbTestCase {
             }
         });
 
-        assertTrue(erp.invoke(actions, true));
+        assertTrue(ProgressSupport.invoke(actions, true));
         assertTrue(secondActionInvoked.get());
     }
 
     public void testEscapeDoesNotCloseDialogForAsyncNonCancellableActions() {
-        ProgressSupport erp = new ProgressSupport();
         List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
 
         final AtomicBoolean panelOpen = new AtomicBoolean();
@@ -487,23 +473,22 @@ public class ProgressSupportTest extends NbTestCase {
                 Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
                     public Object run() {
                         // fake an escape key press
-                        JRootPane rootPane = actionContext.getProgress().getPanel().getRootPane();
+                        JRootPane rootPane = actionContext.getPanel().getRootPane();
                         KeyEvent event = new KeyEvent(rootPane, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_ESCAPE, KeyEvent.CHAR_UNDEFINED);
                         rootPane.dispatchEvent(event);
 
-                        panelOpen.set(actionContext.getProgress().getPanel().isOpen());
+                        panelOpen.set(actionContext.getPanel().isOpen());
                         return null;
                     }
                 });
             }
         });
 
-        erp.invoke(actions);
+        ProgressSupport.invoke(actions);
         assertTrue(panelOpen.get());
     }
 
     public void testEscapeCancelsCancellableActions() {
-        ProgressSupport erp = new ProgressSupport();
         List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
 
         final AtomicBoolean panelOpen = new AtomicBoolean();
@@ -514,12 +499,12 @@ public class ProgressSupportTest extends NbTestCase {
                 Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
                     public Object run() {
                         // fake an escape key press
-                        JRootPane rootPane = actionContext.getProgress().getPanel().getRootPane();
+                        JRootPane rootPane = actionContext.getPanel().getRootPane();
                         KeyEvent event = new KeyEvent(rootPane, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_ESCAPE, KeyEvent.CHAR_UNDEFINED);
                         rootPane.dispatchEvent(event);
 
-                        panelOpen.set(actionContext.getProgress().getPanel().isOpen());
-                        cancelEnabled.set(actionContext.getProgress().getPanel().getCancelButton().isEnabled());
+                        panelOpen.set(actionContext.getPanel().isOpen());
+                        cancelEnabled.set(actionContext.getPanel().getCancelButton().isEnabled());
                         return null;
                     }
                 });
@@ -538,7 +523,7 @@ public class ProgressSupportTest extends NbTestCase {
             }
         });
 
-        erp.invoke(actions, true);
+        ProgressSupport.invoke(actions, true);
         assertTrue(panelOpen.get());
         assertFalse(cancelEnabled.get());
     }
