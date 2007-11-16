@@ -188,6 +188,7 @@ public final class SyntaxParser {
             if(LOG) {
                 for (SyntaxElement se : parsedElements) {
                     LOGGER.log(Level.FINE, se.toString());
+                    System.out.println(se.toString());
                 }
             }
             
@@ -201,20 +202,36 @@ public final class SyntaxParser {
         elements.add(new SyntaxElement(doc, 
                 start, 
                 token.offset(hi) + token.length() - start, 
-                SyntaxElement.TYPE_TEXT));
+                SyntaxElement.TYPE_ENTITY_REFERENCE));
         
     }
     
+    private void comment() {
+        elements.add(new SyntaxElement(doc, 
+                start, 
+                token.offset(hi) + token.length() - start, 
+                SyntaxElement.TYPE_COMMENT));
+    }
+    
+    private void declaration() {
+        elements.add(new SyntaxElement.Declaration(doc, 
+                start, 
+                token.offset(hi) + token.length() - start,
+                root_element,
+                doctype_public_id,
+                doctype_file));
+    }
+    
+    
     private void tag(boolean emptyTag) {
         List<SyntaxElement.TagAttribute> attributes = new ArrayList<SyntaxElement.TagAttribute>();
-        if(attribs != null) {
-            for(Token key : attribs.keySet()) {
-                List<Token> values = attribs.get(key);
+            for(int i = 0; i < attr_keys.size(); i++) {
+                Token key = attr_keys.get(i);
+                List<Token> values = attr_values.get(i);
                 StringBuffer joinedValue = new StringBuffer();
                 for(Token t: values) {
                     joinedValue.append(t.text());
                 }
-                
                 
                 Token firstValuePart = values.get(0);
                 Token lastValuePart = values.get(values.size() - 1);
@@ -227,7 +244,7 @@ public final class SyntaxParser {
                         lastValuePart.offset(hi) + lastValuePart.length() - firstValuePart.offset(hi));
                 attributes.add(ta);
             }
-        }
+        
         elements.add(new SyntaxElement.Tag(doc, 
                 start, 
                 token.offset(hi) + token.length() - start, 
@@ -238,21 +255,34 @@ public final class SyntaxParser {
         
         tagName = null;
         attrib = null;
-        attribs = new HashMap<Token, List<Token>>();
+        attr_keys = new ArrayList<Token>();
+        attr_values = new ArrayList<List<Token>>();
     }
     
     private void reset() {
         state = S_INIT;
         start = -1;
-        ts.movePrevious(); //backup this token
+        backup(1);
+    }
+    
+    private void backup(int tokens) {
+        for(int i = 0; i < tokens; i++) {
+            ts.movePrevious();
+            token = ts.token();
+        }
     }
     
     private static final int S_INIT = 0;
-    private static final int S_CHARACTER = 1;
-    private static final int S_TAG_OPEN_SYMBOL = 2;
-    private static final int S_TAG = 3;
-    private static final int S_TAG_ATTR = 4;
-    private static final int S_TAG_VALUE = 5;
+    private static final int S_TAG_OPEN_SYMBOL = 1;
+    private static final int S_TAG = 2;
+    private static final int S_TAG_ATTR = 3;
+    private static final int S_TAG_VALUE = 4;
+    private static final int S_COMMENT = 5;
+    private static final int S_DECLARATION = 6;
+    private static final int S_DOCTYPE_DECLARATION = 7;
+    private static final int S_DOCTYPE_AFTER_ROOT_ELEMENT = 8;
+    private static final int S_DOCTYPE_PUBLIC_ID = 9;
+    private static final int S_DOCTYPE_FILE = 10;
     
     private int state;
     private int start;
@@ -263,15 +293,19 @@ public final class SyntaxParser {
     private boolean openTag = true;
     private String tagName = null;
     private Token attrib = null;
-    private Map<Token, List<Token>> attribs = null;
-
+    private ArrayList<Token> attr_keys = null;
+    private ArrayList<List<Token>> attr_values = null;
+    
+    private String root_element, doctype_public_id, doctype_file;
+    
     //PENDING: we do not handle incomplete tokens yet - should be added
     private List<SyntaxElement> parseDocument() throws BadLocationException {
         elements = new ArrayList<SyntaxElement>();
         List<TokenSequence<HTMLTokenId>> sequences = hi.tokenSequenceList(languagePath, 0, Integer.MAX_VALUE);
         state = S_INIT;
         start = -1;
-        attribs = new HashMap<Token, List<Token>>();
+        attr_keys = new ArrayList<Token>();
+        attr_values = new ArrayList<List<Token>>();
         
         for (TokenSequence _ts : sequences) {
             ts = _ts;
@@ -284,11 +318,28 @@ public final class SyntaxParser {
                         switch (id) {
                             case CHARACTER:
                                 start = ts.offset();
-                                state = S_CHARACTER;
+                                entityReference();
+                                state = S_INIT;
+                                start = -1;
                                 break;
                             case TAG_OPEN_SYMBOL:
                                 start = ts.offset();
                                 state = S_TAG_OPEN_SYMBOL;
+                                break;
+                            case BLOCK_COMMENT:
+                                start = ts.offset();
+                                state = S_COMMENT;
+                                break;
+                            case DECLARATION:
+                                start = ts.offset();
+                                if(token.text().toString().equals("<!DOCTYPE")) {
+                                    root_element = null;
+                                    doctype_public_id = null;
+                                    doctype_file = null;
+                                    state = S_DOCTYPE_DECLARATION;
+                                } else {
+                                    state = S_DECLARATION;
+                                }
                                 break;
                         }
                         break;
@@ -340,7 +391,7 @@ public final class SyntaxParser {
                             case WS:
                                 break;
                             case VALUE:
-                                ts.movePrevious(); //backup the value
+                                backup(1); //backup the value
                                 state = S_TAG_VALUE;
                                 break;
                             default:
@@ -352,33 +403,163 @@ public final class SyntaxParser {
                     case S_TAG_VALUE:
                         switch(id) {
                             case VALUE:
-                                List<Token> values = attribs.get(attrib);
-                                if(values == null) {
-                                    values = new ArrayList<Token>();
-                                    attribs.put(attrib, values);
+                                int index = attr_keys.indexOf(attrib);
+                                if(index == -1) {
+                                    List<Token> values = new ArrayList<Token>();
+                                    values.add(token);
+                                    attr_keys.add(attrib);
+                                    attr_values.add(values);
+                                } else {
+                                    attr_values.get(index).add(token);
                                 }
-                                values.add(token);
+                                
                                 break;
                             default:
-                                ts.movePrevious();
+                                backup(1);
                                 state = S_TAG;
                                 break;
                         }
                         break;    
                         
-                    case S_CHARACTER:
-                        switch (id) {
-                            case CHARACTER:
+                    case S_COMMENT:
+                        switch(id) {
+                            case BLOCK_COMMENT:
+                            case EOL:
+                            case WS:
                                 break;
                             default:
-                                ts.movePrevious(); //backup the foreign token
-                                entityReference();
+                                backup(1);
+                                comment();
                                 state = S_INIT;
                                 start = -1;
                                 break;
                         }
+                        break;
+                    
+                    case S_DECLARATION:
+                        switch(id) {
+                            case DECLARATION:
+                            case SGML_COMMENT:
+                            case EOL:
+                            case WS:
+                                break;
+                            default:
+                                backup(1);
+                                declaration();
+                                state = S_INIT;
+                                start = -1;
+                                break;
+                        }
+                        break;
+                        
+                    case S_DOCTYPE_DECLARATION:
+                        switch(id) {
+                            case DECLARATION:
+                                root_element = token.text().toString();
+                                state = S_DOCTYPE_AFTER_ROOT_ELEMENT;
+                                break;
+                            case SGML_COMMENT:
+                            case EOL:
+                            case WS:
+                                break;
+                            default:
+                                backup(1);
+                                declaration();
+                                state = S_INIT;
+                                start = -1;
+                                break;
+                        }
+                        break;
+                        
+                    case S_DOCTYPE_AFTER_ROOT_ELEMENT:
+                       switch(id) {
+                            case DECLARATION:
+                                if(token.text().toString().equals("PUBLIC")) {
+                                    state = S_DOCTYPE_PUBLIC_ID;
+                                    break;
+                                } else if(token.text().toString().equals("SYSTEM")) {
+                                    state = S_DOCTYPE_FILE;
+                                    break;
+                                }
+                                //not of the expected
+                                backup(1);
+                                declaration();
+                                state = S_INIT;
+                                start = -1;
+                                
+                                break;
+                            case SGML_COMMENT:
+                            case EOL:
+                            case WS:
+                                break;
+                            default:
+                                backup(1);
+                                declaration();
+                                state = S_INIT;
+                                start = -1;
+                                break;
+                        }
+                        break;
+                        
+                    case S_DOCTYPE_PUBLIC_ID:
+                        switch(id) {
+                            case DECLARATION:
+                                doctype_public_id = token.text().toString();
+                                state = S_DOCTYPE_FILE;
+                                break;
+                            case SGML_COMMENT:
+                            case EOL:
+                            case WS:
+                                break;  
+                              default:
+                                backup(1);
+                                declaration();
+                                state = S_INIT;
+                                start = -1;
+                                break;  
+                        }
+                        break;
+                        
+                        case S_DOCTYPE_FILE:
+                        switch(id) {
+                            case DECLARATION:
+                                doctype_file = token.text().toString();
+                                //jump to simple sgml declaration so potentially 
+                                //other declaration tokens are inluded
+                                state = S_DECLARATION;
+                                break;
+                            case SGML_COMMENT:
+                            case EOL:
+                            case WS:
+                                break;  
+                              default:
+                                backup(1);
+                                declaration();
+                                state = S_INIT;
+                                start = -1;
+                                break;  
+                        }
+                        break;
+                        
                 }
             }
+        }
+        
+        if(state != S_INIT) {
+            //an incomplete syntax element at the end of the file
+            switch(state) {
+                case S_COMMENT:
+                    comment();
+                    break;
+                case S_DECLARATION:
+                case S_DOCTYPE_AFTER_ROOT_ELEMENT:
+                case S_DOCTYPE_DECLARATION:
+                case S_DOCTYPE_FILE:
+                case S_DOCTYPE_PUBLIC_ID:
+                    declaration();
+                    break;
+            }
+            
         }
 
         return elements;

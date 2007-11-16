@@ -140,7 +140,8 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
     private static final int ISI_STYLE_CONTENT_AFTER_LT = 39; //after < in style content
     private static final int ISI_STYLE_CONTENT_ENDTAG = 40; //after </ in style content
     
-    
+    private static final int ISI_SGML_DECL_WS = 41; //after whitespace in SGML declaration
+        
     public HTMLLexer(LexerRestartInfo<HTMLTokenId> info) {
         this.input = info.input();
         this.tokenFactory = info.tokenFactory();
@@ -689,10 +690,24 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     break;
                     
                 case ISI_SGML_DECL:
+                    if(Character.isWhitespace(actChar)) {
+                        lexerState = ISI_SGML_DECL_WS;
+                        if(input.readLength() > 1) {
+                            input.backup(1); //backup the whitespace
+                            return token(HTMLTokenId.DECLARATION);
+                        }
+                        break;
+                    }
                     switch( actChar ) {
                         case '>':
-                            lexerState = INIT;
-                            return token(HTMLTokenId.DECLARATION);
+                            if(input.readLength() > 1) {
+                                input.backup(1); //backup the '<' char
+                                return token(HTMLTokenId.DECLARATION);
+                            } else {
+                                //just the symbol read - return it as a part of declaration
+                                lexerState = INIT;
+                                return token(HTMLTokenId.DECLARATION);
+                            }
                         case '-':
                             if( input.readLength() == 1 ) {
                                 lexerState = ISA_SGML_DECL_DASH;
@@ -703,6 +718,14 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                                     return token(HTMLTokenId.DECLARATION);
                                 }
                             }
+                    }
+                    break;
+                    
+                case ISI_SGML_DECL_WS:
+                    if(!Character.isWhitespace(actChar)) {
+                        lexerState = ISI_SGML_DECL;
+                        input.backup(1);
+                        return token(HTMLTokenId.WS);
                     }
                     break;
                     

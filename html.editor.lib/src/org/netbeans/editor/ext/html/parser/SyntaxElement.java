@@ -63,9 +63,10 @@ public class SyntaxElement {
     public static final int TYPE_TEXT = 3;
     public static final int TYPE_TAG = 4;
     public static final int TYPE_ENDTAG = 5;
+    public static final int TYPE_ENTITY_REFERENCE = 6;
     
     public static final String[] TYPE_NAMES =
-            new String[]{"comment","declaration","error","text","tag","endtag","script","style","unknown"};
+            new String[]{"comment","declaration","error","text","tag","endtag","entity reference"};
     
     private Document document;
     
@@ -103,8 +104,9 @@ public class SyntaxElement {
 
     @Override
     public String toString() {
-        String textContent = type() == TYPE_TEXT ? text() : "";
-        return "Element(" +TYPE_NAMES[type]+")[" + offset + "," + (offset+length-1) + "] \"" + textContent + ""; // NOI18N
+        //String textContent = type() == TYPE_TEXT ? text() : "";
+        String textContent = text();
+        return "Element(" +TYPE_NAMES[type]+")[" + offset + "," + (offset+length-1) + "] \"" + textContent + "\""; // NOI18N
     }
     
     /**
@@ -130,11 +132,11 @@ public class SyntaxElement {
          * @param doctypeFile system identifier for this DOCTYPE, if available.
          *  null otherwise.
          */
-        public Declaration( Document document, int from, int to,
+        public Declaration( Document document, int from, int length,
                 String doctypeRootElement,
                 String doctypePI, String doctypeFile
                 ) {
-            super( document, from, to, TYPE_DECLARATION );
+            super( document, from, length, TYPE_DECLARATION );
             root = doctypeRootElement;
             publicID = doctypePI;
             file = doctypeFile;
