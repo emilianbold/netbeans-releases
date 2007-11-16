@@ -177,7 +177,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
         rmDir(new File(directory, "src")); // NOI18N
     }
     
-    private Properties createAntProperties(WebServiceDescriptor wsMetadataDesc) throws URISyntaxException {
+    Properties createAntProperties(WebServiceDescriptor wsMetadataDesc) throws URISyntaxException {
         File wsdlFile = null;
         try {
             wsdlFile = new File(wsMetadataDesc.getWsdlUrl().toURI());
@@ -208,8 +208,8 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
         return properties;
     }
     
-    private boolean createClientClasses(WebServiceDescriptor wsMetadataDesc) {
-        boolean isJaxRpc = wsMetadataDesc.getWsType() == wsMetadataDesc.JAX_RPC_TYPE;
+    boolean createClientClasses(WebServiceDescriptor wsMetadataDesc) {
+        boolean isJaxRpc = wsMetadataDesc.getWsType() == WebServiceDescriptor.JAX_RPC_TYPE;
         String serviceHome = wsMetadataDesc.getXmlDescriptorFile().getParent();
         String pkgNameDir = wsMetadataDesc.getPackageName().replace('.', '/');
         
@@ -390,7 +390,6 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
         return result;
     }
     
-    public static final Action[] EMPTY_ACTIONS = new Action[0];
     public Action[] getWebServicesRootActions(Node node) {
         return EMPTY_ACTIONS;
     }
