@@ -44,7 +44,6 @@ made subject to such option by the copyright holder.
 <project name="org.netbeans.modules.visualweb.dataprovider/test-unit" basedir="." default="all">
     <import file="../../../../nbbuild/templates/xtest-unit.xml"/>    
 
-    <property name="xtest.file_database.properties" location="../../../test/data/DefaultDatabase.properties"/>
     <loadproperties srcfile="${xtest.file_database.properties}" />
     <!-- -->
     <echo message="xtest.file_database.properties = ${xtest.file_database.properties}"/>
