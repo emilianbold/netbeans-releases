@@ -80,13 +80,13 @@ public class ProgressSupportTest extends NbTestCase {
         // incremented each time an action is invoked
         final AtomicInteger invokeCount = new AtomicInteger();
         // incremented each time an action is invoked in the correct thread
-        // (EDT for sync actions, !EDT for async actions)
+        // (EDT for event thread actions, !EDT for background actions)
         final AtomicInteger correctThreadCount = new AtomicInteger();
         // incremented each time the progress panel state is correct during an action invocation
-        // (closed for sync actions, open for async actions)
+        // (closed for event thread actions, open for background actions)
         final AtomicInteger correctPanelStateCount = new AtomicInteger();
 
-        actions.add(new ProgressSupport.SynchronousAction() {
+        actions.add(new ProgressSupport.EventThreadAction() {
             public void run(final ProgressSupport.Context actionContext) {
                 correctThreadCount.addAndGet(isEventDispatchThread());
                 correctPanelStateCount.addAndGet(Mutex.EVENT.readAccess(new Mutex.Action<Integer>() {
@@ -98,7 +98,7 @@ public class ProgressSupportTest extends NbTestCase {
             }
         });
 
-        actions.add(new ProgressSupport.SynchronousAction() {
+        actions.add(new ProgressSupport.EventThreadAction() {
             public void run(final ProgressSupport.Context actionContext) {
                 correctThreadCount.addAndGet(isEventDispatchThread());
                 correctPanelStateCount.addAndGet(Mutex.EVENT.readAccess(new Mutex.Action<Integer>() {
@@ -110,9 +110,9 @@ public class ProgressSupportTest extends NbTestCase {
             }
         });
 
-        actions.add(new ProgressSupport.AsynchronousAction() {
+        actions.add(new ProgressSupport.BackgroundAction() {
             public void run(final ProgressSupport.Context actionContext) {
-                actionContext.progress("Testing an asynchronous action.");
+                actionContext.progress("Testing a background action.");
 
                 correctThreadCount.addAndGet(isNotEventDispatchThread());
                 correctPanelStateCount.addAndGet(Mutex.EVENT.readAccess(new Mutex.Action<Integer>() {
@@ -128,9 +128,9 @@ public class ProgressSupportTest extends NbTestCase {
             }
         });
 
-        actions.add(new ProgressSupport.AsynchronousAction() {
+        actions.add(new ProgressSupport.BackgroundAction() {
             public void run(final ProgressSupport.Context actionContext) {
-                actionContext.progress("Testing the second asynchronous action.");
+                actionContext.progress("Testing the second background action.");
 
                 correctThreadCount.addAndGet(isNotEventDispatchThread());
                 correctPanelStateCount.addAndGet(Mutex.EVENT.readAccess(new Mutex.Action<Integer>() {
@@ -146,7 +146,7 @@ public class ProgressSupportTest extends NbTestCase {
             }
         });
 
-        actions.add(new ProgressSupport.SynchronousAction() {
+        actions.add(new ProgressSupport.EventThreadAction() {
             public void run(final ProgressSupport.Context actionContext) {
                 correctThreadCount.addAndGet(isEventDispatchThread());
                 correctPanelStateCount.addAndGet(Mutex.EVENT.readAccess(new Mutex.Action<Integer>() {
@@ -158,9 +158,9 @@ public class ProgressSupportTest extends NbTestCase {
             }
         });
 
-        actions.add(new ProgressSupport.AsynchronousAction() {
+        actions.add(new ProgressSupport.BackgroundAction() {
             public void run(final ProgressSupport.Context actionContext) {
-                actionContext.progress("Testing the third asynchronous action.");
+                actionContext.progress("Testing the third background action.");
 
                 correctThreadCount.addAndGet(isNotEventDispatchThread());
                 correctPanelStateCount.addAndGet(Mutex.EVENT.readAccess(new Mutex.Action<Integer>() {
@@ -208,7 +208,7 @@ public class ProgressSupportTest extends NbTestCase {
 
         final AtomicReference<String> progressMessage = new AtomicReference<String>();
 
-        actions.add(new ProgressSupport.AsynchronousAction() {
+        actions.add(new ProgressSupport.BackgroundAction() {
             public void run(final ProgressSupport.Context actionContext) {
                 actionContext.progress("Progress message");
 
@@ -230,7 +230,7 @@ public class ProgressSupportTest extends NbTestCase {
         final CountDownLatch sync = new CountDownLatch(1);
         final AtomicBoolean ran = new AtomicBoolean();
 
-        actions.add(new ProgressSupport.SynchronousAction() {
+        actions.add(new ProgressSupport.EventThreadAction() {
             public void run(ProgressSupport.Context actionContext) {
                 synchronized (sync) {
                     ran.set(true);
@@ -258,10 +258,10 @@ public class ProgressSupportTest extends NbTestCase {
         ProgressSupport.invoke(actions);
     }
 
-    public void testExceptionInSyncActionPropagates() {
+    public void testExceptionInEventThreadActionPropagates() {
         List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
 
-        actions.add(new ProgressSupport.SynchronousAction() {
+        actions.add(new ProgressSupport.EventThreadAction() {
             public void run(final ProgressSupport.Context actionContext) {
                 throw new RuntimeException("Error");
             }
@@ -274,14 +274,14 @@ public class ProgressSupportTest extends NbTestCase {
         }
     }
 
-    public void testExceptionInAsyncActionPropagatesAndProgressPanelCloses() {
+    public void testExceptionInBackgroundActionPropagatesAndProgressPanelCloses() {
         List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
 
         final AtomicReference<ProgressPanel> progressPanel = new AtomicReference<ProgressPanel>();
 
-        actions.add(new ProgressSupport.AsynchronousAction() {
+        actions.add(new ProgressSupport.BackgroundAction() {
             public void run(final ProgressSupport.Context actionContext) {
-                actionContext.progress("Asynchronous");
+                actionContext.progress("Background");
 
                 // get the panel
                 progressPanel.set(actionContext.getPanel());
@@ -306,7 +306,7 @@ public class ProgressSupportTest extends NbTestCase {
 
         final AtomicBoolean cancelVisible = new AtomicBoolean();
 
-        actions.add(new ProgressSupport.AsynchronousAction() {
+        actions.add(new ProgressSupport.BackgroundAction() {
             public void run(final ProgressSupport.Context actionContext) {
                 cancelVisible.set(Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
                     public Boolean run() {
@@ -328,7 +328,7 @@ public class ProgressSupportTest extends NbTestCase {
         final AtomicBoolean cancelVisible2 = new AtomicBoolean();
         final AtomicBoolean cancelEnabled2 = new AtomicBoolean();
 
-        actions.add(new ProgressSupport.AsynchronousAction() {
+        actions.add(new ProgressSupport.BackgroundAction() {
             public void run(final ProgressSupport.Context actionContext) {
                 Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
                     public Object run() {
@@ -412,7 +412,7 @@ public class ProgressSupportTest extends NbTestCase {
             }
         });
 
-        actions.add(new ProgressSupport.AsynchronousAction() {
+        actions.add(new ProgressSupport.BackgroundAction() {
             public void run(ProgressSupport.Context actionContext) {
                 secondActionInvoked.set(true);
             }
@@ -453,7 +453,7 @@ public class ProgressSupportTest extends NbTestCase {
             }
         });
 
-        actions.add(new ProgressSupport.AsynchronousAction() {
+        actions.add(new ProgressSupport.BackgroundAction() {
             public void run(ProgressSupport.Context actionContext) {
                 secondActionInvoked.set(true);
             }
@@ -463,12 +463,12 @@ public class ProgressSupportTest extends NbTestCase {
         assertTrue(secondActionInvoked.get());
     }
 
-    public void testEscapeDoesNotCloseDialogForAsyncNonCancellableActions() {
+    public void testEscapeDoesNotCloseDialogForBackgroundNonCancellableActions() {
         List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
 
         final AtomicBoolean panelOpen = new AtomicBoolean();
 
-        actions.add(new ProgressSupport.AsynchronousAction() {
+        actions.add(new ProgressSupport.BackgroundAction() {
             public void run(final ProgressSupport.Context actionContext) {
                 Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
                     public Object run() {

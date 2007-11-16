@@ -61,18 +61,18 @@ import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
 /**
- * A class providing support for running synchronous (in the event dispathing
- * thread) and asynchronous (outside the EDT) actions. Multiple
- * actions can be posted at the same time, switching between synchronous and
- * asynchronous ones as needed. The actions are run sequentially -- one at most one action
- * may be running at any moment in time. A progress panel is displayed for asynchronous actions.
+ * A class providing support for running event thread (in the event dispathing
+ * thread) and background (in a background thread) actions. Multiple
+ * actions can be posted at the same time, switching between event thread and
+ * background ones as needed. The actions are run sequentially -- one at most one action
+ * may be running at any moment in time. A progress panel is displayed for background actions.
  *
- * <p>A typical use case is running an asynchronous action with a progress dialog.
- * For that just create an {@link #AsynchronouosAction} and send it to the {@link #invoke} method.</p>
+ * <p>A typical use case is running an background action with a progress dialog.
+ * For that just create an {@link #BackgroundAction} and send it to the {@link #invoke} method.</p>
  *
- * <p>A more complex use case is mixing actions: first you need to run an asynchronous
- * action, the a synchronous one (but in certain cases only) and then another
- * asynchronous one, showing and hiding the progress panel as necessary.</p>
+ * <p>A more complex use case is mixing actions: first you need to run an background
+ * action, the an event thread one (but in certain cases only) and then another
+ * background one, showing and hiding the progress panel as necessary.</p>
  *
  * @author Andrei Badea
  */
@@ -150,7 +150,7 @@ public final class ProgressSupport {
             // in either EDT or the RP thread
             final AtomicReference<Throwable> exceptionRef = new AtomicReference<Throwable>();
 
-            // The RequestProcessor task for asynchronous actions
+            // The RequestProcessor task for background actions
             RequestProcessor.Task task = rp.create(new Runnable() {
                 public void run() {
                     try {
@@ -158,7 +158,7 @@ public final class ProgressSupport {
                     } catch (Throwable t) {
                         exceptionRef.set(t);
                     } finally {
-                        // We are done running asynchronous actions, so we must close the progress panel
+                        // We are done running background actions, so we must close the progress panel
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
                                 progressPanel.close();
@@ -169,15 +169,15 @@ public final class ProgressSupport {
             });
 
             try {
-                // True if we are running synchronous actions in this round, false otherwise.
+                // True if we are running event thread actions in this round, false otherwise.
                 boolean runInEDT = true;
 
                 // Every round of the loop invokes a bunch of actions. The first
-                // round invokes synchronous ones, stopping at the first asynchronous one.
-                // The second invokes asynchronous ones, stopping at the first synchronous one.
-                // The third invokes synchronous ones, etc.
+                // round invokes event thread ones, stopping at the first background one.
+                // The second invokes background ones, stopping at the first event thread one.
+                // The third invokes event thread ones, etc.
                 // This avoids hiding/showing the progress panel after/before each
-                // asynchronous action.
+                // background action.
                 while (nextActionIndex.get() < actions.size() && !cancelled) {
                     if (runInEDT) {
                         try {
@@ -194,7 +194,7 @@ public final class ProgressSupport {
                         task.schedule(0);
 
                         // Open the progress panel. It will be closed at the end of the task for
-                        // asynchronous actions. Therefore the call will block and will return when
+                        // background actions. Therefore the call will block and will return when
                         // the RP task's run() method returns.
                         progressPanel.open(progressComponent);
 
@@ -224,11 +224,11 @@ public final class ProgressSupport {
         }
 
         /**
-         * Invokes the next actions of the same kind (all synchronous or all asynchronous),
+         * Invokes the next actions of the same kind (all event thread or all background),
          * starting with nextActionIndex, while skipping disabled actions. That is,
-         * when called in the EDT it will run all enabled synchronous actions,
-         * stopping at the first asynchronous one. When called in a RP thread, it
-         * will run all enabled asynchronous actions, stopping as the first synchronous one.
+         * when called in the EDT it will run all enabled event thread actions,
+         * stopping at the first background one. When called in a RP thread, it
+         * will run all enabled background actions, stopping as the first event thread one.
          */
         private void invokeNextActionsOfSameKind() {
             boolean isEventThread = SwingUtilities.isEventDispatchThread();
@@ -255,7 +255,7 @@ public final class ProgressSupport {
 
                 LOGGER.log(Level.FINE, "Running " + currentAction);
 
-                // Only enable/disable the cancel button for asynchronous actions.
+                // Only enable/disable the cancel button for background actions.
                 if (!isEventThread) {
                     final boolean cancelEnabled = currentAction instanceof Cancellable;
                     SwingUtilities.invokeLater(new Runnable() {
@@ -288,7 +288,7 @@ public final class ProgressSupport {
                 return;
             }
 
-            // There is no guarantee that the current action is asynchronous or that it
+            // There is no guarantee that the current action is background or that it
             // implements Cancellable (maybe the action before it did and the user clicked Cancel
             // just before it finished). If it doesn't we can't do better than
             // just ignore the Cancel request.
@@ -306,7 +306,7 @@ public final class ProgressSupport {
     /**
      * Encapsulates the "context" the action is it run under. Currently contains
      * methods for controlling the progress bar in the progress dialog
-     * for asynchronous actions.
+     * for background actions.
      */
     public static final class Context {
 
@@ -355,7 +355,7 @@ public final class ProgressSupport {
 
     /**
      * Describes an action. See also {@link SynchronousAction} and
-     * {@link AsynchronousAction}.
+     * {@link backgroundAction}.
      */
     public interface Action {
 
@@ -367,9 +367,9 @@ public final class ProgressSupport {
 
         /**
          * Returns true if the actions is enabled (should be run). This is
-         * useful when having e.g. a {@link Asynchronous asynchronous}
-         * action between two {@link Synchronous synchronous} actions. If the
-         * asynchronous action is false the progress dialog
+         * useful when having e.g. a {@link background background}
+         * action between two {@link Synchronous event thread} actions. If the
+         * background action is false the progress dialog
          * is not displayed at all (if it was displayed it would just blink
          * for a short time, which does not look good).
          */
@@ -386,10 +386,10 @@ public final class ProgressSupport {
     }
 
     /**
-     * Describes a synchronous action, that is, one that should be run
+     * Describes an event thread action, that is, one that should be run
      * in the EDT.
      */
-    public static abstract class SynchronousAction implements Action {
+    public static abstract class EventThreadAction implements Action {
 
         public final boolean getRunInEventThread() {
             return true;
@@ -401,10 +401,10 @@ public final class ProgressSupport {
     }
 
     /**
-     * Describes an asynchronous action, that is, one that should be run
+     * Describes an background action, that is, one that should be run
      * outside the EDT and with a progress dialog.
      */
-    public static abstract class AsynchronousAction implements Action {
+    public static abstract class BackgroundAction implements Action {
 
         public final boolean getRunInEventThread() {
             return false;
