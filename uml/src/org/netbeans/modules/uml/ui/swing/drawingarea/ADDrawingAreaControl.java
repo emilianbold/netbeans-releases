@@ -9745,7 +9745,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
         boolean retVal = true;
         if (e != null)
         {
-            retVal = e.isPopupTrigger() || contextMenuTriggered;
+            retVal = e.isPopupTrigger();
         }
 
         ADGraphWindow graphWindow = getGraphWindow();
@@ -9889,7 +9889,6 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
         }
     }
 
-    private static boolean contextMenuTriggered = false;
     private class MouseHandler extends MouseAdapter
     {
 
@@ -9906,8 +9905,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
             //if I was editing something on drawing area, need to commit that
             saveEditCompartment();
             requestFocus();
-            contextMenuTriggered = event.isPopupTrigger();
-            //showPopupMenu(event);
+            showPopupMenu(event);
         }
 
         @Override
