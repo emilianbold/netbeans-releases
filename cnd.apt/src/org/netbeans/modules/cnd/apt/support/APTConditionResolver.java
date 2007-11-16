@@ -135,7 +135,7 @@ public final class APTConditionResolver {
     
     private static TokenStream expandTokenStream(TokenStream orig, APTMacroCallback callback) {
         // need to generate expanded token stream to have all macro substituted
-        return new APTExpandedStream(orig, callback);
+        return new APTExpandedStream(orig, callback, true);
     }
 
     private static boolean isEmpty(AST ast) {

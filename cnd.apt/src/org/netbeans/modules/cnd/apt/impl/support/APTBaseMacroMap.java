@@ -74,15 +74,6 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     protected APTMacroMapSnapshot active;
     
     private static final String DEFINE_PREFIX="#define "; // NOI18N
-    private static final List<Token> DEF_MACRO_BODY;
-    static {
-        int type = APTTokenTypes.NUMBER;
-        APTToken token = APTUtils.createAPTToken(type);
-        token.setType(type);
-        token.setText("1"); // NOI18N
-        DEF_MACRO_BODY = new ArrayList<Token>();
-        DEF_MACRO_BODY.add(token);
-    }
     
     /**
      * Creates a new instance of APTBaseMacroMap
@@ -128,7 +119,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
             // special check for macros without values, we must set it to be 1
             List<Token> body = defNode.getBody();
             if (body == APTUtils.EMPTY_STREAM) {
-                body = DEF_MACRO_BODY;
+                body = APTUtils.DEF_MACRO_BODY;
             }
             defineImpl(defNode.getName(), defNode.getParams(), body);
         } catch (TokenStreamException ex) {

@@ -438,6 +438,7 @@ public class APTUtils {
     public static final APTToken VA_ARGS_TOKEN; // support ELLIPSIS for IZ#83949 in macros
     public static final APTToken EMPTY_ID_TOKEN; // support ELLIPSIS for IZ#83949 in macros
     public static final APTToken COMMA_TOKEN; // support ELLIPSIS for IZ#83949 in macros
+    public static final List<Token> DEF_MACRO_BODY; //support "1" as content of #defined tokens without body IZ#122091
     static {
         VA_ARGS_TOKEN = createAPTToken();
         VA_ARGS_TOKEN.setType(APTTokenTypes.ID);
@@ -450,6 +451,12 @@ public class APTUtils {
         COMMA_TOKEN = createAPTToken();
         COMMA_TOKEN.setType(APTTokenTypes.COMMA);
         COMMA_TOKEN.setText(","); // NOI18N             
+        
+        APTToken token = createAPTToken();
+        token.setType(APTTokenTypes.NUMBER);
+        token.setText("1"); // NOI18N
+        DEF_MACRO_BODY = new ArrayList<Token>();
+        DEF_MACRO_BODY.add(token);
     }
     
     public static final APTToken EOF_TOKEN = new APTEOFToken();

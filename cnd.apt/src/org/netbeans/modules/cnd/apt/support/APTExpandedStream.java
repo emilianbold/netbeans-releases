@@ -79,13 +79,21 @@ public class APTExpandedStream implements TokenStream {
      */
     private boolean extractingMacroParams = false;
     
+    // flag to specify that original stream is from preprocessor expression
+    private final boolean expandPPExpression;
+    
+    public APTExpandedStream(TokenStream stream, APTMacroCallback callback, boolean expandPPExpression) {
+        selector.select(stream);
+        this.callback = callback;
+        this.expandPPExpression = expandPPExpression;
+        assert (!(callback instanceof APTSystemMacroMap)):"system macro map can't be used as callback"; // NOI18N
+    }
+    
     /**
      * Creates a new instance of APTExpandedStream
      */
     public APTExpandedStream(TokenStream stream, APTMacroCallback callback) {
-        selector.select(stream);
-        this.callback = callback;
-        assert (!(callback instanceof APTSystemMacroMap)):"system macro map can't be used as callback"; // NOI18N
+        this(stream, callback, false);
     }
 
     /**
@@ -121,7 +129,11 @@ public class APTExpandedStream implements TokenStream {
                 }
             }
         }
-    }  
+    }
+
+    private boolean isExpandingPPExpression() {
+        return expandPPExpression;
+    }
     
     private boolean pushMacroExpanding(Token token, APTMacro macro) throws TokenStreamException {
         boolean res = true;
@@ -167,6 +179,17 @@ public class APTExpandedStream implements TokenStream {
             // for object-like macro the body doesn't need any parameter expandings
             // use it as is in macro
             out = new APTCommentsFilter(macro.getBody());
+            // in case of expanding stream in preprocessor directive expression
+            // all #define'ed macro without body must be considered as having default macro body
+            if (isExpandingPPExpression()) {
+                if (APTUtils.isEOF(out.nextToken())) {
+                    // no body => use default
+                    out = new ListBasedTokenStream(APTUtils.DEF_MACRO_BODY);
+                } else {
+                    // has body => restore original eaten by the nextToken call above
+                    out = new APTCommentsFilter(macro.getBody());
+                }
+            }
         } else {
             // create wrapper for function-like macro:
 	    
@@ -185,7 +208,7 @@ public class APTExpandedStream implements TokenStream {
 		// - extract macro parameters 
 		List<List<Token>> params = extractParams(macro, token, next);
 		// - subsitute all parameters in macro body
-		List<Token> substParamsList = subsituteParams(macro, params, callback);
+		List<Token> substParamsList = subsituteParams(macro, params, callback, isExpandingPPExpression());
 		// - put result list in TokenStream wrapper
 		out = new ListBasedTokenStream(substParamsList);
 	    }
@@ -296,7 +319,7 @@ public class APTExpandedStream implements TokenStream {
     // gcc consumes 2.5G and fails, 
     // we are trying to prevent such experiments, especially in IDE
     private static final long MACRO_EXPANDING_THREASHOLD = 16*1024;
-    private static List<Token> subsituteParams(APTMacro macro, List<List<Token>> params, APTMacroCallback callback) throws TokenStreamException {
+    private static List<Token> subsituteParams(APTMacro macro, List<List<Token>> params, APTMacroCallback callback, boolean expandPPExpression) throws TokenStreamException {
         final Map<String/*getTokenTextKey(token)*/, List<Token>> paramsMap = createParamsMap(macro, params);;
         final List<Token> expanded = new LinkedList<Token>();
         final TokenStream body = new APTCommentsFilter(macro.getBody());
@@ -335,7 +358,7 @@ public class APTExpandedStream implements TokenStream {
                                 List<Token> paramValue = paramsMap.get(APTUtils.getTokenTextKey(token));
                                 if (paramValue != null) {
                                     // found param, so expand it and skip current token
-                                    List<Token> expandedValue = expandParamValue(paramValue, callback);
+                                    List<Token> expandedValue = expandParamValue(paramValue, callback, expandPPExpression);
                                     if (expandedValue.size() > MACRO_EXPANDING_THREASHOLD) {
                                         if (DebugUtils.STANDALONE) {
                                             System.err.printf(
@@ -504,9 +527,9 @@ public class APTExpandedStream implements TokenStream {
         return out.toString();
     }
 
-    private static List<Token> expandParamValue(List<Token> paramValue, APTMacroCallback callback) {
+    private static List<Token> expandParamValue(List<Token> paramValue, APTMacroCallback callback, boolean expandPPExpression) {
         TokenStream valueStream = new ListBasedTokenStream(paramValue);
-        TokenStream expanedValue = new APTExpandedStream(valueStream, callback);
+        TokenStream expanedValue = new APTExpandedStream(valueStream, callback, expandPPExpression);
         List<Token> out = APTUtils.toList(expanedValue);
         return out;
     }
