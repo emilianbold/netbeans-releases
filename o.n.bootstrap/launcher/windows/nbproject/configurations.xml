@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="38">
+  <logicalFolder name="root" displayName="root" projectFiles="true">
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+      <itemPath>Makefile_windows.mk</itemPath>
+    </logicalFolder>
+    <itemPath>Makefile</itemPath>
+    <itemPath>nbexec.cpp</itemPath>
+  </logicalFolder>
+  <projectmakefile>Makefile_windows.mk</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <compilerSet>Cygwin</compilerSet>
+        <cRequired>true</cRequired>
+        <cppRequired>true</cppRequired>
+        <fortranRequired>false</fortranRequired>
+        <platform>3</platform>
+      </toolsSet>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>make -f Makefile testinst</buildCommand>
+          <cleanCommand>make -f Makefile clean</cleanCommand>
+          <executablePath>nbexec.exe</executablePath>
+        </makeTool>
+      </makefileType>
+      <item path="Makefile">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="nbexec.cpp">
+        <itemTool>1</itemTool>
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

@@ -63,9 +63,9 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="release" depends="init">
-        <copy file="../launcher/unix/nbexec" todir="${cluster}/lib" />
+        <copy file="launcher/unix/nbexec" todir="${cluster}/lib" />
         <chmod file="${cluster}/lib/nbexec" perm="ugo+rx"/>
-        <copy file="../launcher/windows/nbexec.exe" todir="${cluster}/lib/" />
+        <copy file="launcher/windows/nbexec.exe" todir="${cluster}/lib/" />
         <fixcrlf srcdir="${cluster}/lib" eol="lf">
             <include name="**/*.sh"/>
             <include name="**/ide.cfg"/>
