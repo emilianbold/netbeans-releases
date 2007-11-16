@@ -245,7 +245,7 @@ public final class Option {
      * option use:<pre>
      *   public void process(Env env, Map&lt;Option,String[]&gt; values) throws CommandException {
      *     if (values.containsKey(openOption)) {
-     *       for (fileName : values.get(openOption)) {
+     *       for (String fileName : values.get(openOption)) {
      *         File file = new File({@link Env#getCurrentDirectory}, fileName);
      *         // do what is necessary
      *       }
