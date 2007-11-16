@@ -55,7 +55,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.j2ee.core.utilities.ProgressPanel;
-import org.openide.util.Cancellable;
 import org.openide.util.Mutex;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
@@ -257,7 +256,7 @@ public final class ProgressSupport {
 
                 // Only enable/disable the cancel button for background actions.
                 if (isBackground) {
-                    final boolean cancelEnabled = currentAction instanceof Cancellable;
+                    final boolean cancelEnabled = currentAction.isCancellable();
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             actionContext.getPanel().setCancelEnabled(cancelEnabled);
@@ -292,11 +291,11 @@ public final class ProgressSupport {
             // implements Cancellable (maybe the action before it did and the user clicked Cancel
             // just before it finished). If it doesn't we can't do better than
             // just ignore the Cancel request.
-            if (!action.isEnabled() || !action.isBackground() || !(action instanceof Cancellable)) {
+            if (!action.isEnabled() || !action.isBackground() || !action.isCancellable()) {
                 return;
             }
 
-            cancelled = ((Cancellable)action).cancel();
+            cancelled = action.cancel();
             if (cancelled) {
                 actionContext.getPanel().setCancelEnabled(false);
             }
@@ -328,8 +327,8 @@ public final class ProgressSupport {
         }
 
         /**
-         * 
-         * 
+         *
+         *
          * @param message
          */
         public void progress(final String message) {
@@ -354,64 +353,127 @@ public final class ProgressSupport {
     }
 
     /**
-     * Describes an action. See also {@link SynchronousAction} and
-     * {@link backgroundAction}.
+     * Describes an action. See also {@link EventThreadAction} and
+     * {@link BackgroundAction}.
      */
-    public interface Action {
+    public static abstract class Action {
 
         /**
-         * Returns true if the action should be run in the EDT and
-         * false otherwise.
+         * Constructs a new action, by default {@link #isEnabled enabled}.
          */
-        public boolean isBackground();
+        public Action() {
+        }
 
         /**
-         * Returns true if the actions is enabled (should be run). This is
-         * useful when having e.g. a {@link background background}
-         * action between two {@link Synchronous event thread} actions. If the
-         * background action is false the progress dialog
-         * is not displayed at all (if it was displayed it would just blink
-         * for a short time, which does not look good).
+         * Returns true if the action is a background one.
+         *
+         * <p>This method is invoked in an unspecified thread.</p>
+         *
+         * @return true if the action should be run in the background,
+         *         false otherwise.
          */
-        public boolean isEnabled();
+        protected abstract boolean isBackground();
 
         /**
-         * This method is invoked when the action should be run.
+         * Returns true if the action is enabled (should be run). The default
+         * implementation of this method returns true.
+         *
+         * <p>This method is useful when having e.g. an event thread action between
+         * two background actions, and the event thread action's enabled status depends on the
+         * result of the first background action. If this result is such that the event
+         * thread action should not run, the event thread action could implement
+         * it's run() method as a no-op. But this would cause the progress dialog
+         * to blink for a short time (being hidden after the first background action
+         * and shown before the second one). This method helps remove that blinking.</p>
+         *
+         * <p>This method will be invoked in an unspecified thread.</p>
+         *
+         * @return true if the action is enabled, false otherwise.
          */
-        public void run(Context actionContext);
-    }
+        protected boolean isEnabled() {
+            return true;
+        }
 
-    public interface CancellableAction extends Action, Cancellable {
+        /**
+         * This method is invoked when the action should be run. It will
+         * be invoked in the event dispatching thread or an unspecified
+         * background thread depending on the result value of {@link #isBackground}.
+         *
+         * @param  actionContext the context in which this action is run.
+         */
+        protected abstract void run(Context actionContext);
 
+        /**
+         * Returns true if the action is cancellable. The default implementation
+         * of this method returns false.
+         *
+         * @return true if the action is enabled, false otherwise.
+         */
+        protected boolean isCancellable() {
+            return false;
+        }
+
+        /**
+         * This method is invoked when the action should be cancelled. It is
+         * invoked in an unspecified thread.
+         *
+         * @return true if the action could be cancelled successfully, false
+         *         otherwise.
+         */
+        protected boolean cancel() {
+            return true;
+        }
     }
 
     /**
      * Describes an event thread action, that is, one that should be run
-     * in the EDT.
+     * in the event dispatching thread.
      */
-    public static abstract class EventThreadAction implements Action {
+    public static abstract class EventThreadAction extends Action {
+
+        private final boolean cancellable;
+
+        public EventThreadAction() {
+            this(false);
+        }
+
+        public EventThreadAction(boolean cancellable) {
+            this.cancellable = cancellable;
+        }
 
         public final boolean isBackground() {
             return false;
         }
 
-        public boolean isEnabled() {
-            return true;
+        @Override
+        protected final boolean isCancellable() {
+            return cancellable;
         }
     }
 
     /**
-     * Describes an background action, that is, one that should be run
-     * outside the EDT and with a progress dialog.
+     * Describes a background action, that is, one that should be run
+     * in a background thread under a progress dialog.
      */
-    public static abstract class BackgroundAction implements Action {
+    public static abstract class BackgroundAction extends Action {
+
+        private final boolean cancellable;
+
+        public BackgroundAction() {
+            this(false);
+        }
+
+        public BackgroundAction(boolean cancellable) {
+            this.cancellable = cancellable;
+        }
 
         public final boolean isBackground() {
             return true;
         }
 
-        public boolean isEnabled() {
-            return true;
+        @Override
+        protected final boolean isCancellable() {
+            return cancellable;
         }
     }
 }

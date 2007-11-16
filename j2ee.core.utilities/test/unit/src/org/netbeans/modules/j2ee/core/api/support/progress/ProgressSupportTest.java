@@ -341,7 +341,7 @@ public class ProgressSupportTest extends NbTestCase {
             }
         });
 
-        actions.add(new ProgressSupport.CancellableAction() {
+        actions.add(new ProgressSupport.BackgroundAction(true) {
             public void run(final ProgressSupport.Context actionContext) {
                 Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
                     public Object run() {
@@ -352,21 +352,9 @@ public class ProgressSupportTest extends NbTestCase {
                     }
                 });
             }
-
-            public boolean isEnabled() {
-                return true;
-            }
-
-            public boolean isBackground() {
-                return true;
-            }
-
-            public boolean cancel() {
-                return true;
-            }
         });
 
-        // the actions are cancellable, thus the cancel button is always visible
+        // calling invoke() with cancellable == true to make the Cancel button visible
         // invoke() should return true, meaning all actions were invoked
         assertTrue(ProgressSupport.invoke(actions, true));
 
@@ -386,7 +374,7 @@ public class ProgressSupportTest extends NbTestCase {
         final AtomicBoolean cancelInvoked = new AtomicBoolean();
         final AtomicBoolean cancelInvokedInEDT = new AtomicBoolean();
 
-        actions.add(new ProgressSupport.CancellableAction() {
+        actions.add(new ProgressSupport.BackgroundAction(true) {
             public void run(final ProgressSupport.Context actionContext) {
                 Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
                     public Object run() {
@@ -397,14 +385,7 @@ public class ProgressSupportTest extends NbTestCase {
                 // at this point cancel() should already have been called
             }
 
-            public boolean isEnabled() {
-                return true;
-            }
-
-            public boolean isBackground() {
-                return true;
-            }
-
+            @Override
             public boolean cancel() {
                 cancelInvokedInEDT.set(SwingUtilities.isEventDispatchThread());
                 cancelInvoked.set(true);
@@ -429,7 +410,7 @@ public class ProgressSupportTest extends NbTestCase {
 
         final AtomicBoolean secondActionInvoked = new AtomicBoolean();
 
-        actions.add(new ProgressSupport.CancellableAction() {
+        actions.add(new ProgressSupport.BackgroundAction(true) {
             public void run(final ProgressSupport.Context actionContext) {
                 Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
                     public Object run() {
@@ -438,14 +419,6 @@ public class ProgressSupportTest extends NbTestCase {
                     }
                 });
                 // at this point cancel() should already have been called
-            }
-
-            public boolean isEnabled() {
-                return true;
-            }
-
-            public boolean isBackground() {
-                return true;
             }
 
             public boolean cancel() {
@@ -494,7 +467,7 @@ public class ProgressSupportTest extends NbTestCase {
         final AtomicBoolean panelOpen = new AtomicBoolean();
         final AtomicBoolean cancelEnabled = new AtomicBoolean();
 
-        actions.add(new ProgressSupport.CancellableAction() {
+        actions.add(new ProgressSupport.BackgroundAction(true) {
             public void run(final ProgressSupport.Context actionContext) {
                 Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
                     public Object run() {
@@ -508,18 +481,6 @@ public class ProgressSupportTest extends NbTestCase {
                         return null;
                     }
                 });
-            }
-
-            public boolean isEnabled() {
-                return true;
-            }
-
-            public boolean isBackground() {
-                return true;
-            }
-
-            public boolean cancel() {
-                return true;
             }
         });
 
