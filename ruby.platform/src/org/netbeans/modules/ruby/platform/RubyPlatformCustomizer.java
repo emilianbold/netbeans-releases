@@ -58,6 +58,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class RubyPlatformCustomizer extends javax.swing.JPanel {
+    
+    private static final String LAST_PLATFORM_DIRECTORY = "lastPlatformDirectory"; // NOI18N
 
     public static void showCustomizer() {
         RubyPlatformCustomizer customizer = new RubyPlatformCustomizer();
@@ -200,12 +202,12 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
     }
 
     private void addButtonaddPlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonaddPlatform
-        JFileChooser chooser = new JFileChooser(); // XXX pass last used location
+        JFileChooser chooser = new JFileChooser(Util.getPreferences().get(LAST_PLATFORM_DIRECTORY, ""));
         chooser.setAcceptAllFileFilterUsed(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setFileFilter(new FileFilter() {
             public boolean accept(File f)  {
-                return f.isFile() && f.getName().toLowerCase(Locale.US).contains("ruby"); // NOI18N
+                return f.isDirectory() || (f.isFile() && f.getName().toLowerCase(Locale.US).contains("ruby")); // NOI18N
             }
             public String getDescription() {
                 return "Ruby Platform"; //getMessage("CTL_JavadocTab");
@@ -213,9 +215,10 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
         });
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
-            File javadocRoot = FileUtil.normalizeFile(chooser.getSelectedFile());
+            File intepreter = FileUtil.normalizeFile(chooser.getSelectedFile());
+            Util.getPreferences().put(LAST_PLATFORM_DIRECTORY, intepreter.getParentFile().getAbsolutePath());
             // XXX store last used directory into the settings
-            getPlafListModel().addPlatform(javadocRoot);
+            getPlafListModel().addPlatform(intepreter);
             refreshPlatform();
         }
     }//GEN-LAST:event_addButtonaddPlatform

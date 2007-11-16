@@ -53,6 +53,11 @@ public final class Util {
 
     private Util() {
     }
+    
+    /** Returns {@link NbPreferences preferences} for this module. */
+    public static Preferences getPreferences() {
+        return NbPreferences.forModule(Util.class);
+    }
 
     /** Return true iff the given line seems to be colored using ANSI terminal escape codes */
     public static boolean containsAnsiColors(String line) {

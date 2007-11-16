@@ -62,7 +62,6 @@ import java.util.logging.Level;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -82,7 +81,6 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /**
@@ -194,12 +192,12 @@ public class RubyInstallation {
             ruby = System.getProperty("ruby.interpreter");
 
             if (ruby == null) { // Usually the case
-                ruby = getPreferences().get(KEY_RUBY, null);
+                ruby = Util.getPreferences().get(KEY_RUBY, null);
                 
                 if (ruby == null) {
                     ruby = chooseRuby();
                     if (ruby != null) {
-                        getPreferences().put(KEY_RUBY, ruby);
+                        Util.getPreferences().put(KEY_RUBY, ruby);
                     }
                 }
 
@@ -1001,15 +999,11 @@ public class RubyInstallation {
         return valid;
     }
 
-    private static Preferences getPreferences() {
-        return NbPreferences.forModule(RubyInstallation.class);
-    }
-
     public void setRuby(String ruby) {
         File rubyF = new File(ruby);
         ruby = rubyF.getAbsolutePath();
         if (!ruby.equals(getRuby())) {
-            getPreferences().put(KEY_RUBY, ruby);
+            Util.getPreferences().put(KEY_RUBY, ruby);
         }
         if (!FileUtil.normalizeFile(rubyF).equals(FileUtil.normalizeFile(new File(getRuby())))) {
             // reset only in case it is not a link to the same file
@@ -1465,7 +1459,7 @@ public class RubyInstallation {
     }
     
     public String getShortName() {
-        String r = getPreferences().get(KEY_RUBY, null);
+        String r = Util.getPreferences().get(KEY_RUBY, null);
         final String BUILTIN_JRUBY = NbBundle.getMessage(RubyInstallation.class, "BuiltinRuby");
         if (r == null) {
             return BUILTIN_JRUBY;
