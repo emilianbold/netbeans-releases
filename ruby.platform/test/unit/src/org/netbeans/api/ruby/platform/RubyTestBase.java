@@ -39,7 +39,6 @@
 package org.netbeans.api.ruby.platform;
 
 import java.io.File;
-import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
 import org.openide.modules.InstalledFileLocator;
 

@@ -43,10 +43,7 @@ package org.netbeans.modules.ruby;
 
 import junit.framework.TestCase;
 
-import java.io.ByteArrayOutputStream;
-
 /**
- *
  * @author Tor Norbye
  */
 public class RubyMimeResolverTest extends TestCase {
@@ -79,14 +76,14 @@ public class RubyMimeResolverTest extends TestCase {
         assertTrue(checkValidHeader("#!/usr/bin/env jruby"));
         assertTrue(checkValidHeader("#!/usr/bin/env.exe jruby"));
 
-        assertTrue(!checkValidHeader("# !C:\\programs\\ruby.exe"));
-        assertTrue(!checkValidHeader("#!/bin/sh"));
-        assertTrue(!checkValidHeader("#!/bin/rubystuff/bin/ksh"));
-        assertTrue(!checkValidHeader("#!/usr/bin/rub"));
-        assertTrue(!checkValidHeader("#!/usr/bin/"));
-        assertTrue(!checkValidHeader("#! /usr/bin/rub\ny"));
-        assertTrue(!checkValidHeader("#! /usr/b\nin/ruby"));
-        assertTrue(!checkValidHeader("#/usr/bin/ruby"));
-        assertTrue(!checkValidHeader("#!/usr/bin/env.exe jrub"));
+        assertFalse(checkValidHeader("# !C:\\programs\\ruby.exe"));
+        assertFalse(checkValidHeader("#!/bin/sh"));
+        assertFalse(checkValidHeader("#!/bin/rubystuff/bin/ksh"));
+        assertFalse(checkValidHeader("#!/usr/bin/rub"));
+        assertFalse(checkValidHeader("#!/usr/bin/"));
+        assertFalse(checkValidHeader("#! /usr/bin/rub\ny"));
+        assertFalse(checkValidHeader("#! /usr/b\nin/ruby"));
+        assertFalse(checkValidHeader("#/usr/bin/ruby"));
+        assertFalse(checkValidHeader("#!/usr/bin/env.exe jrub"));
     }    
 }
