@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -41,53 +41,43 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="tomcat5" default="netbeans" basedir=".">
-  <import file="../../nbbuild/templates/projectized.xml"/>
+<project name="schema2beans_anttask" default="jars" basedir=".">
+  <import file="../../../nbbuild/default-properties.xml"/>
 
-  <property name="tomcat5_dir" location="src/org/netbeans/modules/tomcat5"/>
+  <target name="jars" depends="compile">
+	<jar jarfile="s2banttask.jar"
+	  basedir="src"
+	  excludes="**/*.java"
+	  compress="false">
+	</jar>
+  </target>
 
-  <target name="build-init" depends="projectized.build-init"/>
-
-  <target name="s2binit" depends="build-init">
-	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
+  <target name="compile">
+    <property name="ant.jar" value="${ant.home}/lib/ant.jar"/>
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" target="1.4" source="1.4" >
 	  <classpath>
-		<pathelement path="${schema2beans/rt.dir}/modules/org-netbeans-modules-schema2beans.jar" />
-		<pathelement path="${nb_all}/schema2beans/rt/dev/schema2beansdev.jar" />
-		<pathelement path="${nb_all}/schema2beans/rt/anttask/s2banttask.jar"/>
+                <!-- cmdline Ant -->
+                <pathelement location="${ant.jar}"/>
+                <!-- Ant in NB -->
+                <!-- Note: in NB 4.0, ${ant.home}/lib/ant.jar will work as is -->
+                <pathelement path="${netbeans.library.path}"/>
+		<pathelement location="${schema2beans/rt.dir}/modules/org-netbeans-modules-schema2beans.jar" />
+		<pathelement location="${nb_all}/schema2beans/rt/dev/schema2beansdev.jar" />
 	  </classpath>
-	</taskdef>
-  </target>
-  
-  <target name="dd2beans_gen" depends="s2binit">
-      <echo message="generating bean graph for Tomcat 5 Server configuration file" />
-	<schema2beans schema="${tomcat5_dir}/resources/tomcat5_server.dtd"
-	  mddFile="tomcat5_server.mdd"
-          attrProp="true"
-	  package="org.netbeans.modules.tomcat5.config.gen"
-	  rootDir="src"/>
-      <echo message="generating bean graph for Tomcat 5 Context configuration file" />
-	<schema2beans schema="${tomcat5_dir}/resources/tomcat5_context.dtd"
-	  mddFile="tomcat5.mdd"
-          attrProp="true"
-	  package="org.netbeans.modules.tomcat5.config.gen"
-	  rootDir="src"/>
-  </target>
-  
-  <target name="compile" depends="dd2beans_gen, projectized-common.compile"/>
-    
-  <target name="clean" depends="clean-ddgen-src, projectized-common.clean"/>
-
-  <target name="clean-ddgen-check">
-    <available property="have-config" file="${tomcat5_dir}/config/gen"/>
+	</javac>
   </target>
 
-  <target name="clean-ddgen-src" if="have-config" depends="clean-ddgen-check">
-        <delete>
-            <fileset dir="${tomcat5_dir}/config/gen">
-                <include name="*.java"/>
-            </fileset>
-        </delete>
-        <delete dir="${tomcat5_dir}/config/gen"/>
+  <target name="clean">
+    <delete>
+      <fileset dir="src">
+        <include name="**/*.class"/>
+      </fileset>
+    </delete>
   </target>
-  
+
+  <target name="real-clean" depends="clean"
+          description="Clean everything possible.">
+	<!-- This jar file is used in taskdef's and will cause a problem during a clean if it's not there. -->
+	<delete file="s2banttask.jar"/>
+  </target>
 </project>

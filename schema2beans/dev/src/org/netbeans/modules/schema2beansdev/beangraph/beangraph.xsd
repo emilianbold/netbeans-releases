@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:element name="bean-graph">
+	<xsd:complexType>
+	  <xsd:sequence>
+		<xsd:element name="schema-type-mapping" type="schemaTypeMappingType"
+		  minOccurs="0" maxOccurs="unbounded"/>
+	  </xsd:sequence>
+	</xsd:complexType>
+  </xsd:element>
+
+  <xsd:complexType name="schemaTypeMappingType">
+	<xsd:annotation>
+	  <xsd:documentation>
+		Map between schema types and java types.
+	  </xsd:documentation>
+	</xsd:annotation>
+	<xsd:sequence>
+	  <xsd:element name="schema-type-namespace" type="xsd:string" minOccurs="0"/>
+	  <xsd:element name="schema-type-name" type="xsd:string">
+		<xsd:annotation>
+		  <xsd:documentation>
+			The schema type; for instance, "string"
+		  </xsd:documentation>
+		</xsd:annotation>
+	  </xsd:element>
+	  <xsd:element name="java-type" type="xsd:string">
+		<xsd:annotation>
+		  <xsd:documentation>
+			The java type; for instance, "java.lang.String", or "int"
+		  </xsd:documentation>
+		</xsd:annotation>
+	  </xsd:element>
+	  <xsd:element name="root" type="xsd:boolean" minOccurs="0"/>
+	  <xsd:element name="bean" type="xsd:boolean" minOccurs="0"/>
+	  <xsd:element name="can-be-empty" type="xsd:boolean" minOccurs="0"/>
+	</xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>

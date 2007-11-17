@@ -1,0 +1,85 @@
+<!-- This holds data about the schema that is not part of DTDs and/or XML Schemas.
+-->
+
+<!--
+-->
+<!ELEMENT metaDD (meta-element*, implements?, extends?, import*, vetoable?, throw-exceptions?, schemaLocation?, finder*)>
+
+<!--
+-->
+<!ELEMENT meta-element (dtd-name, namespace?, bean-name?, bean-class?, wrapper-class?, default-value*, known-value*, meta-property*, comparator-class*, implements?, extends?, import*, user-code?, vetoable?, skip-generation?, delegator-name?, delegator-extends?, bean-interface-extends?, can-be-empty?>
+
+<!--
+-->
+<!ELEMENT meta-property (bean-name, default-value*, known-value*, key?, vetoable?)>
+
+<!ELEMENT delegator-name (#PCDATA)>
+
+<!--
+-->
+<!ELEMENT implements (#PCDATA)>
+
+<!--
+-->
+<!ELEMENT extends (#PCDATA)>
+
+<!--
+-->
+<!ELEMENT import (#PCDATA)>
+
+<!--
+-->
+<!ELEMENT dtd-name (#PCDATA)>
+
+<!ELEMENT namespace (#PCDATA)>
+
+<!--
+-->
+<!ELEMENT default-value (#PCDATA)>
+
+<!--
+-->
+<!ELEMENT skip-generation EMPTY>
+
+<!--
+-->
+<!ELEMENT key EMPTY>
+
+<!--
+-->
+<!ELEMENT vetoable EMPTY>
+
+<!--
+-->
+<!ELEMENT known-value (#PCDATA)>
+
+<!--
+-->
+<!ELEMENT bean-name (#PCDATA)>
+
+<!--
+-->
+<!ELEMENT bean-class (#PCDATA)>
+
+<!--
+-->
+<!ELEMENT wrapper-class (#PCDATA)>
+
+<!--
+-->
+<!ELEMENT comparator-class (#PCDATA)>
+
+<!--
+-->
+<!ELEMENT user-code (#PCDATA)>
+
+<!ELEMENT throw-exceptions EMPTY>
+
+<!-- Automatically set the schemaLocation -->
+<!ELEMENT schemaLocation (#PCDATA)>
+
+<!ELEMENT finder (#PCDATA)>
+
+<!ELEMENT bean-interface-extends (#PCDATA)>
+
+<!ELEMENT can-be-empty EMPTY>
