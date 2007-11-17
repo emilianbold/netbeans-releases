@@ -81,7 +81,7 @@ public class NewUMLProjectWizardIterator
     public static final int TYPE_REVERSE_ENGINEER = 2; // reverse engineer Java project
 //    public static final int TYPE_ROSE_IMPORT = 3; // import Rose model
     
-    public static final String PROP_WIZARD_TYPE = "wizard-type"; //NOI18N
+    public static final String PROP_WIZARD_TYPE = "uml-wizard-type"; //NOI18N
     public static final String PROP_NAME_INDEX = "nameIndex"; //NOI18N
     public static final String PROP_PROJECT_NAME = "name"; //NOI18N
     public static final String PROP_PROJECT_DIR = "projdir"; //NOI18N
