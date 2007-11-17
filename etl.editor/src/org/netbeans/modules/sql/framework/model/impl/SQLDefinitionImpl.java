@@ -112,6 +112,10 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     private static final String STAGING = "Staging";
     private static final String BEST_FIT = "Best Fit";
     private static final String PIPELINE = "Pipeline";
+    
+    private static final String WEB_ROWSET = "WebRowset";
+    private static final String RELATIONALMAP = "RelationalMap";
+    private static final String JSON = "Json";
 
     class SecondParseObjectInfo {
         private Element mElm;
@@ -1961,6 +1965,24 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     }
 
     public void setExecutionStrategyStr(String text) {
+    }
+    
+     public void setResponseTypeStr(String text) {
+     }
+     
+     public String getResponseTypeStr() {
+        int code = getExecutionStrategyCode().intValue();
+        switch (code) {
+            case SQLDefinition.WEB_ROWSET:
+                return SQLDefinitionImpl.WEB_ROWSET;
+            case SQLDefinition.RELATIONAL_MAP:
+                return SQLDefinitionImpl.RELATIONALMAP;
+            case SQLDefinition.JSON:
+                return SQLDefinitionImpl.JSON;
+                
+            default:
+                return SQLDefinitionImpl.WEB_ROWSET;
+        }
     }
 
 }
