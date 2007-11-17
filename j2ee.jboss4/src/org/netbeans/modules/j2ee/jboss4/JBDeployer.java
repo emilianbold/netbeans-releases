@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -52,10 +52,13 @@ import org.netbeans.modules.j2ee.jboss4.config.gen.JbossWeb;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
@@ -107,7 +110,7 @@ public class JBDeployer implements ProgressObject, Runnable {
         mainModuleID = new JBTargetModuleID(target[0], file.getName());
 
         try {
-            String server_url = "http://" + host + ":" + port;
+            String server_url = "http://" + host + ":" + port; // NOI18N
 
             if (file.getName().endsWith(".war")) {
                 mainModuleID.setContextURL(server_url + JbossWeb.createGraph(file2).getContextRoot());
@@ -126,7 +129,38 @@ public class JBDeployer implements ProgressObject, Runnable {
                         mainModuleID.addChild(mod_id);
                     }
                 } else {
-                    LOGGER.log(Level.INFO, "Cannot find file META-INF/application.xml in " + file); // NOI18N
+                    // Java EE 5
+                    for (FileObject child : jfs.getRoot().getChildren()) {
+                        if (child.hasExt("war") || child.hasExt("jar")) { // NOI18N
+                            JBTargetModuleID mod_id = new JBTargetModuleID(target[0]);
+
+                            if (child.hasExt("war")) { // NOI18N
+                                String contextRoot = child.getName();
+                                ZipInputStream zis = new ZipInputStream(child.getInputStream());
+                                try {
+
+                                    ZipEntry entry = null;
+                                    while ((entry = zis.getNextEntry()) != null) {
+                                        if ("WEB-INF/jboss-web.xml".equals(entry.getName())) { // NOI18N
+                                            String ddContextRoot =
+                                                    JbossWeb.createGraph(new ZipEntryInputStream(zis)).getContextRoot();
+                                            if (ddContextRoot != null) {
+                                                contextRoot = ddContextRoot;
+                                            }
+                                            break;
+                                        }
+                                    }
+                                } catch (IOException ex) {
+                                    LOGGER.log(Level.INFO, "Error reading context-root", ex); // NOI18N
+                                } finally {
+                                    zis.close();
+                                }
+
+                                mod_id.setContextURL(server_url + contextRoot);
+                            }
+                            mainModuleID.addChild(mod_id);
+                        }
+                    }
                 }
             }
 
@@ -303,6 +337,42 @@ public class JBDeployer implements ProgressObject, Runnable {
         }
 
         return false;
+    }
+
+    private static class ZipEntryInputStream extends InputStream {
+        private final ZipInputStream zis;
+        
+        public ZipEntryInputStream(ZipInputStream zis) {
+            this.zis = zis;
+        }
+        
+        @Override
+        public int available() throws IOException {
+            return zis.available();
+        }
+
+        @Override
+        public void close() throws IOException {
+            zis.closeEntry();
+        }
+
+        @Override
+        public int read() throws IOException {
+            if (available() > 0) {
+                return zis.read();
+            }
+            return -1;
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            return zis.read(b, off, len);
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            return zis.skip(n);
+        }
     }
 
     // ----------  Implementation of ProgressObject interface
