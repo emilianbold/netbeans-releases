@@ -6,12 +6,14 @@
 package org.netbeans.modules.visualweb.dataprovider;
 
 import com.sun.data.provider.FieldKey;
+import com.sun.data.provider.RowKey;
 import com.sun.sql.rowset.CachedRowSetXImpl;
 import java.io.File;
 import junit.framework.TestCase;
 import com.sun.data.provider.impl.CachedRowSetDataProvider;
 
 
+import java.beans.Beans;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -36,7 +38,7 @@ public class CachedRowSetDataProviderTest extends TestCase {
     private static final String IDNAME = "id";
     private static final String COL1NAME = "col1"; 
     private static final String COL2NAME = "col2";
-    
+    private static final String ROWID = "row1";  
     private static final int NUMROWS = 10;
     
     public CachedRowSetDataProviderTest(String testName) {
@@ -166,6 +168,79 @@ public class CachedRowSetDataProviderTest extends TestCase {
        provider.close();
     }
     
+    public void testInsertRow() {
+        try {
+            int newRowCount = 0;
+            int currentRowCount = 0;
+            CachedRowSetXImpl rowset = new CachedRowSetXImpl();
+            Beans beans = new Beans();
+            beans.setDesignTime(true);
+            CachedRowSetDataProvider provider = new CachedRowSetDataProvider();
+            provider.setCachedRowSet(rowset);
+            currentRowCount = getRowCount(rowset);
+            
+            Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+            Connection conn = DriverManager.getConnection(DBURL);           
+
+            PreparedStatement insert = conn.prepareStatement(
+                    "INSERT INTO " + TABLENAME + " VALUES(?, ?, ?)");
+
+            for (int i = 1; i <= NUMROWS; i++) {
+                insert.setInt(1, i);
+                insert.setString(2, "col1_" + i);
+                insert.setString(3, "col2_" + i);
+
+                insert.execute();
+            }
+            
+            newRowCount = getRowCount(rowset);           
+            assertEquals(newRowCount, currentRowCount + 1);
+        } catch (ClassNotFoundException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        } catch (SQLException sqle) {
+            LOGGER.log(Level.FINE, null, sqle);
+        }
+
+    }
+    
+    public void testRevertChanges() {
+        int newRowCount = 0;
+        int currentRowCount = 0;
+        
+        try {
+            CachedRowSetXImpl rowset = new CachedRowSetXImpl();
+            Beans beans = new Beans();
+            beans.setDesignTime(true);
+            CachedRowSetDataProvider provider = new CachedRowSetDataProvider();
+            provider.setCachedRowSet(rowset);
+
+            /* Select only one row and one extra column
+             */
+            rowset.setCommand("SELECT " + IDNAME + ", " + COL1NAME + " FROM " + TABLENAME + " WHERE " + IDNAME + " = 1");
+
+            rowset.setTableName(TABLENAME);
+
+            //commit changes
+            rowset.execute();
+            provider.commitChanges();
+            currentRowCount = getRowCount(rowset);   
+
+            // add a new row
+            FieldKey fk = new FieldKey(IDNAME);
+            RowKey rk = new RowKey(ROWID);
+            provider.setValue(fk, rk, beans);
+            provider.appendRow();
+            newRowCount = getRowCount(rowset);   
+            // test revert changes
+            provider.revertChanges();      
+            assertEquals(newRowCount, currentRowCount);
+
+        } catch (SQLException sqle) {   
+            LOGGER.log(Level.FINE, null, sqle);
+        }            
+    }
+    
+        
     private void checkRows(CachedRowSetDataProvider provider,
             int expectedRows, int expectedFields) {
         int numrows = provider.getRowCount();
@@ -184,6 +259,27 @@ public class CachedRowSetDataProviderTest extends TestCase {
                 assert(value != null);
             }
         }
+    }
+    
+    private int getRowCount(CachedRowSetXImpl rowset) {
+
+        CachedRowSetDataProvider provider = new CachedRowSetDataProvider();
+        provider.setCachedRowSet(rowset);
+
+        // Select only one row and one extra column
+        try {
+            rowset.setUrl("jdbc:derby:mydb;create=true");
+            rowset.setCommand("SELECT " + IDNAME + ", " + COL1NAME + " FROM " + TABLENAME + " WHERE " + IDNAME + " = 2");
+            rowset.setTableName(TABLENAME);
+
+            //commit changes
+            rowset.execute();
+            
+        } catch (SQLException sqle) {
+            LOGGER.log(Level.FINE, null, sqle);
+        }
+        
+        return provider.getRowCount();
     }
 
 
