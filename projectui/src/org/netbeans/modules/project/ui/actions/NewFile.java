@@ -79,33 +79,34 @@ import org.openide.util.actions.Presenter.Popup;
  */
 public class NewFile extends ProjectAction implements PropertyChangeListener, Popup, PopupMenuListener {
 
-    private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/newFile.png" ) ); //NOI18N        
-    private static final String NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Name" ); // NI18N
+    private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/newFile.png" ) ); //NOI18N
+    private static final String _NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Name" ); // NI18N
     private static final String _SHORT_DESCRIPTION = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Tooltip" ); // NI18N
     private static final String POPUP_NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_PopupName" ); // NOI18N
     private static final String FILE_POPUP_NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_File_PopupName" ); // NOI18N
     private static final String TEMPLATE_NAME_FORMAT = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Template_PopupName" ); // NOI18N
 
     private JMenu subMenu;
-    
+
     public NewFile() {
         this( null );
     }
-    
+
     public NewFile( Lookup context ) {
-        super( (String)null, NAME, ICON, context ); //NOI18N    
+        super( (String)null, _NAME, ICON, context ); //NOI18N
         putValue("iconBase","org/netbeans/modules/project/ui/resources/newFile.png"); //NOI18N
         putValue(SHORT_DESCRIPTION, _SHORT_DESCRIPTION);
         OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
         refresh( getLookup() );
     }
 
+    @Override
     protected void refresh( Lookup context ) {
         // #59615: update synch if possible; only replan if not already in EQ.
         Mutex.EVENT.readAccess(new Runnable() {
             public void run() {
                 setEnabled(OpenProjectList.getDefault().getOpenProjects().length > 0);
-                setDisplayName(NAME);
+                setDisplayName(_NAME);
             }
         });
     }
@@ -118,24 +119,25 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         return menu;
     }
 
-    //private NewFileWizard wizardIterator;  
+    //private NewFileWizard wizardIterator;
 
+    @Override
     protected void actionPerformed( Lookup context ) {
         doPerform( context, null, true );
-    }    
-        
+    }
+
     private void doPerform( Lookup context, DataObject template, boolean inProject ) {
-        
+
         if ( context == null ) {
             context = getLookup();
         }
-    
+
         if ( !inProject ) {
             // Context outside of projects
             NoProjectNew.showDialog( template, preselectedFolder( context ) );
             return;
         }
-        
+
         NewFileWizard wd = new NewFileWizard( preselectedProject( context ) /* , null */ );
 
         DataFolder preselectedFolder = preselectedFolder( context );
@@ -143,16 +145,16 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
             wd.setTargetFolder( preselectedFolder );
         }
 
-        try { 
+        try {
             Set resultSet = template == null ? wd.instantiate () : wd.instantiate( template );
-            
+
             if (resultSet == null || resultSet.isEmpty ()) {
                 // no new object, no work
                 return ;
             }
-            
+
             Iterator it = resultSet.iterator ();
-            
+
             while (it.hasNext ()) {
                 Object obj = it.next ();
                 DataObject newDO = null;
@@ -176,22 +178,23 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         catch ( IOException e ) {
             ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
         }
-        
+
         // Update the Templates LRU for given project
-        Project project = Templates.getProject( wd );
+        //Project project = Templates.getProject( wd );
         FileObject foTemplate = Templates.getTemplate( wd );
         OpenProjectList.getDefault().updateTemplatesLRU( foTemplate );
 
     }
-    
+
     // Context Aware action implementation -------------------------------------
-    
+
+    @Override
     public Action createContextAwareInstance( Lookup actionContext ) {
         return new NewFile( actionContext );
     }
-    
+
     // Presenter.Popup implementation ------------------------------------------
-    
+
     public JMenuItem getSubmenuPopupPresenter() {
         if (subMenu == null) {
             subMenu = new JMenu(POPUP_NAME);
@@ -199,7 +202,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         }
         return subMenu;
     }
-    
+
     private void fillSubMenu() {
         Project projects[] = ActionsUtil.getProjectsFromLookup( getLookup(), null );
         if ( projects != null && projects.length > 0 ) {
@@ -210,9 +213,9 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
             fillNonProjectSubMenu(subMenu);
         }
     }
-    
+
     // Private methods ---------------------------------------------------------
-    
+
     private Project preselectedProject( Lookup context ) {
         Project preselectedProject = null;
 
@@ -223,7 +226,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
             preselectedProject = projects[0];
         }
 
-        
+
         if ( preselectedProject == null ) {
             // No project context => use main project
             preselectedProject = OpenProjectList.getDefault().getMainProject();
@@ -237,51 +240,51 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
             assert false : "Action should be disabled"; // NOI18N
         }
 
-        return preselectedProject;    
+        return preselectedProject;
     }
 
     private DataFolder preselectedFolder( Lookup context ) {
-        
+
         DataFolder preselectedFolder = null;
-        
+
         // Try to find selected folder
-        preselectedFolder = (DataFolder)context.lookup( DataFolder.class );
+        preselectedFolder = context.lookup(DataFolder.class);
         if ( preselectedFolder == null ) {
             // No folder selectd try with DataObject
-            DataObject dobj = (DataObject)context.lookup( DataObject.class );
+            DataObject dobj = context.lookup(DataObject.class);
             if ( dobj != null) {
                 // DataObject found => we'll use the parent folder
                 preselectedFolder = dobj.getFolder();
             }
         }
-        
+
         return preselectedFolder;
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
         refresh( Lookup.EMPTY );
     }
-    
+
     public static String TEMPLATE_PROPERTY = "org.netbeans.modules.project.ui.actions.NewFile.Template"; // NOI18N
     public static String IN_PROJECT_PROPERTY = "org.netbeans.modules.project.ui.actions.NewFile.InProject"; // NOI18N
-    
-    
+
+
      private void fillSubMenu(JMenu menuItem, Project project) {
         menuItem.removeAll();
-        
+
         ActionListener menuListener = new PopupListener();
-        
+
         List lruList = OpenProjectList.getDefault().getTemplatesLRU( project );
         boolean itemAdded = false;
         for( Iterator it = lruList.iterator(); it.hasNext(); ) {
             DataObject template = (DataObject)it.next();
-            
+
             Node delegate = template.getNodeDelegate();
-            JMenuItem item = new JMenuItem( 
+            JMenuItem item = new JMenuItem(
                 MessageFormat.format( TEMPLATE_NAME_FORMAT, new Object[] { delegate.getDisplayName() } ),
                 new ImageIcon( delegate.getIcon( BeanInfo.ICON_COLOR_16x16 ) ) );
             item.addActionListener( menuListener );
-            item.putClientProperty( TEMPLATE_PROPERTY, template );        
+            item.putClientProperty( TEMPLATE_PROPERTY, template );
             menuItem.add( item );
             itemAdded = true;
         }
@@ -293,28 +296,28 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         fileItem.putClientProperty( TEMPLATE_PROPERTY, null );
         menuItem.add( fileItem );
     }
-    
-    
+
+
     private void fillNonProjectSubMenu(JMenu menuItem) {
         menuItem.removeAll();
-        
+
         ActionListener menuListener = new PopupListener();
-        
+
         DataFolder preselectedFolder = preselectedFolder( getLookup() );
-        
+
         boolean canWrite;
         if ( preselectedFolder == null ) {
             canWrite = false;
         }
-        else { 
+        else {
             FileObject pf = preselectedFolder.getPrimaryFile();
             canWrite = pf != null && pf.canWrite();
         }
-        
+
         DataObject templates[] = NoProjectNew.getTemplates();
         for( int i = 0; i < templates.length; i++ ) {
             Node n = templates[i].getNodeDelegate();
-            JMenuItem item = new JMenuItem( 
+            JMenuItem item = new JMenuItem(
                 MessageFormat.format( TEMPLATE_NAME_FORMAT, new Object[] { n.getDisplayName() } ),
                                       new ImageIcon( n.getIcon( BeanInfo.ICON_COLOR_16x16 ) ) );
             item.addActionListener( menuListener );
@@ -324,56 +327,58 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
             menuItem.add( item );
         }
     }
-    
+
     private class PopupListener implements ActionListener {
-                
+
         public void actionPerformed( ActionEvent e ) {
             JMenuItem source = (JMenuItem)e.getSource();
 
             Boolean inProject = (Boolean)source.getClientProperty( IN_PROJECT_PROPERTY );
             DataObject template = (DataObject)source.getClientProperty( TEMPLATE_PROPERTY );
-            
+
             if ( inProject != null && inProject == Boolean.FALSE ) {
-                doPerform( null, template, false );            
+                doPerform( null, template, false );
             }
-            else {                                        
-                doPerform( null, template, true );            
+            else {
+                doPerform( null, template, true );
             }
         }
-        
+
     }
-    
+
     // Implementation of PopupMenuListener -------------------------------------
-    
+
     public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
         fillSubMenu();
     }
-    
+
     public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
     }
 
     public void popupMenuCanceled(PopupMenuEvent e) {
     }
-    
+
     /**
      * Variant for folder context menus that makes a submenu.
      */
     public static final class WithSubMenu extends NewFile {
-        
+
         public WithSubMenu() {}
-        
+
         private WithSubMenu(Lookup actionContext) {
             super(actionContext);
         }
-        
+
+        @Override
         public JMenuItem getPopupPresenter() {
             return getSubmenuPopupPresenter();
         }
-        
+
+        @Override
         public Action createContextAwareInstance(Lookup actionContext) {
             return new WithSubMenu(actionContext);
         }
 
     }
-    
+
 }
