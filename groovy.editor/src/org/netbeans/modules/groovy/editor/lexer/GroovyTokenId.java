@@ -93,9 +93,8 @@ public class GroovyTokenId extends GsfTokenId {
     public static final GsfTokenId BXOR = new GsfTokenId("BXOR", null, "operator");
     public static final GsfTokenId CASE_GROUP = new GsfTokenId("CASE_GROUP", null, "default");
     public static final GsfTokenId CLASS_DEF = new GsfTokenId("CLASS_DEF", null, "default");
-    public static final GsfTokenId CLOSABLE_BLOCK = new GsfTokenId("CLOSABLE_BLOCK", null, "default");
-    public static final GsfTokenId CLOSABLE_BLOCK_OP = new GsfTokenId("CLOSABLE_BLOCK_OP", null, "operator");
-    public static final GsfTokenId CLOSURE_LIST = new GsfTokenId("CLOSURE_LIST", null, "operator");
+    public static final GsfTokenId CLOSED_BLOCK = new GsfTokenId("CLOSABLE_BLOCK", null, "default");
+    public static final GsfTokenId CLOSURE_OP = new GsfTokenId("CLOSURE_LIST", null, "operator");
     public static final GsfTokenId COLON = new GsfTokenId("COLON", null, "operator");
     public static final GsfTokenId COMMA = new GsfTokenId("COMMA", null, "operator");
     public static final GsfTokenId COMPARE_TO = new GsfTokenId("COMPARE_TO", null, "operator");
@@ -109,7 +108,6 @@ public class GroovyTokenId extends GsfTokenId {
     public static final GsfTokenId DOT = new GsfTokenId("DOT", null, "operator");
     public static final GsfTokenId DYNAMIC_MEMBER = new GsfTokenId("DYNAMIC_MEMBER", null, "default");
     public static final GsfTokenId ELIST = new GsfTokenId("ELIST", null, "default");
-    public static final GsfTokenId ELVIS_OPERATOR = new GsfTokenId("ELVIS_OPERATOR", null, "operator");
     public static final GsfTokenId EMPTY_STAT = new GsfTokenId("EMPTY_STAT", null, "default");
     public static final GsfTokenId ENUM_CONSTANT_DEF = new GsfTokenId("ENUM_CONSTANT_DEF", null, "default");
     public static final GsfTokenId ENUM_DEF = new GsfTokenId("ENUM_DEF", null, "default");
@@ -129,7 +127,6 @@ public class GroovyTokenId extends GsfTokenId {
     public static final GsfTokenId GE = new GsfTokenId("GE", null, "operator");
     public static final GsfTokenId GT = new GsfTokenId("GT", null, "operator");
     public static final GsfTokenId HEX_DIGIT = new GsfTokenId("HEX_DIGIT", null, "number");
-    public static final GsfTokenId IDENT = new GsfTokenId("IDENT", null, "default");
     public static final GsfTokenId IMPLEMENTS_CLAUSE = new GsfTokenId("IMPLEMENTS_CLAUSE", null, "default");
     public static final GsfTokenId IMPLICIT_PARAMETERS = new GsfTokenId("IMPLICIT_PARAMETERS", null, "default");
     public static final GsfTokenId IMPORT = new GsfTokenId("IMPORT", null, "default");
@@ -196,7 +193,6 @@ public class GroovyTokenId extends GsfTokenId {
     public static final GsfTokenId LITERAL_while = new GsfTokenId("LITERAL_while", null, "keyword");
     public static final GsfTokenId LNOT = new GsfTokenId("LNOT", null, "operator");
     public static final GsfTokenId LOR = new GsfTokenId("LOR", null, "operator");
-    public static final GsfTokenId LPAREN = new GsfTokenId("LPAREN", null, "operator");
     public static final GsfTokenId LT = new GsfTokenId("LT", null, "operator");
     public static final GsfTokenId MAP_CONSTRUCTOR = new GsfTokenId("MAP_CONSTRUCTOR", null, "default");
     public static final GsfTokenId MEMBER_POINTER = new GsfTokenId("MEMBER_POINTER", null, "operator");
@@ -204,7 +200,6 @@ public class GroovyTokenId extends GsfTokenId {
     public static final GsfTokenId METHOD_DEF = new GsfTokenId("METHOD_DEF", null, "default");
     public static final GsfTokenId MINUS_ASSIGN = new GsfTokenId("MINUS_ASSIGN", null, "operator");
     public static final GsfTokenId MINUS = new GsfTokenId("MINUS", null, "operator");
-    public static final GsfTokenId ML_COMMENT = new GsfTokenId("ML_COMMENT", null, "comment");
     public static final GsfTokenId MOD_ASSIGN = new GsfTokenId("MOD_ASSIGN", null, "operator");
     public static final GsfTokenId MOD = new GsfTokenId("MOD", null, "operator");
     public static final GsfTokenId MODIFIERS = new GsfTokenId("MODIFIERS", null, "default");
@@ -232,10 +227,7 @@ public class GroovyTokenId extends GsfTokenId {
     public static final GsfTokenId RANGE_INCLUSIVE = new GsfTokenId("RANGE_INCLUSIVE", null, "operator");
     public static final GsfTokenId REGEX_FIND = new GsfTokenId("REGEX_FIND", null, "operator");
     public static final GsfTokenId REGEX_MATCH = new GsfTokenId("REGEX_MATCH", null, "operator");
-    public static final GsfTokenId REGEXP_CTOR_END = new GsfTokenId("REGEXP_CTOR_END", null, "default");
-    public static final GsfTokenId REGEXP_LITERAL = new GsfTokenId("REGEXP_LITERAL", null, "default");
     public static final GsfTokenId REGEXP_SYMBOL = new GsfTokenId("REGEXP_SYMBOL", null, "default");
-    public static final GsfTokenId RPAREN = new GsfTokenId("RPAREN", null, "operator");
     public static final GsfTokenId SELECT_SLOT = new GsfTokenId("SELECT_SLOT", null, "default");
     public static final GsfTokenId SEMI = new GsfTokenId("SEMI", null, "operator");
     public static final GsfTokenId SH_COMMENT = new GsfTokenId("SH_COMMENT", null, "comment");
@@ -260,7 +252,6 @@ public class GroovyTokenId extends GsfTokenId {
     public static final GsfTokenId STRING_CTOR_MIDDLE = new GsfTokenId("STRING_CTOR_MIDDLE", null, "string");
     public static final GsfTokenId STRING_CTOR_START = new GsfTokenId("STRING_CTOR_START", null, "string");
     public static final GsfTokenId STRING_CH = new GsfTokenId("STRING_CH", null, "string");
-    public static final GsfTokenId STRING_LITERAL = new GsfTokenId("STRING_LITERAL", null, "string");
     public static final GsfTokenId STRING_NL = new GsfTokenId("STRING_NL", null, "string");
     public static final GsfTokenId SUPER_CTOR_CALL = new GsfTokenId("SUPER_CTOR_CALL", null, "default");
     public static final GsfTokenId TRIPLE_DOT = new GsfTokenId("TRIPLE_DOT", null, "operator");
@@ -281,9 +272,6 @@ public class GroovyTokenId extends GsfTokenId {
     public static final GsfTokenId VARIABLE_PARAMETER_DEF = new GsfTokenId("VARIABLE_PARAMETER_DEF", null, "default");
     public static final GsfTokenId VOCAB = new GsfTokenId("VOCAB", null, "default");
     public static final GsfTokenId WILDCARD_TYPE = new GsfTokenId("WILDCARD_TYPE", null, "default");
-    public static final GsfTokenId WS = new GsfTokenId("WS", null, "default");
-    public static final GsfTokenId WHITESPACE = new GsfTokenId("WHITESPACE", null, "default");
-    public static final GsfTokenId ERROR = new GsfTokenId("ERROR", null, "default");
     // </editor-fold>
     
     private static final Language<GsfTokenId> language =
@@ -342,9 +330,8 @@ public class GroovyTokenId extends GsfTokenId {
         types.add(BXOR);
         types.add(CASE_GROUP);
         types.add(CLASS_DEF);
-        types.add(CLOSABLE_BLOCK);
-        types.add(CLOSABLE_BLOCK_OP);
-        types.add(CLOSURE_LIST);
+        types.add(CLOSED_BLOCK);
+        types.add(CLOSURE_OP);
         types.add(COLON);
         types.add(COMMA);
         types.add(COMPARE_TO);
@@ -358,7 +345,6 @@ public class GroovyTokenId extends GsfTokenId {
         types.add(DOT);
         types.add(DYNAMIC_MEMBER);
         types.add(ELIST);
-        types.add(ELVIS_OPERATOR);
         types.add(EMPTY_STAT);
         types.add(ENUM_CONSTANT_DEF);
         types.add(ENUM_DEF);
@@ -378,7 +364,7 @@ public class GroovyTokenId extends GsfTokenId {
         types.add(GE);
         types.add(GT);
         types.add(HEX_DIGIT);
-        types.add(IDENT);
+        types.add(IDENTIFIER);
         types.add(IMPLEMENTS_CLAUSE);
         types.add(IMPLICIT_PARAMETERS);
         types.add(IMPORT);
@@ -455,7 +441,7 @@ public class GroovyTokenId extends GsfTokenId {
         types.add(METHOD_DEF);
         types.add(MINUS_ASSIGN);
         types.add(MINUS);
-        types.add(ML_COMMENT);
+        types.add(BLOCK_COMMENT);
         types.add(MOD_ASSIGN);
         types.add(MOD);
         types.add(MODIFIERS);
@@ -485,7 +471,6 @@ public class GroovyTokenId extends GsfTokenId {
         types.add(RBRACKET);
         types.add(REGEX_FIND);
         types.add(REGEX_MATCH);
-        types.add(REGEXP_CTOR_END);
         types.add(REGEXP_LITERAL);
         types.add(REGEXP_SYMBOL);
         types.add(RPAREN);
@@ -534,7 +519,6 @@ public class GroovyTokenId extends GsfTokenId {
         types.add(VARIABLE_PARAMETER_DEF);
         types.add(VOCAB);
         types.add(WILDCARD_TYPE);
-        types.add(WS);
         types.add(WHITESPACE);
         types.add(ERROR);
         return types;
@@ -588,12 +572,10 @@ public class GroovyTokenId extends GsfTokenId {
                     return GroovyTokenId.CASE_GROUP;
             case GroovyTokenTypes.CLASS_DEF:
                     return GroovyTokenId.CLASS_DEF;
-            case GroovyTokenTypes.CLOSABLE_BLOCK:
-                    return GroovyTokenId.CLOSABLE_BLOCK;
-            case GroovyTokenTypes.CLOSABLE_BLOCK_OP:
-                    return GroovyTokenId.CLOSABLE_BLOCK_OP;
-            case GroovyTokenTypes.CLOSURE_LIST:
-                    return GroovyTokenId.CLOSURE_LIST;
+            case GroovyTokenTypes.CLOSED_BLOCK:
+                    return GroovyTokenId.CLOSED_BLOCK;
+            case GroovyTokenTypes.CLOSURE_OP:
+                    return GroovyTokenId.CLOSURE_OP;
             case GroovyTokenTypes.COLON:
                     return GroovyTokenId.COLON;
             case GroovyTokenTypes.COMMA:
@@ -620,8 +602,6 @@ public class GroovyTokenId extends GsfTokenId {
                     return GroovyTokenId.DYNAMIC_MEMBER;
             case GroovyTokenTypes.ELIST:
                     return GroovyTokenId.ELIST;
-            case GroovyTokenTypes.ELVIS_OPERATOR:
-                    return GroovyTokenId.ELVIS_OPERATOR;
             case GroovyTokenTypes.EMPTY_STAT:
                     return GroovyTokenId.EMPTY_STAT;
             case GroovyTokenTypes.ENUM_CONSTANT_DEF:
@@ -661,7 +641,7 @@ public class GroovyTokenId extends GsfTokenId {
             case GroovyTokenTypes.HEX_DIGIT:
                     return GroovyTokenId.HEX_DIGIT;
             case GroovyTokenTypes.IDENT:
-                    return GroovyTokenId.IDENT;
+                    return GroovyTokenId.IDENTIFIER;
             case GroovyTokenTypes.IMPLEMENTS_CLAUSE:
                     return GroovyTokenId.IMPLEMENTS_CLAUSE;
             case GroovyTokenTypes.IMPLICIT_PARAMETERS:
@@ -815,7 +795,7 @@ public class GroovyTokenId extends GsfTokenId {
             case GroovyTokenTypes.MINUS:
                     return GroovyTokenId.MINUS;
             case GroovyTokenTypes.ML_COMMENT:
-                    return GroovyTokenId.ML_COMMENT;
+                    return GroovyTokenId.BLOCK_COMMENT;
             case GroovyTokenTypes.MOD_ASSIGN:
                     return GroovyTokenId.MOD_ASSIGN;
             case GroovyTokenTypes.MOD:
@@ -874,10 +854,6 @@ public class GroovyTokenId extends GsfTokenId {
                     return GroovyTokenId.REGEX_FIND;
             case GroovyTokenTypes.REGEX_MATCH:
                     return GroovyTokenId.REGEX_MATCH;
-            case GroovyTokenTypes.REGEXP_CTOR_END:
-                    return GroovyTokenId.REGEXP_CTOR_END;
-            case GroovyTokenTypes.REGEXP_LITERAL:
-                    return GroovyTokenId.REGEXP_LITERAL;
             case GroovyTokenTypes.REGEXP_SYMBOL:
                     return GroovyTokenId.REGEXP_SYMBOL;
             case GroovyTokenTypes.RPAREN:
@@ -973,10 +949,10 @@ public class GroovyTokenId extends GsfTokenId {
             case GroovyTokenTypes.WILDCARD_TYPE:
                     return GroovyTokenId.WILDCARD_TYPE;
             case GroovyTokenTypes.WS:
-                    return GroovyTokenId.WS;
+                    return GroovyTokenId.WHITESPACE;
             // added manually
             case ERROR_INT:
-                    return GroovyTokenId.WS;
+                    return GroovyTokenId.ERROR;
             default:
                 return GroovyTokenId.IDENTIFIER;
         }
