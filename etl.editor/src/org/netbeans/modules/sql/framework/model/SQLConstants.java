@@ -169,8 +169,18 @@ public class SQLConstants {
 
     /** Full Outer Join */
     public static final int FULL_OUTER_JOIN = 4;
+     // --------------------- End of Join Types --------------------------
+     /** WebRowset */
+    public static final int WEB_ROWSET = 10;
 
-    // --------------------- End of Join Types --------------------------
+    /** RelationalMap */
+    public static final int RELATIONAL_MAP = 20;
+    
+    /** JSON */
+    
+    public static final int JSON = 30;
+ // --------------------- End of Response Types --------------------------
+   
 
     // --------------------- Start of Operator Type Names --------------------------
 

@@ -246,7 +246,7 @@ public class ETLDefinitionImpl implements ETLDefinition, Serializable {
      */
     public Integer getExecutionStrategyCode() {
         return this.sqlDefinition.getExecutionStrategyCode();
-    }
+    }    
 
     /**
      * get the parent repository object
@@ -413,7 +413,7 @@ public class ETLDefinitionImpl implements ETLDefinition, Serializable {
     public void setExecutionStrategyCode(Integer code) {
         sqlDefinition.setExecutionStrategyCode(code);
     }
-
+    
     /**
      * set the parent repository object
      *
