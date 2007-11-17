@@ -351,6 +351,7 @@ public class BridgeImpl implements BridgeInterface {
             // Try stopping at a safe point.
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(BridgeImpl.class, "MSG_stopping", logger.getDisplayNameNoLock()));
             logger.stop();
+            process.interrupt();
             // But if that doesn't do it, double-check later...
             // Yes Thread.stop() is deprecated; that is why we try to avoid using it.
             RequestProcessor.getDefault().create(new Runnable() {
@@ -367,7 +368,6 @@ public class BridgeImpl implements BridgeInterface {
     private void forciblyStop(Thread process) {
         if (process.isAlive()) {
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(BridgeImpl.class, "MSG_halting"));
-            // XXX try using process.interrupt() first, then wait a bit longer
             stopThread(process);
         }
     }

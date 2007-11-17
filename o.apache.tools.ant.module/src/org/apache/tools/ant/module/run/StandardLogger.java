@@ -233,7 +233,7 @@ public final class StandardLogger extends AntLogger {
             session.println(formatMessageWithTime("FMT_finished_target_printed", time), false, null);
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(StandardLogger.class, "FMT_finished_target_status", session.getDisplayName()));
         } else {
-            if (t.getCause() instanceof ThreadDeath) {
+            if (isStopException(t.getCause())) {
                 // Sometimes wrapped, but we really want to know just that the thread was stopped.
                 t = t.getCause();
             }
@@ -254,12 +254,12 @@ public final class StandardLogger extends AntLogger {
                     // But send to other loggers since they may wish to suppress such an error.
                     String msg = t.toString();
                     deliverBlockOfTextAsLines(msg, event, AntEvent.LOG_ERR);
-                } else if (!(t instanceof ThreadDeath) || event.getSession().getVerbosity() >= AntEvent.LOG_VERBOSE) {
+                } else if (!isStopException(t) || event.getSession().getVerbosity() >= AntEvent.LOG_VERBOSE) {
                     // ThreadDeath can be thrown when killing an Ant process, so don't print it normally
                     deliverStackTrace(t, event);
                 }
             }
-            if (t instanceof ThreadDeath) {
+            if (isStopException(t)) {
                 event.getSession().println(formatMessageWithTime("FMT_target_stopped_printed", time), true, null);
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(StandardLogger.class, "FMT_target_stopped_status", event.getSession().getDisplayName()));
             } else {
@@ -278,6 +278,9 @@ public final class StandardLogger extends AntLogger {
             c = c.getSuperclass();
         }
         return false;
+    }
+    private static boolean isStopException(Throwable t) {
+        return (t instanceof ThreadDeath) || (t instanceof InterruptedException);
     }
     
     /** Formats the millis in a human readable String.
