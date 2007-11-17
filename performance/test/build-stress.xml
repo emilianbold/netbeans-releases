@@ -129,7 +129,7 @@ made subject to such option by the copyright holder.
                 <path refid="performance.testutilities.path"/>
                 <pathelement path="${compile.destdir}"/>
                 <pathelement path="${junit.classpath}"/>
-                <pathelement location="../insanelib/dist/insanelib.jar"/>
+                <pathelement location="../insanelibmodule/insanelib/dist/insanelib.jar"/>
             </classpath>
         </internalExecution>
     </target>

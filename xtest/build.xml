@@ -89,8 +89,8 @@ made subject to such option by the copyright holder.
                 <exclude name="META-INF/MANIFEST.MF"/>
             </zipfileset>
         </jar>
-        <ant dir="../performance/insanelib" target="jar" inheritAll="false"/>
-        <copy file="../performance/insanelib/dist/insanelib.jar" todir="lib"/>
+        <ant dir="../performance/insanelibmodule/insanelib" target="jar" inheritAll="false"/>
+        <copy file="../performance/insanelibmodule/insanelib/dist/insanelib.jar" todir="lib"/>
     </target>
 
     <target name="compile" depends="call-bootstrap,prepare-nbjunit">
