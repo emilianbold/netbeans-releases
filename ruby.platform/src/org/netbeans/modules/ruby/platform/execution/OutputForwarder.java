@@ -72,7 +72,7 @@ import org.openide.windows.OutputWriter;
  * 
  * @author Tor Norbye
  */
-public final class OutputForwarder implements Runnable {
+final class OutputForwarder implements Runnable {
     
     private static final Logger LOGGER = Logger.getLogger(OutputForwarder.class.getName());
     
