@@ -1,0 +1,192 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ */
+
+package org.netbeans.editor;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.util.Map;
+import javax.swing.JPanel;
+import javax.swing.border.LineBorder;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.View;
+import org.netbeans.editor.view.spi.LockView;
+
+/**
+ *  Component for displaying folded part of code in tooltip
+ *
+ *  @author  Martin Roskanin
+ */
+public class FoldingToolTip extends JPanel {
+
+    View view;
+    EditorUI editorUI;
+    public static final int BORDER_WIDTH = 2;
+    
+    /** Creates a new instance of FoldingToolTip */
+    public FoldingToolTip(View view, EditorUI editorUI) {
+        this.view = view;
+        this.editorUI = editorUI;
+        Coloring defColoring = editorUI.getColoring(SettingsNames.DEFAULT_COLORING);
+        Color foreColor = (defColoring != null) ? defColoring.getForeColor() : null;
+        setBorder(new LineBorder((foreColor == null) ? Color.BLACK : foreColor));
+        setOpaque(true);
+    }
+    
+
+    public void setSize(Dimension d){
+        setSize(d.width, d.height);
+    }
+
+   /** Setting size of popup panel. The height and size is computed to fit the best place on the screen */
+    public void setSize(int width, int height){
+        int viewHeight = (int) view.getPreferredSpan(View.Y_AXIS);
+        int viewWidth = (int) view.getPreferredSpan(View.X_AXIS);
+        if (height<30) {
+            putClientProperty(PopupManager.Placement.class, null);
+        }else{
+            height = Math.min(height, viewHeight);
+        }
+        
+        height += 2*BORDER_WIDTH;
+        
+        width = Math.min(width, viewWidth);
+        
+        super.setSize(width,height);
+    }
+    
+    private void updateRenderingHints(Graphics g){
+        JTextComponent comp = editorUI.getComponent();
+        if (comp == null) return;
+        Object value = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
+        //Don't bother seeing if the hints are explicitly turned off (if they
+        //even can be) as in EditorUI - it's a tooltip, desktop default is
+        //fine
+        if (value == null) {
+            value = Settings.getValue(Utilities.getKitClass(comp), SettingsNames.RENDERING_HINTS);
+        }
+        Map renderingHints = (value instanceof Map) ? (java.util.Map)value : null;
+
+        // Possibly apply the rendering hints
+        if (renderingHints != null) {
+            ((java.awt.Graphics2D)g).setRenderingHints(renderingHints);
+        }
+    }
+    
+    
+    protected void paintComponent(Graphics g) {
+
+        updateRenderingHints(g);
+        
+        Rectangle shape = new Rectangle(getSize());
+        Rectangle clip = g.getClipBounds();
+        
+        Coloring defaultColoring = editorUI.getColoring(SettingsNames.DEFAULT_COLORING);
+        if (defaultColoring!=null && defaultColoring.getBackColor()!=null){
+            g.setColor(defaultColoring.getBackColor());
+        }else{
+            g.setColor(SettingsDefaults.defaultBackColor);
+        }
+        g.fillRect(clip.x, clip.y, clip.width, clip.height);
+
+        g.translate(BORDER_WIDTH, BORDER_WIDTH);
+
+        JTextComponent component = editorUI.getComponent();
+        if (component == null) return;
+        int sideBarWidth = editorUI.getSideBarWidth();
+
+        GlyphGutter gg = editorUI.getGlyphGutter();
+        if (gg!=null){
+            View docView = null;
+            if (view.getViewCount() == 1){//lockview
+                docView = view.getView(0);
+            }
+            int y = 0;
+            if (docView!=null){
+                AbstractDocument doc = (AbstractDocument)docView.getDocument();
+                doc.readLock();
+                try {
+                    LockView lockView = LockView.get(docView);
+                    if (lockView != null) {
+                        lockView.lock();
+                        try {
+                            for (int i = 0; i<docView.getViewCount(); i++ ){
+                                gg.paintGutterForView(g, docView.getView(i), y);
+                                y += editorUI.getLineHeight();
+                            }
+                        } finally {
+                            lockView.unlock();
+                        }
+                    }
+                } finally {
+                    doc.readUnlock();
+                }
+            }else{
+                gg.paintGutterForView(g, view, 0);
+            }
+
+            g.translate(sideBarWidth,0);
+        }
+
+        view.paint(g, shape);
+
+        if (gg!=null){
+            g.translate(-sideBarWidth,0);
+        }
+
+        g.translate(-BORDER_WIDTH, -BORDER_WIDTH);
+
+        if (defaultColoring!=null && defaultColoring.getBackColor()!=null){
+            g.setColor(defaultColoring.getBackColor());
+        }else{
+            g.setColor(SettingsDefaults.defaultBackColor);
+        }
+        for (int i = 1; i<=BORDER_WIDTH; i++){
+            g.drawRect(clip.x+i,clip.y+i,clip.width-i*2-1,clip.height-i*2-1);
+        }
+    }    
+
+    
+}

@@ -126,7 +126,7 @@ plus extension features such as Syntax Coloring, Code Completion,
 Word Matching, Abbreviations or Macros.
 
 <p>
-The library part is located under <i>editor/libsrc</i> folder.
+The library part is located under <i>editor/lib/src</i> folder.
 <br/>
 It depends on the following classes from openide:
 </p>
