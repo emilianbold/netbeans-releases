@@ -1,0 +1,31 @@
+BEGIN AUTH REQUEST
+/cvs
+anon
+A
+END AUTH REQUEST
+Root /cvs
+Valid-responses ok error Valid-requests Checked-in New-entry Checksum Copy-file Updated Created Update-existing Merged Patched Rcs-diff Mode Mod-time Removed Remove-entry Set-static-directory Clear-static-directory Set-sticky Clear-sticky Template Set-checkin-prog Set-update-prog Notified Module-expansion Wrapper-rcsOption M Mbinary E F MT
+valid-requests
+UseUnchanged
+Global_option -q
+Argument -m
+Argument
+Argument --
+Directory .
+/cvs/javacvs/conflistTest
+Entry /conflict.txt/1.2/+=//
+Modified conflict.txt
+u=rw,g=rw,o=r
+79
+AAA
+BBB
+<<<<<<< conflict.txt
+YYY <= fix
+=======
+222 <= fix
+>>>>>>> 1.2
+DDD
+EEE
+Argument conflict.txt
+ci
+

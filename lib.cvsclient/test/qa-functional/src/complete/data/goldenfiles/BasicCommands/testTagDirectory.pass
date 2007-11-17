@@ -1,0 +1,23 @@
+dumpAll
+Table Rows
+dumpFile:
+tag2.java
+Up-to-date
+/pac2/tag2.java,v
+1.1
+1.1
+(none)
+(none)
+dumpExistingTags: 2,2
+1. - DirectoryRecursiveTag - branch: 1.1.2
+2. - DirectoryTag - revision: 1.1
+dumpFile:
+tag1.java
+Up-to-date
+/pac2/subpac2/tag1.java,v
+1.1
+1.1
+(none)
+(none)
+dumpExistingTags: 1,2
+1. - DirectoryRecursiveTag - branch: 1.1.2

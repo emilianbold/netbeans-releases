@@ -1,0 +1,49 @@
+==== cbContextOutput ====
+==== Diff: diff1
+Index: pac4/subpac4/diff1
+===================================================================
+RCS file: <REPOSITORY_PREFIX>/pac4/subpac4/diff1,v
+retrieving revision 1.1
+diff -c -r1.1 diff1
+*** pac4/subpac4/diff1<FILTERED>
+--- pac4/subpac4/diff1<FILTERED>
+***************
+*** 1,6 ****
+  Commit-1.1
+! Whitespace Check
+! Space Changes Check
+! Case-sensitive Check
+  NewLines Check
+  End of NewLines Check
+--- 1,9 ----
+  Commit-1.1
+!     Whitespace    Check    
+! Space   Changes   Check
+! cASE-SENsitive Check
+  NewLines Check
++ 
++ 
++ 
+  End of NewLines Check
+==== cbUnifiedOutput ====
+==== Diff: diff1
+Index: pac4/subpac4/diff1
+===================================================================
+RCS file: <REPOSITORY_PREFIX>/pac4/subpac4/diff1,v
+retrieving revision 1.1
+diff -u -r1.1 diff1
+--- pac4/subpac4/diff1<FILTERED>
++++ pac4/subpac4/diff1<FILTERED>
+@@ -1,6 +1,9 @@
+ Commit-1.1
+-Whitespace Check
+-Space Changes Check
+-Case-sensitive Check
++    Whitespace    Check    
++Space   Changes   Check
++cASE-SENsitive Check
+ NewLines Check
++
++
++
+ End of NewLines Check

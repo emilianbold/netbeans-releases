@@ -1,0 +1,21 @@
+==== Recursively ====
+==== Diff: pac4
+Index: pac4/subpac4/diff1
+===================================================================
+RCS file: <REPOSITORY_PREFIX>/pac4/subpac4/diff1,v
+retrieving revision 1.1
+diff -r1.1 diff1
+2,4c2,4
+< Whitespace Check
+< Space Changes Check
+< Case-sensitive Check
+---
+>     Whitespace    Check    
+> Space   Changes   Check
+> cASE-SENsitive Check
+5a6,8
+> 
+> 
+> 
+==== NOT Recursively ====
+==== Diff: pac4

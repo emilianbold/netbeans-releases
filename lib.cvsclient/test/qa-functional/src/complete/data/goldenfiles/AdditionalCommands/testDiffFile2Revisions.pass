@@ -1,0 +1,88 @@
+==== 2 revisions ====
+==== Diff: diff2
+==== Text - Panel 1 ====
+Commit-1.1 - Line1
+Commit-1.1 - Line2
+
+Commit-1.1 - Line4
+Commit-1.1 - Line5
+
+==== Text - Panel 2 ====
+Commit-1.1 - Line1
+Commit-1.1 - Line2 - Modified-1.2
+Commit-1.2 - Line3 - Added-1.2
+Commit-1.1 - Line4
+Commit-1.1 - Line5 - Modified-1.2
+
+==== Colors - Panel 1 ====
+Pos: 19 ---- Blue
+Pos: 21 ---- Blue
+Pos: 23 ---- Blue
+Pos: 25 ---- Blue
+Pos: 27 ---- Blue
+Pos: 29 ---- Blue
+Pos: 31 ---- Blue
+Pos: 33 ---- Blue
+Pos: 35 ---- Blue
+Pos: 37 ---- Blue
+Pos: 58 ---- Blue
+Pos: 60 ---- Blue
+Pos: 62 ---- Blue
+Pos: 64 ---- Blue
+Pos: 66 ---- Blue
+Pos: 68 ---- Blue
+Pos: 70 ---- Blue
+Pos: 72 ---- Blue
+Pos: 74 ---- Blue
+Pos: 76 ---- Blue
+==== Colors - Panel 2 ====
+Pos: 19 ---- Blue
+Pos: 21 ---- Blue
+Pos: 23 ---- Blue
+Pos: 25 ---- Blue
+Pos: 27 ---- Blue
+Pos: 29 ---- Blue
+Pos: 31 ---- Blue
+Pos: 33 ---- Blue
+Pos: 35 ---- Blue
+Pos: 37 ---- Blue
+Pos: 39 ---- Blue
+Pos: 41 ---- Blue
+Pos: 43 ---- Blue
+Pos: 45 ---- Blue
+Pos: 47 ---- Blue
+Pos: 49 ---- Blue
+Pos: 51 ---- Blue
+Pos: 53 ---- Blue
+Pos: 55 ---- Blue
+Pos: 57 ---- Blue
+Pos: 59 ---- Blue
+Pos: 61 ---- Blue
+Pos: 63 ---- Blue
+Pos: 65 ---- Blue
+Pos: 67 ---- Blue
+Pos: 69 ---- Blue
+Pos: 71 ---- Blue
+Pos: 73 ---- Blue
+Pos: 75 ---- Blue
+Pos: 77 ---- Blue
+Pos: 79 ---- Blue
+Pos: 81 ---- Blue
+Pos: 83 ---- Blue
+Pos: 103 ---- Blue
+Pos: 105 ---- Blue
+Pos: 107 ---- Blue
+Pos: 109 ---- Blue
+Pos: 111 ---- Blue
+Pos: 113 ---- Blue
+Pos: 115 ---- Blue
+Pos: 117 ---- Blue
+Pos: 119 ---- Blue
+Pos: 121 ---- Blue
+Pos: 123 ---- Blue
+Pos: 125 ---- Blue
+Pos: 127 ---- Blue
+Pos: 129 ---- Blue
+Pos: 131 ---- Blue
+Pos: 133 ---- Blue
+Pos: 135 ---- Blue

@@ -1,0 +1,288 @@
+==== cbIgnoneAllWhitespace ====
+==== Diff: diff1
+==== Text - Panel 1 ====
+Commit-1.1
+Whitespace Check
+Space Changes Check
+Case-sensitive Check
+NewLines Check
+
+
+
+End of NewLines Check
+
+==== Text - Panel 2 ====
+Commit-1.1
+    Whitespace    Check    
+Space   Changes   Check
+cASE-SENsitive Check
+NewLines Check
+
+
+
+End of NewLines Check
+
+==== Colors - Panel 1 ====
+Pos: 48 ---- Blue
+Pos: 50 ---- Blue
+Pos: 52 ---- Blue
+Pos: 54 ---- Blue
+Pos: 56 ---- Blue
+Pos: 58 ---- Blue
+Pos: 60 ---- Blue
+Pos: 62 ---- Blue
+Pos: 64 ---- Blue
+Pos: 66 ---- Blue
+Pos: 68 ---- Blue
+==== Colors - Panel 2 ====
+Pos: 63 ---- Blue
+Pos: 65 ---- Blue
+Pos: 67 ---- Blue
+Pos: 69 ---- Blue
+Pos: 71 ---- Blue
+Pos: 73 ---- Blue
+Pos: 75 ---- Blue
+Pos: 77 ---- Blue
+Pos: 79 ---- Blue
+Pos: 81 ---- Blue
+Pos: 83 ---- Blue
+Pos: 99 ---- Green
+Pos: 101 ---- Green
+==== cbIgnoreBlankLines ====
+==== Diff: diff1
+==== Text - Panel 1 ====
+Commit-1.1
+Whitespace Check
+Space Changes Check
+Case-sensitive Check
+NewLines Check
+
+
+
+End of NewLines Check
+
+==== Text - Panel 2 ====
+Commit-1.1
+    Whitespace    Check    
+Space   Changes   Check
+cASE-SENsitive Check
+NewLines Check
+
+
+
+End of NewLines Check
+
+==== Colors - Panel 1 ====
+Pos: 11 ---- Blue
+Pos: 13 ---- Blue
+Pos: 15 ---- Blue
+Pos: 17 ---- Blue
+Pos: 19 ---- Blue
+Pos: 21 ---- Blue
+Pos: 23 ---- Blue
+Pos: 25 ---- Blue
+Pos: 27 ---- Blue
+Pos: 29 ---- Blue
+Pos: 31 ---- Blue
+Pos: 33 ---- Blue
+Pos: 35 ---- Blue
+Pos: 37 ---- Blue
+Pos: 39 ---- Blue
+Pos: 41 ---- Blue
+Pos: 43 ---- Blue
+Pos: 45 ---- Blue
+Pos: 47 ---- Blue
+Pos: 49 ---- Blue
+Pos: 51 ---- Blue
+Pos: 53 ---- Blue
+Pos: 55 ---- Blue
+Pos: 57 ---- Blue
+Pos: 59 ---- Blue
+Pos: 61 ---- Blue
+Pos: 63 ---- Blue
+Pos: 65 ---- Blue
+Pos: 67 ---- Blue
+==== Colors - Panel 2 ====
+Pos: 11 ---- Blue
+Pos: 13 ---- Blue
+Pos: 15 ---- Blue
+Pos: 17 ---- Blue
+Pos: 19 ---- Blue
+Pos: 21 ---- Blue
+Pos: 23 ---- Blue
+Pos: 25 ---- Blue
+Pos: 27 ---- Blue
+Pos: 29 ---- Blue
+Pos: 31 ---- Blue
+Pos: 33 ---- Blue
+Pos: 35 ---- Blue
+Pos: 37 ---- Blue
+Pos: 39 ---- Blue
+Pos: 41 ---- Blue
+Pos: 43 ---- Blue
+Pos: 45 ---- Blue
+Pos: 47 ---- Blue
+Pos: 49 ---- Blue
+Pos: 51 ---- Blue
+Pos: 53 ---- Blue
+Pos: 55 ---- Blue
+Pos: 57 ---- Blue
+Pos: 59 ---- Blue
+Pos: 61 ---- Blue
+Pos: 63 ---- Blue
+Pos: 65 ---- Blue
+Pos: 67 ---- Blue
+Pos: 69 ---- Blue
+Pos: 71 ---- Blue
+Pos: 73 ---- Blue
+Pos: 75 ---- Blue
+Pos: 77 ---- Blue
+Pos: 79 ---- Blue
+Pos: 81 ---- Blue
+Pos: 83 ---- Blue
+==== cbIgnoreCase ====
+==== Diff: diff1
+==== Text - Panel 1 ====
+Commit-1.1
+Whitespace Check
+Space Changes Check
+Case-sensitive Check
+NewLines Check
+
+
+
+End of NewLines Check
+
+==== Text - Panel 2 ====
+Commit-1.1
+    Whitespace    Check    
+Space   Changes   Check
+cASE-SENsitive Check
+NewLines Check
+
+
+
+End of NewLines Check
+
+==== Colors - Panel 1 ====
+Pos: 11 ---- Blue
+Pos: 13 ---- Blue
+Pos: 15 ---- Blue
+Pos: 17 ---- Blue
+Pos: 19 ---- Blue
+Pos: 21 ---- Blue
+Pos: 23 ---- Blue
+Pos: 25 ---- Blue
+Pos: 27 ---- Blue
+Pos: 29 ---- Blue
+Pos: 31 ---- Blue
+Pos: 33 ---- Blue
+Pos: 35 ---- Blue
+Pos: 37 ---- Blue
+Pos: 39 ---- Blue
+Pos: 41 ---- Blue
+Pos: 43 ---- Blue
+Pos: 45 ---- Blue
+Pos: 47 ---- Blue
+==== Colors - Panel 2 ====
+Pos: 11 ---- Blue
+Pos: 13 ---- Blue
+Pos: 15 ---- Blue
+Pos: 17 ---- Blue
+Pos: 19 ---- Blue
+Pos: 21 ---- Blue
+Pos: 23 ---- Blue
+Pos: 25 ---- Blue
+Pos: 27 ---- Blue
+Pos: 29 ---- Blue
+Pos: 31 ---- Blue
+Pos: 33 ---- Blue
+Pos: 35 ---- Blue
+Pos: 37 ---- Blue
+Pos: 39 ---- Blue
+Pos: 41 ---- Blue
+Pos: 43 ---- Blue
+Pos: 45 ---- Blue
+Pos: 47 ---- Blue
+Pos: 49 ---- Blue
+Pos: 51 ---- Blue
+Pos: 53 ---- Blue
+Pos: 55 ---- Blue
+Pos: 57 ---- Blue
+Pos: 59 ---- Blue
+Pos: 61 ---- Blue
+Pos: 99 ---- Green
+Pos: 101 ---- Green
+==== cbIgnoreSpaceChanges ====
+==== Diff: diff1
+==== Text - Panel 1 ====
+Commit-1.1
+Whitespace Check
+Space Changes Check
+Case-sensitive Check
+NewLines Check
+
+
+
+End of NewLines Check
+
+==== Text - Panel 2 ====
+Commit-1.1
+    Whitespace    Check    
+Space   Changes   Check
+cASE-SENsitive Check
+NewLines Check
+
+
+
+End of NewLines Check
+
+==== Colors - Panel 1 ====
+Pos: 11 ---- Blue
+Pos: 13 ---- Blue
+Pos: 15 ---- Blue
+Pos: 17 ---- Blue
+Pos: 19 ---- Blue
+Pos: 21 ---- Blue
+Pos: 23 ---- Blue
+Pos: 25 ---- Blue
+Pos: 27 ---- Blue
+Pos: 48 ---- Blue
+Pos: 50 ---- Blue
+Pos: 52 ---- Blue
+Pos: 54 ---- Blue
+Pos: 56 ---- Blue
+Pos: 58 ---- Blue
+Pos: 60 ---- Blue
+Pos: 62 ---- Blue
+Pos: 64 ---- Blue
+Pos: 66 ---- Blue
+Pos: 68 ---- Blue
+==== Colors - Panel 2 ====
+Pos: 11 ---- Blue
+Pos: 13 ---- Blue
+Pos: 15 ---- Blue
+Pos: 17 ---- Blue
+Pos: 19 ---- Blue
+Pos: 21 ---- Blue
+Pos: 23 ---- Blue
+Pos: 25 ---- Blue
+Pos: 27 ---- Blue
+Pos: 29 ---- Blue
+Pos: 31 ---- Blue
+Pos: 33 ---- Blue
+Pos: 35 ---- Blue
+Pos: 37 ---- Blue
+Pos: 63 ---- Blue
+Pos: 65 ---- Blue
+Pos: 67 ---- Blue
+Pos: 69 ---- Blue
+Pos: 71 ---- Blue
+Pos: 73 ---- Blue
+Pos: 75 ---- Blue
+Pos: 77 ---- Blue
+Pos: 79 ---- Blue
+Pos: 81 ---- Blue
+Pos: 83 ---- Blue
+Pos: 99 ---- Green
+Pos: 101 ---- Green

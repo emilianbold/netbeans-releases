@@ -1,0 +1,101 @@
+#47 = org/netbeans/modules/cvsclient/actions/Bundle.properties
+CVS(47:38)
+----------------------
+Refresh(47:27),
+R Recursively(:28)
+Commit(:19) ...(51:59)
+Update(:20)
+Diff(:15)
+Status(:14)
+Log(:16)
+Annotate(:30)
+Checkout(:21)
+Impo(:22)
+Expo(:23)
+Add(:17)
+Remove(:18)
+Tag(:25)
+ListMod(26)
+-------------------------
+#51 = org/netbeans/modules/vcscore/actions/Bundle.properties
+Versioning Explorer(51:49)
+IncludeInVCSGroup(51:55)
+
+#122 = org/netbeans/modules/vcscore/versioning/impl/Bundle.properties
+Versioning (dialog)(122:14)
+
+#42 = org/netbeans/modules/cvsclient/Bundle.properties
+RunCVS Cmd(42:102)
+#114 = org/netbeans/modules/cvsclient/login/Bundle.properties
+CVS ConnMan(114:13)
+CustomizeFS(51:30)
+#84 = org/netbeans/modules/vcscore/grouping/Bundle.properties
+VCS Group(84:22)
+#137 = org/netbeans/modules/cvsclient/commands/add/Bundle.propertie
+Commit ScheduledFiles(137:33)
+
+
+Dialogs
+=======
+#45 = org/netbeans/modules/javacvs/commands/Bundle.properties
+Arguments for [xxx] (45:86)
+#5 = org/netbeans/core/windows/Bundle.properties
+Output of VCS Commands [xxx](45:84) ? CVS Output [xxx](5:23)
+#118 = org/netbeans/modules/cvsclient/commands/update/Bundle.properties
+	Button->VievLog(118:30)
+#119 = org/netbeans/modules/cvsclient/commands/Bundle.properties
+Server Output Log(119:57)
+
+
+
+RunTimeTAB:
+===========
+#123 = org/netbeans/modules/vcscore/runtime/Bundle.properties
+node VCS Cmds(123:14)
+popup menu->VievOut(123:37)
+#119 = org/netbeans/modules/cvsclient/commands/Bundle.properties
+popup menu->Open in Graph(119:74)
+#55 = org/openide/actions/Bundle.properties
+popup menu->Properties(55:41)
+
+
+VCSGrp:
+=======
+#141 = org/netbeans/modules/cvsclient/commands/grouping/Bundle.properties
+Group Verification(141:22)
+	CorrectGrop(141:20)
+No problems were found (141:21)
+#1xx = org/netbeans/modules/vcscore/grouping/Bundle.properties
+VCS Groups (Root node)(1xx:19)
+VCS Groups (Menu) (1xx:22)
+VCS Groups (Title) (1xx:27)
+#84 = org/netbeans/modules/vcscore/grouping/Bundle.properties
+popup menu->AddVCSGrp(84:14)
+popup menu->Remove VCSGRp(:14)
+popup menu->Verify(:15)
+popup menu->Proper(55:41)
+#51 = org/netbeans/modules/vcscore/actions/Bundle.properties
+popup menu->Move to VCS Grp(51:56)
+#94 = org/openide/actions/Bundle.properties
+popup menu->Delete (94:35)
+
+VersioningExp:
+==============
+#75 = org/netbeans/modules/cvsclient/versioning/Bundle.properties
+Update(:31)
+Diff(:33)
+Merge with rev.(:32)
+Annotate(:36)
+#82 = org/netbeans/modules/vcscore/versioning/Bundle.properties
+Refresh Revision(:15)
+
+MainFrame...status.line:
+========================
+#42 = org/netbeans/modules/javacvs/commands/Bundle.properties
+#84 = org/netbeans/modules/cvsclient/commands/Bundle.properties
+Finished: Log(42:69) (84:14)
+
+DialogTitles:
+=============
+#135 = org/openide/explorer/Bundle.properties
+Confirm Object Deletion(135:46)

@@ -1,0 +1,21 @@
+dumpAll
+Table Rows
+dumpFile:
+status1.java
+Up-to-date
+/pac2/subpac2/status1.java,v
+1.2.2.1
+1.2.2.1
+branchtag (branch: 1.2.2)
+(none)
+dumpExistingTags: 1,2
+1. - branchtag - branch: 1.2.2
+dumpFile:
+status2.java
+Up-to-date
+/pac2/subpac2/status2.java,v
+1.2
+1.2
+(none)
+(none)
+dumpExistingTags: 0,2

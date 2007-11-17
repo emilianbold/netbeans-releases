@@ -1,0 +1,53 @@
+I LOVE YOU
+Valid-requests Root Valid-responses valid-requests Repository Directory Max-dotdot Static-directory Sticky Checkin-prog Update-prog Entry Kopt Checkin-time Modified Is-modified UseUnchanged Unchanged Notify Questionable Case Argument Argumentx Global_option Gzip-stream wrapper-sendme-rcsOptions Set expand-modules ci co update diff log rlog add remove update-patches gzip-file-contents status rdiff tag rtag import admin export history release watch-on watch-off watch-add watch-remove watchers editors init annotate rannotate noop version
+ok
+Module-expansion a11y
+ok
+MT +updated
+MT text U
+MT fname a11y/build.xml
+MT newline
+MT -updated
+Created a11y/
+/cvs/a11y/build.xml
+/build.xml/1.11///
+u=rw,g=rw,o=rw
+1186
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="a11y" default="netbeans" basedir=".">
+
+    <import file="../nbbuild/templates/projectized.xml"/>
+    
+    <property name="license.file" location="${nbext}/standard-nbm-license.txt"/>
+    <property name="homepage.base" value="netbeans.org"/>
+    <property name="dist.base" value="a11y.netbeans.org/nbms/v2.1"/>
+    
+    <target name="nbm" depends="netbeans">
+        <makenbm file="a11y.nbm" productdir="${netbeans.dest.dir}/${cluster.dir}"
+            module="${nb.modules.dir}/org-netbeans-modules-a11y.jar"
+            homepage="http://a11y.${homepage.base}" distribution="http://${dist.base}/a11y.nbm">
+         <license file="${license.file}"/>
+       </makenbm>
+</target>
+
+</project>
+Mod-time 2 Sep 2003 14:10:34 -0000
+

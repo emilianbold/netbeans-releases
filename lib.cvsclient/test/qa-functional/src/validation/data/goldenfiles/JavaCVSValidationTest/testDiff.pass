@@ -1,0 +1,15 @@
+==== Text - Panel 1 ====
+
+class testfile {}
+
+==== Text - Panel 2 ====
+//comment
+class testfile {}
+
+==== Colors - Panel 1 ====
+==== Colors - Panel 2 ====
+Pos: 0 ---- Green
+Pos: 2 ---- Green
+Pos: 4 ---- Green
+Pos: 6 ---- Green
+Pos: 8 ---- Green

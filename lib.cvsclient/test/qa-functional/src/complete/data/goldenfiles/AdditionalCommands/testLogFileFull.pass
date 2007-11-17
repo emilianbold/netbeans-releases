@@ -1,0 +1,21 @@
+dumpFile:
+log1.java
+strict
+/pac1/subpac1/log1.java,v
+1.2
+3
+3
+
+dumpSymbolicNamesList: 1,2
+1. - branchtag - 1.2.0.2
+dumpRevisionList: 3,6
+1. - 1.1 - test - Initial state - Exp - null
+2. - 1.2 - test - Desc - log 1 - 1.2 - Exp - +1 -3
+3. - 1.2.2.1 - test - Desc - log 1 - branchtag - 1.2.2.1 - Exp - +1 -1
+dumpLogMessage: 3
+Initial state
+
+Desc - log 1 - 1.2
+
+Desc - log 1 - branchtag - 1.2.2.1
+

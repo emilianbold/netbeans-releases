@@ -1,0 +1,209 @@
+dumpAll:
+Rows: 2
+dumpFile:
+<REPOSITORY_PREFIX>/pac3/anno1
+Line: 1 ---- 1	1.1	Commit-1.1
+No Author selected:
+---- Equals -- <No Revision Selected> ----
+Line: 1 ---- White
+---- Equals -- 1.1 ----
+Line: 1 ---- Green
+---- Newer than -- <No Revision Selected> ----
+Line: 1 ---- White
+---- Newer than -- 1.1 ----
+Line: 1 ---- White
+---- Older than -- <No Revision Selected> ----
+Line: 1 ---- White
+---- Older than -- 1.1 ----
+Line: 1 ---- White
+Author selected:
+---- Equals -- <No Revision Selected> ----
+Line: 1 ---- Blue
+---- Equals -- 1.1 ----
+Line: 1 ---- Red
+---- Newer than -- <No Revision Selected> ----
+Line: 1 ---- Blue
+---- Newer than -- 1.1 ----
+Line: 1 ---- Blue
+---- Older than -- <No Revision Selected> ----
+Line: 1 ---- Blue
+---- Older than -- 1.1 ----
+Line: 1 ---- Blue
+dumpFile:
+<REPOSITORY_PREFIX>/pac3/subpac3/anno2
+Line: 1 ---- 1	1.3	Commit-1.3 - Line0 - Added-1.3
+Line: 2 ---- 2	1.1	Commit-1.1 - Line1
+Line: 3 ---- 3	1.3	Commit-1.1 - Line2 - Modified-1.2 - Modified-1.3
+Line: 4 ---- 4	1.2	Commit-1.2 - Line3 - Added-1.2
+Line: 5 ---- 5	1.1	Commit-1.1 - Line4
+Line: 6 ---- 6	1.2	Commit-1.1 - Line5 - Modified-1.2
+No Author selected:
+---- Equals -- <No Revision Selected> ----
+Line: 1 ---- White
+Line: 2 ---- White
+Line: 3 ---- White
+Line: 4 ---- White
+Line: 5 ---- White
+Line: 6 ---- White
+---- Equals -- 1.1 ----
+Line: 1 ---- White
+Line: 2 ---- Green
+Line: 3 ---- White
+Line: 4 ---- White
+Line: 5 ---- Green
+Line: 6 ---- White
+---- Equals -- 1.2 ----
+Line: 1 ---- White
+Line: 2 ---- White
+Line: 3 ---- White
+Line: 4 ---- Green
+Line: 5 ---- White
+Line: 6 ---- Green
+---- Equals -- 1.3 ----
+Line: 1 ---- Green
+Line: 2 ---- White
+Line: 3 ---- Green
+Line: 4 ---- White
+Line: 5 ---- White
+Line: 6 ---- White
+---- Newer than -- <No Revision Selected> ----
+Line: 1 ---- White
+Line: 2 ---- White
+Line: 3 ---- White
+Line: 4 ---- White
+Line: 5 ---- White
+Line: 6 ---- White
+---- Newer than -- 1.1 ----
+Line: 1 ---- Green
+Line: 2 ---- White
+Line: 3 ---- Green
+Line: 4 ---- Green
+Line: 5 ---- White
+Line: 6 ---- Green
+---- Newer than -- 1.2 ----
+Line: 1 ---- Green
+Line: 2 ---- White
+Line: 3 ---- Green
+Line: 4 ---- White
+Line: 5 ---- White
+Line: 6 ---- White
+---- Newer than -- 1.3 ----
+Line: 1 ---- White
+Line: 2 ---- White
+Line: 3 ---- White
+Line: 4 ---- White
+Line: 5 ---- White
+Line: 6 ---- White
+---- Older than -- <No Revision Selected> ----
+Line: 1 ---- White
+Line: 2 ---- White
+Line: 3 ---- White
+Line: 4 ---- White
+Line: 5 ---- White
+Line: 6 ---- White
+---- Older than -- 1.1 ----
+Line: 1 ---- White
+Line: 2 ---- White
+Line: 3 ---- White
+Line: 4 ---- White
+Line: 5 ---- White
+Line: 6 ---- White
+---- Older than -- 1.2 ----
+Line: 1 ---- White
+Line: 2 ---- Green
+Line: 3 ---- White
+Line: 4 ---- White
+Line: 5 ---- Green
+Line: 6 ---- White
+---- Older than -- 1.3 ----
+Line: 1 ---- White
+Line: 2 ---- Green
+Line: 3 ---- White
+Line: 4 ---- Green
+Line: 5 ---- Green
+Line: 6 ---- Green
+Author selected:
+---- Equals -- <No Revision Selected> ----
+Line: 1 ---- Blue
+Line: 2 ---- Blue
+Line: 3 ---- Blue
+Line: 4 ---- Blue
+Line: 5 ---- Blue
+Line: 6 ---- Blue
+---- Equals -- 1.1 ----
+Line: 1 ---- Blue
+Line: 2 ---- Red
+Line: 3 ---- Blue
+Line: 4 ---- Blue
+Line: 5 ---- Red
+Line: 6 ---- Blue
+---- Equals -- 1.2 ----
+Line: 1 ---- Blue
+Line: 2 ---- Blue
+Line: 3 ---- Blue
+Line: 4 ---- Red
+Line: 5 ---- Blue
+Line: 6 ---- Red
+---- Equals -- 1.3 ----
+Line: 1 ---- Red
+Line: 2 ---- Blue
+Line: 3 ---- Red
+Line: 4 ---- Blue
+Line: 5 ---- Blue
+Line: 6 ---- Blue
+---- Newer than -- <No Revision Selected> ----
+Line: 1 ---- Blue
+Line: 2 ---- Blue
+Line: 3 ---- Blue
+Line: 4 ---- Blue
+Line: 5 ---- Blue
+Line: 6 ---- Blue
+---- Newer than -- 1.1 ----
+Line: 1 ---- Red
+Line: 2 ---- Blue
+Line: 3 ---- Red
+Line: 4 ---- Red
+Line: 5 ---- Blue
+Line: 6 ---- Red
+---- Newer than -- 1.2 ----
+Line: 1 ---- Red
+Line: 2 ---- Blue
+Line: 3 ---- Red
+Line: 4 ---- Blue
+Line: 5 ---- Blue
+Line: 6 ---- Blue
+---- Newer than -- 1.3 ----
+Line: 1 ---- Blue
+Line: 2 ---- Blue
+Line: 3 ---- Blue
+Line: 4 ---- Blue
+Line: 5 ---- Blue
+Line: 6 ---- Blue
+---- Older than -- <No Revision Selected> ----
+Line: 1 ---- Blue
+Line: 2 ---- Blue
+Line: 3 ---- Blue
+Line: 4 ---- Blue
+Line: 5 ---- Blue
+Line: 6 ---- Blue
+---- Older than -- 1.1 ----
+Line: 1 ---- Blue
+Line: 2 ---- Blue
+Line: 3 ---- Blue
+Line: 4 ---- Blue
+Line: 5 ---- Blue
+Line: 6 ---- Blue
+---- Older than -- 1.2 ----
+Line: 1 ---- Blue
+Line: 2 ---- Red
+Line: 3 ---- Blue
+Line: 4 ---- Blue
+Line: 5 ---- Red
+Line: 6 ---- Blue
+---- Older than -- 1.3 ----
+Line: 1 ---- Blue
+Line: 2 ---- Red
+Line: 3 ---- Blue
+Line: 4 ---- Red
+Line: 5 ---- Red
+Line: 6 ---- Red

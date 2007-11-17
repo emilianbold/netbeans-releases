@@ -1,0 +1,29 @@
+dumpFile:
+<REPOSITORY_PREFIX>/pac3/anno1
+Line: 1 ---- 1	1.1.2.1	Commit-TagName
+No Author selected:
+---- Equals -- <No Revision Selected> ----
+Line: 1 ---- White
+---- Equals -- 1.1.2.1 ----
+Line: 1 ---- Green
+---- Newer than -- <No Revision Selected> ----
+Line: 1 ---- White
+---- Newer than -- 1.1.2.1 ----
+Line: 1 ---- White
+---- Older than -- <No Revision Selected> ----
+Line: 1 ---- White
+---- Older than -- 1.1.2.1 ----
+Line: 1 ---- White
+Author selected:
+---- Equals -- <No Revision Selected> ----
+Line: 1 ---- Blue
+---- Equals -- 1.1.2.1 ----
+Line: 1 ---- Red
+---- Newer than -- <No Revision Selected> ----
+Line: 1 ---- Blue
+---- Newer than -- 1.1.2.1 ----
+Line: 1 ---- Blue
+---- Older than -- <No Revision Selected> ----
+Line: 1 ---- Blue
+---- Older than -- 1.1.2.1 ----
+Line: 1 ---- Blue

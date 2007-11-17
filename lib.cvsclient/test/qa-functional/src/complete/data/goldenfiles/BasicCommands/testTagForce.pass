@@ -1,0 +1,45 @@
+dumpAll
+Table Rows
+dumpFile:
+tag51
+Up-to-date
+/pac2/subpa22/tag51,v
+1.2
+1.2
+(none)
+(none)
+dumpExistingTags: 1,2
+1. - NoForceTag - revision: 1.1
+dumpFile:
+tag52
+Up-to-date
+/pac2/subpa22/tag52,v
+1.2
+1.2
+(none)
+(none)
+dumpExistingTags: 1,2
+1. - ForceTag - revision: 1.1
+dumpAll
+Table Rows
+dumpFile:
+tag51
+Up-to-date
+/pac2/subpa22/tag51,v
+1.2
+1.2
+(none)
+(none)
+dumpExistingTags: 2,2
+1. - ForceTag - revision: 1.2
+2. - NoForceTag - revision: 1.1
+dumpFile:
+tag52
+Up-to-date
+/pac2/subpa22/tag52,v
+1.2
+1.2
+(none)
+(none)
+dumpExistingTags: 1,2
+1. - ForceTag - revision: 1.2

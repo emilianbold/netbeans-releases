@@ -1,0 +1,18 @@
+1. Create a file and commit it to CVS.
+2. Now remove this file from CVS. It now only 
+exists in the "Attic" and is not displayed in the 
+explorer.
+3. Create a local copy of this file again. The 
+status displayed will be "Local".
+4. Do a "cvs refresh" on this file. That status 
+will change to "Up-to-date, No".
+
+To get this file into CVS again, have to do 
+a "cvs add" first. But this option is now not 
+available in the context menu and is dimmed in 
+the task bar.
+
+Well, "cvs status" for that file says that it's "Up-to-date"! This
+seems to be a bug in javacvs library, because cvs binary says that
+it's "Unknown".
+

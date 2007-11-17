@@ -106,7 +106,7 @@ made subject to such option by the copyright holder.
              <echo message="generating beans from message schema" />
              <java classname="org.netbeans.modules.schema2beansdev.GenBeans" fork="yes">	
                    <classpath>
-                      <pathelement location="../../schema2beans/dev/schema2beansdev.jar" />
+                      <pathelement location="../../schema2beans/rt/dev/schema2beansdev.jar" />
                       <pathelement location="../../nbbuild/netbeans/ide6/modules/org-netbeans-modules-schema2beans.jar" />
                    </classpath>
                     <arg line= "-f src/org/netbeans/modules/collab/channel/filesharing/resources/collab.xsd" />
