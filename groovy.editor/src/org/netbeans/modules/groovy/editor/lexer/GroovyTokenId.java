@@ -572,9 +572,9 @@ public class GroovyTokenId extends GsfTokenId {
                     return GroovyTokenId.CASE_GROUP;
             case GroovyTokenTypes.CLASS_DEF:
                     return GroovyTokenId.CLASS_DEF;
-            case GroovyTokenTypes.CLOSED_BLOCK:
+            case GroovyTokenTypes.CLOSABLE_BLOCK:
                     return GroovyTokenId.CLOSED_BLOCK;
-            case GroovyTokenTypes.CLOSURE_OP:
+            case GroovyTokenTypes.CLOSURE_LIST:
                     return GroovyTokenId.CLOSURE_OP;
             case GroovyTokenTypes.COLON:
                     return GroovyTokenId.COLON;
