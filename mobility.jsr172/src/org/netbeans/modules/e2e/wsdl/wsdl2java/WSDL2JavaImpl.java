@@ -1108,7 +1108,11 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                 off.write( resultVariableName + "[" + i + "] = " );
                                 if( Type.FLAVOR_PRIMITIVE == t.getFlavor()) {
                                     if( !isArray ) {
+                                        if( sce.isNillable() || ( sce.getMinOccurs() == 0 && sce.getMaxOccurs() == 1 )) {
+                                            off.write( "obj" + ( isA ? "[i]" : "" ) + "." + getter( variableName ) + "()" );
+                                        } else {
                                         off.write( wrapPrimitiveType( t, "obj" + ( isA ? "[i]" : "" ) + "." + getter( variableName ) + "()" ));
+                                        }
                                     } else {
                                         if( sce.isNillable()) {
                                             off.write( "obj" + ( isA ? "[i]" : "" ) + "." + getter( variableName ) + "()" );
@@ -1172,15 +1176,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                 String variableName = sce.getName().getLocalPart();
                                 boolean isArray = sce.getMaxOccurs() > 1;
                                 if( Type.FLAVOR_PRIMITIVE == t.getFlavor()) {
-                                    if( !isArray ) {
                                         off.write( "result" + ( isA ? "[i]" : "" ) + "." + setter( variableName ) + "(" + unwrapPrimitiveType( sce, objectVariableName + "[" + i + "]" ) + ");\n" );
-                                    } else {
-                                        if( sce.isNillable()) {
-                                            off.write( "result" + ( isA ? "[i]" : "" ) + "." + setter( variableName ) + "(" + "(" + t.getJavaTypeName() + "[]) " + objectVariableName + "[" + i + "]);\n" );
-                                        } else {
-                                            off.write( "???" );
-                                        }
-                                    }
                                 } else if( Type.FLAVOR_SEQUENCE == t.getFlavor()) {
                                     String tn = t.getName() == null ? sce.getName().getLocalPart() : t.getName().getLocalPart();
                                     if( !isArray ) {
