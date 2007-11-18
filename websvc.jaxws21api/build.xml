@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 
     <target name="unzip_jaxws21">
         <mkdir dir="build/external/jaxws21"/>
-        <unzip src="../external/jaxws-2.1.zip" dest="build/external/jaxws21"/>
+        <unzip src="${nb_all}/websvc/jaxws21/external/jaxws-2.1.zip" dest="build/external/jaxws21"/>
     </target>
 
     <target name="common-init" depends="default.init, unzip_jaxws21"/>
