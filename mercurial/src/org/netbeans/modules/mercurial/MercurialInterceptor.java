@@ -76,6 +76,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     public boolean beforeDelete(File file) {
         if (file == null) return true;
+        if (HgUtils.isPartOfMercurialMetadata(file)) return false;
         
         // We track the deletion of top level directories
         if (file.isDirectory()) {
@@ -108,12 +109,15 @@ public class MercurialInterceptor extends VCSInterceptor {
         if (file == null) return;
         Mercurial hg = Mercurial.getInstance();
         final File root = hg.getTopmostManagedParent(file);
-        if (root == null) return;
-        RequestProcessor rp = hg.getRequestProcessor(root.getAbsolutePath());
+        RequestProcessor rp = null;
+        if (root != null) {
+            rp = hg.getRequestProcessor(root.getAbsolutePath());
+        }
         if (file.exists()) {
             if (file.isDirectory()) {
                 file.delete();
                 if (!dirsToDelete.remove(file)) return;
+                if (root == null) return;
                 HgProgressSupport support = new HgProgressSupport() {
                     public void perform() {
                         try {
@@ -150,6 +154,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                 // If we are deleting a parent directory of this file
                 // skip the call to hg remove as we will do it for the directory
                 file.delete();
+                if (root == null) return;
                 for (File dir : dirsToDelete) {
                     File tmpFile = file;
                     do {
