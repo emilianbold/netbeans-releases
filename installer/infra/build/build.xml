@@ -1903,14 +1903,14 @@ jarsigner.storepass=${jarsigner.storepass}
         <!--<antcall target="build-javaeesdk"/>-->
         <antcall target="build-jdk"/>
 
-        <antcall target="export-temp-registry"/>
+        <!--<antcall target="export-temp-registry"/>-->
         
 	<antcall target="generate-bundles"/>
 
 	<antcall target="prepare-web-page"/>
         
         <delete dir="${output.dir}/registry-temp"/>        
-        
+        <delete dir="${output.dir}/components"/>
     </target>
 
     <target name="zip-to-tgz">
