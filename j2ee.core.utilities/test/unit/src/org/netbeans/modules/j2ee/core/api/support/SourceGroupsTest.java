@@ -114,12 +114,16 @@ public class SourceGroupsTest extends NbTestCase {
     
     public void testIsFolderWritable() throws Exception {
         SourceGroup[] javaSGs = SourceGroups.getJavaSourceGroups(javaApp);
+        // existing folder
+        assertTrue(SourceGroups.isFolderWritable(javaSGs[0], "javaapp"));
+        // non-existing
         assertTrue(SourceGroups.isFolderWritable(javaSGs[0], "should.not.exist"));
         
         File notWritableRoot = new File(getWorkDir(), "cantwrite");
         notWritableRoot.mkdir();
         notWritableRoot.setReadOnly();
         SourceGroup notWritable = new SourceGroupImpl(notWritableRoot);
+        assertFalse(SourceGroups.isFolderWritable(notWritable, ""));
         assertFalse(SourceGroups.isFolderWritable(notWritable, "should.not.exist"));
     }
 
