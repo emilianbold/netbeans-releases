@@ -48,7 +48,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
-import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
