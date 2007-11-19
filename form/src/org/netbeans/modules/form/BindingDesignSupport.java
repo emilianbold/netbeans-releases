@@ -677,6 +677,7 @@ public class BindingDesignSupport {
                     if (binding != null) {
                         RADComponent subComp = binding.getSource();
                         String subSourcePath = binding.getSourcePath();
+                        subSourcePath = (subSourcePath == null) ? null : BindingDesignSupport.unwrapSimpleExpression(subSourcePath);
                         // PENDING beware of stack overflow
                         TypeHelper t = determineType(subComp, subSourcePath);
                         if ("selectedElement".equals(pathItem) || pathItem.startsWith("selectedElement_")) { // NOI18N
