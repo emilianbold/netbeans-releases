@@ -78,6 +78,7 @@ import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 
 
 
+
 /**
  * 
  * @author Martin Adamek
@@ -149,7 +150,10 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 result.add(new NewDomainAction(project));
                 break;
             case MESSAGES:
-                result.add(new NewMessageAction());
+                // result.add(new NewMessageAction());
+                // result.add(new org.openide.actions.NewTemplateAction());
+                
+                result.add(org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction());
                 break;
             case SERVICES:
                 result.add(new NewServiceAction());
