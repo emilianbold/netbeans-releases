@@ -363,6 +363,8 @@ public final class MultiViewPeer  {
     
     String preferredID() {
         StringBuffer retValue = new StringBuffer(MULTIVIEW_ID);
+        assert model != null : "Multiview Model not set, error on deserialization of client code. " + //NOI18N
+                "Please add comment to issue #121119 at netbeans.org and attach the ~/.netbeans/var/log/messages.log file"; //NOI18N
         MultiViewDescription[] descs = model.getDescriptions();
         for (int i = 0; i < descs.length; i++) {
             retValue.append(descs[i].preferredID());
@@ -416,22 +418,43 @@ public final class MultiViewPeer  {
         HashMap<MultiViewDescription, MultiViewElement> map = new HashMap<MultiViewDescription, MultiViewElement>();
         int current = 0;
         CloseOperationHandler close = null;
-        while (true) {
-            Object obj = in.readObject();
-            if (obj instanceof MultiViewDescription) {
-                descList.add((MultiViewDescription)obj);
+        try {
+            while (true) {
+                Object obj = in.readObject();
+                if (obj instanceof MultiViewDescription) {
+                    descList.add((MultiViewDescription)obj);
+                }
+                else if (obj instanceof MultiViewElement) {
+                    map.put(descList.get(descList.size() - 1), (MultiViewElement)obj);
+                }
+                else if (obj instanceof Integer)  {
+                    Integer integ = (Integer)obj;
+                    current = integ.intValue();
+                    break;
+                } 
+                if (obj instanceof CloseOperationHandler) {
+                    close = (CloseOperationHandler)obj;
+                }
             }
-            else if (obj instanceof MultiViewElement) {
-                map.put(descList.get(descList.size() - 1), (MultiViewElement)obj);
+        } catch (IOException exc) {
+            //#121119 try preventing model corruption when deserialization of client code fails.
+            if (close == null) {
+                    //TODO some warning to the SPI programmer
+                close = SpiAccessor.DEFAULT.createDefaultCloseHandler();
             }
-            else if (obj instanceof Integer)  {
-                Integer integ = (Integer)obj;
-                current = integ.intValue();
-                break;
-            } 
-            if (obj instanceof CloseOperationHandler) {
-                close = (CloseOperationHandler)obj;
+            setCloseOperationHandler(close);
+            if (descList.size() > 0) {
+                MultiViewDescription[] descs = new MultiViewDescription[descList.size()];
+                descs = descList.toArray(descs);
+                //the integer with current element was not read yet, fallback to zero.
+                MultiViewDescription currDesc = descs[0];
+
+                //when error, ignore any deserialized elements..
+                map.clear();
+                setDeserializedMultiViewDescriptions(descs, currDesc, map);
             }
+            
+            throw exc;
         }
         if (close == null) {
                 //TODO some warning to the SPI programmer
