@@ -85,6 +85,7 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
     private static final String CHARSET_DECL = "CHARSET="; //NOI18N
     private static final String HEAD_END_TAG_NAME = "</HEAD>"; //NOI18N
     
+    private HtmlEditorSupport htmlEditorSupport;
     
     /** New instance.
      * @param pf primary file object for this data object
@@ -145,13 +146,19 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
     /** Creates new Cookie */
     public Node.Cookie createCookie(Class klass) {
         if (klass.isAssignableFrom(HtmlEditorSupport.class)) {
-            HtmlEditorSupport es = new HtmlEditorSupport(this);
-            return es;
+            return getHtmlEditorSupport();
         } else if (klass.isAssignableFrom(ViewSupport.class)) {
             return new ViewSupport(getPrimaryEntry());
         } else {
             return null;
         }
+    }
+    
+    private synchronized HtmlEditorSupport getHtmlEditorSupport() {
+        if (htmlEditorSupport == null) {
+            htmlEditorSupport = new HtmlEditorSupport(this);
+        }
+        return htmlEditorSupport;
     }
     
     // Package accessibility for HtmlEditorSupport:
