@@ -222,12 +222,15 @@ public class BasicBrandingModel {
             getBranding().brandBundleKey(mainWindowTitleNoProject);
             getBranding().brandBundleKey(currentVersion);
             
+            boolean isModified = icon.isModified();
             getBranding().brandFile(icon, 
                     getScaleAndStoreIconTask(icon, BasicBrandingModel.ICON_WIDTH,BasicBrandingModel.ICON_HEIGHT));
             
-            icon16.setBrandingSource(icon.getBrandingSource());
-            getBranding().brandFile(icon16, 
-                    getScaleAndStoreIconTask(icon16, 16,16));
+            if (isModified) {
+                icon16.setBrandingSource(icon.getBrandingSource());
+                getBranding().brandFile(icon16, 
+                        getScaleAndStoreIconTask(icon16, 16,16));
+            }
                                     
             getBranding().brandBundleKeys(splashKeys);
             getBranding().brandFile(splash);                        
