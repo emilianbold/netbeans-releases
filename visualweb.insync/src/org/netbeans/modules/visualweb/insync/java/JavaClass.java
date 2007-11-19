@@ -435,7 +435,7 @@ public class JavaClass {
     /*
      * Removes a method corresponding to passed in element handle
      */     
-    public void removeMethod(final ElementHandle<ExecutableElement> methodElementHandle) {
+    void removeMethod(final ElementHandle<ExecutableElement> methodElementHandle) {
          WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
             public Object run(WorkingCopy wc) {
                 ExecutableElement execElement = methodElementHandle.resolve(wc);
@@ -452,7 +452,7 @@ public class JavaClass {
     /*
      * Returns the first public constructor
      */ 
-    public MethodTree getPublicConstructor(CompilationInfo cinfo, ClassTree ctree) {
+    private MethodTree getPublicConstructor(CompilationInfo cinfo, ClassTree ctree) {
         for(Tree tree : ctree.getMembers()) {
             if(Tree.Kind.METHOD == tree.getKind()) {
                 MethodTree mtree = (MethodTree)tree;
@@ -479,7 +479,7 @@ public class JavaClass {
     /*
      * Returns a method corresponding to a method by given name and parameter types
      */     
-    public Method getMethod(final String name, final Class[] params, final MethodKind kind) {
+    private Method getMethod(final String name, final Class[] params, final MethodKind kind) {
         return (Method)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
             public Object run(CompilationInfo cinfo) {
                 return getMethod(cinfo, name, params, kind);

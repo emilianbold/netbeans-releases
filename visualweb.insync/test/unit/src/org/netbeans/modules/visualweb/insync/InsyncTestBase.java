@@ -38,7 +38,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.core.startup.layers.NbinstURLStreamHandlerFactory;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
-import org.netbeans.modules.web.jsf.JSFConfigLoader;
+import org.netbeans.modules.web.project.WebProject;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.test.MockLookup;
@@ -49,9 +49,6 @@ import org.openide.util.test.MockLookup;
  * 
  */
 public class InsyncTestBase extends NbTestCase {
-    private static final String SYS_PROP_SAX_PARSER_FACTORY = "javax.xml.parsers.SAXParserFactory"; // NOI18N
-    private static final String SYS_PROP_DOM_PARSER_FACTORY = "javax.xml.parsers.DocumentBuilderFactory"; // NO18N
-    
     public InsyncTestBase(String name) {
         super(name);
         _setUp();
@@ -100,21 +97,87 @@ public class InsyncTestBase extends NbTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         clearWorkDir();
-    }       
-    
-    String oldSaxParser, oldDomParser;
-    
-    public void setUpForFacesModelSet() {
-        // Needed for faces container initialization
-        System.setProperty(SYS_PROP_SAX_PARSER_FACTORY, "org.netbeans.core.startup.SAXFactoryImpl");
-        System.setProperty(SYS_PROP_DOM_PARSER_FACTORY, "org.netbeans.core.startup.DOMFactoryImpl");        
     }
-    
+
     public FacesModelSet createFacesModelSet() {
         FileObject file = getProject().getProjectDirectory();
-        //setUpForFacesModelSet();
         FacesModelSet set = FacesModelSet.getInstance(file);
         return set;
+    }       
+    
+    protected int getBeansCount() {
+        return getPageBeans().length + getNonPageBeansCount();
+    }
+    
+    protected int getNonPageBeansCount() {
+        return getRequestBeans().length + 
+               getSessionBeans().length + 
+               getApplicationBeans().length;
+    }
+    
+    protected String[] getBeanNames() {
+        String[] str = new String[getBeansCount()];
+        int i = 0;
+        for(String s : getPageBeans()) {
+            str[i++] = s;
+        }
+        for (String s : getRequestBeans()) {
+            str[i++] = s;
+        }
+        for (String s : getSessionBeans()) {
+            str[i++] = s;
+        }    
+        for (String s : getApplicationBeans()) {
+            str[i++] = s;
+        }         
+        return str;
+    }
+    
+    protected FileObject getJavaFile(String name) {
+        FileObject[] roots = ((WebProject)getProject()).getSourceRoots().getRoots();
+        for(FileObject f : roots) {
+            FileObject result = findFileObject(f, name);
+            if(result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+    
+    protected FileObject findFileObject(FileObject f, String name) {
+        FileObject result = null;
+        if(f.isFolder()) {
+            for(FileObject child : f.getChildren()) {
+                result = findFileObject(child, name);
+                if(result != null) {
+                    return result;
+                }
+            }
+        }else {
+            if(name.equals(f.getName())) {
+                result = f;
+            }
+        }
+        return result;
+    }
+
+    protected String getFQN(String className) {
+        FileObject[] roots = ((WebProject)getProject()).getSourceRoots().getRoots();
+        for(FileObject f : roots) {
+            FileObject result = findFileObject(f, className);
+            if(result != null) {
+                String filePath = result.getPath().substring(0, result.getPath().lastIndexOf("."));
+                String relativePath = filePath.replace(f.getPath(), "");
+                return relativePath.replace('/', '.').substring(1);
+            }
+        }
+        return null;
+    }
+
+    protected String getPackageName(String className) {
+        String relativePath = getFQN(className);
+        int lastDotIndex = relativePath.lastIndexOf('.');
+        return relativePath.substring(0, lastDotIndex);
     }
 
     public Project openProject() {

@@ -38,17 +38,14 @@ import org.netbeans.modules.visualweb.insync.ModelSet;
 import org.netbeans.modules.visualweb.insync.ModelSetsListener;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.jsfsupport.container.FacesContainer;
-import org.netbeans.modules.web.project.WebProject;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 
 /**
  *
- * @author sc32560
+ * @author sc32560, jdeva
  */
 public class FacesModelSetTest extends InsyncTestBase {
-    static Project project = null;
     public FacesModelSetTest(String testName) {
         super(testName);
     }
@@ -71,62 +68,6 @@ public class FacesModelSetTest extends InsyncTestBase {
     protected void tearDown() throws Exception {
         super.tearDown();
     }   
-    
-    int getBeansCount() {
-        return getPageBeans().length + getNonPageBeansCount();
-    }
-    
-    int getNonPageBeansCount() {
-        return getRequestBeans().length + 
-               getSessionBeans().length + 
-               getApplicationBeans().length;
-    }
-    
-    String[] getBeanNames() {
-        String[] str = new String[getBeansCount()];
-        int i = 0;
-        for(String s : getPageBeans()) {
-            str[i++] = s;
-        }
-        for (String s : getRequestBeans()) {
-            str[i++] = s;
-        }
-        for (String s : getSessionBeans()) {
-            str[i++] = s;
-        }    
-        for (String s : getApplicationBeans()) {
-            str[i++] = s;
-        }         
-        return str;
-    }
-    
-    FileObject getFirstPageBeanJavaFile() {
-        FileObject[] roots = ((WebProject)getProject()).getSourceRoots().getRoots();
-        for(FileObject f : roots) {
-            FileObject result = findFileObject(f, getPageBeans()[0]);
-            if(result != null) {
-                return result;
-            }
-        }
-        return null;
-    }
-    
-    FileObject findFileObject(FileObject f, String name) {
-        FileObject result = null;
-        if(f.isFolder()) {
-            for(FileObject child : f.getChildren()) {
-                result = findFileObject(child, name);
-                if(result != null) {
-                    return result;
-                }
-            }
-        }else {
-            if(name.equals(f.getName())) {
-                result = f;
-            }
-        }
-        return result;
-    }
     
     /**
      * Test of startModeling method, of class FacesModelSet.
@@ -218,7 +159,7 @@ public class FacesModelSetTest extends InsyncTestBase {
      */
     public void testGetFacesModelIfAvailable() {
         System.out.println("getFacesModelIfAvailable");
-        FileObject f = getFirstPageBeanJavaFile();
+        FileObject f = getJavaFile(getPageBeans()[0]);
         FacesModel result = FacesModelSet.getFacesModelIfAvailable(f);
         assertNull(result);
         FacesModelSet instance = createFacesModelSet();
