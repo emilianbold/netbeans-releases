@@ -112,17 +112,19 @@ public class JSFRefactoringUtils {
     
     public static boolean containsRenamingPackage(String oldFQCN, String oldPackage, boolean renameSubpackages){
         boolean contains = false;
-        if (!renameSubpackages){
-            if (oldFQCN.startsWith(oldPackage)
-                    && oldFQCN.substring(oldPackage.length()+1).indexOf('.') < 0
-                    && oldFQCN.substring(oldPackage.length()).charAt(0) == '.'){
-                contains = true;
+        if (oldFQCN != null && oldPackage != null) {
+            if (!renameSubpackages){
+                if (oldFQCN.startsWith(oldPackage)
+                        && oldFQCN.substring(oldPackage.length()+1).indexOf('.') < 0
+                        && oldFQCN.substring(oldPackage.length()).charAt(0) == '.'){
+                    contains = true;
+                }
             }
-        }
-        else {
-            if (oldFQCN.startsWith(oldPackage) 
-                    && oldFQCN.substring(oldPackage.length()).charAt(0) == '.'){
-                contains = true;
+            else {
+                if (oldFQCN.startsWith(oldPackage) 
+                        && oldFQCN.substring(oldPackage.length()).charAt(0) == '.'){
+                    contains = true;
+                }
             }
         }
         return contains;
