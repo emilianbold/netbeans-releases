@@ -53,7 +53,7 @@
   </condition>
 
   <property name="nb.dir" value="../../nbbuild/netbeans"/>
-  <property name="netbeans.appname" value="NetBeans 6.0"/>
+  <property name="netbeans.appname" value="NetBeans 6.1"/>
   <property name="appname" value="${netbeans.appname}"/>
   <property name="appversion" value="6.1 Development Version"/>
   <property name="version" value="6.1 Development Version"/>
