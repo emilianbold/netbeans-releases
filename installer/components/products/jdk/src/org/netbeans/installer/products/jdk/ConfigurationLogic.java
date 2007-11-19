@@ -63,6 +63,7 @@ import org.netbeans.installer.utils.helper.NbiThread;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.RemovalMode;
 import org.netbeans.installer.utils.helper.Status;
+import org.netbeans.installer.utils.helper.Text;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.launchers.LauncherResource;
@@ -605,6 +606,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 progress.setPercentage(d);
             }
         }
+    }
+    @Override
+    public Text getLicense() {
+        return null;
     }
 /////////////////////////////////////////////////////////////////////////////////
 // Constants
