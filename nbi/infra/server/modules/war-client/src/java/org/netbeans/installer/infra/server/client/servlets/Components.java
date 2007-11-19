@@ -91,7 +91,7 @@ public class Components extends HttpServlet {
             response.setContentType("text/javascript; charset=UTF-8");
             final PrintWriter out = response.getWriter();
             
-            final Registry registry = manager.loadRegistry("NetBeans 6.0");
+            final Registry registry = manager.loadRegistry("NetBeans 6.1");
             
             final List<Product> products = registry.getProducts();
             final List<Group> groups = registry.getGroups();
