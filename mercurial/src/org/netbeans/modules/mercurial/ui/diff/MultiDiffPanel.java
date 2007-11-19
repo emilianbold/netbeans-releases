@@ -45,7 +45,6 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 
 import org.netbeans.modules.versioning.util.DelegatingUndoRedo;
 import org.netbeans.modules.versioning.util.VersioningEvent;
-import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -89,7 +88,7 @@ import java.beans.PropertyChangeEvent;
  *
  * @author Maros Sandor
  */
-class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, VersioningListener, DiffSetupSource, PropertyChangeListener {
+class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffSetupSource, PropertyChangeListener {
     
     /**
      * Array of DIFF setups that we show in the DIFF view. Contents of this array is changed if
@@ -284,25 +283,17 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         super.removeNotify();
     }
     
-    public void versioningEvent(VersioningEvent event) {
-        if (event.getId() == FileStatusCache.PROP_FILE_STATUS_CHANGED) {
-            if (!affectsView(event)) {
-                return;
-            }
-            refreshTask.schedule(200);
-        }
-    }
-    
-    private boolean affectsView(VersioningEvent event) {
-        File file = (File) event.getParams()[0];
-        FileInformation oldInfo = (FileInformation) event.getParams()[1];
-        FileInformation newInfo = (FileInformation) event.getParams()[2];
+    private boolean affectsView(PropertyChangeEvent event) {
+        FileStatusCache.ChangedEvent changedEvent = (FileStatusCache.ChangedEvent) event.getNewValue();
+        File file = changedEvent.getFile();
+        FileInformation oldInfo = changedEvent.getOldInfo();
+        FileInformation newInfo = changedEvent.getNewInfo();
         if (oldInfo == null) {
             if ((newInfo.getStatus() & displayStatuses) == 0) return false;
         } else {
             if ((oldInfo.getStatus() & displayStatuses) + (newInfo.getStatus() & displayStatuses) == 0) return false;
         }
-        return context.contains(file);
+        return context == null? false: context.contains(file);
     }
     
     private void setDiffIndex(int idx, int location) {
@@ -582,6 +573,11 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     public void propertyChange(PropertyChangeEvent evt) {
         if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
             refreshComponents();
+        } else if (FileStatusCache.PROP_FILE_STATUS_CHANGED.equals(evt.getPropertyName())) {
+            if (!affectsView(evt)) {
+                return;
+            }
+            refreshTask.schedule(200);
         }
     }
 
