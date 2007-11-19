@@ -234,7 +234,7 @@ public final class CompositeProgress extends Progress implements ProgressListene
      *      added.
      */
     public void addChild(final Progress progress, final int percentage) {
-        // check wehther we can add a new child with the given percentage
+        // check wehther we can add a new child with the given percentage       
         if (!evaluatePercentage(percentage)) {
             throw new IllegalArgumentException(StringUtils.format(
                     ERROR_WRONG_PERCENTAGE,
@@ -250,6 +250,25 @@ public final class CompositeProgress extends Progress implements ProgressListene
         
         notifyListeners();
     }
+    /**
+     * Remove a child progress from the composite.
+     *
+     * @param progress The child progress to remove from the composite.     
+     *
+     * @throws {@link IllegalArgumentException} if the supplied progress is not in 
+     *      composite.
+     */
+    public void removeChild(final Progress progress) {                    
+        final int index = progresses.indexOf(progress);
+        if(index != -1) {
+            percentages.remove(index);
+            progresses.remove(index);
+        }else {
+             throw new IllegalArgumentException(StringUtils.format(
+                    ERROR_WRONG_PROGRESS));           
+        } 
+        progress.removeProgressListener(this);
+    }    
     
     /**
      * Sets the value of the <code>synchronizeDetails</code> property.
@@ -290,10 +309,10 @@ public final class CompositeProgress extends Progress implements ProgressListene
      *      composite, <code>false</code> otherwise.
      */
     private boolean evaluatePercentage(final int percentage) {
-        int total = percentage;
+        int total = percentage;        
         for (Integer value: percentages) {
             total += value;
-        }
+        }      
         
         return (total >= START) && (total <= COMPLETE);
     }
@@ -307,4 +326,11 @@ public final class CompositeProgress extends Progress implements ProgressListene
     public static final String ERROR_WRONG_PERCENTAGE =
             ResourceUtils.getString(CompositeProgress.class,
             "CP.error.percentage"); // NOI18N
+    /**
+     * The error message which will be displayed when a user tries to remove
+     * a non-existent child.
+     */    
+    public static final String ERROR_WRONG_PROGRESS =
+            ResourceUtils.getString(CompositeProgress.class,
+            "CP.error.progress"); // NOI18N
 }

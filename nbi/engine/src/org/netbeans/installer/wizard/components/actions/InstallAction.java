@@ -127,9 +127,8 @@ public class InstallAction extends WizardAction {
     public void execute() {
         final Registry registry = Registry.getInstance();
         final List<Product> products = registry.getProductsToInstall();
-        final int percentageChunk = Progress.COMPLETE / products.size();
-        final int percentageLeak = Progress.COMPLETE % products.size();
-
+        int percentageChunk = Progress.COMPLETE / products.size();
+        int percentageLeak = Progress.COMPLETE % products.size();          
         final Map<Product, Progress> progresses = new HashMap<Product, Progress>();
 
         overallProgress = new CompositeProgress();
@@ -143,10 +142,11 @@ public class InstallAction extends WizardAction {
 
             // initiate the progress for the current element
             currentProgress = new Progress();
-
+ 
             overallProgress.addChild(currentProgress, percentageChunk);
             overallProgress.setTitle(StringUtils.format(getProperty(PROGRESS_INSTALL_TITLE_PROPERTY),
                     product.getDisplayName()));
+            boolean isProductRolledback = false;
             try {
                 product.install(currentProgress);
 
@@ -154,7 +154,8 @@ public class InstallAction extends WizardAction {
                     overallProgress.setTitle(StringUtils.format(getProperty(PROGRESS_ROLLBACK_TITLE_PROPERTY),
                             product.getDisplayName()));
                     product.rollback(currentProgress);
-
+                    isProductRolledback = true;
+                    
                     final RegistryFilter filter = new OrFilter(new ProductFilter(DetailedStatus.INSTALLED_SUCCESSFULLY),
                             new ProductFilter(DetailedStatus.INSTALLED_WITH_WARNINGS));
                     for (Product toRollback : registry.queryProducts(filter)) {
@@ -164,7 +165,7 @@ public class InstallAction extends WizardAction {
                     for (Product toRollback : registry.getProductsToUninstall()) {
                         overallProgress.setTitle(StringUtils.format(getProperty(PROGRESS_ROLLBACK_TITLE_PROPERTY),
                                 toRollback.getDisplayName()));
-                        toRollback.rollback(progresses.get(toRollback));
+                        toRollback.rollback(progresses.get(toRollback));                      
                     }
                     break;
                 }
@@ -186,7 +187,7 @@ public class InstallAction extends WizardAction {
                 // adjust the product's status and save this error - it will
                 // be reused later at the PostInstallSummary
                 product.setStatus(Status.NOT_INSTALLED);
-                product.setInstallationError(e);
+                product.setInstallationError(e);                               
 
                 // since the current product failed to install, we should cancel the
                 // installation of the products that may require this one
@@ -207,9 +208,29 @@ public class InstallAction extends WizardAction {
                     }
                 }
 
-                // finally notify the user of what has happened
-                LogManager.log(ErrorLevel.ERROR, e);
-            }
+                if(!isProductRolledback) {
+                    try{                         
+                        overallProgress.setTitle(StringUtils.format(
+                                getProperty(PROGRESS_ROLLBACK_TITLE_PROPERTY),
+                                product.getDisplayName()));
+                        product.rollback(currentProgress);                                           
+                    }catch(Exception uie) {
+                        LogManager.log(uie);                        
+                    }
+                }
+                overallProgress.removeChild(currentProgress);                
+                final int productsToInstallSize = registry.getProductsToInstall().size();                
+                if(productsToInstallSize > 0) {
+                    final int theRestOfPercentage = Progress.COMPLETE - 
+                            overallProgress.getPercentage();
+                    percentageChunk = theRestOfPercentage / productsToInstallSize;
+                    percentageLeak =  theRestOfPercentage % productsToInstallSize;                    
+                    overallProgress.addPercentage(percentageLeak);                                   
+                }
+
+                 // finally notify the user of what has happened
+                 LogManager.log(ErrorLevel.ERROR, e);
+            }            
         }
     }
 
