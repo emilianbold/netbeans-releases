@@ -511,6 +511,47 @@ public class ServiceModelTest extends NbTestCase {
     }
 
     /**
+     * Tests removal of the last operation from the model
+     *
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=122228
+     */
+    public void testRemoveLastOperation() throws Exception {
+        System.out.println("=======================");
+        System.out.println("testRemoveLastOperation");
+        FileObject sourceFileObject = dataDir.getFileObject("remove/MethodRemoveTestService.java");
+        assertNotNull(sourceFileObject);
+        ServiceModel model = ServiceModel.getServiceModel(sourceFileObject);
+        FileObject sourceFileObject_1 = dataDir.getFileObject("remove/MethodRemoveTestService_1.java");
+        assertNotNull(sourceFileObject_1);
+        ServiceModel model_1 = ServiceModel.getServiceModel(sourceFileObject_1);
+        model.addServiceChangeListener(new ServiceChangeListener() {
+
+            public void propertyChanged(String propertyName, String oldValue, String newValue) {
+                System.out.println("propertyChanged " + propertyName + ":" + oldValue + ":" + newValue);
+                events.add(new String[]{"propertyChanged", propertyName, oldValue, newValue});
+            }
+
+            public void operationAdded(MethodModel method) {
+                System.out.println("operationAdded " + method.getOperationName());
+                events.add(new String[]{"operationAdded", method.getOperationName()});
+            }
+
+            public void operationRemoved(MethodModel method) {
+                System.out.println("operationRemoved " + method.getOperationName());
+                events.add(new String[]{"operationRemoved", method.getOperationName()});
+            }
+
+            public void operationChanged(MethodModel oldMethod, MethodModel newMethod) {
+                System.out.println("operationChanged " + newMethod.getOperationName());
+                events.add(new String[]{"operationChanged", newMethod.getOperationName()});
+            }
+        });
+        model.mergeModel(model_1);
+        List<MethodModel> operations = model.getOperations();
+        assertEquals(0, operations.size());
+    }
+
+    /**
      * Returns a string which contains the contents of a file.
      *
      * @param f the file to be read
