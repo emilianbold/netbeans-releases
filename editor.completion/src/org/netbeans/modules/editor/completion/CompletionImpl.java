@@ -379,6 +379,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         assert (SwingUtilities.isEventDispatchThread());
 
         if (layout.isDocumentationVisible() || CompletionSettings.INSTANCE.documentationAutoPopup()) {
+            documentationCancel();
             restartDocumentationAutoPopupTimer();
         }
     }
