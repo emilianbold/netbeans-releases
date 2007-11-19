@@ -53,15 +53,15 @@ import org.openide.filesystems.FileObject;
  */
 public class ClassPathProviderImpl implements ClassPathProvider {
     
-    private final ClassPath classPath;
+    private final ClassPath sourcePath;
 
-    public ClassPathProviderImpl(FileObject[] sources) {
-        this.classPath = ClassPathSupport.createClassPath(sources);
+    public ClassPathProviderImpl(FileObject[] sourceRoots) {
+        this.sourcePath = ClassPathSupport.createClassPath(sourceRoots);
     }
     
     public ClassPath findClassPath(FileObject file, String type) {
         if (ClassPath.SOURCE.equals(type)){
-            return classPath;
+            return sourcePath;
         }
         return null;
     }
