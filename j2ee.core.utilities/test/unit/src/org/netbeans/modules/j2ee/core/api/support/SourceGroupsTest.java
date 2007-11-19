@@ -137,6 +137,12 @@ public class SourceGroupsTest extends NbTestCase {
         // default package
         packageName =  SourceGroups.getPackageForFolder(javaSGs[0], getJavaAppSourceRoot());
         assertEquals("", packageName);
+        
+        try{
+            SourceGroups.getPackageForFolder(javaSGs[0], FileUtil.toFileObject(getWorkDir()));
+            fail();
+        }catch (IllegalStateException expected){
+        }
     }
 
     private FileObject getJavaAppSourceRoot(){
