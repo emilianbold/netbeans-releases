@@ -188,7 +188,7 @@ public final class ProgressSupport {
                         // The equivalent of invokeNextActionsOfSameKind() above, but in the background
                         // and under the progress panel.
 
-                        // Schedule the RP task for asychronous actions. The task
+                        // Schedule the RP task for background actions. The task
                         // also sets exceptionRef if an exception occured.
                         task.schedule(0);
 
