@@ -41,8 +41,12 @@
 
 package org.netbeans.modules.j2ee.core.api.support.java;
 
-import com.sun.source.tree.*;
-import com.sun.source.util.*;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.VariableTree;
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -50,8 +54,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import javax.lang.model.element.*;
-import javax.lang.model.type.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
@@ -61,11 +71,10 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -76,80 +85,42 @@ public class GenerationUtilsTest extends NbTestCase {
     private FileObject workDir;
     private FileObject testFO;
 
-    static {
-        // set the lookup which will be returned by Lookup.getDefault()
-        System.setProperty("org.openide.util.Lookup",Lkp.class.getName());
-        assertEquals("Unable to set the default lookup!",Lkp.class, Lookup.getDefault().getClass());
-        assertEquals(RepositoryImpl.class, Lookup.getDefault().lookup(Repository.class).getClass());
-        assertEquals("The default Repository is not our repository!", RepositoryImpl.class, Repository.getDefault().getClass());
-    }
-
     public GenerationUtilsTest(String testName) {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
+        MockLookup.init();
         clearWorkDir();
         TestUtilities.setCacheFolder(getWorkDir());
         workDir = FileUtil.toFileObject(getWorkDir());
         testFO = workDir.createData("TestClass.java");
-        
-        ClassPathProviderImpl classPathProvider = new ClassPathProviderImpl(new FileObject[]{FileUtil.toFileObject(getWorkDir())});
-        setLookups(
-                classPathProvider,
-                new FakeJavaDataLoaderPool(),
-                new TestSourceLevelQueryImplementation()
-                );
-        initTemplates();
-        
-    }
 
-    private RepositoryImpl.MultiFileSystemImpl getSystemFs(){
-        return (RepositoryImpl.MultiFileSystemImpl)Repository.getDefault().getDefaultFileSystem();
+        MockLookup.setInstances(
+                new ClassPathProviderImpl(new FileObject[] { workDir }),
+                new FakeJavaDataLoaderPool(),
+                new SourceLevelQueryImpl());
+        initTemplates();
+
     }
 
     private void initTemplates() throws Exception{
-        RepositoryImpl.MultiFileSystemImpl systemFS = getSystemFs();
-        FileObject interfaceTemplate = systemFS.getRoot().getFileObject("Templates/Classes/Interface.java");
+        FileSystem systemFS = Repository.getDefault().getDefaultFileSystem();
+        FileObject interfaceTemplate = FileUtil.createData(systemFS.getRoot(), "Templates/Classes/Interface.java");
+        interfaceTemplate.setAttribute("javax.script.ScriptEngine", "freemarker");
         TestUtilities.copyStringToFileObject(interfaceTemplate,
                 "package ${package};" +
                 "public interface ${name} {\n" +
                 "}");
-        FileObject classTemplate = systemFS.getRoot().getFileObject("Templates/Classes/Class.java");
+        FileObject classTemplate = FileUtil.createData(systemFS.getRoot(), "Templates/Classes/Class.java");
+        classTemplate.setAttribute("javax.script.ScriptEngine", "freemarker");
         TestUtilities.copyStringToFileObject(classTemplate,
                 "package ${package};" +
                 "public class ${name} {\n" +
-                "   public ${name}(){\n" + 
+                "   public ${name}(){\n" +
                 "   }\n" +
                 "}");
-    }
-    
-
-    public void testNewInstance() throws Exception {
-        TestUtilities.copyStringToFileObject(testFO,
-                "package foo;" +
-                "public class TestClass {" +
-                "}");
-        runModificationTask(testFO, new Task<WorkingCopy>() {
-            public void run(WorkingCopy copy) throws Exception {
-                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = copy.getElements().getTypeElement("foo.TestClass");
-                GenerationUtils genUtils = GenerationUtils.newInstance(copy, typeElement);
-                assertSame(typeElement, genUtils.getTypeElement());
-                assertEquals(copy.getTrees().getTree(typeElement), genUtils.getClassTree());
-
-                ClassTree classTree = (ClassTree)copy.getCompilationUnit().getTypeDecls().get(0);
-                genUtils = GenerationUtils.newInstance(copy, classTree);
-                assertSame(classTree, genUtils.getClassTree());
-                TreePath classTreePath = copy.getTrees().getPath(copy.getCompilationUnit(), classTree);
-                typeElement = (TypeElement)copy.getTrees().getElement(classTreePath);
-                assertEquals(typeElement, genUtils.getTypeElement());
-
-                genUtils = GenerationUtils.newInstance(copy);
-                assertSame(genUtils.getTypeElement(), typeElement);
-                assertSame(genUtils.getClassTree(), classTree);
-            }
-        });
     }
 
     public void testPhase() throws Exception {
@@ -159,7 +130,7 @@ public class GenerationUtilsTest extends NbTestCase {
                 "}");
         runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
-                GenerationUtils genUtils = GenerationUtils.newInstance(copy);
+                GenerationUtils.newInstance(copy);
                 assertEquals(JavaSource.Phase.ELEMENTS_RESOLVED, copy.getPhase());
             }
         });
@@ -169,9 +140,9 @@ public class GenerationUtilsTest extends NbTestCase {
         FileObject javaFO = GenerationUtils.createClass(workDir, "NewTestClass", "Javadoc");
         runUserActionTask(javaFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
-                SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                assertEquals(ElementKind.CLASS, srcUtils.getTypeElement().getKind());
-                assertTrue(srcUtils.getNoArgConstructor() != null);
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                assertEquals(ElementKind.CLASS, typeElement.getKind());
+                assertTrue(SourceUtils.getNoArgConstructor(controller, typeElement) != null);
                 // TODO assert for Javadoc
             }
         });
@@ -181,8 +152,8 @@ public class GenerationUtilsTest extends NbTestCase {
         FileObject javaFO = GenerationUtils.createInterface(workDir, "NewTestClass", "Javadoc");
         runUserActionTask(javaFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
-                SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                assertEquals(ElementKind.INTERFACE, srcUtils.getTypeElement().getKind());
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                assertEquals(ElementKind.INTERFACE, typeElement.getKind());
                 // TODO assert for Javadoc
             }
         });
@@ -196,13 +167,15 @@ public class GenerationUtilsTest extends NbTestCase {
         runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
-                ClassTree newClassTree = genUtils.ensureNoArgConstructor(genUtils.getClassTree());
-                copy.rewrite(genUtils.getClassTree(), newClassTree);
+                ClassTree classTree = (ClassTree)copy.getCompilationUnit().getTypeDecls().get(0);
+                ClassTree newClassTree = genUtils.ensureNoArgConstructor(classTree);
+                copy.rewrite(classTree, newClassTree);
             }
         }).commit();
         runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
-                assertTrue(SourceUtils.newInstance(controller).getNoArgConstructor() != null);
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                assertTrue(SourceUtils.getNoArgConstructor(controller, typeElement) != null);
             }
         });
     }
@@ -217,13 +190,15 @@ public class GenerationUtilsTest extends NbTestCase {
         runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
-                ClassTree newClassTree = genUtils.ensureNoArgConstructor(genUtils.getClassTree());
-                copy.rewrite(genUtils.getClassTree(), newClassTree);
+                ClassTree classTree = (ClassTree)copy.getCompilationUnit().getTypeDecls().get(0);
+                ClassTree newClassTree = genUtils.ensureNoArgConstructor(classTree);
+                copy.rewrite(classTree, newClassTree);
             }
         }).commit();
         runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
-                assertTrue(SourceUtils.newInstance(controller).getNoArgConstructor().getModifiers().contains(Modifier.PUBLIC));
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                assertTrue(SourceUtils.getNoArgConstructor(controller, typeElement).getModifiers().contains(Modifier.PUBLIC));
             }
         });
     }
@@ -236,14 +211,15 @@ public class GenerationUtilsTest extends NbTestCase {
         runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
-                assertEquals(TypeKind.BOOLEAN, ((PrimitiveTypeTree)genUtils.createType("boolean")).getPrimitiveTypeKind());
-                assertEquals(TypeKind.BYTE, ((PrimitiveTypeTree)genUtils.createType("byte")).getPrimitiveTypeKind());
-                assertEquals(TypeKind.SHORT, ((PrimitiveTypeTree)genUtils.createType("short")).getPrimitiveTypeKind());
-                assertEquals(TypeKind.INT, ((PrimitiveTypeTree)genUtils.createType("int")).getPrimitiveTypeKind());
-                assertEquals(TypeKind.LONG, ((PrimitiveTypeTree)genUtils.createType("long")).getPrimitiveTypeKind());
-                assertEquals(TypeKind.CHAR, ((PrimitiveTypeTree)genUtils.createType("char")).getPrimitiveTypeKind());
-                assertEquals(TypeKind.FLOAT, ((PrimitiveTypeTree)genUtils.createType("float")).getPrimitiveTypeKind());
-                assertEquals(TypeKind.DOUBLE, ((PrimitiveTypeTree)genUtils.createType("double")).getPrimitiveTypeKind());
+                TypeElement scope = SourceUtils.getPublicTopLevelElement(copy);
+                assertEquals(TypeKind.BOOLEAN, ((PrimitiveTypeTree)genUtils.createType("boolean", scope)).getPrimitiveTypeKind());
+                assertEquals(TypeKind.BYTE, ((PrimitiveTypeTree)genUtils.createType("byte", scope)).getPrimitiveTypeKind());
+                assertEquals(TypeKind.SHORT, ((PrimitiveTypeTree)genUtils.createType("short", scope)).getPrimitiveTypeKind());
+                assertEquals(TypeKind.INT, ((PrimitiveTypeTree)genUtils.createType("int", scope)).getPrimitiveTypeKind());
+                assertEquals(TypeKind.LONG, ((PrimitiveTypeTree)genUtils.createType("long", scope)).getPrimitiveTypeKind());
+                assertEquals(TypeKind.CHAR, ((PrimitiveTypeTree)genUtils.createType("char", scope)).getPrimitiveTypeKind());
+                assertEquals(TypeKind.FLOAT, ((PrimitiveTypeTree)genUtils.createType("float", scope)).getPrimitiveTypeKind());
+                assertEquals(TypeKind.DOUBLE, ((PrimitiveTypeTree)genUtils.createType("double", scope)).getPrimitiveTypeKind());
             }
         });
     }
@@ -256,24 +232,25 @@ public class GenerationUtilsTest extends NbTestCase {
         runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
+                ClassTree classTree = (ClassTree)copy.getCompilationUnit().getTypeDecls().get(0);
                 AnnotationTree annotationTree = genUtils.createAnnotation("java.lang.SuppressWarnings",
                         Collections.singletonList(genUtils.createAnnotationArgument(null, "unchecked")));
-                ClassTree newClassTree = genUtils.addAnnotation(genUtils.getClassTree(), annotationTree);
+                ClassTree newClassTree = genUtils.addAnnotation(classTree, annotationTree);
                 annotationTree = genUtils.createAnnotation("java.lang.annotation.Retention",
                         Collections.singletonList(genUtils.createAnnotationArgument(null, "java.lang.annotation.RetentionPolicy", "RUNTIME")));
                 newClassTree = genUtils.addAnnotation(newClassTree, annotationTree);
-                copy.rewrite(genUtils.getClassTree(), newClassTree);
+                copy.rewrite(classTree, newClassTree);
             }
         }).commit();
         runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
-                SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                assertEquals(2, srcUtils.getTypeElement().getAnnotationMirrors().size());
-                SuppressWarnings suppressWarnings = srcUtils.getTypeElement().getAnnotation(SuppressWarnings.class);
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                assertEquals(2, typeElement.getAnnotationMirrors().size());
+                SuppressWarnings suppressWarnings = typeElement.getAnnotation(SuppressWarnings.class);
                 assertNotNull(suppressWarnings);
                 assertEquals(1, suppressWarnings.value().length);
                 assertEquals("unchecked", suppressWarnings.value()[0]);
-                Retention retention = srcUtils.getTypeElement().getAnnotation(Retention.class);
+                Retention retention = typeElement.getAnnotation(Retention.class);
                 assertNotNull(retention);
                 assertEquals(RetentionPolicy.RUNTIME, retention.value());
             }
@@ -296,6 +273,7 @@ public class GenerationUtilsTest extends NbTestCase {
         runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
+                ClassTree classTree = SourceUtils.getPublicTopLevelTree(copy);
                 ExpressionTree namedQueryAnnotation0 = genUtils.createAnnotation("foo.NamedQuery", Arrays.asList(
                         genUtils.createAnnotationArgument("name", "foo0"),
                         genUtils.createAnnotationArgument("query", "q0")));
@@ -304,14 +282,14 @@ public class GenerationUtilsTest extends NbTestCase {
                         genUtils.createAnnotationArgument("query", "q1")));
                 ExpressionTree namedQueriesAnnValue = genUtils.createAnnotationArgument("value", Arrays.asList(namedQueryAnnotation0, namedQueryAnnotation1));
                 AnnotationTree namedQueriesAnnotation = genUtils.createAnnotation("foo.NamedQueries", Collections.singletonList(namedQueriesAnnValue));
-                ClassTree newClassTree = genUtils.addAnnotation(genUtils.getClassTree(), namedQueriesAnnotation);
-                copy.rewrite(genUtils.getClassTree(), newClassTree);
+                ClassTree newClassTree = genUtils.addAnnotation(classTree, namedQueriesAnnotation);
+                copy.rewrite(classTree, newClassTree);
             }
         }).commit();
         runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
-                SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
                 Map<? extends ExecutableElement, ? extends AnnotationValue> namedQueriesAnnElements = annotations.get(0).getElementValues();
                 List<? extends AnnotationMirror> namedQueriesAnnValue = (List<? extends AnnotationMirror>)namedQueriesAnnElements.values().iterator().next().getValue();
                 assertEquals(2, namedQueriesAnnValue.size());
@@ -352,16 +330,17 @@ public class GenerationUtilsTest extends NbTestCase {
         runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
+                ClassTree classTree = SourceUtils.getPublicTopLevelTree(copy);
                 AnnotationTree annotationTree = genUtils.createAnnotation("foo.Column", Collections.singletonList(genUtils.createAnnotationArgument("nullable", true)));
-                ClassTree newClassTree = genUtils.addAnnotation(genUtils.getClassTree(), annotationTree);
-                copy.rewrite(genUtils.getClassTree(), newClassTree);
+                ClassTree newClassTree = genUtils.addAnnotation(classTree, annotationTree);
+                copy.rewrite(classTree, newClassTree);
             }
         }).commit();
         runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
-                SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                assertEquals(1, srcUtils.getTypeElement().getAnnotationMirrors().size());
-                AnnotationMirror columnAnn = srcUtils.getTypeElement().getAnnotationMirrors().get(0);
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                assertEquals(1, typeElement.getAnnotationMirrors().size());
+                AnnotationMirror columnAnn = typeElement.getAnnotationMirrors().get(0);
                 assertEquals(1, columnAnn.getElementValues().size());
                 Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> columnAnnNullableElement = columnAnn.getElementValues().entrySet().iterator().next();
                 assertEquals("nullable", columnAnnNullableElement.getKey().getSimpleName().toString());
@@ -379,17 +358,17 @@ public class GenerationUtilsTest extends NbTestCase {
         runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
-                TreeMaker make = copy.getTreeMaker();
+                ClassTree classTree = (ClassTree)copy.getCompilationUnit().getTypeDecls().get(0);
                 AnnotationTree annWithLiteralArgument = genUtils.createAnnotation("java.lang.SuppressWarnings",
                         Collections.singletonList(genUtils.createAnnotationArgument(null, "unchecked")));
                 AnnotationTree annWithArrayArgument = genUtils.createAnnotation("java.lang.annotation.Target",
                         Collections.singletonList(genUtils.createAnnotationArgument(null, Collections.<ExpressionTree>emptyList())));
                 AnnotationTree annWithMemberSelectArgument = genUtils.createAnnotation("java.lang.annotation.Retention",
                         Collections.singletonList(genUtils.createAnnotationArgument(null, "java.lang.annotation.RetentionPolicy", "RUNTIME")));
-                ClassTree newClassTree = genUtils.addAnnotation(genUtils.getClassTree(), annWithLiteralArgument);
+                ClassTree newClassTree = genUtils.addAnnotation(classTree, annWithLiteralArgument);
                 newClassTree = genUtils.addAnnotation(newClassTree, annWithArrayArgument);
                 newClassTree = genUtils.addAnnotation(newClassTree, annWithMemberSelectArgument);
-                copy.rewrite(genUtils.getClassTree(), newClassTree);
+                copy.rewrite(classTree, newClassTree);
             }
         }).commit();
         assertFalse(TestUtilities.copyFileObjectToString(testFO).contains("value"));
@@ -406,15 +385,17 @@ public class GenerationUtilsTest extends NbTestCase {
         runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
-                VariableTree field = genUtils.createField(genUtils.createModifiers(Modifier.PRIVATE), "someProp", "java.lang.String");
-                MethodTree getter = genUtils.createPropertyGetterMethod(genUtils.createModifiers(Modifier.PUBLIC), "someProp", "java.lang.String");
-                MethodTree setter = genUtils.createPropertySetterMethod(genUtils.createModifiers(Modifier.PUBLIC), "someProp", "java.lang.String");
+                ClassTree classTree = (ClassTree)copy.getCompilationUnit().getTypeDecls().get(0);
+                TypeElement scope = SourceUtils.classTree2TypeElement(copy, classTree);
+                VariableTree field = genUtils.createField(scope, genUtils.createModifiers(Modifier.PRIVATE), "someProp", "java.lang.String", null);
+                MethodTree getter = genUtils.createPropertyGetterMethod(scope, genUtils.createModifiers(Modifier.PUBLIC), "someProp", "java.lang.String");
+                MethodTree setter = genUtils.createPropertySetterMethod(scope, genUtils.createModifiers(Modifier.PUBLIC), "someProp", "java.lang.String");
                 TreeMaker make = copy.getTreeMaker();
-                ClassTree newClassTree = genUtils.getClassTree();
+                ClassTree newClassTree = classTree;
                 newClassTree = make.insertClassMember(newClassTree, 0, field);
                 newClassTree = make.addClassMember(newClassTree, getter);
                 newClassTree = make.addClassMember(newClassTree, setter);
-                copy.rewrite(genUtils.getClassTree(), newClassTree);
+                copy.rewrite(classTree, newClassTree);
             }
         }).commit();
         // TODO check the field and methods
@@ -428,16 +409,17 @@ public class GenerationUtilsTest extends NbTestCase {
         runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
-                ClassTree newClassTree = genUtils.addImplementsClause(genUtils.getClassTree(), "java.io.Serializable");
+                ClassTree classTree = (ClassTree)copy.getCompilationUnit().getTypeDecls().get(0);
+                ClassTree newClassTree = genUtils.addImplementsClause(classTree, "java.io.Serializable");
                 newClassTree = genUtils.addImplementsClause(newClassTree, "java.lang.Cloneable");
-                copy.rewrite(genUtils.getClassTree(), newClassTree);
+                copy.rewrite(classTree, newClassTree);
             }
         }).commit();
         runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
-                SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                assertImplements(controller, srcUtils.getTypeElement(), "java.io.Serializable");
-                assertImplements(controller, srcUtils.getTypeElement(), "java.lang.Cloneable");
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                assertImplements(controller, typeElement, "java.io.Serializable");
+                assertImplements(controller, typeElement, "java.lang.Cloneable");
             }
         });
     }
@@ -450,7 +432,8 @@ public class GenerationUtilsTest extends NbTestCase {
         runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
-                assertNotNull(genUtils.createType("byte[]"));
+                TypeElement scope = SourceUtils.getPublicTopLevelElement(copy);
+                assertNotNull(genUtils.createType("byte[]", scope));
             }
         });
     }
@@ -474,36 +457,4 @@ public class GenerationUtilsTest extends NbTestCase {
         }
         fail("Type " + typeElement + " does not implement " + interfaceName);
     }
-
-    private static void setLookups(Object... lookups) {
-        ((Lkp)Lookup.getDefault()).setProxyLookups(Lookups.fixed(lookups));
-    }
-
-    public static final class Lkp extends ProxyLookup {
-        
-        private final Repository repository = new RepositoryImpl();
-        
-        public Lkp() {
-            setProxyLookups(new Lookup[0]);
-        }
-        
-        private void setProxyLookups(Lookup... lookups) {
-            Lookup[] allLookups = new Lookup[lookups.length + 3];
-            ClassLoader classLoader = GenerationUtilsTest.class.getClassLoader();
-            allLookups[0] = Lookups.singleton(classLoader);
-            allLookups[1] = Lookups.singleton(repository);
-            System.arraycopy(lookups, 0, allLookups, 2, lookups.length);
-            allLookups[allLookups.length - 1] = Lookups.metaInfServices(classLoader);
-            setLookups(allLookups);
-        }
-    }
-    
-    public static final class TestSourceLevelQueryImplementation implements SourceLevelQueryImplementation {
-        
-        public String getSourceLevel(FileObject javaFile) {
-            return "1.5";
-        }
-
-    }
-
 }

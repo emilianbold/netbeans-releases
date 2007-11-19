@@ -133,8 +133,18 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <!-- for the nbinst: protocol -->
+                        <code-name-base>org.netbeans.core.startup</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.java.j2seproject</code-name-base>
                         <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util</code-name-base>
+                        <test/>
                         <compile-dependency/>
                     </test-dependency>
                 </test-type>

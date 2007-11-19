@@ -41,11 +41,9 @@
 
 package org.netbeans.modules.j2ee.core.api.support.java;
 
-import com.sun.source.tree.*;
-import com.sun.source.util.*;
 import java.io.IOException;
-import javax.lang.model.element.*;
-import org.netbeans.api.java.source.CancellableTask;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
@@ -67,7 +65,7 @@ public class SourceUtilsTest extends NbTestCase {
     }
 
     protected void setUp() throws Exception {
-        MockServices.setServices(FakeJavaDataLoaderPool.class, RepositoryImpl.class);
+        MockServices.setServices(FakeJavaDataLoaderPool.class/*, RepositoryImpl.class*/);
 
         clearWorkDir();
         TestUtilities.setCacheFolder(getWorkDir());
@@ -75,47 +73,7 @@ public class SourceUtilsTest extends NbTestCase {
         testFO = workDir.createData("TestClass.java");
     }
 
-    public void testNewInstance() throws Exception {
-        TestUtilities.copyStringToFileObject(testFO,
-                "package foo;" +
-                "public class TestClass {" +
-                "}");
-        runUserActionTask(testFO, new Task<CompilationController>() {
-            public void run(CompilationController controller) throws Exception {
-                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = controller.getElements().getTypeElement("foo.TestClass");
-                SourceUtils srcUtils = SourceUtils.newInstance(controller, typeElement);
-                assertSame(typeElement, srcUtils.getTypeElement());
-                assertEquals(controller.getTrees().getTree(typeElement), srcUtils.getClassTree());
-
-                ClassTree classTree = (ClassTree)controller.getCompilationUnit().getTypeDecls().get(0);
-                srcUtils = SourceUtils.newInstance(controller, classTree);
-                assertSame(classTree, srcUtils.getClassTree());
-                TreePath classTreePath = controller.getTrees().getPath(controller.getCompilationUnit(), classTree);
-                typeElement = (TypeElement)controller.getTrees().getElement(classTreePath);
-                assertEquals(typeElement, srcUtils.getTypeElement());
-
-                srcUtils = SourceUtils.newInstance(controller);
-                assertSame(srcUtils.getTypeElement(), typeElement);
-                assertSame(srcUtils.getClassTree(), classTree);
-            }
-        });
-    }
-
-    public void testPhase() throws Exception {
-        TestUtilities.copyStringToFileObject(testFO,
-                "package foo;" +
-                "public class TestClass {" +
-                "}");
-        runUserActionTask(testFO, new Task<CompilationController>() {
-            public void run(CompilationController controller) throws Exception {
-                SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                assertEquals(JavaSource.Phase.ELEMENTS_RESOLVED, controller.getPhase());
-            }
-        });
-    }
-
-    public void testMainTypeElement() throws Exception {
+    public void testGetPublicTopLevelElement() throws Exception {
         TestUtilities.copyStringToFileObject(testFO,
                 "package foo;" +
                 "public class TestClass {" +
@@ -124,7 +82,7 @@ public class SourceUtilsTest extends NbTestCase {
                 "}");
         runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
-                TypeElement typeElement = SourceUtils.newInstance(controller).getTypeElement();
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
                 assertTrue(typeElement.getQualifiedName().contentEquals("foo.TestClass"));
             }
         });
@@ -135,7 +93,7 @@ public class SourceUtilsTest extends NbTestCase {
                 "}");
         runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
-                assertNull(SourceUtils.newInstance(controller));
+                assertNull(SourceUtils.getPublicTopLevelElement(controller));
             }
         });
     }
@@ -149,8 +107,8 @@ public class SourceUtilsTest extends NbTestCase {
                 "}");
         runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
-                SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                ExecutableElement constructor = srcUtils.getNoArgConstructor();
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                ExecutableElement constructor = SourceUtils.getNoArgConstructor(controller, typeElement);
                 assertNotNull(constructor);
                 assertFalse(controller.getElementUtilities().isSynthetic(constructor));
             }
@@ -162,8 +120,8 @@ public class SourceUtilsTest extends NbTestCase {
                 "}");
         runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
-                SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                assertNull(srcUtils.getNoArgConstructor());
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                assertNull(SourceUtils.getNoArgConstructor(controller, typeElement));
             }
         });
     }
@@ -175,9 +133,9 @@ public class SourceUtilsTest extends NbTestCase {
                 "}");
         runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
-                SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                assertTrue(srcUtils.isSubtype("java.io.Serializable"));
-                assertFalse(srcUtils.isSubtype("java.lang.Cloneable"));
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                assertTrue(SourceUtils.isSubtype(controller, typeElement, "java.io.Serializable"));
+                assertFalse(SourceUtils.isSubtype(controller, typeElement, "java.lang.Cloneable"));
             }
         });
     }
@@ -196,9 +154,9 @@ public class SourceUtilsTest extends NbTestCase {
                 "}");
         runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
-                SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                assertTrue(srcUtils.isSubtype("java.util.Enumeration<String>"));
-                assertFalse(srcUtils.isSubtype("java.util.Enumeration<Object>"));
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                assertTrue(SourceUtils.isSubtype(controller, typeElement, "java.util.Enumeration<String>"));
+                assertFalse(SourceUtils.isSubtype(controller, typeElement, "java.util.Enumeration<Object>"));
             }
         });
     }

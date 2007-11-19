@@ -41,7 +41,15 @@
 
 package org.netbeans.modules.j2ee.core.api.support.java;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -49,8 +57,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.lang.model.element.*;
-import javax.lang.model.type.*;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -62,20 +73,14 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Parameters;
 
 /**
- * <code>GenerationUtils</code> is a helper class for creating classes, 
- * methods, variables, annotations and types using the Java Model. 
- * 
+ * <code>GenerationUtils</code> is a helper class for creating classes,
+ * methods, variables, annotations and types using the Java Model.
+ *
  * @author Andrei Badea
  */
-public final class GenerationUtils extends SourceUtils {
+public final class GenerationUtils {
 
-    // XXX this class both provides some state (getClassTree()) and
-    // method which could be static if they didn't need TreeMaker.
-    // GenerationUtils should only contain these "static" method and should not
-    // inherit from SourceUtils. Instead it should have just a newInstance(WorkingCopy)
-    // method and there should also be a SourceUtils.getGenerationUtils() method.
-
-    // TODO use CharSequence instead of String where possible
+    // PENDING use CharSequence instead of String where possible
 
     /**
      * The templates for regular Java class and interface.
@@ -83,38 +88,18 @@ public final class GenerationUtils extends SourceUtils {
     static final String CLASS_TEMPLATE = "Templates/Classes/Class.java"; // NOI18N
     static final String INTERFACE_TEMPLATE = "Templates/Classes/Interface.java"; // NOI18N
 
+    private final WorkingCopy copy;
+
     // <editor-fold desc="Constructors and factory methods">
 
-    private GenerationUtils(WorkingCopy copy, TypeElement typeElement) {
-        super(copy, typeElement);
-    }
-
-    private GenerationUtils(WorkingCopy copy, ClassTree classTree) {
-        super(copy, classTree);
-    }
-
-    public static GenerationUtils newInstance(WorkingCopy copy, TypeElement typeElement) {
-        Parameters.notNull("copy", copy); // NOI18N
-        Parameters.notNull("typeElement", typeElement); // NOI18N
-
-        return new GenerationUtils(copy, typeElement);
-    }
-
-    public static GenerationUtils newInstance(WorkingCopy copy, ClassTree classTree) {
-        Parameters.notNull("copy", copy); // NOI18N
-        Parameters.notNull("classTree", classTree); // NOI18N
-
-        return new GenerationUtils(copy, classTree);
+    private GenerationUtils(WorkingCopy copy) throws IOException {
+        this.copy = copy;
+        copy.toPhase(Phase.ELEMENTS_RESOLVED);
     }
 
     public static GenerationUtils newInstance(WorkingCopy copy) throws IOException {
         Parameters.notNull("copy", copy); // NOI18N
-
-        ClassTree classTree = findPublicTopLevelClass(copy);
-        if (classTree != null) {
-            return newInstance(copy, classTree);
-        }
-        return null;
+        return new GenerationUtils(copy);
     }
 
     // </editor-fold>
@@ -126,13 +111,14 @@ public final class GenerationUtils extends SourceUtils {
      *
      * @param  targetFolder the folder the new class should be created in;
      *         cannot be null.
-     * @param  targetName the name of the new class (a valid Java identifier);
+     * @param  className the name of the new class (a valid Java identifier);
      *         cannot be null.
      * @param  javadoc the new class's Javadoc; can be null.
      * @return the FileObject for the new Java class; never null.
+     * @throws IOException if an error occurred while creating the class.
      */
     public static FileObject createClass(FileObject targetFolder, String className, final String javadoc) throws IOException{
-        return createClass(CLASS_TEMPLATE, targetFolder, className, javadoc);
+        return createClass(CLASS_TEMPLATE, targetFolder, className, javadoc, Collections.<String, Object>emptyMap());
     }
 
     /**
@@ -144,26 +130,31 @@ public final class GenerationUtils extends SourceUtils {
      *         cannot be null.
      * @param  javadoc the new interface's Javadoc; can be null.
      * @return the FileObject for the new Java interface; never null.
+     * @throws IOException if an error occurred while creating the class.
      */
     public static FileObject createInterface(FileObject targetFolder, String interfaceName, final String javadoc) throws IOException{
-        return createClass(INTERFACE_TEMPLATE, targetFolder, interfaceName, javadoc);
+        return createClass(INTERFACE_TEMPLATE, targetFolder, interfaceName, javadoc, Collections.<String, Object>emptyMap());
     }
 
     /**
      * Creates a new Java class based on the provided template.
      *
+     * @param  template the template to base the new class on.
      * @param  targetFolder the folder the new class should be created in;
      *         cannot be null.
-     * @param  targetName the name of the new interface (a valid Java identifier);
+     * @param  className the name of the new class (a valid Java identifier);
      *         cannot be null.
+     * @param  javadoc the new class's Javadoc; can be null.
+     * @param  parameters map of named objects that are going to be used when creating the new object
      * @return the FileObject for the new Java class; never null.
+     * @throws IOException if an error occurred while creating the class.
      */
-    public static FileObject createClass(String template, FileObject targetFolder, String className, final String javadoc) throws IOException {
+    public static FileObject createClass(String template, FileObject targetFolder, String className, final String javadoc, Map<String, ? extends Object> parameters) throws IOException {
         Parameters.notNull("template", template); // NOI18N
         Parameters.notNull("targetFolder", targetFolder); // NOI18N
         Parameters.javaIdentifier("className", className); // NOI18N
 
-        FileObject classFO = createDataObjectFromTemplate(template, targetFolder, className).getPrimaryFile();
+        FileObject classFO = createDataObjectFromTemplate(template, targetFolder, className, parameters).getPrimaryFile();
         // JavaSource javaSource = JavaSource.forFileObject(classFO);
         // final boolean[] commit = { false };
         // ModificationResult modification = javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
@@ -181,26 +172,6 @@ public final class GenerationUtils extends SourceUtils {
         return classFO;
     }
 
-    /**
-     * Creates a new Java class based on the provided template.
-     *
-     * @param  targetFolder the folder the new class should be created in;
-     *         cannot be null.
-     * @param  targetName the name of the new interface (a valid Java identifier);
-     *         cannot be null.
-     * @param  parameters map of named objects that are going to be used when creating the new object
-     * @return the FileObject for the new Java class; never null.
-     */
-    public static FileObject createClass(String template, FileObject targetFolder, String className, final String javadoc, 
-            Map<String,? extends Object> parameters) throws IOException {
-        Parameters.notNull("template", template); // NOI18N
-        Parameters.notNull("targetFolder", targetFolder); // NOI18N
-        Parameters.javaIdentifier("className", className); // NOI18N
-
-        FileObject classFO = createDataObjectFromTemplate(template, targetFolder, className, parameters).getPrimaryFile();
-        return classFO;
-    }
-
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Non-public static methods">
@@ -212,26 +183,7 @@ public final class GenerationUtils extends SourceUtils {
      * @return the <code>DataObject</code> of the newly created file.
      * @throws IOException if an error occured while creating the file.
      */
-    private static DataObject createDataObjectFromTemplate(String template, FileObject targetFolder, String targetName) throws IOException {
-        assert template != null;
-        assert targetFolder != null;
-        assert targetName != null && targetName.trim().length() >  0;
-
-        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
-        FileObject templateFO = defaultFS.findResource(template);
-        DataObject templateDO = DataObject.find(templateFO);
-        DataFolder dataFolder = DataFolder.findFolder(targetFolder);
-        return templateDO.createFromTemplate(dataFolder, targetName);
-    }
-
-    /**
-     * Creates a data object from a given template path in the system
-     * file system and using parameters defined in <code>parameters</code> map.
-     *
-     * @return the <code>DataObject</code> of the newly created file.
-     * @throws IOException if an error occured while creating the file.
-     */
-    private static DataObject createDataObjectFromTemplate(String template, FileObject targetFolder, String targetName, 
+    private static DataObject createDataObjectFromTemplate(String template, FileObject targetFolder, String targetName,
             Map<String,? extends Object> parameters) throws IOException {
         assert template != null;
         assert targetFolder != null;
@@ -248,7 +200,7 @@ public final class GenerationUtils extends SourceUtils {
 
     // <editor-fold desc="Public methods">
 
-    public Tree createType(String typeName) {
+    public Tree createType(String typeName, TypeElement scope) {
         TreeMaker make = getTreeMaker();
         TypeKind primitiveTypeKind = null;
         if ("boolean".equals(typeName)) {           // NOI18N
@@ -276,8 +228,7 @@ public final class GenerationUtils extends SourceUtils {
         Tree typeTree = tryCreateQualIdent(typeName);
         if (typeTree == null) {
             // XXX does not handle imports; temporary until issue 102149 is fixed
-            WorkingCopy copy = getWorkingCopy();
-            TypeMirror typeMirror = copy.getTreeUtilities().parseType(typeName, getTypeElement());
+            TypeMirror typeMirror = copy.getTreeUtilities().parseType(typeName, scope);
             typeTree = make.Type(typeMirror);
         }
         return typeTree;
@@ -343,7 +294,7 @@ public final class GenerationUtils extends SourceUtils {
      * Creates a new annotation argument whose value is an array.
      *
      * @param argumentName the argument name; cannot be null.
-     * @param argumentValue the argument value; cannot be null.
+     * @param argumentValues the argument values to initialize the array with; cannot be null.
      * @return the new annotation argument; never null.
      */
     public ExpressionTree createAnnotationArgument(String argumentName, List<? extends ExpressionTree> argumentValues) {
@@ -392,12 +343,17 @@ public final class GenerationUtils extends SourceUtils {
      * @param  classTree the class to ensure the constructor for; cannot be null.
      * @return a modified class if a no-arg constructor was added, the original
      *         class otherwise; never null.
+     * @throws IOException if an error occured while setting the javac phase to <code>RESOLVED</code>.
      */
     public ClassTree ensureNoArgConstructor(ClassTree classTree) throws IOException {
-        getWorkingCopy().toPhase(Phase.RESOLVED);
+        copy.toPhase(Phase.RESOLVED);
 
-        ExecutableElement constructor = getNoArgConstructor();
-        MethodTree constructorTree = constructor != null ? getWorkingCopy().getTrees().getTree(constructor) : null;
+        TypeElement typeElement = SourceUtils.classTree2TypeElement(copy, classTree);
+        if (typeElement == null) {
+            throw new IllegalArgumentException("No TypeElement for ClassTree " + classTree.getSimpleName());
+        }
+        ExecutableElement constructor = SourceUtils.getNoArgConstructor(copy, typeElement);
+        MethodTree constructorTree = constructor != null ? copy.getTrees().getTree(constructor) : null;
         MethodTree newConstructorTree = null;
         TreeMaker make = getTreeMaker();
         if (constructor != null) {
@@ -445,7 +401,7 @@ public final class GenerationUtils extends SourceUtils {
      * }
      * </pre>
      *
-     * @param  modifier the constructor modifier.
+     * @param  modifiersTree the constructor modifiers.
      * @param  constructorName the constructor name; cannot be null.
      * @param  parameters the constructor parameters; cannot be null.
      * @return the new constructor; never null.
@@ -475,25 +431,15 @@ public final class GenerationUtils extends SourceUtils {
     /**
      * Creates a new field.
      *
-     * @param  modifiersTree the field modifiers; cannot be null.
-     * @param  fieldType the fully-qualified name of the field type; cannot be null.
-     * @param  fieldName the field name; cannot be null.
-     * @return the new field; never null.
-     */
-    public VariableTree createField(ModifiersTree modifiersTree, String fieldName, String fieldType) {
-        return createField(modifiersTree, fieldName, fieldType, null);
-    }
-
-    /**
-     * Creates a new field.
-     *
+     * @param  scope the scope in which to create the field (will be e.g. used 
+     *         to parse <code>fieldType</code>).
      * @param  modifiersTree the field modifiers; cannot be null.
      * @param  fieldType the fully-qualified name of the field type; cannot be null.
      * @param  fieldName the field name; cannot be null.
      * @param  expressionTree expression to initialize the field; can be null.
      * @return the new field; never null.
      */
-    public VariableTree createField(ModifiersTree modifiersTree, String fieldName, String fieldType, ExpressionTree expressionTree) {
+    public VariableTree createField(TypeElement scope, ModifiersTree modifiersTree, String fieldName, String fieldType, ExpressionTree expressionTree) {
         Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
         Parameters.javaIdentifier("fieldName", fieldName); // NOI18N
         Parameters.notNull("fieldType", fieldType); // NOI18N
@@ -501,7 +447,7 @@ public final class GenerationUtils extends SourceUtils {
         return getTreeMaker().Variable(
                 modifiersTree,
                 fieldName,
-                createType(fieldType),
+                createType(fieldType, scope),
                 expressionTree);
     }
 
@@ -509,18 +455,22 @@ public final class GenerationUtils extends SourceUtils {
      * Creates a new variable (a <code>VariableTree</code> with no
      * modifiers nor initializer).
      *
+     * @param  scope the scope in which to create the variable (will be e.g. used 
+     *         to parse <code>variableType</code>).
      * @param  variableType the fully-qualified name of the variable type; cannot be null.
      * @param  variableName the variable name; cannot be null.
      * @return the new variable; never null.
      */
-    public VariableTree createVariable(String variableName, String variableType) {
+    public VariableTree createVariable(TypeElement scope, String variableName, String variableType) {
         Parameters.javaIdentifier("variableName", variableName); // NOI18N
         Parameters.notNull("variableType", variableType); // NOI18N
 
         return createField(
+                scope,
                 createEmptyModifiers(),
                 variableName,
-                variableType);
+                variableType,
+                null);
     }
 
     /**
@@ -563,18 +513,21 @@ public final class GenerationUtils extends SourceUtils {
     /**
      * Creates a new public property getter method.
      *
+     * @param  scope the scope in which to create the method (will be e.g. used 
+     *         to parse <code>propertyType</code>).
      * @param  modifiersTree the method modifiers; cannot be null.
      * @param  propertyType the fully-qualified name of the property type; cannot be null.
      * @param  propertyName the property name; cannot be null.
      * @return the new method; never null.
+     * @throws java.io.IOException 
      */
-    public MethodTree createPropertyGetterMethod(ModifiersTree modifiersTree, String propertyName, String propertyType) throws IOException {
+    public MethodTree createPropertyGetterMethod(TypeElement scope, ModifiersTree modifiersTree, String propertyName, String propertyType) throws IOException {
         Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
         Parameters.javaIdentifier("propertyName", propertyName); // NOI18N
         Parameters.notNull("propertyType", propertyType); // NOI18N
-        getWorkingCopy().toPhase(Phase.RESOLVED);
+        copy.toPhase(Phase.RESOLVED);
 
-        return createPropertyGetterMethod(modifiersTree, propertyName, createType(propertyType));
+        return createPropertyGetterMethod(modifiersTree, propertyName, createType(propertyType, scope));
     }
 
     /**
@@ -584,12 +537,13 @@ public final class GenerationUtils extends SourceUtils {
      * @param  propertyType the property type; cannot be null.
      * @param  propertyName the property name; cannot be null.
      * @return the new method; never null.
+     * @throws IOException if an error occured while setting the javac phase to <code>RESOLVED</code>.
      */
     public MethodTree createPropertyGetterMethod(ModifiersTree modifiersTree, String propertyName, Tree propertyType) throws IOException {
         Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
         Parameters.javaIdentifier("propertyName", propertyName); // NOI18N
         Parameters.notNull("propertyType", propertyType); // NOI18N
-        getWorkingCopy().toPhase(Phase.RESOLVED);
+        copy.toPhase(Phase.RESOLVED);
 
         return getTreeMaker().Method(
                 modifiersTree,
@@ -605,31 +559,37 @@ public final class GenerationUtils extends SourceUtils {
     /**
      * Creates a new public property setter method.
      *
-     * @param  propertyType the fully-qualified name of the property type; cannot be null.
+     * @param  scope the scope in which to create the method (will be e.g. used 
+     *         to parse <code>propertyType</code>).
+     * @param  modifiersTree the method modifiers; cannot be null.
      * @param  propertyName the property name; cannot be null.
+     * @param  propertyType the fully-qualified name of the property type; cannot be null.
      * @return the new method; never null.
+     * @throws IOException if an error occured while setting the javac phase to <code>RESOLVED</code>.
      */
-    public MethodTree createPropertySetterMethod(ModifiersTree modifiersTree, String propertyName, String propertyType) throws IOException {
+    public MethodTree createPropertySetterMethod(TypeElement scope, ModifiersTree modifiersTree, String propertyName, String propertyType) throws IOException {
         Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
         Parameters.javaIdentifier("propertyName", propertyName); // NOI18N
         Parameters.notNull("propertyType", propertyType); // NOI18N
-        getWorkingCopy().toPhase(Phase.RESOLVED);
+        copy.toPhase(Phase.RESOLVED);
 
-        return createPropertySetterMethod(modifiersTree, propertyName, createType(propertyType));
+        return createPropertySetterMethod(modifiersTree, propertyName, createType(propertyType, scope));
     }
 
     /**
      * Creates a new public property setter method.
      *
+     * @param  modifiersTree the method modifiers; cannot be null.
      * @param  propertyType the property type; cannot be null.
      * @param  propertyName the property name; cannot be null.
      * @return the new method; never null.
+     * @throws IOException if an error occured while setting the javac phase to <code>RESOLVED</code>.
      */
     public MethodTree createPropertySetterMethod(ModifiersTree modifiersTree, String propertyName, Tree propertyType) throws IOException {
         Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
         Parameters.javaIdentifier("propertyName", propertyName); // NOI18N
         Parameters.notNull("propertyType", propertyType); // NOI18N
-        getWorkingCopy().toPhase(Phase.RESOLVED);
+        copy.toPhase(Phase.RESOLVED);
 
         TreeMaker make = getTreeMaker();
         return make.Method(
@@ -729,7 +689,7 @@ public final class GenerationUtils extends SourceUtils {
             firstNonFieldIndex++;
         }
         TreeMaker make = getTreeMaker();
-        ClassTree newClassTree = getClassTree();
+        ClassTree newClassTree = classTree;
         for (VariableTree fieldTree : fieldTrees) {
             newClassTree = make.insertClassMember(newClassTree, firstNonFieldIndex, fieldTree);
             firstNonFieldIndex++;
@@ -737,18 +697,19 @@ public final class GenerationUtils extends SourceUtils {
         return newClassTree;
     }
 
-    // MISSING addClassConstructors(), addClassMethods()
+    // PENDING addClassConstructors(), addClassMethods()
 
     /**
      * Adds the specified interface to the implements clause of
      * {@link #getClassTree()}.
      *
-     * @param interfaceType the fully-qualified name of the interface; cannot be null.
+     * @param  classTree the class to add the implements clause to.
+     * @param  interfaceType the fully-qualified name of the interface; cannot be null.
+     * @return the class implementing the new interface.
      */
     public ClassTree addImplementsClause(ClassTree classTree, String interfaceType) {
-        if (getTypeElement().getKind() != ElementKind.CLASS) {
-            throw new IllegalStateException("Cannot add an implements clause to the non-class type " + getTypeElement().getQualifiedName()); // NOI18N
-        }
+        Parameters.notNull("classTree", classTree); // NOI18N
+        Parameters.notNull("interfaceType", interfaceType); // NOI18N
 
         ExpressionTree interfaceTree = createQualIdent(interfaceType);
         return getTreeMaker().addClassImplementsClause(classTree, interfaceTree);
@@ -758,17 +719,8 @@ public final class GenerationUtils extends SourceUtils {
 
     // <editor-fold defaultstate="collapsed" desc="Non-public methods">
 
-    /**
-     * Returns the working copy this instance works with.
-     *
-     * @return the working copy this instance works with; never null.
-     */
-    private WorkingCopy getWorkingCopy() {
-        return (WorkingCopy)getCompilationController();
-    }
-
     private TreeMaker getTreeMaker() {
-        return getWorkingCopy().getTreeMaker();
+        return copy.getTreeMaker();
     }
 
     private ModifiersTree createEmptyModifiers() {
@@ -776,7 +728,7 @@ public final class GenerationUtils extends SourceUtils {
     }
 
     private ExpressionTree tryCreateQualIdent(String typeName) {
-        TypeElement typeElement = getWorkingCopy().getElements().getTypeElement(typeName);
+        TypeElement typeElement = copy.getElements().getTypeElement(typeName);
         if (typeElement != null) {
             return getTreeMaker().QualIdent(typeElement);
         }
