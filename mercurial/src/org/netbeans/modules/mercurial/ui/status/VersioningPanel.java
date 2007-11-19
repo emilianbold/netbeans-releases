@@ -183,7 +183,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             Object source = evt.getOldValue();
             File root  = HgUtils.getRootFile(context);
             Mercurial.LOG.log(Level.FINE, "Mercurial.changesetChanged: source {0} repo {1} ", new Object [] {source, root}); // NOI18N
-            if (root == source) {
+            if (root != null && root.equals(source)) {
                 reScheduleRefresh(1000);
             }
             return;
