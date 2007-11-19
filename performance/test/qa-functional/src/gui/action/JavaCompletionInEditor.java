@@ -137,7 +137,7 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
         // measure only paint events from QuietEditorPane
         repaintManager().addRegionFilter(COMPLETION_FILTER);
         
-/*        // set large font size for Editor
+        // set large font size for Editor
         BaseOptions options = BaseOptions.getOptions (JavaKit.class);
         if (options instanceof JavaOptions) {
             completionAutoPopupDelay = ((JavaOptions)options).getCompletionAutoPopupDelay();
@@ -149,7 +149,7 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
         caretBlinkRate = options.getCaretBlinkRate();
         //disable caret blinkering
         options.setCaretBlinkRate(0);
-*/        
+        
         // turn off the error hightlighting feature
         /* TODO doesn't work after retouche integration
         parsingErrors = JavaSettings.getDefault().getParsingErrors();
@@ -161,7 +161,7 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
         // reset filter
         repaintManager().resetRegionFilters();
         
-/*        // set back the original font size for Editor
+        // set back the original font size for Editor
         Class kitClass = JavaKit.class;
         BaseOptions options = BaseOptions.getOptions (kitClass);
         if (options instanceof JavaOptions) {
@@ -171,7 +171,7 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
         
         // set back the original blink rate
         options.setCaretBlinkRate(caretBlinkRate);
-*/        
+        
         /* doesn't work after retouche integration
         JavaSettings.getDefault().setParsingErrors(parsingErrors);        
          */
