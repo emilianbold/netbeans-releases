@@ -175,6 +175,7 @@ public class MarkOccurrencesSupport implements CaretListener {
         if (highlights == null) return;
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
+                if (highlights == null) return;
                 NbEditorDocument doc = (NbEditorDocument) editor.getDocument ();
                 Iterator<Highlight> it = highlights.iterator ();
                 while (it.hasNext ())
