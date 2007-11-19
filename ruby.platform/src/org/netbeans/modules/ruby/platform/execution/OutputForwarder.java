@@ -77,7 +77,7 @@ final class OutputForwarder implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(OutputForwarder.class.getName());
     
     /** Package private for unit test. */
-    public static final Pattern RANGE_ERROR_RE = Pattern.compile("#<RangeError: 0x[0-9a-f]+ is recycled object>"); // NOI18N
+    static final Pattern RANGE_ERROR_RE = Pattern.compile("#<RangeError: 0x[0-9a-f]+ is recycled object>"); // NOI18N
     
     private StopAction stopAction;
     private InputStream str;
@@ -86,7 +86,7 @@ final class OutputForwarder implements Runnable {
     private List<OutputRecognizer> recognizers;
     private String role;
 
-    public OutputForwarder(InputStream instream, OutputWriter out, FileLocator fileLocator,
+    OutputForwarder(InputStream instream, OutputWriter out, FileLocator fileLocator,
         List<OutputRecognizer> recognizers, StopAction stopAction, String role) {
         str = instream;
         writer = out;
@@ -96,7 +96,8 @@ final class OutputForwarder implements Runnable {
         this.role = role;
     }
 
-    public void processLine(String line) throws IOException {
+    /** Package private for unit test. */
+    void processLine(String line) throws IOException {
         // TODO: workarounding issue 110763
         if (RANGE_ERROR_RE.matcher(line).matches()) {
             LOGGER.log(Level.FINE, "Filtering line from Output Window (issue #110763): " + line);
@@ -297,7 +298,7 @@ final class OutputForwarder implements Runnable {
     }
     
     private class ActionHandler implements OutputListener {
-        private Runnable runnable;
+        final private Runnable runnable;
         
         private ActionHandler(Runnable runnable) {
             this.runnable = runnable;
