@@ -357,11 +357,48 @@ public class EditorContextBridge {
             return ca;
         }
 
+        public <R,D> R parseExpression(String expression, String url, final int line,
+                                              TreePathScanner<R,D> visitor, D context) {
+            R ret = null;
+            try {
+                ret = (R) cp1.getClass().getMethod(
+                    "parseExpression",
+                    new Class[] { String.class, String.class, Integer.TYPE, TreePathScanner.class, Object.class }).
+                        invoke(getContext(), new Object[] { expression, url, line, visitor, context });
+            } catch (java.lang.reflect.InvocationTargetException itex) {
+                Throwable tex = itex.getTargetException();
+                if (tex instanceof RuntimeException) {
+                    throw (RuntimeException) tex;
+                } else {
+                    ErrorManager.getDefault().notify(tex);
+                }
+            } catch (Exception ex) {
+                // Ignore, we have another attempt with cp2
+            }
+            if (ret == null) {
+                try {
+                    ret = (R) cp2.getClass().getMethod(
+                    "parseExpression",
+                    new Class[] { String.class, String.class, Integer.TYPE, TreePathScanner.class, Object.class }).
+                        invoke(getContext(), new Object[] { expression, url, line, visitor, context });
+                } catch (java.lang.reflect.InvocationTargetException itex) {
+                    Throwable tex = itex.getTargetException();
+                    if (tex instanceof RuntimeException) {
+                        throw (RuntimeException) tex;
+                    } else {
+                        ErrorManager.getDefault().notify(tex);
+                    }
+                } catch (Exception ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            }
+            return ret;
+        }
+
         public int getLineNumber (Object annotation, Object timeStamp) {
-            CompoundAnnotation ca = new CompoundAnnotation ();
-            int ln = cp1.getLineNumber (ca.annotation1, timeStamp);
+            int ln = cp1.getLineNumber (annotation, timeStamp);
             if (ln >= 0) return ln;
-            return cp2.getLineNumber (ca.annotation2, timeStamp);
+            return cp2.getLineNumber (annotation, timeStamp);
         }
 
         public boolean showSource (String sourceName, int lineNumber, Object timeStamp) {

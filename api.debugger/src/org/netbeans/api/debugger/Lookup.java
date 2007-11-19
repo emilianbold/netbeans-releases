@@ -294,8 +294,12 @@ abstract class Lookup implements ContextProvider {
                     getDefault ().lookup (ClassLoader.class);
                 String v = "\nR lookup " + resourceName;
                 Enumeration e = cl.getResources (resourceName);
+                HashSet urls = new HashSet();
                 while (e.hasMoreElements ()) {
                     URL url = (URL) e.nextElement();
+                    // Ignore duplicated URLs, necessary because of tests
+                    if (urls.contains(url)) continue;
+                    urls.add(url);
                     InputStream is = url.openStream ();
                     if (is == null) continue;
                     BufferedReader br = new BufferedReader (

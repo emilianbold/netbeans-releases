@@ -510,6 +510,70 @@ public class EvaluatorApp {
         return 5.111111111111111111/(-6e2);
     }
     
+    public static int testOp18a() {
+        return 1234 & 54321;
+    }
+    
+    public static int testOp18b() {
+        return 0x50F23 & 0x51111;
+    }
+    
+    public static boolean testOp18c() {
+        return true & false;
+    }
+    
+    public static long testOp19() {
+        return 12345432346L | 95432354654321l;
+    }
+    
+    public static long testOp20() {
+        return 12345432346L ^ 95432354654321l;
+    }
+    
+    public static long testOp21() {
+        return 12345432343642234L % 2345l;
+    }
+    
+    public static long testOp22() {
+        return 12345432343642234L >> 10;
+    }
+    
+    public static long testOp23() {
+        return 1234543234364223400L << 18;
+    }
+    
+    public static long testOp24() {
+        return 12345432343642231L >>> 24;
+    }
+    
+    //    +=      -=      *=      /=      &=  |=      ^=      %=      <<=       >>=       >>>=
+    
+    public static long testOp25() {
+        return ix += 10;
+    }
+    
+    public static long testOp25_undo() {
+        return ix -= 10;
+    }
+    
+    public static long testOp26() {
+        return ix -= 10;
+    }
+    
+    public static long testOp26_undo() {
+        return ix += 10;
+    }
+    
+    public static long testOp27() {
+        return ix *= 10;
+    }
+    
+    public static long testOp27_undo() {
+        return ix /= 10;
+    }
+    
+    
+    
     // Test operand priorities
 
 }

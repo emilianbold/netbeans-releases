@@ -67,7 +67,7 @@ public class HeapWalkingTest extends NbTestCase {
         LineBreakpoint lb = LineBreakpoint.create (
                 Utils.getURL(System.getProperty ("test.dir.src")+
                              "org/netbeans/api/debugger/jpda/testapps/HeapWalkApp.java"),
-                40
+                62
             );
         DebuggerManager.getDebuggerManager ().addBreakpoint (lb);
         support = JPDASupport.attach (

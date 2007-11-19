@@ -70,7 +70,7 @@ public class EvaluatorTest extends NbTestCase {
 
     protected void setUp () throws Exception {
         super.setUp ();
-        //System.setProperty("debugger.evaluator2", "true");
+        System.setProperty("debugger.evaluator2", "true");
         JPDASupport.removeAllBreakpoints ();
         LineBreakpoint lb = LineBreakpoint.create (
                 Utils.getURL(System.getProperty ("test.dir.src")+

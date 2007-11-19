@@ -58,7 +58,11 @@ import com.sun.jdi.connect.*;
 import com.sun.jdi.VirtualMachineManager;
 import com.sun.jdi.Bootstrap;
 //import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath;
 //import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
 
 /**
  * Contains support functionality for unit tests.
@@ -139,6 +143,22 @@ public class JPDASupport implements DebuggerManagerListener {
 //        pio.go ();
 //        return new JPDASupport (jpdaDebugger);
 //    }
+
+    private static void deleteUserDir() {
+        String userDir = System.getProperty("netbeans.user");
+        if (userDir != null) {
+            delete(new File(userDir));
+        }
+    }
+    
+    private static void delete(File f) {
+        if (f.isDirectory()) {
+            for (File cf : f.listFiles()) {
+                delete(cf);
+            }
+        }
+        f.delete();
+    }
 
     public static JPDASupport attach (String mainClass) throws IOException, 
     DebuggerStartException {
@@ -222,6 +242,7 @@ public class JPDASupport implements DebuggerManagerListener {
         debuggerEngine.getActionsManager ().
             doAction (ActionsManager.ACTION_KILL);
         waitState (JPDADebugger.STATE_DISCONNECTED);
+        deleteUserDir();
     }
 
     public void waitState (int state) {
@@ -254,23 +275,22 @@ public class JPDASupport implements DebuggerManagerListener {
     // other methods ...........................................................
     
     private static Object[] createServices () {
-//        try {
+        try {
             Map map = new HashMap ();
-//            ClassLoader cl = JPDASupport.class.getClassLoader ();
-//            String file = "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.class";
-//            URL url = cl.getResource (file);
-//            String surl = url.toString ();
-//            url = new URL (surl.substring (0, surl.length () - file.length ()));
-//            ClassPath cp = ClassPathSupport.createClassPath (new URL[] {
-//                url
-//            });
-//            map.put ("sourcepath", cp);
-            return new Object[] {
-                map
-            };
-//        } catch (MalformedURLException ex) {
-//            return new Object[] {};
-//        }
+            String sourceRoot = System.getProperty ("test.dir.src");
+            URL sourceUrl = new File(sourceRoot).toURI().toURL();
+            String sourceUrlStr = sourceUrl.toString() + "/";
+            sourceUrl = new URL(sourceUrlStr);
+            ClassPath cp = ClassPathSupport.createClassPath (new URL[] {
+                sourceUrl
+            });
+            map.put ("sourcepath", cp);
+            return new Object[] { map };
+        } catch (MalformedURLException ex) {
+            //System.err.println("MalformedURLException: sourceRoot = '"+sourceRoot+"'.");
+            ex.printStackTrace();
+            return new Object[] {};
+        }
     }
 
     private static String readLine (InputStream in) throws IOException {
