@@ -146,7 +146,11 @@ public class SimplifiedJSPServlet {
         }
     }
     
-    public void process() throws BadLocationException {
+    public void process() throws BadLocationException{
+        process(false);
+    }
+    
+    public void process(final boolean processAsIncluded) throws BadLocationException {
         processCalled = true;
         
         if (!isServletAPIOnClasspath()){
@@ -197,9 +201,12 @@ public class SimplifiedJSPServlet {
                 int newBlockStart = buff.length();
 
                 if (blockType == JavaCodeType.EXPRESSION) {
-                    String exprPrefix = String.format("\t\tObject expr%1$d = ", expressionIndex++); //NOI18N
-                    newBlockStart += exprPrefix.length();
-                    buff.append(exprPrefix + blockBody + ";\n");
+                    // ignore JSP expressions in included files
+                    if (!processAsIncluded){
+                        String exprPrefix = String.format("\t\tObject expr%1$d = ", expressionIndex++); //NOI18N
+                        newBlockStart += exprPrefix.length();
+                        buff.append(exprPrefix + blockBody + ";\n");
+                    }
                 } else {
                     buff.append(blockBody + "\n");
                 }
@@ -262,7 +269,7 @@ public class SimplifiedJSPServlet {
 
                     if (editor != null) {
                         SimplifiedJSPServlet simplifiedServlet = new SimplifiedJSPServlet(editor.openDocument());
-                        simplifiedServlet.process();
+                        simplifiedServlet.process(true);
 
                         declarations.append(simplifiedServlet.declarations);
                         scriptlets.append(simplifiedServlet.scriptlets);
