@@ -51,6 +51,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 import org.openide.DialogDescriptor;
@@ -61,7 +62,7 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Adamek, Andrei Badea
  */
-public class ProgressPanel extends javax.swing.JPanel {
+public class ProgressPanel extends JPanel {
 
     private Dialog dialog;
 
