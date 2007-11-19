@@ -67,7 +67,7 @@ made subject to such option by the copyright holder.
 
         <center>
             <h1>NetBeans API List</h1>
-            <h3>Current Development Version</h3>
+            <h3>Version 6.0</h3>
             <xsl:if test="$date" >
                 <xsl:value-of select="$date" />
                 <p/>
@@ -77,17 +77,7 @@ made subject to such option by the copyright holder.
         This document provides a list of <em>NetBeans APIs</em> with a short description
         of what they are used for, and a table describing different types of interfaces
         (see <a href="http://openide.netbeans.org/tutorial/api-design.html#api">What is
-        an API?</a> to understand why we list DTDs, file formats, etc.) and with
-        a stability category (<span style="background:#ffffff">stable and official</span>,
-        <span style="background:#ddcc80">under development</span>,
-        <span style="background:#afafaf;text-decoration:line-through">deprecated</span>,
-        <span style="background:#e0c0c0">friend or private</span>;
-        see <a
-        href="http://openide.netbeans.org/tutorial/api-design.html#life">API
-        life-cycle</a> for more info).
-        The aim is to provide as detailed a definition of NetBeans module 
-        external interfaces as possible and give other developers a chance to decide
-        whether they want to depend on a particular API or not.
+        an API?</a> to understand why we list DTDs, file formats, etc.).
         <p/>
         Some of these APIs are part of the 
         <a href="http://platform.netbeans.org/">NetBeans Platform</a>
@@ -101,18 +91,19 @@ made subject to such option by the copyright holder.
         <em>NetBeans</em> one is free to choose the set of modules and their APIs 
         to satisfy one's needs.
         <p>
-        This is a list of APIs for development version, if you want to see
-        a list of APIs for a particular version, you may want to go to:
+        This is a list of APIs for version 6.0 version, if you want to see
+        a list of APIs for older versions, you may want to go to:
         </p>
         <ul>
             <li><a href="http://www.netbeans.org/download/5_5_1/javadoc/" target="_top">5.5.1</a> - Javadoc as released for NetBeans IDE 5.5.1</li>
             <li><a href="http://www.netbeans.org/download/5_5/javadoc/" target="_top">5.5</a> - Javadoc as released for NetBeans IDE 5.5</li>
             <li><a href="http://www.netbeans.org/download/5_0/javadoc/" target="_top">5.0</a> - Javadoc as released for NetBeans IDE 5.0</li>
         </ul>
-        <p/>
-        To get the API of your module listed here, see the documentation for the 
-        Javadoc building
-        <a href="http://openide.netbeans.org/tutorial/api.html">infrastructure</a>.
+        </p>
+        <p>
+        You can also read javadoc for version of NetBeans that 
+        is <a href="http://bits.netbeans.org/dev/javadoc/" target="_top">currently being developed</a>.
+        </p>
         
         <h4>Additional Sources of Information</h4>
         
