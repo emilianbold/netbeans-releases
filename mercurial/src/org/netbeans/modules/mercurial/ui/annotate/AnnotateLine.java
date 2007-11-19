@@ -51,6 +51,7 @@ public class AnnotateLine {
 
     private String  author;
     private String  revision;
+    private String  file;
     private Date    date;
     private String  content;
     private int     lineNum;
@@ -82,6 +83,21 @@ public class AnnotateLine {
      */
     public void setAuthor(String author) {
         this.author = author;
+    }
+
+    /**
+     * Returns the file of this line.
+     */
+    public String getFileName() {
+        return file;
+    }
+
+    /**
+    /**
+     * Sets the file of this line.
+     */
+    public void setFileName(String file) {
+        this.file = file;
     }
 
     /**

@@ -246,10 +246,12 @@ public class AnnotateAction extends AbstractAction {
         int i = 0;
         for (String line : annotations) {
             int endAuthor = line.indexOf(" "); // NOI18N
-            int endRevision = line.indexOf(":", endAuthor + 1); // NOI18N
+            int endFile = line.indexOf(":", endAuthor + 1); // NOI18N
+            int endRevision = line.indexOf(" ", endAuthor + 1); // NOI18N
             lines[i] = new AnnotateLine();
             lines[i].setAuthor(line.substring(0, endAuthor));
-            lines[i].setContent(line.substring(endRevision + 2));
+            lines[i].setContent(line.substring(endFile + 2));
+            lines[i].setFileName(line.substring(endRevision + 1, endFile).trim());
             lines[i].setLineNum(i + 1);
             lines[i].setRevision(line.substring(endAuthor, endRevision).trim());
             i++;

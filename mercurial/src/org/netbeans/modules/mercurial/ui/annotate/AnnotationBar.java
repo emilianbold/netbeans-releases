@@ -156,6 +156,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     private String recentRevision;
     
     /**
+     * File for revision associated with caret line.
+     */
+    private File recentFile;
+    
+    /**
      * Request processor to create threads that may be cancelled.
      */
     RequestProcessor requestProcessor = null;
@@ -374,7 +379,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             public void actionPerformed(ActionEvent e) {
                 if (recentRevision != null) {
                     if (getPreviousRevision(recentRevision) != null) {
-                        DiffAction.diff(file, getPreviousRevision(recentRevision), recentRevision);
+                        DiffAction.diff(recentFile, getPreviousRevision(recentRevision), recentRevision);
                     }
                 }
             }
@@ -515,6 +520,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         String revision = al.getRevision();
         if (revision.equals(recentRevision) == false) {
             recentRevision = revision;
+            File file = Mercurial.getInstance().getTopmostManagedParent(getCurrentFile());
+            recentFile = new File(file, al.getFileName());
             recentRevisionCanBeRolledBack = al.canBeRolledBack();
             repaint();
 

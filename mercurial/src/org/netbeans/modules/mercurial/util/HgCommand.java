@@ -102,6 +102,7 @@ public class HgCommand {
     private static final String HG_BRANCH_REV_TEMPLATE_CMD = "--template={rev}\\n"; // NOI18N
     private static final String HG_BRANCH_SHORT_CS_TEMPLATE_CMD = "--template={node|short}\\n"; // NOI18N
     private static final String HG_BRANCH_INFO_TEMPLATE_CMD = "--template={branches}:{rev}:{node|short}\\n"; // NOI18N
+    private static final String HG_GET_PREVIOUS_TEMPLATE_CMD = "--template={files}\\n"; // NOI18N
     
     private static final String HG_CREATE_CMD = "init"; // NOI18N
     private static final String HG_CLONE_CMD = "clone"; // NOI18N
@@ -587,29 +588,6 @@ public class HgCommand {
     /**
      * Determines whether anything has been committed to the repository
      *
-     * @param String repository of the mercurial repository
-     * @return Boolean which is true if the repository has revision history.
-     */
-    public static Boolean hasHistory(String repository) throws HgException {
-        if (repository == null ) return false;
-        
-        List<String> command = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_LOG_CMD);
-        command.add(HG_LOG_LIMIT_CMD);
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repository);
-
-        List<String> list = exec(command);
-        if (!list.isEmpty() && isErrorAbort(list.get(0)))
-            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
-        return !list.isEmpty();
-    }
-
-    /**
-     * Determines whether anything has been committed to the repository
-     *
      * @param File repository of the mercurial repository's root directory
      * @return Boolean which is true if the repository has revision history.
      */
@@ -633,6 +611,52 @@ public class HgCommand {
         } catch (HgException e) {
             return false;
         }
+    }
+    
+    /**
+     * Determines the previous name of the specified file 
+     * We make the assumption that the previous file name is in the
+     * list of files returned by hg log command immediately befor
+     * the file we started with.
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @param File file of the file whose previous name is required
+     * @param String revision which the revision to start from.
+     * @return File for the previous name of the file
+     */
+    private static File getPreviousName(File repository, File file, String revision) throws HgException {
+        if (repository == null ) return null;
+        if (revision == null ) return null;
+        
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_LOG_CMD);
+        command.add(HG_OPT_FOLLOW);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_FLAG_REV_CMD);
+        command.add(revision);
+        command.add(HG_GET_PREVIOUS_TEMPLATE_CMD);
+       
+        command.add(file.getAbsolutePath());
+
+        List<String> list = exec(command);
+        try {
+            list = exec(command);
+            if (!list.isEmpty() && isErrorAbort(list.get(0)))
+                return null;
+        } catch (HgException e) {
+            return null;
+        }
+        String[] fileNames = list.get(0).split(" ");
+        for (int j = fileNames.length -1 ; j > 0; j--) {
+            File name = new File(repository, fileNames[j]);
+            if (name.equals(file)) {
+               return new File(repository, fileNames[j-1]); 
+            }
+        }
+        return null;
     }
     
     /**
@@ -724,7 +748,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static void doCat(File repository, File file, File outFile) throws HgException {
-        doCat(repository, file, outFile, "tip"); //NOI18N
+        doCat(repository, file, outFile, "tip", false); //NOI18N
     }
     
     /**
@@ -740,6 +764,10 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static void doCat(File repository, File file, File outFile, String revision) throws HgException {
+        doCat(repository, file, outFile, revision, true); //NOI18N
+    }
+
+    public static void doCat(File repository, File file, File outFile, String revision, boolean retry) throws HgException {
         if (repository == null) return;
         if (file == null) return;
         
@@ -765,6 +793,14 @@ public class HgCommand {
              } else if (isErrorAbort(list.get(0))) {
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
              }
+        }
+        if (outFile.length() == 0 && retry) {
+            // Perhaps the file has changed its name
+            String newRevision = Integer.toString(Integer.parseInt(revision)+1);
+            File prevFile = getPreviousName(repository, file, newRevision); 
+            if (prevFile != null) {
+                doCat(repository, prevFile, outFile, revision, false); //NOI18N
+            }
         }
     }
     
@@ -1078,6 +1114,7 @@ public class HgCommand {
         }
         command.add(HG_ANNOTATE_FLAGN_CMD);
         command.add(HG_ANNOTATE_FLAGU_CMD);
+        command.add(HG_OPT_FOLLOW);
         command.add(file.getAbsolutePath());
         List<String> list = exec(command);
         if (!list.isEmpty()) {
