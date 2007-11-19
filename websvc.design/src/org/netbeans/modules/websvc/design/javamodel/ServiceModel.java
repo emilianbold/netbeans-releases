@@ -333,7 +333,7 @@ public class ServiceModel {
     /** package private due to test functionality */ 
     void mergeModel(ServiceModel model2) {
         if (model2.status == STATUS_INCORRECT_SERVICE || model2.status == STATUS_NOT_SERVICE) {
-           if (this.operations != null && model2.operations == null) {
+           if (this.operations != null && (model2.operations == null || model2.operations.size() == 0)) {
                int size=this.operations.size();
                for (int i=size-1;i>=0;i--) {
                    removeOperation(this.operations.get(i));
