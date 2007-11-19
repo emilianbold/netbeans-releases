@@ -385,13 +385,58 @@ public class DwarfSource implements SourceFileProperties{
     private void addUserIncludePath(String path){
         userIncludes.add(path);
     }
+
+    // public because method is used in unit tests.
+    public static List<String> scanCommandLine(String line){
+        List<String> res = new ArrayList<String>();
+        int i = 0;
+        StringBuilder current = new StringBuilder();
+        boolean isSingleQuoteMode = false;
+        boolean isDoubleQuoteMode = false;
+        while (i < line.length()) {
+            char c = line.charAt(i);
+            i++;
+            if (c == '\'') {
+                if (isSingleQuoteMode) {
+                    isSingleQuoteMode = false;
+                } else if (!isDoubleQuoteMode) {
+                    isSingleQuoteMode = true;
+                }
+                current.append(c);
+                continue;
+            } else if (c == '\"') {
+                if (isDoubleQuoteMode) {
+                    isDoubleQuoteMode = false;
+                } else if (!isSingleQuoteMode) {
+                    isDoubleQuoteMode = true;
+                }
+                current.append(c);
+                continue;
+            } else if (isSingleQuoteMode || isDoubleQuoteMode) {
+                current.append(c);
+                continue;
+            }
+            if (Character.isWhitespace(c)) {
+                if (current.length()>0) {
+                    res.add(current.toString());
+                    current.setLength(0);
+                }
+            } else {
+                current.append(c);
+            }
+        }
+        if (current.length()>0) {
+            res.add(current.toString());
+        }
+        return res;
+    }
     
     private void gatherLine(String line) {
         // /set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.
         if (FULL_TRACE) System.out.println("Process command line "+line); // NOI18N
-        StringTokenizer st = new StringTokenizer(line);
-        while(st.hasMoreTokens()){
-            String option = st.nextToken();
+        Iterator<String> st = scanCommandLine(line).iterator();
+        while(st.hasNext()){
+            String option = st.next();
             if (option.startsWith("-D")){ // NOI18N
                 String macro = option.substring(2);
                 int i = macro.indexOf('=');
@@ -408,15 +453,15 @@ public class DwarfSource implements SourceFileProperties{
                 }
             } else if (option.startsWith("-I")){ // NOI18N
                 String path = option.substring(2);
-                if (path.length()==0 && st.hasMoreTokens()){
-                    path = st.nextToken();
+                if (path.length()==0 && st.hasNext()){
+                    path = st.next();
                 }
                 String include = PathCache.getString(path);
                 addUserIncludePath(include);
             } else if (option.startsWith("-Y")){ // NOI18N
                 String defaultSearchPath = option.substring(2);
-                if (defaultSearchPath.length()==0 && st.hasMoreTokens()){
-                    defaultSearchPath = st.nextToken();
+                if (defaultSearchPath.length()==0 && st.hasNext()){
+                    defaultSearchPath = st.next();
                 }
                 if (defaultSearchPath.startsWith("I,")){ // NOI18N
                     defaultSearchPath = defaultSearchPath.substring(2);
