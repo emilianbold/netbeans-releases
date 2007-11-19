@@ -85,7 +85,13 @@ class CvsOptionsController extends OptionsPanelController {
     }
 
     public boolean isChanged() {
-        return true;
+        if (panel.getExcludeNewFiles().isSelected() != CvsModuleConfig.getDefault().getPreferences().getBoolean(CvsModuleConfig.PROP_EXCLUDE_NEW_FILES, false)) return true;
+        if (!panel.getStatusLabelFormat().getText().equals(CvsModuleConfig.getDefault().getPreferences().get(CvsModuleConfig.PROP_ANNOTATIONS_FORMAT, CvsModuleConfig.DEFAULT_ANNOTATIONS_FORMAT))) return true;
+        int originalWrapLength = CvsModuleConfig.getDefault().getWrapCommitMessagelength();
+        boolean originalWrapMessages = originalWrapLength > 0;
+        if (panel.getWrapCommitMessages().isSelected() != originalWrapMessages) return true;
+        if (originalWrapMessages && !panel.getWrapCharCount().getText().equals(Integer.toString(originalWrapLength))) return true;
+        return false;
     }
 
     public JComponent getComponent(Lookup masterLookup) {
