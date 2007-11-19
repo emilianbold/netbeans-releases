@@ -62,7 +62,7 @@ public final class SourceUtilsTestUtil2 {
 //        if (afterCommit)
 //            throw new IllegalStateException ("The run method can't be called on a WorkingCopy instance after the commit");   //NOI18N
         t.init();
-        t.attach(wc.getJavacTask().getContext(), wc);
+        t.attach(wc.impl.getJavacTask().getContext(), wc);
         t.apply(wc.getCompilationUnit());
         t.release();
         t.destroy();
@@ -72,7 +72,7 @@ public final class SourceUtilsTestUtil2 {
 //        if (afterCommit)
 //            throw new IllegalStateException ("The run method can't be called on a WorkingCopy instance after the commit");   //NOI18N
         t.init();
-        t.attach(wc.getJavacTask().getContext(), wc);
+        t.attach(wc.impl.getJavacTask().getContext(), wc);
         t.apply(tree);
         t.release();
         t.destroy();

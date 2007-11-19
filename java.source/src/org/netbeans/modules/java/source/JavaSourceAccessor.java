@@ -85,6 +85,7 @@ public abstract class JavaSourceAccessor {
     /**
      * Returns the JavacTaskImpl associated with given {@link CompilationInfo},
      * when it's not available it's created.
+     * Expert: May violate confinement
      * @param compilationInfo which {@link JavacTaskImpl} should be obtained.
      * @return {@link JavacTaskImpl} never returns null
      */
@@ -92,6 +93,7 @@ public abstract class JavaSourceAccessor {
     
     /**
      * Returns a cached compilation info when available or null
+     * Expert: Violates confinement
      * @param js {@link JavaSource} which {@CompilationInfo} should be returned
      * @param phase to which the compilation info should be moved
      * Can be called only from the dispatch thread!
@@ -112,12 +114,12 @@ public abstract class JavaSourceAccessor {
     public abstract boolean isDispatchThread ();
     
     /**
-     * Locks java compiler. Private API for indentation engine only!
+     * Expert: Locks java compiler. Private API for indentation engine only!
      */
     public abstract void lockJavaCompiler ();
     
     /**
-     * Unlocks java compiler. Private API for indentation engine only!
+     * Expert: Unlocks java compiler. Private API for indentation engine only!
      */
     public abstract void unlockJavaCompiler ();
 }

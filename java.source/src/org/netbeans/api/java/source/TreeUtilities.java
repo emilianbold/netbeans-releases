@@ -70,17 +70,18 @@ import org.netbeans.modules.java.source.builder.CommentHandlerService;
 
 /**
  *
- * @author Jan Lahoda, Dusan Balek
+ * @author Jan Lahoda, Dusan Balek, Tomas Zezula
  */
 public final class TreeUtilities {
     
-    private CompilationInfo info;
-    private CommentHandler handler;
+    private final CompilationInfo info;
+    private final CommentHandler handler;
     
     /** Creates a new instance of CommentUtilities */
-    TreeUtilities(CompilationInfo info) {
+    TreeUtilities(final CompilationInfo info) {
+        assert info != null;
         this.info = info;
-        this.handler = CommentHandlerService.instance(info.getJavacTask().getContext());
+        this.handler = CommentHandlerService.instance(info.impl.getJavacTask().getContext());
     }
     
     /**Checks whether the given tree represents a class.
@@ -280,11 +281,11 @@ public final class TreeUtilities {
      * @return parsed {@link TypeMirror} or null if the given specification cannot be parsed
      */
     public TypeMirror parseType(String expr, TypeElement scope) {
-        com.sun.tools.javac.tree.TreeMaker jcMaker = com.sun.tools.javac.tree.TreeMaker.instance(info.getJavacTask().getContext());
+        com.sun.tools.javac.tree.TreeMaker jcMaker = com.sun.tools.javac.tree.TreeMaker.instance(info.impl.getJavacTask().getContext());
         int oldPos = jcMaker.pos;
         
         try {
-            return info.getJavacTask().parseType(expr, scope);
+            return info.impl.getJavacTask().parseType(expr, scope);
         } finally {
             jcMaker.pos = oldPos;
         }
@@ -297,11 +298,11 @@ public final class TreeUtilities {
      * @return parsed {@link StatementTree} or null?
      */
     public StatementTree parseStatement(String stmt, SourcePositions[] sourcePositions) {
-        com.sun.tools.javac.tree.TreeMaker jcMaker = com.sun.tools.javac.tree.TreeMaker.instance(info.getJavacTask().getContext());
+        com.sun.tools.javac.tree.TreeMaker jcMaker = com.sun.tools.javac.tree.TreeMaker.instance(info.impl.getJavacTask().getContext());
         int oldPos = jcMaker.pos;
         
         try {
-            return (StatementTree)info.getJavacTask().parseStatement(stmt, sourcePositions);
+            return (StatementTree)info.impl.getJavacTask().parseStatement(stmt, sourcePositions);
         } finally {
             jcMaker.pos = oldPos;
         }
@@ -314,11 +315,11 @@ public final class TreeUtilities {
      * @return parsed {@link ExpressionTree} or null?
      */
     public ExpressionTree parseExpression(String expr, SourcePositions[] sourcePositions) {
-        com.sun.tools.javac.tree.TreeMaker jcMaker = com.sun.tools.javac.tree.TreeMaker.instance(info.getJavacTask().getContext());
+        com.sun.tools.javac.tree.TreeMaker jcMaker = com.sun.tools.javac.tree.TreeMaker.instance(info.impl.getJavacTask().getContext());
         int oldPos = jcMaker.pos;
         
         try {
-            return (ExpressionTree) info.getJavacTask().parseExpression(expr, sourcePositions);
+            return (ExpressionTree) info.impl.getJavacTask().parseExpression(expr, sourcePositions);
         } finally {
             jcMaker.pos = oldPos;
         }
@@ -331,11 +332,11 @@ public final class TreeUtilities {
      * @return parsed {@link ExpressionTree} or null?
      */
     public ExpressionTree parseVariableInitializer(String init, SourcePositions[] sourcePositions) {
-        com.sun.tools.javac.tree.TreeMaker jcMaker = com.sun.tools.javac.tree.TreeMaker.instance(info.getJavacTask().getContext());
+        com.sun.tools.javac.tree.TreeMaker jcMaker = com.sun.tools.javac.tree.TreeMaker.instance(info.impl.getJavacTask().getContext());
         int oldPos = jcMaker.pos;
         
         try {
-            return (ExpressionTree)info.getJavacTask().parseVariableInitializer(init, sourcePositions);
+            return (ExpressionTree)info.impl.getJavacTask().parseVariableInitializer(init, sourcePositions);
         } finally {
             jcMaker.pos = oldPos;
         }
@@ -348,11 +349,11 @@ public final class TreeUtilities {
      * @return parsed {@link BlockTree} or null?
      */
     public BlockTree parseStaticBlock(String block, SourcePositions[] sourcePositions) {
-        com.sun.tools.javac.tree.TreeMaker jcMaker = com.sun.tools.javac.tree.TreeMaker.instance(info.getJavacTask().getContext());
+        com.sun.tools.javac.tree.TreeMaker jcMaker = com.sun.tools.javac.tree.TreeMaker.instance(info.impl.getJavacTask().getContext());
         int oldPos = jcMaker.pos;
         
         try {
-            return (BlockTree)info.getJavacTask().parseStaticBlock(block, sourcePositions);
+            return (BlockTree)info.impl.getJavacTask().parseStaticBlock(block, sourcePositions);
         } finally {
             jcMaker.pos = oldPos;
         }
@@ -416,7 +417,7 @@ public final class TreeUtilities {
     /**Attribute the given tree in the given context.
      */
     public TypeMirror attributeTree(Tree tree, Scope scope) {
-        return info.getJavacTask().attributeTree((JCTree)tree, ((JavacScope)scope).getEnv());
+        return info.impl.getJavacTask().attributeTree((JCTree)tree, ((JavacScope)scope).getEnv());
     }
     
     //XXX dbalek:
@@ -424,21 +425,21 @@ public final class TreeUtilities {
      * Returns scope valid at point when <code>to</code> is reached.
      */
     public Scope attributeTreeTo(Tree tree, Scope scope, Tree to) {
-        return info.getJavacTask().attributeTreeTo((JCTree)tree, ((JavacScope)scope).getEnv(), (JCTree)to);
+        return info.impl.getJavacTask().attributeTreeTo((JCTree)tree, ((JavacScope)scope).getEnv(), (JCTree)to);
     }
     
     //XXX dbalek:
     public TypeMirror reattributeTree(Tree tree, Scope scope) {
         Env<AttrContext> env = ((JavacScope)scope).getEnv();
         copyInnerClassIndexes(env.tree, tree);
-        return info.getJavacTask().attributeTree((JCTree)tree, env);
+        return info.impl.getJavacTask().attributeTree((JCTree)tree, env);
     }
     
     //XXX dbalek:
     public Scope reattributeTreeTo(Tree tree, Scope scope, Tree to) {
         Env<AttrContext> env = ((JavacScope)scope).getEnv();
         copyInnerClassIndexes(env.tree, tree);
-        return info.getJavacTask().attributeTreeTo((JCTree)tree, env, (JCTree)to);
+        return info.impl.getJavacTask().attributeTreeTo((JCTree)tree, env, (JCTree)to);
     }
     
     /**Returns tokens for a given tree.
@@ -468,7 +469,7 @@ public final class TreeUtilities {
         if (scope instanceof JavacScope 
                 && member instanceof Symbol 
                 && type instanceof Type) {
-            Resolve resolve = Resolve.instance(info.getJavacTask().getContext());
+            Resolve resolve = Resolve.instance(info.impl.getJavacTask().getContext());
 	    return resolve.isAccessible(((JavacScope)scope).getEnv(), (Type)type, (Symbol)member);  
         } else 
             return false;
@@ -477,7 +478,7 @@ public final class TreeUtilities {
     /**Checks whether the given scope is in "static" context.
      */
     public boolean isStaticContext(Scope scope) {
-        return Resolve.instance(info.getJavacTask().getContext()).isStatic(((JavacScope)scope).getEnv());
+        return Resolve.instance(info.impl.getJavacTask().getContext()).isStatic(((JavacScope)scope).getEnv());
     }
     
     /**Returns uncaught exceptions inside the given tree path.
@@ -656,9 +657,9 @@ public final class TreeUtilities {
 
     private static class UncaughtExceptionsVisitor extends TreePathScanner<Void, Set<TypeMirror>> {
         
-        private CompilationInfo info;
+        private final CompilationInfo info;
         
-        private UncaughtExceptionsVisitor(CompilationInfo info) {
+        private UncaughtExceptionsVisitor(final CompilationInfo info) {
             this.info = info;
         }
     

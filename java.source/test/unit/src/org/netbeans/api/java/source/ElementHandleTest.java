@@ -514,7 +514,7 @@ public class ElementHandleTest extends NbTestCase {
         assertTrue (annonClassHandle[0].hashCode() == annonClassHandle[0].hashCode());
         
         assertFalse (stringElementHandle[0].hashCode() == utilElementHandle[0].hashCode());
-        assertTrue (stringLengthElementHandle[0].hashCode() == stringCountElementHandle[0].hashCode());
+        assertFalse (stringLengthElementHandle[0].hashCode() == stringCountElementHandle[0].hashCode());    //Changed by ElementHandle 1.15
         assertFalse (stringLengthElementHandle[0].hashCode() == retentionPolicyHandle[0].hashCode());
         assertFalse (stringLengthElementHandle[0].hashCode() == retentionPolicyClassHandle[0].hashCode());
         assertFalse (stringLengthElementHandle[0].hashCode() == innerClassHandle[0].hashCode());

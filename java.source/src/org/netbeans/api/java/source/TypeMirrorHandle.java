@@ -58,7 +58,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
-import org.netbeans.api.java.source.CompilationInfo;
 
 /**
  * Represents a handle for {@link TypeMirror} which can be kept and later resolved
@@ -261,7 +260,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                 if (e == null) {
                     String[] signatures = element.getSignature();
                     assert signatures.length == 1;
-                    Context context = info.getJavacTask().getContext();
+                    Context context = info.impl.getJavacTask().getContext();
                     return (T)new com.sun.tools.javac.code.Type.ErrorType(Name.Table.instance(context).fromString(signatures[0]), Symtab.instance(context).rootPackage); 
                 }
                 if (!(e instanceof com.sun.tools.javac.code.Symbol.ClassSymbol))

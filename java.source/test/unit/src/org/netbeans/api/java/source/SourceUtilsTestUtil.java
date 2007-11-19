@@ -349,7 +349,7 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
     }
     
     public static JavacTask getJavacTaskFor(CompilationInfo info) {
-        return info.getJavacTask();
+        return info.impl.getJavacTask();
     }
     
     /** Blocking call for CompilationInfo after given phase is reached.

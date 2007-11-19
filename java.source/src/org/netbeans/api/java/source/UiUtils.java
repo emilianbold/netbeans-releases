@@ -128,18 +128,18 @@ public final class  UiUtils {
     }
     
     private static String getMethodHeader(MethodTree tree, CompilationInfo info, String s) {
-        Context context = info.getJavacTask().getContext();
+        Context context = info.impl.getJavacTask().getContext();
         VeryPretty veryPretty = new VeryPretty(info);
         return veryPretty.getMethodHeader(tree, s);
     }
 
     private static String getClassHeader(ClassTree tree, CompilationInfo info, String s) {
-        Context context = info.getJavacTask().getContext();
+        Context context = info.impl.getJavacTask().getContext();
         VeryPretty veryPretty = new VeryPretty(info);
         return veryPretty.getClassHeader(tree, s);
     }
     private static String getVariableHeader(VariableTree tree, CompilationInfo info, String s) {
-        Context context = info.getJavacTask().getContext();
+        Context context = info.impl.getJavacTask().getContext();
         VeryPretty veryPretty = new VeryPretty(info);
         return veryPretty.getVariableHeader(tree, s);
     }

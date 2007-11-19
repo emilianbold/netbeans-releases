@@ -105,7 +105,7 @@ public final class TreeMaker {
     TreeMaker(WorkingCopy copy, TreeFactory delegate) {
         this.delegate = delegate;
         this.copy = copy;
-        this.handler = CommentHandlerService.instance(copy.getJavacTask().getContext());
+        this.handler = CommentHandlerService.instance(copy.impl.getJavacTask().getContext());
     }
     
     /** 

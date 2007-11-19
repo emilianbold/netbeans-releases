@@ -122,7 +122,6 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
-import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavadocEnv;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -299,8 +298,8 @@ public final class JavaSource {
     private DataObjectListener dataObjectListener;
     
     private final ClasspathInfo classpathInfo;    
-    private CompilationInfo currentInfo;
-    private java.util.Stack<CompilationInfo> infoStack = new java.util.Stack<CompilationInfo> ();
+    private CompilationInfoImpl currentInfo;
+    private java.util.Stack<CompilationInfoImpl> infoStack = new java.util.Stack<CompilationInfoImpl> ();
             
     private int flags = 0;        
     
@@ -584,7 +583,7 @@ public final class JavaSource {
                 }            
                 this.javacLock.lock();                                
                 try {
-                    CompilationInfo currentInfo = null;
+                    CompilationInfoImpl currentInfo = null;
                     synchronized (this) {                        
                         if (this.currentInfo != null && (this.flags & INVALID)==0) {
                             currentInfo = this.currentInfo;
@@ -617,7 +616,14 @@ public final class JavaSource {
                         infoStack.push (currentInfo);
                     }
                     try {
-                        task.run (new CompilationController (currentInfo));
+                        final CompilationController clientController = new CompilationController (currentInfo);
+                        try {
+                            task.run (clientController);
+                        } finally {
+                            if (shared) {
+                                clientController.invalidate();
+                            }
+                        }
                     } finally {
                         if (!shared) {
                             infoStack.pop ();
@@ -663,8 +669,15 @@ public final class JavaSource {
                         else {
                             restarted = true;
                         }
-                        CompilationInfo ci = createCurrentInfo(this, new PositionConverter(activeFile, null), jt);
-                        task.run(new CompilationController(ci));
+                        CompilationInfoImpl ci = createCurrentInfo(this, new PositionConverter(activeFile, null), jt);
+                        CompilationController clientController = new CompilationController(ci);
+                        try {
+                            task.run (clientController);
+                        } finally {
+                            if (shared) {
+                                clientController.invalidate();
+                            }
+                        }
                         if (!ci.needsRestart) {
                             jt = ci.getJavacTask();
                             Log.instance(jt.getContext()).nerrors = 0;
@@ -823,7 +836,7 @@ public final class JavaSource {
                 }            
                 this.javacLock.lock();                                
                 try {
-                    CompilationInfo currentInfo = null;
+                    CompilationInfoImpl currentInfo = null;
                     synchronized (this) {
                         if (this.currentInfo != null &&  (this.flags & INVALID) == 0) {
                             currentInfo = this.currentInfo;
@@ -889,7 +902,7 @@ public final class JavaSource {
                         else {
                             restarted = true;
                         }
-                        CompilationInfo ci = createCurrentInfo(this, new PositionConverter(activeFile, null), jt);
+                        CompilationInfoImpl ci = createCurrentInfo(this, new PositionConverter(activeFile, null), jt);
                         WorkingCopy copy = new WorkingCopy(ci);
                         task.run(copy);
                         if (!ci.needsRestart) {
@@ -963,7 +976,7 @@ public final class JavaSource {
             if (includedTasks == null || !includedTasks.matcher(taskClassName).matches())
             return;
         }
-        CompilationInfo currentInfo;
+        CompilationInfoImpl currentInfo;
         synchronized (this) {
             currentInfo = this.currentInfo;
         }
@@ -1153,7 +1166,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
      * Not synchronized, only the CompilationJob's thread can call it!!!!
      *
      */
-    static Phase moveToPhase (final Phase phase, final CompilationInfo currentInfo, final boolean cancellable) throws IOException {
+    static Phase moveToPhase (final Phase phase, final CompilationInfoImpl currentInfo, final boolean cancellable) throws IOException {
         boolean parserError = currentInfo.parserCrashed;
         Phase currentPhase = currentInfo.getPhase();
         if (parserError) {
@@ -1487,7 +1500,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                                 else {
                                     assert js.files.size() <= 1;
                                     boolean jsInvalid;
-                                    CompilationInfo ci;
+                                    CompilationInfoImpl ci;
                                     synchronized (INTERNAL_LOCK) {
                                         //jl:what does this comment mean?
                                         //Not only the finishedRequests for the current request.javaSource should be cleaned,
@@ -1552,7 +1565,12 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                                                         final long startTime = System.currentTimeMillis();
                                                         Index.cancel.set(currentRequest.getCanceledRef());
                                                         try {
-                                                            ((CancellableTask<CompilationInfo>)r.task).run (ci); //XXX: How to do it in save way?
+                                                            final CompilationInfo clientCi = new CompilationInfo(ci);
+                                                            try {
+                                                                ((CancellableTask<CompilationInfo>)r.task).run (clientCi); //XXX: How to do it in save way?
+                                                            } finally {
+                                                                clientCi.invalidate();
+                                                            }
                                                         } finally {
                                                             Index.cancel.remove();
                                                         }
@@ -1844,8 +1862,8 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
     }
         
-    private static CompilationInfo createCurrentInfo (final JavaSource js, final PositionConverter binding, final JavacTaskImpl javac) throws IOException {        
-        CompilationInfo info = new CompilationInfo (js, binding, javac);
+    private static CompilationInfoImpl createCurrentInfo (final JavaSource js, final PositionConverter binding, final JavacTaskImpl javac) throws IOException {        
+        CompilationInfoImpl info = new CompilationInfoImpl(js, binding, javac);
         if (binding != null) {
             Logger.getLogger("TIMER").log(Level.FINE, "CompilationInfo",
                     new Object[] {binding.getFileObject(), info});
@@ -1896,18 +1914,18 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
             return JavaSource.createJavacTask(cpInfo, diagnosticListener, sourceLevel, true);
         }
-        
+                
         @Override
         public JavacTaskImpl getJavacTask (final CompilationInfo compilationInfo) {
             assert compilationInfo != null;
-            return compilationInfo.getJavacTask();
+            return compilationInfo.impl.getJavacTask();
         }
         
         @Override
         public CompilationInfo getCurrentCompilationInfo (final JavaSource js, final Phase phase) throws IOException {
             assert js != null;
             assert isDispatchThread();
-            CompilationInfo info = null;
+            CompilationInfoImpl info = null;
             synchronized (js) {                     
                 if ((js.flags & INVALID)==0) {
                     info = js.currentInfo;
@@ -1917,7 +1935,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 return null;
             }
             Phase currentPhase = moveToPhase(phase, info, true);                
-            return currentPhase.compareTo(phase)<0 ? null : info;
+            return currentPhase.compareTo(phase)<0 ? null : new CompilationInfo(info);
         }
 
         @Override
@@ -2329,7 +2347,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
      * @param  info  CompilationInfo for which the error occurred.
      * @param  exc  exception to write to the end of dump file
      */
-    private static void dumpSource(CompilationInfo info, Throwable exc) {
+    private static void dumpSource(CompilationInfoImpl info, Throwable exc) {
         String userDir = System.getProperty("netbeans.user");
         if (userDir == null) {
             return;

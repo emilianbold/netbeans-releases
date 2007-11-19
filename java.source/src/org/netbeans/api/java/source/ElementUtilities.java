@@ -74,31 +74,30 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import org.netbeans.modules.java.source.builder.ASTService;
 
 import org.netbeans.modules.java.source.builder.ElementsService;
 import org.netbeans.modules.java.source.JavadocEnv;
 
 /**
  *
- * @author Jan Lahoda, Dusan Balek
+ * @author Jan Lahoda, Dusan Balek, Tomas Zezula
  */
 public final class ElementUtilities {
     
-    private Context ctx;
-    private ElementsService delegate;
-    private CompilationInfo info;
+    private final Context ctx;
+    private final ElementsService delegate;
+    private final CompilationInfo info;
     
     /** Creates a new instance of ElementUtilities */
-    ElementUtilities(CompilationInfo info) {
-        JavacTask task = info.getJavacTask();
+    ElementUtilities(final CompilationInfo info) {
+        assert info != null;
+        JavacTask task = info.impl.getJavacTask();
         this.info = info;
         this.ctx = ((JavacTaskImpl)task).getContext();
         this.delegate = ElementsService.instance(ctx);

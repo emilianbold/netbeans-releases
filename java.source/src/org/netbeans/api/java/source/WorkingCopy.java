@@ -84,7 +84,7 @@ import org.openide.util.NbBundle;
 
 /**XXX: extends CompilationController now, finish method delegation
  *
- * @author Dusan Balek, Petr Hrebejk
+ * @author Dusan Balek, Petr Hrebejk, Tomas Zezula
  */
 public class WorkingCopy extends CompilationController {
     
@@ -95,8 +95,8 @@ public class WorkingCopy extends CompilationController {
     private boolean afterCommit = false;
     private TreeMaker treeMaker;
     
-    WorkingCopy(final CompilationInfo delegate) throws IOException {        
-        super(delegate);
+    WorkingCopy(final CompilationInfoImpl impl) {        
+        super(impl);
     }
 
     private synchronized void init() {
@@ -111,7 +111,7 @@ public class WorkingCopy extends CompilationController {
     }
     
     private Context getContext() {
-        return getJavacTask().getContext();
+        return impl.getJavacTask().getContext();
     }
     
     // API of the class --------------------------------------------------------
@@ -228,7 +228,7 @@ public class WorkingCopy extends CompilationController {
     
     // Package private methods -------------------------------------------------        
     
-    private static void commit(Context context, CompilationUnitTree topLevel, List<Diff> diffs, SourceRewriter out) throws IOException, BadLocationException {
+    private static void commit(CompilationUnitTree topLevel, List<Diff> diffs, SourceRewriter out) throws IOException, BadLocationException {
         SourceReader in = null;
         try {
             String s = ((JCTree.JCCompilationUnit) topLevel).sourcefile.getCharContent(true).toString();
@@ -406,7 +406,7 @@ public class WorkingCopy extends CompilationController {
         });
         
         Rewriter r = new Rewriter(getFileObject(), getPositionConverter(), userInfo);
-        commit(getContext(), getCompilationUnit(), diffs, r);
+        commit(getCompilationUnit(), diffs, r);
         
         return r.diffs;
     }

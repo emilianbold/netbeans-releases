@@ -54,10 +54,11 @@ import javax.lang.model.type.TypeMirror;
  */
 public final class TypeUtilities {
 
-    private CompilationInfo info;
+    private final CompilationInfo info;
 
     /** Creates a new instance of CommentUtilities */
-    TypeUtilities(CompilationInfo info) {
+    TypeUtilities(final CompilationInfo info) {
+        assert info != null;
         this.info = info;
     }
 
@@ -70,7 +71,7 @@ public final class TypeUtilities {
      * @since 0.6
      */
     public boolean isCastable(TypeMirror t1, TypeMirror t2) {
-        return Types.instance(info.getJavacTask().getContext()).isCastable((Type) t1, (Type) t2);
+        return Types.instance(info.impl.getJavacTask().getContext()).isCastable((Type) t1, (Type) t2);
     }
     
 }

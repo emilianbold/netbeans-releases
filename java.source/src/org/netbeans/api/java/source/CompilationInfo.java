@@ -45,7 +45,6 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
-import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.model.JavacElements;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -54,18 +53,13 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.swing.text.Document;
-import javax.tools.DiagnosticListener;
 import javax.tools.Diagnostic;
-import javax.tools.JavaFileObject;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.parsing.SourceFileObject;
-import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -78,35 +72,22 @@ import org.openide.loaders.DataObjectNotFoundException;
  */
 public class CompilationInfo {
     
-    private JavaSource.Phase phase = JavaSource.Phase.MODIFIED;
-    private CompilationUnitTree compilationUnit;
-    private List<Diagnostic> errors;
-    
-    private JavacTaskImpl javacTask;
-    private PositionConverter binding;
-    final JavaFileObject jfo;    
-    final JavaSource javaSource;        
-    boolean needsRestart;
-    boolean parserCrashed;      //When javac throws an error, the moveToPhase sets this flag to true to prevent the same exception to be rethrown
-    
+    //INV: never null
+    final CompilationInfoImpl impl;
+    //Expert: set to true when the runUserActionTask(,true), runModificationTask(,true)
+    //ended or when reschedulable task leaved run method to verify confinement
+    protected boolean invalid;
+    //@GuarderBy(this)
     private ElementUtilities elementUtilities;
+    //@GuarderBy(this)
     private TreeUtilities treeUtilities;
+    //@GuarderBy(this)
     private TypeUtilities typeUtilities;
     
-    CompilationInfo () {
-        this.javaSource = null;
-        this.jfo = null;
-        this.javacTask = null;
-        this.errors = null;
-    }
     
-    CompilationInfo (  final JavaSource javaSource,final PositionConverter binding, final JavacTaskImpl javacTask) throws IOException {
-        assert javaSource != null;        
-        this.javaSource = javaSource;
-        this.binding = binding;
-        this.jfo = this.binding != null ? javaSource.jfoProvider.createJavaFileObject(binding.getFileObject(), this.javaSource.rootFo, this.binding.getFilter()) : null;
-        this.javacTask = javacTask;        
-        this.errors = new ArrayList<Diagnostic>();
+    CompilationInfo (final CompilationInfoImpl impl)  {
+        assert impl != null;
+        this.impl = impl;
     }
              
     // API of the class --------------------------------------------------------
@@ -116,7 +97,7 @@ public class CompilationInfo {
      * @return {@link JavaSource.Phase} the state which was reached by the {@link JavaSource}.
      */
     public JavaSource.Phase getPhase() {
-        return this.phase;
+        return this.impl.getPhase();
     }
        
     /**
@@ -125,13 +106,8 @@ public class CompilationInfo {
      * java source file. 
      * @throws java.lang.IllegalStateException  when the phase is less than {@link JavaSource.Phase#PARSED}
      */
-    public CompilationUnitTree getCompilationUnit() {
-        if (this.jfo == null) {
-            throw new IllegalStateException ();
-        }
-        if (this.phase.compareTo (JavaSource.Phase.PARSED) < 0)
-            throw new IllegalStateException("Cannot call getCompilationInfo() if current phase < JavaSource.Phase.PARSED. You must call toPhase(Phase.PARSED) first.");//NOI18N
-        return this.compilationUnit;
+    public CompilationUnitTree getCompilationUnit() {        
+        return this.impl.getCompilationUnit();
     }
     
     /**
@@ -139,29 +115,15 @@ public class CompilationInfo {
      * @return String the java source
      */
     public String getText() {
-        if (this.jfo == null) {
-            throw new IllegalStateException ();
-        }
-        try {
-            return this.jfo.getCharContent(false).toString();
-        } catch (IOException ioe) {
-            //Should never happen
-            ErrorManager.getDefault().notify(ioe);
-            return null;
-        }
+        return this.impl.getText();
     }
     
+    /**
+     * Returns the {@link TokenHierarchy} for the file represented by the {@link JavaSource}.
+     * @return lexer TokenHierarchy
+     */
     public TokenHierarchy<?> getTokenHierarchy() {
-        if (this.jfo == null) {
-            throw new IllegalStateException ();
-        }
-        try {
-            return ((SourceFileObject) this.jfo).getTokenHierarchy();
-        } catch (IOException ioe) {
-            //Should never happen
-            ErrorManager.getDefault().notify(ioe);
-            return null;
-        }
+        return this.impl.getTokenHierarchy();
     }
     
     /**
@@ -169,17 +131,7 @@ public class CompilationInfo {
      * @return an list of {@link Diagnostic} 
      */
     public List<Diagnostic> getDiagnostics() {
-        if (this.jfo == null) {
-            throw new IllegalStateException ();
-        }
-        List<Diagnostic> errors = ((DiagnosticListenerImpl) javacTask.getContext().get(DiagnosticListener.class)).errors;
-        List<Diagnostic> localErrors = new ArrayList<Diagnostic>(errors.size());
-        
-        for(Diagnostic m : errors) {
-            if (this.jfo == m.getSource())
-                localErrors.add(m);
-        }
-        return localErrors;
+        return this.impl.getDiagnostics();
     }
     
     /**
@@ -191,14 +143,15 @@ public class CompilationInfo {
      * @since 0.14
      */
     public List<? extends TypeElement> getTopLevelElements () throws IllegalStateException {
-        if (this.jfo == null) {
+        if (this.impl.getPositionConverter() == null) {
             throw new IllegalStateException ();
         }
-        List<TypeElement> result = new ArrayList<TypeElement>();
-        if (this.javaSource.isClassFile()) {
+        final List<TypeElement> result = new ArrayList<TypeElement>();
+        final JavaSource javaSource = this.impl.getJavaSource();
+        if (javaSource.isClassFile()) {
             Elements elements = getElements();
             assert elements != null;
-            assert this.javaSource.rootFo != null;
+            assert javaSource.rootFo != null;
             String name = FileObjects.convertFolder2Package(FileObjects.stripExtension(FileUtil.getRelativePath(javaSource.rootFo, getFileObject())));
             TypeElement e = ((JavacElements)elements).getTypeElementByBinaryName(name);
             if (e != null) {                
@@ -226,44 +179,54 @@ public class CompilationInfo {
         }
         return Collections.unmodifiableList(result);
     }
+        
     
-    //todo: remove when Abort from javac is fixed
-    private static boolean isLocal (TypeElement sym) {
-        if  (sym.getQualifiedName().contentEquals("")) {    //NOI18N
-            return true;
-        }        
-        Element enclosing = sym.getEnclosingElement();
-        while (enclosing != null && enclosing.getKind() != ElementKind.PACKAGE) {
-            if (!enclosing.getKind().isClass() && !enclosing.getKind().isInterface()) {
-                return true;
-            }
-            enclosing = enclosing.getEnclosingElement();
-        }
-        return false;
-    }
-    
+    /**
+     * Return the {@link Trees} service of the javac represented by this {@link CompilationInfo}.
+     * @return javac Trees service
+     */
     public Trees getTrees() {
-        return Trees.instance(getJavacTask());
+        return Trees.instance(impl.getJavacTask());
     }
     
+    /**
+     * Return the {@link Types} service of the javac represented by this {@link CompilationInfo}.
+     * @return javac Types service
+     */
     public Types getTypes() {
-        return getJavacTask().getTypes();
+        return impl.getJavacTask().getTypes();
     }
     
+    /**
+     * Return the {@link Elements} service of the javac represented by this {@link CompilationInfo}.
+     * @return javac Elements service
+     */
     public Elements getElements() {
-	return getJavacTask().getElements();
+	return impl.getJavacTask().getElements();
     }
         
+    /**
+     * Returns {@link JavaSource} for which this {@link CompilationInfo} was created.
+     * @return JavaSource
+     */
     public JavaSource getJavaSource() {
-        return javaSource;
+        return this.impl.getJavaSource();
     }
     
+    /**
+     * Returns {@link ClasspathInfo} for which this {@link CompilationInfo} was created.
+     * @return ClasspathInfo
+     */
     public ClasspathInfo getClasspathInfo() {
-	return javaSource.getClasspathInfo();
+	return this.impl.getClasspathInfo();
     }
     
+    /**
+     * Returns the {@link FileObject} represented by this {@link CompilationInfo}.
+     * @return FileObject
+     */
     public FileObject getFileObject() {
-        return this.binding != null ? this.binding.getFileObject() : null;
+        return impl.getFileObject();
     }
     
     /**Return {@link PositionConverter} binding virtual Java source and the real source.
@@ -275,19 +238,26 @@ public class CompilationInfo {
      * @since 0.21
      */
     public PositionConverter getPositionConverter() {
-        return binding;
+        return this.impl.getPositionConverter();
     }
-    
-    //XXX cleanup: IOException is no longer required
-    public Document getDocument() throws IOException {
-        if (this.binding == null || this.binding.getFileObject() == null) {
+            
+    /**
+     * Returns {@link Document} of this {@link CompilationInfoImpl}
+     * @return Document or null when the {@link DataObject} doesn't
+     * exist or has no {@link EditorCookie}.
+     * @throws java.io.IOException
+     */
+    public Document getDocument() throws IOException { //XXX cleanup: IOException is no longer required? Used by PositionEstimator, DiffFacility
+        final PositionConverter binding = this.impl.getPositionConverter();
+        FileObject fo;
+        if (binding == null || (fo=binding.getFileObject()) == null) {
             return null;
         }
-        if (!this.binding.getFileObject().isValid()) {
+        if (!fo.isValid()) {
             return null;
         }
         try {
-            DataObject od = DataObject.find(this.binding.getFileObject());            
+            DataObject od = DataObject.find(fo);            
             EditorCookie ec = od.getCookie(EditorCookie.class);
             if (ec != null) {
                 return  ec.getDocument();
@@ -302,6 +272,11 @@ public class CompilationInfo {
         }
     }
     
+    
+    /**
+     * Returns {@link TreeUtilities}.
+     * @return TreeUtilities
+     */
     public synchronized TreeUtilities getTreeUtilities() {
         if (treeUtilities == null) {
             treeUtilities = new TreeUtilities(this);
@@ -309,6 +284,10 @@ public class CompilationInfo {
         return treeUtilities;
     }
     
+    /**
+     * Returns {@link ElementUtilities}.
+     * @return ElementUtilities
+     */
     public synchronized ElementUtilities getElementUtilities() {
         if (elementUtilities == null) {
             elementUtilities = new ElementUtilities(this);
@@ -318,10 +297,7 @@ public class CompilationInfo {
     }
     
     /**Get the TypeUtilities.
-     * 
      * @return an instance of TypeUtilities
-     * 
-     * @since 0.6
      */
     public synchronized TypeUtilities getTypeUtilities() {
         if (typeUtilities == null) {
@@ -330,37 +306,12 @@ public class CompilationInfo {
         return typeUtilities;
     }
     
-    // Package private methods -------------------------------------------------
     
-    void setPhase(final JavaSource.Phase phase) {
-        assert phase != null;
-        this.phase = phase;
-    }
-    
-    void setCompilationUnit(final CompilationUnitTree compilationUnit) {
-        assert compilationUnit != null;
-        this.compilationUnit = compilationUnit;
-    }        
-    
-    synchronized JavacTaskImpl getJavacTask() {	
-        if (javacTask == null) {
-            javacTask = javaSource.createJavacTask(new DiagnosticListenerImpl(errors));
-        }
-	return javacTask;
-    }
-    
-    // Innerclasses ------------------------------------------------------------
-    
-    private static class DiagnosticListenerImpl implements DiagnosticListener {
+    /**
+     * Marks this {@link CompilationInfo} as invalid, may be used to
+     * verify confinement.
+     */
+    void invalidate () {
         
-        private final List<Diagnostic> errors;
-        
-        public DiagnosticListenerImpl(final List<Diagnostic> errors) {
-            this.errors = errors;
-        }
-        
-        public void report(Diagnostic message) {
-            errors.add(message);
-        }
     }
 }

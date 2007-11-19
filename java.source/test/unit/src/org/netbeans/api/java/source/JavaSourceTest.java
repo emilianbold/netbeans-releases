@@ -202,7 +202,7 @@ public class JavaSourceTest extends NbTestCase {
         js.addPhaseCompletionTask(task2,Phase.PARSED,Priority.LOW);
         assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches1[0], latches2[0]}, 15000)); 
         assertEquals ("Called more times than expected",2,counter.getAndSet(0));        
-        Thread.sleep(500);  //Making test a more deterministic, when the task is cancelled by DocListener, it's hard for test to recover from it
+        Thread.sleep(1000);  //Making test a more deterministic, when the task is cancelled by DocListener, it's hard for test to recover from it
         NbDocument.runAtomic (doc,
             new Runnable () {
                 public void run () {                        
@@ -766,7 +766,7 @@ public class JavaSourceTest extends NbTestCase {
         js.runUserActionTask(new Task<CompilationController> () {
             
             public void run (CompilationController c) {
-                identityHashCodes[0] = System.identityHashCode(c.delegate);
+                identityHashCodes[0] = System.identityHashCode(c.impl);
             }
             
         },true);
@@ -774,7 +774,7 @@ public class JavaSourceTest extends NbTestCase {
         js.runUserActionTask(new Task<CompilationController> () {
             
             public void run (CompilationController c) {
-                identityHashCodes[1] = System.identityHashCode(c.delegate);
+                identityHashCodes[1] = System.identityHashCode(c.impl);
             }
             
         },false);
@@ -783,7 +783,7 @@ public class JavaSourceTest extends NbTestCase {
         js.runUserActionTask(new Task<CompilationController> () {
             
             public void run (CompilationController c) {
-                identityHashCodes[2] = System.identityHashCode(c.delegate);
+                identityHashCodes[2] = System.identityHashCode(c.impl);
             }
             
         },false);
@@ -834,14 +834,14 @@ public class JavaSourceTest extends NbTestCase {
         js.runUserActionTask(new Task<CompilationController>() {            
             
             public void run (CompilationController control) {
-                delegateRef[0] = control.delegate;
+                delegateRef[0] = control.impl;
             }            
         }, true);
         
         js.runUserActionTask(new Task<CompilationController>() {            
             
             public void run (CompilationController control) {
-                assertTrue(delegateRef[0] == control.delegate);
+                assertTrue(delegateRef[0] == control.impl);
             }            
 
         }, true);
@@ -850,7 +850,7 @@ public class JavaSourceTest extends NbTestCase {
         js.runUserActionTask(new Task<CompilationController>() {            
             
             public void run (CompilationController control) {
-                delegateRef[0] = control.delegate;
+                delegateRef[0] = control.impl;
             }            
 
         }, false);
@@ -858,7 +858,7 @@ public class JavaSourceTest extends NbTestCase {
         js.runUserActionTask(new Task<CompilationController>() {            
             
             public void run (CompilationController control) {
-                assertTrue(delegateRef[0] != control.delegate);
+                assertTrue(delegateRef[0] != control.impl);
             }            
 
         }, true);
@@ -868,12 +868,12 @@ public class JavaSourceTest extends NbTestCase {
         js.runUserActionTask(new CancellableTask<CompilationController>() {            
             
             public void run (CompilationController control) {
-                delegateRef[0] = control.delegate;
-                final Object[] delegateRef2 = new Object[] {control.delegate};
+                delegateRef[0] = control.impl;
+                final Object[] delegateRef2 = new Object[] {control.impl};
                 try {
                     js.runUserActionTask(new Task<CompilationController> () {
                         public void run (CompilationController control) {
-                            assertTrue (delegateRef2[0] == control.delegate);
+                            assertTrue (delegateRef2[0] == control.impl);
                         }
 
                     }, true);
@@ -889,7 +889,7 @@ public class JavaSourceTest extends NbTestCase {
         js.runUserActionTask(new Task<CompilationController>() {            
             
             public void run (CompilationController controll) {
-                assertTrue(delegateRef[0] == controll.delegate);
+                assertTrue(delegateRef[0] == controll.impl);
             }            
         }, true);
         
@@ -898,12 +898,12 @@ public class JavaSourceTest extends NbTestCase {
         js.runUserActionTask(new Task<CompilationController>() {            
             
             public void run (CompilationController control) {
-                delegateRef[0] = control.delegate;
-                final Object[] delegateRef2 = new Object[] {control.delegate};
+                delegateRef[0] = control.impl;
+                final Object[] delegateRef2 = new Object[] {control.impl};
                 try {
                     js.runUserActionTask(new CancellableTask<CompilationController> () {
                         public void run (CompilationController control) {
-                            assertTrue (delegateRef2[0] == control.delegate);
+                            assertTrue (delegateRef2[0] == control.impl);
                         }
 
                         public void cancel () {}
@@ -919,7 +919,7 @@ public class JavaSourceTest extends NbTestCase {
         js.runUserActionTask(new Task<CompilationController>() {            
             
             public void run (CompilationController controll) {
-                assertTrue(delegateRef[0] != controll.delegate);
+                assertTrue(delegateRef[0] != controll.impl);
             }            
         }, true);
         
@@ -928,12 +928,12 @@ public class JavaSourceTest extends NbTestCase {
         final Object[] delegateRef2 = new Object[1];
         js.runUserActionTask(new Task<CompilationController>() {                        
             public void run (CompilationController control) {
-                delegateRef[0] = control.delegate;
+                delegateRef[0] = control.impl;
                 try {
                     js.runUserActionTask(new Task<CompilationController> () {
                         public void run (CompilationController control) {
-                            assertTrue (delegateRef[0] != control.delegate);
-                            delegateRef2[0] = control.delegate;
+                            assertTrue (delegateRef[0] != control.impl);
+                            delegateRef2[0] = control.impl;
                         }
 
                     }, false);
@@ -949,8 +949,8 @@ public class JavaSourceTest extends NbTestCase {
         js.runUserActionTask(new Task<CompilationController>() {            
             
             public void run (CompilationController controll) {
-                assertTrue(delegateRef[0] != controll.delegate);
-                assertTrue(delegateRef2[0] != controll.delegate);
+                assertTrue(delegateRef[0] != controll.impl);
+                assertTrue(delegateRef2[0] != controll.impl);
             }            
 
         }, true);
@@ -959,17 +959,17 @@ public class JavaSourceTest extends NbTestCase {
         //  has to see the CompilationInfo from the task (2) which is not equal to CompilationInfo from (1)
         js.runUserActionTask(new Task<CompilationController>() {                        
             public void run (CompilationController control) {
-                delegateRef[0] = control.delegate;
+                delegateRef[0] = control.impl;
                 try {
                     js.runUserActionTask(new Task<CompilationController> () {
                         public void run (CompilationController control) {
-                            assertTrue (delegateRef[0] != control.delegate);
-                            delegateRef2[0] = control.delegate;
+                            assertTrue (delegateRef[0] != control.impl);
+                            delegateRef2[0] = control.impl;
                             try {
                                 js.runUserActionTask(new Task<CompilationController> () {
                                     public void run (CompilationController control) {
-                                        assertTrue (delegateRef[0] != control.delegate);
-                                        assertTrue (delegateRef2[0] == control.delegate);                            
+                                        assertTrue (delegateRef[0] != control.impl);
+                                        assertTrue (delegateRef2[0] == control.impl);
                                     }
                                 }, true);
                             } catch (IOException ioe) {
@@ -991,20 +991,20 @@ public class JavaSourceTest extends NbTestCase {
         //  has to have new CompilationInfo but the task (1) (2) (3) have to have the same CompilationInfo.
         js.runUserActionTask(new Task<CompilationController>() {                        
             public void run (CompilationController control) {
-                delegateRef[0] = control.delegate;
+                delegateRef[0] = control.impl;
                 try {
                     js.runUserActionTask(new Task<CompilationController> () {
                         public void run (CompilationController control) {
-                            assertTrue (delegateRef[0] == control.delegate);
+                            assertTrue (delegateRef[0] == control.impl);
                             try {
                                 js.runUserActionTask(new Task<CompilationController> () {
                                     public void run (CompilationController control) {
-                                        assertTrue (delegateRef[0] == control.delegate);
+                                        assertTrue (delegateRef[0] == control.impl);
                                     }
                                 }, false);
                                 js.runUserActionTask(new Task<CompilationController> () {
                                     public void run (CompilationController control) {
-                                        assertTrue (delegateRef[0] != control.delegate);
+                                        assertTrue (delegateRef[0] != control.impl);
                                     }
                                 }, true);
                             } catch (IOException ioe) {
@@ -1367,12 +1367,12 @@ public class JavaSourceTest extends NbTestCase {
         public void run (CompilationController controler) {
             try {
                 controler.toPhase(Phase.PARSED);
-                if (!controler.delegate.needsRestart) {
+                if (!controler.impl.needsRestart) {
                     assertTrue (Phase.PARSED.compareTo(controler.getPhase())<=0);
                     assertNotNull("No ComplationUnitTrees after parse",controler.getCompilationUnit());
                     controler.toPhase(Phase.RESOLVED);     
                     if (multiSource) {
-                        if (controler.delegate.needsRestart) {
+                        if (controler.impl.needsRestart) {
                             return;
                         }
                     }
@@ -1468,11 +1468,7 @@ public class JavaSourceTest extends NbTestCase {
                 //Was not modified should stay in {@link Phase#RESOLVED}
                 assertTrue (Phase.RESOLVED.compareTo(controler.getPhase())<=0);                
                 if (currentIndex == oomFor) {
-                    Class<CompilationController> clazz = CompilationController.class;
-                    Field delegateField = clazz.getDeclaredField("delegate");
-                    delegateField.setAccessible(true);
-                    CompilationInfo delegate = (CompilationInfo) delegateField.get(controler);
-                    delegate.needsRestart = true;                    
+                    controler.impl.needsRestart = true;                    
                     uri = cut.getSourceFile().toUri();
                 }
                 if (currentIndex == oomFor+1) {

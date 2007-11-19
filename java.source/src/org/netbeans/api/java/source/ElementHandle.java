@@ -120,7 +120,7 @@ public final class ElementHandle<T extends Element> {
     @SuppressWarnings ("unchecked")     // NOI18N
     public T resolve (final CompilationInfo compilationInfo) {
         assert compilationInfo != null;
-        return resolveImpl (compilationInfo.getJavacTask());
+        return resolveImpl (compilationInfo.impl.getJavacTask());
     }
     
     private T resolveImpl (final JavacTaskImpl jt) {
