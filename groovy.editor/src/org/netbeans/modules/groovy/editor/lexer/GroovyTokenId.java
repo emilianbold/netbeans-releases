@@ -272,6 +272,10 @@ public class GroovyTokenId extends GsfTokenId {
     public static final GsfTokenId VARIABLE_PARAMETER_DEF = new GsfTokenId("VARIABLE_PARAMETER_DEF", null, "default");
     public static final GsfTokenId VOCAB = new GsfTokenId("VOCAB", null, "default");
     public static final GsfTokenId WILDCARD_TYPE = new GsfTokenId("WILDCARD_TYPE", null, "default");
+    
+    // overriding ERROR from GsfTokenId so that errors from lexer are not underlined (they need to be cleaned-up)
+    public static final GsfTokenId ERROR = new GsfTokenId("GROOVY_ERROR", null, "default");
+    
     // </editor-fold>
     
     private static final Language<GsfTokenId> language =
