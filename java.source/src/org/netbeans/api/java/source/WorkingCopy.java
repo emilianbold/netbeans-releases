@@ -118,6 +118,7 @@ public class WorkingCopy extends CompilationController {
 
     @Override
     public JavaSource.Phase toPhase(JavaSource.Phase phase) throws IOException {
+        //checkConfinement() called by super
         JavaSource.Phase result = super.toPhase(phase);
         
         if (result.compareTo(JavaSource.Phase.PARSED) >= 0) {
@@ -128,6 +129,7 @@ public class WorkingCopy extends CompilationController {
     }        
     
     public synchronized TreeMaker getTreeMaker() {
+        checkConfinement();
         if (treeMaker == null)
             throw new IllegalStateException("Cannot call getTreeMaker before toPhase.");
         return treeMaker;
@@ -153,6 +155,7 @@ public class WorkingCopy extends CompilationController {
      * @see TreeMaker
      */
     public synchronized void rewrite(Tree oldTree, Tree newTree) {
+        checkConfinement();
         if (changes == null) {
             throw new IllegalStateException("Cannot call rewrite before toPhase.");
         }
@@ -187,6 +190,7 @@ public class WorkingCopy extends CompilationController {
      * @since 0.23
      */
     public synchronized void rewriteInComment(int start, int length, String newText) throws IllegalArgumentException {
+        checkConfinement();
         TokenSequence<JavaTokenId> ts = getTokenHierarchy().tokenSequence(JavaTokenId.language());
         
         ts.move(start);

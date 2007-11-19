@@ -975,19 +975,7 @@ public final class JavaSource {
         if (excludedTasks != null && excludedTasks.matcher(taskClassName).matches()) {
             if (includedTasks == null || !includedTasks.matcher(taskClassName).matches())
             return;
-        }
-        CompilationInfoImpl currentInfo;
-        synchronized (this) {
-            currentInfo = this.currentInfo;
-        }
-        if (currentInfo == null) {
-            currentInfo = createCurrentInfo (this, binding, null);
-        }
-        synchronized (this) {
-            if (this.currentInfo == null) {
-                this.currentInfo = currentInfo;
-            }
-        }
+        }        
         handleAddRequest (new Request (task, this, phase, priority, true));
     }
     
@@ -1520,7 +1508,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                                                 rc.add(r);
                                                 continue;
                                             }
-                                            jsInvalid = (js.flags & INVALID)!=0;
+                                            jsInvalid = js.currentInfo == null || (js.flags & INVALID)!=0;
                                             ci = js.currentInfo;
                                         }
                                     }
@@ -1529,7 +1517,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                                         if (jsInvalid) {
                                             ci = createCurrentInfo (js, js.binding, null);
                                             synchronized (js) {
-                                                if ((js.flags & INVALID) != 0) {
+                                                if (js.currentInfo == null || (js.flags & INVALID) != 0) {
                                                     js.currentInfo = ci;
                                                     js.flags &= ~INVALID;
                                                 }

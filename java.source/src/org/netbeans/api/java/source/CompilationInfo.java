@@ -72,11 +72,13 @@ import org.openide.loaders.DataObjectNotFoundException;
  */
 public class CompilationInfo {
     
+    private static final boolean VERIFY_CONFINEMENT = Boolean.getBoolean(CompilationInfo.class.getName()+".vetifyConfinement"); //NOI18N
+    
     //INV: never null
     final CompilationInfoImpl impl;
     //Expert: set to true when the runUserActionTask(,true), runModificationTask(,true)
     //ended or when reschedulable task leaved run method to verify confinement
-    protected boolean invalid;
+    private boolean invalid;
     //@GuarderBy(this)
     private ElementUtilities elementUtilities;
     //@GuarderBy(this)
@@ -97,6 +99,7 @@ public class CompilationInfo {
      * @return {@link JavaSource.Phase} the state which was reached by the {@link JavaSource}.
      */
     public JavaSource.Phase getPhase() {
+        checkConfinement();
         return this.impl.getPhase();
     }
        
@@ -107,6 +110,7 @@ public class CompilationInfo {
      * @throws java.lang.IllegalStateException  when the phase is less than {@link JavaSource.Phase#PARSED}
      */
     public CompilationUnitTree getCompilationUnit() {        
+        checkConfinement();
         return this.impl.getCompilationUnit();
     }
     
@@ -115,6 +119,7 @@ public class CompilationInfo {
      * @return String the java source
      */
     public String getText() {
+        checkConfinement();
         return this.impl.getText();
     }
     
@@ -123,6 +128,7 @@ public class CompilationInfo {
      * @return lexer TokenHierarchy
      */
     public TokenHierarchy<?> getTokenHierarchy() {
+        checkConfinement();
         return this.impl.getTokenHierarchy();
     }
     
@@ -131,6 +137,7 @@ public class CompilationInfo {
      * @return an list of {@link Diagnostic} 
      */
     public List<Diagnostic> getDiagnostics() {
+        checkConfinement();
         return this.impl.getDiagnostics();
     }
     
@@ -143,6 +150,7 @@ public class CompilationInfo {
      * @since 0.14
      */
     public List<? extends TypeElement> getTopLevelElements () throws IllegalStateException {
+        checkConfinement();
         if (this.impl.getPositionConverter() == null) {
             throw new IllegalStateException ();
         }
@@ -186,6 +194,7 @@ public class CompilationInfo {
      * @return javac Trees service
      */
     public Trees getTrees() {
+        checkConfinement();
         return Trees.instance(impl.getJavacTask());
     }
     
@@ -194,6 +203,7 @@ public class CompilationInfo {
      * @return javac Types service
      */
     public Types getTypes() {
+        checkConfinement();
         return impl.getJavacTask().getTypes();
     }
     
@@ -202,6 +212,7 @@ public class CompilationInfo {
      * @return javac Elements service
      */
     public Elements getElements() {
+        checkConfinement();
 	return impl.getJavacTask().getElements();
     }
         
@@ -210,6 +221,7 @@ public class CompilationInfo {
      * @return JavaSource
      */
     public JavaSource getJavaSource() {
+        checkConfinement();
         return this.impl.getJavaSource();
     }
     
@@ -218,6 +230,7 @@ public class CompilationInfo {
      * @return ClasspathInfo
      */
     public ClasspathInfo getClasspathInfo() {
+        checkConfinement();
 	return this.impl.getClasspathInfo();
     }
     
@@ -226,6 +239,7 @@ public class CompilationInfo {
      * @return FileObject
      */
     public FileObject getFileObject() {
+        checkConfinement();
         return impl.getFileObject();
     }
     
@@ -238,6 +252,7 @@ public class CompilationInfo {
      * @since 0.21
      */
     public PositionConverter getPositionConverter() {
+        checkConfinement();
         return this.impl.getPositionConverter();
     }
             
@@ -248,6 +263,7 @@ public class CompilationInfo {
      * @throws java.io.IOException
      */
     public Document getDocument() throws IOException { //XXX cleanup: IOException is no longer required? Used by PositionEstimator, DiffFacility
+        checkConfinement();
         final PositionConverter binding = this.impl.getPositionConverter();
         FileObject fo;
         if (binding == null || (fo=binding.getFileObject()) == null) {
@@ -278,6 +294,7 @@ public class CompilationInfo {
      * @return TreeUtilities
      */
     public synchronized TreeUtilities getTreeUtilities() {
+        checkConfinement();
         if (treeUtilities == null) {
             treeUtilities = new TreeUtilities(this);
         }
@@ -289,6 +306,7 @@ public class CompilationInfo {
      * @return ElementUtilities
      */
     public synchronized ElementUtilities getElementUtilities() {
+        checkConfinement();
         if (elementUtilities == null) {
             elementUtilities = new ElementUtilities(this);
 
@@ -300,6 +318,7 @@ public class CompilationInfo {
      * @return an instance of TypeUtilities
      */
     public synchronized TypeUtilities getTypeUtilities() {
+        checkConfinement();
         if (typeUtilities == null) {
             typeUtilities = new TypeUtilities(this);
         }
@@ -311,7 +330,19 @@ public class CompilationInfo {
      * Marks this {@link CompilationInfo} as invalid, may be used to
      * verify confinement.
      */
-    void invalidate () {
-        
+    final void invalidate () {
+        this.invalid = true;
+    }
+    
+    /**
+     * Checks concurrency confinement.
+     * When {@link VERIFY_CONFINEMENT} is enabled & thread accesses the CompilationInfo
+     * outside guarded run() method the {@link IllegalStateException} is thrown
+     * @throws java.lang.IllegalStateException
+     */
+    final void checkConfinement () throws IllegalStateException {
+        if (VERIFY_CONFINEMENT && this.invalid) {
+            throw new IllegalStateException (String.format("Access to the shared %s outside a guarded run method.", this.getClass().getSimpleName()));
+        }
     }
 }
