@@ -141,9 +141,10 @@ TestSupport.prototype = {
             var m = methods[j];                            
             var mName = m.attributes.getNamedItem("name").nodeValue;
             var mediaType = this.wdr.getMediaType(m);
+            if(mediaType == null)
+                mediaType = this.wdr.getDefaultMime();
             var mimeTypes = mediaType.split(',');
-            var k=0;
-            for(k=0;k<mimeTypes.length;k++) {
+            for(var k=0;k<mimeTypes.length;k++) {
                 var mimeType = mimeTypes[k];
                 var dispName = this.wdr.getMethodNameForDisplay(mName, mimeType);
                 if(mName == 'GET')
@@ -283,40 +284,34 @@ TestSupport.prototype = {
 
     getParamRep : function (req, mName) {
         var str = "";
-        if(mName == 'GET') {
-            if(req != null && req.length > 0) {       
-                //ts.debug(req.length);             
-                for(var i=0;i<req.length;i++) {
-                    var params = req[i].childNodes;
-                    if(params != null) {
-                        for(var j=0;j<params.length;j++) {
-                            var param = params[j];
-                            if(param.nodeName == null || param.nodeName != 'param')
-                                continue;
-                            var pname = param.attributes.getNamedItem('name').nodeValue;
-                            var defaultVal = '';
-                            if(param.attributes.getNamedItem('default') != null)
-                                defaultVal = param.attributes.getNamedItem('default').nodeValue;
-                            var type = 'query';
-                            if(param.attributes.getNamedItem('style') != null)
-                                type = param.attributes.getNamedItem('style').nodeValue;
-                            var paramsId = 'qparams';
-                            if(type == 'template')
-                                paramsId = 'tparams';
-                            else if(type == 'matrix')
-                                paramsId = 'mparams';
-                            str += "<span class=bld>"+pname+":</span>"+"<input id='"+paramsId+"' name='"+pname+"' type='text' value='"+defaultVal+"'>"+"<br><br>";
-                        }
+        if(req != null && req.length > 0) {       
+            //ts.debug(req.length);             
+            for(var i=0;i<req.length;i++) {
+                var params = req[i].childNodes;
+                if(params != null) {
+                    for(var j=0;j<params.length;j++) {
+                        var param = params[j];
+                        if(param.nodeName == null || param.nodeName != 'param')
+                            continue;
+                        var pname = param.attributes.getNamedItem('name').nodeValue;
+                        var defaultVal = '';
+                        if(param.attributes.getNamedItem('default') != null)
+                            defaultVal = param.attributes.getNamedItem('default').nodeValue;
+                        var type = 'query';
+                        if(param.attributes.getNamedItem('style') != null)
+                            type = param.attributes.getNamedItem('style').nodeValue;
+                        var paramsId = 'qparams';
+                        if(type == 'template')
+                            paramsId = 'tparams';
+                        else if(type == 'matrix')
+                            paramsId = 'mparams';
+                        str += "<span class=bld>"+pname+":</span>"+"<input id='"+paramsId+"' name='"+pname+"' type='text' value='"+defaultVal+"'>"+"<br><br>";
                     }
                 }
-            } else {
-                str = "";
             }
         }
-        else if(mName == 'DELETE')
-            str = "";
-        else
-            str = "<textarea id='blobParam' name='params' rows='6' cols='70'>MSG_TEST_RESBEANS_Insert</textarea><br/>";        
+        if(mName == 'PUT' || mName == 'POST')
+            str += "<span class=bld>Content:</span>: <br><textarea id='blobParam' name='params' rows='6' cols='70'>MSG_TEST_RESBEANS_Insert</textarea><br/>";       
         if(str != "")
             str = "<span class=bld>MSG_TEST_RESBEANS_ResourceInputs</span><br><br><div class='ml20'>"+str+"</div><br/>";
         return str;
@@ -329,38 +324,46 @@ TestSupport.prototype = {
         var p = '';
         var path = document.forms[0].path.value;
         
-        //process query parameters
+        //filter template parameters that show up on the path
+        var tps = document.forms[0].tparams;
+        var tparams = [];
         var found = path.indexOf( "{" );
-        var qparams = document.forms[0].qparams;
         if (found != -1){
-            if(qparams != null) {
-                if(qparams.length == undefined) {
-                    path = path.replace("{"+qparams.name+"}", qparams.value);
+            if(tps != null) {
+                if(tps.length == undefined) {
+                    if(path.indexOf("{"+tps.name+"}"))
+                        path = path.replace("{"+tps.name+"}", tps.value);
+                    else
+                        tparams.push(tps);
                 } else {
-                    var len = qparams.length;
+                    var len = tps.length;
                     for(var j=0;j<len;j++) {
-                        var param = qparams[j]
-                        path = path.replace("{"+param.name+"}", param.value);
-                    }
-                }
-            }
-        } else {
-            if(qparams != null) {
-                if(qparams.length == undefined) {
-                    p += qparams.name+"="+qparams.value;
-                } else {
-                    var len = qparams.length;
-                    for(var j=0;j<len;j++) {
-                        var param = qparams[j]
-                        if(len == 1 || len-j == 1)
-                            p += escape(param.name)+"="+escape(param.value);
+                        var param = tps[j];
+                        if(path.indexOf("{"+param.name+"}"))
+                            path = path.replace("{"+param.name+"}", param.value);
                         else
-                            p += escape(param.name)+"="+escape(param.value)+"&";
+                            tparams.push(param);
                     }
                 }
             }
         }
         
+        var qparams = document.forms[0].qparams;
+        if(qparams != null) {
+            if(qparams.length == undefined) {
+                p += qparams.name+"="+qparams.value;
+            } else {
+                var len = qparams.length;
+                for(var j=0;j<len;j++) {
+                    var param = qparams[j]
+                    if(len == 1 || len-j == 1)
+                            p += escape(param.name)+"="+escape(param.value);
+                    else
+                            p += escape(param.name)+"="+escape(param.value)+"&";
+                }
+            }
+        }
+
         //process user added parameters
         var newParamNames = document.forms[0].newParamNames;
         if(newParamNames != null) {
@@ -399,7 +402,6 @@ TestSupport.prototype = {
             req = baseURL+escape(path);
         
         //change url if there are template params
-        var tparams = document.forms[0].tparams;
         if(tparams != null) {
             if(tparams.length == undefined) {
                 req += "/" + escape(tparams.value);
