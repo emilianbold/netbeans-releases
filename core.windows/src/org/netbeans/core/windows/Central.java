@@ -1898,7 +1898,14 @@ final class Central implements ControllerHandler {
                 }
             }
         }
+        TopComponent recentTc = null;
+        if( mode.getKind() == Constants.MODE_KIND_EDITOR ) {
+            //an editor document is being closed so let's find the most recent editor to select
+            recentTc = getRecentTopComponent( mode, tc );
+        }
         addModeClosedTopComponent(mode, tc);
+        if( null != recentTc )
+            recentTc.requestActive();
     }
     
     public void userClosedMode(ModeImpl mode) {
