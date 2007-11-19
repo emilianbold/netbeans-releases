@@ -50,13 +50,13 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Parameters;
 
 /**
- * A <code>WizardDescriptor.Panel</code> which delegates to another panel.
+ * A {@link org.openide.WizardDescriptor.Panel} which delegates to another panel.
  * It can be used to add further validation to e.g. a panel returned by
  * <code>JavaTemplates.createPackageChooser()</code>.
  *
- * <p>This class currently only implements <code>WizardDescriptor.Panel</code>
- * and <code>WizardDescriptor.FinishablePanel</code>. It will not delegate
- * methods in other subinterfaces of <code>WizardDescriptor.Panel</code>.</p>
+ * <p>This class currently only implements {@link org.openide.WizardDescriptor.Panel}
+ * and {@link org.openide.WizardDescriptor.FinishablePanel}. It will not delegate
+ * methods in other subinterfaces of {@link org.openide.WizardDescriptor.Panel}.</p>
  *
  * @param  <Data> the type of the object representing the wizard state.
  *
