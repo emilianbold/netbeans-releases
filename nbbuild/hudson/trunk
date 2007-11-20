@@ -88,6 +88,7 @@ sigtest_prev=`pwd`/../lastSuccessful/archive/nbbuild/build/sigtests
 sigtest_gen=`pwd`/nbbuild/build/sigtests
 sigtest_out=nbbuild/build/sigtestscheck
 
+echo SigTest: Changing All Changes
 if [ -f $sigtest_jar -a -d $sigtest_prev ]; then
     ant -f nbbuild/build.xml -Dsigtest.basedir=$sigtest_prev -Dsigtest.jar=$sigtest_jar -Dsigtest.check.type=strictcheck -Dsigtest.output.dir=`pwd`/$sigtest_out check-sigtests > $sigtest_gen.log
     ERROR_CODE=$?
@@ -106,6 +107,9 @@ if [ -f $sigtest_jar -a -d $sigtest_prev ]; then
     fi
 
 fi
+echo SigTest: Changing All Changes Done
+
+echo SigTest: Generating Golden Files
 if [ -f $sigtest_jar ]; then
     ant -f nbbuild/build.xml -Dsigtest.basedir=$sigtest_gen -Dsigtest.jar=$sigtest_jar gen-sigtests >$sigtest_gen.log
     ERROR_CODE=$?
@@ -117,7 +121,9 @@ if [ -f $sigtest_jar ]; then
         ) | mail -s "`basename $report` - cannot generate sigtest golden files in $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
     fi
 fi
+echo SigTest: Generating Golden Files Done
 
+echo SigTest: Incompatible Changes
 sigtest_incompat_gen=nbbuild/build/sigtestsincompat
 if ! ant -f nbbuild/build.xml -Dsigtest.output.dir=`pwd`/$sigtest_incompat_gen check-sigtests > `pwd`/$sigtest_incompat_gen.log; then
     (
@@ -125,8 +131,9 @@ if ! ant -f nbbuild/build.xml -Dsigtest.output.dir=`pwd`/$sigtest_incompat_gen c
         echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_incompat_gen"; 
         echo; 
         cat `pwd`/$sigtest_incompat_gen/*
-    ) | mail -s "Incompatible API change $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
+    ) | mail -s "Incompatible API change $JOB_NAME build #$BUILD_NUMBER" jtulach@netbeans.org
 fi
+echo SigTest: Incompatible Changes Done
 
 ###############  Commit validation tests  ##########################
 TESTS_STARTED=`date`
