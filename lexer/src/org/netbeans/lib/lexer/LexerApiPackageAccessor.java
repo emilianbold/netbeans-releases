@@ -61,6 +61,15 @@ import org.netbeans.spi.lexer.LanguageHierarchy;
 
 public abstract class LexerApiPackageAccessor {
     
+    static {
+        // Cause api accessor impl to get initialized
+        try {
+            Class.forName(Language.class.getName(), true, LexerApiPackageAccessor.class.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            // Should never happen
+        }
+    }
+    
     private static LexerApiPackageAccessor INSTANCE;
     
     public static LexerApiPackageAccessor get() {

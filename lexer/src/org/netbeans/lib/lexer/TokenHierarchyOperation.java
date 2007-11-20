@@ -253,6 +253,10 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         return (activity == Activity.ACTIVE);
     }
     
+    public boolean isActiveNoInit() {
+        return (activity == Activity.ACTIVE);
+    }
+    
     private void activateIfPossible() {
         if (rootTokenList == null && mutableTextInput != null &&
                 (activity == Activity.NOT_INITED || activity == Activity.NOT_INITED_FIRE)

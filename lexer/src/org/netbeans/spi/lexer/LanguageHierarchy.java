@@ -49,7 +49,6 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.CharProvider;
-import org.netbeans.lib.lexer.LanguageOperation;
 import org.netbeans.lib.lexer.LexerApiPackageAccessor;
 import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.lib.lexer.LexerSpiPackageAccessor;
@@ -321,13 +320,6 @@ public abstract class LanguageHierarchy<T extends TokenId> {
      */
     public final Language<T> language() {
         if (language == null) {
-            // Cause api accessor impl to get initialized
-            try {
-                Class.forName(Language.class.getName(), true, LanguageOperation.class.getClassLoader());
-            } catch (ClassNotFoundException e) {
-                //cannot happen
-            }
-            
             // Both tokenIds() and tokenCategories() should impose no locks
             // so call in synchronized block
             language = LexerApiPackageAccessor.get().createLanguage(this);

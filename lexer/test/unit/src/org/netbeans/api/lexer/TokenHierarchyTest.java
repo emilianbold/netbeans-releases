@@ -41,10 +41,13 @@
 
 package org.netbeans.api.lexer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.lexer.LexerApiPackageAccessor;
+import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.lang.TestLineTokenId;
 import org.netbeans.lib.lexer.lang.TestPlainTokenId;
 import org.netbeans.lib.lexer.lang.TestTokenId;
@@ -190,6 +193,62 @@ public class TokenHierarchyTest extends NbTestCase {
 
         List<TokenSequence<?>> ets5 = hi.embeddedTokenSequences(doc.getLength(), false);
         assertEquals("Wrong number of embedded TokenSequences", 0, ets5.size());
+    }
+
+    public void testMultiThreadTokenSequenceCreation() throws Exception {
+        Document doc = new ModificationTextDocument();
+        String text = "a b";
+        doc.insertString(0, text, null);
+        doc.putProperty(Language.class,TestTokenId.language());
+        
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenHierarchyOperation<?,?> hiOp = LexerApiPackageAccessor.get().tokenHierarchyOperation(hi);
+        assertFalse(hiOp.isActiveNoInit());
+        TSAccessor.hi = hi;
+        int threadCount = 3;
+        List<TSAccessor> threads = new ArrayList<TSAccessor>(threadCount);
+        while (threads.size() < threadCount) {
+            TSAccessor a = new TSAccessor();
+            threads.add(a);
+            a.start();
+        }
+        Thread.sleep(10); // Wait shortly so that the notifyAll will find all the threads waiting
+        synchronized (hi) {
+            hi.notifyAll(); // Should wake up all waiting threads
+        }
+        for (TSAccessor a : threads) {
+            a.join();
+        }
+        Token<?> token1 = threads.get(0).token1;
+        assertNotNull(token1);
+        for (TSAccessor a : threads) {
+            assertNotNull(a.token1);
+            assertSame(token1, a.token1);
+        }
+    }
+
+    private static final class TSAccessor extends Thread {
+        
+        static TokenHierarchy<?> hi;
+        
+        TokenSequence<?> ts;
+        Token<?> token1;
+        
+        TSAccessor() {
+        }
+        
+        public void run() {
+            synchronized (hi) {
+                try {
+                    hi.wait();
+                } catch (InterruptedException e) {
+                }
+            }
+            ts = hi.tokenSequence();
+            assertTrue(ts.moveNext());
+            token1 = ts.token();
+        }
+
     }
 
 }

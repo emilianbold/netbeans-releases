@@ -67,6 +67,15 @@ import org.netbeans.spi.lexer.TokenValidator;
 
 public abstract class LexerSpiPackageAccessor {
     
+    static {
+        // Cause spi accessor impl to get initialized
+        try {
+            Class.forName(LanguageHierarchy.class.getName(), true, LexerSpiPackageAccessor.class.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            // Should never happen
+        }
+    }
+    
     private static LexerSpiPackageAccessor INSTANCE;
     
     public static LexerSpiPackageAccessor get() {
