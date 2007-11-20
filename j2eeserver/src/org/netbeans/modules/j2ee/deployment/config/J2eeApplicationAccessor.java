@@ -47,26 +47,27 @@ import org.openide.util.Exceptions;
 
 /**
  * Utility class for accessing non-public constructor of the J2eeApplication.
- * 
- * 
+ *
+ *
  * @author sherold
  */
 public abstract class J2eeApplicationAccessor {
-    
+
     public static J2eeApplicationAccessor DEFAULT;
-    
+
     // force loading of J2eeApplication class. That will set DEFAULT variable.
     static {
+        Class c = J2eeApplication.class;
         try {
-            Object o = Class.forName("org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication", true, J2eeApplicationAccessor.class.getClassLoader()); // NOI18N
+            Class.forName(c.getName(), true, J2eeApplicationAccessor.class.getClassLoader()); // NOI18N
         } catch (ClassNotFoundException cnf) {
             Exceptions.printStackTrace(cnf);
         }
     }
-    
+
     /**
      * Factory method that creates a J2eeApplication for the J2eeApplicationImplementation.
-     * 
+     *
      * @param impl SPI J2eeApplicationImplementation object
      * @return J2eeApplication
      */

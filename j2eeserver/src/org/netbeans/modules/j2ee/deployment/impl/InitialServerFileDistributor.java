@@ -85,7 +85,6 @@ public class InitialServerFileDistributor extends ServerProgress {
     public File distribute() {
         ModuleConfigurationProvider deployment = dtarget.getModuleConfigurationProvider();
         J2eeModule source = dtarget.getModule();
-        J2eeModule deployable = deployment.getJ2eeModule(null);
         String name = dtarget.getDeploymentName();
         File dir = incDeployment.getDirectoryForNewApplication (name, target, deployment.getModuleConfiguration());
         try {
@@ -139,7 +138,6 @@ public class InitialServerFileDistributor extends ServerProgress {
             return;
         
         ModuleConfigurationProvider deployment = dtarget.getModuleConfigurationProvider();
-        J2eeModule source = dtarget.getModule();
         J2eeModule deployable = deployment.getJ2eeModule(null);
         File dir = incDeployment.getDirectoryForNewApplication (target, deployable, deployment.getModuleConfiguration());
         if (!cleanup (dir)) {

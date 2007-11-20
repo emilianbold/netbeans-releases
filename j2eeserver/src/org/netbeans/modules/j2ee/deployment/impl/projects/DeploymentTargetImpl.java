@@ -250,11 +250,11 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
             }
             targetModules = TargetModule.load(getServer(), fname);
         }
-        return targetModules;
+        return targetModules.clone();
     }
     
     public void setTargetModules(TargetModule[] targetModules) {
-        this.targetModules = targetModules;
+        this.targetModules = targetModules.clone();
         for (int i=0; i< targetModules.length; i++) {
             targetModules[i].save(getTargetModuleFileName());
         }
