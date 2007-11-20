@@ -43,6 +43,9 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
 -->
 <project basedir="." default="netbeans" name="ide/branding">
 
+  <!-- Apparently needed by ML build? -->
+  <property name="nb_all" location="../.."/>
+
   <import file="${nb_all}/nbbuild/templates/projectized.xml"/>
 
   <property name="locjar.warnMissingDir" value="true"/>
