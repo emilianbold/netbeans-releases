@@ -112,6 +112,7 @@ public class SourceNodeFactory implements NodeFactory {
                 }
             }
 
+            java.util.Collections.sort(result);
             return result;
         }
         
@@ -151,7 +152,7 @@ public class SourceNodeFactory implements NodeFactory {
         
     }
 
-    private static class SourceGroupKey {
+    private static class SourceGroupKey implements Comparable<SourceGroupKey> {
         
         public final SourceGroup group;
         public final FileObject fileObject;
@@ -164,6 +165,13 @@ public class SourceNodeFactory implements NodeFactory {
         public int hashCode() {
             return fileObject.hashCode();
         }
+        
+        
+        public int compareTo(SourceGroupKey o) {
+            return group.getDisplayName().compareTo(o.group.getDisplayName());
+            
+        }
+        
         
         public boolean equals(Object obj) {
             
