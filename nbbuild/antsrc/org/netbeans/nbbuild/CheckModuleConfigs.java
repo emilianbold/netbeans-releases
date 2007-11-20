@@ -261,7 +261,8 @@ public final class CheckModuleConfigs extends Task {
         for (String module : allClusterModules) {
             if (new File(nbroot, (module + "/nbproject/project.xml").replace('/', File.separatorChar)).isFile()) {
                 Element e = doc.createElementNS("http://www.netbeans.org/ns/freeform-project/1", "project");
-                e.appendChild(doc.createTextNode("../../" + module));
+                String path = "../../" + module;
+                e.appendChild(doc.createTextNode(path.replaceFirst("^\\.\\./\\.\\./ide/", "../")));
                 sp.appendChild(e);
             } else {
                 sp.appendChild(doc.createComment(" Unprojectized: " + module + " "));
