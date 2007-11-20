@@ -72,14 +72,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.mercurial.HgModuleConfig;
-//import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-//import org.tigris.subversion.svnclientadapter.SVNRevision;
-//import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * @author Tomas Stupka
@@ -197,7 +194,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             // templates for supported connection methods        
             recentRoots.add(new RepositoryConnection("file:///"));      // NOI18N
             recentRoots.add(new RepositoryConnection("http://"));       // NOI18N
-            recentRoots.add(new RepositoryConnection("https://"));      // NOI18N
+            //recentRoots.add(new RepositoryConnection("https://"));      // NOI18N
             recentRoots.add(new RepositoryConnection("static-http://"));        // NOI18N
             recentRoots.add(new RepositoryConnection("ssh://"));        // NOI18N
         };
@@ -402,10 +399,10 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             repositoryPanel.tipLabel.setText(HTTP_URL_HELP);
             authFields = true;
             proxyFields = true;
-        } else if(selectedUrlString.startsWith("https:")) {                     // NOI18N
-            repositoryPanel.tipLabel.setText(HTTPS_URL_HELP);
-            authFields = true;
-            proxyFields = true;
+        //} else if(selectedUrlString.startsWith("https:")) {                     // NOI18N
+            //repositoryPanel.tipLabel.setText(HTTPS_URL_HELP);
+            //authFields = true;
+            //proxyFields = true;
         } else if(selectedUrlString.startsWith("static-http:")) {                       // NOI18N
             repositoryPanel.tipLabel.setText(STATIC_HTTP_URL_HELP);
             authFields = true;
@@ -417,16 +414,23 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             repositoryPanel.tipLabel.setText(LOCAL_URL_HELP);
         } else {
             repositoryPanel.tipLabel.setText(NbBundle.getMessage(Repository.class, "MSG_Repository_Url_Help", new Object [] { // NOI18N
-                LOCAL_URL_HELP, HTTP_URL_HELP, HTTPS_URL_HELP, STATIC_HTTP_URL_HELP, SSH_URL_HELP
+                //LOCAL_URL_HELP, HTTP_URL_HELP, HTTPS_URL_HELP, STATIC_HTTP_URL_HELP, SSH_URL_HELP
+                LOCAL_URL_HELP, HTTP_URL_HELP, STATIC_HTTP_URL_HELP, SSH_URL_HELP
             }));
         }
 
-        repositoryPanel.userPasswordField.setVisible(authFields);
-        repositoryPanel.passwordLabel.setVisible(authFields);          
-        repositoryPanel.userTextField.setVisible(authFields);          
-        repositoryPanel.leaveBlankLabel.setVisible(authFields);        
-        repositoryPanel.userLabel.setVisible(authFields);             
-        //repositoryPanel.savePasswordCheckBox.setVisible(authFields);             
+        //repositoryPanel.userPasswordField.setVisible(authFields);
+        //repositoryPanel.passwordLabel.setVisible(authFields);          
+        //repositoryPanel.userTextField.setVisible(authFields);          
+        //repositoryPanel.leaveBlankLabel.setVisible(authFields);        
+        //repositoryPanel.userLabel.setVisible(authFields);             
+        //repositoryPanel.savePasswordCheckBox.setVisible(authFields);
+        repositoryPanel.userPasswordField.setVisible(false);
+        repositoryPanel.passwordLabel.setVisible(false);          
+        repositoryPanel.userTextField.setVisible(false);          
+        repositoryPanel.leaveBlankLabel.setVisible(false);        
+        repositoryPanel.userLabel.setVisible(false);             
+        repositoryPanel.savePasswordCheckBox.setVisible(false);
         repositoryPanel.proxySettingsButton.setVisible(proxyFields && ((modeMask & FLAG_SHOW_PROXY) != 0));        
         //repositoryPanel.tunnelCommandTextField.setVisible(sshFields);        
         //repositoryPanel.tunnelCommandLabel.setVisible(sshFields);        
@@ -440,8 +444,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     }
 
     private String getSVNTunnelTip(String urlString) {
-        String tunnelName = getTunnelName(urlString);
-        return MessageFormat.format(SSH_URL_HELP, tunnelName).trim();
+        //String tunnelName = getTunnelName(urlString);
+        //return MessageFormat.format(SSH_URL_HELP, tunnelName).trim();
+        return SSH_URL_HELP;
     }
             
     private String getTunnelName(String urlString) {
