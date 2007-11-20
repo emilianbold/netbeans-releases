@@ -62,6 +62,7 @@ import javax.swing.Icon;
 import javax.swing.JPanel;
 
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 
 /**
  *
@@ -389,8 +390,7 @@ public abstract class CsmPaintComponent extends JPanel {
     }
     
     public static class NamespacePaintComponent extends CsmPaintComponent{
-        
-        private CsmNamespace pkg;
+
         private String pkgName;
         private boolean displayFullNamespacePath;
         private Color NAMESPACE_COLOR = Color.green.darker().darker().darker();
@@ -427,6 +427,35 @@ public abstract class CsmPaintComponent extends JPanel {
         }
     }
     
+    public static class NamespaceAliasPaintComponent extends CsmPaintComponent{
+
+        private String aliasName;
+        private Color NAMESPACE_COLOR = Color.green.darker().darker().darker();
+        
+        public NamespaceAliasPaintComponent(){
+            super();
+        }
+        
+        public void setAliasName(String aliasName){
+            this.aliasName = aliasName;
+        }
+        
+        protected void draw(Graphics g) {
+            // IMPORTANT:
+            // when updated => have to update toString!
+            drawIcon(g, getIcon());
+            drawString(g, aliasName,	    NAMESPACE_COLOR);
+        }
+        
+        /**
+         * returns string representation of paint item
+         * IMPORTANT: have to be in sync with draw() method
+         */
+        public String toString() {
+            return aliasName;
+        }
+    }
+
     public static class EnumPaintComponent extends CsmPaintComponent {
         
         String formatEnumName;

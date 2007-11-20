@@ -134,6 +134,7 @@ public interface CsmImageName {
     static final String INCLUDE_SYSTEM = RESOURCE_BASE+"include_sys_16.png"; // NOI18N
     static final String INCLUDE_SYS_FOLDER = RESOURCE_BASE+"include_sys_folder_16.png"; // NOI18N
     static final String INCLUDE_USR_FOLDER = RESOURCE_BASE+"include_usr_folder_16.png"; // NOI18N
+    static final String NAMESPACE_ALIAS = RESOURCE_BASE+"namespace_16.png"; // NOI18N
     static final String USING = RESOURCE_BASE+"using_namespace_16.png"; // NOI18N
     static final String USING_DECLARATION =  RESOURCE_BASE+"using_declaration_16.png"; // NOI18N
     

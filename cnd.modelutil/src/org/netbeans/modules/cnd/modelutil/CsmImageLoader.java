@@ -143,6 +143,8 @@ public class CsmImageLoader implements CsmImageName {
             // FIXUP: consider namespace same as namespace definition
             // because namespace is not declaration
             kind = CsmDeclaration.Kind.NAMESPACE_DEFINITION;
+        } else if (CsmKindUtilities.isNamespaceAlias(o)) {
+            kind = CsmDeclaration.Kind.NAMESPACE_ALIAS;
         } else if (CsmKindUtilities.isMacro(o)) {
             return MACRO;
         } else if (CsmKindUtilities.isInclude(o)) {
@@ -162,6 +164,8 @@ public class CsmImageLoader implements CsmImageName {
         String iconPath = DEFAULT;
         if (kind == CsmDeclaration.Kind.NAMESPACE_DEFINITION) {
             iconPath = NAMESPACE;
+        } else if (kind == CsmDeclaration.Kind.NAMESPACE_ALIAS) {
+            iconPath = NAMESPACE_ALIAS;
         } else if (kind == CsmDeclaration.Kind.ENUM) { 
             if ((modifiers & CsmUtilities.ENUMERATOR) == 0)
                 iconPath = ENUMERATION;

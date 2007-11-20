@@ -42,10 +42,7 @@
 package org.netbeans.modules.cnd.modelutil;
 
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import org.openide.util.Utilities;
 
 /**
  * container of paint components
@@ -54,6 +51,22 @@ import org.openide.util.Utilities;
  */
 public abstract class NbCsmPaintComponent extends CsmPaintComponent {
 
+    public final static class NbNamespaceAliasPaintComponent extends CsmPaintComponent.NamespaceAliasPaintComponent{
+
+        public NbNamespaceAliasPaintComponent(){
+            super();
+        }
+        
+        @Override
+        protected Icon getIcon(){
+            Icon superIcon = super.getIcon();
+            if (superIcon != null) 
+                return superIcon;
+            Icon newIcon = CsmImageLoader.getIcon(CsmDeclaration.Kind.NAMESPACE_ALIAS, 0);
+            setIcon(newIcon);
+            return newIcon;            
+        }
+    }    
 
     public final static class NbNamespacePaintComponent extends CsmPaintComponent.NamespacePaintComponent{
 
@@ -61,6 +74,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
             super();
         }
         
+        @Override
         protected Icon getIcon(){
             Icon superIcon = super.getIcon();
             if (superIcon != null) 
@@ -77,6 +91,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
             super();
         }
         
+        @Override
         protected Icon getIcon(){
             Icon superIcon = super.getIcon();
             if (superIcon != null) 
@@ -93,6 +108,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
             super();
         }
         
+        @Override
         protected Icon getIcon(){
             Icon superIcon = super.getIcon();
             if (superIcon != null) 
@@ -109,6 +125,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
             super();
         }
         
+        @Override
         protected Icon getIcon(){
             Icon superIcon = super.getIcon();
             if (superIcon != null) 
@@ -125,6 +142,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
             super();
         }
         
+        @Override
         protected Icon getIcon(){
             Icon superIcon = super.getIcon();
             if (superIcon != null) 
@@ -141,6 +159,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
             super();
         }
         
+        @Override
         protected Icon getIcon(){
             Icon superIcon = super.getIcon();
             if (superIcon != null) 
@@ -157,6 +176,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
             super();
         }
         
+        @Override
         protected Icon getIcon(){
             Icon superIcon = super.getIcon();
             if (superIcon != null) 
@@ -174,6 +194,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
             super();
         }
         
+        @Override
         protected Icon getIcon(){
             Icon superIcon = super.getIcon();
             if (superIcon != null) 
@@ -190,6 +211,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
             super();
         }
         
+        @Override
         protected Icon getIcon(){
             Icon newIcon = CsmImageLoader.getIcon(CsmDeclaration.Kind.VARIABLE, getModifiers()|CsmUtilities.GLOBAL);
             return newIcon;             
@@ -202,6 +224,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
             super();
         }
         
+        @Override
         protected Icon getIcon(){
             Icon newIcon = CsmImageLoader.getIcon(CsmDeclaration.Kind.VARIABLE, getModifiers()|CsmUtilities.LOCAL);
             return newIcon;             
@@ -214,6 +237,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
             super();
         }
         
+        @Override
         protected Icon getIcon() {
             Icon newIcon = CsmImageLoader.getIcon(CsmDeclaration.Kind.VARIABLE, getModifiers()|CsmUtilities.FILE_LOCAL);
             return newIcon;             
@@ -226,6 +250,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
             super();
         }
         
+        @Override
         protected Icon getIcon(){
             Icon newIcon = CsmImageLoader.getIcon(CsmDeclaration.Kind.VARIABLE, getModifiers()|CsmUtilities.MEMBER);
             return newIcon;            
@@ -239,6 +264,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
             super();
         }
         
+        @Override
         protected Icon getIcon(){
             Icon newIcon = CsmImageLoader.getIcon(CsmDeclaration.Kind.FUNCTION_DEFINITION, getModifiers()|CsmUtilities.GLOBAL);
             return newIcon;             
@@ -251,6 +277,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
             super();
         }
         
+        @Override
         protected Icon getIcon(){
             Icon newIcon = CsmImageLoader.getIcon(CsmDeclaration.Kind.FUNCTION_DEFINITION, getModifiers()|CsmUtilities.MEMBER);
             return newIcon;            
@@ -264,6 +291,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         }
 
         
+        @Override
         protected Icon getIcon(){
             Icon newIcon = CsmImageLoader.getIcon(CsmDeclaration.Kind.FUNCTION_DEFINITION, getModifiers()|CsmUtilities.CONSTRUCTOR);
             return newIcon;            
