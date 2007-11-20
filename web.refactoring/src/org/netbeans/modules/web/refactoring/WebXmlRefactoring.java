@@ -72,7 +72,7 @@ public abstract class WebXmlRefactoring implements WebRefactoring{
     protected List<Servlet> getServlets(String clazz){
         List<Servlet> result = new ArrayList<Servlet>();
         for(Servlet servlet : webModel.getServlet())
-            if (servlet.getServletClass().equals(clazz)){
+            if (clazz.equals(servlet.getServletClass())){
                 result.add(servlet);
             }
         return result;
@@ -81,7 +81,7 @@ public abstract class WebXmlRefactoring implements WebRefactoring{
     protected List<Filter> getFilters(String clazz){
         List<Filter> result = new ArrayList<Filter>();
         for (Filter filter : webModel.getFilter()){
-            if (filter.getFilterClass().equals(clazz)){
+            if (clazz.equals(filter.getFilterClass())){
                 result.add(filter);
             }
         }
@@ -91,7 +91,7 @@ public abstract class WebXmlRefactoring implements WebRefactoring{
     protected List<Listener> getListeners(String clazz){
         List<Listener> result = new ArrayList<Listener>();
         for (Listener listener : webModel.getListener()){
-            if (listener.getListenerClass().equals(clazz)){
+            if (clazz.equals(listener.getListenerClass())){
                 result.add(listener);
             }
         }

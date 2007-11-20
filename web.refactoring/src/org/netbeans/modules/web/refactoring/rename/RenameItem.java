@@ -27,6 +27,8 @@
  */
 package org.netbeans.modules.web.refactoring.rename;
 
+import org.openide.util.Parameters;
+
 /**
  * Encapsulates the new and old name.
  * TODO: needs a better name
@@ -38,7 +40,17 @@ class RenameItem {
     private final String oldFqn;
     private final String newFqn;
 
+    /**
+     * Creates a new RenameItem.
+     * 
+     * @param newFqn the new fully qualified name for the object being renamed;
+     * must not be empty or null.
+     * @param oldFqn the old fully qualified name of the object being renamed;
+     * must not be empty or null.
+     */
     public RenameItem(String newFqn, String oldFqn) {
+        Parameters.notEmpty("newFqn", newFqn); //NO18N
+        Parameters.notEmpty("oldFqn", oldFqn); //NO18N
         this.newFqn = newFqn;
         this.oldFqn = oldFqn;
     }

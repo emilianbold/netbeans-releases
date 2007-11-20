@@ -31,8 +31,6 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
@@ -108,6 +106,8 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
             return null;
         }
         String clazz = resolveClass(handle);
+        // if have a java file, the class name should be resolvable
+        assert !(javaFile && clazz == null) : "Could not resolve the class for: " + sourceFO;//NOI18N
         
         List<WebRefactoring> refactorings = new ArrayList<WebRefactoring>();
         
