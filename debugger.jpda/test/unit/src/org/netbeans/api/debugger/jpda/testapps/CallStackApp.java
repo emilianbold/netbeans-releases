@@ -42,14 +42,14 @@
 package org.netbeans.api.debugger.jpda.testapps;
 
 /**
- * Sample call stack info application. DO NOT MODIFY - line numbers must not change in this source file.
+ * Sample call stack info application.
  *
  * @author Maros Sandor
  */
 public class CallStackApp {
 
     public static void main(String[] args) {
-        CallStackApp sa = new CallStackApp();
+        CallStackApp sa = new CallStackApp(); // LBREAKPOINT
         x += sa.m1();
         x += sa.m1();
         x += sa.m1();
@@ -68,7 +68,7 @@ public class CallStackApp {
 
     private int m2() {
         int im2 = 20;
-        m3();
+        m3();         // STOP CallStackEval
         return im2;
     }
 

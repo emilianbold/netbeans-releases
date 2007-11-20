@@ -42,7 +42,7 @@
 package org.netbeans.api.debugger.jpda.testapps;
 
 /**
- * Sample field breakpoints application. DO NOT MODIFY - line numbers must not change in this source file.
+ * Sample field breakpoints application.
  *
  * @author Maros Sandor
  */
@@ -63,14 +63,14 @@ public class FieldBreakpointApp {
         int isw = is.getW();
     }
 
-    private int y = 1;
+    private int y = 1;  // STOP FY1
 
     {
-        y++;
+        y++;            // STOP FY2
     }
 
     public FieldBreakpointApp() {
-        y++;
+        y++;            // STOP FY3
     }
 
     private int m1() {
@@ -100,14 +100,14 @@ public class FieldBreakpointApp {
             q ++;
         }
 
-        private int w = 1;
+        private int w = 1;  // STOP FW1
 
         {
-            w ++;
+            w ++;           // STOP FW2
         }
 
         public InnerStatic() {
-            w ++;
+            w ++;           // STOP FW3
         }
 
         public static int getQ() {
@@ -121,14 +121,14 @@ public class FieldBreakpointApp {
 
     private class Inner {
 
-        private int w = 1;
+        private int w = 1;  // STOP FIW1
 
         {
-            w ++;
+            w ++;           // STOP FIW2
         }
 
         public Inner() {
-            w ++;
+            w ++;           // STOP FIW3
         }
 
         public int getW() {

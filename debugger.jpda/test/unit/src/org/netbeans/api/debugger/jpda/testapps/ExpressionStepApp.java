@@ -42,14 +42,14 @@
 package org.netbeans.api.debugger.jpda.testapps;
 
 /**
- * Sample step application. DO NOT MODIFY - line numbers must not change in this source file.
+ * Sample step application.
  *
  * @author Martin Entlicher
  */
 public class ExpressionStepApp {
 
     public static void main(String[] args) {
-        x += factorial(10);
+        x += factorial(10);                     // LBREAKPOINT
         x += factorial(20) + factorial(30);
         x += factorial(40); x += factorial(50);
         ExpressionStepApp exs = new ExpressionStepApp();

@@ -42,7 +42,7 @@
 package org.netbeans.api.debugger.jpda.testapps;
 
 /**
- * Sample method breakpoints application. DO NOT MODIFY - line numbers must not change in this source file.
+ * Sample method breakpoints application.
  *
  * @author Maros Sandor
  */
@@ -57,29 +57,29 @@ public class MethodBreakpointApp {
         new ConcreteInner().compute(); new ConcreteInner().getString();
     }
     static {
-        System.currentTimeMillis();
+        System.currentTimeMillis();     // STOP cinit
     }
 
-    public MethodBreakpointApp() {
+    public MethodBreakpointApp() {      // STOP init
         System.currentTimeMillis();
     }
 
     private void a() {
-        b();
+        b();                // STOP a
         c();
     }
 
     private void b() {
-        c();
+        c();                // STOP b
     }
 
     private void c() {
-        Inner i = new Inner(); i.getW(); i.getW();
+        Inner i = new Inner(); i.getW(); i.getW();                 // STOP c
     }
 
     private static class InnerStatic {
 
-        private static int q = 0;
+        private static int q = 0;       // STOP InnerStatic.cinit
 
         static {
             q ++;
@@ -100,7 +100,7 @@ public class MethodBreakpointApp {
         }
 
         public int getW() {
-            return w;
+            return w;   // STOP InnerStatic.getW
         }
     }
 
@@ -112,12 +112,12 @@ public class MethodBreakpointApp {
             w ++;
         }
 
-        public Inner() {
+        public Inner() {        // STOP Inner.init
             w ++;
         }
 
         public int getW() {
-            return w;
+            return w;   // STOP Inner.getW
         }
     }
     
@@ -137,12 +137,12 @@ public class MethodBreakpointApp {
         
         public double compute() {
             double num = Math.PI/2;
-            return Math.round(Math.sin(num)*1000)/1000.0;
+            return Math.round(Math.sin(num)*1000)/1000.0;   // STOP Rcompute
         }
         
         public String getString() {
             char[] chars = new char[] { 'H', 'e', 'l', 'l', 'o' };
-            return new String(chars);
+            return new String(chars);                       // STOP RgetString
         }
         
     }

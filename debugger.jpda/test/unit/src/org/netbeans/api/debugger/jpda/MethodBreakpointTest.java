@@ -65,36 +65,38 @@ public class MethodBreakpointTest extends NbTestCase {
     }
 
     public void testMethodEntryBreakpoints() throws Exception {
+        Utils.BreakPositions bp = Utils.getBreakPositions(System.getProperty ("test.dir.src") + 
+                "org/netbeans/api/debugger/jpda/testapps/MethodBreakpointApp.java");
         try {
             MethodBreakpoint mb1 = MethodBreakpoint.create (CLASS_NAME, "a");
             TestBreakpointListener tbl = new TestBreakpointListener 
-                ("a", 46, 1);
+                ("a", bp.getStopLine("a"), 1);
             mb1.addJPDABreakpointListener (tbl);
             dm.addBreakpoint(mb1);
 
             MethodBreakpoint mb2 = MethodBreakpoint.create (CLASS_NAME, "b");
             TestBreakpointListener tb2 = new TestBreakpointListener 
-                ("b", 51, 2);
+                ("b", bp.getStopLine("b"), 2);
             mb2.addJPDABreakpointListener (tb2);
             dm.addBreakpoint (mb2);
 
             MethodBreakpoint mb3 = MethodBreakpoint.create (CLASS_NAME, "c");
             TestBreakpointListener tb3 = new TestBreakpointListener
-                ("c", 55, 4);
+                ("c", bp.getStopLine("c"), 4);
             mb3.addJPDABreakpointListener (tb3);
             dm.addBreakpoint (mb3);
 
             MethodBreakpoint mb4 = MethodBreakpoint.create 
                 (CLASS_NAME, "<init>");
             TestBreakpointListener tb4 = new TestBreakpointListener
-                ("<init>", 41, 1);
+                ("<init>", bp.getStopLine("init"), 1);
             mb4.addJPDABreakpointListener (tb4);
             dm.addBreakpoint (mb4);
 
             MethodBreakpoint mb5 = MethodBreakpoint.create
                 (CLASS_NAME, "<clinit>");
             TestBreakpointListener tb5 = new TestBreakpointListener
-                ("<clinit>", 38, 1);
+                ("<clinit>", bp.getStopLine("cinit"), 1);
             mb5.addJPDABreakpointListener (tb5);
             dm.addBreakpoint (mb5);
 
@@ -104,7 +106,7 @@ public class MethodBreakpointTest extends NbTestCase {
             );
             TestBreakpointListener tb6 = new TestBreakpointListener (
                 "InnerStatic.<clinit>", 
-                60, 
+                bp.getStopLine("InnerStatic.cinit"), 
                 1
             );
             mb6.addJPDABreakpointListener (tb6);
@@ -116,7 +118,7 @@ public class MethodBreakpointTest extends NbTestCase {
             );
             TestBreakpointListener tb7 = new TestBreakpointListener (
                 "InnerStatic.getW", 
-                81, 
+                bp.getStopLine("InnerStatic.getW"), 
                 1
             );
             mb7.addJPDABreakpointListener (tb7);
@@ -128,7 +130,7 @@ public class MethodBreakpointTest extends NbTestCase {
             );
             TestBreakpointListener tb8 = new TestBreakpointListener (
                 "Inner.<init>", 
-                93, 
+                bp.getStopLine("Inner.init"), 
                 4
             );
             mb8.addJPDABreakpointListener (tb8);
@@ -140,7 +142,7 @@ public class MethodBreakpointTest extends NbTestCase {
             );
             TestBreakpointListener tb9 = new TestBreakpointListener (
                 "Inner.getW", 
-                98, 
+                bp.getStopLine("Inner.getW"), 
                 8
             );
             mb9.addJPDABreakpointListener (tb9);
@@ -180,13 +182,15 @@ public class MethodBreakpointTest extends NbTestCase {
     }
 
     public void testMethodExitBreakpoints() throws Exception {
+        Utils.BreakPositions bp = Utils.getBreakPositions(System.getProperty ("test.dir.src") + 
+                "org/netbeans/api/debugger/jpda/testapps/MethodBreakpointApp.java");
         try {
             MethodBreakpoint mb1 = MethodBreakpoint.create (
                 CLASS_NAME + "$AbstractInner", "compute"
             );
             mb1.setBreakpointType(MethodBreakpoint.TYPE_METHOD_EXIT);
             TestBreakpointListener tbl = new TestBreakpointListener 
-                ("compute", 118, 1, "1.0");
+                ("compute", bp.getStopLine("Rcompute"), 1, "1.0");
             mb1.addJPDABreakpointListener (tbl);
             dm.addBreakpoint(mb1);
             
@@ -195,7 +199,7 @@ public class MethodBreakpointTest extends NbTestCase {
             );
             mb2.setBreakpointType(MethodBreakpoint.TYPE_METHOD_EXIT);
             TestBreakpointListener tb2 = new TestBreakpointListener 
-                ("getString", 123, 1, "\"Hello\"");
+                ("getString", bp.getStopLine("RgetString"), 1, "\"Hello\"");
             mb2.addJPDABreakpointListener (tb2);
             dm.addBreakpoint(mb2);
             

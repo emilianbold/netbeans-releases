@@ -46,7 +46,6 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.RequestProcessor;
 
 /**
  * Tests field breakpoints.
@@ -67,20 +66,9 @@ public class FieldBreakpointTest extends NbTestCase {
 
     public void testFieldBreakpoints() throws Exception {
         try {
-//            Does not work on JDK1.4            
-//            FieldBreakpoint fb1 = FieldBreakpoint.create (
-//                CLASS_NAME, 
-//                "x", 
-//                FieldBreakpoint.TYPE_MODIFICATION
-//            );
-//            TestBreakpointListener tbl = new TestBreakpointListener (
-//                "x", 
-//                0, 
-//                new int [] {29, 32, 37 }
-//            );
-//            fb1.addJPDABreakpointListener (tbl);
-//            dm.addBreakpoint (fb1);
 
+            Utils.BreakPositions bp = Utils.getBreakPositions(System.getProperty ("test.dir.src") + 
+                    "org/netbeans/api/debugger/jpda/testapps/FieldBreakpointApp.java");
             FieldBreakpoint fb2 = FieldBreakpoint.create (
                 CLASS_NAME, 
                 "y", 
@@ -88,25 +76,12 @@ public class FieldBreakpointTest extends NbTestCase {
             );
             TestBreakpointListener tb2 = new TestBreakpointListener (
                 "y", 
-                0, 
-                new int [] { 44, 47, 51 }
+                0,
+                new int[] { bp.getStopLine("FY1"), bp.getStopLine("FY2"), bp.getStopLine("FY3") }
+                //new int [] { 44, 47, 51 }
             );
             fb2.addJPDABreakpointListener (tb2);
             dm.addBreakpoint (fb2);
-
-//            Does not work on JDK1.4            
-//            FieldBreakpoint fb3 = FieldBreakpoint.create (
-//                CLASS_NAME + "$InnerStatic", 
-//                "q", 
-//                FieldBreakpoint.TYPE_MODIFICATION
-//            );
-//            TestBreakpointListener tb3 = new TestBreakpointListener (
-//                "InnerStatic.q", 
-//                0, 
-//                new int [] {75, 78 }
-//            );
-//            fb3.addJPDABreakpointListener (tb3);
-//            dm.addBreakpoint (fb3);
 
             FieldBreakpoint fb4 = FieldBreakpoint.create (
                 CLASS_NAME + "$InnerStatic", 
@@ -116,7 +91,8 @@ public class FieldBreakpointTest extends NbTestCase {
             TestBreakpointListener tb4 = new TestBreakpointListener (
                 "InnerStatic.w", 
                 0, 
-                new int [] { 81, 84, 88 }
+                new int[] { bp.getStopLine("FW1"), bp.getStopLine("FW2"), bp.getStopLine("FW3") }
+                //new int [] { 81, 84, 88 }
             );
             fb4.addJPDABreakpointListener (tb4);
             dm.addBreakpoint (fb4);
@@ -129,7 +105,8 @@ public class FieldBreakpointTest extends NbTestCase {
             TestBreakpointListener tb5 = new TestBreakpointListener (
                 "Inner.w", 
                 0, 
-                new int [] { 102, 105, 109 }
+                new int[] { bp.getStopLine("FIW1"), bp.getStopLine("FIW2"), bp.getStopLine("FIW3") }
+                //new int [] { 102, 105, 109 }
             );
             fb5.addJPDABreakpointListener (tb5);
             dm.addBreakpoint (fb5);

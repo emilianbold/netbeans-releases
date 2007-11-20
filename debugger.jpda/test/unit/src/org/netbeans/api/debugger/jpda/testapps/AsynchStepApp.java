@@ -42,14 +42,14 @@
 package org.netbeans.api.debugger.jpda.testapps;
 
 /**
- * Sample step application. DO NOT MODIFY - line numbers must not change in this source file.
+ * Sample step application.
  *
  * @author Maros Sandor
  */
 public class AsynchStepApp {
 
     public static void main(String[] args) {
-        AsynchStepApp sa = new AsynchStepApp();
+        AsynchStepApp sa = new AsynchStepApp(); // LBREAKPOINT
         x += sa.m1();
         x += sa.m1();
         x += sa.m1();
@@ -57,17 +57,17 @@ public class AsynchStepApp {
         x += sa.m1();
     }
 
-    public AsynchStepApp() {
-    }
+    public AsynchStepApp() {    // STOP Into1
+    }                           // STOP Over1
 
     private int m1() {
-        int im1 = 10;
-        m2();
+        int im1 = 10;           // STOP Into2
+        m2();                   // STOP Over2
         return im1;
     }
 
     private int m2() {
-        int im2 = 20;
+        int im2 = 20;           // STOP Into3
         m3();
         return im2;
     }

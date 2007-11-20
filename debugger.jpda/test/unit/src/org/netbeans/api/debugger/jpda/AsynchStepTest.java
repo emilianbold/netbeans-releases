@@ -65,11 +65,9 @@ public class AsynchStepTest extends NbTestCase {
     public void testStepOver () throws Exception {
         try {
             JPDASupport.removeAllBreakpoints ();
-            LineBreakpoint lb = LineBreakpoint.create (
-                Utils.getURL(sourceRoot + 
-                    "org/netbeans/api/debugger/jpda/testapps/AsynchStepApp.java"),
-                30
-            );
+            Utils.BreakPositions bp = Utils.getBreakPositions(sourceRoot + 
+                    "org/netbeans/api/debugger/jpda/testapps/AsynchStepApp.java");
+            LineBreakpoint lb = bp.getLineBreakpoints().get(0);
             dm.addBreakpoint (lb);
             support = JPDASupport.attach
                 ("org.netbeans.api.debugger.jpda.testapps.AsynchStepApp");
@@ -84,36 +82,37 @@ public class AsynchStepTest extends NbTestCase {
                     getClassName (), 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp"
             );
+            int line = lb.getLineNumber();
             assertEquals (
                 "Execution stopped at wrong line", 
-                30, 
+                line, 
                 support.getDebugger ().getCurrentCallStackFrame ().
                     getLineNumber (null)
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp", 
-                31
+                ++line
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp", 
-                32
+                ++line
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp", 
-                33
+                ++line
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp", 
-                34
+                ++line
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp", 
-                35
+                ++line
             );
             support.doContinue ();
             support.waitState (JPDADebugger.STATE_DISCONNECTED);
@@ -127,11 +126,9 @@ public class AsynchStepTest extends NbTestCase {
     public void testStepInto () throws Exception {
         try {
             JPDASupport.removeAllBreakpoints ();
-            LineBreakpoint lb = LineBreakpoint.create (
-                Utils.getURL(sourceRoot + 
-                    "org/netbeans/api/debugger/jpda/testapps/AsynchStepApp.java"),
-                30
-            );
+            Utils.BreakPositions bp = Utils.getBreakPositions(sourceRoot + 
+                    "org/netbeans/api/debugger/jpda/testapps/AsynchStepApp.java");
+            LineBreakpoint lb = bp.getLineBreakpoints().get(0);
             dm.addBreakpoint (lb);
             support = JPDASupport.attach
                 ("org.netbeans.api.debugger.jpda.testapps.AsynchStepApp");
@@ -143,9 +140,10 @@ public class AsynchStepTest extends NbTestCase {
                     getClassName (), 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp"
             );
+            int line = lb.getLineNumber();
             assertEquals (
                 "Execution stopped at wrong line", 
-                30, 
+                line, 
                 support.getDebugger ().getCurrentCallStackFrame ().
                     getLineNumber (null)
             );
@@ -153,38 +151,38 @@ public class AsynchStepTest extends NbTestCase {
             stepCheck (
                 ActionsManager.ACTION_STEP_INTO, 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp", 
-                38
+                bp.getStopLine("Into1")
             );
 //            stepCheck (ActionsManager.ACTION_STEP_INTO, "java.lang.Object", -1);
             stepCheck (
                 ActionsManager.ACTION_STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp", 
-                39
+                bp.getStopLine("Over1")
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp", 
-                30
+                line
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp", 
-                31
+                line + 1
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_INTO, 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp", 
-                42
+                bp.getStopLine("Into2")
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp", 
-                43
+                bp.getStopLine("Over2")
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_INTO, 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp", 
-                48
+                bp.getStopLine("Into3")
             );
 
             support.doContinue ();
@@ -199,11 +197,9 @@ public class AsynchStepTest extends NbTestCase {
     public void testStepOut () throws Exception {
         try {
             JPDASupport.removeAllBreakpoints ();
-            LineBreakpoint lb = LineBreakpoint.create (
-                Utils.getURL(sourceRoot + 
-                    "org/netbeans/api/debugger/jpda/testapps/AsynchStepApp.java"),
-                30
-            );
+            Utils.BreakPositions bp = Utils.getBreakPositions(sourceRoot + 
+                    "org/netbeans/api/debugger/jpda/testapps/AsynchStepApp.java");
+            LineBreakpoint lb = bp.getLineBreakpoints().get(0);
             dm.addBreakpoint (lb);
             support = JPDASupport.attach
                 ("org.netbeans.api.debugger.jpda.testapps.AsynchStepApp");
@@ -215,41 +211,42 @@ public class AsynchStepTest extends NbTestCase {
                     getClassName (), 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp"
             );
+            int line = lb.getLineNumber();
             assertEquals (
                 "Execution stopped at wrong line", 
-                30, 
+                line, 
                 support.getDebugger ().getCurrentCallStackFrame ().
                     getLineNumber (null)
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp", 
-                31
+                line + 1
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_INTO, 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp", 
-                42
+                bp.getStopLine("Into2")
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp", 
-                43
+                bp.getStopLine("Over2")
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_INTO, 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp", 
-                48
+                bp.getStopLine("Into3")
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OUT, 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp", 
-                43
+                bp.getStopLine("Over2")
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OUT, 
                 "org.netbeans.api.debugger.jpda.testapps.AsynchStepApp", 
-                31
+                line + 1
             );
 
             support.doContinue ();

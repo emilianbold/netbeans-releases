@@ -76,11 +76,9 @@ public class JPDAStepTest extends NbTestCase {
      public void testStepInto () throws Exception {
         try {
             JPDASupport.removeAllBreakpoints ();
-            LineBreakpoint lb = LineBreakpoint.create (
-                Utils.getURL(sourceRoot + 
-                    "org/netbeans/api/debugger/jpda/testapps/StepApp.java"),
-                30
-            );
+            Utils.BreakPositions bp = Utils.getBreakPositions(sourceRoot + 
+                    "org/netbeans/api/debugger/jpda/testapps/StepApp.java");
+            LineBreakpoint lb = bp.getLineBreakpoints().get(0);
             dm.addBreakpoint (lb);
             lb.addJPDABreakpointListener(new JPDABreakpointListener() {
                 public void breakpointReached(JPDABreakpointEvent event) {
@@ -98,38 +96,38 @@ public class JPDAStepTest extends NbTestCase {
             );
             assertEquals (
                 "Execution stopped at wrong line", 
-                30, 
+                lb.getLineNumber(), 
                 getCurrentLineNumber()
             );
             stepCheck (
                 JPDAStep.STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                31
+                lb.getLineNumber() + 1
             );
             stepCheck (
                 JPDAStep.STEP_INTO, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                42
+                bp.getStopLine("Into1")
             );
             stepCheck (
                 JPDAStep.STEP_INTO, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                43
+                bp.getStopLine("Into2")
             );
             stepCheck (
                 JPDAStep.STEP_INTO, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                48
+                bp.getStopLine("Into3")
             );
             stepCheck (
                 JPDAStep.STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                49
+                bp.getStopLine("Over4")
             );
             stepCheck (
                 JPDAStep.STEP_INTO, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                54
+                bp.getStopLine("Into5")
             );
            
             // resume VM
@@ -144,16 +142,15 @@ public class JPDAStepTest extends NbTestCase {
      public void testStepOver () throws Exception {
         try {
             JPDASupport.removeAllBreakpoints ();
-            LineBreakpoint lb = LineBreakpoint.create (
-                Utils.getURL(sourceRoot + 
-                    "org/netbeans/api/debugger/jpda/testapps/StepApp.java"),
-                30
-            );
+            Utils.BreakPositions bp = Utils.getBreakPositions(sourceRoot + 
+                    "org/netbeans/api/debugger/jpda/testapps/StepApp.java");
+            LineBreakpoint lb = bp.getLineBreakpoints().get(0);
             dm.addBreakpoint (lb);
             support = JPDASupport.attach
                 ("org.netbeans.api.debugger.jpda.testapps.StepApp");
             support.waitState (JPDADebugger.STATE_STOPPED);
             dm.removeBreakpoint (lb);
+            int line = lb.getLineNumber();
             assertEquals (
                 "Execution stopped in wrong class", 
                 getCurrentClassName(),
@@ -161,33 +158,33 @@ public class JPDAStepTest extends NbTestCase {
             );
             assertEquals (
                 "Execution stopped at wrong line", 
-                30, 
+                line, 
                 getCurrentLineNumber()
             );
             stepCheck (
                 JPDAStep.STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                31
+                ++line
             );
             stepCheck (
                 JPDAStep.STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                32
+                ++line
             );
             stepCheck (
                 JPDAStep.STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                33
+                ++line
             );
             stepCheck (
                 JPDAStep.STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                34
+                ++line
             );
             stepCheck (
                 JPDAStep.STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                35
+                ++line
             );
             
             // resume VM
@@ -202,11 +199,9 @@ public class JPDAStepTest extends NbTestCase {
     public void testStepOut () throws Exception {
         try {
             JPDASupport.removeAllBreakpoints ();
-            LineBreakpoint lb = LineBreakpoint.create (
-                Utils.getURL(sourceRoot + 
-                    "org/netbeans/api/debugger/jpda/testapps/StepApp.java"),
-                30
-            );
+            Utils.BreakPositions bp = Utils.getBreakPositions(sourceRoot + 
+                    "org/netbeans/api/debugger/jpda/testapps/StepApp.java");
+            LineBreakpoint lb = bp.getLineBreakpoints().get(0);
             dm.addBreakpoint (lb);
             support = JPDASupport.attach
                 ("org.netbeans.api.debugger.jpda.testapps.StepApp");
@@ -217,40 +212,41 @@ public class JPDAStepTest extends NbTestCase {
                 getCurrentClassName(), 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp"
             );
+            int line = lb.getLineNumber();
             assertEquals (
                 "Execution stopped at wrong line", 
-                30, 
+                line,
                 getCurrentLineNumber()
             );
             stepCheck (
                 JPDAStep.STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                31
+                line+1
             );
             stepCheck (
                 JPDAStep.STEP_INTO, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                42
+                bp.getStopLine("Into1")
             );
             stepCheck (
                 JPDAStep.STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                43
+                bp.getStopLine("Into2")
             );
             stepCheck (
                 JPDAStep.STEP_INTO, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                48
+                bp.getStopLine("Into3")
             );
             stepCheck (
                 JPDAStep.STEP_OUT, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                43
+                bp.getStopLine("Into2")
             );
             stepCheck (
                 JPDAStep.STEP_OUT, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
-                31
+                line+1
             );
             
             // resume VM

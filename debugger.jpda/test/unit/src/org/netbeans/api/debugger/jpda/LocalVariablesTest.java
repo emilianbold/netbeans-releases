@@ -41,7 +41,6 @@
 
 package org.netbeans.api.debugger.jpda;
 
-import java.net.URL;
 import java.util.*;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbTestCase;
@@ -66,11 +65,9 @@ public class LocalVariablesTest extends NbTestCase {
 
     public void testWatches () throws Exception {
         try {
-            LineBreakpoint lb = LineBreakpoint.create (
-                    Utils.getURL(System.getProperty ("test.dir.src") + 
-                                 "org/netbeans/api/debugger/jpda/testapps/LocalVariablesApp.java"),
-                    40);
-            lb.setPreferredClassName(CLASS_NAME);
+            Utils.BreakPositions bp = Utils.getBreakPositions(System.getProperty ("test.dir.src") + 
+                    "org/netbeans/api/debugger/jpda/testapps/LocalVariablesApp.java");
+            LineBreakpoint lb = bp.getLineBreakpoints().get(0);
             dm.addBreakpoint (lb);
 
             support = JPDASupport.attach (CLASS_NAME);

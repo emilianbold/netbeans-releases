@@ -65,12 +65,10 @@ public class CallStackTest extends NbTestCase {
         JPDASupport support = null;
         try {
             JPDASupport.removeAllBreakpoints ();
-            LineBreakpoint lb = LineBreakpoint.create (
-                Utils.getURL(System.getProperty ("test.dir.src") + 
-                             "org/netbeans/api/debugger/jpda/testapps/CallStackApp.java"),
-                30
-            );
-            lb.setPreferredClassName("org.netbeans.api.debugger.jpda.testapps.CallStackApp");
+            Utils.BreakPositions bp = Utils.getBreakPositions(System.getProperty ("test.dir.src") + 
+                    "org/netbeans/api/debugger/jpda/testapps/CallStackApp.java");
+            LineBreakpoint lb = bp.getLineBreakpoints().get(0);
+            //lb.setPreferredClassName("org.netbeans.api.debugger.jpda.testapps.CallStackApp");
             DebuggerManager.getDebuggerManager ().addBreakpoint (lb);
             support = JPDASupport.attach (
                 "org.netbeans.api.debugger.jpda.testapps.CallStackApp"
@@ -108,7 +106,7 @@ public class CallStackTest extends NbTestCase {
             );
             assertEquals (
                 "Wrong line number", 
-                49, 
+                bp.getStopLine("CallStackEval"), 
                 sf.getLineNumber (null)
             );
             LocalVariable [] vars = sf.getLocalVariables ();
@@ -166,11 +164,9 @@ public class CallStackTest extends NbTestCase {
         JPDASupport support = null;
         try {
             JPDASupport.removeAllBreakpoints ();
-            LineBreakpoint lb = LineBreakpoint.create (
-                Utils.getURL(System.getProperty ("test.dir.src") + 
-                             "org/netbeans/api/debugger/jpda/testapps/CallStackApp.java"),
-                30
-            );
+            Utils.BreakPositions bp = Utils.getBreakPositions(System.getProperty ("test.dir.src") + 
+                    "org/netbeans/api/debugger/jpda/testapps/CallStackApp.java");
+            LineBreakpoint lb = bp.getLineBreakpoints().get(0);
             lb.setPreferredClassName("org.netbeans.api.debugger.jpda.testapps.CallStackApp");
             DebuggerManager.getDebuggerManager ().addBreakpoint (lb);
             support = JPDASupport.attach (
@@ -197,7 +193,7 @@ public class CallStackTest extends NbTestCase {
             );
             assertEquals (
                 "Wrong line number", 
-                30, 
+                lb.getLineNumber(), 
                 sf.getLineNumber (null)
             );
 

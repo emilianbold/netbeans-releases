@@ -42,7 +42,7 @@
 package org.netbeans.api.debugger.jpda.testapps;
 
 /**
- * Sample local variables test. DO NOT MODIFY - line numbers must not change in this source file.
+ * Sample local variables test.
  *
  * @author Maros Sandor
  */
@@ -59,7 +59,7 @@ public class LocalVariablesApp {
         Object  s = "asdfghjkl";
         {
             int g = 20;
-            System.currentTimeMillis();
+            System.currentTimeMillis();         // LBREAKPOINT
         }
         CharSequence g = "ad";
         System.currentTimeMillis();

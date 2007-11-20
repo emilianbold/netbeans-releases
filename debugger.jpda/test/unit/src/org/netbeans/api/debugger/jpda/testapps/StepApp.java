@@ -49,7 +49,7 @@ package org.netbeans.api.debugger.jpda.testapps;
 public class StepApp {
 
     public static void main(String[] args) {
-        StepApp sa = new StepApp();
+        StepApp sa = new StepApp();         // LBREAKPOINT
         x += sa.m1();
         x += sa.m1();
         x += sa.m1();
@@ -57,23 +57,23 @@ public class StepApp {
         x += sa.m1();
     }
 
-    public StepApp() {
+    public StepApp() {          // STOP 1into
     }
 
     private int m1() {
-        int im1 = 10;
-        m2();
+        int im1 = 10;           // STOP Into1
+        m2();                   // STOP Into2
         return im1;
     }
 
     private int m2() {
-        int im2 = 20;
-        m3();
+        int im2 = 20;           // STOP Into3
+        m3();                   // STOP Over4
         return im2;
     }
 
     private int m3() {
-        int im3 = 30;
+        int im3 = 30;           // STOP Into5
         return im3;
     }
 

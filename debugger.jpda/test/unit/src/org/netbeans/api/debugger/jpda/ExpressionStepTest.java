@@ -68,11 +68,8 @@ public class ExpressionStepTest extends NbTestCase {
     public void testExpressionStep() throws Exception {
         try {
             JPDASupport.removeAllBreakpoints ();
-            LineBreakpoint lb = LineBreakpoint.create (
-                Utils.getURL(sourceRoot + 
-                    "org/netbeans/api/debugger/jpda/testapps/ExpressionStepApp.java"),
-                30
-            );
+            LineBreakpoint lb = Utils.getBreakPositions(sourceRoot + 
+                    "org/netbeans/api/debugger/jpda/testapps/ExpressionStepApp.java").getLineBreakpoints().get(0);
             dm.addBreakpoint (lb);
             support = JPDASupport.attach
                 ("org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp");
@@ -84,16 +81,17 @@ public class ExpressionStepTest extends NbTestCase {
                     getClassName (), 
                 "org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp"
             );
+            int line = lb.getLineNumber();
             assertEquals (
                 "Execution stopped at wrong line", 
-                30, 
+                line, 
                 support.getDebugger ().getCurrentCallStackFrame ().
                     getLineNumber (null)
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OPERATION, 
                 "org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp", 
-                30, 14,
+                line, 14,
                 "factorial",
                 null,
                 new Object[] { "10" }
@@ -101,7 +99,7 @@ public class ExpressionStepTest extends NbTestCase {
             stepCheck (
                 ActionsManager.ACTION_STEP_OPERATION, 
                 "org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp", 
-                31, 14,
+                line+1, 14,
                 "factorial",
                 new Object[] {"3628800"},
                 new Object[] { "20" }
@@ -109,7 +107,7 @@ public class ExpressionStepTest extends NbTestCase {
             stepCheck (
                 ActionsManager.ACTION_STEP_OPERATION, 
                 "org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp", 
-                31, 30,
+                line+1, 30,
                 "factorial",
                 new Object[] {"2432902008176640000"},
                 new Object[] { "30" }
@@ -117,73 +115,73 @@ public class ExpressionStepTest extends NbTestCase {
             stepCheck (
                 ActionsManager.ACTION_STEP_OPERATION, 
                 "org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp", 
-                32, 14,
+                line+2, 14,
                 "factorial",
                 new Object[] {"2432902008176640000", "-8764578968847253504"}
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OPERATION, 
                 "org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp", 
-                32, 34,
+                line+2, 34,
                 "factorial",
                 new Object[] {"-70609262346240000"}
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OPERATION, 
                 "org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp", 
-                33, 37,
+                line+3, 37,
                 "<init>", // "ExpressionStepApp",
                 new Object[] {"-70609262346240000", "-3258495067890909184"}
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OPERATION, 
                 "org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp", 
-                34, 20,
+                line+4, 24,
                 "m2",
                 null,
-                new Object[] { "(int) x" }
+                new Object[] { "(int)x" }
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OPERATION, 
                 "org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp", 
-                34, 13,
+                line+4, 17,
                 "m1",
                 new Object[] {"-899453552"},
-                new Object[] { "exs.m2((int) x)" }
+                new Object[] { "exs.m2((int)x)" }
             );
             
             stepCheck (
                 ActionsManager.ACTION_STEP_OPERATION, 
                 "org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp", 
-                35, 27,
+                line+5, 31,
                 "m2",
                 new Object[] {"-899453552", "-404600928"}
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OPERATION, 
                 "org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp", 
-                35, 20,
+                line+5, 24,
                 "m1",
                 new Object[] {"497916032"}
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OPERATION, 
                 "org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp", 
-                35, 27,
+                line+5, 49,
                 "m1",
                 new Object[] {"497916032", "684193024"}
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OPERATION, 
                 "org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp", 
-                35, 13,
+                line+5, 17,
                 "m3",
                 new Object[] {"497916032", "684193024", "248958016"}
             );
             stepCheck (
                 ActionsManager.ACTION_STEP_OPERATION, 
                 "org.netbeans.api.debugger.jpda.testapps.ExpressionStepApp", 
-                35, 13,
+                line+5, 62,
                 "intValue",
                 new Object[] {"497916032", "684193024", "248958016", "933151070"}
             );

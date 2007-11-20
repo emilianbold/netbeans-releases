@@ -42,25 +42,25 @@
 package org.netbeans.api.debugger.jpda.testapps;
 
 /**
- * Sample line breakpoints application. DO NOT MODIFY - line numbers must not change in this source file.
+ * Sample line breakpoints application.
  *
  * @author Maros Sandor
  */
 public class LineBreakpointApp {
 
-    static int x = 20;
+    static int x = 20;                          // STOP staticx
 
     static {
-        x += 30;
+        x += 30;                                // STOP staticx2   LBREAKPOINT
     }
 
     public static void main(String[] args) {
-        LineBreakpointApp sa = new LineBreakpointApp();
-        x += sa.m1();
+        LineBreakpointApp sa = new LineBreakpointApp();     // STOP M1
+        x += sa.m1();                           // LBREAKPOINT
 
-        int isq = InnerStatic.getQ();
-        InnerStatic is = new InnerStatic();
-        int isw = is.getW();
+        int isq = InnerStatic.getQ();           //  STOP condition1
+        InnerStatic is = new InnerStatic();     //  STOP condition2
+        int isw = is.getW();                    // LBREAKPOINT
     }
 
     private int y = 20;
@@ -70,7 +70,7 @@ public class LineBreakpointApp {
     }
 
     public LineBreakpointApp() {
-        y += 100;
+        y += 100;                               // STOP C1
     }
 
     private int m1() {
@@ -94,10 +94,10 @@ public class LineBreakpointApp {
 
     private static class InnerStatic {
 
-        private static int q = 200;
+        private static int q = 200;             // STOP IS1
 
         static {
-            q += 40;
+            q += 40;                            // STOP IS2
         }
 
         private int w = 70;
@@ -111,7 +111,7 @@ public class LineBreakpointApp {
         }
 
         public static int getQ() {
-            return q;
+            return q;                           // STOP IS3   LBREAKPOINT
         }
 
         public int getW() {
@@ -121,18 +121,18 @@ public class LineBreakpointApp {
 
     private class Inner {
 
-        private int w = 70;
+        private int w = 70;                 // STOP I1
 
         {
-            w += 10;
+            w += 10;                        // STOP I2
         }
 
         public Inner() {
-            w += 100;
+            w += 100;                       // LBREAKPOINT
         }
 
         public int getW() {
-            return w;
+            return w;                       // STOP I3
         }
     }
 

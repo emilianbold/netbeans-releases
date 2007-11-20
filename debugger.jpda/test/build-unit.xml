@@ -45,4 +45,5 @@ made subject to such option by the copyright holder.
 <project name="JPDA Debugger API unit tests build script" basedir="." default="all">
     <import file="../../nbbuild/templates/xtest-unit.xml"/>
     <property name="javac.source" value="1.5"/>
+    <!-- <property name="xtest.jvm.args" value="-Xmx256m"/> -->
 </project>
