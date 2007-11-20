@@ -141,13 +141,13 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
 
         switch (category) {
             case CONFIGURATION:
-                result.add(new NewConfigurationAction());
+                // do nothing.
                 break;
             case CONTROLLERS:
-                result.add(new NewControllerAction());
+                result.add(new NewArtifactAction(project, SourceCategory.CONTROLLERS, "Create new controller template"));
                 break;
             case DOMAIN:
-                result.add(new NewDomainAction(project));
+                result.add(new NewArtifactAction(project, SourceCategory.DOMAIN, "Create new Domain Class"));
                 break;
             case MESSAGES:
                 // result.add(new NewMessageAction());
@@ -156,15 +156,15 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 result.add(org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction());
                 break;
             case SERVICES:
-                result.add(new NewServiceAction());
+                result.add(new NewArtifactAction(project, SourceCategory.SERVICES, "Create a new Service"));
                 break;
             case TAGLIB:
-                result.add(new NewTaglibAction());
+                result.add(new NewArtifactAction(project, SourceCategory.TAGLIB, "Create new Tag Library"));
                 break;
             case UTIL:          // result.add(new NewU());
                 break;
             case VIEWS:
-                result.add(new NewViewAction());
+                result.add(new NewArtifactAction(project, SourceCategory.VIEWS, "Create a new View"));
                 break;
         }
 
