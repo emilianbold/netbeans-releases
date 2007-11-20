@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FacilityConfig>
+	<Facility name="JavaChangeExecuter" progid="...">
+		<Properties>
+			<Property name="attribute" value="JavaAttributeChangeFacility"/>
+			<Property name="operation" value="JavaMethodChangeFacility"/>
+			<Property name="method" value="JavaMethodChangeFacility"/>
+			<Property name="class" value="JavaClassChangeFacility"/>
+			<Property name="interface" value="JavaInterfaceChangeFacility"/>
+			<Property name="generalization" value="JavaGeneralizationChangeFacility"/>
+			<Property name="implemenation" value="JavaImplementationChangeFacility"/>
+			<Property name="dependency" value="JavaDependencyChangeFacility"/>
+                        <Property name="enumeration" value="EnumerationChangeFacility"/>
+                        <Property name="enumerationliteral" value="JavaEnumLiteralChangeFacility"/>
+		</Properties>
+	</Facility>
+
+	<!-- Java Specific Facilities -->
+
+	<Facility name="JavaAttributeChangeFacility" progid="org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javarpcomponent.JavaAttributeChangeFacility" singleton="true"/>
+	<Facility name="JavaMethodChangeFacility" progid="org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javarpcomponent.JavaMethodChangeFacility" singleton="true"/>
+	<Facility name="JavaClassChangeFacility" progid="org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javarpcomponent.JavaClassChangeFacility" singleton="true"/>
+	<Facility name="JavaInterfaceChangeFacility" progid="org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javarpcomponent.JavaInterfaceChangeFacility" singleton="true"/>
+	<Facility name="JavaGeneralizationChangeFacility" progid="org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javarpcomponent.JavaGeneralizationChangeFacility" singleton="true"/>
+	<Facility name="JavaImplementationChangeFacility" progid="org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javarpcomponent.JavaImplementationChangeFacility" singleton="true"/>
+	<Facility name="JavaDependencyChangeFacility" progid="org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javarpcomponent.JavaDependencyChangeFacility" singleton="true"/>
+        <Facility name="EnumerationChangeFacility" progid="org.netbeans.modules.uml.core.roundtripframework.EnumerationChangeFacility" singleton="true"/>
+        <Facility name="JavaEnumLiteralChangeFacility" progid="org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javarpcomponent.JavaEnumLiteralChangeFacility" singleton="true"/>
+
+	<!-- Visual Basic 6 Specific Facilities -->
+
+	<Facility name="VBAttributeChangeFacility" progid="VisualBasicRP.VBAttributeChangeFacility" singleton="true"/>
+
+	<!-- Language Independent Facilities -->
+
+	<Facility name="ModelChangeFacility" progid="RoundTripFramework.ModelChangeFacility">
+		<Properties>
+			<Property name="java" value="JavaChangeExecuter"/>
+			<Property name="java.attribute" value="JavaAttributeChangeFacility"/>
+			<Property name="java.operation" value="JavaMethodChangeFacility"/>
+			<Property name="java.method" value="JavaMethodChangeFacility"/>
+			<Property name="java.class" value="JavaClassChangeFacility"/>
+			<Property name="java.interface" value="JavaInterfaceChangeFacility"/>
+			<Property name="java.generalization" value="JavaGeneralizationChangeFacility"/>
+			<Property name="java.implemenation" value="JavaImplementationChangeFacility"/>
+			<Property name="java.dependency" value="JavaDependencyChangeFacility"/>
+                        <Property name="java.enumeration" value="EnumerationChangeFacility"/>
+                        <Property name="java.enumerationliteral" value="JavaEnumLiteralChangeFacility"/>
+
+			<Property name="Visual Basic 6.attribute" value="VBAttributeChangeFacility"/>
+			<Property name="Visual Basic 6.operation" value="JavaMethodChangeFacility"/>
+			<Property name="Visual Basic 6.method" value="JavaMethodChangeFacility"/>
+			<Property name="Visual Basic 6.class" value="JavaClassChangeFacility"/>
+			<Property name="Visual Basic 6.interface" value="JavaInterfaceChangeFacility"/>
+			<Property name="Visual Basic 6.generalization" value="JavaGeneralizationChangeFacility"/>
+			<Property name="Visual Basic 6.implemenation" value="JavaImplementationChangeFacility"/>
+			<Property name="Visual Basic 6.dependency" value="JavaDependencyChangeFacility"/>
+
+		</Properties>
+	</Facility>
+</FacilityConfig>

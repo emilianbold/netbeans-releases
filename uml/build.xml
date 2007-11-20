@@ -49,8 +49,8 @@ made subject to such option by the copyright holder.
 
     <target name="dot-uml-zip" depends="init" >
         <zip destfile="${basedir}/build/dotuml.zip">
-            <zipfileset  dir="../config" prefix=".uml/config"/>
-            <zipfileset  dir="../scripts" prefix=".uml/scripts"/>
+            <zipfileset  dir="config" prefix=".uml/config"/>
+            <zipfileset  dir="scripts" prefix=".uml/scripts"/>
         </zip>
     </target>
 
@@ -60,8 +60,8 @@ made subject to such option by the copyright holder.
             <format property="buildnumber" pattern="yyMMdd" timezone="UTC"/>
         </tstamp>
         <zip destfile="${build.classes.dir}/org/netbeans/modules/uml/dotuml.zip">
-            <zipfileset  dir="../config" prefix=".uml/config"/>
-            <zipfileset  dir="../scripts" prefix=".uml/scripts"/>
+            <zipfileset  dir="config" prefix=".uml/config"/>
+            <zipfileset  dir="scripts" prefix=".uml/scripts"/>
         </zip>
     </target>
     

@@ -1,0 +1,185 @@
+<?xml version="1.0"?>
+<ExpansionVariables default="GenerativeFramework.ExpansionVariable">
+	<Context name="default" padding=" ">
+		<!--
+         name  :     Name of the expansion variable. This is what will be seen in the various Generative Templates
+         query :     The actual XPath query to perform on the context element. The result of which could be an XML attribute
+                     element whose value will be used, or an actual xml element(s) that will be added to the Expansion variables
+                     ResultNodes property. These can then be fed into other variables potentially.
+         idLookup :  A query that will result in an XMI.id value that will then be used to find the element whose id matches that
+                     value. The can be a ' ' ( read space ) delimited list of xml attributes that result in an xmi.id value. They
+                     will be located in order, each result being applied to the next id.
+         xslFilter:  This attribute should be a value that points at a xsl script that will be applied to the results of the query.
+         type     :  Use in conjunction with the "idLookup" attribute. Filters the result on nodes that have a node name of the
+                     value found in the "type" attribute
+         varType  :  One of these values, used to interpret the results indicated by the "query" value( if not indicated, 
+                     the "query" result will be interpreted to be a attribute value or a nodes value ). The "nodeName" indicator
+                     is the only value that does not rely on the "query" attribute to be set.:
+
+                        attr     - Indicates that the query attribute results in an xml attribute value
+                        nodes    - Indicates that the query attribute results in a collection of 0 or more xml nodes
+                        text     - The query results in an xml node whose first text child will be queried for its value
+                        nodeName - Indicates that the query attribute results in the name of the context xml node
+                        boolean  - The expansion variable expands out to either "true" or "false". If a 'trueValue' attr is
+                                   not used, then a true result is returned if the query results in length( for an attribute
+                                   search ) or elements are returned ( for a full query ).
+                        pref     - The expansion variable expands to the given preference value indicated by the preference path supplied
+                                   in query. The "query" attribute must be a full path to the preference, delimited by '|' characters. For
+                                   example, query="Default|ConfigManagement|Enabled" would retrieve the preference that indicated whether 
+                                   or not configuration management was enabled or not. The hive(key) must be the first '|' delimited token 
+                                   ( 'Default' in the example ), and the actual preference name must be the last token ( 'Enabled' in the previous example ).
+         trueValue:  Used in conjunction with the "boolean" varType sownedAttributesetting. This indicates the value that will result in a
+                     true expansion result
+         trueValueType: This should only be set to "length" at this point. This further specifies how an expansion variable
+                        is to determine whether or not it is "true" or "false". trueValueType set to "length" indicates
+                        that we expect the result to be a string value, and that we simply care if that value has length
+                        or not. By default, a boolean expansion variable determines its true state by looking at
+                        the string results of the expansion, the trueValue parameter, or whether or not elements were
+                        created as a result of the query. In the case where we only want to return true if there is actually
+                        a string result with length, and NOT when result nodes are created, trueValueType is essential.
+         type     :  Used to filter the nodes returned from a query based on node names
+         expand   :  A reuse capability built into expansion variables. This allows you to create an expansion variable
+                     that can then expand the results against another expansion variable. This can be a ' ' ( read space )
+                     list of expansion variable names that will be expanded in order, each passing the results to the
+                     next.
+         operator :  Used in conjunction with compound boolean vars ( a compound boolean variable is a variable of type boolean that is built
+                     up of a number of other boolean variables ). Can be "or", which means that if any of the sub variables expand to a true
+                     result, the compound variable is then true. Can also be "and", which means that ALL sub variables must expand to a true result
+                     for the compound variable to also be true. "or" is the default if the "operator" attribute has not been set.
+
+         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         !!!!WARNING!!!! No spaces should occur within idLookup and expand attributes UNLESS they are used to delimit
+         !!!!WARNING!!!! multiple id attrnames or multiple expand names.
+         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      -->
+		<ExpansionVar name="documentation" query="UML:Element.ownedElement/UML:TaggedValue[@name='documentation']/UML:TaggedValue.dataValue" varType="text"/>
+		<ExpansionVar name="visibility" query="@visibility"/>
+		<ExpansionVar name="static" query="@isStatic"/>
+		<ExpansionVar name="final" query="@isFinal"/>
+		<ExpansionVar name="typeName" idLookup="@type" expand="name"/>
+		<ExpansionVar name="name" query="@name"/>
+		<ExpansionVar name="attributeInitializer" query="UML:Attribute.default/UML:Expression/UML:Expression.body" varType="text"/>
+		<ExpansionVar name="abstract" query="@isAbstract"/>
+		<ExpansionVar name="isAbstract" varType="boolean" expand="abstract" trueValue="abstract"/>
+		<ExpansionVar name="generalizationLink" query="UML:Classifier.generalization/UML:Generalization"/>
+		<ExpansionVar name="subClass" idLookup="@specific"/>
+		<ExpansionVar name="subClassName" expand="subClass name"/>
+		<ExpansionVar name="superClass" idLookup="@general"/>
+		<ExpansionVar name="superClassName" expand="superClass name"/>
+		<ExpansionVar name="firstSuperClassName" expand="generalizationLink superClassName"/>
+		<ExpansionVar name="implementedInterfaceName" expand="supplierName"/>
+		<ExpansionVar name="supplierName" idLookup="@supplier" expand="name"/>
+		<ExpansionVar name="qualifiedName" methodGet="QualifiedName2"/>
+		<ExpansionVar name="outboundNavigableEnds" methodGet="OutboundNavigableEnds" varType="nodes"/>
+		<ExpansionVar name="ownerQualifiedName" query="ancestor::*[name(.)='UML:Package'][1]" expand="qualifiedName"/>
+		<ExpansionVar name="ownedAttributes" query="./UML:Element.ownedElement/UML:Attribute"/>
+		<ExpansionVar name="ownedAttributesIncludingEnds" expand="ownedAttributes outboundNavigableEnds"/>
+		<ExpansionVar name="ownedOperations" query="./UML:Element.ownedElement/UML:Operation"/>
+		<ExpansionVar name="implementedInterfaces" idLookup="@clientDependency" type="UML:Implementation"/>
+		<ExpansionVar name="ownedFormalParameters" query="./UML:Element.ownedElement/UML:Parameter[not( @direction='result')]"/>
+		<ExpansionVar name="returnParm" query="./UML:Element.ownedElement/UML:Parameter[@direction='result']"/>
+		<ExpansionVar name="returnType" idLookup="./UML:Element.ownedElement/UML:Parameter[@direction='result']/@type"/>
+		<ExpansionVar name="returnTypeArrayDimensions" query="./UML:Element.ownedElement/UML:Parameter[@direction='result']/UML:TypedElement.multiplicity/UML:Multiplicity/UML:Multiplicity.range/UML:MultiplicityRange"/>
+		<ExpansionVar name="returnTypeName" expand="returnType name"/>
+		<ExpansionVar name="paramType" idLookup="./UML:Element.ownedElement/UML:Parameter[not( @direction='result') ]/@type"/>
+		<ExpansionVar name="paramTypeName" expand="paramType name"/>
+		<ExpansionVar name="paramDirection" query="@direction"/>
+		<ExpansionVar name="arrayDimensions" query="UML:TypedElement.multiplicity/UML:Multiplicity/UML:Multiplicity.range/UML:MultiplicityRange"/>
+		<ExpansionVar name="isArray" varType="boolean" expand="arrayDimensions"/>
+		<ExpansionVar name="isRetTypeArray" varType="boolean" expand="returnTypeArrayDimensions"/>
+		<ExpansionVar name="nodeName" varType="nodeName"/>
+		<ExpansionVar name="id" query="@xmi.id"/>
+		<ExpansionVar name="fileLocation" query="@sourcefile"/>
+		<ExpansionVar name="types" query="//*[@name and not( name(.) = 'UML:Parameter' or name(.) = 'UML:Attribute' or name(.) = 'UML:Operation' or name(.) = 'UML:Interaction' or name(.) = 'UML:Activity')]"/>
+		<ExpansionVar name="sourceFiles" query="//UML:SourceFileArtifact"/>
+		<ExpansionVar name="artifactOwner" idLookup="ancestor::*[@xmi.id][1]/@xmi.id"/>
+		<ExpansionVar name="versionedFileName" methodGet="VersionedFileName"/>
+		<ExpansionVar name="raisedExceptions" idLookup="@raisedException"/>
+		<ExpansionVar name="isGetter" varType="boolean" idLookup="@clientDependency"/>
+		<ExpansionVar name="isSetter" varType="boolean" idLookup="@supplierDependency"/>
+		<ExpansionVar name="hasReturnType" varType="boolean" expand="returnType"/>
+		<ExpansionVar name="getterMemberName" idLookup="@clientDependency @supplier" expand="name"/>
+		<ExpansionVar name="setterMemberName" idLookup="@supplierDependency @client" expand="name"/>
+		<ExpansionVar name="firstParameter" query="UML:Element.ownedElement/UML:Parameter[not(@direction='result')][1]"/>
+		<ExpansionVar name="firstParameterName" expand="firstParameter name"/>
+		<ExpansionVar name="typeDefaultValue" methodGet="DefaultTypeValue" iid="{693BB282-5711-4382-AB73-68DFD0A50ADC}"/>
+		<ExpansionVar name="returnTypeDefaultValue" expand="returnType typeDefaultValue"/>
+		<ExpansionVar name="transient" query="@isTransient"/>
+		<ExpansionVar name="volatile" query="@isVolatile"/>
+		<ExpansionVar name="strictfp" query="@isStrictFP"/>
+		<ExpansionVar name="native" query="@isNative"/>
+		<ExpansionVar name="isNative" varType="boolean" query="@isNative" trueValue="true"/>
+		<ExpansionVar name="isNotNative" varType="boolean" expand="isNative" trueValue="false"/>
+		<ExpansionVar name="concurrency" query="@concurrency"/>
+		<ExpansionVar name="isFinal" varType="boolean" query="@isFinal" trueValue="true"/>
+		<ExpansionVar name="isLeaf" varType="boolean" query="@isLeaf" trueValue="true"/>
+		<ExpansionVar name="isComplete" varType="boolean" expand="isFinal isLeaf" trueValue="true"/>
+		<ExpansionVar name="returnTypeHasValue" varType="boolean" expand="returnTypeDefaultValue" trueValueType="length"/>
+		<ExpansionVar name="isInterface" varType="boolean" expand="nodeName" trueValue="UML:Interface"/>
+		<ExpansionVar name="isClass" varType="boolean" expand="nodeName" trueValue="UML:Class"/>
+		<ExpansionVar name="isOwnerClass" varType="boolean" idLookup="@owner" expand="isClass"/>
+		<ExpansionVar name="isOwnerInterface" varType="boolean" idLookup="@owner" expand="isInterface"/>
+		<ExpansionVar name="isOperationNotImplemented" varType="boolean" expand="isOwnerInterface isAbstract isNative" trueValue="true"/>
+		<ExpansionVar name="isOperationImplemented" varType="boolean" expand="isOperationNotImplemented" trueValue="false"/>
+		<ExpansionVar name="stereotype" idLookup="@appliedStereotype"/>
+		<ExpansionVar name="stereotypeName" expand="stereotype name"/>
+		<!-- Property Editor Values -->
+		<ExpansionVar name="sendingLifeline" idLookup="@sendEvent @lifeline"/>
+		<ExpansionVar name="sendingLifelineName" expand="sendingLifeline name"/>
+		<ExpansionVar name="sendingLifelineID" idLookup="@sendEvent @lifeline" expand="id"/>
+		<ExpansionVar name="sendingLifeline2" idLookup="@fromLine"/>
+		<ExpansionVar name="sendingLifelineName2" expand="sendingLifeline2 name"/>
+		<ExpansionVar name="sendingClassifier" idLookup="@sendEvent @lifeline @represents @type"/>
+		<ExpansionVar name="sendingClassifierName" expand="sendingClassifier name"/>
+		<ExpansionVar name="sendingClassifierID" expand="sendingClassifier id"/>
+		<ExpansionVar name="receivingLifeline" idLookup="@receiveEvent @lifeline"/>
+		<ExpansionVar name="receivingLifelineName" expand="receivingLifeline name"/>
+		<ExpansionVar name="receivingLifelineID" idLookup="@receiveEvent @lifeline" expand="id"/>
+		<ExpansionVar name="receivingLifeline2" idLookup="@toLine"/>
+		<ExpansionVar name="receivingLifelineName2" expand="receivingLifeline2 name"/>
+		<ExpansionVar name="receivingClassifier" idLookup="@receiveEvent @lifeline @represents @type"/>
+		<ExpansionVar name="receivingClassifierName" expand="receivingClassifier name"/>
+		<ExpansionVar name="receivingClassifierID" expand="receivingClassifier id"/>
+		<ExpansionVar name="targetElement" idLookup="@target"/>
+		<ExpansionVar name="targetElementName" expand="targetElement name"/>
+		<ExpansionVar name="sourceElement" idLookup="@source"/>
+		<ExpansionVar name="sourceElementName" expand="sourceElement name"/>
+		<ExpansionVar name="clientElement" idLookup="@client"/>
+		<ExpansionVar name="clientElementName" expand="clientElement name"/>
+		<ExpansionVar name="supplierElement" idLookup="@supplier"/>
+		<ExpansionVar name="supplierElementName" expand="supplierElement name"/>
+		<ExpansionVar name="ownerElement" idLookup="@owner"/>
+		<ExpansionVar name="ownerElementName" expand="ownerElement name"/>
+		<ExpansionVar name="bindingFormalElement" idLookup="@formal"/>
+		<ExpansionVar name="bindingFormalElementName" expand="bindingFormalElement name"/>
+		<ExpansionVar name="bindingActualElement" idLookup="@actual"/>
+		<ExpansionVar name="bindingActualElementName" expand="bindingActualElement name"/>
+		<ExpansionVar name="isSub" query="@isSub"/>
+		<ExpansionVar name="vb_op_visibility" expand="visibility"/>
+		<ExpansionVar name="vb_attr_visibility" expand="visibility"/>
+		<ExpansionVar name="collectionOverride" varType="pref" query="Default|RoundTrip|Java|COLLECTION_OVERRIDE"/>
+		<ExpansionVar name="isCollectionOverrideOn" varType="boolean" expand="collectionOverride"/>
+		<ExpansionVar name="isCollectionOverrideOff" varType="boolean" expand="collectionOverride" trueValue=""/>
+		<ExpansionVar name="useCollectionOverride" varType="boolean" expand="isArray collectionOverride" operator="and"/>
+		<ExpansionVar name="dontUseCollectionOverride" varType="boolean" expand="isArray isCollectionOverrideOff" operator="and"/>
+		<ExpansionVar name="useRetTypeCollectionOverride" varType="boolean" expand="isRetTypeArray collectionOverride" operator="and"/>
+		<ExpansionVar name="dontUseRetTypeCollectionOverride" varType="boolean" expand="isRetTypeArray isCollectionOverrideOff" operator="and"/>
+		<ExpansionVar name="isSetterParmTypeOverride" varType="boolean" expand="isSetter firstParameter isArray isCollectionOverrideOn" operator="and"/>
+		<ExpansionVar name="multiplicityRangeElementCount" methodGet="RangeElementCount"/>
+		<ExpansionVar name="refersToName" idLookup="@refersTo" expand="name"/>
+		<ExpansionVar name="groupName" idLookup="@group" expand="name"/>
+		<ExpansionVar name="defaultName" idLookup="@default" expand="name"/>
+		<ExpansionVar name="typeAlias" idLookup="@type" expand="alias"/>
+		<ExpansionVar name="alias" query="@alias"/>
+		<ExpansionVar name="defaultAlias" idLookup="@default" expand="alias"/>
+		<ExpansionVar name="lifelineClassifierAlias" idLookup="@represents @type" expand="alias"/>
+		<ExpansionVar name="lifelineClassifierName" idLookup="@represents @type" expand="name"/>
+		<ExpansionVar name="lifelineClassifierID" idLookup="@represents @type" expand="id"/>
+		<ExpansionVar name="lifelineName" idLookup="@represents" expand="name"/>
+		<ExpansionVar name="actualTypeName" idLookup="@actualType" expand="name"/>
+		<ExpansionVar name="messageOperationInvokedID" idLookup="@receiveEvent @finishExec @procedure" expand="id"/>
+		<ExpansionVar name="messageOperationInvokedClassID" idLookup="@receiveEvent @finishExec @procedure @owner" expand="id"/>
+		<ExpansionVar name="messageOperationInvokedName" idLookup="@receiveEvent @finishExec @procedure" expand="name"/>
+	</Context>
+</ExpansionVariables>

@@ -1,0 +1,614 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PropertyDefinitions>
+	<PropertyDefinition name="Project" sort="alpha">
+		<aDefinition name="Exclude">
+			<aDefinition name="Association"/>
+			<aDefinition name="Delegate"/>
+			<aDefinition name="Dependency"/>
+			<aDefinition name="Generalization"/>
+			<aDefinition name="Usage"/>
+			<aDefinition name="Permission"/>
+			<aDefinition name="Realization"/>
+			<aDefinition name="Abstraction"/>
+			<aDefinition name="Implementation"/>
+			<aDefinition name="Aggregation"/>
+		</aDefinition>
+		<aDefinition name="ImportedPackages" displayName="PSK_IMPORTEDPACKAGES" minimum="1" get="getImportedPackages" sort="alpha" type="Namespace" values="FormatString"/>
+		<aDefinition name="ImportedElements" displayName="PSK_IMPORTEDELEMENTS" minimum="1" get="getImportedElements" sort="alpha" type="Element" values="FormatString"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Package">
+		<aDefinition name="Exclude">
+			<aDefinition name="Association"/>
+			<aDefinition name="Dependency"/>
+			<aDefinition name="Generalization"/>
+			<aDefinition name="Usage"/>
+			<aDefinition name="Permission"/>
+			<aDefinition name="Realization"/>
+			<aDefinition name="Abstraction"/>
+			<aDefinition name="Implementation"/>
+			<aDefinition name="Aggregation"/>
+		</aDefinition>
+		<aDefinition name="ImportedPackages" id="org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage" displayName="PSK_IMPORTEDPACKAGES" minimum="1" get="getImportedPackages" sort="alpha" type="Namespace" values="FormatString"/>
+		<aDefinition name="ImportedElements" id="org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage" displayName="PSK_IMPORTEDELEMENTS" minimum="1" get="getImportedElements" sort="alpha" type="Element" values="FormatString"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="2" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage" displayName="PSK_CLIENTDEPENDENCIES" minimum="2" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Class" sort="alpha">
+		<aDefinition name="Exclude">
+			<aDefinition name="Attribute"/>
+			<aDefinition name="Operation"/>
+			<aDefinition name="Realization"/>
+			<aDefinition name="Derivation"/>
+		</aDefinition>
+		<aDefinition name="Attributes" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IClass" displayName="PSK_ATTRIBUTES" minimum="3" get="getAttributes" sort="visibility" type="Attribute" values="FormatString"/>
+		<aDefinition name="Operations" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IClass" displayName="PSK_OPERATIONS" minimum="3" get="getOperations" sort="visibility" type="Operation" values="FormatString"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="Generalizations" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IClass" displayName="PSK_GENERALIZATIONS" minimum="3" get="getGeneralizations" type="Generalization"/>
+			<aDefinition name="Specializations" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IClass" displayName="PSK_SPECIALIZATIONS" minimum="3" get="getSpecializations" type="Generalization"/>
+			<aDefinition name="Associations" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IClass" displayName="PSK_ASSOCIATIONS" minimum="3" get="getAssociations" type="Association"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IClass" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IClass" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IClass" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IClass" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Association" sort="alpha" showDetails="true">
+		<aDefinition name="Exclude">
+			<aDefinition name="Attribute"/>
+			<aDefinition name="Operation"/>
+		</aDefinition>
+		<aDefinition name="Attributes" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociation" displayName="PSK_ATTRIBUTES" minimum="3" get="getAttributes" sort="visibility" type="Attribute" values="FormatString"/>
+		<aDefinition name="Operations" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociation" displayName="PSK_OPERATIONS" minimum="3" get="getOperations" sort="visibility" type="Operation" values="FormatString"/>
+		<aDefinition name="Participants" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociation" displayName="PSK_PARTICIPANTS" minimum="3" get="getAllParticipants"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="AssociationEnd">
+		<aDefinition id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociationEnd" name="Participant" get="getParticipant"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="NavigableEnd">
+		<aDefinition id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.INavigableEnd" name="Participant" get="getParticipant"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Aggregation" sort="alpha" showDetails="true">
+		<aDefinition name="Exclude">
+			<aDefinition name="Attribute"/>
+			<aDefinition name="Operation"/>
+		</aDefinition>
+		<aDefinition name="Attributes" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAggregation" displayName="PSK_ATTRIBUTES" minimum="3" get="getAttributes" sort="visibility" type="Attribute" values="FormatString"/>
+		<aDefinition name="Operations" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAggregation" displayName="PSK_OPERATIONS" minimum="3" get="getOperations" sort="visibility" type="Operation" values="FormatString"/>
+		<aDefinition name="Participants" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAggregation" displayName="PSK_PARTICIPANTS" minimum="3" get="getAllParticipants"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Dependency" sort="alpha" showDetails="true">
+		<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.foundation.IDependency" name="Supplier" get="getSupplier"/>
+		<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.foundation.IDependency" name="Client" get="getClient"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Usage" sort="alpha" showDetails="true">
+		<aDefinition name="Supplier" id="org.netbeans.modules.uml.core.metamodel.core.foundation.IUsage" get="getSupplier"/>
+		<aDefinition name="Client" id="org.netbeans.modules.uml.core.metamodel.core.foundation.IUsage" get="getClient"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Permission" sort="alpha" showDetails="true">
+		<aDefinition name="Supplier" id="org.netbeans.modules.uml.core.metamodel.core.foundation.IPermission" get="getSupplier"/>
+		<aDefinition name="Client" id="org.netbeans.modules.uml.core.metamodel.core.foundation.IPermission" get="getClient"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Abstraction" sort="alpha" showDetails="true">
+		<aDefinition name="Supplier" id="org.netbeans.modules.uml.core.metamodel.core.foundation.IAbstraction" get="getSupplier"/>
+		<aDefinition name="Client" id="org.netbeans.modules.uml.core.metamodel.core.foundation.IAbstraction" get="getClient"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Realization" sort="alpha" showDetails="true">
+		<aDefinition name="Supplier" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IRealization" get="getSupplier"/>
+		<aDefinition name="Client" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IRealization" get="getClient"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Implementation" sort="alpha" showDetails="true">
+		<aDefinition name="Implementing Classifier" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IImplementation" get="getImplementingClassifier"/>
+		<aDefinition name="Contract" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IImplementation" get="getSupplier"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Generalization" sort="alpha" showDetails="true">
+		<aDefinition name="Sub" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IGeneralization" get="getSpecific"/>
+		<aDefinition name="Super" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IGeneralization" get="getGeneral"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Actor" sort="alpha">
+		<aDefinition name="Exclude">
+			<aDefinition name="Attribute"/>
+			<aDefinition name="Operation"/>
+			<aDefinition name="Realization"/>
+		</aDefinition>
+		<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.constructs.IActor" name="Attributes" displayName="PSK_ATTRIBUTES" minimum="3" get="getAttributes" sort="visibility" type="Attribute" values="FormatString"/>
+		<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.constructs.IActor" name="Operations" displayName="PSK_OPERATIONS" minimum="3" get="getOperations" sort="visibility" type="Operation" values="FormatString"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.constructs.IActor" name="Generalizations" displayName="PSK_GENERALIZATIONS" minimum="3" get="getGeneralizations" type="Generalization"/>
+			<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.constructs.IActor" name="Specializations" displayName="PSK_SPECIALIZATIONS" minimum="3" get="getSpecializations" type="Generalization"/>
+			<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.constructs.IActor" name="Associations" displayName="PSK_ASSOCIATIONS" minimum="3" get="getAssociations" type="Association"/>
+			<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.constructs.IActor" name="Supplier Dependencies" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.constructs.IActor" name="Client Dependencies" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IActor" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IActor" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="UseCase" sort="alpha">
+		<aDefinition name="Exclude">
+			<aDefinition name="Attribute"/>
+			<aDefinition name="Operation"/>
+			<aDefinition name="Realization"/>
+			<aDefinition name="UseCaseDetail"/>
+		</aDefinition>
+		<aDefinition name="Attributes" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IUseCase" displayName="PSK_ATTRIBUTES" minimum="3" get="getAttributes" sort="visibility" type="Attribute" values="FormatString"/>
+		<aDefinition name="Operations" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IUseCase" displayName="PSK_OPERATIONS" minimum="3" get="getOperations" sort="visibility" type="Operation" values="FormatString"/>
+		<aDefinition name="UseCaseDetails" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IUseCase" displayName="PSK_USECASEDETAILS" minimum="3" get="getDetails" type="UseCaseDetail"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="Generalizations" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IUseCase" displayName="PSK_GENERALIZATIONS" minimum="3" get="getGeneralizations" type="Generalization"/>
+			<aDefinition name="Specializations" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IUseCase" displayName="PSK_SPECIALIZATIONS" minimum="3" get="getSpecializations" type="Generalization"/>
+			<aDefinition name="Associations" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IUseCase" displayName="PSK_ASSOCIATIONS" minimum="3" get="getAssociations" type="Association"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IUseCase" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IUseCase" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Extends" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IUseCase" displayName="PSK_EXTENDS" minimum="3" get="getExtends" type="Extend"/>
+			<aDefinition name="Includes" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IUseCase" displayName="PSK_INCLUDES" minimum="3" get="getIncludes" type="Include"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IUseCase" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IUseCase" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Interface" sort="alpha">
+		<aDefinition name="Exclude">
+			<aDefinition name="Attribute"/>
+			<aDefinition name="Operation"/>
+			<aDefinition name="Realization"/>
+		</aDefinition>
+		<aDefinition name="Attributes" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface" displayName="PSK_ATTRIBUTES" minimum="3" get="getAttributes" sort="visibility" type="Attribute" values="FormatString"/>
+		<aDefinition name="Operations" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface" displayName="PSK_OPERATIONS" minimum="3" get="getOperations" sort="visibility" type="Operation" values="FormatString"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="Generalizations" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface" displayName="PSK_GENERALIZATIONS" minimum="3" get="getGeneralizations" type="Generalization"/>
+			<aDefinition name="Specializations" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface" displayName="PSK_SPECIALIZATIONS" minimum="3" get="getSpecializations" type="Generalization"/>
+			<aDefinition name="Associations" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface" displayName="PSK_ASSOCIATIONS" minimum="3" get="getAssociations" type="Association"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Comment" sort="alpha"/>
+	<PropertyDefinition name="Interaction" sort="alpha" ownedQuery="./UML:Element.ownedElement/*[ name(.) = 'UML:Message' or name(.) = 'UML:Lifeline' ]">
+		<aDefinition name="Exclude">
+			<aDefinition name="UninterpretedAction"/>
+			<aDefinition name="ActionOccurrence"/>
+			<aDefinition name="Dependency"/>
+		</aDefinition>
+		<aDefinition name="Messages" id="org.netbeans.modules.uml.core.metamodel.dynamics.IInteraction" displayName="PSK_MESSAGES" get="getMessages" type="Message"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Lifeline" sort="alpha">
+		<aDefinition name="Exclude"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Message" sort="alpha"/>
+	<PropertyDefinition name="DataType" sort="alpha">
+		<aDefinition name="Exclude">
+			<aDefinition name="Attribute"/>
+			<aDefinition name="Operation"/>
+			<aDefinition name="Realization"/>
+		</aDefinition>
+		<aDefinition name="Attributes" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType" displayName="PSK_ATTRIBUTES" minimum="3" get="getAttributes" sort="visibility" type="Attribute" values="FormatString"/>
+		<aDefinition name="Operations" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType" displayName="PSK_OPERATIONS" minimum="3" get="getOperations" sort="visibility" type="Operation" values="FormatString"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="Generalizations" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType" displayName="PSK_GENERALIZATIONS" minimum="3" get="getGeneralizations" type="Generalization"/>
+			<aDefinition name="Specializations" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType" displayName="PSK_SPECIALIZATIONS" minimum="3" get="getSpecializations" type="Generalization"/>
+			<aDefinition name="Associations" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType" displayName="PSK_ASSOCIATIONS" minimum="3" get="getAssociations" type="Association"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="AliasedType" sort="alpha">
+		<aDefinition name="Exclude">
+			<aDefinition name="Attribute"/>
+			<aDefinition name="Operation"/>
+			<aDefinition name="Realization"/>
+			<aDefinition name="Derivation"/>
+		</aDefinition>
+		<aDefinition name="Attributes" displayName="PSK_ATTRIBUTES" minimum="3" get="getAttributes" sort="visibility" type="Attribute" values="FormatString"/>
+		<aDefinition name="Operations" displayName="PSK_OPERATIONS" minimum="3" get="getOperations" sort="visibility" type="Operation" values="FormatString"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="Generalizations" displayName="PSK_GENERALIZATIONS" minimum="3" get="getGeneralizations" type="Generalization"/>
+			<aDefinition name="Specializations" displayName="PSK_SPECIALIZATIONS" minimum="3" get="getSpecializations" type="Generalization"/>
+			<aDefinition name="Associations" displayName="PSK_ASSOCIATIONS" minimum="3" get="getAssociations" type="Association"/>
+			<aDefinition name="Supplier Dependencies" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Artifact" sort="alpha">
+		<aDefinition name="Exclude">
+			<aDefinition name="Attribute"/>
+			<aDefinition name="Operation"/>
+			<aDefinition name="Realization"/>
+		</aDefinition>
+		<aDefinition name="Attributes" id="org.netbeans.modules.uml.core.metamodel.structure.IArtifact" displayName="PSK_ATTRIBUTES" minimum="3" get="getAttributes" sort="visibility" type="Attribute" values="FormatString"/>
+		<aDefinition name="Operations" id="org.netbeans.modules.uml.core.metamodel.structure.IArtifact" displayName="PSK_OPERATIONS" minimum="3" get="getOperations" sort="visibility" type="Operation" values="FormatString"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="Generalizations" id="org.netbeans.modules.uml.core.metamodel.structure.IArtifact" displayName="PSK_GENERALIZATIONS" minimum="3" get="getGeneralizations" type="Generalization"/>
+			<aDefinition name="Specializations" id="org.netbeans.modules.uml.core.metamodel.structure.IArtifact" displayName="PSK_SPECIALIZATIONS" minimum="3" get="getSpecializations" type="Generalization"/>
+			<aDefinition name="Associations" id="org.netbeans.modules.uml.core.metamodel.structure.IArtifact" displayName="PSK_ASSOCIATIONS" minimum="3" get="getAssociations" type="Association"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.structure.IArtifact" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.structure.IArtifact" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="SourceFileArtifact" sort="alpha">
+		<aDefinition name="Exclude"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="RequirementArtifact" sort="alpha">
+		<aDefinition name="Exclude"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Attribute" sort="alpha">
+		<aDefinition name="Exclude"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Operation" sort="alpha">
+		<aDefinition name="Exclude"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Collaboration">
+		<aDefinition name="Exclude">
+			<aDefinition name="Attribute"/>
+			<aDefinition name="Operation"/>
+			<aDefinition name="Realization"/>
+			<aDefinition name="Derivation"/>
+		</aDefinition>
+		<aDefinition name="Attributes" displayName="PSK_ATTRIBUTES" minimum="3" get="getAttributes" sort="visibility" type="Attribute" values="FormatString"/>
+		<aDefinition name="Operations" displayName="PSK_OPERATIONS" minimum="3" get="getOperations" sort="visibility" type="Operation" values="FormatString"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="Generalizations" displayName="PSK_GENERALIZATIONS" minimum="3" get="getGeneralizations" type="Generalization"/>
+			<aDefinition name="Specializations" displayName="PSK_SPECIALIZATIONS" minimum="3" get="getSpecializations" type="Generalization"/>
+			<aDefinition name="Associations" displayName="PSK_ASSOCIATIONS" minimum="3" get="getAssociations" type="Association"/>
+			<aDefinition name="Supplier Dependencies" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="PartFacade">
+		<aDefinition name="Exclude">
+			<aDefinition name="Attribute"/>
+			<aDefinition name="Operation"/>
+			<aDefinition name="Realization"/>
+		</aDefinition>
+		<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade" name="Attributes" displayName="PSK_ATTRIBUTES" minimum="3" get="getAttributes" sort="visibility" type="Attribute" values="FormatString"/>
+		<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade" name="Operations" displayName="PSK_OPERATIONS" minimum="3" get="getOperations" sort="visibility" type="Operation" values="FormatString"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade" name="Generalizations" displayName="PSK_GENERALIZATIONS" minimum="3" get="getGeneralizations" type="Generalization"/>
+			<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade" name="Specializations" displayName="PSK_SPECIALIZATIONS" minimum="3" get="getSpecializations" type="Generalization"/>
+			<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade" name="Associations" displayName="PSK_ASSOCIATIONS" minimum="3" get="getAssociations" type="Association"/>
+			<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade" name="Supplier Dependencies" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade" name="Client Dependencies" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade" name="Referencing" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade" name="Referred" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Activity">
+		<aDefinition name="Exclude">
+			<aDefinition name="Dependency"/>
+			<aDefinition name="Usage"/>
+			<aDefinition name="Permission"/>
+			<aDefinition name="Realization"/>
+			<aDefinition name="Abstraction"/>
+			<aDefinition name="MultiFlow"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="ActivityPartition">
+		<aDefinition name="Exclude">
+			<aDefinition name="ActivityPartition"/>
+		</aDefinition>
+		<aDefinition name="ActivityPartitions" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition" displayName="PSK_SUBPARTITIONS" get="getSubPartitions" type="ActivityPartition"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="IncomingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IJoinForkNode" displayName="PSK_INCOMINGEDGES" minimum="1" get="getIncomingEdges" type="ActivityEdge"/>
+			<aDefinition name="OutgoingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IJoinForkNode" displayName="PSK_OUTGOINGEDGES" minimum="1" get="getOutgoingEdges" type="ActivityEdge"/>
+			<aDefinition name="Supplier Dependencies" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Enumeration">
+		<aDefinition name="EnumerationLiterals" displayName="PSK_ENUMERATIONLITERALS" get="getLiterals" type="EnumerationLiteral" minimum="99999"/>
+		<aDefinition name="Exclude">
+			<aDefinition name="Attribute"/>
+			<aDefinition name="Operation"/>
+			<aDefinition name="Realization"/>
+			<aDefinition name="Derivation"/>
+		</aDefinition>
+		<aDefinition name="Attributes" displayName="PSK_ATTRIBUTES" minimum="3" get="getAttributes" sort="visibility" type="Attribute" values="FormatString"/>
+		<aDefinition name="Operations" displayName="PSK_OPERATIONS" minimum="3" get="getOperations" sort="visibility" type="Operation" values="FormatString"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="Generalizations" displayName="PSK_GENERALIZATIONS" minimum="3" get="getGeneralizations" type="Generalization"/>
+			<aDefinition name="Specializations" displayName="PSK_SPECIALIZATIONS" minimum="3" get="getSpecializations" type="Generalization"/>
+			<aDefinition name="Associations" displayName="PSK_ASSOCIATIONS" minimum="3" get="getAssociations" type="Association"/>
+			<aDefinition name="Supplier Dependencies" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="State">
+		<aDefinition name="Exclude">
+			<aDefinition name="Region"/>
+		</aDefinition>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="IncomingTransitions" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState" displayName="PSK_INCOMINGTRANSITIONS" minimum="1" get="getIncomingTransitions" type="Transition"/>
+			<aDefinition name="OutgoingTransitions" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState" displayName="PSK_OUTGOINGTRANSITIONS" minimum="1" get="getOutgoingTransitions" type="Transition"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+		<aDefinition name="ContainedElements" displayName="PSK_CONTAINEDELEMENTS" minimum="999999" get="getContainedElements" sort="alpha" type="Element" values="FormatString"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Transition">
+		<aDefinition name="Source" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.ITransition" get="getSource"/>
+		<aDefinition name="Target" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.ITransition" get="getTarget"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Region">
+		<aDefinition name="Exclude">
+			<aDefinition name="Transition"/>
+			<aDefinition name="Dependency"/>
+			<aDefinition name="Usage"/>
+			<aDefinition name="Permission"/>
+			<aDefinition name="Realization"/>
+			<aDefinition name="Abstraction"/>
+		</aDefinition>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="IncomingTransitions" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion" displayName="PSK_INCOMINGTRANSITIONS" minimum="1" get="getIncomingTransitions" type="Transition"/>
+			<aDefinition name="OutgoingTransitions" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion" displayName="PSK_OUTGOINGTRANSITIONS" minimum="1" get="getOutgoingTransitions" type="Transition"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="StateMachine">
+		<aDefinition name="Exclude">
+			<aDefinition name="Region"/>
+			<aDefinition name="Transition"/>
+		</aDefinition>
+		<aDefinition name="ContainedElements" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IStateMachine" displayName="PSK_CONTAINEDELEMENTS" minimum="999999" get="getContainedElements" sort="alpha" type="Element" values="FormatString"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="PseudoState">
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="IncomingTransitions" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IPseudoState" displayName="PSK_INCOMINGTRANSITIONS" minimum="1" get="getIncomingTransitions" type="Transition"/>
+			<aDefinition name="OutgoingTransitions" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IPseudoState" displayName="PSK_OUTGOINGTRANSITIONS" minimum="1" get="getOutgoingTransitions" type="Transition"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IPseudoState" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IPseudoState" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IPseudoState" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IPseudoState" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="FinalState">
+		<aDefinition name="Exclude"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="IncomingTransitions" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IFinalState" displayName="PSK_INCOMINGTRANSITIONS" minimum="1" get="getIncomingTransitions" type="Transition"/>
+			<aDefinition name="OutgoingTransitions" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IFinalState" displayName="PSK_OUTGOINGTRANSITIONS" minimum="1" get="getOutgoingTransitions" type="Transition"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IFinalState" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IFinalState" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IFinalState" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IFinalState" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="InvocationNode">
+		<aDefinition name="Exclude"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="IncomingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IInvocationNode" displayName="PSK_INCOMINGEDGES" minimum="1" get="getIncomingEdges" type="ActivityEdge"/>
+			<aDefinition name="OutgoingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IInvocationNode" displayName="PSK_OUTGOINGEDGES" minimum="1" get="getOutgoingEdges" type="ActivityEdge"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IInvocationNode" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IInvocationNode" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IInvocationNode" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IInvocationNode" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+		<aDefinition name="Elements" displayName="PSK_CONTAINEDELEMENTS" minimum="999999" get="getElements" sort="alpha" type="Element" values="FormatString"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="InitialNode">
+		<aDefinition name="Exclude"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="IncomingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IInitialNodee" displayName="PSK_INCOMINGEDGES" minimum="1" get="getIncomingEdges" type="ActivityEdge"/>
+			<aDefinition name="OutgoingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IInitialNodee" displayName="PSK_OUTGOINGEDGES" minimum="1" get="getOutgoingEdges" type="ActivityEdge"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IInitialNodee" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IInitialNodee" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IInitialNodee" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IInitialNodee" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="MultiFlow">
+		<aDefinition name="Source" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IMultiFlow" get="getSource"/>
+		<aDefinition name="Target" get="getTarget"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="JoinForkNode">
+		<aDefinition name="Exclude"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="IncomingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IJoinForkNode" displayName="PSK_INCOMINGEDGES" minimum="1" get="getIncomingEdges" type="ActivityEdge"/>
+			<aDefinition name="OutgoingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IJoinForkNode" displayName="PSK_OUTGOINGEDGES" minimum="1" get="getOutgoingEdges" type="ActivityEdge"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IJoinForkNode" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IJoinForkNode" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IJoinForkNode" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IJoinForkNode" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="DecisionMergeNode">
+		<aDefinition name="Exclude"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="IncomingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IDecisionMergeNode" displayName="PSK_INCOMINGEDGES" minimum="1" get="getIncomingEdges" type="ActivityEdge"/>
+			<aDefinition name="OutgoingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IDecisionMergeNode" displayName="PSK_OUTGOINGEDGES" minimum="1" get="getOutgoingEdges" type="ActivityEdge"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IDecisionMergeNode" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IDecisionMergeNode" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IDecisionMergeNode" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IDecisionMergeNode" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="ActivityFinalNode">
+		<aDefinition name="Exclude"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="IncomingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityFinalNode" displayName="PSK_INCOMINGEDGES" minimum="1" get="getIncomingEdges" type="ActivityEdge"/>
+			<aDefinition name="OutgoingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityFinalNode" displayName="PSK_OUTGOINGEDGES" minimum="1" get="getOutgoingEdges" type="ActivityEdge"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityFinalNode" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityFinalNode" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityFinalNode" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityFinalNode" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="FlowFinalNode">
+		<aDefinition name="Exclude"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="IncomingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IFlowFinalNode" displayName="PSK_INCOMINGEDGES" minimum="1" get="getIncomingEdges" type="ActivityEdge"/>
+			<aDefinition name="OutgoingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IFlowFinalNode" displayName="PSK_OUTGOINGEDGES" minimum="1" get="getOutgoingEdges" type="ActivityEdge"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IFlowFinalNode" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IFlowFinalNode" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IFlowFinalNode" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IFlowFinalNode" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="ParameterUsageNode">
+		<aDefinition name="Exclude"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="IncomingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IParameterUsageNode" displayName="PSK_INCOMINGEDGES" minimum="1" get="getIncomingEdges" type="ActivityEdge"/>
+			<aDefinition name="OutgoingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IParameterUsageNode" displayName="PSK_OUTGOINGEDGES" minimum="1" get="getOutgoingEdges" type="ActivityEdge"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IParameterUsageNode" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IParameterUsageNode" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IParameterUsageNode" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IParameterUsageNode" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="DataStoreNode">
+		<aDefinition name="Exclude"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="IncomingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IDataStoreNode" displayName="PSK_INCOMINGEDGES" minimum="1" get="getIncomingEdges" type="ActivityEdge"/>
+			<aDefinition name="OutgoingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IDataStoreNode" displayName="PSK_OUTGOINGEDGES" minimum="1" get="getOutgoingEdges" type="ActivityEdge"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IDataStoreNode" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IDataStoreNode" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IDataStoreNode" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.IDataStoreNode" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="SignalNode">
+		<aDefinition name="Exclude"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="IncomingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.ISignalNode" displayName="PSK_INCOMINGEDGES" minimum="1" get="getIncomingEdges" type="ActivityEdge"/>
+			<aDefinition name="OutgoingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.ISignalNode" displayName="PSK_OUTGOINGEDGES" minimum="1" get="getOutgoingEdges" type="ActivityEdge"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.ISignalNode" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.ISignalNode" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.ISignalNode" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.ISignalNode" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="ComplexActivityGroup">
+		<aDefinition name="Exclude"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="IncomingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.ISignalNode" displayName="PSK_INCOMINGEDGES" minimum="1" get="getIncomingEdges" type="ActivityEdge"/>
+			<aDefinition name="OutgoingEdges" id="org.netbeans.modules.uml.core.metamodel.common.commonactivities.ISignalNode" displayName="PSK_OUTGOINGEDGES" minimum="1" get="getOutgoingEdges" type="ActivityEdge"/>
+			<aDefinition name="Supplier Dependencies" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Extend" sort="alpha" showDetails="true">
+		<aDefinition name="Base" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IExtend" get="getBase"/>
+		<aDefinition name="Extension" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IExtend" get="getExtension"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Include" sort="alpha" showDetails="true">
+		<aDefinition name="Base" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IInclude" get="getBase"/>
+		<aDefinition name="Addition" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IInclude" get="getAddition"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Component">
+		<aDefinition name="Exclude">
+			<aDefinition name="Attribute"/>
+			<aDefinition name="Operation"/>
+			<aDefinition name="Realization"/>
+		</aDefinition>
+		<aDefinition name="Attributes" id="org.netbeans.modules.uml.core.metamodel.structure.IComponent" displayName="PSK_ATTRIBUTES" minimum="3" get="getAttributes" sort="visibility" type="Attribute" values="FormatString"/>
+		<aDefinition name="Operations" id="org.netbeans.modules.uml.core.metamodel.structure.IComponent" displayName="PSK_OPERATIONS" minimum="3" get="getOperations" sort="visibility" type="Operation" values="FormatString"/>
+		<aDefinition name="ExternalInterfaces" id="org.netbeans.modules.uml.core.metamodel.structure.IComponent" displayName="PSK_EXTERNALINTERFACES" minimum="3" get="getExternalInterfaces" type="Port" values="FormatString">
+                    <aDefinition name="RequiredInterfaces" id="org.netbeans.modules.uml.core.metamodel.structure.IComponent" displayName="PSK_REQUIREDINTERFACES" get="getRequiredInterfaces" type="Interface" values="FormatString" />
+                    <aDefinition name="ProvidedInterfaces" id="org.netbeans.modules.uml.core.metamodel.structure.IComponent" displayName="PSK_PROVIDEDINTERFACES" get="getProvidedInterfaces" type="Interface" values="FormatString" />
+                </aDefinition>
+		<aDefinition name="Relationships" id="org.netbeans.modules.uml.core.metamodel.structure.IComponent" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="Generalizations" id="org.netbeans.modules.uml.core.metamodel.structure.IComponent" displayName="PSK_GENERALIZATIONS" minimum="3" get="getGeneralizations" type="Generalization"/>
+			<aDefinition name="Specializations" id="org.netbeans.modules.uml.core.metamodel.structure.IComponent" displayName="PSK_SPECIALIZATIONS" minimum="3" get="getSpecializations" type="Generalization"/>
+			<aDefinition name="Associations" id="org.netbeans.modules.uml.core.metamodel.structure.IComponent" displayName="PSK_ASSOCIATIONS" minimum="3" get="getAssociations" type="Association"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.structure.IComponent" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.structure.IComponent" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.structure.IComponent" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.structure.IComponent" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Port">
+		<aDefinition name="Exclude"/>
+                <!-- The name of the next two defs are the same to control the icon that is displayed.  For some reason we are not using the type attribute. -->
+                <aDefinition name="RequiredInterfaces" id="org.netbeans.modules.uml.core.metamodel.structure.IComponent" displayName="PSK_REQUIREDINTERFACES" get="getRequiredInterfaces" type="AssemblyConnector" values="FormatString" />
+                <aDefinition name="ProvidedInterfaces" id="org.netbeans.modules.uml.core.metamodel.structure.IComponent" displayName="PSK_PROVIDEDINTERFACES" get="getProvidedInterfaces" type="AssemblyConnector" values="FormatString" />
+	</PropertyDefinition>
+	<PropertyDefinition name="DeploymentSpecification" sort="alpha">
+		<aDefinition name="Exclude"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.structure.IDeploymentSpecification" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.structure.IDeploymentSpecification" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.structure.IDeploymentSpecification" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.structure.IDeploymentSpecification" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Node" sort="alpha">
+		<aDefinition name="Exclude">
+			<aDefinition name="Attribute"/>
+			<aDefinition name="Operation"/>
+			<aDefinition name="Realization"/>
+		</aDefinition>
+		<aDefinition name="Attributes" id="org.netbeans.modules.uml.core.metamodel.structure.INode" displayName="PSK_ATTRIBUTES" minimum="3" get="getAttributes" sort="visibility" type="Attribute" values="FormatString"/>
+		<aDefinition name="Operations" id="org.netbeans.modules.uml.core.metamodel.structure.INode" displayName="PSK_OPERATIONS" minimum="3" get="getOperations" sort="visibility" type="Operation" values="FormatString"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="Generalizations" id="org.netbeans.modules.uml.core.metamodel.structure.INode" displayName="PSK_GENERALIZATIONS" minimum="3" get="getGeneralizations" type="Generalization"/>
+			<aDefinition name="Specializations" id="org.netbeans.modules.uml.core.metamodel.structure.INode" displayName="PSK_SPECIALIZATIONS" minimum="3" get="getSpecializations" type="Generalization"/>
+			<aDefinition name="Associations" id="org.netbeans.modules.uml.core.metamodel.structure.INode" displayName="PSK_ASSOCIATIONS" minimum="3" get="getAssociations" type="Association"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.structure.INode" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.structure.INode" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.structure.INode" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.structure.INode" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Reference" sort="alpha" showDetails="true">
+		<aDefinition name="ReferencingElement" id="org.netbeans.modules.uml.core.metamodel.core.foundation.IReference" get="getReferencingElement"/>
+		<aDefinition name="ReferredElement" id="org.netbeans.modules.uml.core.metamodel.core.foundation.IReference" get="getReferredElement"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Profile">
+		<aDefinition name="Exclude"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="UseCaseDetail">
+		<aDefinition name="Exclude">
+			<aDefinition name="UseCaseDetail"/>
+		</aDefinition>
+		<aDefinition name="SubDetails" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IUseCaseDetail" displayName="PSK_SUBDETAILS" minimum="3" get="getSubDetails" type="UseCaseDetail"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="AssociationClass" sort="alpha">
+		<aDefinition name="Exclude">
+			<aDefinition name="Attribute"/>
+			<aDefinition name="Operation"/>
+		</aDefinition>
+		<aDefinition name="Attributes" id="org.netbeans.modules.uml.core.metamodel.structure.IAssociationClass" displayName="PSK_ATTRIBUTES" minimum="3" get="getAttributes" sort="visibility" type="Attribute" values="FormatString"/>
+		<aDefinition name="Operations" id="org.netbeans.modules.uml.core.metamodel.structure.IAssociationClass" displayName="PSK_OPERATIONS" minimum="3" get="getOperations" sort="visibility" type="Operation" values="FormatString"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="DerivationClassifier" sort="alpha">
+		<aDefinition name="Exclude">
+			<aDefinition name="Attribute"/>
+			<aDefinition name="Operation"/>
+			<aDefinition name="Realization"/>
+			<aDefinition name="Derivation"/>
+		</aDefinition>
+		<aDefinition name="Attributes" id="org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier" displayName="PSK_ATTRIBUTES" minimum="3" get="getAttributes" sort="visibility" type="Attribute" values="FormatString"/>
+		<aDefinition name="Operations" id="org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier" displayName="PSK_OPERATIONS" minimum="3" get="getOperations" sort="visibility" type="Operation" values="FormatString"/>
+		<aDefinition name="Relationships" displayName="PSK_RELATIONSHIPS" show="true" collapsed="false">
+			<aDefinition name="Generalizations" id="org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier" displayName="PSK_GENERALIZATIONS" minimum="3" get="getGeneralizations" type="Generalization"/>
+			<aDefinition name="Specializations" id="org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier" displayName="PSK_SPECIALIZATIONS" minimum="3" get="getSpecializations" type="Generalization"/>
+			<aDefinition name="Associations" id="org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier" displayName="PSK_ASSOCIATIONS" minimum="3" get="getAssociations" type="Association"/>
+			<aDefinition name="Supplier Dependencies" id="org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier" displayName="PSK_SUPPLIERDEPENDENCIES" minimum="3" get="getSupplierDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Client Dependencies" id="org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier" displayName="PSK_CLIENTDEPENDENCIES" minimum="3" get="getClientDependencies" type="Abstraction,Usage,Permission,Delegate,RoleBinding,Derivation,Dependency"/>
+			<aDefinition name="Referencing" id="org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier" displayName="PSK_INGREFERENCES" minimum="3" get="getReferencingReferences" type="Reference"/>
+			<aDefinition name="Referred" id="org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier" displayName="PSK_EDREFERENCES" minimum="3" get="getReferredReferences" type="Reference"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Derivation" sort="alpha" showDetails="true">
+		<aDefinition name="Supplier" get="getSupplier"/>
+		<aDefinition name="Client" get="getClient"/>
+	</PropertyDefinition>
+</PropertyDefinitions>

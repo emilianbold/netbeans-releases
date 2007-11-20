@@ -1,0 +1,1 @@
+!%%%IfVar <test="isGetter" var="java_operation_getter.gt" ><test="isSetter" var="java_operation_setter.gt" ><test="returnTypeHasValue" var="java_operation_result.gt" >%%%!

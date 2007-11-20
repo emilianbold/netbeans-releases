@@ -1,0 +1,4 @@
+!%/**
+   * %%documentation%%
+   */
+%!!%%%visibility%% %!!%%%abstract%% %!!%%%isComplete%% %!class %java_class_head.gt% !%extends %%firstSuperClassName%%%!!% implements %%IterationVar <list="implementedInterfaces" var="implementedInterfaceName" delimiter=", ">%%%!

@@ -1,0 +1,4 @@
+!%/**
+   * %%documentation%%
+   */
+%!!%%%visibility%% %!interface %java_interface_head.gt% !%extends %%IterationVar <list="generalizationLink" var="superClassName" delimiter=", \r\n\t\t\t">%%%!

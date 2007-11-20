@@ -1,0 +1,473 @@
+<?xml version="1.0"?>
+<PropertyDefinitions>
+	<PropertyDefinition name="WRFormatElement">
+		<aDefinition name="InReport" displayName="PSK_WR_INREPORT" controlType="list" values="PSK_TRUE|PSK_FALSE" helpText="PSK_WR_INREPORT_HLP" translator="WebReportAddIn.WebReportController"/>
+		<aDefinition name="InTree" displayName="PSK_WR_INTREE" controlType="list" values="PSK_TRUE|PSK_FALSE" helpText="PSK_WR_INTREE_HLP" translator="WebReportAddIn.WebReportController"/>
+		<aDefinition name="XSL" displayName="PSK_WR_XSL" controlType="FileOpen" helpText="PSK_WR_XSL_HLP" translator="WebReportAddIn.WebReportController"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Workspace" displayName="PSK_WR_WORKSPACE" translator="WebReportAddIn.WebReportController">
+		<aDefinition name="XSL" displayName="PSK_WR_HTML" controlType="FileOpen" helpText="PSK_WR_HTML_HLP" translator="WebReportAddIn.WebReportController"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Project" displayName="PSK_WR_PROJECT" translator="WebReportAddIn.WebReportController">
+		<aDefinition name="XSL" displayName="PSK_WR_XSL" controlType="FileOpen" helpText="PSK_WR_XSL_HLP" translator="WebReportAddIn.WebReportController"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Diagrams" displayName="PSK_WR_DIAGRAMS" translator="WebReportAddIn.WebReportController">
+		<aDefinition pdref="WRFormatElement"/>
+		<aDefinition name="ActivityDiagram" displayName="PSK_WR_ACTIVITYDIAGRAM" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="ClassDiagram" displayName="PSK_WR_CLASSDIAGRAM" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="CollaborationDiagram" displayName="PSK_WR_COLLABORATIONDIAGRAM" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="ComponentDiagram" displayName="PSK_WR_COMPONENTDIAGRAM" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="DeploymentDiagram" displayName="PSK_WR_DEPLOYMENTDIAGRAM" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="SequenceDiagram" displayName="PSK_WR_SEQDIAGRAM" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="StateDiagram" displayName="PSK_WR_STATEDIAGRAM" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="UseCaseDiagram" displayName="PSK_WR_UCDDIAGRAM" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Package" displayName="PSK_WR_PACKAGE" translator="WebReportAddIn.WebReportController">
+		<aDefinition pdref="WRFormatElement"/>
+		<aDefinition name="Relationships" displayName="PSK_WR_RELATIONSHIPS" translator="WebReportAddIn.WebReportController">
+			<aDefinition name="Abstraction" displayName="PSK_WR_ABSTRACTION" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Dependency" displayName="PSK_WR_DEPENDENCIES" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Permission" displayName="PSK_WR_PERMISSION" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Realization" displayName="PSK_WR_REALIZATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Usage" displayName="PSK_WR_USAGE" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Activity" displayName="PSK_ACTIVITY" translator="ConfigStringFramework.ConfigStringTranslator">
+		<aDefinition pdref="WRFormatElement"/>
+		<aDefinition name="ActivityFinalNode" displayName="PSK_ACTIVITYFINALNODE" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="ActivityMember"/>
+		</aDefinition>
+		<aDefinition name="ComplexActivityGroup" displayName="PSK_ACTIVITYGROUP" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="ActivityMember"/>
+		</aDefinition>
+		<aDefinition name="DataStoreNode" displayName="PSK_DATASTORENODE" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="ActivityMember"/>
+		</aDefinition>
+		<aDefinition name="DecisionMergeNode" displayName="PSK_DECISIONMERGENODE" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="ActivityMember"/>
+		</aDefinition>
+		<aDefinition name="FlowFinalNode" displayName="PSK_FLOWFINALNODE" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="ActivityMember"/>
+		</aDefinition>
+		<aDefinition name="JoinForkNode" displayName="PSK_JOINFORKNODE" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="ActivityMember"/>
+		</aDefinition>
+		<aDefinition name="InitialNode" displayName="PSK_INITIALNODE" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="ActivityMember"/>
+		</aDefinition>
+		<aDefinition name="InvocationNode" displayName="PSK_INVOCATIONNODE" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="ActivityMember"/>
+		</aDefinition>
+		<aDefinition name="ParameterUsageNode" displayName="PSK_PARAMETERUSAGENODE" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="ActivityMember"/>
+		</aDefinition>
+		<aDefinition name="ActivityPartition" displayName="PSK_ACTIVITYPARTITION" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="ActivityMember"/>
+		</aDefinition>
+		<aDefinition name="SignalNode" displayName="PSK_SIGNALNODE" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="ActivityMember"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Actor" displayName="PSK_WR_ACTOR" translator="WebReportAddIn.WebReportController">
+		<aDefinition pdref="Class"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="AliasedType" displayName="PSK_ALIASEDTYPE">
+		<aDefinition pdref="Class"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Artifact" displayName="PSK_WR_ARTIFACT" translator="WebReportAddIn.WebReportController">
+		<aDefinition pdref="Class"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="AssociationClass" displayName="PSK_ASSOCIATIONCLASS" translator="ConfigStringFramework.ConfigStringTranslator">
+		<aDefinition pdref="WRFormatElement"/>
+		<aDefinition name="Attribute" displayName="PSK_WR_ATTRIBUTES" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="Operation" displayName="PSK_WR_OPERATIONS" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Class" displayName="PSK_WR_CLASS" translator="WebReportAddIn.WebReportController">
+		<aDefinition pdref="WRFormatElement"/>
+		<aDefinition name="Attribute" displayName="PSK_WR_ATTRIBUTES" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="Operation" displayName="PSK_WR_OPERATIONS" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="Relationships" displayName="PSK_WR_RELATIONSHIPS" translator="WebReportAddIn.WebReportController">
+			<aDefinition name="Abstraction" displayName="PSK_WR_ABSTRACTION" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Aggregation" displayName="PSK_WR_AGGREGATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Association" displayName="PSK_WR_ASSOCIATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Delegate" displayName="PSK_DELEGATE" translator="ConfigStringFramework.ConfigStringTranslator">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Dependency" displayName="PSK_WR_DEPENDENCIES" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Derivation" displayName="PSK_DERIVATION">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Generalization" displayName="PSK_WR_GENERALIZATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Implementation" displayName="PSK_WR_IMPLEMENTATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Permission" displayName="PSK_WR_PERMISSION" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Realization" displayName="PSK_WR_REALIZATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Usage" displayName="PSK_WR_USAGE" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Collaboration" displayName="PSK_COLLABORATION" translator="ConfigStringFramework.ConfigStringTranslator">
+		<aDefinition pdref="WRFormatElement"/>
+		<aDefinition name="Attribute" displayName="PSK_WR_ATTRIBUTES" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="Operation" displayName="PSK_WR_OPERATIONS" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="Relationships" displayName="PSK_WR_RELATIONSHIPS" translator="WebReportAddIn.WebReportController">
+			<aDefinition name="Abstraction" displayName="PSK_WR_ABSTRACTION" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Aggregation" displayName="PSK_WR_AGGREGATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Association" displayName="PSK_WR_ASSOCIATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Dependency" displayName="PSK_WR_DEPENDENCIES" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Generalization" displayName="PSK_WR_GENERALIZATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Implementation" displayName="PSK_WR_IMPLEMENTATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Permission" displayName="PSK_WR_PERMISSION" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Realization" displayName="PSK_WR_REALIZATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Usage" displayName="PSK_WR_USAGE" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Comment" displayName="PSK_WR_COMMENT" translator="WebReportAddIn.WebReportController">
+		<aDefinition pdref="WRFormatElement"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Component" displayName="PSK_COMPONENT" translator="ConfigStringFramework.ConfigStringTranslator">
+		<aDefinition pdref="WRFormatElement"/>
+		<aDefinition name="Port" displayName="PSK_PORT" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="Attribute" displayName="PSK_WR_ATTRIBUTES" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="Operation" displayName="PSK_WR_OPERATIONS" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="Relationships" displayName="PSK_WR_RELATIONSHIPS" translator="WebReportAddIn.WebReportController">
+			<aDefinition name="Abstraction" displayName="PSK_WR_ABSTRACTION" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Aggregation" displayName="PSK_WR_AGGREGATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Association" displayName="PSK_WR_ASSOCIATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Delegate" displayName="PSK_DELEGATE" translator="ConfigStringFramework.ConfigStringTranslator">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Dependency" displayName="PSK_WR_DEPENDENCIES" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Generalization" displayName="PSK_WR_GENERALIZATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Implementation" displayName="PSK_WR_IMPLEMENTATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Permission" displayName="PSK_WR_PERMISSION" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Realization" displayName="PSK_WR_REALIZATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Usage" displayName="PSK_WR_USAGE" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="DataType" displayName="PSK_WR_DATATYPE" translator="WebReportAddIn.WebReportController">
+		<aDefinition pdref="Class"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="DesignPattern" displayName="PSK_DESIGNPATTERN" translator="ConfigStringFramework.ConfigStringTranslator">
+		<aDefinition name="PartFacade" displayName="PSK_PARTICIPANT" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="Class"/>
+		</aDefinition>
+		<aDefinition pdref="Collaboration"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="DerivationClassifier" displayName="PSK_DERIVATIONCLASSIFIER">
+		<aDefinition pdref="Class"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="DeploymentSpecification" displayName="PSK_DEPLOYMENTSPECIFICATION" translator="ConfigStringFramework.ConfigStringTranslator">
+		<aDefinition pdref="WRFormatElement"/>
+		<aDefinition name="Relationships" displayName="PSK_WR_RELATIONSHIPS" translator="WebReportAddIn.WebReportController">
+			<aDefinition name="Abstraction" displayName="PSK_WR_ABSTRACTION" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Dependency" displayName="PSK_WR_DEPENDENCIES" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Permission" displayName="PSK_WR_PERMISSION" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Realization" displayName="PSK_WR_REALIZATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Usage" displayName="PSK_WR_USAGE" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Enumeration" displayName="PSK_ENUMERATION">
+		<aDefinition name="EnumerationLiteral" displayName="PSK_ENUMERATIONLITERAL">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition pdref="Class"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Interaction" displayName="PSK_WR_INTERACTION" translator="WebReportAddIn.WebReportController">
+		<aDefinition pdref="WRFormatElement"/>
+		<aDefinition name="CombinedFragment" displayName="PSK_WR_FRAGMENT" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="InteractionOccurrence" displayName="PSK_INTERACTIONOCCURRENCE" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="Lifeline" displayName="PSK_WR_LIFELINE" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+			<aDefinition name="Relationships" displayName="PSK_WR_RELATIONSHIPS" translator="WebReportAddIn.WebReportController">
+				<aDefinition name="Abstraction" displayName="PSK_WR_ABSTRACTION" translator="WebReportAddIn.WebReportController">
+					<aDefinition pdref="WRFormatElement"/>
+				</aDefinition>
+				<aDefinition name="Dependency" displayName="PSK_WR_DEPENDENCIES" translator="WebReportAddIn.WebReportController">
+					<aDefinition pdref="WRFormatElement"/>
+				</aDefinition>
+				<aDefinition name="Permission" displayName="PSK_WR_PERMISSION" translator="WebReportAddIn.WebReportController">
+					<aDefinition pdref="WRFormatElement"/>
+				</aDefinition>
+				<aDefinition name="Realization" displayName="PSK_WR_REALIZATIONS" translator="WebReportAddIn.WebReportController">
+					<aDefinition pdref="WRFormatElement"/>
+				</aDefinition>
+				<aDefinition name="Usage" displayName="PSK_WR_USAGE" translator="WebReportAddIn.WebReportController">
+					<aDefinition pdref="WRFormatElement"/>
+				</aDefinition>
+			</aDefinition>
+		</aDefinition>
+		<aDefinition name="Message" displayName="PSK_WR_MESSAGE" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Interface" displayName="PSK_WR_INTERFACE" translator="WebReportAddIn.WebReportController">
+		<aDefinition pdref="Class"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Node" displayName="PSK_NODE" translator="ConfigStringFramework.ConfigStringTranslator">
+		<aDefinition pdref="Class"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="Profile" displayName="PSK_PROFILE" translator="ConfigStringFramework.ConfigStringTranslator">
+		<aDefinition pdref="WRFormatElement"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="SourceFileArtifact" displayName="PSK_SOURCEFILEARTIFACT" translator="ConfigStringFramework.ConfigStringTranslator">
+		<aDefinition pdref="Class"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="StateMachine" displayName="PSK_STATEMACHINE" translator="ConfigStringFramework.ConfigStringTranslator">
+		<aDefinition pdref="WRFormatElement"/>
+		<aDefinition name="Attribute" displayName="PSK_WR_ATTRIBUTES" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="Operation" displayName="PSK_WR_OPERATIONS" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="AbortedFinalState" displayName="PSK_ABORTEDFINALSTATE" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="StateMember"/>
+		</aDefinition>
+		<aDefinition name="ChoicePseudoState" displayName="PSK_CHOICEPSUEDOSTATE" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="StateMember"/>
+		</aDefinition>
+		<aDefinition name="CompositeState" displayName="PSK_COMPOSITESTATE" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition name="Region" displayName="PSK_REGIONS">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition pdref="StateMember"/>
+		</aDefinition>
+		<aDefinition name="DeepHistoryState" displayName="PSK_DEEPHISTORY" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="StateMember"/>
+		</aDefinition>
+		<aDefinition name="EntryPointState" displayName="PSK_ENTRYPOINT" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="StateMember"/>
+		</aDefinition>
+		<aDefinition name="FinalState" displayName="PSK_FINALSTATE" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="StateMember"/>
+		</aDefinition>
+		<aDefinition name="InitialState" displayName="PSK_INITIALSTATE" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="StateMember"/>
+		</aDefinition>
+		<aDefinition name="JoinState" displayName="PSK_JOINSTATE" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="StateMember"/>
+		</aDefinition>
+		<aDefinition name="JunctionState" displayName="PSK_JUNCTION" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="StateMember"/>
+		</aDefinition>
+		<aDefinition name="ShallowHistoryState" displayName="PSK_SHALLOWHISTORY" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="StateMember"/>
+		</aDefinition>
+		<aDefinition name="State" displayName="PSK_STATE" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="StateMember"/>
+		</aDefinition>
+		<aDefinition name="SubmachineState" displayName="PSK_SUBMACHINESTATE" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="StateMember"/>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="Stereotype" displayName="PSK_STEREOTYPE" translator="ConfigStringFramework.ConfigStringTranslator">
+		<aDefinition pdref="WRFormatElement"/>
+	</PropertyDefinition>
+	<PropertyDefinition name="UseCase" displayName="PSK_WR_USECASE" translator="WebReportAddIn.WebReportController">
+		<aDefinition pdref="WRFormatElement"/>
+		<aDefinition name="Attribute" displayName="PSK_WR_ATTRIBUTES" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="Operation" displayName="PSK_WR_OPERATIONS" translator="WebReportAddIn.WebReportController">
+			<aDefinition pdref="WRFormatElement"/>
+		</aDefinition>
+		<aDefinition name="UseCaseDetail" displayName="PSK_USECASEDETAILS" translator="ConfigStringFramework.ConfigStringTranslator">
+			<aDefinition pdref="WRFormatElement"/>
+			<aDefinition name="SubDetails" displayName="PSK_SUBDETAILS" translator="ConfigStringFramework.ConfigStringTranslator">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+		</aDefinition>
+		<aDefinition name="Relationships" displayName="PSK_WR_RELATIONSHIPS" translator="WebReportAddIn.WebReportController">
+			<aDefinition name="Abstraction" displayName="PSK_WR_ABSTRACTION" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Aggregation" displayName="PSK_WR_AGGREGATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Association" displayName="PSK_WR_ASSOCIATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Dependency" displayName="PSK_WR_DEPENDENCIES" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Extend" displayName="PSK_WR_EXTEND" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Generalization" displayName="PSK_WR_GENERALIZATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Implementation" displayName="PSK_WR_IMPLEMENTATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Include" displayName="PSK_WR_INCLUDE" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Permission" displayName="PSK_WR_PERMISSION" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Realization" displayName="PSK_WR_REALIZATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Usage" displayName="PSK_WR_USAGE" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="ActivityMember">
+		<aDefinition pdref="WRFormatElement"/>
+		<aDefinition name="Relationships" displayName="PSK_WR_RELATIONSHIPS" translator="WebReportAddIn.WebReportController">
+			<aDefinition name="Abstraction" displayName="PSK_WR_ABSTRACTION" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="MultiFlow" displayName="PSK_ACTIVITYEDGE" translator="ConfigStringFramework.ConfigStringTranslator">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Dependency" displayName="PSK_WR_DEPENDENCIES" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Permission" displayName="PSK_WR_PERMISSION" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Realization" displayName="PSK_WR_REALIZATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Usage" displayName="PSK_WR_USAGE" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+		</aDefinition>
+	</PropertyDefinition>
+	<PropertyDefinition name="StateMember">
+		<aDefinition pdref="WRFormatElement"/>
+		<aDefinition name="Relationships" displayName="PSK_WR_RELATIONSHIPS" translator="WebReportAddIn.WebReportController">
+			<aDefinition name="Transition" displayName="PSK_TRANSITION" translator="ConfigStringFramework.ConfigStringTranslator">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Dependency" displayName="PSK_WR_DEPENDENCIES" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Realization" displayName="PSK_WR_REALIZATIONS" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Usage" displayName="PSK_WR_USAGE" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Permission" displayName="PSK_WR_PERMISSION" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+			<aDefinition name="Abstraction" displayName="PSK_WR_ABSTRACTION" translator="WebReportAddIn.WebReportController">
+				<aDefinition pdref="WRFormatElement"/>
+			</aDefinition>
+		</aDefinition>
+	</PropertyDefinition>
+</PropertyDefinitions>

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<templateFamilies>
+    <family name="Java" expanded="true">
+        <domainObject name="Basic Class">
+            <modelElement>Class</modelElement>
+            <stereotype></stereotype>
+            <description>Code generation template for standard Java class file.</description>
+            <template>
+                <filenameFormat>{name}</filenameFormat>
+                <fileExtension>.java</fileExtension>
+                <folderPath></folderPath>
+                <templateFile>Java/CompilationUnit.java</templateFile>
+            </template>
+        </domainObject>
+        <domainObject name="Basic Interface">
+            <modelElement>Interface</modelElement>
+            <stereotype></stereotype>
+            <description>Code generation template for standard Java interface file.</description>
+            <template>
+                <filenameFormat>{name}</filenameFormat>
+                <fileExtension>.java</fileExtension>
+                <folderPath></folderPath>
+                <templateFile>Java/CompilationUnit.java</templateFile>
+            </template>
+        </domainObject>
+        <domainObject name="Basic Enumeration">
+            <modelElement>Enumeration</modelElement>
+            <stereotype></stereotype>
+            <description>Code generation template for standard Java enumeration file.</description>
+            <template>
+                <filenameFormat>{name}</filenameFormat>
+                <fileExtension>.java</fileExtension>
+                <folderPath></folderPath>
+                <templateFile>Java/CompilationUnit.java</templateFile>
+            </template>
+        </domainObject>
+    </family>
+</templateFamilies>

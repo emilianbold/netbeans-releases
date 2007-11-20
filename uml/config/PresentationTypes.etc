@@ -1,0 +1,569 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<EMBT:PresentationTypes xmlns:EMBT="www.sun.com" version="1.0">
+  <Version>1.0</Version>
+  <DiagramsTable>
+    <DiagramName DiagramID="1">Diagram</DiagramName>
+    <DiagramName DiagramID="2">Activity Diagram</DiagramName>
+    <DiagramName DiagramID="4">Class Diagram</DiagramName>
+    <DiagramName DiagramID="8">Collaboration Diagram</DiagramName>
+    <DiagramName DiagramID="16">Component Diagram</DiagramName>
+    <DiagramName DiagramID="32">Deployment Diagram</DiagramName>
+    <DiagramName DiagramID="64">Sequence Diagram</DiagramName>
+    <DiagramName DiagramID="128">State Diagram</DiagramName>
+    <DiagramName DiagramID="256">Use Case Diagram</DiagramName>
+  </DiagramsTable>
+  <InitStringsTable>
+    <InitString InitStringID="1">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Graphic GST_RECTANGLE</InitString>
+    <InitString InitStringID="2">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Graphic GST_ROUNDED_RECTANGLE</InitString>
+    <InitString InitStringID="3">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Graphic GST_ELLIPSE</InitString>
+    <InitString InitStringID="4">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Graphic GST_PENTAGON</InitString>
+    <InitString InitStringID="5">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Graphic GST_HEXAGON1</InitString>
+    <InitString InitStringID="6">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Graphic GST_HEXAGON2</InitString>
+    <InitString InitStringID="7">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Graphic GST_OCTAGON</InitString>
+    <InitString InitStringID="8">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Graphic GST_TRIANGLE</InitString>
+    <InitString InitStringID="9">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Graphic GST_TRIANGLE_DOWN</InitString>
+    <InitString InitStringID="10">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Graphic GST_TRIANGLE_LEFT</InitString>
+    <InitString InitStringID="11">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Graphic GST_TRIANGLE_RIGHT</InitString>
+    <InitString InitStringID="12">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Graphic GST_DIAMOND</InitString>
+    <InitString InitStringID="13">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Graphic GST_PARALLELOGRAM</InitString>
+    <InitString InitStringID="14">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Graphic GST_STAR</InitString>
+    <InitString InitStringID="15">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Graphic GST_CROSS</InitString>
+    <InitString InitStringID="16">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge NestedLink</InitString>
+    <InitString InitStringID="17">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge CommentEdge</InitString>
+    <InitString InitStringID="18">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Qualifier</InitString>
+    <InitString InitStringID="19">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge AssociationClassInitialEdge</InitString>
+    <InitString InitStringID="20">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge AssemblyConnectorInitialEdge</InitString>
+    <InitString InitStringID="21">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge</InitString>
+    <InitString InitStringID="22">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI</InitString>
+    <InitString InitStringID="23">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Comment</InitString>
+    <InitString InitStringID="24">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI AssociationClass</InitString>
+    <InitString InitStringID="25">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI AssociationClassConnectorDrawEngine</InitString>
+    <InitString InitStringID="26">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Class</InitString>
+    <InitString InitStringID="27">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI TemplateClass</InitString>
+    <InitString InitStringID="28">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Actor</InitString>
+    <InitString InitStringID="29">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI BoundaryControllerOrEntity</InitString>
+    <InitString InitStringID="30">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Boundary</InitString>
+    <InitString InitStringID="31">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Controller</InitString>
+    <InitString InitStringID="32">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Entity</InitString>
+    <InitString InitStringID="33">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Interface LollypopNotation</InitString>
+    <InitString InitStringID="34">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Interface ClassNotation</InitString>
+    <InitString InitStringID="35">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI DataType</InitString>
+    <InitString InitStringID="36">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI AliasedType</InitString>
+    <InitString InitStringID="37">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI UtilityClass</InitString>
+    <InitString InitStringID="38">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Enumeration</InitString>
+    <InitString InitStringID="39">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI self</InitString>
+    <InitString InitStringID="40">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI destroy</InitString>
+    <InitString InitStringID="41">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI DerivationClassifier</InitString>
+    <InitString InitStringID="42">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Derivation</InitString>
+    <InitString InitStringID="43">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Association</InitString>
+    <InitString InitStringID="44">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge AssociationEnd</InitString>
+    <InitString InitStringID="45">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Aggregation</InitString>
+    <InitString InitStringID="46">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Association NN NN</InitString>
+    <InitString InitStringID="47">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Aggregation CO NN</InitString>
+    <InitString InitStringID="48">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Aggregation AG NN</InitString>
+    <InitString InitStringID="49">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Association NN NA</InitString>
+    <InitString InitStringID="50">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Aggregation CO NA</InitString>
+    <InitString InitStringID="51">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Aggregation AG NA</InitString>
+    <InitString InitStringID="52">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Generalization</InitString>
+    <InitString InitStringID="53">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Message</InitString>
+    <InitString InitStringID="54">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Message asynchronous</InitString>
+    <InitString InitStringID="55">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Message create</InitString>
+    <InitString InitStringID="56">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Message result</InitString>
+    <InitString InitStringID="57">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Dependency</InitString>
+    <InitString InitStringID="58">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge BinaryAssociation</InitString>
+    <InitString InitStringID="59">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Implementation</InitString>
+    <InitString InitStringID="60">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Realization</InitString>
+    <InitString InitStringID="61">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Usage</InitString>
+    <InitString InitStringID="62">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Delegate</InitString>
+    <InitString InitStringID="63">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Permission</InitString>
+    <InitString InitStringID="64">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Abstraction</InitString>
+    <InitString InitStringID="65">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Package</InitString>
+    <InitString InitStringID="66">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI CombinedFragment</InitString>
+    <InitString InitStringID="67">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI InteractionOccurrence</InitString>
+    <InitString InitStringID="68">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Interaction</InitString>
+    <InitString InitStringID="69">Embarcadero.ADViewFactory#CLabelView</InitString>
+    <InitString InitStringID="70">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI ObjectNode ParameterUsageNode</InitString>
+    <InitString InitStringID="71">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI ObjectNode DataStoreNode</InitString>
+    <InitString InitStringID="72">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI ObjectNode Signal</InitString>
+    <InitString InitStringID="73">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI ControllerNode InitialNode</InitString>
+    <InitString InitStringID="74">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI ControllerNode ActivityFinalNode</InitString>
+    <InitString InitStringID="75">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI ControllerNode FlowFinalNode</InitString>
+    <InitString InitStringID="76">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI ControllerNode DecisionNode</InitString>
+    <InitString InitStringID="77">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI ControllerNode MergeNode</InitString>
+    <InitString InitStringID="78">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI ControllerNode ForkNode</InitString>
+    <InitString InitStringID="79">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI ControllerNode ForkNode Horizontal</InitString>
+    <InitString InitStringID="80">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI ControllerNode JoinNode</InitString>
+    <InitString InitStringID="81">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI InvocationNode</InitString>
+    <InitString InitStringID="82">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge ActivityEdge</InitString>
+    <InitString InitStringID="83">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI InterruptibleActivityRegion</InitString>
+    <InitString InitStringID="84">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI IterationActivityGroup</InitString>
+    <InitString InitStringID="85">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI StructuredActivityGroup</InitString>
+    <InitString InitStringID="86">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI ComplexActivityGroup</InitString>
+    <InitString InitStringID="87">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Activity</InitString>
+    <InitString InitStringID="88">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Partition</InitString>
+    <InitString InitStringID="89">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI UseCase</InitString>
+    <InitString InitStringID="90">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Include</InitString>
+    <InitString InitStringID="91">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Extend</InitString>
+    <InitString InitStringID="92">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Component</InitString>
+    <InitString InitStringID="93">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Port</InitString>
+    <InitString InitStringID="94">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge PortProvidedInterface</InitString>
+    <InitString InitStringID="95">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Node</InitString>
+    <InitString InitStringID="96">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Artifact</InitString>
+    <InitString InitStringID="97">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI DeploymentSpecification</InitString>
+    <InitString InitStringID="98">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI PseudoState</InitString>
+    <InitString InitStringID="99">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI PseudoState Choice</InitString>
+    <InitString InitStringID="100">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI PseudoState EntryPoint</InitString>
+    <InitString InitStringID="101">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI PseudoState DeepHistory</InitString>
+    <InitString InitStringID="102">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI PseudoState ShallowHistory</InitString>
+    <InitString InitStringID="103">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI PseudoState Junction</InitString>
+    <InitString InitStringID="104">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI PseudoState Initial</InitString>
+    <InitString InitStringID="105">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI PseudoState Join</InitString>
+    <InitString InitStringID="106">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI PseudoState Join Horizontal</InitString>
+    <InitString InitStringID="107">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Transition</InitString>
+    <InitString InitStringID="108">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI CompositeState</InitString>
+    <InitString InitStringID="109">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI SimpleState</InitString>
+    <InitString InitStringID="110">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI SubmachineState</InitString>
+    <InitString InitStringID="111">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI FinalState</InitString>
+    <InitString InitStringID="112">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI FinalState Aborted</InitString>
+    <InitString InitStringID="113">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI StateMachine</InitString>
+    <InitString InitStringID="114">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI CollaborationLifeline</InitString>
+    <InitString InitStringID="115">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI Collaboration</InitString>
+    <InitString InitStringID="116">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI PartFacade Classifier</InitString>
+    <InitString InitStringID="117">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI PartFacade Interface</InitString>
+    <InitString InitStringID="118">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI PartFacade UseCase</InitString>
+    <InitString InitStringID="119">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI PartFacade Actor</InitString>
+    <InitString InitStringID="120">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeUI PartFacade Class</InitString>
+    <InitString InitStringID="121">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge PartFacade</InitString>
+    <InitString InitStringID="122">org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Connector</InitString>
+    <InitString InitStringID="200">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericNodeLabelUI NodeLabel</InitString>
+    <InitString InitStringID="201">org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericEdgeLabelUI EdgeLabel</InitString>
+  </InitStringsTable>
+  <Buttons>
+    <ID_VIEWNODE_UML_ABSTRACTION InitStringID="64" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_ACTIVITY InitStringID="87" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_ACTIVITYEDGE InitStringID="82" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_ACTIVITYFINALNODE InitStringID="74" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_ACTOR InitStringID="28" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_ACTOR InitStringID="28" DiagramID="64"/>
+    <ID_VIEWNODE_UML_AGGREGATION_AG_NA InitStringID="51" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_AGGREGATION_AG_NN InitStringID="48" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_AGGREGATION_CO_NA InitStringID="50" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_AGGREGATION_CO_NN InitStringID="47" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_ALIASEDTYPE InitStringID="36" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_ARTIFACT InitStringID="96" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_ASSEMBLYCONNECTOR_INITIALEDGE InitStringID="20" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_ASSOCIATIONCLASS InitStringID="19" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_ASSOCIATION_NN_NA InitStringID="49" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_ASSOCIATION_NN_NN InitStringID="46" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_BINARYASSOCIATION InitStringID="58" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_CLASS InitStringID="26" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_CLASS InitStringID="26" DiagramID="64"/>
+    <ID_VIEWNODE_UML_CLASS_BOUNDARY InitStringID="30" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_CLASS_BOUNDARYCONTROLLERORENTITY InitStringID="29" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_CLASS_CONTROL InitStringID="31" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_CLASS_ENTITY InitStringID="32" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_COLLABORATION InitStringID="115" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_COLLABORATIONLIFELINE InitStringID="114" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_COMBINED_FRAGMENT InitStringID="66" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_COMMENT InitStringID="17" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_COMMENTLINK InitStringID="17" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_COMMENTNODE InitStringID="23" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_COMPLEXACTIVITYGROUP InitStringID="86" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_COMPONENT InitStringID="92" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_COMPONENT InitStringID="92" DiagramID="16"/>
+    <ID_VIEWNODE_UML_COMPONENTPORT InitStringID="93" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_COMPOSITE_STATE InitStringID="108" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_CONNECTOR InitStringID="122" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_CROSS InitStringID="15" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_DATASTORENODE InitStringID="71" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_DATATYPE InitStringID="35" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_DECISIONNODE InitStringID="76" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_DELEGATE InitStringID="62" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_DEPENDENCY InitStringID="57" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_DEPLOYMENTSPEC InitStringID="97" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_DEPLOYMENTSPEC InitStringID="97" DiagramID="16"/>
+    <ID_VIEWNODE_UML_DERIVATIONCLASSIFIER InitStringID="41" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_DERIVATIONEDGE InitStringID="42" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_DESTROY_LIFELINE InitStringID="40" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_DIAMOND InitStringID="12" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_ELLIPSE InitStringID="3" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_ENUMERATION InitStringID="38" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_EXTEND InitStringID="91" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_FINALSTATE InitStringID="111" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_FINALSTATE_ABORTED InitStringID="112" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_FLOWFINALNODE InitStringID="75" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_FORKNODE InitStringID="78" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_GENERALIZATION InitStringID="52" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_HEXAGON1 InitStringID="5" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_HEXAGON2 InitStringID="6" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_HORIZONTAL_FORKNODE InitStringID="79" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_IMPLEMENTATION InitStringID="59" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_INCLUDE InitStringID="90" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_INITIALNODE InitStringID="73" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_INTERFACE InitStringID="33" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_INTERFACE_AS_CLASS InitStringID="34" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_INTERRUPTIBLEACTIVITYREGIONNODE InitStringID="83" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_INVOCATIONNODE InitStringID="81" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_ITERATIONACTIVITYGROUP InitStringID="84" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_JOINNODE InitStringID="80" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_MERGENODE InitStringID="77" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_MESSAGE InitStringID="53" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_MESSAGE_ASYNCHRONOUS InitStringID="54" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_MESSAGE_CREATE InitStringID="55" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_MESSAGE_CREATE InitStringID="56" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_MESSAGE_SELF InitStringID="39" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_NESTEDLINK InitStringID="16" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_NODE InitStringID="95" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_OCTAGON InitStringID="7" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PACKAGE InitStringID="65" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PARALLELOGRAM InitStringID="13" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PARAMETERUSAGENODE InitStringID="70" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PARTFACADE InitStringID="116" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PARTFACADELINK InitStringID="121" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PARTFACADE_ACTOR InitStringID="119" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PARTFACADE_CLASS InitStringID="120" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PARTFACADE_INTERFACE InitStringID="117" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PARTFACADE_USECASE InitStringID="118" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PARTITION InitStringID="88" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PENTAGON InitStringID="4" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PERMISSION InitStringID="63" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PORTINTERFACE_INITIALEDGE InitStringID="94" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PSEUDOSTATE_CHOICE InitStringID="99" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PSEUDOSTATE_DEEPHISTORY InitStringID="101" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PSEUDOSTATE_ENTRYPOINT InitStringID="100" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PSEUDOSTATE_INITIAL InitStringID="104" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PSEUDOSTATE_JOIN InitStringID="105" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PSEUDOSTATE_JOIN_HORIZONTAL InitStringID="106" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PSEUDOSTATE_JUNCTION InitStringID="103" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_PSEUDOSTATE_SHALLOWHISTORY InitStringID="102" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_REALIZATION InitStringID="60" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_RECTANGLE InitStringID="1" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_ROUNDED_RECTANGLE InitStringID="2" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_SIGNALNODE InitStringID="72" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_SIMPLE_STATE InitStringID="109" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_STAR InitStringID="14" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_STATEMACHINE InitStringID="113" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_STATE_TRANSITION InitStringID="107" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_STRUCTUREDACTIVITYGROUP InitStringID="85" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_SUBMACHINE_STATE InitStringID="110" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_TEMPLATECLASS InitStringID="27" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_TRIANGLE InitStringID="8" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_TRIANGLE_DOWN InitStringID="9" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_TRIANGLE_LEFT InitStringID="10" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_TRIANGLE_RIGHT InitStringID="11" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_USAGE InitStringID="61" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_USECASE InitStringID="89" DiagramID="-1"/>
+    <ID_VIEWNODE_UML_UTILITYCLASS InitStringID="37" DiagramID="-1"/>
+  </Buttons>
+  <Tools>
+    <Tool id="1">Node</Tool>
+    <Tool id="2">Edge</Tool>
+    <Tool id="3">Label</Tool>
+    <Tool id="4">NodeDecorator</Tool>
+    <Tool id="5">NodeResize</Tool>
+  </Tools>
+  <MetaTypes>
+    <Abstraction InitStringID="64" DiagramID="-1"/>
+    <Actor InitStringID="28" DiagramID="-1"/>
+    <Artifact InitStringID="96" DiagramID="-1"/>
+    <Aggregation InitStringID="47" DiagramID="-1"/>
+    <Association InitStringID="46" DiagramID="-1"/>
+    <AssociationClass InitStringID="24" DiagramID="-1"/>
+    <BinaryAssociation InitStringID="58" DiagramID="-1"/>
+    <Class InitStringID="26" DiagramID="-1"/>
+    <DerivationClassifier InitStringID="41" DiagramID="-1"/>
+    <Comment InitStringID="23" DiagramID="-1"/>
+    <Component InitStringID="92" DiagramID="-1"/>
+    <Component InitStringID="92" DiagramID="16"/>
+    <DataType InitStringID="35" DiagramID="-1"/>
+    <AliasedType InitStringID="36" DiagramID="-1"/>
+    <Delegate InitStringID="62" DiagramID="-1"/>
+    <Dependency InitStringID="57" DiagramID="-1"/>
+    <DeploymentSpecification InitStringID="97" DiagramID="-1"/>
+    <Enumeration InitStringID="38" DiagramID="-1"/>
+    <Extend InitStringID="91" DiagramID="-1"/>
+    <Generalization InitStringID="52" DiagramID="-1"/>
+    <Implementation InitStringID="59" DiagramID="-1"/>
+    <Include InitStringID="90" DiagramID="-1"/>
+    <Interface InitStringID="34" DiagramID="-1"/>
+    <Message InitStringID="53" DiagramID="-1"/>
+    <Node InitStringID="95" DiagramID="-1"/>
+    <Package InitStringID="65" DiagramID="-1"/>
+    <PartFacade InitStringID="116" DiagramID="-1"/>
+    <PartFacadeInterface InitStringID="117" DiagramID="-1"/>
+    <PartFacadeClass InitStringID="120" DiagramID="-1"/>
+    <PartFacadeUseCase InitStringID="118" DiagramID="-1"/>
+    <PartFacadeActor InitStringID="119" DiagramID="-1"/>
+    <Permission InitStringID="63" DiagramID="-1"/>
+    <Port InitStringID="93" DiagramID="-1"/>
+    <Realization InitStringID="60" DiagramID="-1"/>
+    <Usage InitStringID="61" DiagramID="-1"/>
+    <UseCase InitStringID="89" DiagramID="-1"/>
+    <AssociationEnd InitStringID="18" DiagramID="-1"/>
+    <Derivation InitStringID="42" DiagramID="-1"/>
+    <Activity InitStringID="87" DiagramID="2"/>
+    <ActivityEdge InitStringID="82" DiagramID="2"/>
+    <ControlFlow InitStringID="82" DiagramID="2"/>
+    <ObjectFlow InitStringID="82" DiagramID="2"/>
+    <MultiFlow InitStringID="82" DiagramID="2"/>
+    <ActivityFinalNode InitStringID="74" DiagramID="2"/>
+    <ActivityPartition InitStringID="88" DiagramID="2"/>
+    <ComplexActivityGroup InitStringID="86" DiagramID="2"/>
+    <DataStoreNode InitStringID="71" DiagramID="2"/>
+    <DecisionMergeNode InitStringID="76" DiagramID="2"/>
+    <DecisionNode InitStringID="76" DiagramID="2"/>
+    <FlowFinalNode InitStringID="75" DiagramID="2"/>
+    <ForkNode InitStringID="78" DiagramID="2"/>
+    <InitialNode InitStringID="73" DiagramID="2"/>
+    <Interaction InitStringID="68" DiagramID="2"/>
+    <InteractionOccurrence InitStringID="67" DiagramID="2"/>
+    <InvocationNode InitStringID="81" DiagramID="2"/>
+    <JoinForkNode InitStringID="79" DiagramID="2"/>
+    <JoinNode InitStringID="80" DiagramID="2"/>
+    <MergeNode InitStringID="77" DiagramID="2"/>
+    <ParameterUsageNode InitStringID="70" DiagramID="2"/>
+    <Partition InitStringID="88" DiagramID="2"/>
+    <SignalNode InitStringID="72" DiagramID="2"/>
+    <Actor InitStringID="28" DiagramID="8"/>
+    <Collaboration InitStringID="115" DiagramID="-1"/>
+    <Interaction InitStringID="68" DiagramID="8"/>
+    <InteractionOccurrence InitStringID="67" DiagramID="8"/>
+    <Lifeline InitStringID="114" DiagramID="8"/>
+    <Connector InitStringID="122" DiagramID="8"/>
+    <MessageConnector InitStringID="122" DiagramID="8"/>
+    <Lifeline InitStringID="114" DiagramID="16"/>
+    <Lifeline InitStringID="114" DiagramID="4"/>
+    <Actor InitStringID="28" DiagramID="64"/>
+    <CombinedFragment InitStringID="66" DiagramID="64"/>
+    <Lifeline InitStringID="26" DiagramID="64"/>
+    <Interaction InitStringID="68" DiagramID="64"/>
+    <InteractionOccurrence InitStringID="67" DiagramID="64"/>
+    <CompositeState InitStringID="108" DiagramID="128"/>
+    <FinalState InitStringID="111" DiagramID="128"/>
+    <Initial InitStringID="104" DiagramID="128"/>
+    <PseudoState InitStringID="98" DiagramID="128"/>
+    <SimpleState InitStringID="109" DiagramID="128"/>
+    <State InitStringID="108" DiagramID="128"/>
+    <StateMachine InitStringID="113" DiagramID="128"/>
+    <SubmachineState InitStringID="110" DiagramID="128"/>
+    <Transition InitStringID="107" DiagramID="128"/>
+    <NodeLabel InitStringID="200" DiagramID="-1"/>
+    <EdgeLabel InitStringID="201" DiagramID="-1"/>
+  </MetaTypes>
+  <PresentationElements>
+    <PresentationElementToCreate ElementType="AssociationEnd" PresentationElement="AssociationEdgePresentation"/>
+    <PresentationElementToCreate ElementType="AssociationClass" PresentationElement="AssociationEdgePresentation"/>
+    <PresentationElementToCreate ElementType="Association" PresentationElement="AssociationEdgePresentation"/>
+    <PresentationElementToCreate ElementType="Aggregation" PresentationElement="AggregationEdgePresentation"/>
+    <PresentationElementToCreate ElementType="Implementation" PresentationElement="ImplementationEdgePresentation"/>
+    <PresentationElementToCreate ElementType="Dependency" PresentationElement="DependencyEdgePresentation"/>
+    <PresentationElementToCreate ElementType="Abstraction" PresentationElement="DependencyEdgePresentation"/>
+    <PresentationElementToCreate ElementType="Usage" PresentationElement="DependencyEdgePresentation"/>
+    <PresentationElementToCreate ElementType="Permission" PresentationElement="DependencyEdgePresentation"/>
+    <PresentationElementToCreate ElementType="Realization" PresentationElement="DependencyEdgePresentation"/>
+    <PresentationElementToCreate ElementType="Generalization" PresentationElement="GeneralizationEdgePresentation"/>
+    <PresentationElementToCreate ElementType="Message" PresentationElement="MessageEdgePresentation"/>
+    <PresentationElementToCreate ElementType="Comment" PresentationElement="CommentEdgePresentation"/>
+    <PresentationElementToCreate ElementType="ActivityEdge" PresentationElement="ActivityEdgePresentation"/>
+    <PresentationElementToCreate ElementType="ControlFlow" PresentationElement="ActivityEdgePresentation"/>
+    <PresentationElementToCreate ElementType="ObjectFlow" PresentationElement="ActivityEdgePresentation"/>
+    <PresentationElementToCreate ElementType="MultiFlow" PresentationElement="ActivityEdgePresentation"/>
+    <PresentationElementToCreate ElementType="Transition" PresentationElement="TransitionEdgePresentation"/>
+    <PresentationElementToCreate ElementType="Include" PresentationElement="IncludeEdgePresentation"/>
+    <PresentationElementToCreate ElementType="Extend" PresentationElement="ExtendEdgePresentation"/>
+    <PresentationElementToCreate ElementType="Derivation" PresentationElement="DerivationEdgePresentation"/>
+    <PresentationElementToCreate ElementType="Delegate" PresentationElement="DependencyEdgePresentation"/>
+    <PresentationElementToCreate ElementType="Connector" PresentationElement="ConnectorEdgePresentation"/>
+    <PresentationElementToCreate ElementType="Interface" PresentationElement="InterfaceEdgePresentation"/>
+    <PresentationElementToCreate ElementType="AssociationEnd" PresentationElement="AssociationEdgePresentation"/>
+  </PresentationElements>
+  <InitStrings>
+    <InitString InitStringID="1" DiagramID="-1" MetaType="Graphic" EngineName="GraphicDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="2" DiagramID="-1" MetaType="Graphic" EngineName="GraphicDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="3" DiagramID="-1" MetaType="Graphic" EngineName="GraphicDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="4" DiagramID="-1" MetaType="Graphic" EngineName="GraphicDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="5" DiagramID="-1" MetaType="Graphic" EngineName="GraphicDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="6" DiagramID="-1" MetaType="Graphic" EngineName="GraphicDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="7" DiagramID="-1" MetaType="Graphic" EngineName="GraphicDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="8" DiagramID="-1" MetaType="Graphic" EngineName="GraphicDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="9" DiagramID="-1" MetaType="Graphic" EngineName="GraphicDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="10" DiagramID="-1" MetaType="Graphic" EngineName="GraphicDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="11" DiagramID="-1" MetaType="Graphic" EngineName="GraphicDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="12" DiagramID="-1" MetaType="Graphic" EngineName="GraphicDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="13" DiagramID="-1" MetaType="Graphic" EngineName="GraphicDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="14" DiagramID="-1" MetaType="Graphic" EngineName="GraphicDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="15" DiagramID="-1" MetaType="Graphic" EngineName="GraphicDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="16" DiagramID="-1" MetaType="NestedLink" EngineName="NestedLinkDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="17" DiagramID="-1" MetaType="" EngineName="CommentEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="18" DiagramID="-1" MetaType="AssociationEnd" EngineName="QualifierDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="19" DiagramID="-1" MetaType="" EngineName="BridgeEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="20" DiagramID="-1" MetaType="" EngineName="BridgeEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="21" DiagramID="-1" MetaType="" EngineName="BridgeEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="22" DiagramID="-1" MetaType="" EngineName="BridgeNodeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="39" DiagramID="64" MetaType="SelfMessage" EngineName="LifelineDrawEngine" TSGraphObjectKind="4"/>
+    <InitString InitStringID="40" DiagramID="64" MetaType="Destroy" EngineName="LifelineDrawEngine" TSGraphObjectKind="4"/>
+    <InitString InitStringID="23" DiagramID="-1" MetaType="Comment" EngineName="CommentDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="24" DiagramID="-1" MetaType="AssociationClass" EngineName="ClassDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="25" DiagramID="-1" MetaType="AssociationClass" EngineName="AssociationClassConnectorDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="26" DiagramID="-1" MetaType="Class" EngineName="ClassDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="27" DiagramID="-1" MetaType="Class" EngineName="ClassDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="26" DiagramID="64" MetaType="Lifeline" EngineName="LifelineDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="28" DiagramID="-1" MetaType="Actor" EngineName="ActorDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="28" DiagramID="64" MetaType="Lifeline" EngineName="LifelineDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="28" DiagramID="8" MetaType="Lifeline" EngineName="CollaborationLifelineDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="29" DiagramID="-1" MetaType="Class" EngineName="ClassRobustnessDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="30" DiagramID="-1" MetaType="Class" EngineName="ClassRobustnessDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="31" DiagramID="-1" MetaType="Class" EngineName="ClassRobustnessDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="32" DiagramID="-1" MetaType="Class" EngineName="ClassRobustnessDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="33" DiagramID="-1" MetaType="Interface" EngineName="InterfaceDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="34" DiagramID="-1" MetaType="Interface" EngineName="ClassDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="35" DiagramID="-1" MetaType="DataType" EngineName="DataTypeDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="36" DiagramID="-1" MetaType="AliasedType" EngineName="DataTypeDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="37" DiagramID="-1" MetaType="Class" EngineName="ClassDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="38" DiagramID="-1" MetaType="Enumeration" EngineName="EnumerationDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="41" DiagramID="-1" MetaType="DerivationClassifier" EngineName="DerivationClassifierDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="42" DiagramID="-1" MetaType="Derivation" EngineName="DerivationEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="65" DiagramID="-1" MetaType="Package" EngineName="PackageDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="66" DiagramID="64" MetaType="CombinedFragment" EngineName="CombinedFragmentDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="67" DiagramID="64" MetaType="InteractionOccurrence" EngineName="InteractionFragmentDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="67" DiagramID="8" MetaType="InteractionOccurrence" EngineName="InteractionFragmentDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="67" DiagramID="2" MetaType="InteractionOccurrence" EngineName="InteractionFragmentDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="68" DiagramID="64" MetaType="Interaction" EngineName="InteractionFragmentDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="68" DiagramID="8" MetaType="Interaction" EngineName="InteractionFragmentDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="68" DiagramID="2" MetaType="Interaction" EngineName="InteractionFragmentDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="70" DiagramID="2" MetaType="ParameterUsageNode" EngineName="ObjectNodeDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="71" DiagramID="2" MetaType="DataStoreNode" EngineName="ObjectNodeDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="72" DiagramID="2" MetaType="SignalNode" EngineName="ObjectNodeDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="73" DiagramID="2" MetaType="InitialNode" EngineName="ControlNodeDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="74" DiagramID="2" MetaType="ActivityFinalNode" EngineName="ControlNodeDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="75" DiagramID="2" MetaType="FlowFinalNode" EngineName="ControlNodeDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="76" DiagramID="2" MetaType="DecisionMergeNode" EngineName="ControlNodeDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="77" DiagramID="2" MetaType="DecisionMergeNode" EngineName="ControlNodeDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="78" DiagramID="2" MetaType="JoinForkNode" EngineName="ControlNodeDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="79" DiagramID="2" MetaType="JoinForkNode" EngineName="ControlNodeDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="80" DiagramID="2" MetaType="JoinForkNode" EngineName="ControlNodeDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="81" DiagramID="2" MetaType="InvocationNode" EngineName="InvocationNodeDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="82" DiagramID="-1" MetaType="ActivityEdge" EngineName="ActivityEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="83" DiagramID="2" MetaType="InterruptibleActivityRegion" EngineName="ActivityGroupDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="84" DiagramID="2" MetaType="IterationActivityGroup" EngineName="ActivityGroupDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="85" DiagramID="2" MetaType="StructuredActivityGroup" EngineName="ActivityGroupDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="86" DiagramID="2" MetaType="ComplexActivityGroup" EngineName="ActivityGroupDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="87" DiagramID="2" MetaType="Activity" EngineName="ActivityNodeDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="88" DiagramID="-1" MetaType="ActivityPartition" EngineName="PartitionDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="89" DiagramID="-1" MetaType="UseCase" EngineName="UseCaseDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="90" DiagramID="-1" MetaType="Include" EngineName="IncludeEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="91" DiagramID="-1" MetaType="Extend" EngineName="ExtendEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="96" DiagramID="-1" MetaType="Artifact" EngineName="ArtifactDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="95" DiagramID="-1" MetaType="Node" EngineName="ClassNodeDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="97" DiagramID="-1" MetaType="DeploymentSpecification" EngineName="DeploymentSpecDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="92" DiagramID="-1" MetaType="Component" EngineName="ComponentDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="92" DiagramID="16" MetaType="Component" EngineName="ComponentDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="93" DiagramID="-1" MetaType="Port" EngineName="PortDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="94" DiagramID="-1" MetaType="Interface" EngineName="PortProvidedInterfaceEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="98" DiagramID="-1" MetaType="PseudoState" EngineName="PseudoStateDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="99" DiagramID="-1" MetaType="PseudoState" EngineName="PseudoStateDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="100" DiagramID="-1" MetaType="PseudoState" EngineName="PseudoStateDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="101" DiagramID="-1" MetaType="PseudoState" EngineName="PseudoStateDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="102" DiagramID="-1" MetaType="PseudoState" EngineName="PseudoStateDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="104" DiagramID="-1" MetaType="PseudoState" EngineName="PseudoStateDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="103" DiagramID="-1" MetaType="PseudoState" EngineName="PseudoStateDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="105" DiagramID="-1" MetaType="PseudoState" EngineName="PseudoStateDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="106" DiagramID="-1" MetaType="PseudoState" EngineName="PseudoStateDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="107" DiagramID="-1" MetaType="Transition" EngineName="TransitionEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="108" DiagramID="-1" MetaType="State" EngineName="StateDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="109" DiagramID="-1" MetaType="State" EngineName="StateDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="110" DiagramID="-1" MetaType="State" EngineName="StateDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="111" DiagramID="-1" MetaType="FinalState" EngineName="FinalStateDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="112" DiagramID="-1" MetaType="FinalState" EngineName="FinalStateDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="113" DiagramID="-1" MetaType="StateMachine" EngineName="StateMachineDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="43" DiagramID="-1" MetaType="Association" EngineName="AssociationEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="44" DiagramID="-1" MetaType="AssociationEnd" EngineName="AssociationEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="45" DiagramID="-1" MetaType="Aggregation" EngineName="AssociationEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="46" DiagramID="-1" MetaType="Association" EngineName="AssociationEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="47" DiagramID="-1" MetaType="Aggregation" EngineName="AssociationEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="48" DiagramID="-1" MetaType="Aggregation" EngineName="AssociationEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="49" DiagramID="-1" MetaType="Association" EngineName="AssociationEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="50" DiagramID="-1" MetaType="Aggregation" EngineName="AssociationEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="51" DiagramID="-1" MetaType="Aggregation" EngineName="AssociationEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="52" DiagramID="-1" MetaType="Generalization" EngineName="GeneralizationEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="53" DiagramID="-1" MetaType="Message" EngineName="MessageEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="54" DiagramID="-1" MetaType="Message" EngineName="MessageEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="55" DiagramID="-1" MetaType="Message" EngineName="MessageEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="56" DiagramID="-1" MetaType="Message" EngineName="MessageEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="57" DiagramID="-1" MetaType="Dependency" EngineName="DependencyEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="58" DiagramID="-1" MetaType="BinaryAssociation" EngineName="BinaryAssociationEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="59" DiagramID="-1" MetaType="Implementation" EngineName="ImplementationEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="60" DiagramID="-1" MetaType="Realization" EngineName="DependencyEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="61" DiagramID="-1" MetaType="Usage" EngineName="DependencyEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="62" DiagramID="-1" MetaType="Delegate" EngineName="DependencyEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="63" DiagramID="-1" MetaType="Permission" EngineName="DependencyEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="64" DiagramID="-1" MetaType="Abstraction" EngineName="DependencyEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="114" DiagramID="-1" MetaType="Lifeline" EngineName="CollaborationLifelineDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="115" DiagramID="-1" MetaType="Collaboration" EngineName="CollaborationDrawEngine" TSGraphObjectKind="5"/>
+    <InitString InitStringID="116" DiagramID="-1" MetaType="PartFacade" EngineName="ClassDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="117" DiagramID="-1" MetaType="PartFacade" EngineName="ClassDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="118" DiagramID="-1" MetaType="PartFacade" EngineName="UseCaseDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="119" DiagramID="-1" MetaType="PartFacade" EngineName="ActorDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="120" DiagramID="-1" MetaType="PartFacade" EngineName="ClassDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="121" DiagramID="-1" MetaType="PartFacade" EngineName="PartFacadeEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="122" DiagramID="8" MetaType="Connector" EngineName="ConnectorEdgeDrawEngine" TSGraphObjectKind="2"/>
+    <InitString InitStringID="69" DiagramID="-1" MetaType="" EngineName="ADLabelDrawEngine" TSGraphObjectKind="3"/>
+    <InitString InitStringID="200" DiagramID="-1" MetaType="NodeLabel" EngineName="ADLabelDrawEngine" TSGraphObjectKind="3"/>
+    <InitString InitStringID="201" DiagramID="-1" MetaType="EdgeLabel" EngineName="ADLabelDrawEngine" TSGraphObjectKind="3"/>
+    <InitString InitStringID="202" DiagramID="-1" MetaType="" EngineName="ADLabelDrawEngine" TSGraphObjectKind="3"/>
+    <InitString InitStringID="203" DiagramID="-1" MetaType="" EngineName="BridgeNodeDrawEngine" TSGraphObjectKind="1"/>
+    <InitString InitStringID="204" DiagramID="-1" MetaType="" EngineName="AssociationEdgeDrawEngine" TSGraphObjectKind="2"/>          
+  </InitStrings>
+  <OwnerMetaTypes>
+    <Attribute InitStringID="Class"/>
+    <Operation InitStringID="Class"/>
+  </OwnerMetaTypes>
+  <InvalidDrawEngines>
+    <InvalidEngine DiagramID="Class Diagram" Engine="CombinedFragmentDrawEngine"/>
+    <InvalidEngine DiagramID="Class Diagram" Engine="LifelineDrawEngine"/>
+    <InvalidEngine DiagramID="Class Diagram" Engine="MessageEdgeDrawEngine"/>
+    <InvalidEngine DiagramID="Class Diagram" Engine="NodeDrawEngine"/>
+    <InvalidEngine DiagramID="Sequence Diagram" Engine="InterfaceDrawEngine"/>
+    <InvalidEngine DiagramID="Sequence Diagram" Engine="ClassDrawEngine"/>
+    <InvalidEngine DiagramID="Sequence Diagram" Engine="PackageDrawEngine"/>
+    <InvalidEngine DiagramID="Sequence Diagram" Engine="NodeDrawEngine"/>
+  </InvalidDrawEngines>
+  
+  
+  <ToolbarDefinitions> 
+    <!-- Since Coke, the <Toolbar> elements and its <Button> sub elements have no longer been used; hence have been removed.
+    The section is being replaced by PaletteItemDefinitions.xml located in modelingpalette module.
+    The replacement is part of the effort to move UML modeling palette to NB 5.0 Common Palette framework.
+    -->
+   
+
+     <DiagramToolbars>
+     	<Diagram DiagramID="4">
+     		<ToolbarRef name="Class Elements" optional="false" />     		
+     	</Diagram>
+     	<Diagram DiagramID="256">
+     		<ToolbarRef name="Use Case Diagram" optional="false" />
+     	</Diagram>
+     	<Diagram DiagramID="64">
+     		<ToolbarRef name="Sequence Diagram" optional="false" />
+     	</Diagram>
+     	<Diagram DiagramID="16">
+     		<ToolbarRef name="Component Diagram" optional="false" />
+     	</Diagram>
+     	<Diagram DiagramID="8">
+     		<ToolbarRef name="Collaboration Diagram" optional="false" />
+     	</Diagram>
+     	<Diagram DiagramID="2">
+     		<ToolbarRef name="Activity Diagram" optional="false" />
+     	</Diagram>
+     	<Diagram DiagramID="32">
+     		<ToolbarRef name="Deployment Diagram" optional="false" />
+     	</Diagram>
+     	<Diagram DiagramID="128">
+     		<ToolbarRef name="State Diagram" optional="false" />
+     	</Diagram>
+     </DiagramToolbars>
+  </ToolbarDefinitions>
+    
+</EMBT:PresentationTypes>

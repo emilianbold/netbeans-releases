@@ -1,0 +1,2 @@
+!%%%ImportVar <var="java_operation_comment.gt">%%
+%!!%%%visibility%% %!!%%%abstract%% %!!%%%strictfp%% %!!%%%concurrency%% %!!%%%native%% %!!%%%static%% %!!%%%final%% %!!%%%IfVar <test="useRetTypeCollectionOverride" var="collectionOverride"><var="returnTypeName">%%!%%%IfVar <test="dontUseRetTypeCollectionOverride" var="java_retType_dimensions.gt">%%%! %!%java_operation_head.gt%(!% %%ImportVar <var="java_parameters.gt" >%% %!)!% throws %%IterationVar <list="raisedExceptions" var="qualifiedName" delimiter=", ">%% %!

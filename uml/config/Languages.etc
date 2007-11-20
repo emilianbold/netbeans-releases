@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<LanguageConfig>
+	<Extensions>
+		<Extension type="java" language="Java"/>
+		<Filter language="Java" name="Source Files" value="*.java"/>
+	</Extensions>
+	<LanguageRef type="Java" location="JavaLanguage.etc"/>
+	<DataTypes>
+		<DataType name="int">
+			<Language name="Java"/>
+			<Description> Defines a integer data type. </Description>
+		</DataType>
+		<DataType name="long"> Defines an 64 bit integer </DataType>
+		<DataType name="short"> Defines an 16 bit integer </DataType>
+		<DataType name="byte"> Defines an 16 bit integer </DataType>
+		<DataType name="char"> Defines an 16 bit integer </DataType>
+		<DataType name="float"> Defines an 32 bit floating point </DataType>
+		<DataType name="double"> Defines an 64 bit floating point </DataType>
+	</DataTypes>
+	<LanguageRef type="UML" location="UMLLanguage.etc"/>
+</LanguageConfig>

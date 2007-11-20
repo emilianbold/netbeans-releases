@@ -1,0 +1,10 @@
+<QuerySchemas defaultUpdater="org.netbeans.modules.uml.core.typemanagement.PickListManager">
+	<Query name="NodeNames" updater="org.netbeans.modules.uml.core.typemanagement.PickListManager" locate="//*[@name and string-length(@name) and not( name(.) = 'UML:Parameter' or name(.) = 'UML:Attribute' or name(.) = 'UML:Operation' or name(.) = 'UML:Interaction' or name(.) = 'UML:Activity' or name(.) = 'UML:TaggedValue' or name(.) = 'UML:NavigableEnd' or name(.) = 'UML:Project')]">
+		<QueryResult name="Name" includeNodeType="true">
+			<ResultAttr name="name" query="@name"/>
+			<ResultAttr name="alias" query="@alias"/>
+			<ResultAttr name="id" query="@xmi.id" isUnique="true"/>
+			<ResultAttr name="fullName" query="getQualifiedName2" isProperty="true"/>
+		</QueryResult>
+	</Query>
+</QuerySchemas>

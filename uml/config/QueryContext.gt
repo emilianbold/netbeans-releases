@@ -1,0 +1,12 @@
+
+   <QueryContext crc="">
+
+      <NodeNames>
+         !%%%IterationVar <list="types" var="NameResultFormat.gt" delimiter="\r\n">%%%!  
+      </NodeNames>
+
+      <SourceFiles>
+         !%%%IterationVar <list="sourceFiles" var="SourceFileResultFormat.gt" delimiter="\r\n">%%%!
+      </SourceFiles>
+   
+   </QueryContext>

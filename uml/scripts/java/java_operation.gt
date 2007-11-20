@@ -1,0 +1,2 @@
+%%ImportVar <var="java_operation_head.gt">%%!%%%IfVar <test="isOperationNotImplemented">%%;%!!%
+%%IfVar <test="isOperationImplemented" var="java_operation_class_body.gt">%%%!

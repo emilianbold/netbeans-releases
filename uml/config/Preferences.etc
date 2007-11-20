@@ -1,0 +1,118 @@
+<?xml version="1.0" ?>
+<Preferences>
+	<!--
+		The Alias preference simply stores whether or not to display
+		alias information, or the actual information
+	-->
+	<AliasBehavior on="false"/>
+	<!-- 
+		This first element shows defaults to any new project.
+		Any other Project entities should have the name attribute
+		set to the name of an existing project. In that way,
+		defaults can be set up for that specific project.
+   -->
+	<DefaultProject name="NewProject">
+		<Elements>
+			<!-- 
+				Valid values for the idType attribute is IDT_UUID or IDT_NORMAL.
+			-->
+			<Element idType="IDT_UUID"/>
+			<!--
+			   The NamedElement element is used to name elements
+				that have not been named yet. The default is
+				"< un-named >"
+			-->
+			<NamedElement defaultName="Unnamed"/>
+			<!--
+			   DefaultMode determines what mode Describe should be placed into
+				for the given project. This dictates how new elements are created,
+				what default types are used, etc.
+			-->
+			<DefaultMode name="Implementation"/>
+			<!--
+				The UnknownClassifier element is used to handle the cases
+				where Describe Enterprise is being asked to refer to a 
+				Classifer that does not exist in this model or any of its
+				imported packages. The "create" attribute can be set to 
+				false to simply abort processing in this case, or "true"
+				to automatically create a type indicated in the "type"
+				attribute.
+			-->
+			<UnknownClassifier create="true" type="DataType"/>
+		</Elements>
+	</DefaultProject>
+	<!--
+	   DefaultModes are modes that determine how Describe acts while modeling.
+		
+		The modelLibraries attribute refers to the id of ModelLibrary element
+      found later in this file. The value of the attribute is a white-space
+      delimited value of ids.
+	-->
+	<DefaultModes>
+		<Mode name="Analysis" modelLibraries="3 5"/>
+		<Mode name="Design" modelLibraries="3 5"/>
+		<Mode name="Implementation" modelLibraries="3 5" language="Java"/>
+	</DefaultModes>
+	<!--
+      DefaultModelLibraries are sets of model elements that are to be reference
+      in all new projects.  
+   -->
+	<DefaultModelLibraries>
+		<ModelLibrary id="1" name="UML 1.4 Standard Elements" file="UML1_4Elements.etd#//*[@xmi.id='U.0']"/>
+		<ModelLibrary id="2" name="C++ Data Types" file="CPPDataTypes.etd#//*[@xmi.id='C.0']"/>
+		<ModelLibrary id="3" name="Java Data Types" file="JavaDataTypes.etd#//*[@xmi.id='J.0']"/>
+		<ModelLibrary id="4" name="UML Data Types" file="UMLDataTypes.etd"/>
+		<ModelLibrary id="5" name="UML 2.0 Standard Elements" file="UML20Elements.etd#//*[@xmi.id='UML2.0']"/>
+	</DefaultModelLibraries>
+	<!--
+      Here is where we define the default RoundTrip behavior for projects.
+      Each behavior set is based on the language used by the project.
+      Each entry is a "Behavior" node that has a name and a value.
+   -->
+	<DefaultRoundTripBehavior language="Java">
+		<!--
+        BehaviorTypeInfo defines the id used in code to access
+        the behavior, and also defines a "displayed name", which
+        can be used by a gui or other user to make a readable
+        behavior.  This also defines the valuetype of the behavior,
+        such as boolean or integer or whatever, and an optional
+        set of values. Boolean valuetypes have default values of "true"
+        "false", but can be overridden with a values section.
+      -->
+		<BehaviorTypeInfo>
+			<BehaviorType id="ADD_CTORS" name="Create Constructors" valuetype="boolean"/>
+			<BehaviorType id="ADD_DTORS" name="Create Finalizers" valuetype="boolean"/>
+			<BehaviorType id="ADD_ACCESSORS" name="Create Accessors" valuetype="boolean"/>
+			<BehaviorType id="IMPLEMENT_REDEFINABLE_OPS" name="Implement Redefinable Operations" valuetype="enumeration">
+				<Values>
+					<BehaviorValue value="Always"/>
+					<BehaviorValue value="Never"/>
+					<BehaviorValue value="AskMe"/>
+				</Values>
+			</BehaviorType>
+		</BehaviorTypeInfo>
+		<!--
+         Each behavior is a tagged value of type and value,
+         where type is the id defined in the BehaviorTypeInfo
+         section.   
+      -->
+		<Behaviors>
+			<Behavior type="ADD_CTORS" value="true"/>
+			<Behavior type="ADD_DTORS" value="true"/>
+			<Behavior type="ADD_ACCESSORS" value="true"/>
+			<Behavior type="IMPLEMENT_REDEFINABLE_OPS" value="Always"/>
+		</Behaviors>
+	</DefaultRoundTripBehavior>
+	<!--
+	   Expansion variables are values that can be used in place of
+	   actual file names, for instance, that are specific to a client
+	   machine.
+		There are a couple of expansion variables that are well-known,
+	   such as the CONFIG_LOCATION variable, which will expand to the
+	   home location area by default. If the "value" attribute is put in, that value
+	   will be used instead.
+	-->
+	<ExpansionVariables>
+		<ExpansionVariable name="CONFIG_LOCATION"/>
+	</ExpansionVariables>
+</Preferences>

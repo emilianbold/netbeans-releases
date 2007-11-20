@@ -1,0 +1,598 @@
+<?xml version="1.0" encoding="WINDOWS-1252"?>
+<TSX edition="Java Edition" product="Tom Sawyer Visualization" version="6.0.1">
+<graphManager id="4">
+<resources>
+<shapes>
+<rectangleShape id="0"/>
+</shapes>
+<fonts>
+<font id="1">
+<name value="SansSerif"/>
+<bold value="false"/>
+<italic value="false"/>
+<fontHeight value="10"/>
+</font>
+<font id="2">
+<name value="SansSerif"/>
+<bold value="false"/>
+<italic value="false"/>
+<fontHeight value="9"/>
+</font>
+<font id="3">
+<name value="Arial"/>
+<bold value="false"/>
+<italic value="false"/>
+<fontHeight value="12"/>
+</font>
+</fonts>
+</resources>
+<instances>
+<graphs>
+<graph id="5">
+<name/>
+<nodes>
+<node id="6">
+<name/>
+<center x="-299.27720571857265" y="-237.74023102224538"/>
+<size height="199.0" width="254.0"/>
+<originalSize height="199.0" width="254.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="1"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.D4E55208-54FC-94C7-88CC-A787EBBEA8DD"/>
+</graphics>
+</node>
+<node id="7">
+<name/>
+<center x="392.9227942814274" y="-237.74023102224538"/>
+<size height="139.0" width="247.0"/>
+<originalSize height="139.0" width="247.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="1"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.866A3039-3B10-1E54-2C8C-2289419187F0"/>
+</graphics>
+</node>
+<node id="8">
+<name/>
+<center x="48.9227942814274" y="-237.74023102224538"/>
+<size height="199.0" width="293.0"/>
+<originalSize height="199.0" width="293.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="1"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.1DACE1B1-F442-8240-75D7-F5F5CA54A6FC"/>
+</graphics>
+</node>
+<node id="9">
+<name/>
+<center x="718.3227942814275" y="-237.74023102224538"/>
+<size height="219.0" width="262.0"/>
+<originalSize height="219.0" width="262.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="1"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.68A61B10-DC02-5C15-FBD7-959B3F818E46"/>
+</graphics>
+</node>
+<node id="10">
+<name/>
+<center x="-664.8772057185726" y="-237.74023102224538"/>
+<size height="199.0" width="322.0"/>
+<originalSize height="199.0" width="322.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="1"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.10400F94-3798-60FF-E829-2EA3DC5B18F6"/>
+</graphics>
+</node>
+<node id="11">
+<name/>
+<center x="-664.8772057185726" y="311.0597689777546"/>
+<size height="159.0" width="280.0"/>
+<originalSize height="159.0" width="280.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="1"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.124009D8-2EAF-0FB7-6FBD-D98159CCD037"/>
+</graphics>
+</node>
+<node id="12">
+<name/>
+<center x="48.9227942814274" y="311.0597689777546"/>
+<size height="71.0" width="748.0"/>
+<originalSize height="71.0" width="748.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="2"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.4138A7DA-136E-BDDD-48E6-0732F2D36310"/>
+</graphics>
+</node>
+<node id="13">
+<name/>
+<center x="718.3227942814275" y="54.659768977754595"/>
+<size height="115.0" width="170.0"/>
+<originalSize height="115.0" width="170.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="3"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.C30AB552-1FE1-694B-F3AF-116028521FDE"/>
+</graphics>
+</node>
+<node id="14">
+<name/>
+<center x="-664.8772057185726" y="54.659768977754595"/>
+<size height="235.0" width="322.0"/>
+<originalSize height="235.0" width="322.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="3"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.7ABE85F9-FF1E-E9F8-C505-72BECCF1FD8A"/>
+</graphics>
+</node>
+<node id="15">
+<name/>
+<center x="-299.27720571857265" y="54.659768977754595"/>
+<size height="135.0" width="214.0"/>
+<originalSize height="135.0" width="214.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="3"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.2E2826FE-23BC-07F1-C5E6-9CD6D12F89E7"/>
+</graphics>
+</node>
+<node id="16">
+<name/>
+<center x="48.9227942814274" y="54.659768977754595"/>
+<size height="115.0" width="192.0"/>
+<originalSize height="115.0" width="192.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="3"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.BB16AEB5-BE31-589E-2976-DBA4F3A26D02"/>
+</graphics>
+</node>
+<node id="17">
+<name/>
+<center x="392.9227942814274" y="54.659768977754595"/>
+<size height="135.0" width="245.0"/>
+<originalSize height="135.0" width="245.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="3"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.AE79091D-27F1-C163-61AB-2D6963B3CB02"/>
+</graphics>
+</node>
+</nodes>
+<edges>
+<edge id="18" source="15" target="6">
+<sourceClipping/>
+<targetClipping/>
+<url/>
+<visible value="true"/>
+<graphics type="basicEdge">
+<lineColor value="0 0 0"/>
+<arrowWidth value="6.0"/>
+<arrowHeight value="6.0"/>
+<arrowType value="NO_ARROW"/>
+<bendWidth value="5.0"/>
+<bendHeight value="5.0"/>
+<antiAliasing value="false"/>
+<PEID value="DCE.8BD31998-F6F3-8353-25BD-2E6B270285CA"/>
+</graphics>
+</edge>
+<edge id="19" source="17" target="7">
+<sourceClipping/>
+<targetClipping/>
+<url/>
+<visible value="true"/>
+<graphics type="basicEdge">
+<lineColor value="0 0 0"/>
+<arrowWidth value="6.0"/>
+<arrowHeight value="6.0"/>
+<arrowType value="NO_ARROW"/>
+<bendWidth value="5.0"/>
+<bendHeight value="5.0"/>
+<antiAliasing value="false"/>
+<PEID value="DCE.2309997F-2923-A59D-7A6F-B3C8508E7FB5"/>
+</graphics>
+</edge>
+<edge id="20" source="16" target="8">
+<sourceClipping/>
+<targetClipping/>
+<url/>
+<visible value="true"/>
+<graphics type="basicEdge">
+<lineColor value="0 0 0"/>
+<arrowWidth value="6.0"/>
+<arrowHeight value="6.0"/>
+<arrowType value="NO_ARROW"/>
+<bendWidth value="5.0"/>
+<bendHeight value="5.0"/>
+<antiAliasing value="false"/>
+<PEID value="DCE.37A122C0-B9BA-719E-EA06-505156D482A3"/>
+</graphics>
+</edge>
+<edge id="21" source="13" target="9">
+<sourceClipping/>
+<targetClipping/>
+<url/>
+<visible value="true"/>
+<graphics type="basicEdge">
+<lineColor value="0 0 0"/>
+<arrowWidth value="6.0"/>
+<arrowHeight value="6.0"/>
+<arrowType value="NO_ARROW"/>
+<bendWidth value="5.0"/>
+<bendHeight value="5.0"/>
+<antiAliasing value="false"/>
+<PEID value="DCE.A969DDCC-E0D3-CCE6-04B5-95A1533C8E1B"/>
+</graphics>
+</edge>
+<edge id="22" source="14" target="10">
+<sourceClipping/>
+<targetClipping/>
+<url/>
+<visible value="true"/>
+<graphics type="basicEdge">
+<lineColor value="0 0 0"/>
+<arrowWidth value="6.0"/>
+<arrowHeight value="6.0"/>
+<arrowType value="NO_ARROW"/>
+<bendWidth value="5.0"/>
+<bendHeight value="5.0"/>
+<antiAliasing value="false"/>
+<PEID value="DCE.F39335EF-71C7-4788-9AE5-F6AC0EB0F3E1"/>
+</graphics>
+</edge>
+<edge id="23" source="11" target="14">
+<sourceClipping/>
+<targetClipping/>
+<url/>
+<visible value="true"/>
+<graphics type="basicEdge">
+<lineColor value="0 0 0"/>
+<arrowWidth value="6.0"/>
+<arrowHeight value="6.0"/>
+<arrowType value="NO_ARROW"/>
+<bendWidth value="5.0"/>
+<bendHeight value="5.0"/>
+<antiAliasing value="false"/>
+<PEID value="DCE.7A7FFA44-2B90-A358-B61B-7E685742C3AF"/>
+</graphics>
+</edge>
+<edge id="24" source="12" target="13">
+<sourceClipping/>
+<targetClipping/>
+<bends>
+<point x="515.4227942814274" y="187.0097689777546"/>
+</bends>
+<url/>
+<visible value="true"/>
+<graphics type="basicEdge">
+<lineColor value="0 0 0"/>
+<arrowWidth value="6.0"/>
+<arrowHeight value="6.0"/>
+<arrowType value="NO_ARROW"/>
+<bendWidth value="5.0"/>
+<bendHeight value="5.0"/>
+<antiAliasing value="false"/>
+<PEID value="DCE.CF3B3E34-5C7C-4603-1579-54FDA1584A50"/>
+</graphics>
+</edge>
+<edge id="25" source="12" target="14">
+<sourceClipping/>
+<targetClipping/>
+<bends>
+<point x="-406.27720571857265" y="187.0097689777546"/>
+</bends>
+<url/>
+<visible value="true"/>
+<graphics type="basicEdge">
+<lineColor value="0 0 0"/>
+<arrowWidth value="6.0"/>
+<arrowHeight value="6.0"/>
+<arrowType value="NO_ARROW"/>
+<bendWidth value="5.0"/>
+<bendHeight value="5.0"/>
+<antiAliasing value="false"/>
+<PEID value="DCE.22C9CBCF-68D5-4DF9-1492-FADF40D37EAB"/>
+</graphics>
+</edge>
+<edge id="26" source="12" target="15">
+<sourceClipping/>
+<targetClipping/>
+<url/>
+<visible value="true"/>
+<graphics type="basicEdge">
+<lineColor value="0 0 0"/>
+<arrowWidth value="6.0"/>
+<arrowHeight value="6.0"/>
+<arrowType value="NO_ARROW"/>
+<bendWidth value="5.0"/>
+<bendHeight value="5.0"/>
+<antiAliasing value="false"/>
+<PEID value="DCE.A05528D6-53F8-E781-C2FF-A0C575CDD5FB"/>
+</graphics>
+</edge>
+<edge id="27" source="12" target="16">
+<sourceClipping/>
+<targetClipping/>
+<url/>
+<visible value="true"/>
+<graphics type="basicEdge">
+<lineColor value="0 0 0"/>
+<arrowWidth value="6.0"/>
+<arrowHeight value="6.0"/>
+<arrowType value="NO_ARROW"/>
+<bendWidth value="5.0"/>
+<bendHeight value="5.0"/>
+<antiAliasing value="false"/>
+<PEID value="DCE.50EAF223-8A0D-38E9-8AA7-94F9879152CF"/>
+</graphics>
+</edge>
+<edge id="28" source="12" target="17">
+<sourceClipping/>
+<targetClipping/>
+<url/>
+<visible value="true"/>
+<graphics type="basicEdge">
+<lineColor value="0 0 0"/>
+<arrowWidth value="6.0"/>
+<arrowHeight value="6.0"/>
+<arrowType value="NO_ARROW"/>
+<bendWidth value="5.0"/>
+<bendHeight value="5.0"/>
+<antiAliasing value="false"/>
+<PEID value="DCE.0C1C3BA6-EE13-FEE5-980F-5714ABDA8E67"/>
+</graphics>
+</edge>
+</edges>
+<margins>
+<proportional bottom="0.0" left="0.0" right="0.0" top="0.0"/>
+<constant bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+</margins>
+<url/>
+<graphics type="basicGraph">
+<backgroundColor value="255 255 255"/>
+<imageUsed/>
+<imageTiled value="false"/>
+<imageStyle value="WORLD_OFFSET"/>
+<imageMinTileStep value="25"/>
+<imageX value="0.0"/>
+<imageY value="0.0"/>
+<drawNodesBeforeEdges value="true"/>
+</graphics>
+</graph>
+</graphs>
+<rootGraph value="5"/>
+</instances>
+</graphManager>
+<serviceInput type="jlayout">
+<defaults>
+<optionDefaults type="connector">
+<optionDefault name="all:all:connector:movable" value="false"/>
+</optionDefaults>
+<optionDefaults type="node">
+<optionDefault name="layout:all:node:embedded" value="true"/>
+<optionDefault name="all:all:node:attachmentSide" value="ATTACHMENT_SIDE_ANY"/>
+<optionDefault name="layout:symmetric:node:constrained" value="false"/>
+<optionDefault name="routing:all:node:fixedSize" value="false"/>
+<optionDefault name="routing:all:node:fixedPosition" value="false"/>
+</optionDefaults>
+<optionDefaults type="edge">
+<optionDefault name="layout:all:edge:embedded" value="true"/>
+<optionDefault name="layout:symmetric:edge:desiredLength" value="1.0"/>
+<optionDefault name="all:all:edge:sourceAttachmentSide" value="ATTACHMENT_SIDE_ANY"/>
+<optionDefault name="all:all:edge:targetAttachmentSide" value="ATTACHMENT_SIDE_ANY"/>
+</optionDefaults>
+<optionDefaults type="edgeLabel">
+<optionDefault name="labeling:all:edgeLabel:fixed" value="false"/>
+<optionDefault name="labeling:all:edgeLabel:association" value="EDGE_LABEL_ASSOCIATION_CENTER"/>
+<optionDefault name="labeling:all:edgeLabel:region" value="EDGE_LABEL_REGION_ANY"/>
+</optionDefaults>
+<optionDefaults type="graph">
+<optionDefault name="layout:orthogonal:graph:aspectRatio" value="0.0"/>
+<optionDefault name="layout:orthogonal:graph:verticalSpacingBetweenNodes" value="20.0"/>
+<optionDefault name="layout:symmetric:graph:nodeSpacing" value="10.0"/>
+<optionDefault name="layout:hierarchical:graph:horizontalSpacingBetweenEdges" value="12.0"/>
+<optionDefault name="layout:all:graph:incrementalCompaction" value="true"/>
+<optionDefault name="layout:all:graph:componentProportionalSpacing" value="0.05"/>
+<optionDefault name="layout:all:graph:disconnectedNodesConstantSpacing" value="20.0"/>
+<optionDefault name="layout:hierarchical:graph:levelDirection" value="DIRECTION_TOP_TO_BOTTOM"/>
+<optionDefault name="layout:hierarchical:graph:constantHorizontalSpacingBetweenNodes" value="20.0"/>
+<optionDefault name="layout:hierarchical:graph:orthogonalRouting" value="false"/>
+<optionDefault name="layout:hierarchical:graph:levelAlignment" value="CENTER_ALIGNED"/>
+<optionDefault name="layout:orthogonal:graph:keepNodeSizes" value="false"/>
+<optionDefault name="layout:hierarchical:graph:proportionalHorizontalSpacingBetweenNodes" value="0.1"/>
+<optionDefault name="layout:all:graph:detectDisconnectedNodes" value="true"/>
+<optionDefault name="layout:hierarchical:graph:proportionalVerticalSpacingBetweenNodes" value="0.1"/>
+<optionDefault name="layout:orthogonal:graph:horizontalSpacingBetweenEdges" value="12.0"/>
+<optionDefault name="layout:all:graph:detectComponents" value="true"/>
+<optionDefault name="layout:hierarchical:graph:constantVerticalSpacingBetweenNodes" value="20.0"/>
+<optionDefault name="layout:hierarchical:graph:edgeSpacing" value="12.0"/>
+<optionDefault name="layout:symmetric:graph:quality" value="LAYOUT_QUALITY_MEDIUM"/>
+<optionDefault name="layout:orthogonal:graph:quality" value="LAYOUT_QUALITY_MEDIUM"/>
+<optionDefault name="layout:hierarchical:graph:verticalSpacingBetweenEdges" value="12.0"/>
+<optionDefault name="layout:all:graph:componentAspectRatio" value="1.0"/>
+<optionDefault name="layout:hierarchical:graph:undirected" value="false"/>
+<optionDefault name="layout:symmetric:graph:randomSeed" value="1"/>
+<optionDefault name="layout:orthogonal:graph:verticalSpacingBetweenEdges" value="12.0"/>
+<optionDefault name="layout:orthogonal:graph:useCombLabeling" value="true"/>
+<optionDefault name="layout:all:graph:disconnectedNodesProportionalSpacing" value="0.05"/>
+<optionDefault name="layout:all:graph:layoutStyle" value="LAYOUT_STYLE_HIERARCHICAL"/>
+<optionDefault name="layout:hierarchical:graph:keepNodeSizes" value="false"/>
+<optionDefault name="layout:orthogonal:graph:strictIncremental" value="false"/>
+<optionDefault name="layout:all:graph:componentConstantSpacing" value="20.0"/>
+<optionDefault name="layout:orthogonal:graph:horizontalSpacingBetweenNodes" value="20.0"/>
+<optionDefault name="layout:hierarchical:graph:variableLevelSpacing" value="true"/>
+<optionDefault name="layout:hierarchical:graph:quality" value="LAYOUT_QUALITY_MEDIUM"/>
+</optionDefaults>
+<optionDefaults type="connectorLabel">
+<optionDefault name="labeling:all:connectorLabel:fixed" value="false"/>
+<optionDefault name="labeling:all:connectorLabel:region" value="CONNECTOR_LABEL_REGION_ANY"/>
+</optionDefaults>
+<optionDefaults type="nodeLabel">
+<optionDefault name="labeling:all:nodeLabel:region" value="NODE_LABEL_REGION_ANY"/>
+<optionDefault name="labeling:all:nodeLabel:location" value="NODE_LABEL_LOCATION_CENTER"/>
+<optionDefault name="labeling:all:nodeLabel:fixed" value="false"/>
+<optionDefault name="labeling:all:nodeLabel:orientation" value="NODE_LABEL_ORIENTATION_OUTSIDE"/>
+</optionDefaults>
+<optionDefaults type="graphManager">
+<optionDefault name="layout:all:graphManager:horizontalSpacingBetweenIntergraphEdges" value="12.0"/>
+<optionDefault name="routing:all:graphManager:horizontalSpacingBetweenNodes" value="20.0"/>
+<optionDefault name="routing:all:graphManager:fixedSize" value="true"/>
+<optionDefault name="routing:all:graphManager:verticalSpacingBetweenNodes" value="20.0"/>
+<optionDefault name="routing:all:graphManager:fixedPosition" value="true"/>
+<optionDefault name="layout:all:graphManager:verticalSpacingBetweenIntergraphEdges" value="12.0"/>
+<optionDefault name="layout:all:graphManager:incrementalLayout" value="false"/>
+<optionDefault name="routing:all:graphManager:horizontalSpacingBetweenEdges" value="12.0"/>
+<optionDefault name="routing:all:graphManager:verticalSpacingBetweenEdges" value="12.0"/>
+<optionDefault name="all:all:graphManager:performLabeling" value="true"/>
+</optionDefaults>
+</defaults>
+<option context="none" name="all:all:none:graphManager" value="4"/>
+</serviceInput>
+<preferences>
+<preference name="maximumZoomLevel" value="50.0"/>
+<preference name="interactiveZoomSensitivity" value="200.0"/>
+<preference name="panningSensitivity" value="1.0"/>
+<preference name="preventResizeInversion" value="false"/>
+<preference name="drawInvisibleOnDragging" value="false"/>
+<preference name="compressMetaEdges" value="true"/>
+<preference name="edgeNavigationTripDuration" value="300"/>
+<preference name="edgeNavigationFrameCount" value="10"/>
+<preference name="autoHideScrollbars" value="true"/>
+<preference name="hitToleranceThreshold" value="10"/>
+<preference name="opaqueMovement" value="false"/>
+<preference name="geometricAdjustment" value="true"/>
+<preference name="reconnectEdgeSensitivity" value="10.0"/>
+<preference name="edgeNavigationBlinkDuration" value="500"/>
+<preference name="undoStackSize" value="50"/>
+<preference name="minimumZoomLevel" value="1.0E-4"/>
+<preference name="inPlaceEditing" value="true"/>
+<preference name="tooltipsEnabled" value="true"/>
+<preference name="hitTolerance" value="2"/>
+<preference name="partialSelection" value="true"/>
+</preferences>
+</TSX>

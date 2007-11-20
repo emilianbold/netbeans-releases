@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<XMI xmi.version="2.0" xmlns:UML="omg.org/UML/1.4">
+	<XMI.header>
+		<XMI.metamodel xmi.name="UML" xmi.version="1.4"/>
+		<XMI.documentation>
+			<XMI.exporter>
+				Embarcadero's Describe
+			</XMI.exporter>
+			<XMI.exporterVersion>
+				6.0
+			</XMI.exporterVersion>
+		</XMI.documentation>
+	</XMI.header>
+	<XMI.content>
+		<UML:Profile xmi.id="DCE.CDC3CAC7-8585-42F0-98D9-921C89826D42" name="Unnamed" isDirty="false" href=".\EJB1_1.etup#//*[@xmi.id=&quot;DCE.CDC3CAC7-8585-42F0-98D9-921C89826D42&quot;]">
+			<UML:Element.ownedElement>
+				<UML:Stereotype xmi.id="DCE.17F24672-A80E-45FD-8202-B7280F268F75" name="interface" owner="__uri_.\EJB1_1.etup#//*[@xmi.id=&quot;DCE.CDC3CAC7-8585-42F0-98D9-921C89826D42&quot;]"/>
+			</UML:Element.ownedElement>
+		</UML:Profile>
+	</XMI.content>
+</XMI>

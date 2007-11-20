@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PropertyDefinitions>
+  <PropertyDefinition name="Describe" >
+        <!--
+	<aDefinition name="Workspace" displayName="PSK_WORKSPACE" image="">
+		<aDefinition name="Workspace" displayName="PSK_WORKSPACE" image="org/netbeans/modules/uml/resources/images/workspace.gif"/>
+	</aDefinition>
+        -->
+	<aDefinition name="Project" displayName="PSK_PROJECT" image="">
+		<aDefinition name="Project" displayName="PSK_PROJECT" image="org/netbeans/modules/uml/resources/images/uml.png"/>
+	</aDefinition>
+	<aDefinition name="Package" displayName="PSK_PACKAGE" image="">
+		<aDefinition name="Package" displayName="PSK_PACKAGE" image="org/netbeans/modules/uml/resources/images/package.png"/>
+	</aDefinition>
+	<aDefinition name="Diagram" displayName="PSK_DIAGRAM" image="">
+		<aDefinition name="Activity Diagram" displayName="PSK_ACTIVITY_DIAGRAM" image="org/netbeans/modules/uml/resources/images/activity-diagram.png"/>
+		<aDefinition name="Class Diagram" displayName="PSK_CLASS_DIAGRAM" image="org/netbeans/modules/uml/resources/images/class-diagram.png"/>
+		<aDefinition name="Collaboration Diagram" displayName="PSK_COLLABORATION_DIAGRAM" image="org/netbeans/modules/uml/resources/images/collaboration-diagram.png"/>
+		<aDefinition name="Component Diagram" displayName="PSK_COMPONENT_DIAGRAM" image="org/netbeans/modules/uml/resources/images/component-diagram.png"/>
+		<aDefinition name="Deployment Diagram" displayName="PSK_DEPLOYMENT_DIAGRAM" image="org/netbeans/modules/uml/resources/images/deployment-diagram.png"/>
+		<aDefinition name="Sequence Diagram" displayName="PSK_SEQUENCE_DIAGRAM" image="org/netbeans/modules/uml/resources/images/sequence-diagram.png"/>
+		<aDefinition name="State Diagram" displayName="PSK_STATE_DIAGRAM" image="org/netbeans/modules/uml/resources/images/state-diagram.png"/>
+		<aDefinition name="Use Case Diagram" displayName="PSK_USE_CASE_DIAGRAM" image="org/netbeans/modules/uml/resources/images/use-case-diagram.png"/>
+	</aDefinition>
+	<aDefinition name="Element" displayName="PSK_ELEMENT" image="">
+		<aDefinition name="Actor" displayName="PSK_ACTOR" image="org/netbeans/modules/uml/resources/images/actor.png"/>
+		<aDefinition name="AliasedType" displayName="PSK_ALIASED_TYPE" image="org/netbeans/modules/uml/resources/images/aliased-type.png"/>
+		<aDefinition name="Artifact" displayName="PSK_ARTIFACT" image="org/netbeans/modules/uml/resources/images/artifact.png"/>
+		<aDefinition name="Class" displayName="PSK_CLASS" image="org/netbeans/modules/uml/resources/images/class.png"/>
+		<aDefinition name="DataType" displayName="PSK_DATATYPE" image="org/netbeans/modules/uml/resources/images/datatype.png"/>
+		<aDefinition name="Emumeration" displayName="PSK_ENUMERATION" image="org/netbeans/modules/uml/resources/images/enumeration.png"/>
+		<aDefinition name="Interface" displayName="PSK_INTERFACE" image="org/netbeans/modules/uml/resources/images/interface.png"/>
+		<aDefinition name="Node" displayName="PSK_NODE" image="org/netbeans/modules/uml/resources/images/node.png"/>
+	</aDefinition>
+  </PropertyDefinition>
+</PropertyDefinitions>

@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<PropertyDefinitionFilters>
+	<Filter name="Visibility">
+		<FilterElement name="Operation" type="{B2820E6E-BA9F-4DF6-958F-96E317525E9D}">
+			<FilterOp name="remove" xpath="Visibility"/>
+		</FilterElement>
+		<FilterElement name="Attribute" type="{E46374E6-2105-4D89-80A0-58C386C3866E}">
+			<FilterOp name="remove" xpath="Visibility"/>
+		</FilterElement>
+	</Filter>
+	<Filter name="Stereotypes">
+		<FilterElement name="Element" type="{A08E31A2-D10F-4e16-9A55-CA33E25BBF1C}">
+			<FilterOp name="remove" xpath="Stereotypes"/>
+		</FilterElement>
+	</Filter>
+	<Filter name="TaggedValues">
+		<FilterElement name="Operation" type="{B2820E6E-BA9F-4DF6-958F-96E317525E9D}">
+			<FilterOp name="remove" xpath="TaggedValues"/>
+		</FilterElement>
+		<FilterElement name="Attribute" type="{E46374E6-2105-4D89-80A0-58C386C3866E}">
+			<FilterOp name="remove" xpath="TaggedValues"/>
+		</FilterElement>
+	</Filter>
+</PropertyDefinitionFilters>

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<EMBT:StereotypeIcons version="1.0" xmlns:EMBT="www.sun.com">
+	<Version>1.0</Version>
+	<Icons>
+		<Icon Stereotype="target" IsLargeIcon="0" Filename="stereotype_target.gif"/>
+		<Icon Stereotype="serverpage" IsLargeIcon="0" Filename="stereotype_serverpage.gif"/>
+		<Icon Stereotype="frameset" IsLargeIcon="0" Filename="stereotype_frameset.gif"/>
+		<Icon Stereotype="form" IsLargeIcon="0" Filename="stereotype_form.gif"/>
+		<Icon Stereotype="component" IsLargeIcon="0" Filename="stereotype_component.gif"/>
+		<Icon Stereotype="clientpage" IsLargeIcon="0" Filename="stereotype_clientpage.gif"/>
+		<Icon DrawEngineID="ActorDrawEngine" Stereotype="PT73" IsLargeIcon="1" Filename="MetaFiles\PT73.emf"/>
+		<Icon DrawEngineID="ActorDrawEngine" Stereotype="ATeam" IsLargeIcon="1" Filename="MetaFiles\ATeam.emf"/>
+	</Icons> 
+</EMBT:StereotypeIcons>

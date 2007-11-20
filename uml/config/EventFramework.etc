@@ -1,0 +1,412 @@
+<?xml version="1.0"?>
+<EventMechanism eventContextProgID="org.netbeans.modules.uml.core.eventframework.EventContext" xmlns:EMBT="www.sun.com">
+	<!--
+		All event names and EventContext names must be unique!
+	-->
+	<!--
+		WorkspaceEvents
+	-->
+	<EMBT:TriggerPoint name="WorkspacePreCreate" context="C.0" payLoad="WorkspaceManagement.WorkspacePreCreatePayload" id="T.0"/>
+	<EMBT:TriggerPoint name="WorkspaceCreated" context="C.0" id="T.1"/>
+	<EMBT:TriggerPoint name="WorkspacePreOpen" context="C.0" id="T.2"/>
+	<EMBT:TriggerPoint name="WorkspaceOpened" context="C.0" id="T.3"/>
+	<EMBT:TriggerPoint name="WorkspacePreSave" context="C.0" id="T.4"/>
+	<EMBT:TriggerPoint name="WorkspaceSaved" context="C.0" id="T.5"/>
+	<EMBT:TriggerPoint name="WorkspacePreClose" context="C.0" id="T.6"/>
+	<EMBT:TriggerPoint name="WorkspaceClosed" context="C.0" id="T.44"/>
+	<!--
+		ElementModifiedEvents
+	-->
+	<EMBT:TriggerPoint name="ElementPreModified" id="T.7"/>
+	<EMBT:TriggerPoint name="ElementModified" id="T.8"/>
+	<!--
+		WSProjectEvents
+	-->
+	<EMBT:TriggerPoint name="WSProjectPreCreate" context="C.1" id="T.9"/>
+	<EMBT:TriggerPoint name="WSProjectCreated" context="C.1" id="T.10"/>
+	<EMBT:TriggerPoint name="WSProjectPreOpen" context="C.1" id="T.11"/>
+	<EMBT:TriggerPoint name="WSProjectOpened" context="C.1" id="T.12"/>
+	<EMBT:TriggerPoint name="WSProjectPreInsert" context="C.1" id="T.13"/>
+	<EMBT:TriggerPoint name="WSProjectInserted" context="C.1" id="T.14"/>
+	<EMBT:TriggerPoint name="WSProjectPreRemove" context="C.1" id="T.15"/>
+	<EMBT:TriggerPoint name="WSProjectRemoved" context="C.1" id="T.16"/>
+	<EMBT:TriggerPoint name="WSProjectPreRename" context="C.1" id="T.17"/>
+	<EMBT:TriggerPoint name="WSProjectRenamed" context="C.1" id="T.18"/>
+	<EMBT:TriggerPoint name="WSProjectPreClose" context="C.1" id="T.19"/>
+	<EMBT:TriggerPoint name="WSProjectClosed" context="C.1" id="T.20"/>
+	<EMBT:TriggerPoint name="WSProjectPreSave" context="C.1" id="T.21"/>
+	<EMBT:TriggerPoint name="WSProjectSaved" context="C.1" id="T.22"/>
+	<!--
+		DrawingAreaContextMenuEventsSink
+	-->
+	<EMBT:TriggerPoint name="DrawingAreaContextMenuPrepare" id="T.23"/>
+	<EMBT:TriggerPoint name="DrawingAreaContextMenuPrepared" id="T.24"/>
+	<EMBT:TriggerPoint name="DrawingAreaContextMenuHandleDisplay" id="T.25"/>
+	<EMBT:TriggerPoint name="DrawingAreaContextMenuSelected" id="T.26"/>
+	<!--
+		DrawingAreaSelectionEvents
+	-->
+	<EMBT:TriggerPoint name="DrawingAreaSelect" id="T.28"/>
+	<!--
+		ProjectTreeContextMenuEventsSink
+	-->
+	<EMBT:TriggerPoint name="ProjectTreeContextMenuPrepare" id="T.29"/>
+	<EMBT:TriggerPoint name="ProjectTreeContextMenuPrepared" id="T.30"/>
+	<EMBT:TriggerPoint name="ProjectTreeContextMenuHandleDisplay" id="T.31"/>
+	<EMBT:TriggerPoint name="ProjectTreeContextMenuSelected" id="T.32"/>
+	<!--
+		ProjectTreeEventsSink
+	-->
+	<EMBT:TriggerPoint name="ProjectTreeProjectAdded" id="T.33"/>
+	<EMBT:TriggerPoint name="ProjectTreeItemExpanding" id="T.34"/>
+	<EMBT:TriggerPoint name="ProjectTreeBeforeEdit" id="T.35"/>
+	<EMBT:TriggerPoint name="ProjectTreeAfterEdit" id="T.36"/>
+	<EMBT:TriggerPoint name="ProjectTreeDoubleClick" id="T.37"/>
+	<EMBT:TriggerPoint name="ProjectTreeSelChanged" id="T.38"/>
+	<EMBT:TriggerPoint name="ProjectTreeRightButtonDown" id="T.39"/>
+	<EMBT:TriggerPoint name="ProjectTreeBeginDrag" id="T.40"/>
+	<EMBT:TriggerPoint name="ProjectTreeMoveDrag" id="T.41"/>
+	<EMBT:TriggerPoint name="ProjectTreeEndDrag" id="T.42"/>
+	<!--
+		MessengerEventsSink
+	-->
+	<EMBT:TriggerPoint name="MessengerMessageAdded" id="T.43"/>
+	<!--
+		MetaAttributeModifiedEvents
+	-->
+	<EMBT:TriggerPoint name="MetaAttributePreModified" id="T.45" payLoad="Foundation.MetaAttributeModifiedEventPayload"/>
+	<EMBT:TriggerPoint name="MetaAttributeModified" id="T.46" payLoad="Foundation.MetaAttributeModifiedEventPayload"/>
+	<!--
+		WSElementEvents
+	-->
+	<EMBT:TriggerPoint name="WSElementPreCreate" id="T.47"/>
+	<EMBT:TriggerPoint name="WSElementCreated" id="T.48"/>
+	<EMBT:TriggerPoint name="WSElementPreSave" id="T.49"/>
+	<EMBT:TriggerPoint name="WSElementSaved" id="T.50"/>
+	<EMBT:TriggerPoint name="WSElementPreRemove" id="T.51"/>
+	<EMBT:TriggerPoint name="WSElementRemoved" id="T.52"/>
+	<EMBT:TriggerPoint name="WSElementPreNameChanged" id="T.140"/>
+	<EMBT:TriggerPoint name="WSElementNameChanged" id="T.141"/>
+	<EMBT:TriggerPoint name="WSElementPreOwnerChange" id="T.142"/>
+	<EMBT:TriggerPoint name="WSElementOwnerChanged" id="T.143"/>
+	<EMBT:TriggerPoint name="WSElementPreLocationChanged" id="T.144"/>
+	<EMBT:TriggerPoint name="WSElementLocationChanged" id="T.145"/>
+	<EMBT:TriggerPoint name="WSElementPreDataChanged" id="T.146"/>
+	<EMBT:TriggerPoint name="WSElementDataChanged" id="T.147"/>
+	<!--
+		VBA Events
+	-->
+	<EMBT:TriggerPoint name="VBAOpenProjectItem" id="T.53"/>
+	<!--
+		Ax Edit  Events
+	-->
+	<EMBT:TriggerPoint name="Killfocus" id="T.54"/>
+	<!--
+		Project Tree Filter Dialog Events
+	-->
+	<EMBT:TriggerPoint name="ProjectTreeFilterDialogButtonSelected" id="T.55"/>
+	<EMBT:TriggerPoint name="ProjectTreeFilterDialogOKActivated" id="T.56"/>
+	<EMBT:TriggerPoint name="ProjectTreeFilterDialogInit" id="T.57"/>
+	<!--
+		Relation Validation Events
+	-->
+	<EMBT:TriggerPoint name="PreRelationValidate" id="T.58"/>
+	<EMBT:TriggerPoint name="RelationValidated" id="T.59"/>
+	<!--
+	   Documentation Modified events
+	-->
+	<EMBT:TriggerPoint name="DocumentationPreModified" id="T.60"/>
+	<EMBT:TriggerPoint name="DocumentationModified" id="T.61"/>
+	<!--
+	   Namespace Modified events
+	-->
+	<EMBT:TriggerPoint name="PreElementAddedToNamespace" id="T.62"/>
+	<EMBT:TriggerPoint name="ElementAddedToNamespace" id="T.63"/>
+	<!--
+	   NamedElement Modified events
+	-->
+	<EMBT:TriggerPoint name="PreNameModified" id="T.64"/>
+	<EMBT:TriggerPoint name="NameModified" id="T.65"/>
+	<EMBT:TriggerPoint name="PreVisibilityModified" id="T.66"/>
+	<EMBT:TriggerPoint name="VisibilityModified" id="T.67"/>
+	<!--
+	   Classifier Feature events
+	-->
+	<EMBT:TriggerPoint name="FeaturePreAdded" id="T.72"/>
+	<EMBT:TriggerPoint name="FeatureAdded" id="T.73"/>
+	<EMBT:TriggerPoint name="FeaturePreRemoved" id="T.170"/>
+	<EMBT:TriggerPoint name="FeatureRemoved" id="T.171"/>
+	<EMBT:TriggerPoint name="FeaturePreMoved" id="T.172"/>
+	<EMBT:TriggerPoint name="FeatureMoved" id="T.173"/>
+	<EMBT:TriggerPoint name="FeaturePreDuplicatedToClassifier" id="T.174"/>
+	<EMBT:TriggerPoint name="FeatureDuplicatedToClassifier" id="T.175"/>
+	<!--
+	   Feature events
+	-->
+	<EMBT:TriggerPoint name="PreStaticModified" id="T.74"/>
+	<EMBT:TriggerPoint name="StaticModified" id="T.75"/>
+	<!--
+	   StructuralFeature events
+	-->
+	<EMBT:TriggerPoint name="PreChangeabilityModified" id="T.76"/>
+	<EMBT:TriggerPoint name="ChangeabilityModified" id="T.77"/>
+	<!--
+	   BehavioralFeature events
+	-->
+	<EMBT:TriggerPoint name="ConcurrencyPreModified" id="T.78"/>
+	<EMBT:TriggerPoint name="ConcurrencyModified" id="T.79"/>
+	<EMBT:TriggerPoint name="PreHandledSignalAdded" id="T.80"/>
+	<EMBT:TriggerPoint name="HandledSignalAdded" id="T.81"/>
+	<EMBT:TriggerPoint name="PreHandledSignalRemoved" id="T.82"/>
+	<EMBT:TriggerPoint name="HandledSignalRemoved" id="T.83"/>
+	<EMBT:TriggerPoint name="PreParameterAdded" id="T.84"/>
+	<EMBT:TriggerPoint name="ParameterAdded" id="T.85"/>
+	<EMBT:TriggerPoint name="PreParameterRemoved" id="T.86"/>
+	<EMBT:TriggerPoint name="ParameterRemoved" id="T.87"/>
+	<EMBT:TriggerPoint name="PreAbstractModified" id="T.88"/>
+	<EMBT:TriggerPoint name="AbstractModified" id="T.89"/>
+	<!--
+	   Parameter events
+	-->
+	<EMBT:TriggerPoint name="PreDefaultExpModified" id="T.90"/>
+	<EMBT:TriggerPoint name="DefaultExpModified" id="T.91"/>
+	<EMBT:TriggerPoint name="PreDirectionModified" id="T.92"/>
+	<EMBT:TriggerPoint name="DirectionModified" id="T.93"/>
+	<EMBT:TriggerPoint name="PreDefaultExpBodyModified" id="T.94"/>
+	<EMBT:TriggerPoint name="DefaultExpBodyModified" id="T.95"/>
+	<EMBT:TriggerPoint name="PreDefaultExpLanguageModified" id="T.96"/>
+	<EMBT:TriggerPoint name="DefaultExpLanguageModified" id="T.97"/>
+	<!--
+	   TypedElement events
+	-->
+	<EMBT:TriggerPoint name="PreMultiplicityModified" id="T.98"/>
+	<EMBT:TriggerPoint name="MultiplicityModified" id="T.99"/>
+	<EMBT:TriggerPoint name="PreTypeModified" id="T.102"/>
+	<EMBT:TriggerPoint name="TypeModified" id="T.103"/>
+	<EMBT:TriggerPoint name="PreLowerModified" id="T.104"/>
+	<EMBT:TriggerPoint name="LowerModified" id="T.105"/>
+	<EMBT:TriggerPoint name="PreUpperModified" id="T.106"/>
+	<EMBT:TriggerPoint name="UpperModified" id="T.107"/>
+	<EMBT:TriggerPoint name="PreRangeAdded" id="T.108"/>
+	<EMBT:TriggerPoint name="RangeAdded" id="T.109"/>
+	<EMBT:TriggerPoint name="PreRangeRemoved" id="T.110"/>
+	<EMBT:TriggerPoint name="RangeRemoved" id="T.111"/>
+	<EMBT:TriggerPoint name="PreOrderModified" id="T.112"/>
+	<EMBT:TriggerPoint name="OrderModified" id="T.113"/>
+	<!--
+	   Attribute events
+	-->
+	<EMBT:TriggerPoint name="DefaultPreModified" id="T.114"/>
+	<EMBT:TriggerPoint name="DefaultModified" id="T.115"/>
+	<EMBT:TriggerPoint name="PreDefaultBodyModified" id="T.116"/>
+	<EMBT:TriggerPoint name="DefaultBodyModified" id="T.117"/>
+	<EMBT:TriggerPoint name="PreDefaultLanguageModified" id="T.118"/>
+	<EMBT:TriggerPoint name="DefaultLanguageModified" id="T.119"/>
+	<!--
+	   Operation events
+	-->
+	<EMBT:TriggerPoint name="ConditionPreAdded" id="T.120"/>
+	<EMBT:TriggerPoint name="ConditionAdded" id="T.121"/>
+	<EMBT:TriggerPoint name="ConditionPreRemoved" id="T.122"/>
+	<EMBT:TriggerPoint name="ConditionRemoved" id="T.123"/>
+	<EMBT:TriggerPoint name="PreQueryModified" id="T.124"/>
+	<EMBT:TriggerPoint name="QueryModified" id="T.125"/>
+	<!--
+		RoundTripAttribute events
+	-->
+	<EMBT:TriggerPoint name="PreAttributeChangeRequest" id="T.126"/>
+	<EMBT:TriggerPoint name="AttributeChangeRequest" id="T.127"/>
+	<!--
+		RoundTripOperation events
+	-->
+	<EMBT:TriggerPoint name="PreOperationChangeRequest" id="T.128"/>
+	<EMBT:TriggerPoint name="OperationChangeRequest" id="T.129"/>
+	<!--
+		RoundTripClass events
+	-->
+	<EMBT:TriggerPoint name="PreClassChangeRequest" id="T.130"/>
+	<EMBT:TriggerPoint name="ClassChangeRequest" id="T.131"/>
+	<!--
+		RoundTripPackage events
+	-->
+	<EMBT:TriggerPoint name="PrePackageChangeRequest" id="T.132"/>
+	<EMBT:TriggerPoint name="PackageChangeRequest" id="T.133"/>
+	<!--
+		RoundTripRelation events
+	-->
+	<EMBT:TriggerPoint name="PreRelationChangeRequest" id="T.134"/>
+	<EMBT:TriggerPoint name="RelationChangeRequest" id="T.135"/>
+	<!--
+	   RequestProcessor Init events
+	-->
+	<EMBT:TriggerPoint name="PreInitialized" id="T.136"/>
+	<EMBT:TriggerPoint name="Initialized" id="T.137"/>
+	<!--
+	   CoreProduct init events
+	-->
+	<EMBT:TriggerPoint name="CoreProductPreInit" id="T.138"/>
+	<EMBT:TriggerPoint name="CoreProductInitialized" id="T.139"/>
+	<!--
+	   ClassifierTransform events
+	-->
+	<EMBT:TriggerPoint name="PreTransform" id="T.177"/>
+	<EMBT:TriggerPoint name="Transformed" id="T.178"/>
+	<!--
+	   Import events
+	-->
+	<EMBT:TriggerPoint name="PrePackageImport" id="T.148"/>
+	<EMBT:TriggerPoint name="PackageImported" id="T.149"/>
+	<EMBT:TriggerPoint name="PreElementImport" id="T.150"/>
+	<EMBT:TriggerPoint name="ElementImported" id="T.151"/>
+	<!--
+	   Relation events
+	-->
+	<EMBT:TriggerPoint name="PreRelationEndModified" id="T.152"/>
+	<EMBT:TriggerPoint name="RelationEndModified" id="T.153"/>
+	<EMBT:TriggerPoint name="PreRelationEndAdded" id="T.154"/>
+	<EMBT:TriggerPoint name="RelationEndAdded" id="T.155"/>
+	<EMBT:TriggerPoint name="PreRelationEndRemoved" id="T.156"/>
+	<EMBT:TriggerPoint name="RelationEndRemoved" id="T.157"/>
+	<EMBT:TriggerPoint name="PreRelationCreated" id="T.158"/>
+	<EMBT:TriggerPoint name="RelationCreated" id="T.159"/>
+	<EMBT:TriggerPoint name="PreRelationDeleted" id="T.160"/>
+	<EMBT:TriggerPoint name="RelationDeleted" id="T.161"/>
+	<!--
+	   Element LifeTime events
+	-->
+	<EMBT:TriggerPoint name="ElementPreCreate" id="T.162"/>
+	<EMBT:TriggerPoint name="ElementCreated" id="T.163"/>
+	<EMBT:TriggerPoint name="ElementPreDelete" id="T.164"/>
+	<EMBT:TriggerPoint name="ElementDeleted" id="T.165"/>
+	<EMBT:TriggerPoint name="PreDisposeElements" id="T.166"/>
+	<EMBT:TriggerPoint name="DisposedElements" id="T.167"/>
+	<EMBT:TriggerPoint name="ElementPreDuplicated" id="T.168"/>
+	<EMBT:TriggerPoint name="ElementDuplicated" id="T.179"/>
+	<!--
+	   ExternalElementEventsSink events
+	-->
+	<EMBT:TriggerPoint name="ExternalElementPreLoaded" id="T.180"/>
+	<EMBT:TriggerPoint name="ExternalElementLoaded" id="T.181"/>
+	<EMBT:TriggerPoint name="PreInitialExtraction" id="T.182"/>
+	<EMBT:TriggerPoint name="InitialExtraction" id="T.183"/>
+	<!--
+	   SCMEventsSink events
+	-->
+	<EMBT:TriggerPoint name="PreFeatureExecuted" id="T.184"/>
+	<EMBT:TriggerPoint name="FeatureExecuted" id="T.185"/>
+	<!--
+	   EventFramework events
+	-->
+	<EMBT:TriggerPoint name="PreEventContextPushed" id="T.186"/>
+	<EMBT:TriggerPoint name="EventContextPushed" id="T.187"/>
+	<EMBT:TriggerPoint name="PreEventContextPopped" id="T.188"/>
+	<EMBT:TriggerPoint name="EventContextPopped" id="T.189"/>
+	<EMBT:TriggerPoint name="EventDispatchCancelled" id="T.190"/>
+	<!--
+	   Stereotype events
+	-->
+	<EMBT:TriggerPoint name="PreStereotypeApplied" id="T.191"/>
+	<EMBT:TriggerPoint name="StereotypeApplied" id="T.192"/>
+	<!--
+	   AffectedElement events
+	-->
+	<EMBT:TriggerPoint name="PreImpacted" id="T.193" payLoad="EventFramework.OriginalAndNewEventPayload"/>
+	<EMBT:TriggerPoint name="Impacted" id="T.194"/>
+	<!-- 
+	   Behavioral Events ( Continued )
+	-->
+	<EMBT:TriggerPoint name="PreStrictFPModified" id="T.195"/>
+	<EMBT:TriggerPoint name="StrictFPModified" id="T.196"/>
+	<!--
+	   RedefinableElement Modifed events
+	-->
+	<EMBT:TriggerPoint name="PreFinalModified" id="T.197"/>
+	<EMBT:TriggerPoint name="FinalModified" id="T.198"/>
+	<!--
+	   WSElementEventsSink ( Continued )
+	-->
+	<EMBT:TriggerPoint name="WSElementPreDocChanged" id="T.199"/>
+	<EMBT:TriggerPoint name="WSElementDocChanged" id="T.200"/>
+	<EMBT:TriggerPoint name="WSElementPreModify" id="T.201"/>
+	<EMBT:TriggerPoint name="WSElementModified" id="T.202"/>
+	<!--
+		LifelineModifiedEvents
+	-->
+	<EMBT:TriggerPoint name="PreLifelineChangeRepresentingClassifier" id="T.203"/>
+	<EMBT:TriggerPoint name="LifelineChangeRepresentingClassifier" id="T.204"/>
+	<!--
+		ProjectEvents
+	-->
+	<EMBT:TriggerPoint name="PreModeModified" id="T.205"/>
+	<EMBT:TriggerPoint name="ModeModified" id="T.206"/>
+	<EMBT:TriggerPoint name="PreDefaultLanguageModified" id="T.207"/>
+	<EMBT:TriggerPoint name="DefaultLanguageModified" id="T.208"/>
+	<!--
+		ActivityEdgeEvents
+	-->
+	<EMBT:TriggerPoint name="PreWeightModified" id="T.209"/>
+	<EMBT:TriggerPoint name="WeightModified" id="T.210"/>
+	<EMBT:TriggerPoint name="PreGuardModified" id="T.211"/>
+	<EMBT:TriggerPoint name="GuardModified" id="T.212"/>
+	<!--
+		ProjectEvents( cont. )
+	-->
+	<EMBT:TriggerPoint name="ProjectPreCreate" id="T.213"/>
+	<EMBT:TriggerPoint name="ProjectCreated" id="T.214"/>
+	<EMBT:TriggerPoint name="ProjectPreOpen" id="T.215"/>
+	<EMBT:TriggerPoint name="ProjectOpened" id="T.216"/>
+	<EMBT:TriggerPoint name="ProjectPreRename" id="T.217"/>
+	<EMBT:TriggerPoint name="ProjectRenamed" id="T.218"/>
+	<EMBT:TriggerPoint name="ProjectPreClose" id="T.219"/>
+	<EMBT:TriggerPoint name="ProjectClosed" id="T.220"/>
+	<EMBT:TriggerPoint name="ProjectPreSave" id="T.221"/>
+	<EMBT:TriggerPoint name="ProjectSaved" id="T.222"/>
+	<!--
+		AssociationEndEvents
+	-->
+	<EMBT:TriggerPoint name="PreQualifierAttributeAdded" id="T.223"/>
+	<EMBT:TriggerPoint name="QualifierAttributeAdded" id="T.224"/>
+	<EMBT:TriggerPoint name="PreQualifierAttributeRemove" id="T.225"/>
+	<EMBT:TriggerPoint name="QualifierAttributeRemoved" id="T.226"/>
+	<!--
+	   Classifier Feature events ( cont. )
+	-->
+	<EMBT:TriggerPoint name="PreTemplateParameterAdded" id="T.227"/>
+	<EMBT:TriggerPoint name="TemplateParameterAdded" id="T.228"/>
+	<EMBT:TriggerPoint name="PreTemplateParameterRemoved" id="T.229"/>
+	<EMBT:TriggerPoint name="TemplateParameterRemoved" id="T.230"/>
+	<EMBT:TriggerPoint name="PreNameCollision" id="T.231"/>
+	<EMBT:TriggerPoint name="NameCollision" id="T.232"/>
+	<!--
+      ArtifactEvents
+   -->
+	<EMBT:TriggerPoint name="PreFileNameModified" id="T.233"/>
+	<EMBT:TriggerPoint name="FileNameModified" id="T.234"/>
+	<EMBT:TriggerPoint name="PreDirty" id="T.235"/>
+	<EMBT:TriggerPoint name="Dirty" id="T.236"/>
+	<EMBT:TriggerPoint name="PreSave" id="T.237"/>
+	<EMBT:TriggerPoint name="Save" id="T.238"/>
+	<!--
+      CoreProduct events ( cont. )
+   -->
+	<EMBT:TriggerPoint name="CoreProductPreSaved" id="T.239"/>
+	<EMBT:TriggerPoint name="CoreProductSaved" id="T.240"/>
+	<!--
+		ProjectEvents( cont. )
+	-->
+	<EMBT:TriggerPoint name="PreReferencedLibraryAdded" id="T.241"/>
+	<EMBT:TriggerPoint name="ReferencedLibraryAdded" id="T.242"/>
+	<EMBT:TriggerPoint name="PreReferencedLibraryRemoved" id="T.243"/>
+	<EMBT:TriggerPoint name="ReferencedLibraryRemoved" id="T.244"/>
+	<!--
+		PackageEvents
+	-->
+	<EMBT:TriggerPoint name="PreSourceDirModified" id="T.245"/>
+	<EMBT:TriggerPoint name="SourceDirModified" id="T.246"/>
+	<!--
+		If an EventContext does not have a progID associated with it, the eventContextProgID attribute value on the EventMechanism
+		element will be used.
+	-->
+	<EMBT:EventContext name="WorkspaceEvents" id="C.0" triggers="T.0 T.1 T.2 T.3 T.4 T.5 T.6"/>
+	<EMBT:EventContext name="WSProjectEvents" id="C.1" triggers="T.9 T.10 T.11 T.12 T.13 T.14 T.15 T.16 T.17 T.18 T.19 T.20 T.21 T.22"/>
+</EventMechanism>

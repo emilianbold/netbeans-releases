@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FacilityConfig>
+	<Facility name="CodeGeneration" progid="CodeGen.CodeGenerator" singleton="true">
+		<Description>Listens to Round Trip events and generates language specific code that represents the round trip event..</Description>
+		<Properties>
+			<Property name="Java.FileSystemManip" value="CodeGeneration.FileSysManip"/>
+			<Property name="C++.FileSystemManip" value="CodeGeneration.FileSysManip"/>
+			<Property name="C#.FileSystemManip" value="CodeGeneration.FileSysManip"/>
+		</Properties>
+	</Facility>
+	<Facility name="SCM" progid="org.netbeans.modules.uml.ui.support.scmintegration.SCMFactory" singleton="true">
+		<Description>
+		   Handles the bootstrapping chores associated with source and element configuration management.
+		</Description> 
+		<Properties>
+			<Property name="PSK_SCC_PROVIDER" value="com.embarcadero.netbeans.SCM.NetbeansSCMTool"/>
+		</Properties>
+	</Facility>
+	<FacilityManager name="Parsing" config="ParsingFacilities.etc"/>
+	<FacilityManager name="RoundTrip" config="RoundTripFacilities.etc"/>
+</FacilityConfig>

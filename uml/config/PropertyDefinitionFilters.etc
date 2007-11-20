@@ -1,0 +1,138 @@
+<?xml version="1.0"?>
+<PropertyDefinitionFilters>
+	<!--  Filters for when the language of an element and/or project is Java -->
+	<Filter name="Java">
+		<!--  Any element that is a NamedElement needs to have its visibility picklist altered -->
+		<FilterElement name="NamedElement" type="org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement">
+			<FilterOp name="modify" xpath="Visibility" values="public|protected|private|package"/>
+		</FilterElement>
+		<!-- Java does not support the Transient field, so any element that is a Classifier, remove it -->
+		<FilterElement name="Classifier" type="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier">
+			<!--  ERStudioIntegration uses this field to determine if the class is persistent or not, so we have to leave it in
+			<FilterOp name="remove" xpath="Transient"/>
+			-->
+		</FilterElement>
+		<!-- Java does not support the listed fields, so any element that is a StructuralFeature, remove them -->
+		<FilterElement name="Attribute" type="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute">
+			<FilterOp name="remove" xpath="HeapBased"/>
+			<FilterOp name="remove" xpath="IsDerived"/>
+			<FilterOp name="remove" xpath="IsWithEvents"/>
+		</FilterElement>
+		<!-- Java does not support the listed fields, so any element that is a Operation, remove them -->
+		<FilterElement name="Operation" type="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation">
+			<FilterOp name="remove" xpath="IsFriend"/>
+			<FilterOp name="remove" xpath="IsProperty"/>
+			<FilterOp name="remove" xpath="IsSubroutine"/>
+			<FilterOp name="remove" xpath="IsVirtual"/>
+			<FilterOp name="remove" xpath="IsOverride"/>
+			<FilterOp name="remove" xpath="IsDelegate"/>
+			<FilterOp name="remove" xpath="IsIndexer"/>
+		</FilterElement>
+		<!-- Java does not support the listed fields, so any element that is an Interface, remove them -->
+		<FilterElement name="Interface" type="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface">
+			<FilterOp name="remove" xpath="Abstract"/>
+			<FilterOp name="remove" xpath="Leaf"/>
+			<FilterOp name="remove" xpath="Transient"/>
+			<FilterOp name="remove" xpath="Final"/>
+		</FilterElement>
+                <FilterElement name="Stereotype" type="org.netbeans.modules.uml.core.metamodel.profiles.IStereotype">
+			<FilterOp name="remove" xpath="Documentation"/>
+			<FilterOp name="remove" xpath="Constraints"/>
+			<FilterOp name="remove" xpath="Visibility"/>
+			<FilterOp name="remove" xpath="VersionedFileName"/>
+                        <FilterOp name="remove" xpath="SourceDir"/>
+		</FilterElement>
+	</Filter>
+	<!--  Filters for when the language of an element and/or project is UML -->
+	<Filter name="UML">
+		<!--  Any element that is a NamedElement needs to have its visibility picklist altered -->
+		<FilterElement name="NamedElement" type="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}">
+			<FilterOp name="modify" xpath="Visibility" values="public|protected|private|package"/>
+		</FilterElement>
+		<!-- UML does not support the listed fields, so any element that is a StructuralFeature, remove them -->
+		<FilterElement name="Attribute" type="{53B27B52-8971-4b72-9C09-B2938618198B}">
+			<FilterOp name="remove" xpath="HeapBased"/>
+			<FilterOp name="remove" xpath="IsWithEvents"/>
+		</FilterElement>
+		<!-- UML does not support the listed fields, so any element that is a Operation, remove them -->
+		<FilterElement name="Operation" type="{50C47E0A-6AFF-4fe3-9D0A-E5BFBD7EB7F8}">
+			<FilterOp name="remove" xpath="IsFriend"/>
+			<FilterOp name="remove" xpath="IsProperty"/>
+			<FilterOp name="remove" xpath="IsStrictFP"/>
+			<FilterOp name="remove" xpath="Native"/>
+			<FilterOp name="remove" xpath="IsSubroutine"/>
+			<FilterOp name="remove" xpath="IsVirtual"/>
+			<FilterOp name="remove" xpath="IsOverride"/>
+			<FilterOp name="remove" xpath="IsDelegate"/>
+			<FilterOp name="remove" xpath="IsIndexer"/>
+		</FilterElement>
+	</Filter>
+	<!--  Filters for when the language of an element and/or project is VB -->
+	<Filter name="Visual Basic 6">
+		<!--  Any element that is a NamedElement needs to have its visibility picklist altered -->
+		<FilterElement name="NamedElement" type="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}">
+			<FilterOp name="modify" xpath="Visibility" values="public||private"/>
+		</FilterElement>
+		<!-- VB does not support the listed fields, so any element that is a StructuralFeature, remove them -->
+		<FilterElement name="Attribute" type="{53B27B52-8971-4b72-9C09-B2938618198B}">
+			<FilterOp name="modify" xpath="Visibility" values="Public|Dim|Private"/>
+		</FilterElement>
+		<!-- VB does not support the listed fields, so any element that is a Operation, remove them -->
+		<FilterElement name="Operation" type="{50C47E0A-6AFF-4fe3-9D0A-E5BFBD7EB7F8}">
+			<FilterOp name="modify" xpath="Visibility" values="Public|Friend|Private"/>
+			<FilterOp name="remove" xpath="IsStrictFP"/>
+			<FilterOp name="remove" xpath="Native"/>
+			<FilterOp name="remove" xpath="IsVirtual"/>
+			<FilterOp name="remove" xpath="IsOverride"/>
+			<FilterOp name="remove" xpath="IsDelegate"/>
+			<FilterOp name="remove" xpath="IsIndexer"/>
+		</FilterElement>
+		<!-- VB does not support the listed fields, so any element that is an Interface, remove them -->
+		<FilterElement name="Interface" type="{FC1154D5-0956-482D-ABB9-CBE846696224}">
+			<FilterOp name="remove" xpath="Abstract"/>
+		</FilterElement>
+	</Filter>
+	<!--  Filters for when the language of an element and/or project is C++ -->
+	<Filter name="C++">
+		<!--  Any element that is a NamedElement needs to have its visibility picklist altered -->
+		<FilterElement name="NamedElement" type="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}">
+			<FilterOp name="modify" xpath="Visibility" values="public|protected|private"/>
+		</FilterElement>
+		<!-- C++ does not support the listed fields, so any element that is a StructuralFeature, remove them -->
+		<FilterElement name="Attribute" type="{53B27B52-8971-4b72-9C09-B2938618198B}">
+			<FilterOp name="remove" xpath="HeapBased"/>
+			<FilterOp name="remove" xpath="IsWithEvents"/>
+		</FilterElement>
+		<!-- C++ does not support the listed fields, so any element that is a Operation, remove them -->
+		<FilterElement name="Operation" type="{50C47E0A-6AFF-4fe3-9D0A-E5BFBD7EB7F8}">
+			<FilterOp name="remove" xpath="IsStrictFP"/>
+			<FilterOp name="remove" xpath="Native"/>
+			<FilterOp name="remove" xpath="IsSubroutine"/>
+			<FilterOp name="remove" xpath="IsOverride"/>
+			<FilterOp name="remove" xpath="IsDelegate"/>
+			<FilterOp name="remove" xpath="IsIndexer"/>
+		</FilterElement>
+	</Filter>
+	<!--  Filters for when the language of an element and/or project is C++ -->
+	<Filter name="C#">
+		<!--  Any element that is a NamedElement needs to have its visibility picklist altered -->
+		<FilterElement name="NamedElement" type="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}">
+			<FilterOp name="modify" xpath="Visibility" values="public|protected|private"/>
+		</FilterElement>
+		<!-- C# does not support the listed fields, so any element that is a StructuralFeature, remove them -->
+		<FilterElement name="Attribute" type="{53B27B52-8971-4b72-9C09-B2938618198B}">
+			<FilterOp name="remove" xpath="HeapBased"/>
+			<FilterOp name="remove" xpath="IsWithEvents"/>
+		</FilterElement>
+		<!-- C# does not support the listed fields, so any element that is a Operation, remove them -->
+		<FilterElement name="Operation" type="{50C47E0A-6AFF-4fe3-9D0A-E5BFBD7EB7F8}">
+			<FilterOp name="remove" xpath="IsStrictFP"/>
+			<FilterOp name="remove" xpath="Native"/>
+			<FilterOp name="remove" xpath="IsSubroutine"/>
+		</FilterElement>
+		<!-- C# does not support the listed fields, so any element that is an Interface, remove them -->
+		<FilterElement name="Interface" type="{FC1154D5-0956-482D-ABB9-CBE846696224}">
+			<FilterOp name="remove" xpath="Abstract"/>
+		</FilterElement>
+	</Filter>
+</PropertyDefinitionFilters>

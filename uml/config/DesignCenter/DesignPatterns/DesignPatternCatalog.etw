@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<EMBT:Workspace xmlns:EMBT="www.sun.com" version="1.0" name="DesignPatternCatalog">
+  <EMBT:WSProject baseDirectory=".\EJB1.1" name="EJB1.1">
+    <EMBT:WSElement href="./EJB1.1/EJB1_1.etpat" name="_MetaData__" data="DCE.351FE6C9-F308-4CC7-8FB3-FDD6C44BFFF1"/>
+  </EMBT:WSProject>
+  <EMBT:WSProject baseDirectory=".\EJB2.0" name="EJB2.0">
+    <EMBT:WSElement href="./EJB2.0/EJB2_0.etpat" name="_MetaData__" data="DCE.41C4F032-84A8-41F1-B7D6-A293569FEC3E"/>
+  </EMBT:WSProject>
+  <EMBT:WSProject baseDirectory=".\GoF" name="GoF Design Patterns">
+    <EMBT:WSElement href="./GoF/GoF.etpat" name="_MetaData__" data="DCE.301410E1-25C6-4A4E-BC54-761DA7E61BA9"/>
+  </EMBT:WSProject>
+</EMBT:Workspace>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PropertyEditorFilter>
+	<Common>
+		<Item name="Data" displayName="PSK_DATA"/>
+		<Item name="All" displayName="PSK_ALL"/>
+		<Item name="Name" displayName="PSK_NAME"/>
+		<Item name="Visibility" displayName="PSK_VISIBILITY"/>
+	</Common>
+	<Other>
+		<Item name="Abstract" displayName="PSK_ABSTRACT"/>
+		<Item name="Alias" displayName="PSK_ALIAS"/>
+		<Item name="Body" displayName="PSK_BODY"/>
+		<Item name="ClientChangeability" displayName="PSK_CLIENTCHANGEABILITY"/>
+		<Item name="Concurrency" displayName="PSK_CONCURRENCY"/>
+		<Item name="Default" displayName="PSK_PARAMDEFAULT"/>
+		<Item name="DefaultLanguage" displayName="PSK_DEFAULTLANGUAGE"/>
+		<Item name="Direction" displayName="PSK_DIRECTION"/>
+		<Item name="Documentation" displayName="PSK_DOCUMENTATION"/>
+		<Item name="Final" displayName="PSK_FINAL"/>
+		<Item name="IsComposite" displayName="PSK_COMPOSITE"/>
+		<Item name="IsDerived" displayName="PSK_ISDERIVED"/>
+		<Item name="IsNavigable" displayName="PSK_NAVIGABLE"/>
+		<Item name="IsOrdered" displayName="PSK_ORDERED"/>
+		<Item name="IsReflexive" displayName="PSK_ISREFLEXIVE"/>
+		<Item name="IsStatic" displayName="PSK_ISSTATIC"/>
+		<Item name="Language" displayName="PSK_LANGUAGE"/>
+		<Item name="LayoutStyle" displayName="PSK_LAYOUTSTYLE"/>
+		<Item name="Leaf" displayName="PSK_LEAF"/>
+		<Item name="Lower" displayName="PSK_LOWER"/>
+		<Item name="MessageKind" displayName="PSK_MESSAGEKIND"/>
+		<Item name="Mode" displayName="PSK_MODE"/>
+		<Item name="Namespace" displayName="PSK_NAMESPACE"/>
+		<Item name="Native" displayName="PSK_NATIVE"/>
+		<Item name="Ordering" displayName="PSK_ORDERING"/>
+		<Item name="Query" displayName="PSK_QUERY"/>
+		<Item name="ReturnType" displayName="PSK_RETURNTYPE"/>
+		<Item name="Transient" displayName="PSK_TRANSIENT"/>
+		<Item name="Type" displayName="PSK_TYPE"/>
+		<Item name="Upper" displayName="PSK_UPPER"/>
+		<Item name="VersionedFileName" displayName="PSK_VERSIONEDFILENAME"/>
+		<Item name="Volatile" displayName="PSK_VOLATILE"/>
+	</Other>
+</PropertyEditorFilter>

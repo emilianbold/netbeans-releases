@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="WINDOWS-1252"?>
+<TSX edition="Java Edition" product="Tom Sawyer Visualization" version="6.0.1">
+<graphManager id="4">
+<resources>
+<shapes>
+<rectangleShape id="0"/>
+</shapes>
+<fonts>
+<font id="1">
+<name value="SansSerif"/>
+<bold value="false"/>
+<italic value="false"/>
+<fontHeight value="10"/>
+</font>
+<font id="2">
+<name value="SansSerif"/>
+<bold value="false"/>
+<italic value="false"/>
+<fontHeight value="7"/>
+</font>
+<font id="3">
+<name value="Arial"/>
+<bold value="false"/>
+<italic value="false"/>
+<fontHeight value="12"/>
+</font>
+</fonts>
+</resources>
+<instances>
+<graphs>
+<graph id="5">
+<name/>
+<nodes>
+<node id="6">
+<name/>
+<center x="-539.7158380794576" y="-214.8829190397288"/>
+<size height="219.0" width="262.0"/>
+<originalSize height="219.0" width="262.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="1"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.22DAEC3C-EAC8-91F8-3C5F-12127D659076"/>
+</graphics>
+</node>
+<node id="7">
+<name/>
+<center x="-210.11583807945766" y="-214.8829190397288"/>
+<size height="199.0" width="253.9999999999999"/>
+<originalSize height="199.0" width="254.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="1"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.DC7E5B1E-81CA-B078-546E-AABA2407446A"/>
+</graphics>
+</node>
+<node id="8">
+<name/>
+<center x="172.88416192054228" y="-214.8829190397288"/>
+<size height="199.0" width="322.0"/>
+<originalSize height="199.0" width="322.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="1"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.E0793D4C-D6DD-6505-7E45-C744B89A2308"/>
+</graphics>
+</node>
+<node id="9">
+<name/>
+<center x="172.88416192054228" y="417.91708096027116"/>
+<size height="139.0" width="218.0"/>
+<originalSize height="139.0" width="218.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="1"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.BE45EC2E-D528-6039-6880-7C103C5B9318"/>
+</graphics>
+</node>
+<node id="10">
+<name/>
+<center x="564.8841619205423" y="-214.8829190397288"/>
+<size height="179.0" width="298.0"/>
+<originalSize height="179.0" width="298.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="1"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.05E16DE8-49F0-197C-778C-DE1181184674"/>
+</graphics>
+</node>
+<node id="11">
+<name/>
+<center x="-210.11583807945766" y="417.91708096027116"/>
+<size height="71.0" width="386.9999999999999"/>
+<originalSize height="71.0" width="387.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="2"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.0988B804-87AD-87D5-A368-B400704E1552"/>
+</graphics>
+</node>
+<node id="12">
+<name/>
+<center x="-539.7158380794576" y="125.51708096027119"/>
+<size height="115.0" width="159.0"/>
+<originalSize height="115.0" width="159.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="3"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.81E63350-A4B2-13CE-9836-C2D27C34ADE4"/>
+</graphics>
+</node>
+<node id="13">
+<name/>
+<center x="172.88416192054228" y="125.51708096027119"/>
+<size height="315.0" width="322.0"/>
+<originalSize height="315.0" width="322.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="3"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.C42E9730-DBCF-FA4A-AE58-516A961C3BD4"/>
+</graphics>
+</node>
+<node id="14">
+<name/>
+<center x="-210.11583807945766" y="125.51708096027119"/>
+<size height="135.0" width="203.0"/>
+<originalSize height="135.0" width="203.0"/>
+<shape resource="0"/>
+<url/>
+<visible value="true"/>
+<resizability value="RESIZABILITY_NO_FIT"/>
+<graphics type="ETGenericNodeUI">
+<fillColor value="204 204 204"/>
+<borderColor value="0 0 0"/>
+<transparent value="false"/>
+<drawBorder value="true"/>
+<textFont resource="3"/>
+<textColor value="0 0 0"/>
+<justification value="CENTER"/>
+<childGraphMark value="true"/>
+<PEID value="DCE.6B587DD8-2407-8C85-CEBB-4A8F4CBC355C"/>
+</graphics>
+</node>
+</nodes>
+<edges>
+<edge id="15" source="12" target="6">
+<sourceClipping/>
+<targetClipping/>
+<url/>
+<visible value="true"/>
+<graphics type="basicEdge">
+<lineColor value="0 0 0"/>
+<arrowWidth value="6.0"/>
+<arrowHeight value="6.0"/>
+<arrowType value="NO_ARROW"/>
+<bendWidth value="5.0"/>
+<bendHeight value="5.0"/>
+<antiAliasing value="false"/>
+<PEID value="DCE.2433850F-1CBF-F947-B06F-D0E727A944F0"/>
+</graphics>
+</edge>
+<edge id="16" source="14" target="7">
+<sourceClipping/>
+<targetClipping/>
+<url/>
+<visible value="true"/>
+<graphics type="basicEdge">
+<lineColor value="0 0 0"/>
+<arrowWidth value="6.0"/>
+<arrowHeight value="6.0"/>
+<arrowType value="NO_ARROW"/>
+<bendWidth value="5.0"/>
+<bendHeight value="5.0"/>
+<antiAliasing value="false"/>
+<PEID value="DCE.554FD312-F70C-81ED-BC0B-629CC153EE57"/>
+</graphics>
+</edge>
+<edge id="17" source="13" target="8">
+<sourceClipping/>
+<targetClipping/>
+<url/>
+<visible value="true"/>
+<graphics type="basicEdge">
+<lineColor value="0 0 0"/>
+<arrowWidth value="6.0"/>
+<arrowHeight value="6.0"/>
+<arrowType value="NO_ARROW"/>
+<bendWidth value="5.0"/>
+<bendHeight value="5.0"/>
+<antiAliasing value="false"/>
+<PEID value="DCE.B971F21D-56A3-B43A-B539-3FF2FBBCE222"/>
+</graphics>
+</edge>
+<edge id="18" source="9" target="13">
+<sourceClipping/>
+<targetClipping/>
+<url/>
+<visible value="true"/>
+<graphics type="basicEdge">
+<lineColor value="0 0 0"/>
+<arrowWidth value="6.0"/>
+<arrowHeight value="6.0"/>
+<arrowType value="NO_ARROW"/>
+<bendWidth value="5.0"/>
+<bendHeight value="5.0"/>
+<antiAliasing value="false"/>
+<PEID value="DCE.9E78F9A6-5AEC-622F-B943-C0F8470E246A"/>
+</graphics>
+</edge>
+<edge id="19" source="13" target="10">
+<sourceClipping/>
+<targetClipping/>
+<url/>
+<visible value="true"/>
+<graphics type="basicEdge">
+<lineColor value="0 0 0"/>
+<arrowWidth value="6.0"/>
+<arrowHeight value="6.0"/>
+<arrowType value="NO_ARROW"/>
+<bendWidth value="5.0"/>
+<bendHeight value="5.0"/>
+<antiAliasing value="false"/>
+<PEID value="DCE.12BF7AE1-9E5A-518B-3359-4D3E558DDEAE"/>
+</graphics>
+</edge>
+<edge id="20" source="11" target="12">
+<sourceClipping/>
+<targetClipping/>
+<url/>
+<visible value="true"/>
+<graphics type="basicEdge">
+<lineColor value="0 0 0"/>
+<arrowWidth value="6.0"/>
+<arrowHeight value="6.0"/>
+<arrowType value="NO_ARROW"/>
+<bendWidth value="5.0"/>
+<bendHeight value="5.0"/>
+<antiAliasing value="false"/>
+<PEID value="DCE.7046C7A6-257F-D6C4-2055-958CEC1CCFC5"/>
+</graphics>
+</edge>
+<edge id="21" source="11" target="13">
+<sourceClipping/>
+<targetClipping/>
+<url/>
+<visible value="true"/>
+<graphics type="basicEdge">
+<lineColor value="0 0 0"/>
+<arrowWidth value="6.0"/>
+<arrowHeight value="6.0"/>
+<arrowType value="NO_ARROW"/>
+<bendWidth value="5.0"/>
+<bendHeight value="5.0"/>
+<antiAliasing value="false"/>
+<PEID value="DCE.B05A8015-F39C-4F9C-3E74-A823311474D4"/>
+</graphics>
+</edge>
+<edge id="22" source="11" target="14">
+<sourceClipping/>
+<targetClipping/>
+<url/>
+<visible value="true"/>
+<graphics type="basicEdge">
+<lineColor value="0 0 0"/>
+<arrowWidth value="6.0"/>
+<arrowHeight value="6.0"/>
+<arrowType value="NO_ARROW"/>
+<bendWidth value="5.0"/>
+<bendHeight value="5.0"/>
+<antiAliasing value="false"/>
+<PEID value="DCE.5A8CBB52-88DB-628D-3928-E0F0F84FFFB0"/>
+</graphics>
+</edge>
+</edges>
+<margins>
+<proportional bottom="0.0" left="0.0" right="0.0" top="0.0"/>
+<constant bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+</margins>
+<url/>
+<graphics type="basicGraph">
+<backgroundColor value="255 255 255"/>
+<imageUsed/>
+<imageTiled value="false"/>
+<imageStyle value="WORLD_OFFSET"/>
+<imageMinTileStep value="25"/>
+<imageX value="0.0"/>
+<imageY value="0.0"/>
+<drawNodesBeforeEdges value="true"/>
+</graphics>
+</graph>
+</graphs>
+<rootGraph value="5"/>
+</instances>
+</graphManager>
+<serviceInput type="jlayout">
+<defaults>
+<optionDefaults type="connector">
+<optionDefault name="all:all:connector:movable" value="false"/>
+</optionDefaults>
+<optionDefaults type="node">
+<optionDefault name="layout:all:node:embedded" value="true"/>
+<optionDefault name="all:all:node:attachmentSide" value="ATTACHMENT_SIDE_ANY"/>
+<optionDefault name="layout:symmetric:node:constrained" value="false"/>
+<optionDefault name="routing:all:node:fixedSize" value="false"/>
+<optionDefault name="routing:all:node:fixedPosition" value="false"/>
+</optionDefaults>
+<optionDefaults type="edge">
+<optionDefault name="layout:all:edge:embedded" value="true"/>
+<optionDefault name="layout:symmetric:edge:desiredLength" value="1.0"/>
+<optionDefault name="all:all:edge:sourceAttachmentSide" value="ATTACHMENT_SIDE_ANY"/>
+<optionDefault name="all:all:edge:targetAttachmentSide" value="ATTACHMENT_SIDE_ANY"/>
+</optionDefaults>
+<optionDefaults type="edgeLabel">
+<optionDefault name="labeling:all:edgeLabel:fixed" value="false"/>
+<optionDefault name="labeling:all:edgeLabel:association" value="EDGE_LABEL_ASSOCIATION_CENTER"/>
+<optionDefault name="labeling:all:edgeLabel:region" value="EDGE_LABEL_REGION_ANY"/>
+</optionDefaults>
+<optionDefaults type="graph">
+<optionDefault name="layout:orthogonal:graph:aspectRatio" value="0.0"/>
+<optionDefault name="layout:orthogonal:graph:verticalSpacingBetweenNodes" value="20.0"/>
+<optionDefault name="layout:symmetric:graph:nodeSpacing" value="10.0"/>
+<optionDefault name="layout:hierarchical:graph:horizontalSpacingBetweenEdges" value="12.0"/>
+<optionDefault name="layout:all:graph:incrementalCompaction" value="true"/>
+<optionDefault name="layout:all:graph:componentProportionalSpacing" value="0.05"/>
+<optionDefault name="layout:all:graph:disconnectedNodesConstantSpacing" value="20.0"/>
+<optionDefault name="layout:hierarchical:graph:levelDirection" value="DIRECTION_TOP_TO_BOTTOM"/>
+<optionDefault name="layout:hierarchical:graph:constantHorizontalSpacingBetweenNodes" value="20.0"/>
+<optionDefault name="layout:hierarchical:graph:orthogonalRouting" value="false"/>
+<optionDefault name="layout:hierarchical:graph:levelAlignment" value="CENTER_ALIGNED"/>
+<optionDefault name="layout:orthogonal:graph:keepNodeSizes" value="false"/>
+<optionDefault name="layout:hierarchical:graph:proportionalHorizontalSpacingBetweenNodes" value="0.1"/>
+<optionDefault name="layout:all:graph:detectDisconnectedNodes" value="true"/>
+<optionDefault name="layout:hierarchical:graph:proportionalVerticalSpacingBetweenNodes" value="0.1"/>
+<optionDefault name="layout:orthogonal:graph:horizontalSpacingBetweenEdges" value="12.0"/>
+<optionDefault name="layout:all:graph:detectComponents" value="true"/>
+<optionDefault name="layout:hierarchical:graph:constantVerticalSpacingBetweenNodes" value="20.0"/>
+<optionDefault name="layout:hierarchical:graph:edgeSpacing" value="12.0"/>
+<optionDefault name="layout:symmetric:graph:quality" value="LAYOUT_QUALITY_MEDIUM"/>
+<optionDefault name="layout:orthogonal:graph:quality" value="LAYOUT_QUALITY_MEDIUM"/>
+<optionDefault name="layout:hierarchical:graph:verticalSpacingBetweenEdges" value="12.0"/>
+<optionDefault name="layout:all:graph:componentAspectRatio" value="1.0"/>
+<optionDefault name="layout:hierarchical:graph:undirected" value="false"/>
+<optionDefault name="layout:symmetric:graph:randomSeed" value="1"/>
+<optionDefault name="layout:orthogonal:graph:verticalSpacingBetweenEdges" value="12.0"/>
+<optionDefault name="layout:orthogonal:graph:useCombLabeling" value="true"/>
+<optionDefault name="layout:all:graph:disconnectedNodesProportionalSpacing" value="0.05"/>
+<optionDefault name="layout:all:graph:layoutStyle" value="LAYOUT_STYLE_HIERARCHICAL"/>
+<optionDefault name="layout:hierarchical:graph:keepNodeSizes" value="false"/>
+<optionDefault name="layout:orthogonal:graph:strictIncremental" value="false"/>
+<optionDefault name="layout:all:graph:componentConstantSpacing" value="20.0"/>
+<optionDefault name="layout:orthogonal:graph:horizontalSpacingBetweenNodes" value="20.0"/>
+<optionDefault name="layout:hierarchical:graph:variableLevelSpacing" value="true"/>
+<optionDefault name="layout:hierarchical:graph:quality" value="LAYOUT_QUALITY_MEDIUM"/>
+</optionDefaults>
+<optionDefaults type="connectorLabel">
+<optionDefault name="labeling:all:connectorLabel:fixed" value="false"/>
+<optionDefault name="labeling:all:connectorLabel:region" value="CONNECTOR_LABEL_REGION_ANY"/>
+</optionDefaults>
+<optionDefaults type="nodeLabel">
+<optionDefault name="labeling:all:nodeLabel:region" value="NODE_LABEL_REGION_ANY"/>
+<optionDefault name="labeling:all:nodeLabel:location" value="NODE_LABEL_LOCATION_CENTER"/>
+<optionDefault name="labeling:all:nodeLabel:fixed" value="false"/>
+<optionDefault name="labeling:all:nodeLabel:orientation" value="NODE_LABEL_ORIENTATION_OUTSIDE"/>
+</optionDefaults>
+<optionDefaults type="graphManager">
+<optionDefault name="layout:all:graphManager:horizontalSpacingBetweenIntergraphEdges" value="12.0"/>
+<optionDefault name="routing:all:graphManager:horizontalSpacingBetweenNodes" value="20.0"/>
+<optionDefault name="routing:all:graphManager:fixedSize" value="true"/>
+<optionDefault name="routing:all:graphManager:verticalSpacingBetweenNodes" value="20.0"/>
+<optionDefault name="routing:all:graphManager:fixedPosition" value="true"/>
+<optionDefault name="layout:all:graphManager:verticalSpacingBetweenIntergraphEdges" value="12.0"/>
+<optionDefault name="layout:all:graphManager:incrementalLayout" value="false"/>
+<optionDefault name="routing:all:graphManager:horizontalSpacingBetweenEdges" value="12.0"/>
+<optionDefault name="routing:all:graphManager:verticalSpacingBetweenEdges" value="12.0"/>
+<optionDefault name="all:all:graphManager:performLabeling" value="true"/>
+</optionDefaults>
+</defaults>
+<option context="none" name="all:all:none:graphManager" value="4"/>
+</serviceInput>
+<preferences>
+<preference name="maximumZoomLevel" value="50.0"/>
+<preference name="interactiveZoomSensitivity" value="200.0"/>
+<preference name="panningSensitivity" value="1.0"/>
+<preference name="preventResizeInversion" value="false"/>
+<preference name="drawInvisibleOnDragging" value="false"/>
+<preference name="compressMetaEdges" value="true"/>
+<preference name="edgeNavigationTripDuration" value="300"/>
+<preference name="edgeNavigationFrameCount" value="10"/>
+<preference name="autoHideScrollbars" value="true"/>
+<preference name="hitToleranceThreshold" value="10"/>
+<preference name="opaqueMovement" value="false"/>
+<preference name="geometricAdjustment" value="true"/>
+<preference name="reconnectEdgeSensitivity" value="10.0"/>
+<preference name="edgeNavigationBlinkDuration" value="500"/>
+<preference name="undoStackSize" value="50"/>
+<preference name="minimumZoomLevel" value="1.0E-4"/>
+<preference name="inPlaceEditing" value="true"/>
+<preference name="tooltipsEnabled" value="true"/>
+<preference name="hitTolerance" value="2"/>
+<preference name="partialSelection" value="true"/>
+</preferences>
+</TSX>

@@ -1,0 +1,264 @@
+<?xml version="1.0"?>
+<Language type="Java" caseSensitive="true">
+	<DataTypes>
+		<DataType name="int" type="primitive" uml="Integer" scope="global" default_value="0" attributedefault="true"/>
+		<DataType name="long" type="primitive" uml="Long" scope="global" default_value="0L"/>
+		<DataType name="short" type="primitive" uml="Short" scope="global" default_value="0"/>
+		<DataType name="byte" type="primitive" uml="Byte" scope="global" default_value="0"/>
+		<DataType name="char" type="primitive" uml="Character" scope="global" default_value="'\u0000'"/>
+		<DataType name="float" type="primitive" uml="Float" scope="global" default_value="0.0f"/>
+		<DataType name="double" type="primitive" uml="Double" scope="global" default_value="0.0d"/>
+		<DataType name="boolean" type="primitive" uml="Boolean" scope="global" default_value="false"/>
+		<DataType name="void" type="primitive" uml="Void" scope="global" operationdefault="true"/>
+	</DataTypes>
+        <Collections>
+            <Collection name="ArrayList" package="java.util" userdefined="false" default="true"/>
+            <Collection name="AbstractCollection" package="java.util" userdefined="false"/>
+            <Collection name="AbstractQueue" package="java.util" userdefined="false"/>
+            <Collection name="AbstractSequentialList" package="java.util" userdefined="false"/>
+            <Collection name="ArrayBlockingQueue" package="java.util.concurrent" userdefined="false"/>
+            <Collection name="AttributeList" package="javax.management" userdefined="false"/>
+            <Collection name="BeanContextServicesSupport" package="javax.management" userdefined="false"/>
+            <Collection name="BeanContextSupport" package="java.beans.beancontext" userdefined="false"/>
+            <Collection name="ConcurrentLinkedQueue" package="java.util.concurrent" userdefined="false"/>
+            <Collection name="CopyOnWriteArrayList" package="java.util.concurrent" userdefined="false"/>
+            <Collection name="CopyOnWriteArraySet" package="java.util.concurrent" userdefined="false"/>
+            <Collection name="DelayQueue" package="java.util.concurrent" userdefined="false"/>
+            <Collection name="EnumSet" package="java.util" userdefined="false"/>
+            <Collection name="HashSet" package="java.util" userdefined="false"/>
+            <Collection name="JobStateReasons" package="javax.print.attribute.standard" userdefined="false"/>
+            <Collection name="LinkedBlockingQueue" package="java.util.concurrent" userdefined="false"/>
+            <Collection name="LinkedHashSet" package="java.util" userdefined="false"/>
+            <Collection name="LinkedList" package="java.util" userdefined="false"/>
+            <Collection name="PriorityBlockingQueue" package="java.util.concurrent" userdefined="false"/>
+            <Collection name="PriorityQueue" package="java.util" userdefined="false"/>
+            <Collection name="RoleList" package="javax.management.relation" userdefined="false"/>
+            <Collection name="RoleUnresolvedList" package="javax.management.relation" userdefined="false"/>
+            <Collection name="Stack" package="java.util" userdefined="false"/>
+            <Collection name="SynchronousQueue" package="java.util.concurrent" userdefined="false"/>
+            <Collection name="TreeSet" package="java.util" userdefined="false"/>
+            <Collection name="Vector" package="java.util" userdefined="false"/>
+            <Collection name="Collection" package="java.util" userdefined="false"/>
+            <Collection name="List" package="java.util" userdefined="false"/>
+            <Collection name="Set" package="java.util" userdefined="false"/>
+            <Collection name="BlockingDeque" package="java.util.concurrent " userdefined="false"/>
+            <Collection name="BlockingQueue" package="java.util.concurrent" userdefined="false"/>
+            <Collection name="Deque" package="java.util" userdefined="false"/>
+            <Collection name="NavigableSet" package="java.util" userdefined="false"/>
+            <Collection name="Queue" package="java.util" userdefined="false"/>
+            <Collection name="SortedSet" package="java.util" userdefined="false"/>
+            <Collection name="AbstractList" package="java.util" userdefined="false"/>
+            <Collection name="AbstractSet" package="java.util" userdefined="false"/>
+            <Collection name="ArrayDeque" package="java.util" userdefined="false"/>
+            <Collection name="ConcurrentSkipListSet" package="java.util.concurrent" userdefined="false"/>
+            <Collection name="LinkedBlockingDeque" package="java.util.concurrent" userdefined="false"/>
+        </Collections>
+	<Parsers>
+		<Parser name="Default" parser="org.netbeans.modules.uml.core.reverseengineering.parsers.javaparser.REJavaParser"/>
+	</Parsers>
+	<!-- The syntax section is used to specify the tokens that define the 
+             syntax of the java langauge.
+         -->
+	<Syntax>
+		<Token name="public" kind="Keyword" category="Modifier" type="Public Visibility"/>
+		<Token name="private" kind="Keyword" category="Modifier" type="Private Visibility"/>
+		<Token name="protected" kind="Keyword" category="Modifier" type="Protected Visibility"/>
+		<Token name="final" kind="Keyword" category="Modifier" type="Leaf"/>
+		<Token name="static" kind="Keyword" category="Modifier" type="OwnerScope"/>
+		<Token name="transient" kind="Keyword" category="Modifier" type="Transient"/>
+		<Token name="strictfp" kind="Keyword" category="Modifier" type="StrictFP"/>
+		<Token name="synchronized" kind="Keyword" category="Modifier" type="Guarded"/>
+		<Token name="volatile" kind="Keyword" category="Modifier" type="Volatile"/>
+		<Token name="abstract" kind="Keyword" category="Modifier" type="Abstract"/>
+		<Token name="native" kind="Keyword" category="Modifier" type="Native"/>
+		<Token name="class" kind="Keyword" category="Structure"/>
+		<Token name="interface" kind="Keyword" category="Structure"/>
+                <Token name="enum" kind="Keyword" category="Structure"/>
+		<Token name="package" kind="Keyword" category="Structure"/>
+		<Token name="if" kind="Keyword" category="Statement"/>
+		<Token name="else" kind="Keyword" category="Statement"/>
+		<Token name="while" kind="Keyword" category="Statement"/>
+		<Token name="do" kind="Keyword" category="Statement"/>
+		<Token name="break" kind="Keyword" category="Statement"/>
+		<Token name="case" kind="Keyword" category="Statement"/>
+		<Token name="catch" kind="Keyword" category="Statement"/>
+		<Token name="continue" kind="Keyword" category="Statement"/>
+		<Token name="default" kind="Keyword" category="Statement"/>
+		<Token name="extends" kind="Keyword" category="Statement"/>
+		<Token name="finally" kind="Keyword" category="Statement"/>
+		<Token name="for" kind="Keyword" category="Statement"/>
+		<Token name="goto" kind="Keyword" category="Statement"/>
+		<Token name="implements" kind="Keyword" category="Statement"/>
+		<Token name="import" kind="Keyword" category="Statement"/>
+		<Token name="instanceof" kind="Keyword" category="Statement"/>
+		<Token name="new" kind="Keyword" category="Statement"/>
+		<Token name="null" kind="Keyword" category="Statement"/>
+		<Token name="return" kind="Keyword" category="Statement"/>
+		<Token name="super" kind="Keyword" category="Statement"/>
+		<Token name="switch" kind="Keyword" category="Statement"/>
+		<Token name="this" kind="Keyword" category="Statement"/>
+		<Token name="throw" kind="Keyword" category="Statement"/>
+		<Token name="throws" kind="Keyword" category="Statement"/>
+		<Token name="try" kind="Keyword" category="Statement"/>
+		<Token name="const" kind="Keyword" category="Statement"/>
+                <Token name="assert" kind="Keyword" category="Statement"/>
+		<Token name="true" kind="Keyword" category="Statement"/>
+		<Token name="false" kind="Keyword" category="Statement"/>
+		<Token name="&lt;" kind="Operator" category="Equality"/>
+		<Token name="&gt;" kind="Operator" category="Equality"/>
+		<Token name="&lt;=" kind="Operator" category="Equality"/>
+		<Token name="&gt;=" kind="Operator" category="Equality"/>
+		<Token name="!" kind="Operator" category="Equality"/>
+		<Token name="&lt;&lt;" kind="Operator" category="Shift"/>
+		<Token name="&gt;&gt;" kind="Operator" category="Shift"/>
+		<Token name="&gt;&gt;&gt;" kind="Operator" category="Shift"/>
+		<Token name="&quot;" kind="Delimiter" category="String"/>
+		<Token name="'" kind="Delimiter" category="Character"/>
+	</Syntax>
+	<Contexts>
+		<Context kind="RoundTrip" instantiationDirective="org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javarpcomponent.JavaRequestProcessor"/>
+		<Context kind="CodeGeneration" instantiationDirective="JavaSupport.JavaCodeGenerator"/>
+		<Context kind="InsertionPointLocator" instantiationDirective="org.netbeans.modules.uml.core.roundtripframework.codegeneration.InsertionPointLocator"/>
+		<Context kind="ParserDataLocator" instantiationDirective="org.netbeans.modules.uml.core.roundtripframework.codegeneration.ParserDataLocator"/>
+	</Contexts>
+	<CodeGeneration>
+		<Script event="OperationCreated" location="..\scripts\java\java_operation.gt"/>
+		<Script event="OperationModified" location="..\scripts\java\java_operation_head.gt"/>
+		<Script event="AttributeCreated" location="..\scripts\java\java_attribute_create.gt"/>
+		<Script event="AttributeModified" location="..\scripts\java\java_attribute.gt"/>
+		<Script event="PackageModified" location="..\scripts\java\java_package_statement.gt"/>
+		<Script event="PackageCreated" location="..\scripts\java\java_package_statement.gt"/>
+		<Script event="ClassifierCreated" location="..\scripts\java\java_class_create.gt"/>
+		<Script event="ClassifierModified" location="..\scripts\java\java_class_modify.gt"/>
+		<Script event="ClassifierNamespaceChanged" location="..\scripts\java\java_package_statement.gt"/>
+		<Script event="DependencyCreated" location="..\scripts\java\java_import_statement.gt"/>
+		<Script event="AttributeDefaultChanged" location="..\scripts\java\java_attribute_default.gt"/>
+	</CodeGeneration>
+	<ExpansionVariables>
+		<ExpansionVar name="visibility" overrides="visibility" valueFilter="package=,=public"/>
+		<ExpansionVar name="abstract" overrides="abstract" valueFilter="true=abstract,false="/>
+		<ExpansionVar name="ownerQualifiedName" overrides="ownerQualifiedName" replaceFilter="::=."/>
+		<ExpansionVar name="static" overrides="static" valueFilter="true=static,false="/>
+		<ExpansionVar name="final" overrides="final" valueFilter="true=final,false="/>
+		<ExpansionVar name="isComplete" overrides="isComplete" valueFilter="true=final,false="/>
+		<ExpansionVar name="qualifiedName" overrides="ownerQualifiedName" replaceFilter="::=."/>
+		<ExpansionVar name="strictfp" overrides="strictfp" valueFilter="true=strictfp,false="/>
+		<ExpansionVar name="transient" overrides="transient" valueFilter="true=transient,false="/>
+		<ExpansionVar name="volatile" overrides="volatile" valueFilter="true=volatile,false="/>
+		<ExpansionVar name="native" overrides="native" valueFilter="true=native,false="/>
+		<ExpansionVar name="concurrency" overrides="concurrency" valueFilter="guarded=synchronized,concurrent=,sequential="/>
+	</ExpansionVariables>
+	<Libraries>
+                <Library name="JDK 1.6" path="Libraries\Java16"/>
+	</Libraries>
+	<SupportedFeatures>
+		<Feature name="Operation Reverse Engineering" value="true"/>
+	</SupportedFeatures>
+	<FormatDefinitions>
+            <FormatDefinition name="Attribute" file="JavaAttributeFormat.xsl"/>
+            <FormatDefinition name="Operation" file="JavaOperationFormat.xsl"/>
+            <FormatDefinition name="Parameter" file="JavaParameterFormat.xsl"/>
+            <FormatDefinition name="NamedElement" file="NamedElementFormat.xsl"/>
+
+		<PropertyDefinitions>
+			<PropertyDefinition id="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" name="Unknown">
+				<aDefinition pdref="DCE.4759E705-37B7-C0D2-B881-2BF44CD2928C"/>
+			</PropertyDefinition>
+			<PropertyDefinition xmi.id="DCE.4759E705-37B7-C0D2-B881-2BF44CD2928C" id="org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement" name="NamedElement" toolTip="PSK_NAMEDELEMENT">
+				<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement" name="NameWithAlias" toolTip="PSK_TT_NAME" required="false" enabled="true" visible="true" multiplicity="1" controlType="edit" get="getNameWithAlias" set="setNameWithAlias"/>
+			</PropertyDefinition>
+			<PropertyDefinition xmi.id="DCE.E784FC69-BFCE-E50F-3BA9-7C8E4065B6FF" id="org.netbeans.modules.uml.core.metamodel.core.constructs.IClass" name="Class" toolTip="PSK_NAMEDELEMENT">
+				<aDefinition id="org.netbeans.modules.uml.core.metamodel.core.constructs.IClass" name="NameWithAlias" toolTip="PSK_TT_NAME" required="false" enabled="true" visible="true" multiplicity="1" controlType="combo" get="getNameWithAlias" set="setNameWithAlias" values="#DataTypeList(Class)"/>
+			</PropertyDefinition>
+			<PropertyDefinition xmi.id="DCE.2B1DA90F-F564-AD11-EFD4-EF352600B4D0" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute" name="Attribute" toolTip="PSK_TT_ATTRIBUTE" required="false" enabled="true" multiplicity="1" create="createAttribute3" insert="addAttribute" delete="delete" values="FormatString">
+				<aDefinition name="Visibility" toolTip="PSK_TT_VISIBILITY" required="true" visible="true" enabled="true" multiplicity="1" controlType="list" get="getVisibility" set="setVisibility" values="PSK_PUBLIC|PSK_PROTECTED|PSK_PRIVATE|PSK_PEPACKAGE" default="false"/>
+				<!--aDefinition name="Stereotypes" toolTip="PSK_TT_STEREOTYPE" required="false" visible="notEmpty" enabled="true" multiplicity="*" controlType="" get="getAppliedStereotypes" leadSeparator=" &lt;&lt; " trailSeparator=" &gt;&gt;" delete="removeStereotypes" delimitor=", " default="false">
+					<DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
+					<aDefinition pdref2="DCE.407C9071-D389-AE3B-7042-AC1B1AFF22FA"/>
+				</aDefinition-->
+				<aDefinition name="Type" toolTip="PSK_TT_TYPE" required="true" visible="notEmpty" enabled="true" multiplicity="1" controlType="combo" get="getType" set="setType2" values="#DataTypeList" leadSeparator=" " default="false" inertStart="&lt;" inertEnd="&gt;" inertSeparators=", ">
+					<DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
+				</aDefinition>
+				<aDefinition name="NameWithAlias" toolTip="PSK_TT_NAME" required="false" visible="true" enabled="true" multiplicity="1" controlType="edit" get="getNameWithAlias" set="setNameWithAlias" leadSeparator=" " default="true"/>
+				<aDefinition name="Multiplicity" toolTip="PSK_TT_MULTIPLICITY" required="false" visible="notEmpty" enabled="false" multiplicity="*" controlType="read-only" get="getMultiplicity" set="setMultiplicity" values="FormatString" leadSeparator="[" default="false" trailSeparator="]">
+					<aDefinition pdref="DCE.CF6002A4-EF8E-C238-E9BD-77A06CED90DF"/>
+				</aDefinition>
+				<aDefinition name="Default" toolTip="PSK_TT_INITIALVALUE" required="false" visible="notEmpty" enabled="false" multiplicity="1" controlType="edit" get="getDefault2" set="setDefault2" leadSeparator=" = " default="false" inertSeparators="*"/>
+				<aDefinition name="TaggedValues" toolTip="PSK_TT_TAGGEDVALUES" required="false" visible="notEmpty" enabled="false" multiplicity="*" get="getTaggedValues" leadSeparator=" {" default="false" trailSeparator="}" delete="removeTaggedValue" delimitor=", ">
+					<aDefinition pdref2="DCE.DCA6EB65-7F66-ECF1-E72D-FC1EC2E06606" onDemand="true"/>
+				</aDefinition>
+			</PropertyDefinition>
+			<PropertyDefinition xmi.id="DCE.315D1F5C-3EF9-5908-0D3D-3429712ABB2D" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation" name="Operation" toolTip="PSK_TT_OPERATION" required="false" enabled="true" multiplicity="1" create="createOperation3" insert="addOperation" delete="delete" values="FormatString">
+				<aDefinition name="Visibility" toolTip="PSK_TT_VISIBILITY" required="false" visible="true" enabled="true" multiplicity="1" controlType="list" get="getVisibility" set="setVisibility" values="PSK_PUBLIC|PSK_PROTECTED|PSK_PRIVATE|PSK_PEPACKAGE" default="false" dummyDefaultValue="+"/>
+				<!--aDefinition name="Stereotypes" toolTip="PSK_TT_STEREOTYPE" required="false" visible="notEmpty" enabled="true" multiplicity="*" controlType="" get="getAppliedStereotypes" leadSeparator=" &lt;&lt; " trailSeparator=" &gt;&gt;" delete="removeStereotypes" delimitor=", " default="false">
+					<DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
+					<aDefinition pdref2="DCE.407C9071-D389-AE3B-7042-AC1B1AFF22FA"/>
+				</aDefinition-->
+				<aDefinition name="ReturnType" toolTip="PSK_TT_RETURNTYPE" required="false" visible="notEmpty" enabled="true" multiplicity="1" controlType="read-only" get="getReturnType" set="setReturnType" values="FormatString" leadSeparator=" " dummyDefaultValue="void" trailSeparator=" " >
+					<aDefinition pdref2="DCE.58CF6760-29FF-808C-FD2D-7E2DDC839126"/>
+				</aDefinition>
+				<aDefinition name="NameWithAlias" toolTip="PSK_TT_NAME" required="false" visible="true" enabled="true" multiplicity="1" controlType="edit" get="getNameWithAlias" set="setNameWithAlias" leadSeparator=" " default="true"/>
+				<aDefinition name="Parameters" toolTip="PSK_TT_PARAMETER" required="false" visible="true" enabled="true" multiplicity="*" get="getFormalParameters" set="setFormalParameters" leadSeparator="( " delimitor=", " trailSeparator=" )" delete="removeParameter" default="false">
+					<aDefinition pdref2="DCE.E58A4F06-958C-19F3-B9C2-987D950C73AA"/>
+				</aDefinition>
+				<aDefinition name="TaggedValues" toolTip="PSK_TT_TAGGEDVALUES" required="false" visible="notEmpty" enabled="false" multiplicity="*" get="getTaggedValues" leadSeparator=" {" default="false" trailSeparator="}" delete="removeTaggedValue" delimitor=", ">
+					<aDefinition pdref2="DCE.DCA6EB65-7F66-ECF1-E72D-FC1EC2E06606"/>
+				</aDefinition>
+			</PropertyDefinition>
+			<PropertyDefinition xmi.id="DCE.407C9071-D389-AE3B-7042-AC1B1AFF22FA" id="org.netbeans.modules.uml.core.metamodel.profiles" name="Stereotype" toolTip="PSK_TT_STEREOTYPE" required="false" multiplicity="1" create="applyStereotype2" identifier="Name">
+				<aDefinition name="Name" toolTip="PSK_TT_NAME" required="false" visible="notEmpty" enabled="true" multiplicity="1" controlType="combo" get="getName" set="setName" values="#DataTypeList(Stereotype)"/>
+			</PropertyDefinition>
+			<PropertyDefinition xmi.id="DCE.E58A4F06-958C-19F3-B9C2-987D950C73AA" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter" name="Parameter" toolTip="PSK_TT_PARAMETER" required="false" enabled="false" multiplicity="1" create="createParameter3" insert="addParameter" insertBefore="insertParameter" values="FormatString">
+				<!--aDefinition name="Direction" toolTip="PSK_TT_DIRECTION" required="false" visible="false" enabled="false" multiplicity="1" controlType="list" get="Direction" set="Direction" values="PSK_IN|PSK_INOUT|PSK_OUT" trailSeparator=" " default="false"/-->
+				<aDefinition name="Type" toolTip="PSK_TT_TYPE" required="true" visible="notEmpty" enabled="true" multiplicity="1" controlType="combo" get="getType" set="setType2" values="#DataTypeList" inertStart="&lt;" inertEnd="&gt;" inertSeparators=", ">
+					<DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
+				</aDefinition>
+				<aDefinition id="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" name="NameWithAlias" toolTip="PSK_TT_NAME" required="false" visible="notEmpty" enabled="true" multiplicity="1" controlType="edit" get="getNameWithAlias" set="setNameWithAlias" leadSeparator=" " default="true"/>
+				<aDefinition name="Multiplicity" toolTip="PSK_TT_MULTIPLICITY" required="false" visible="notEmpty" enabled="false" multiplicity="*" controlType="read-only" get="getMultiplicity" set="setMultiplicity" values="FormatString" leadSeparator="[" trailSeparator="]" default="false" dummyDefaultValue="">
+					<aDefinition pdref="DCE.CF6002A4-EF8E-C238-E9BD-77A06CED90DF"/>
+				</aDefinition>
+				<aDefinition name="Default" toolTip="PSK_TT_PARAMDEFAULT" required="false" visible="notEmpty" enabled="false" multiplicity="1" controlType="edit" get="getDefault2" set="setDefault2" leadSeparator=" = " default="false" inertSeparators="*"/>
+			</PropertyDefinition>
+			<PropertyDefinition xmi.id="DCE.58CF6760-29FF-808C-FD2D-7E2DDC839126" id="org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter" name="ReturnTypeParameter" toolTip="PSK_TT_RETURNTYPE" required="false" enabled="true" values="FormatString">
+				<aDefinition name="Type" toolTip="PSK_TT_TYPE" required="false" visible="notEmpty" enabled="true" multiplicity="1" controlType="combo" get="getType" set="setType2" values="#DataTypeList" default="true" dummyDefaultValue="int" inertStart="&lt;" inertEnd="&gt;" inertSeparators=", ">
+					<DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
+				</aDefinition>
+				<aDefinition name="Multiplicity" toolTip="PSK_TT_MULTIPLICITY" required="false" visible="notEmpty" enabled="false" multiplicity="*" controlType="read-only" get="getMultiplicity" set="setMultiplicity" values="FormatString" leadSeparator="[" trailSeparator="]" default="false">
+					<aDefinition pdref="DCE.CF6002A4-EF8E-C238-E9BD-77A06CED90DF"/>
+				</aDefinition>
+			</PropertyDefinition>
+			<PropertyDefinition xmi.id="DCE.CF6002A4-EF8E-C238-E9BD-77A06CED90DF" id="org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity" name="Multiplicity" toolTip="PSK_TT_MULTIPLICITY" required="false" enabled="false">
+				<aDefinition name="MultiplicityRanges" toolTip="PSK_TT_RANGES" required="false" visible="true" enabled="true" multiplicity="1" get="getRangeAsString" set="setRangeThroughString" default="true" inertSeparators=".,"/>
+			</PropertyDefinition>
+			<PropertyDefinition xmi.id="DCE.DCA6EB65-7F66-ECF1-E72D-FC1EC2E06606" id="org.netbeans.modules.uml.core.metamodel.core.foundation.ITaggedValue" name="TaggedValue" toolTip="PSK_TT_TAGGEDVALUE" required="false" enabled="false" multiplicity="1" create="addTaggedValue">
+				<aDefinition name="NameWithAlias" toolTip="PSK_TT_TVNAME" required="false" visible="true" enabled="true" multiplicity="1" controlType="edit" get="getNameWithAlias" set="setNameWithAlias" default="true"/>
+				<aDefinition name="Value" toolTip="PSK_TT_TVVALUE" required="false" visible="notEmpty" enabled="false" multiplicity="1" controlType="multiedit" get="getDataValue" set="setDataValue" leadSeparator="="/>
+			</PropertyDefinition>
+			<PropertyDefinition xmi.id="DCE.D2E5BC30-B5D9-03E6-30C8-631B794CC731" id="org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline" name="Lifeline" toolTip="PSK_LIFELINE">
+				<aDefinition name="NameWithAlias" toolTip="PSK_TT_LIFENAME" required="false" enabled="true" visible="notEmpty" multiplicity="1" controlType="edit" get="getNameWithAlias" set="setNameWithAlias"/>
+				<aDefinition name="RepresentingClassifier" toolTip="PSK_TT_REPRESENTINGCLASSIFIER" required="true" enabled="true" visible="true" get="getRepresentingClassifier" set="setRepresentingClassifierWithAlias" default="true" multiplicity="1" controlType="combo" values="#DataTypeList" leadSeparator=" : " validate="ADDiagramSequenceEngine.LifelineValidator">
+					<DispatchInvoke name="{1246690B-3BCF-4557-B7DF-A5FEAD3DA4AF}" get="getNameWithAlias"/>
+				</aDefinition>
+			</PropertyDefinition>
+			<PropertyDefinition xmi.id="DCE.0BEF1475-B8A2-857D-99DB-1DD8C2F86469" id="org.netbeans.modules.uml.core.metamodel.core.foundation.IExpression" name="Expression" toolTip="PSK_EXPRESSION">
+				<!--aDefinition pdref="Element"/-->
+				<aDefinition name="Body" toolTip="PSK_TT_EXPRESSION" required="false" visible="true" enabled="true" multiplicity="1" leadSeparator="[" trailSeparator="]" controlType="edit" get="getBody" set="setBody"/>
+				<!--aDefinition name="Language" displayName="PSK_LANGUAGE" required="false" multiplicity="1" controlType="edit" get="Language" set="Language"/-->
+			</PropertyDefinition>
+			<PropertyDefinition xmi.id="DCE.DF119439-7C05-7529-B820-18174B08F543" id="org.netbeans.modules.uml.core.metamodel.dynamicsIInteractionConstraint" name="InteractionConstraint" toolTip="PSK_TT_INTERACTIONCONSTRAINT">
+				<aDefinition pdref2="DCE.B296CFE4-6941-EF1A-D442-86C5997C7A17"/>
+			</PropertyDefinition>
+			<PropertyDefinition xmi.id="DCE.B296CFE4-6941-EF1A-D442-86C5997C7A17" id="org.netbeans.modules.uml.core.metamodel.core.foundation.IConstraint" name="Constraint" toolTip="PSK_CONSTRAINT" create="createConstraint" insert="addOwnedConstraint">
+				<aDefinition name="Expression" toolTip="PSK_TT_EXPRESSION" required="false" visible="true" enabled="true" multiplicity="1" leadSeparator="[" trailSeparator="]" controlType="edit" get="getExpression" set="setExpression"/>
+			</PropertyDefinition>
+			<PropertyDefinition xmi.id="DCE.462BE69C-33BA-D1B0-0642-A51E901141B9" id="org.netbeans.modules.uml.core.metamodel.structure.IComment" name="Comment" toolTip="PSK_TT_COMMENT">
+				<aDefinition name="Comment" required="false" visible="true" enabled="true" multiplicity="1" controlType="multiline" get="getBody" set="setBody"/>
+			</PropertyDefinition>
+			<!-- INSERT ABOVE HERE -->
+		</PropertyDefinitions>
+	</FormatDefinitions>
+	<Defaults>
+		<Default name="extension" value="java"/>
+		<Default name="UnknownDataType Initialization" value="null"/>
+	</Defaults>
+</Language>

@@ -1,0 +1,1 @@
+!%%%IfVar <test="useCollectionOverride" var="java_attribute_default_override.gt"><test="dontUseCollectionOverride" var="java_attribute_default_normal.gt">%%%!

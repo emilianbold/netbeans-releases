@@ -1,0 +1,83 @@
+<?xml version="1.0" ?> 
+<FacilityConfig>
+   <Facility name="UMLParser" progid="org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.UMLParser" singleton="true" >
+      <Description>The UMLParser is used parse a file and sends  XMI fragments events.  The XMI fragments represent the source code.  By using XMI fragments the listeners do not have to care about the details of a specific language.</Description>
+      <Properties>
+         <!-- ****************************************************************************** -->
+         <!-- ** Java Language Parser Ports                                               ** -->
+         <!-- ****************************************************************************** -->
+         <Property name="Java.StateListener" value="org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.JavaUMLParserProcessor"/>
+         <Property name="Java.TokenProcessor" value="org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.JavaUMLParserProcessor"/>
+         <Property name="Java.StateFilter" value="org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.JavaUMLParserProcessor"/>
+         <Property name="Java.TokenFilter" value="org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.JavaUMLParserProcessor"/>
+         <Property name="Java.ErrorListener" value="org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.ParserErrorListener"/>
+         <Property name="JavaOperation.TokenProcessor" value="org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.JavaOperationUMLParserProcessor"/>
+         <Property name="JavaOperation.StateFilter" value="org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.JavaOperationUMLParserProcessor"/>
+         <Property name="JavaOperation.StateListener" value="org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.JavaOperationUMLParserProcessor"/>
+         <Property name="JavaOperation.ErrorListener" value="org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.ParserErrorListener"/>
+	   <Property name="JavaOperation.Options" value="org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.JavaOperationUMLParserProcessor"/>
+
+	   <!-- ****************************************************************************** -->
+         <!-- ** C# Language Parser Ports                                               ** -->
+         <!-- ****************************************************************************** -->
+         <Property name="C#.StateListener" value="CSharpSupport.CSharpUMLParserProcessor"/>
+         <Property name="C#.TokenProcessor" value="CSharpSupport.CSharpUMLParserProcessor"/>
+         <Property name="C#.StateFilter" value="CSharpSupport.CSharpUMLParserProcessor"/>
+         <Property name="C#.TokenFilter" value="CSharpSupport.CSharpUMLParserProcessor"/>
+         <Property name="C#.ErrorListener" value="ParsingFacilities.ParserErrorListener"/>
+         <Property name="C#Operation.TokenProcessor" value="ParsingFacilities.JavaOperationUMLParserProcessor"/>
+         <Property name="C#Operation.StateFilter" value="ParsingFacilities.JavaOperationUMLParserProcessor"/>
+         <Property name="C#Operation.StateListener" value="ParsingFacilities.JavaOperationUMLParserProcessor"/>
+         <Property name="C#Operation.ErrorListener" value="ParsingFacilities.ParserErrorListener"/>
+	   <Property name="C#Operation.Options" value="ParsingFacilities.JavaOperationUMLParserProcessor"/> 
+
+
+         <!-- ****************************************************************************** -->
+         <!-- ** Visual Basic Language Parser Ports                                       ** -->
+         <!-- ****************************************************************************** -->
+         <Property name="Visual Basic 6.StateListener" value="ParsingFacilities.VBUMLParserProcessor"/>
+         <Property name="Visual Basic 6.TokenProcessor" value="ParsingFacilities.VBUMLParserProcessor"/>
+         <Property name="Visual Basic 6.StateFilter" value="ParsingFacilities.VBUMLParserProcessor"/>
+         <Property name="Visual Basic 6.TokenFilter" value="ParsingFacilities.VBUMLParserProcessor"/>
+         <Property name="Visual Basic 6.ErrorListener" value="ParsingFacilities.ParserErrorListener"/>
+
+         <Property name="Visual Basic 6Operation.TokenProcessor" value="ParsingFacilities.VBOperationUMLParserProcessor"/>
+         <Property name="Visual Basic 6Operation.StateFilter" value="ParsingFacilities.VBOperationUMLParserProcessor"/>
+         <Property name="Visual Basic 6Operation.StateListener" value="ParsingFacilities.VBOperationUMLParserProcessor"/>
+	   <Property name="Visual Basic 6Operation.Options" value="ParsingFacilities.VBOperationUMLParserProcessor"/> 
+         <Property name="Visual Basic 6Operation.ErrorListener" value="ParsingFacilities.ParserErrorListener"/>
+
+         <!-- ****************************************************************************** -->
+         <!-- ** C++ Language Parser Ports                                               ** -->
+         <!-- ****************************************************************************** -->
+         <Property name="C++.StateListener" value="TXLCPPParser.CPPUMLParserProcessor"/>
+         <Property name="C++.TokenProcessor" value="TXLCPPParser.CPPUMLParserProcessor"/>
+         <Property name="C++.StateFilter" value="TXLCPPParser.CPPUMLParserProcessor"/>
+         <Property name="C++.TokenFilter" value="TXLCPPParser.CPPUMLParserProcessor"/>
+         <Property name="C++.ErrorListener" value="ParsingFacilities.ParserErrorListener"/>
+
+
+         <Property name="BootStrap" value="org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.ParserBootstrap"/>
+         <Property name="OperationBootStrap" value="org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.ParserBootstrap"/>
+      </Properties>
+   </Facility>
+<!--
+   <Facility name="ReverseEngineering" progid="Visualizer.ReverseEngineering" singleton="false">
+      <Description>Parses source files to find elements that can be modeled in a UML system.  Diagrams will be created to represent that source code.</Description>
+      <Dependency name="UMLParser"/>
+      <Menu>
+         <MenuItem parent="Tools" clsid="ReverseEngineering.MenuItem"/>
+      </Menu>
+   </Facility>
+   <Facility name="SQDReverseEngineering" progid="Visualizer.SQDReverseEngineering" singleton="true">
+      <Description>Parses the contents of an operation add creates a Sequence Diagram that represent the operation.</Description>
+      <Dependency name="UMLParser"/>
+      <DiagramMenu>
+         <MenuItem parent="Tools" clsid="ReverseEngineering.DiagramMenuItem"/>
+      </DiagramMenu>
+      <SystemTreeMenu>
+         <MenuItem parent="Tools" clsid="ReverseEngineering.SystemTreeMenuItem"/>
+      </SystemTreeMenu>
+   </Facility>
+-->
+</FacilityConfig>

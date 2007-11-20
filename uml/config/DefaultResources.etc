@@ -1,0 +1,882 @@
+<?xml version="1.0"?>
+<EMBT:DefaultColors version="1.0" xmlns:EMBT="www.sun.com">
+	<Version>1</Version>
+	<defaultresource type="color" colorvalue="0,0,0"/>
+	<defaultresource type="font" facename="SansSerif" height="12" weight="400" colorvalue="0,0,0"/>
+	<SampleDiagrams>
+		<diagram type="activity" location="ActivityDiagram_1074895257.etld">
+			<standarddrawengine name="InvocationNodeDrawEngine"/>
+			<standarddrawengine name="ControlNodeDrawEngine"/>
+			<standarddrawengine name="ActivityEdgeDrawEngine"/>
+			<standarddrawengine name="ActivityGroupDrawEngine"/>
+			<standarddrawengine name="ObjectNodeDrawEngine"/>
+			<standarddrawengine name="PartitionDrawEngine"/>
+			<standarddrawengine name="DependencyEdgeDrawEngine"/>
+			<standarddrawengine name="CommentDrawEngine"/>
+			<standarddrawengine name="CommentEdgeDrawEngine"/>
+			<standarddrawengine name="GraphicDrawEngine"/>
+			<standarddrawengine name="ADLabelDrawEngine"/>
+		</diagram>
+		<diagram type="class" location="ClassDiagram_1074699624.etld">
+			<standarddrawengine name="ClassDrawEngine"/>
+			<standarddrawengine name="InterfaceDrawEngine"/>
+			<standarddrawengine name="PackageDrawEngine"/>
+			<standarddrawengine name="CollaborationLifelineDrawEngine"/>
+			<standarddrawengine name="ClassRobustnessDrawEngine"/>
+			<standarddrawengine name="EnumerationDrawEngine"/>
+			<standarddrawengine name="ClassNodeDrawEngine"/>
+			<standarddrawengine name="DataTypeDrawEngine"/>
+			<standarddrawengine name="ArtifactDrawEngine"/>
+			<standarddrawengine name="ActorDrawEngine"/>
+			<standarddrawengine name="GeneralizationEdgeDrawEngine"/>
+			<standarddrawengine name="DependencyEdgeDrawEngine"/>
+			<standarddrawengine name="ImplementationEdgeDrawEngine"/>
+			<standarddrawengine name="NestedLinkDrawEngine"/>
+			<standarddrawengine name="DerivationClassifierDrawEngine"/>
+			<standarddrawengine name="DerivationEdgeDrawEngine"/>
+			<standarddrawengine name="AssociationEdgeDrawEngine"/>
+			<standarddrawengine name="CollaborationDrawEngine"/>
+			<standarddrawengine name="PartFacadeEdgeDrawEngine"/>
+			<standarddrawengine name="CommentDrawEngine"/>
+			<standarddrawengine name="CommentEdgeDrawEngine"/>
+			<standarddrawengine name="GraphicDrawEngine"/>
+			<standarddrawengine name="ADLabelDrawEngine"/>
+		</diagram>
+		<diagram type="collaboration" location="CollaborationDiagram_1074895272.etld">
+			<standarddrawengine name="CollaborationLifelineDrawEngine"/>
+			<standarddrawengine name="ConnectorEdgeDrawEngine"/>
+			<standarddrawengine name="DependencyEdgeDrawEngine"/>
+			<standarddrawengine name="CommentDrawEngine"/>
+			<standarddrawengine name="CommentEdgeDrawEngine"/>
+			<standarddrawengine name="GraphicDrawEngine"/>
+			<standarddrawengine name="ADLabelDrawEngine"/>
+		</diagram>
+		<diagram type="component" location="ComponentDiagram_1074809903.etld">
+			<standarddrawengine name="ComponentDrawEngine"/>
+			<standarddrawengine name="ClassDrawEngine"/>
+			<standarddrawengine name="InterfaceDrawEngine"/>
+			<standarddrawengine name="PackageDrawEngine"/>
+			<standarddrawengine name="DeploymentSpecDrawEngine"/>
+			<standarddrawengine name="CollaborationLifelineDrawEngine"/>
+			<standarddrawengine name="ClassRobustnessDrawEngine"/>
+			<standarddrawengine name="EnumerationDrawEngine"/>
+			<standarddrawengine name="ClassNodeDrawEngine"/>
+			<standarddrawengine name="DataTypeDrawEngine"/>
+			<standarddrawengine name="ArtifactDrawEngine"/>
+			<standarddrawengine name="ActorDrawEngine"/>
+			<standarddrawengine name="GeneralizationEdgeDrawEngine"/>
+			<standarddrawengine name="DependencyEdgeDrawEngine"/>
+			<standarddrawengine name="ImplementationEdgeDrawEngine"/>
+			<standarddrawengine name="NestedLinkDrawEngine"/>
+			<standarddrawengine name="DerivationClassifierDrawEngine"/>
+			<standarddrawengine name="DerivationEdgeDrawEngine"/>
+			<standarddrawengine name="AssociationEdgeDrawEngine"/>
+			<standarddrawengine name="CollaborationDrawEngine"/>
+			<standarddrawengine name="UseCaseDrawEngine"/>
+			<standarddrawengine name="PartFacadeEdgeDrawEngine"/>
+			<standarddrawengine name="CommentDrawEngine"/>
+			<standarddrawengine name="CommentEdgeDrawEngine"/>
+			<standarddrawengine name="GraphicDrawEngine"/>
+			<standarddrawengine name="ADLabelDrawEngine"/>
+			<standarddrawengine name="PortDrawEngine"/>
+		</diagram>
+		<diagram type="deployment" location="DeploymentDiagram_1074895281.etld">
+			<standarddrawengine name="ComponentDrawEngine"/>
+			<standarddrawengine name="InterfaceDrawEngine"/>
+			<standarddrawengine name="PackageDrawEngine"/>
+			<standarddrawengine name="ArtifactDrawEngine"/>
+			<standarddrawengine name="ClassNodeDrawEngine"/>
+			<standarddrawengine name="DeploymentSpecDrawEngine"/>
+			<standarddrawengine name="GeneralizationEdgeDrawEngine"/>
+			<standarddrawengine name="DependencyEdgeDrawEngine"/>
+			<standarddrawengine name="ImplementationEdgeDrawEngine"/>
+			<standarddrawengine name="AssociationEdgeDrawEngine"/>
+			<standarddrawengine name="CommentDrawEngine"/>
+			<standarddrawengine name="CommentEdgeDrawEngine"/>
+			<standarddrawengine name="GraphicDrawEngine"/>
+			<standarddrawengine name="ADLabelDrawEngine"/>
+		</diagram>
+		<diagram type="sequence" location="SequenceDiagram_1074811353.etld">
+			<standarddrawengine name="LifelineDrawEngine"/>
+			<standarddrawengine name="CombinedFragmentDrawEngine"/>
+			<standarddrawengine name="MessageEdgeDrawEngine"/>
+			<standarddrawengine name="CommentDrawEngine"/>
+			<standarddrawengine name="CommentEdgeDrawEngine"/>
+			<standarddrawengine name="GraphicDrawEngine"/>
+			<standarddrawengine name="ADLabelDrawEngine"/>
+		</diagram>
+		<diagram type="state" location="statediagram_1075923056.etld">
+			<standarddrawengine name="StateDrawEngine"/>
+			<standarddrawengine name="TransitionEdgeDrawEngine"/>
+			<standarddrawengine name="PseudoStateDrawEngine"/>
+			<standarddrawengine name="FinalStateDrawEngine"/>
+			<standarddrawengine name="CompositeStateDrawEngine"/>
+			<standarddrawengine name="DependencyEdgeDrawEngine"/>
+			<standarddrawengine name="CommentDrawEngine"/>
+			<standarddrawengine name="CommentEdgeDrawEngine"/>
+			<standarddrawengine name="GraphicDrawEngine"/>
+			<standarddrawengine name="ADLabelDrawEngine"/>
+		</diagram>
+		<diagram type="usecase" location="UseCaseDiagram_1074895293.etld">
+			<standarddrawengine name="UseCaseDrawEngine"/>
+			<standarddrawengine name="PackageDrawEngine"/>
+			<standarddrawengine name="ActorDrawEngine"/>
+			<standarddrawengine name="IncludeEdgeDrawEngine"/>
+			<standarddrawengine name="ExtendEdgeDrawEngine"/>
+			<standarddrawengine name="GeneralizationEdgeDrawEngine"/>
+			<standarddrawengine name="DependencyEdgeDrawEngine"/>
+			<standarddrawengine name="AssociationEdgeDrawEngine"/>
+			<standarddrawengine name="CommentDrawEngine"/>
+			<standarddrawengine name="CommentEdgeDrawEngine"/>
+			<standarddrawengine name="GraphicDrawEngine"/>
+			<standarddrawengine name="ADLabelDrawEngine"/>
+		</diagram>
+		<diagram type="entity" location="EntityDiagram_1074895300.etld">
+			<standarddrawengine name="EREntityDrawEngine"/>
+			<standarddrawengine name="ERViewDrawEngine"/>
+			<standarddrawengine name="TitleBlockDrawEngine"/>
+			<standarddrawengine name="EREntityAssociationDrawEngine"/>
+			<standarddrawengine name="GeneralizationEdgeDrawEngine"/>
+			<standarddrawengine name="CommentDrawEngine"/>
+			<standarddrawengine name="CommentEdgeDrawEngine"/>
+			<standarddrawengine name="GraphicDrawEngine"/>
+			<standarddrawengine name="ADLabelDrawEngine"/>
+		</diagram>
+	</SampleDiagrams>
+	<UpgradeTable>
+		<resource type="color" oldname="ActivityEdgeBorderColor" newdrawengine="ActivityEdgeDrawEngine" newresource="activityedgecolor"/>
+		<resource type="color" oldname="ActivityFinalNodeBorderColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ActivityFinalNodeFillColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ActivityFinalNodeLightGradientFillColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ActivityFinalNodeTextColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ActivityGroupBorderColor" newdrawengine="ActivityGroupDrawEngine" newresource=""/>
+		<resource type="color" oldname="ActivityGroupFillColor" newdrawengine="ActivityGroupDrawEngine" newresource=""/>
+		<resource type="color" oldname="ActivityGroupLightGradientFillColor" newdrawengine="ActivityGroupDrawEngine" newresource=""/>
+		<resource type="color" oldname="ActivityGroupTextColor" newdrawengine="ActivityGroupDrawEngine" newresource=""/>
+		<resource type="color" oldname="ArtifactBorderColor" newdrawengine="ArtifactDrawEngine" newresource=""/>
+		<resource type="color" oldname="ArtifactFillColor" newdrawengine="ArtifactDrawEngine" newresource=""/>
+		<resource type="color" oldname="ArtifactLightGradientFillColor" newdrawengine="ArtifactDrawEngine" newresource=""/>
+		<resource type="color" oldname="AssociationEdgeBorderColor" newdrawengine="AssociationEdgeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ClassBorderColor" newdrawengine="ClassDrawEngine" newresource="classborder"/>
+		<resource type="color" oldname="ClassFillColor" newdrawengine="ClassDrawEngine" newresource="classfill"/>
+                <resource type="color" oldname="ClassLightGradientFillColor" newdrawengine="ClassDrawEngine" newresource="classlightgradientfill"/>
+		<resource type="color" oldname="ClassNodeBorderColor" newdrawengine="ClassNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ClassNodeFillColor" newdrawengine="ClassNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ClassNodeLightGradientFillColor" newdrawengine="ClassNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ClassNodeTextColor" newdrawengine="ClassNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ClassTextColor" newdrawengine="ClassDrawEngine" newresource=""/>
+		<resource type="color" oldname="CollaborationBorderColor" newdrawengine="CollaborationDrawEngine" newresource=""/>
+		<resource type="color" oldname="CollaborationFillColor" newdrawengine="CollaborationDrawEngine" newresource=""/>
+		<resource type="color" oldname="CollaborationLightGradientFillColor" newdrawengine="CollaborationDrawEngine" newresource=""/>
+		<resource type="color" oldname="CollaborationLifelineBorderColor" newdrawengine="CollaborationLifelineDrawEngine" newresource=""/>
+		<resource type="color" oldname="CollaborationLifelineFillColor" newdrawengine="CollaborationLifelineDrawEngine" newresource=""/>
+		<resource type="color" oldname="CollaborationLifelineLightGradientFillColor" newdrawengine="CollaborationLifelineDrawEngine" newresource=""/>
+		<resource type="color" oldname="CollaborationLifelineTextColor" newdrawengine="CollaborationLifelineDrawEngine" newresource=""/>
+		<resource type="color" oldname="CollaborationTextColor" newdrawengine="CollaborationDrawEngine" newresource=""/>
+		<resource type="color" oldname="CombinedFragmentBorderColor" newdrawengine="CombinedFragmentDrawEngine" newresource=""/>
+		<resource type="color" oldname="CombinedFragmentFillColor" newdrawengine="CombinedFragmentDrawEngine" newresource=""/>
+		<resource type="color" oldname="CombinedFragmentLightGradientFillColor" newdrawengine="CombinedFragmentDrawEngine" newresource=""/>
+		<resource type="color" oldname="CombinedFragmentTextColor" newdrawengine="CombinedFragmentDrawEngine" newresource=""/>
+		<resource type="color" oldname="CommentBorderColor" newdrawengine="CommentDrawEngine" newresource=""/>
+		<resource type="color" oldname="CommentEdgeBorderColor" newdrawengine="CommentEdgeDrawEngine" newresource=""/>
+		<resource type="color" oldname="CommentFillColor" newdrawengine="CommentDrawEngine" newresource=""/>
+		<resource type="color" oldname="CommentLightGradientFillColor" newdrawengine="CommentDrawEngine" newresource=""/>
+		<resource type="color" oldname="CommentTextColor" newdrawengine="CommentDrawEngine" newresource=""/>
+		<resource type="color" oldname="ComponentBorderColor" newdrawengine="ComponentDrawEngine" newresource=""/>
+		<resource type="color" oldname="ComponentFillColor" newdrawengine="ComponentDrawEngine" newresource=""/>
+		<resource type="color" oldname="ComponentTextColor" newdrawengine="ComponentDrawEngine" newresource=""/>
+		<resource type="color" oldname="ConnectorEdgeBorderColor" newdrawengine="ConnectorEdgeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ControlNodeBorderColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ControlNodeFillColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ControlNodeLightGradientFillColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ControlNodeTextColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="DataTypeBorderColor" newdrawengine="DataTypeDrawEngine" newresource=""/>
+		<resource type="color" oldname="DataTypeFillColor" newdrawengine="DataTypeDrawEngine" newresource=""/>
+		<resource type="color" oldname="DataTypeLightGradientFillColor" newdrawengine="DataTypeDrawEngine" newresource=""/>
+		<resource type="color" oldname="DataTypeTextColor" newdrawengine="DataTypeDrawEngine" newresource=""/>
+		<resource type="color" oldname="DecisionMergeNodeBorderColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="DecisionMergeNodeFillColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="DecisionMergeNodeLightGradientFillColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="DecisionMergeNodeTextColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="DependencyEdgeBorderColor" newdrawengine="DependencyEdgeDrawEngine" newresource=""/>
+		<resource type="color" oldname="DeploymentSpecBorderColor" newdrawengine="DeploymentSpecDrawEngine" newresource=""/>
+		<resource type="color" oldname="DeploymentSpecFillColor" newdrawengine="DeploymentSpecDrawEngine" newresource=""/>
+		<resource type="color" oldname="DeploymentSpecLightGradientFillColor" newdrawengine="DeploymentSpecDrawEngine" newresource=""/>
+		<resource type="color" oldname="DeploymentSpecTextColor" newdrawengine="DeploymentSpecDrawEngine" newresource=""/>
+		<resource type="color" oldname="DerivationClassifierBorderColor" newdrawengine="DerivationClassifierDrawEngine" newresource=""/>
+		<resource type="color" oldname="DerivationClassifierFillColor" newdrawengine="DerivationClassifierDrawEngine" newresource=""/>
+		<resource type="color" oldname="DerivationClassifierLightGradientFillColor" newdrawengine="DerivationClassifierDrawEngine" newresource=""/>
+		<resource type="color" oldname="DerivationEdgeBorderColor" newdrawengine="DerivationEdgeDrawEngine" newresource=""/>
+		<resource type="color" oldname="EnumBorderColor" newdrawengine="EnumerationDrawEngine" newresource=""/>
+		<resource type="color" oldname="EnumFillColor" newdrawengine="EnumerationDrawEngine" newresource=""/>
+		<resource type="color" oldname="EnumLightGradientFillColor" newdrawengine="EnumerationDrawEngine" newresource=""/>
+		<resource type="color" oldname="FinalStateBorderColor" newdrawengine="FinalStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="FinalStateFillColor" newdrawengine="FinalStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="FinalStateLightGradientFillColor" newdrawengine="FinalStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="FinalStateTextColor" newdrawengine="FinalStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="FlowFinalNodeBorderColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="FlowFinalNodeFillColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="FlowFinalNodeLightGradientFillColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="FlowFinalNodeTextColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ForkJoinNodeBorderColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ForkJoinNodeFillColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ForkJoinNodeLightGradientFillColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ForkJoinNodeTextColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="GeneralizationEdgeBorderColor" newdrawengine="GeneralizationEdgeDrawEngine" newresource=""/>
+		<resource type="color" oldname="GraphicBorderColor" newdrawengine="GraphicDrawEngine" newresource=""/>
+		<resource type="color" oldname="GraphicFillColor" newdrawengine="GraphicDrawEngine" newresource=""/>
+		<resource type="color" oldname="GraphicTextColor" newdrawengine="GraphicDrawEngine" newresource=""/>
+		<resource type="color" oldname="ImplementationEdgeBorderColor" newdrawengine="ImplementationEdgeDrawEngine" newresource=""/>
+		<resource type="color" oldname="InitialNodeBorderColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="InitialNodeFillColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="InitialNodeLightGradientFillColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="InitialNodeTextColor" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="InterfaceBorderColor" newdrawengine="InterfaceDrawEngine" newresource=""/>
+		<resource type="color" oldname="InterfaceFillColor" newdrawengine="InterfaceDrawEngine" newresource=""/>
+		<resource type="color" oldname="InterfaceLightGradientFillColor" newdrawengine="InterfaceDrawEngine" newresource=""/>
+		<resource type="color" oldname="InvocationNodeBorderColor" newdrawengine="InvocationNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="InvocationNodeFillColor" newdrawengine="InvocationNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="InvocationNodeLightGradientFillColor" newdrawengine="InvocationNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="InvocationNodeTextColor" newdrawengine="InvocationNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="LabelBorderColor" newdrawengine="ADLabelDrawEngine" newresource=""/>
+		<resource type="color" oldname="LabelFillColor" newdrawengine="ADLabelDrawEngine" newresource=""/>
+		<resource type="color" oldname="LabelTextColor" newdrawengine="ADLabelDrawEngine" newresource=""/>
+		<resource type="color" oldname="LifelineBorderColor" newdrawengine="LifelineDrawEngine" newresource=""/>
+		<resource type="color" oldname="LifelineFillColor" newdrawengine="LifelineDrawEngine" newresource=""/>
+		<resource type="color" oldname="LifelineLightGradientFillColor" newdrawengine="LifelineDrawEngine" newresource=""/>
+		<resource type="color" oldname="LifelineTextColor" newdrawengine="LifelineDrawEngine" newresource=""/>
+		<resource type="color" oldname="MessageEdgeBorderColor" newdrawengine="MessageEdgeDrawEngine" newresource=""/>
+		<resource type="color" oldname="NestedLinkEdgeBorderColor" newdrawengine="NestedLinkDrawEngine" newresource=""/>
+		<resource type="color" oldname="ObjectNodeBorderColor" newdrawengine="ObjectNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ObjectNodeFillColor" newdrawengine="ObjectNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ObjectNodeLightGradientFillColor" newdrawengine="ObjectNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="ObjectNodeTextColor" newdrawengine="ObjectNodeDrawEngine" newresource=""/>
+		<resource type="color" oldname="PackageBorderColor" newdrawengine="PackageDrawEngine" newresource=""/>
+		<resource type="color" oldname="PackageFillColor" newdrawengine="PackageDrawEngine" newresource=""/>
+		<resource type="color" oldname="PackageLightGradientFillColor" newdrawengine="PackageDrawEngine" newresource=""/>
+		<resource type="color" oldname="PackageTextColor" newdrawengine="PackageDrawEngine" newresource=""/>
+		<resource type="color" oldname="PartFacadeEdgeBorderColor" newdrawengine="PartFacadeEdgeDrawEngine" newresource=""/>
+		<resource type="color" oldname="PortBorderColor" newdrawengine="PortDrawEngine" newresource=""/>
+		<resource type="color" oldname="PortFillColor" newdrawengine="PortDrawEngine" newresource=""/>
+		<resource type="color" oldname="PortProvidedInterfaceEdgeBorderColor" newdrawengine="PortProvidedInterfaceEdgeDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateChoiceBorderColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateChoiceFillColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateChoiceLightGradientFillColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateChoiceTextColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateDeepHistoryBorderColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateDeepHistoryFillColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateDeepHistoryLightGradientFillColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateDeepHistoryTextColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateEntryPointBorderColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateEntryPointFillColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateEntryPointLightGradientFillColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateEntryPointTextColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateInitialBorderColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateInitialFillColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateInitialLightGradientFillColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateInitialTextColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateJoinBorderColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateJoinFillColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateJoinTextColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateJunctionBorderColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateJunctionFillColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateJunctionLightGradientFillColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateJunctionTextColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateShallowHistoryBorderColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateShallowHistoryFillColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateShallowHistoryLightGradientFillColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateShallowHistoryTextColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateStopBorderColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateStopFillColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateStopLightGradientFillColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="PseudoStateStopTextColor" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="color" oldname="QualifierBorderColor" newdrawengine="QualifierDrawEngine" newresource=""/>
+		<resource type="color" oldname="QualifierFillColor" newdrawengine="QualifierDrawEngine" newresource=""/>
+		<resource type="color" oldname="QualifierLightGradientFillColor" newdrawengine="QualifierDrawEngine" newresource=""/>
+		<resource type="color" oldname="QualifierTextColor" newdrawengine="QualifierDrawEngine" newresource=""/>
+		<resource type="color" oldname="RobustnessBorderColor" newdrawengine="ClassRobustnessDrawEngine" newresource=""/>
+		<resource type="color" oldname="RobustnessFillColor" newdrawengine="ClassRobustnessDrawEngine" newresource=""/>
+		<resource type="color" oldname="RobustnessLightGradientFillColor" newdrawengine="ClassRobustnessDrawEngine" newresource=""/>
+		<resource type="color" oldname="RobustnessTextColor" newdrawengine="ClassRobustnessDrawEngine" newresource=""/>
+		<resource type="color" oldname="StateBorderColor" newdrawengine="StateDrawEngine" newresource=""/>
+		<resource type="color" oldname="StateFillColor" newdrawengine="StateDrawEngine" newresource=""/>
+		<resource type="color" oldname="StateLightGradientFillColor" newdrawengine="StateDrawEngine" newresource=""/>
+		<resource type="color" oldname="StateTextColor" newdrawengine="StateDrawEngine" newresource=""/>
+		<resource type="color" oldname="StickBorderColor" newdrawengine="ActorDrawEngine" newresource=""/>
+		<resource type="color" oldname="StickColor" newdrawengine="ActorDrawEngine" newresource=""/>
+		<resource type="color" oldname="StickTextColor" newdrawengine="ActorDrawEngine" newresource=""/>
+		<resource type="color" oldname="TransitionEdgeBorderColor" newdrawengine="TransitionEdgeDrawEngine" newresource=""/>
+		<resource type="color" oldname="UseCaseBorderColor" newdrawengine="UseCaseDrawEngine" newresource=""/>
+		<resource type="color" oldname="UseCaseFillColor" newdrawengine="UseCaseDrawEngine" newresource=""/>
+		<resource type="color" oldname="UseCaseLightGradientFillColor" newdrawengine="UseCaseDrawEngine" newresource=""/>
+		<resource type="color" oldname="UseCaseTextColor" newdrawengine="UseCaseDrawEngine" newresource=""/>
+		<resource type="font" oldname="ActivityGroupFont" newdrawengine="ActivityGroupDrawEngine" newresource=""/>
+		<resource type="font" oldname="ArtifactFont" newdrawengine="ArtifactDrawEngine" newresource=""/>
+		<resource type="font" oldname="ClassFont" newdrawengine="ClassDrawEngine" newresource=""/>
+		<resource type="font" oldname="ClassNodeFont" newdrawengine="ClassNodeDrawEngine" newresource=""/>
+		<resource type="font" oldname="CollaborationFont" newdrawengine="CollaborationDrawEngine" newresource=""/>
+		<resource type="font" oldname="CollaborationLifelineFont" newdrawengine="CollaborationLifelineDrawEngine" newresource=""/>
+		<resource type="font" oldname="CombinedFragmentFont" newdrawengine="CombinedFragmentDrawEngine" newresource=""/>
+		<resource type="font" oldname="CommentFont" newdrawengine="CommentDrawEngine" newresource=""/>
+		<resource type="font" oldname="ComponentFont" newdrawengine="ComponentDrawEngine" newresource=""/>
+		<resource type="font" oldname="ControlNodeFont" newdrawengine="ControlNodeDrawEngine" newresource=""/>
+		<resource type="font" oldname="DataTypeFont" newdrawengine="DataTypeDrawEngine" newresource=""/>
+		<resource type="font" oldname="DeploymentSpecFont" newdrawengine="DeploymentSpecDrawEngine" newresource=""/>
+		<resource type="font" oldname="DerivationClassifierFont" newdrawengine="DerivationClassifierDrawEngine" newresource=""/>
+		<resource type="font" oldname="EnumFont" newdrawengine="EnumerationDrawEngine" newresource=""/>
+		<resource type="font" oldname="ExpressionFont" newdrawengine="ActivityGroupDrawEngine" newresource=""/>
+		<resource type="font" oldname="FinalStateFont" newdrawengine="FinalStateDrawEngine" newresource=""/>
+		<resource type="font" oldname="GraphicFont" newdrawengine="GraphicDrawEngine" newresource=""/>
+		<resource type="font" oldname="InteractionFragmentFont" newdrawengine="CombinedFragmentDrawEngine" newresource=""/>
+		<resource type="font" oldname="InterfaceFont" newdrawengine="InterfaceDrawEngine" newresource=""/>
+		<resource type="font" oldname="InvocationNodeFont" newdrawengine="InvocationNodeDrawEngine" newresource=""/>
+		<resource type="font" oldname="LabelFont" newdrawengine="ADLabelDrawEngine" newresource=""/>
+		<resource type="font" oldname="LifelineFont" newdrawengine="LifelineDrawEngine" newresource=""/>
+		<resource type="font" oldname="NameFont" newdrawengine="" newresource=""/>
+		<resource type="font" oldname="ObjectNodeFont" newdrawengine="ObjectNodeDrawEngine" newresource=""/>
+		<resource type="font" oldname="PackageFont" newdrawengine="PackageDrawEngine" newresource=""/>
+		<resource type="font" oldname="PackageImportFont" newdrawengine="" newresource=""/>
+		<resource type="font" oldname="PackageInTabFont" newdrawengine="PackageDrawEngine" newresource=""/>
+		<resource type="font" oldname="PortFont" newdrawengine="PortDrawEngine" newresource=""/>
+		<resource type="font" oldname="PseudoStateChoiceFont" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="font" oldname="PseudoStateDeepHistoryFont" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="font" oldname="PseudoStateEntryPointFont" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="font" oldname="PseudoStateInitialFont" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="font" oldname="PseudoStateJoinFont" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="font" oldname="PseudoStateJunctionFont" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="font" oldname="PseudoStateShallowHistoryFont" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="font" oldname="PseudoStateStopFont" newdrawengine="PseudoStateDrawEngine" newresource=""/>
+		<resource type="font" oldname="QualifierFont" newdrawengine="QualifierDrawEngine" newresource=""/>
+		<resource type="font" oldname="RobustnessFont" newdrawengine="ClassRobustnessDrawEngine" newresource=""/>
+		<resource type="font" oldname="StateEventsFont" newdrawengine="StateDrawEngine" newresource=""/>
+		<resource type="font" oldname="StateFont" newdrawengine="StateDrawEngine" newresource=""/>
+		<resource type="font" oldname="StereotypeFont" newdrawengine="" newresource=""/>
+		<resource type="font" oldname="StickFont" newdrawengine="ActorDrawEngine" newresource=""/>
+		<resource type="font" oldname="SubPartitionFont" newdrawengine="ADZoneCompartment" newresource=""/>
+		<resource type="font" oldname="TaggedValuesFont" newdrawengine="" newresource=""/>
+		<resource type="font" oldname="TemplateFont" newdrawengine="" newresource=""/>
+		<resource type="font" oldname="UseCaseFont" newdrawengine="UseCaseDrawEngine" newresource=""/>
+	</UpgradeTable>
+	<drawengine type="ClassDrawEngine" displayName="PSK_CLASSDRAWENGINE" description="PSK_CLASSDRAWENGINE_DESC" diagramtype="class">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="classfill" colorvalue="251,233,127" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+                <resource type="color" name="classlightgradientfill" colorvalue="254,254,254" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/> 
+		<resource type="color" name="classborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Title Font for the list compartments-->
+		<resource type="font" name="titlefont" facename="SansSerif" height="8" italic="1" weight="400" colorvalue="0,0,0" displayName="PSK_LISTTITLEFONT" description="PSK_LISTTITLEFONT_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+		<!--Fonts used by the attribute compartment-->
+		<resource type="font" name="publicattribute" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PUBATTRFONT" description="PSK_PUBATTRFONT_DESC"/>
+		<resource type="font" name="privateattribute" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PRIATTRFONT" description="PSK_PRIATTRFONT_DESC"/>
+		<resource type="font" name="protectedattribute" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PROATTRFONT" description="PSK_PROATTRFONT_DESC"/>
+		<resource type="font" name="packageattribute" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGATTRFONT" description="PSK_PKGATTRFONT_DESC"/>
+		<!--Fonts used by the operation compartment-->
+		<resource type="font" name="publicoperation" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PUBOPERFONT" description="PSK_PUBOPERFONT_DESC"/>
+		<resource type="font" name="privateoperation" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PRIOPERFONT" description="PSK_PRIOPERFONT_DESC"/>
+		<resource type="font" name="protectedoperation" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PROOPERFONT" description="PSK_PROOPERFONT_DESC"/>
+		<resource type="font" name="packageoperation" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGOPERFONT" description="PSK_PKGOPERFONT_DESC"/>
+	</drawengine>
+	<drawengine type="ActivityEdgeDrawEngine" displayName="PSK_ACTIVITYEDGEDRAWENGINE" description="PSK_ACTIVITYEDGEDRAWENGINE_DESC" diagramtype="activity">
+		<resource type="color" name="activityedgecolor" colorvalue="0,0,0" displayName="PSK_EDGECOLOR" description="PSK_EDGECOLOR_DESC"/>
+	</drawengine>
+	<drawengine type="ActivityGroupDrawEngine" displayName="PSK_ACTIVITYGROUPDRAWENGINE" description="PSK_ACTIVITYGROUPDRAWENGINE_DESC" diagramtype="activity">
+		<resource type="color" name="boxfill" colorvalue="225,255,255" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="boxlightgradientfill" colorvalue="255,255,255" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="boxborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+		<!--Fonts used by the expression compartment-->
+		<resource type="font" name="expression" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_EXPRESSIONFONT" description="PSK_EXPRESSIONFONT_DESC"/>
+	</drawengine>
+	<drawengine type="ControlNodeDrawEngine" displayName="PSK_CONTROLNODEDRAWENGINE" description="PSK_CONTROLNODEDRAWENGINE_DESC" diagramtype="activity">
+		<resource type="color" name="forkfill" colorvalue="50,199,199" displayName="PSK_FORKFILLCOLOR" description="PSK_FORKFILLCOLOR_DESC"/>
+		<resource type="color" name="forklightgradientfill" colorvalue="191,235,235" displayName="PSK_FORKLIGHTFILLCOLOR" description="PSK_FORKLIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="forkborder" colorvalue="0,0,0" displayName="PSK_FORKBORDERCOLOR" description="PSK_FORKBORDERCOLOR_DESC"/>
+		<resource type="color" name="initialnodefill" colorvalue="26,120,51" displayName="PSK_INITIALNODEFILLCOLOR" description="PSK_INITIALNODEFILLCOLOR_DESC"/>
+		<resource type="color" name="initialnodelightgradientfill" colorvalue="116,189,136" displayName="PSK_INITIALNODELIGHTFILLCOLOR" description="PSK_INITIALNODELIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="initialnodeborder" colorvalue="0,0,0" displayName="PSK_INITIALNODEBORDERCOLOR" description="PSK_INITIALNODEBORDERCOLOR_DESC"/>
+		<resource type="color" name="activityfinalfill" colorvalue="255,51,0" displayName="PSK_ACTIVITYFINALFILLCOLOR" description="PSK_ACTIVITYFINALFILLCOLOR_DESC"/>
+		<resource type="color" name="activityfinallightgradientfill" colorvalue="255,225,217" displayName="PSK_ACTIVITYFINALLIGHTFILLCOLOR" description="PSK_ACTIVITYFINALLIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="activityfinalborder" colorvalue="0,0,0" displayName="PSK_ACTIVITYFINALBORDERCOLOR" description="PSK_ACTIVITYFINALBORDERCOLOR_DESC"/>
+		<resource type="color" name="flowfinalfill" colorvalue="255,51,0" displayName="PSK_FLOWFINALFILLCOLOR" description="PSK_FLOWFINALFILLCOLOR_DESC"/>
+		<resource type="color" name="flowfinallightgradientfill" colorvalue="255,225,217" displayName="PSK_FLOWFINALLIGHTFILLCOLOR" description="PSK_FLOWFINALLIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="flowfinalborder" colorvalue="0,0,0" displayName="PSK_FLOWFINALBORDERCOLOR" description="PSK_FLOWFINALBORDERCOLOR_DESC"/>
+		<resource type="color" name="mergefill" colorvalue="167,240,240" displayName="PSK_MERGEFILLCOLOR" description="PSK_MERGEFILLCOLOR_DESC"/>
+		<resource type="color" name="mergelightgradientfill" colorvalue="255,255,255" displayName="PSK_MERGELIGHTFILLCOLOR" description="PSK_MERGELIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="mergeborder" colorvalue="0,0,0" displayName="PSK_MERGEBORDERCOLOR" description="PSK_MERGEBORDERCOLOR_DESC"/>
+	</drawengine>
+	<drawengine type="InvocationNodeDrawEngine" displayName="PSK_INVOCATIONNODEDRAWENGINE" description="PSK_INVOCATIONNODEDRAWENGINE_DESC" diagramtype="activity">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="invocationnodefill" colorvalue="50,199,199" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="invocationnodelightgradientfill" colorvalue="191,235,235" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="invocationnodeborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="ObjectNodeDrawEngine" displayName="PSK_OBJECTNODEDRAWENGINE" description="PSK_OBJECTNODEDRAWENGINE_DESC" diagramtype="activity">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="objectnodefill" colorvalue="255,182,105" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="objectnodelightgradientfill" colorvalue="255,239,208" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="objectnodeborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="PartitionDrawEngine" displayName="PSK_PARTITIONDRAWENGINE" description="PSK_PARTITIONDRAWENGINE_DESC" diagramtype="activity">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="partitionfill" colorvalue="105,191,105" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="partitionlightgradientfill" colorvalue="255,255,255" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="partitionborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="ComponentDrawEngine" displayName="PSK_COMPONENTDRAWENGINE" description="PSK_COMPONENTDRAWENGINE_DESC" diagramtype="component">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="componentfill" colorvalue="255,204,0" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="componentlightgradientfill" colorvalue="254,241,187" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="componentborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="PortDrawEngine" displayName="PSK_PORTDRAWENGINE" description="PSK_PORTDRAWENGINE_DESC" diagramtype="component">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="boxfill" colorvalue="153,0,51" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="boxborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+	</drawengine>
+	<drawengine type="PortProvidedInterfaceEdgeDrawEngine" displayName="PSK_PORTPROVIDEDINTERFACEEDGEDRAWENGINE" description="PSK_PORTPROVIDEDINTERFACEEDGEDRAWENGINE_DESC">
+		<resource type="color" name="portprovidedinterfacecolor" colorvalue="0,0,0" displayName="PSK_EDGECOLOR" description="PSK_EDGECOLOR_DESC"/>
+	</drawengine>
+	<drawengine type="ClassNodeDrawEngine" displayName="PSK_CLASSNODEDRAWENGINE" description="PSK_CLASSNODEDRAWENGINE_DESC" diagramtype="class">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="boxfill" colorvalue="72,132,84" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="boxlightgradientfill" colorvalue="183,207,188" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="boxborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="DeploymentSpecDrawEngine" displayName="PSK_DEPLOYMENTSPECDRAWENGINE" description="PSK_DEPLOYMENTSPECDRAWENGINE_DESC" diagramtype="component">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="deploymentspecfill" colorvalue="195,226,203" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="deploymentspeclightgradientfill" colorvalue="255,255,255" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="deploymentspecborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="GraphicDrawEngine" displayName="PSK_GRAPHICDRAWENGINE" description="PSK_GRAPHICDRAWENGINE_DESC" diagramtype="class">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="graphicfill" colorvalue="255,255,255" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="graphicborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="CombinedFragmentDrawEngine" displayName="PSK_COMBINEDFRAGMENTDRAWENGINE" description="PSK_COMBINEDFRAGMENTDRAWENGINE_DESC" diagramtype="sequence">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="combinedfragmentborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Corner label compartment-->
+		<resource type="color" name="cornerlabelfill" colorvalue="211,227,244" displayName="PSK_CORNERLABELCOLOR" description="PSK_CORNERLABELCOLOR_DESC"/>
+		<resource type="color" name="cornerlabellightgradientfill" colorvalue="255,255,255" displayName="PSK_CORNERLABELLIGHTCOLOR" description="PSK_CORNERLABELLIGHTCOLOR_DESC"/>
+		<resource type="color" name="nametagcolor" colorvalue="0,0,0" displayName="PSK_NAMETAGCOLOR" description="PSK_NAMETAGCOLOR_DESC"/>
+		<resource type="color" name="zonesborder" colorvalue="0,0,0" displayName="PSK_COMBINEDFRAGDIVIDERCOLOR" description="PSK_COMBINEDFRAGDIVIDERCOLOR_DESC"/>
+		<resource type="font" name="cornerlabeltext" facename="SansSerif" height="9" weight="700" colorvalue="0,0,0" displayName="PSK_CORNERLABELFONT" description="PSK_CORNERLABELFONT_DESC"/>
+	</drawengine>
+	<drawengine type="InteractionFragmentDrawEngine" displayName="PSK_INTERACTIONFRAGMENTDRAWENGINE" description="PSK_INTERACTIONFRAGMENTDRAWENGINE_DESC" diagramtype="sequence">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="graphicfill" colorvalue="255,255,255" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="interactionfragmentborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Interaction fragment font-->
+		<resource type="font" name="interactionfragmentfont" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_INTERACTIONFRAGMENTFONT" description="PSK_INTERACTIONFRAGMENTFONT_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="LifelineDrawEngine" displayName="PSK_LIFELINEDRAWENGINE" description="PSK_LIFELINEDRAWENGINE_DESC" diagramtype="sequence">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="lifelinefill" colorvalue="211,227,244" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="lifelinelightgradientfill" colorvalue="255,255,255" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="lifelineborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Stick figure colors-->
+		<resource type="color" name="stickfigure" colorvalue="255,128,255" displayName="PSK_STICKFIGURECOLOR" description="PSK_STICKFIGURECOLOR_DESC"/>
+		<resource type="color" name="stickfigurehead" colorvalue="255,255,255" displayName="PSK_HEADCOLOR" description="PSK_HEADCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="MessageEdgeDrawEngine" displayName="PSK_MESSAGEEDGEDRAWENGINE" description="PSK_MESSAGEEDGEDRAWENGINE_DESC" diagramtype="sequence">
+		<resource type="color" name="messagecolor" colorvalue="0,0,0" displayName="PSK_EDGECOLOR" description="PSK_EDGECOLOR_DESC"/>
+	</drawengine>
+	<drawengine type="FinalStateDrawEngine" displayName="PSK_FINALSTATEDRAWENGINE" description="PSK_FINALSTATEDRAWENGINE_DESC" diagramtype="state">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="ellipsefill" colorvalue="255,51,0" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="ellipselightgradientfill" colorvalue="255,255,255" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="ellipseborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+	</drawengine>
+	<drawengine type="PseudoStateDrawEngine" displayName="PSK_PSEUDOSTATEDRAWENGINE" description="PSK_PSEUDOSTATEDRAWENGINE_DESC" diagramtype="state">
+<!--
+		<resource type="color" name="boxfill" colorvalue="0,0,0" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC" advanced="1"/>
+		<resource type="color" name="boxborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC" advanced="1"/>
+-->
+		<resource type="color" name="choicestatefill" colorvalue="167,240,240" displayName="PSK_PSEUDOSTATECHOICEFILLCOLOR" description="PSK_PSEUDOSTATECHOICEFILLCOLOR_DESC"/>
+		<resource type="color" name="choicestatelightgradientfill" colorvalue="255,255,255" displayName="PSK_PSEUDOSTATECHOICELIGHTFILLCOLOR" description="PSK_PSEUDOSTATECHOICELIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="choicestateborder" colorvalue="0,0,0" displayName="PSK_PSEUDOSTATECHOICEBORDERCOLOR" description="PSK_PSEUDOSTATECHOICEBORDERCOLOR_DESC"/>>
+		<resource type="font" name="deephistorystatefont" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PSEUDOSTATEDEEPHISTORYFONT" description="PSK_PSEUDOSTATEDEEPHISTORYFONT_DESC" advanced="1"/>
+		<resource type="color" name="deephistorystatefill" colorvalue="101,154,210" displayName="PSK_PSEUDOSTATEDEEPHISTORYFILLCOLOR" description="PSK_PSEUDOSTATEDEEPHISTORYFILLCOLOR_DESC"/>
+		<resource type="color" name="deephistorystatelightgradientfill" colorvalue="255,255,255" displayName="PSK_PSEUDOSTATEDEEPHISTORYLIGHTFILLCOLOR" description="PSK_PSEUDOSTATEDEEPHISTORYLIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="deephistorystateborder" colorvalue="0,0,0" displayName="PSK_PSEUDOSTATEDEEPHISTORYBORDERCOLOR" description="PSK_PSEUDOSTATEDEEPHISTORYBORDERCOLOR_DESC"/>>
+		<resource type="font" name="shallowhistorystatefont" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PSEUDOSTATESHALLOWHISTORYFONT" description="PSK_PSEUDOSTATESHALLOWHISTORYFONT_DESC" advanced="1"/>
+		<resource type="color" name="shallowhistorystatefill" colorvalue="255,255,0" displayName="PSK_PSEUDOSTATESHALLOWHISTORYFILLCOLOR" description="PSK_PSEUDOSTATESHALLOWHISTORYFILLCOLOR_DESC"/>
+		<resource type="color" name="shallowhistorystatelightgradientfill" colorvalue="255,255,255" displayName="PSK_PSEUDOSTATESHALLOWHISTORYLIGHTFILLCOLOR" description="PSK_PSEUDOSTATESHALLOWHISTORYLIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="shallowhistorystateborder" colorvalue="0,0,0" displayName="PSK_PSEUDOSTATESHALLOWHISTORYBORDERCOLOR" description="PSK_PSEUDOSTATESHALLOWHISTORYBORDERCOLOR_DESC"/>>
+		<resource type="color" name="initialstatefill" colorvalue="0,146,0" displayName="PSK_PSEUDOSTATEINITIALSTATEFILLCOLOR" description="PSK_PSEUDOSTATEINITIALSTATEFILLCOLOR_DESC"/>
+		<resource type="color" name="initialstatelightgradientfill" colorvalue="238,247,238" displayName="PSK_PSEUDOSTATEINITIALSTATELIGHTFILLCOLOR" description="PSK_PSEUDOSTATEINITIALSTATELIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="initialstateborder" colorvalue="0,0,0" displayName="PSK_PSEUDOSTATEINITIALSTATEBORDERCOLOR" description="PSK_PSEUDOSTATEINITIALSTATEBORDERCOLOR_DESC"/>>
+		<resource type="color" name="joinstatefill" colorvalue="0,0,0" displayName="PSK_PSEUDOSTATEJOINSTATEFILLCOLOR" description="PSK_PSEUDOSTATEJOINSTATEFILLCOLOR_DESC"/>
+		<resource type="color" name="joinstateborder" colorvalue="0,0,0" displayName="PSK_PSEUDOSTATEJOINSTATEBORDERCOLOR" description="PSK_PSEUDOSTATEJOINSTATEBORDERCOLOR_DESC"/>>
+		<resource type="color" name="junctionstatefill" colorvalue="102,102,204" displayName="PSK_PSEUDOSTATEJUNCTIONSTATEFILLCOLOR" description="PSK_PSEUDOSTATEJUNCTIONSTATEFILLCOLOR_DESC"/>
+		<resource type="color" name="junctionstatelightgradientfill" colorvalue="255,255,255" displayName="PSK_PSEUDOSTATEJUNCTIONSTATELIGHTFILLCOLOR" description="PSK_PSEUDOSTATEJUNCTIONSTATELIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="junctionstateborder" colorvalue="0,0,0" displayName="PSK_PSEUDOSTATEJUNCTIONSTATEBORDERCOLOR" description="PSK_PSEUDOSTATEJUNCTIONSTATEBORDERCOLOR_DESC"/>>
+		<resource type="color" name="entrypointstatefill" colorvalue="255,153,51" displayName="PSK_PSEUDOSTATEENTRYPOINTFILLCOLOR" description="PSK_PSEUDOSTATEENTRYPOINTFILLCOLOR_DESC"/>
+		<resource type="color" name="entrypointstatelightgradientfill" colorvalue="255,255,255" displayName="PSK_PSEUDOSTATEENTRYPOINTLIGHTFILLCOLOR" description="PSK_PSEUDOSTATEENTRYPOINTLIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="entrypointstateborder" colorvalue="0,0,0" displayName="PSK_PSEUDOSTATEENTRYPOINTBORDERCOLOR" description="PSK_PSEUDOSTATEENTRYPOINTBORDERCOLOR_DESC"/>>
+		<resource type="color" name="stopstatefill" colorvalue="255,51,0" displayName="PSK_PSEUDOSTATESTOPSTATEFILLCOLOR" description="PSK_PSEUDOSTATESTOPSTATEFILLCOLOR_DESC" advanced="1"/>
+		<resource type="color" name="stopstatelightgradientfill" colorvalue="255,255,255" displayName="PSK_PSEUDOSTATESTOPSTATELIGHTFILLCOLOR" description="PSK_PSEUDOSTATESTOPSTATELIGHTFILLCOLOR_DESC" advanced="1"/>
+		<resource type="color" name="stopstateborder" colorvalue="0,0,0" displayName="PSK_PSEUDOSTATESTOPSTATEBORDERCOLOR" description="PSK_PSEUDOSTATESTOPSTATEBORDERCOLOR_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="StateDrawEngine" displayName="PSK_STATEDRAWENGINE" description="PSK_STATEDRAWENGINE_DESC" diagramtype="state">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="statefill" colorvalue="142,203,219" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="statelightgradientfill" colorvalue="220,239,244" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="stateborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+		<!--State Events and Transitions Font-->
+		<resource type="font" name="stateevents" facename="SansSerif" height="9" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+           <!--Subpartition Font-->
+           <resource type="font" name="subpartition" facename="SansSerif" height="8" weight="700" colorvalue="0,0,0" displayName="PSK_SUBPARTITIONFONT" description="PSK_SUBPARTITIONFONT_DESC"/>
+	</drawengine>
+	<drawengine type="TransitionEdgeDrawEngine" displayName="PSK_TRANSITIONEDGEDRAWENGINE" description="PSK_TRANSITIONEDGEDRAWENGINE_DESC" diagramtype="state">
+		<resource type="color" name="transitioncolor" colorvalue="0,0,0" displayName="PSK_EDGECOLOR" description="PSK_EDGECOLOR_DESC"/>
+	</drawengine>
+	<drawengine type="ExtendEdgeDrawEngine" displayName="PSK_EXTENDEDGEDRAWENGINE" description="PSK_EXTENDEDGEDRAWENGINE_DESC" diagramtype="usecase">
+		<resource type="color" name="extendedgecolor" colorvalue="0,0,0" displayName="PSK_EDGECOLOR" description="PSK_EDGECOLOR_DESC"/>
+	</drawengine>
+	<drawengine type="IncludeEdgeDrawEngine" displayName="PSK_INCLUDEEDGEDRAWENGINE" description="PSK_INCLUDEEDGEDRAWENGINE_DESC" diagramtype="usecase">
+		<resource type="color" name="includeedgecolor" colorvalue="0,0,0" displayName="PSK_EDGECOLOR" description="PSK_EDGECOLOR_DESC"/>
+	</drawengine>
+	<drawengine type="UseCaseDrawEngine" displayName="PSK_USECASEDRAWENGINE" description="PSK_USECASEDRAWENGINE_DESC" diagramtype="usecase">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="usecasefill" colorvalue="170,244,243" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="usecaselightgradientfill" colorvalue="255,255,255" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="usecaseborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="8" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+		<!--Extension point compartment-->
+		<resource type="font" name="extensionpoint" facename="SansSerif" height="8" weight="700" colorvalue="0,0,0" displayName="PSK_EXTENSIONPOINTFONT" description="PSK_EXTENSIONPOINTFONT_DESC"/>
+	</drawengine>
+	<drawengine type="ActorDrawEngine" displayName="PSK_ACTORDRAWENGINE" description="PSK_ACTORDRAWENGINE_DESC" diagramtype="class">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="stickfigure" colorvalue="255,128,255" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<resource type="color" name="stickfigurehead" colorvalue="255,255,255" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="ADLabelDrawEngine" displayName="PSK_ADLABELDRAWENGINE" description="PSK_ADLABELDRAWENGINE_DESC" diagramtype="class">
+		<!--Draw Engine Border Color-->
+		<resource type="color" name="labeliconborder" colorvalue="255,255,255" displayName="PSK_LABELICONBORDERCOLOR" description="PSK_LABELICONBORDERCOLOR_DESC" advanced="1"/>
+		<resource type="font" name="label" facename="SansSerif" height="11" weight="400" colorvalue="0,0,0" displayName="PSK_LABELFONT" description="PSK_LABELFONT_DESC"/>
+		<resource type="color" name="connectorarrowcolor" colorvalue="0,0,0" displayName="PSK_MSGCONNECTORARROWCOLOR" description="PSK_MSGCONNECTORARROWCOLOR_DESC"/>
+	</drawengine>
+	<drawengine type="ArtifactDrawEngine" displayName="PSK_ARTIFACTDRAWENGINE" description="PSK_ARTIFACTDRAWENGINE_DESC" diagramtype="class">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="artifactfill" colorvalue="163,184,204" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+                <resource type="color" name="artifactlightgradientfill" colorvalue="204,216,227" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="artifactborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="AssociationEdgeDrawEngine" displayName="PSK_ASSOCIATIONEDGEDRAWENGINE" description="PSK_ASSOCIATIONEDGEDRAWENGINE_DESC" diagramtype="class">
+		<resource type="color" name="associationedgecolor" colorvalue="0,0,0" displayName="PSK_EDGECOLOR" description="PSK_EDGECOLOR_DESC"/>
+	</drawengine>
+	<drawengine type="ClassRobustnessDrawEngine" displayName="PSK_CLASSROBUSTNESSDRAWENGINE" description="PSK_CLASSROBUSTNESSDRAWENGINE_DESC" diagramtype="class">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="classrobustnessfill" colorvalue="254,243,168" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="classrobustnesslightgradientfill" colorvalue="255,255,255" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="classrobustnessborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="CollaborationDrawEngine" displayName="PSK_COLLABORATIONDRAWENGINE" description="PSK_COLLABORATIONDRAWENGINE_DESC" diagramtype="class">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="collaborationfill" colorvalue="103,190,103" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+                <resource type="color" name="collaborationlightgradientfill" colorvalue="213,237,213" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="collaborationborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="CollaborationLifelineDrawEngine" displayName="PSK_COLLABORATIONLIFELINEDRAWENGINE" description="PSK_COLLABORATIONLIFELINEDRAWENGINE_DESC" diagramtype="class">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="collaborationlifelinefill" colorvalue="211,227,244" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="collaborationlifelinelightgradientfill" colorvalue="255,255,255" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="collaborationlifelineborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Stick figure Fill and Border Color-->
+		<resource type="color" name="stickfigure" colorvalue="255,128,255" displayName="PSK_STICKFIGUREFILLCOLOR" description="PSK_STICKFIGUREFILLCOLOR_DESC"/>
+		<resource type="color" name="stickfigurehead" colorvalue="255,255,255" displayName="PSK_STICKFIGUREBORDERCOLOR" description="PSK_STICKFIGUREBORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="CommentDrawEngine" displayName="PSK_COMMENTDRAWENGINE" description="PSK_COMMENTDRAWENGINE_DESC" diagramtype="class">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="commentfill" colorvalue="211,227,244" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="commentlightgradientfill" colorvalue="255,255,255" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="commentborder" colorvalue="0,0,128" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="commentfont" facename="SansSerif" height="8" weight="400" colorvalue="0,0,0" displayName="PSK_COMMENTFONT" description="PSK_COMMENTFONT_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="8" weight="400" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="CommentEdgeDrawEngine" displayName="PSK_COMMENTEDGEDRAWENGINE" description="PSK_COMMENTEDGEDRAWENGINE_DESC" diagramtype="class">
+		<resource type="color" name="commentedgecolor" colorvalue="0,0,0" displayName="PSK_EDGECOLOR" description="PSK_EDGECOLOR_DESC"/>
+	</drawengine>
+	<drawengine type="ConnectorEdgeDrawEngine" displayName="PSK_CONNECTOREDGEDRAWENGINE" description="PSK_CONNECTOREDGEDRAWENGINE_DESC" diagramtype="collaboration">
+		<resource type="color" name="connectoredgecolor" colorvalue="0,0,0" displayName="PSK_EDGECOLOR" description="PSK_EDGECOLOR_DESC"/>
+	</drawengine>
+	<drawengine type="DataTypeDrawEngine" displayName="PSK_DATATYPEDRAWENGINE" description="PSK_DATATYPEDRAWENGINE_DESC" diagramtype="class">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="datatypefill" colorvalue="223,233,243" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="datatypelightgradientfill" colorvalue="255,255,255" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="datatypeborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="DependencyEdgeDrawEngine" displayName="PSK_DEPENDENCYEDGEDRAWENGINE" description="PSK_DEPENDENCYEDGEDRAWENGINE_DESC" diagramtype="class">
+		<resource type="color" name="dependencyedgecolor" colorvalue="0,0,0" displayName="PSK_EDGECOLOR" description="PSK_EDGECOLOR_DESC"/>
+	</drawengine>
+	<drawengine type="DerivationClassifierDrawEngine" displayName="PSK_DERIVATIONCLASSIFIERDRAWENGINE" description="PSK_DERIVATIONCLASSIFIERDRAWENGINE_DESC" diagramtype="class">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="derivationclassifierfill" colorvalue="251,233,126" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="derivationclassifierlightgradientfill" colorvalue="254,254,254" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="derivationclassifierborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="DerivationEdgeDrawEngine" displayName="PSK_DERIVATIONEDGEDRAWENGINE" description="PSK_DERIVATIONEDGEDRAWENGINE_DESC" diagramtype="class">
+		<resource type="color" name="derivationedgecolor" colorvalue="0,0,0" displayName="PSK_EDGECOLOR" description="PSK_EDGECOLOR_DESC"/>
+	</drawengine>
+	<drawengine type="EnumerationDrawEngine" displayName="PSK_ENUMERATIONDRAWENGINE" description="PSK_ENUMERATIONDRAWENGINE_DESC" diagramtype="class">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="enumerationfill" colorvalue="251,233,126" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="enumerationlightgradientfill" colorvalue="254,254,254" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="enumerationborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+		<!--Fonts used by the literal compartment-->
+		<resource type="font" name="enumerationliteral" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_ENUMLITFONT" description="PSK_ENUMLITFONT_DESC"/>
+		<!--Fonts used by the attribute compartment-->
+		<resource type="font" name="publicattribute" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PUBATTRFONT" description="PSK_PUBATTRFONT_DESC"/>
+		<resource type="font" name="privateattribute" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PRIATTRFONT" description="PSK_PRIATTRFONT_DESC"/>
+		<resource type="font" name="protectedattribute" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PROATTRFONT" description="PSK_PROATTRFONT_DESC"/>
+		<resource type="font" name="packageattribute" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGATTRFONT" description="PSK_PKGATTRFONT_DESC"/>
+		<!--Fonts used by the operation compartment-->
+		<resource type="font" name="publicoperation" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PUBOPERFONT" description="PSK_PUBOPERFONT_DESC"/>
+		<resource type="font" name="privateoperation" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PRIOPERFONT" description="PSK_PRIOPERFONT_DESC"/>
+		<resource type="font" name="protectedoperation" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PROOPERFONT" description="PSK_PROOPERFONT_DESC"/>
+		<resource type="font" name="packageoperation" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGOPERFONT" description="PSK_PKGOPERFONT_DESC"/>
+	</drawengine>
+	<drawengine type="GeneralizationEdgeDrawEngine" displayName="PSK_GENERALIZATIONEDGEDRAWENGINE" description="PSK_GENERALIZATIONEDGEDRAWENGINE_DESC" diagramtype="class">
+		<resource type="color" name="generalizationedgecolor" colorvalue="0,0,0" displayName="PSK_EDGECOLOR" description="PSK_EDGECOLOR_DESC"/>
+	</drawengine>
+	<drawengine type="ImplementationEdgeDrawEngine" displayName="PSK_IMPLEMENTATIONEDGEDRAWENGINE" description="PSK_IMPLEMENTATIONEDGEDRAWENGINE_DESC" diagramtype="class">
+		<resource type="color" name="implementationedgecolor" colorvalue="0,0,0" displayName="PSK_EDGECOLOR" description="PSK_EDGECOLOR_DESC"/>
+	</drawengine>
+	<drawengine type="InterfaceDrawEngine" displayName="PSK_INTERFACEDRAWENGINE" description="PSK_INTERFACEDRAWENGINE_DESC" diagramtype="class">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="ellipsefill" colorvalue="251,233,126" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="ellipselightgradientfill" colorvalue="254,254,254" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="ellipseborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="NestedLinkDrawEngine" displayName="PSK_NESTEDLINKDRAWENGINE" description="PSK_NESTEDLINKDRAWENGINE_DESC" diagramtype="class">
+		<resource type="color" name="nestedlinkcolor" colorvalue="0,0,0" displayName="PSK_EDGECOLOR" description="PSK_EDGECOLOR_DESC"/>
+	</drawengine>
+	<drawengine type="PackageDrawEngine" displayName="PSK_PACKAGEDRAWENGINE" description="PSK_PACKAGEDRAWENGINE_DESC" diagramtype="class">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="packagefill" colorvalue="105,191,105" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="packagelightgradientfill" colorvalue="188,223,198" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="packageborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<resource type="font" name="packagetabfont" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_PKGTABFONT" description="PSK_PKGTABFONT_DESC"/>
+		<resource type="font" name="packagebodyfont" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_PKGBODYFONT" description="PSK_PKGBODYFONT_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="QualifierDrawEngine" displayName="PSK_QUALIFIERDRAWENGINE" description="PSK_QUALIFIERDRAWENGINE_DESC" diagramtype="class">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="qualifierfill" colorvalue="251,233,126" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="qualifierlightgradientfill" colorvalue="254,254,254" displayName="PSK_LIGHTFILLCOLOR" description="PSK_LIGHTFILLCOLOR_DESC"/>
+		<resource type="color" name="qualifierborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="EREntityAssociationEdgeDrawEngine" displayName="PSK_ERENTITYASSOCIATIONEDGEDRAWENGINE" description="PSK_ERENTITYASSOCIATIONEDGEDRAWENGINE_DESC" diagramtype="entity">
+		<resource type="color" name="entityassociationedgecolor" colorvalue="0,0,0" displayName="PSK_EDGECOLOR" description="PSK_EDGECOLOR_DESC"/>
+		<resource type="font" name="erentityassociation" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_ERENTITYASSOCIATIONFONT" description="PSK_ERENTITYASSOCIATIONFONT_DESC"/>
+	</drawengine>
+	<drawengine type="EREntityDrawEngine" displayName="PSK_ERENTITYDRAWENGINE" description="PSK_ERENTITYDRAWENGINE_DESC" diagramtype="entity">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="erentityfill" colorvalue="255,255,0" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="erentityborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="ERViewDrawEngine" displayName="PSK_ERVIEWDRAWENGINE" description="PSK_ERVIEWDRAWENGINE_DESC" diagramtype="entity">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="erviewfill" colorvalue="255,255,0" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="erviewborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+	<drawengine type="TitleBlockDrawEngine" displayName="PSK_TITLEBLOCKDRAWENGINE" description="PSK_TITLEBLOCKDRAWENGINE_DESC" diagramtype="entity">
+		<!--Draw Engine Fill and Border Color-->
+		<resource type="color" name="titleblockfill" colorvalue="218,218,216" displayName="PSK_FILLCOLOR" description="PSK_FILLCOLOR_DESC"/>
+		<resource type="color" name="titleblockborder" colorvalue="0,0,0" displayName="PSK_BORDERCOLOR" description="PSK_BORDERCOLOR_DESC"/>
+		<!--Fonts used by the name list compartment-->
+		<resource type="font" name="name" facename="SansSerif" height="12" weight="700" colorvalue="0,0,0" displayName="PSK_NAMEFONT" description="PSK_NAMEFONT_DESC"/>
+		<resource type="font" name="stereotype" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STEREOFONT" description="PSK_STEREOFONT_DESC" advanced="1"/>
+		<resource type="font" name="taggedvalues" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TAGGEDVALUESFONT" description="PSK_TAGGEDVALUESFONT_DESC" advanced="1"/>
+		<resource type="font" name="packageimport" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_PKGIMPORTFONT" description="PSK_PKGIMPORTFONT_DESC" advanced="1"/>
+		<resource type="font" name="statictext" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_STATICTEXTFONT" description="PSK_STATICTEXTFONT_DESC" advanced="1"/>
+		<resource type="font" name="template" facename="SansSerif" height="9" weight="400" colorvalue="0,0,0" displayName="PSK_TEMPLATEFONT" description="PSK_TEMPLATEFONT_DESC" advanced="1"/>
+	</drawengine>
+</EMBT:DefaultColors>

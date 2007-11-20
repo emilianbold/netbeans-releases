@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PreferenceDefaults>
+	<aDefault name="DefaultDocFont" value="Arial"/>
+	<aDefault name="DefaultFont" value="Arial"/>
+	<aDefault name="DefaultCharSet" value="0"/>
+	<aDefault name="DefaultPitchAndFamily" value="0"/>
+	<aDefault name="DefaultGridFontHeight" value="11"/>
+</PreferenceDefaults>
