@@ -80,11 +80,11 @@ import org.openide.util.actions.Presenter.Popup;
 public class NewFile extends ProjectAction implements PropertyChangeListener, Popup, PopupMenuListener {
 
     private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/newFile.png" ) ); //NOI18N
-    private static final String _NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Name" ); // NI18N
-    private static final String _SHORT_DESCRIPTION = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Tooltip" ); // NI18N
-    private static final String POPUP_NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_PopupName" ); // NOI18N
-    private static final String FILE_POPUP_NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_File_PopupName" ); // NOI18N
-    private static final String TEMPLATE_NAME_FORMAT = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Template_PopupName" ); // NOI18N
+    private static final String _NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Name" );
+    private static final String _SHORT_DESCRIPTION = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Tooltip" );
+    private static final String POPUP_NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_PopupName" );
+    private static final String FILE_POPUP_NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_File_PopupName" );
+    private static final String TEMPLATE_NAME_FORMAT = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Template_PopupName" );
 
     private JMenu subMenu;
 
