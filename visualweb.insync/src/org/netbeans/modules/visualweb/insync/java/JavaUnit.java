@@ -249,11 +249,11 @@ public class JavaUnit extends SourceUnit {
         //Check if the import is successfully added
         if(result.equals(ImportStatus.needed)) {
             return isImported(fqn);
-        }else if(result.equals(ImportStatus.not_needed)){
+        }else if(result.equals(ImportStatus.not_allowed)){
+            return false;
+        }else {
             return true;
         }
-        
-        return false;
     }
  
    /**
@@ -373,13 +373,7 @@ public class JavaUnit extends SourceUnit {
     public void removeClass(JavaClass cls) {
     }
 
-    //-------------------------------------------------------------------------------------- Helpers
-
-
-    protected void endFlush(boolean madeDirty) {
-    }
-    
-    
+    //-------------------------------------------------------------------------------------- 
     public boolean flush() {    
         return true;
     }
@@ -390,6 +384,13 @@ public class JavaUnit extends SourceUnit {
     public void dumpTo(PrintWriter w) {
     }
     
+    protected synchronized void firstWriteLock() {
+        markSourceDirty = false;
+    }
+
+    protected synchronized void lastWriteUnlock() {
+        markSourceDirty = true;
+    }    
     //----------------------------------------------------------------------------- DocumentListener
 
     /*
@@ -412,14 +413,6 @@ public class JavaUnit extends SourceUnit {
         if(markSourceDirty) {
             setSourceDirty();
         }
-    }
-    
-    protected synchronized void firstWriteLock() {
-        markSourceDirty = false;
-    }
-
-    protected synchronized void lastWriteUnlock() {
-        markSourceDirty = true;
     }
     
 }
