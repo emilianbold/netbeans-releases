@@ -79,7 +79,27 @@ class PDFOpenSupport implements OpenCookie {
         final String filePath = f.getAbsolutePath();
 
         if (Utilities.isWindows()) {
+            /*
+             * To run the PDF viewer, we need to execute:
+             * 
+             *      cmd.exe /C start <file name>
+             * 
+             * This works well except for cases that there is a space
+             * in the file's path. In this case, the file's path must be
+             * enclosed to quotes to make the command-line interpreter (cmd.exe)
+             * consider it a single argument. BUT: If the first argument
+             * to the "start" command is enclosed in quotes, it is considered
+             * to be a window title. So, to make sure the file path argument
+             * is not considered a window title, we must pass some dummy
+             * argument enclosed in quotes as the first argument and the
+             * actual file path as the second argument (of the 'start' command):
+             * 
+             *      cmd.exe /C start "PDF Viewer" <file name>
+             * 
+             * (see also bug #122221)
+             */
             tryCommand(new String[] {"cmd.exe", "/C", "start",          //NOI18N
+                                     "\"PDF Viewer\"",  //win.title     //NOI18N
                                      filePath});
             return;
         }
