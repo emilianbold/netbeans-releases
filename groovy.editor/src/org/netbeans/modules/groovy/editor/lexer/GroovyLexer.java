@@ -131,6 +131,19 @@ final class GroovyLexer implements Lexer<GsfTokenId> {
                     return null;
                 }
 
+                // temp fix
+                if (len < 0) {
+                    len = lexerInput.readLength() - myCharBuffer.getExtraCharCount();
+                    int tokenLength = lexerInput.readLength();
+                    scanner.resetText();
+                    while (len < tokenLength) {
+                        scannerConsumeChar();
+                        len++;
+                    }
+                    scanner.resetText();
+                    return createToken(GroovyTokenId.ERROR_INT, tokenLength);
+                }
+                
                 return createToken(intId, len);
 
             } 
