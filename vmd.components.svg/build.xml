@@ -42,15 +42,4 @@ made subject to such option by the copyright holder.
 -->
 <project basedir="." default="netbeans" name="mobility/svg/nb_svg_midp_module">
     <import file="../../../nbbuild/templates/projectized.xml"/>
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init">
-        <mkdir dir="${cluster}/modules/ext"/>
-        <mkdir dir="${cluster}/modules/docs"/>
-        <mkdir dir="${cluster}/sources"/>
-        <echo message="${cluster}/modules/ext"/>
-        <copy file="../nb_svg_midp_components/dist/nb_svg_midp_components.jar" todir="${cluster}/modules/ext"/>
-        <copy file="../nb_svg_midp_components/dist/nb_svg_midp_components-api.zip" todir="${cluster}/modules/docs"/>    
-        <copy file="../nb_svg_midp_components/dist/nb_svg_midp_components-src.zip" todir="${cluster}/sources"/>         
-    </target>    
 </project>
