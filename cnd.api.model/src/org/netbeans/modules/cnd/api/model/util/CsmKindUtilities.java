@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
@@ -536,6 +537,10 @@ public class CsmKindUtilities {
                (obj instanceof CsmUsingDirective);
     }
 
+    public static boolean isNamespaceAlias(CsmObject obj) {
+        return obj instanceof CsmNamespaceAlias;        
+    }
+    
     public static boolean isUsingDirective(CsmObject obj) {
         return obj instanceof CsmUsingDirective;
     }
