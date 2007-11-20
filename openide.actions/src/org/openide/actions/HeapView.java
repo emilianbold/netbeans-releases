@@ -286,7 +286,7 @@ class HeapView extends JComponent {
             kernelData[i] = blurFactor;
         }
         blur = new ConvolveOp(new Kernel(kw, kh, kernelData));
-        format = new MessageFormat("{0,number,0.0}/{1,number,0.0}MB");
+        format = new MessageFormat("{0,choice,0#{0,number,0.0}|999<{0,number,0}}/{1,choice,0#{1,number,0.0}|999<{1,number,0}}MB");
         heapSizeText = "";
         showDropShadow = true;
         showText = true;
