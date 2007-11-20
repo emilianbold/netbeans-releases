@@ -193,7 +193,8 @@ public class CompletionResolverImpl implements CompletionResolver {
         Collection globProjectMacros = null;
         
         Collection globFuns       = null;
-        Collection globProjectNSs = null; // NOT YET IMPL
+        Collection globProjectNSs = null;
+        Collection projectNsAliases = null; // NOT YET IMPL
         
         Collection libClasses     = null;
         Collection fileLibMacros  = null;
@@ -201,7 +202,8 @@ public class CompletionResolverImpl implements CompletionResolver {
         Collection libVars        = null;
         Collection libEnumerators = null;
         Collection libFuns        = null;
-        Collection libNSs         = null; // NOT YET IMPL
+        Collection libNSs         = null; 
+        Collection libNsAliases   = null; // NOT YET IMPL
         
         CsmProject prj = file != null ? file.getProject() : null;
         if (prj == null) {
@@ -336,10 +338,12 @@ public class CompletionResolverImpl implements CompletionResolver {
                 classFields, classEnumerators, classMethods, classesEnumsTypedefs, 
                 fileLocalVars, fileLocalEnumerators, 
                 fileLocalMacros, fileProjectMacros, 
-                globVars, globEnumerators, globProjectMacros, globFuns, globProjectNSs, 
+                globVars, globEnumerators, globProjectMacros, globFuns, 
+                globProjectNSs, projectNsAliases,
                 libClasses, 
                 fileLibMacros, globLibMacros, 
-                libVars, libEnumerators, libFuns, libNSs);
+                libVars, libEnumerators, libFuns, 
+                libNSs, libNsAliases);
         //long timeEnd = System.nanoTime();
         //System.out.println("get gesolve list time "+(timeEnd -timeStart)+" objects "+result.size()); //NOI18N
         //System.out.println("get global macro time "+(timeGlobMacroEnd -timeGlobMacroStart)+" objects "+ //NOI18N
@@ -402,10 +406,12 @@ public class CompletionResolverImpl implements CompletionResolver {
             Collection classFields, Collection classEnumerators, Collection classMethods, Collection classesEnumsTypedefs, 
             Collection fileLocalVars, Collection fileLocalEnumerators, Collection fileLocalMacros, Collection fileProjectMacros, 
             Collection globVars, Collection globEnumerators, 
-            Collection globProjectMacros, Collection globFuns, Collection globProjectNSs,             
+            Collection globProjectMacros, Collection globFuns, 
+            Collection globProjectNSs, Collection projectNsAliases,
             Collection libClasses,             
             Collection fileLibMacros, Collection globLibMacros,
-            Collection libVars, Collection libEnumerators, Collection libFuns, Collection libNSs) {
+            Collection libVars, Collection libEnumerators, Collection libFuns, 
+            Collection libNSs, Collection libNsAliases) {
         // local vars
         int fullSize = 0;
         if (DEBUG || STAT_COMPLETION) { fullSize += trace(localVars, "Local variables");} //NOI18N
@@ -439,6 +445,8 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (DEBUG || STAT_COMPLETION) { fullSize += trace(globFuns, "Global Project functions");} //NOI18N
         // add namespaces
         if (DEBUG || STAT_COMPLETION) { fullSize += trace(globProjectNSs, "Global Project Namespaces");} //NOI18N        
+        // add namespace aliases
+        if (DEBUG || STAT_COMPLETION) { fullSize += trace(projectNsAliases, "Project Namespace Aliases");} //NOI18N        
         // add libraries classesEnumsTypedefs
         if (DEBUG || STAT_COMPLETION) { fullSize += trace(libClasses, "Library classes");} //NOI18N
         if (DEBUG || STAT_COMPLETION) { fullSize += trace(fileLibMacros, "File Included Library Macros");} //NOI18N
@@ -451,8 +459,10 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (DEBUG || STAT_COMPLETION) { fullSize += trace(libEnumerators, "Global Library enumerators");} //NOI18N
         // add libraries functions
         if (DEBUG || STAT_COMPLETION) { fullSize += trace(libFuns, "Global Library functions");} //NOI18N
-        // add libraries functions
+        // add libraries namespaces
         if (DEBUG || STAT_COMPLETION) { fullSize += trace(libNSs, "Global Library Namespaces");} //NOI18N
+        // add libraries namespace aliases
+        if (DEBUG || STAT_COMPLETION) { fullSize += trace(libNsAliases, "Global Library Namespace Aliases");} //NOI18N
         // all elements info
         if (DEBUG || STAT_COMPLETION) { trace(null, "There are " + fullSize + " resovled elements");} //NOI18N
         Result out = new ResultImpl(
@@ -460,10 +470,12 @@ public class CompletionResolverImpl implements CompletionResolver {
                     classFields, classEnumerators, classMethods, classesEnumsTypedefs, 
                     fileLocalVars, fileLocalEnumerators, 
                     fileLocalMacros, fileProjectMacros,
-                    globVars, globEnumerators, globProjectMacros, globFuns, globProjectNSs,
+                    globVars, globEnumerators, globProjectMacros, globFuns, 
+                    globProjectNSs, projectNsAliases,
                     libClasses,
                     fileLibMacros, globLibMacros,
-                    libVars, libEnumerators, libFuns, libNSs 
+                    libVars, libEnumerators, libFuns, 
+                    libNSs, libNsAliases
                             );
         return out;
     }
@@ -862,33 +874,35 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
 
     private static final class ResultImpl implements Result {
-        private Collection localVars      = null;
+        private final Collection localVars;
         
-        private Collection classFields    = null;
-        private Collection classEnumerators = null;
-        private Collection classMethods   = null;
-        private Collection classesEnumsTypedefs = null;
+        private final Collection classFields;
+        private final Collection classEnumerators;
+        private final Collection classMethods;
+        private final Collection classesEnumsTypedefs;
         
-        private Collection fileLocalVars  = null;
-        private Collection fileLocalEnumerators = null;
-        private Collection fileLocalMacros = null;
+        private final Collection fileLocalVars;
+        private final Collection fileLocalEnumerators;
+        private final Collection fileLocalMacros;
 
-        private Collection fileProjectMacros = null;
+        private final Collection fileProjectMacros;
 
-        private Collection globVars       = null;
-        private Collection globEnumerators = null;
-        private Collection globProjectMacros = null;
+        private final Collection globVars;
+        private final Collection globEnumerators;
+        private final Collection globProjectMacros;
         
-        private Collection globFuns       = null;
-        private Collection globProjectNSs = null; 
+        private final Collection globFuns;
+        private final Collection globProjectNSs; 
+        private final Collection projectNsAliases; 
         
-        private Collection libClasses     = null;
-        private Collection fileLibMacros  = null;
-        private Collection globLibMacros  = null;
-        private Collection libVars        = null;
-        private Collection libEnumerators = null;
-        private Collection libFuns        = null;
-        private Collection libNSs         = null;    
+        private final Collection libClasses;
+        private final Collection fileLibMacros;
+        private final Collection globLibMacros;
+        private final Collection libVars;
+        private final Collection libEnumerators;
+        private final Collection libFuns;
+        private final Collection libNSs;    
+        private final Collection libNsAliases;    
 
         private ResultImpl(
                     Collection localVars,
@@ -910,6 +924,7 @@ public class CompletionResolverImpl implements CompletionResolver {
 
                     Collection globFuns,
                     Collection globProjectNSs,
+                    Collection projectNsAliases,
 
                     Collection libClasses,
                     Collection fileLibMacros,
@@ -917,7 +932,8 @@ public class CompletionResolverImpl implements CompletionResolver {
                     Collection libVars,
                     Collection libEnumerators,
                     Collection libFuns,
-                    Collection libNSs 
+                    Collection libNSs,
+                    Collection libNsAliases 
                             ) {
             this.localVars = localVars;
             
@@ -938,6 +954,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             
             this.globFuns = globFuns;
             this.globProjectNSs = globProjectNSs;
+            this.projectNsAliases = projectNsAliases;
             
             this.libClasses = libClasses;
             this.fileLibMacros = fileLibMacros;
@@ -946,6 +963,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             this.libEnumerators = libEnumerators;
             this.libFuns = libFuns;
             this.libNSs = libNSs;
+            this.libNsAliases = libNsAliases;
         }
         
         public Collection getLocalVariables() {
@@ -1004,6 +1022,10 @@ public class CompletionResolverImpl implements CompletionResolver {
             return maskNull(globProjectNSs);
         }
 
+        public Collection getProjectNamespaceAliases() {
+            return maskNull(projectNsAliases);
+        }
+        
         public Collection getLibClassifiersEnums() {
             return maskNull(libClasses);
         }
@@ -1030,6 +1052,10 @@ public class CompletionResolverImpl implements CompletionResolver {
 
         public Collection getLibNamespaces() {
             return maskNull(libNSs);
+        }
+        
+        public Collection getLibNamespaceAliases() {
+            return maskNull(libNsAliases);
         }
         
         public Collection addResulItemsToCol(Collection orig) {
@@ -1181,6 +1207,14 @@ public class CompletionResolverImpl implements CompletionResolver {
         public int size() {
             return 0;
         }
+
+        public Collection getProjectNamespaceAliases() {
+            return Collections.EMPTY_LIST;
+        }
+
+        public Collection getLibNamespaceAliases() {
+            return Collections.EMPTY_LIST;
+        }
         
     }
     
@@ -1215,6 +1249,8 @@ public class CompletionResolverImpl implements CompletionResolver {
         merge(dest, result.globFuns);
         // add namespaces
         merge(dest, result.globProjectNSs);
+        // add namespace aliases
+        merge(dest, result.projectNsAliases);
         // add libraries classesEnumsTypedefs
         merge(dest, result.libClasses);
         merge(dest, result.fileLibMacros);
@@ -1225,8 +1261,10 @@ public class CompletionResolverImpl implements CompletionResolver {
         merge(dest, result.libEnumerators);
         // add libraries functions
         merge(dest, result.libFuns);
-        // add libraries functions
+        // add libraries namespaces
         merge(dest, result.libNSs);
+        // add libraries namespace aliases
+        merge(dest, result.libNsAliases);
 
         return dest;
     }    

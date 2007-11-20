@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.loaders.DataObject;
@@ -149,8 +150,9 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
     private static final int GLOBAL_MACRO_PRIORITY = GLOBAL_ENUMERATOR_PRIORITY + PRIORITY_SHIFT;
     private static final int GLOBAL_FUN_PRIORITY = GLOBAL_MACRO_PRIORITY + PRIORITY_SHIFT;
     private static final int GLOBAL_NAMESPACE_PRIORITY = GLOBAL_FUN_PRIORITY + PRIORITY_SHIFT;
+    private static final int GLOBAL_NAMESPACE_ALIAS_PRIORITY = GLOBAL_NAMESPACE_PRIORITY; // same as project ns
     
-    private static final int LIB_CLASS_PRIORITY = GLOBAL_NAMESPACE_PRIORITY + PRIORITY_SHIFT;
+    private static final int LIB_CLASS_PRIORITY = GLOBAL_NAMESPACE_ALIAS_PRIORITY + PRIORITY_SHIFT;
     private static final int LIB_ENUM_PRIORITY = LIB_CLASS_PRIORITY; // same as class
     private static final int LIB_TYPEDEF_PRIORITY = LIB_CLASS_PRIORITY; // same as class
     
@@ -160,6 +162,7 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
     private static final int LIB_ENUMERATOR_PRIORITY = LIB_VAR_PRIORITY + PRIORITY_SHIFT;
     private static final int LIB_FUN_PRIORITY = LIB_ENUMERATOR_PRIORITY + PRIORITY_SHIFT;
     private static final int LIB_NAMESPACE_PRIORITY = LIB_FUN_PRIORITY + PRIORITY_SHIFT;    
+    private static final int LIB_NAMESPACE_ALIAS_PRIORITY = LIB_NAMESPACE_PRIORITY; // same as lib ns
        
     // 550 is priority for abbreviations, we'd like to be above
     
@@ -233,6 +236,10 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
 	    return new NbCsmResultItem.NbNamespaceResultItem(pkg, displayFullNamespacePath, GLOBAL_NAMESPACE_PRIORITY);
         }
 
+        public CsmResultItem.NamespaceAliasResultItem createNamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath) {
+            return new NbCsmResultItem.NbNamespaceAliasResultItem(alias, displayFullNamespacePath, GLOBAL_NAMESPACE_ALIAS_PRIORITY);
+        }
+        
         public CsmResultItem.ClassResultItem createLibClassResultItem(CsmClass cls, int classDisplayOffset, boolean displayFQN){
             return new NbCsmResultItem.NbClassResultItem(cls, classDisplayOffset, displayFQN, LIB_CLASS_PRIORITY);
         }
@@ -265,6 +272,10 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         
         public CsmResultItem.NamespaceResultItem createLibNamespaceResultItem(CsmNamespace pkg, boolean displayFullNamespacePath) {
 	    return new NbCsmResultItem.NbNamespaceResultItem(pkg, displayFullNamespacePath, LIB_NAMESPACE_PRIORITY);
+        }         
+
+        public CsmResultItem.NamespaceAliasResultItem createLibNamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath) {
+            return new NbCsmResultItem.NbNamespaceAliasResultItem(alias, displayFullNamespacePath, LIB_NAMESPACE_ALIAS_PRIORITY);
         }        
     }
 }

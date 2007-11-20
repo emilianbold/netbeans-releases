@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 
 /**
@@ -169,6 +170,8 @@ public interface CompletionResolver {
 
         public Collection<CsmNamespace> getGlobalProjectNamespaces();
 
+        public Collection<CsmNamespaceAlias> getProjectNamespaceAliases();
+
         public Collection<CsmClassifier> getLibClassifiersEnums();
 
         public Collection<CsmMacro> getInFileIncludedLibMacros();
@@ -183,6 +186,8 @@ public interface CompletionResolver {
 
         public Collection<CsmNamespace> getLibNamespaces();
         
+        public Collection<CsmNamespaceAlias> getLibNamespaceAliases();
+
         public Collection addResulItemsToCol(Collection orig);
         
         public int size();

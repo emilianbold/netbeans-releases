@@ -77,6 +77,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.ParamStr;
@@ -997,6 +998,37 @@ public abstract class CsmResultItem
             return ctrComponent;
         }
         
+        
+    }
+    
+    public static class NamespaceAliasResultItem extends CsmResultItem{
+        
+        private CsmNamespaceAlias alias;
+        private String aliasName;
+        private static CsmPaintComponent.NamespaceAliasPaintComponent aliasComponent;
+        
+        public NamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath, int priotity){
+            super(alias, priotity);
+            this.alias = alias;
+            this.aliasName = alias.getAlias();
+        }        
+        
+        public String getItemText() {
+            return alias.getAlias();
+        }
+        
+        protected CsmPaintComponent.NamespaceAliasPaintComponent createPaintComponent(){
+            return new CsmPaintComponent.NamespaceAliasPaintComponent();
+        }
+        
+        public Component getPaintComponent(boolean isSelected) {
+            if (aliasComponent == null) {
+                aliasComponent = createPaintComponent();
+            }
+            aliasComponent.setSelected(isSelected);
+            aliasComponent.setAliasName(aliasName);
+            return aliasComponent;
+        }
         
     }
     

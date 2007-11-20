@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.modelutil.NbCsmPaintComponent;
@@ -78,6 +79,7 @@ public abstract class NbCsmResultItem extends CsmResultItem{
             super(fld, priority);
         }        
 
+        @Override
         protected CsmPaintComponent.FieldPaintComponent createPaintComponent(){
             return new NbCsmPaintComponent.NbGlobalVariablePaintComponent();
         }
@@ -90,6 +92,7 @@ public abstract class NbCsmResultItem extends CsmResultItem{
             super(fld, priority);
         }        
 
+        @Override
         protected CsmPaintComponent.FieldPaintComponent createPaintComponent(){
             return new NbCsmPaintComponent.NbLocalVariablePaintComponent();
         }
@@ -102,6 +105,7 @@ public abstract class NbCsmResultItem extends CsmResultItem{
             super(fld, priority);
         }        
 
+        @Override
         protected CsmPaintComponent.FieldPaintComponent createPaintComponent(){
             return new NbCsmPaintComponent.NbFileLocalVariablePaintComponent();
         }
@@ -114,6 +118,7 @@ public abstract class NbCsmResultItem extends CsmResultItem{
             super(mac, priority);
         }        
 
+        @Override
         protected CsmPaintComponent.MacroPaintComponent createPaintComponent(){
             return new NbCsmPaintComponent.NbMacroPaintComponent();
         }
@@ -126,6 +131,7 @@ public abstract class NbCsmResultItem extends CsmResultItem{
             super(fld, priority);
         }        
 
+        @Override
         protected CsmPaintComponent.FieldPaintComponent createPaintComponent(){
             return new NbCsmPaintComponent.NbFieldPaintComponent();
         }
@@ -138,6 +144,7 @@ public abstract class NbCsmResultItem extends CsmResultItem{
             super(fun, substituteExp, priority);
         }        
 
+        @Override
         protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent() {
             return new NbCsmPaintComponent.NbGlobalFunctionPaintComponent();
         }
@@ -150,6 +157,7 @@ public abstract class NbCsmResultItem extends CsmResultItem{
             super(mtd, substituteExp, priority);
         }        
 
+        @Override
         protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent(){
             return new NbCsmPaintComponent.NbMethodPaintComponent();
         }
@@ -162,17 +170,31 @@ public abstract class NbCsmResultItem extends CsmResultItem{
             super(ctr, substituteExp, priority);
         }
 
+        @Override
         protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent() {
             return new NbCsmPaintComponent.NbConstructorPaintComponent();
         }
         
     }
     
+    public final static class NbNamespaceAliasResultItem extends NamespaceAliasResultItem {
+        public NbNamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullPackagePath, int priority) {
+            super(alias, displayFullPackagePath, priority);
+        }
+        
+        @Override
+        protected CsmPaintComponent.NamespaceAliasPaintComponent createPaintComponent() {
+            return new NbCsmPaintComponent.NbNamespaceAliasPaintComponent();
+        }
+
+    }
+
     public final static class NbNamespaceResultItem extends NamespaceResultItem {
         public NbNamespaceResultItem(CsmNamespace pkg, boolean displayFullPackagePath, int priority) {
             super(pkg, displayFullPackagePath, priority);
         }
         
+        @Override
         protected CsmPaintComponent.NamespacePaintComponent createPaintComponent() {
             return new NbCsmPaintComponent.NbNamespacePaintComponent();
         }
@@ -188,6 +210,7 @@ public abstract class NbCsmResultItem extends CsmResultItem{
             super(enm, enumDisplayOffset, displayFQN, priority);
         }
         
+        @Override
         protected CsmPaintComponent.EnumPaintComponent createPaintComponent() {
             return new NbCsmPaintComponent.NbEnumPaintComponent();
         }
@@ -203,6 +226,7 @@ public abstract class NbCsmResultItem extends CsmResultItem{
             super(enmtr, enumDisplayOffset, displayFQN, priority);
         }
         
+        @Override
         protected CsmPaintComponent.EnumeratorPaintComponent createPaintComponent() {
             return new NbCsmPaintComponent.NbEnumeratorPaintComponent();
         }
@@ -218,14 +242,17 @@ public abstract class NbCsmResultItem extends CsmResultItem{
             super(cls, classDisplayOffset, displayFQN, priority);
         }
         
+        @Override
         protected CsmPaintComponent.ClassPaintComponent createClassPaintComponent() {
             return new NbCsmPaintComponent.NbClassPaintComponent();
         }
 
+        @Override
         protected CsmPaintComponent.StructPaintComponent createStructPaintComponent() {
             return new NbCsmPaintComponent.NbStructPaintComponent();
         }
         
+        @Override
         protected CsmPaintComponent.UnionPaintComponent createUnionPaintComponent() {
             return new NbCsmPaintComponent.NbUnionPaintComponent();
         }
@@ -241,6 +268,7 @@ public abstract class NbCsmResultItem extends CsmResultItem{
             super(def, classDisplayOffset, displayFQN, priority);
         }
         
+        @Override
         protected CsmPaintComponent.TypedefPaintComponent createTypedefPaintComponent() {
             return new NbCsmPaintComponent.NbTypedefPaintComponent();
         }
@@ -252,6 +280,7 @@ public abstract class NbCsmResultItem extends CsmResultItem{
             super(str, priority);
         }
 
+        @Override
         protected CsmPaintComponent.StringPaintComponent createStringPaintComponent() {
             return new NbCsmPaintComponent.NbStringPaintComponent();
         }        

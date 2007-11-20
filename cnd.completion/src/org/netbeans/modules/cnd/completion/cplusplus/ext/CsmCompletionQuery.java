@@ -74,6 +74,7 @@ import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.ExtSettingsNames;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.editor.cplusplus.CCSettingsNames;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
@@ -1859,6 +1860,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         public CsmResultItem.MacroResultItem createGlobalMacroResultItem(CsmMacro mac);
 
         public CsmResultItem.NamespaceResultItem createNamespaceResultItem(CsmNamespace pkg, boolean displayFullNamespacePath);
+        public CsmResultItem.NamespaceAliasResultItem createNamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath);
         
         public CsmResultItem.ClassResultItem createLibClassResultItem(CsmClass cls, int classDisplayOffset, boolean displayFQN);
         public CsmResultItem.EnumResultItem createLibEnumResultItem(CsmEnum enm, int enumDisplayOffset, boolean displayFQN);
@@ -1872,6 +1874,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     
         public CsmResultItem.GlobalFunctionResultItem createLibGlobalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp);
         public CsmResultItem.NamespaceResultItem createLibNamespaceResultItem(CsmNamespace pkg, boolean displayFullNamespacePath);
+        public CsmResultItem.NamespaceAliasResultItem createLibNamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath);
     }
     
     private static final int FAKE_PRIORITY = 1000;
@@ -1883,6 +1886,10 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             return new CsmResultItem.NamespaceResultItem(pkg, displayFullNamespacePath, FAKE_PRIORITY);
         }
     
+        public CsmResultItem.NamespaceAliasResultItem createNamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath) {
+            return new CsmResultItem.NamespaceAliasResultItem(alias, displayFullNamespacePath, FAKE_PRIORITY);
+        }
+
         public CsmResultItem.EnumeratorResultItem createMemberEnumeratorResultItem(CsmEnumerator enmtr, int enumtrDisplayOffset, boolean displayFQN) {
             return createGlobalEnumeratorResultItem(enmtr, enumtrDisplayOffset, displayFQN);
         }
@@ -1978,6 +1985,10 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         public CsmResultItem.NamespaceResultItem createLibNamespaceResultItem(CsmNamespace pkg, boolean displayFullNamespacePath) {
             return createNamespaceResultItem(pkg, displayFullNamespacePath);
         }
+        
+        public CsmResultItem.NamespaceAliasResultItem createLibNamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath) {
+            return createNamespaceAliasResultItem(alias, displayFullNamespacePath);
+        }        
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -2154,6 +2165,13 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             out.add(item);            
         }
         
+        for (CsmNamespaceAlias elem : res.getProjectNamespaceAliases()) {
+            item = factory.createNamespaceAliasResultItem(elem, false);
+            assert item != null;
+            item.setSubstituteOffset(substituteOffset);    
+            out.add(item);            
+        }
+        
         for (CsmClassifier elem : res.getLibClassifiersEnums()) {
             if (CsmKindUtilities.isClass(elem)) {
                 item = factory.createLibClassResultItem((CsmClass)elem, classDisplayOffset, false);
@@ -2210,6 +2228,12 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             out.add(item);            
         }    
         
+        for (CsmNamespaceAlias elem : res.getLibNamespaceAliases()) {
+            item = factory.createLibNamespaceAliasResultItem(elem, false);
+            assert item != null;
+            item.setSubstituteOffset(substituteOffset);    
+            out.add(item);            
+        }          
         return out;
     }
     
