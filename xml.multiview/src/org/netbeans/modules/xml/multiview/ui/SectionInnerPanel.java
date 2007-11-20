@@ -395,7 +395,7 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
                 if (Error.TYPE_WARNING == error.getSeverityLevel() && !disable) {
                     org.openide.DialogDescriptor desc = new RefreshSaveDialog(sectionView.getErrorPanel());
                     Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(desc);
-                    dialog.show();
+                    dialog.setVisible(true);
                     Integer opt = (Integer) desc.getValue();
                     if (opt.equals(RefreshSaveDialog.OPTION_FIX)) {
                         disable = true;
@@ -413,7 +413,7 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
                 } else if (!disable){
                     org.openide.DialogDescriptor desc = new RefreshDialog(sectionView.getErrorPanel());
                     Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(desc);
-                    dialog.show();
+                    dialog.setVisible(true);
                     Integer opt = (Integer) desc.getValue();
                     if (opt.equals(RefreshDialog.OPTION_FIX)) {
                         disable = true;

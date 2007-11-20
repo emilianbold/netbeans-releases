@@ -88,7 +88,7 @@ public class SectionNode extends AbstractNode {
         this.sectionNodeView = sectionNodeView;
         this.key = key;
         super.setDisplayName(title);
-        super.setIconBase(iconBase);
+        super.setIconBaseWithExtension(iconBase + ".gif"); //NOI18N
         this.iconBase = iconBase;
         sectionNodeView.registerNode(this);
     }

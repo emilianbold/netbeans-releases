@@ -90,7 +90,7 @@ public abstract class SectionNodeView extends SectionView {
         root.add(new Node[]{rootNode});
         AbstractNode mainNode = new AbstractNode(root);
         mainNode.setDisplayName(rootNode.getDisplayName());
-        mainNode.setIconBase(rootNode.getIconBase());
+        mainNode.setIconBaseWithExtension(rootNode.getIconBase() + ".gif"); //NOI18N
         setRoot(mainNode);
         addSection(rootNode.getSectionNodePanel());
     }

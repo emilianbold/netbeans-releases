@@ -52,7 +52,7 @@ public class SectionContainerNode extends org.openide.nodes.AbstractNode {
     public SectionContainerNode(org.openide.nodes.Children ch) {
         super(ch);
         int childrenSize = ch.getNodes().length;
-        setIconBase("org/netbeans/modules/xml/multiview/resources/folder"); //NOI18N
+        setIconBaseWithExtension("org/netbeans/modules/xml/multiview/resources/folder.gif"); //NOI18N
         addNodeListener(new NodeAdapter() {
             public void childrenAdded(org.openide.nodes.NodeMemberEvent ev) {
                 if (SectionContainerNode.this.getChildren().getNodes().length==1) {
