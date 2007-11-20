@@ -215,13 +215,13 @@ made subject to such option by the copyright holder.
                 <project>../../httpserver/servletapi</project>
                 <project>../../i18n</project>
                 <project>../../i18n/form</project>
-                <project>../../ide/branding</project>
-                <project>../../ide/branding/kit</project>
-                <project>../../ide/defaults</project>
-                <project>../../ide/kit</project>
-                <project>../../ide/launcher/upgrade</project>
-                <project>../../ide/updatecenters</project>
-                <project>../../ide/welcome</project>
+                <project>../branding</project>
+                <project>../branding/kit</project>
+                <project>../defaults</project>
+                <project>../kit</project>
+                <project>../launcher/upgrade</project>
+                <project>../updatecenters</project>
+                <project>../welcome</project>
                 <project>../../identity/ant</project>
                 <project>../../identity/kit</project>
                 <project>../../identity/profileapi</project>
@@ -508,7 +508,6 @@ made subject to such option by the copyright holder.
                 <project>../../visualweb/outline</project>
                 <project>../../visualweb/palette</project>
                 <project>../../visualweb/portletcontainer/ddapi</project>
-                <project>../../visualweb/project/importpage</project>
                 <project>../../visualweb/project/jsf</project>
                 <project>../../visualweb/project/jsfloader</project>
                 <project>../../visualweb/propertyeditors</project>
@@ -563,7 +562,6 @@ made subject to such option by the copyright holder.
                 <project>../../websvc/jaxwsmodel</project>
                 <project>../../websvc/kit</project>
                 <project>../../websvc/manager</project>
-                <project>../../websvc/restapi</project>
                 <project>../../websvc/serviceapi</project>
                 <project>../../websvc/websvcapi</project>
                 <project>../../websvc/websvcddapi</project>
