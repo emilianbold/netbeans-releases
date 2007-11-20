@@ -855,11 +855,11 @@ function WADLParser() {
 WADLParser.prototype = {
     updateMenu : function (rtext) {                                
         if(rtext == undefined || rtext == "" || rtext.indexOf("HTTP Status") != -1) {   
-            var newUrl = prompt(wadlErr, baseURL);
+            var newUrl = prompt(ts.wadlErr, baseURL);
             if(newUrl != null && baseURL != newUrl) {
                 baseURL = newUrl;
                 ts.wadlURL = baseURL+"/application.wadl";
-                init();
+                ts.init();
             }
             return;
         }
