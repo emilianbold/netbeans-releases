@@ -1,19 +1,245 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-
+    <folder name="Loaders">
+        <folder name="application">
+            <folder name="x-gsp">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/gsp/resources/gsp16.png"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/groovy/gsp/resources/gsp16.png"/>
+                <folder name="Actions">
+                    <file name="org-openide-actions-OpenAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.instance">
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
     <folder name="Services">
         <folder name="MIMEResolver">
-            <file name="GSP.xml" url="GSP.xml">
+            <file name="GspResolver.xml" url="GspResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.gsp.resources.Bundle"/>
+                <attr name="position" intvalue="230"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Templates">
+        <folder name="Groovy">
+            <file name="_view.gsp" url="GspTemplate.gsp">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.gsp.resources.Bundle"/>
+                <attr name="position" intvalue="100"/>
+                <attr name="templateCategory" stringvalue="ruby"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="template" boolvalue="true"/>
             </file>
         </folder>
     </folder>
 
     <folder name="Editors">
-        <folder name="text">
-            <folder name="gsp">
-                <file name="language.nbs" url="GSP.nbs"/>
+        <folder name="application">
+            <folder name="x-gsp">
+                <file name="org-netbeans-modules-groovy-gsp-GspIndentTaskFactory.instance"/>
+                <file name="org-netbeans-modules-groovy-gsp-EmbeddedSectionsHighlighting$Factory.instance"/>
+
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+<!--
+                <file name="org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance" />
+-->                
+                <attr name="createDataObject" boolvalue="false"/>
+                <file name="language.nbs" url="GSP.nbs">
+                    <attr name="icon" stringvalue="org/netbeans/modules/groovy/gsp/resources/gsp16.png"/>
+                </file>
+                
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-gsfret-editor-completion-GsfCompletionProvider.instance"/>
+                    <!-- This doesn't work right because most of the templates don't start with characters
+                         that are identifiers
+                    <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance"/>
+                    -->
+                </folder>
+   
+                <!--
+                <folder name="CodeTemplateFilterFactories">
+                    <file name="org-netbeans-modules-groovy-gsp-editor-GspCodeTemplateFilter$Factory.instance"/>
+                    OR:
+                    <file name="org-netbeans-modules-gsfret-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance"/>
+                </folder>   
+                -->
+
+                <folder name="HyperlinkProviders">
+                    <file name="GsfHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.gsfret.editor.hyperlink.GsfHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                    </file>
+                </folder>
+
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.gsp.resources.Bundle"/>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.gsp.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+
+                <file name="Settings.settings" url="GspOptions.settings"/>
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.gsp.editor.GspKit"/>
+                </file>
+            
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="codetemplates.xml" url="codetemplates.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.gsp.resources.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-ruby-keybindings.xml" url="DefaultKeyBindings.xml"/>
+                            <file name="org-netbeans-modules-ruby-keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml">
+                                <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+
+                <folder name="Popup">
+                    <file name="format">
+                        <attr name="position" intvalue="1480"/>
+                    </file>
+                
+                    <file name="SeparatorAfterGoToHelp.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1240"/>
+                    </file>
+                    
+                    <file name="SeparatorBeforeCut.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1960"/>
+                    </file>                    
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="application">
+                <folder name="x-gsp">
+                    <file name="org-netbeans-modules-languages-features-LanguagesNavigator.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="OptionsDialog">
+        <folder name="PreviewExamples">
+            <folder name="application">
+                <file name="x-gsp" url="GspExample"/>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="GsfPlugins">
+        <folder name="application">
+            <folder name="x-gsp">
+                <attr name="displayName" stringvalue="GSP"/>
+                <!-- Use Schliemann instead of the custom GSF editor kit -->
+                <attr name="useCustomEditorKit" boolvalue="true"/>
+                
+                <file name="language.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.GsfLanguage"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.gsp.GspLanguage"/>
+                </file>
+<!--                
+                <file name="parser.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.Parser"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.gsp.GspParser"/>
+                </file>
+
+                <file name="renamer.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.InstantRenamer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RenameHandler"/>
+                </file>
+
+                <file name="completion.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.Completable"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.gsp.GspCompleter"/>
+                </file>
+                
+                <file name="declarationfinder.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.DeclarationFinder"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.gsp.GspFinder"/>
+                </file>
+-->                
+                
+                <file name="bracket.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.BracketCompletion"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.BracketCompleter"/>
+                </file>
+                <!--
+                Navigator handled by Schliemann
+                <file name="structure.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.StructureScanner"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.StructureAnalyzer"/>
+                </file>
+
+                Don't index gsp files - there's usually nothing interesting (new classes, methods) there
+                <file name="indexer.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.Indexer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyIndexer"/>
+                </file>
+                -->
+                <folder name="extensions">
+                    <file name="gsp"/>
+                </folder>
             </folder>
         </folder>
     </folder>

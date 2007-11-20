@@ -131,6 +131,10 @@ final class GroovyLexer implements Lexer<GsfTokenId> {
                     return null;
                 }
 
+//                if (len < 0) {
+//                    return createToken(GroovyTokenId.ERROR_INT, len);
+//                }
+//                
                 return createToken(intId, len);
 
             } 
