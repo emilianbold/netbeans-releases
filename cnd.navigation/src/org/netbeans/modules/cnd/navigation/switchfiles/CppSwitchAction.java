@@ -96,16 +96,22 @@ public final class CppSwitchAction extends BaseAction {
         final Node[] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
 
         FileObject res = findToggleFile(activatedNodes);
+        boolean isToggled = false;
         if (res != null) {
             doToggle(res);
+            isToggled = true;
         } else {
             CsmFile target = getTarget(activatedNodes);
             if (target != null) {
                 DataObject dob = CsmUtilities.getDataObject(target);
-                doToggle(dob);
-            } else {
-                StatusDisplayer.getDefault().setStatusText(getMessage("cpp-switch-file-not-found")); // NOI18N
+                if (dob != null) {
+                    doToggle(dob);
+                    isToggled = true;
+                }
             }
+        }
+        if (!isToggled) {
+            StatusDisplayer.getDefault().setStatusText(getMessage("cpp-switch-file-not-found")); // NOI18N
         }
     }
 
