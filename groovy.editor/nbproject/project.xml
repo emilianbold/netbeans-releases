@@ -144,7 +144,11 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.groovy.gsp</friend>
+                <package>org.netbeans.modules.groovy.editor</package>
+                <package>org.netbeans.modules.groovy.editor.lexer</package>
+            </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/antlr.jar</runtime-relative-path>
                 <binary-origin>../../../lexer/external/antlr-2.7.1.jar</binary-origin>
