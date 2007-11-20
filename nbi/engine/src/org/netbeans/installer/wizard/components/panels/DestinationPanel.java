@@ -233,6 +233,10 @@ public class DestinationPanel extends ErrorMessagePanel {
             }
         }
         
+        protected NbiTextField getDestinationField() {
+            return destinationField;
+        }
+        
         @Override
         protected String validateInput() {
             final String string = destinationField.getText().trim();

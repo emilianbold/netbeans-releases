@@ -39,6 +39,8 @@ package org.netbeans.installer.products.jdk.wizard.panels;
 import java.io.File;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.wizard.components.actions.SearchForJavaAction;
 import org.netbeans.installer.wizard.components.panels.DestinationPanel;
@@ -140,7 +142,11 @@ public class JDKPanel extends DestinationPanel {
         @Override
         protected String validateInput() {
             String errorMessage = super.validateInput();
-            
+            // don`t allow space path installation since unix JDK installer doesn`t work with that                
+            if(errorMessage == null && !SystemUtils.isWindows() && 
+                    getDestinationField().getText().trim().contains(StringUtils.SPACE)) {                
+                    errorMessage = ERROR_SPACE_IN_PATH;                
+            }
             return errorMessage;
         }
         
@@ -169,5 +175,7 @@ public class JDKPanel extends DestinationPanel {
     public static final String JDK_VENDOR = 
             ResourceUtils.getString(JDKPanel.class,
             "JDKP.jdk.vendor"); // NOI18N
-    
+    public static final String ERROR_SPACE_IN_PATH = 
+            ResourceUtils.getString(JDKPanel.class,
+            "JDKP.error.space.in.path");//NOI18N
 }
