@@ -528,10 +528,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** @param clearDocument indicates whether the document is needed
      *                       to clear before (used for reloading) */
     private Task prepareDocument(final boolean notUsed) {
+        assert Thread.holdsLock(getLock());
+
         if (prepareTask != null) {
             return prepareTask;
         }
 
+        boolean failed = true;
+	
         try {
             // listen to modifications on env, but remove
             // previous instance first
@@ -625,16 +629,19 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                        }
                                                    }
                                                });
+	    failed = false;
         } catch (RuntimeException ex) {
-            synchronized (getLock()) {
-                prepareDocumentRuntimeException = ex;
+            prepareDocumentRuntimeException = ex;
+            throw ex;
+        } catch (Error err) {
+            prepareDocumentRuntimeException = err;
+            throw err;
+	} finally {
+	    if (failed) {
                 documentStatus = DOCUMENT_NO;
                 getLock().notifyAll();
-            }
-
-            throw ex;
+	    }
         }
-
         return prepareTask;
     }
 
