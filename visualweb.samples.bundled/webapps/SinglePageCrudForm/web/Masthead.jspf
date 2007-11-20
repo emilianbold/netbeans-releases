@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (c) 2007, Sun Microsystems, Inc. All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+  * Neither the name of Sun Microsystems, Inc. nor the names of its contributors
+    may be used to endorse or promote products derived from this software without
+    specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+  THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<div style="height: 155px; width: 760px; -rave-layout: grid" xmlns:f="http://java.sun.com/jsf/core" xmlns:h="http://java.sun.com/jsf/html" xmlns:webuijsf="http://www.sun.com/webui/webuijsf">
+    <f:subview id="Masthead">
+        <h:panelGrid binding="#{Masthead.mainPanel}" id="mainPanel" style="height: 155px; left: 0px; top: 0px; width: 760px">
+            <h:panelGrid binding="#{Masthead.titlePanel}" id="titlePanel" style="background-image: url(resources/masthead_background.gif); height: 120px; text-indent: 25px; width: 760px">
+                <webuijsf:staticText binding="#{Masthead.appName}" id="appName"
+                    style="color: rgb(255, 255, 255); font-family: 'Georgia', 'Times New Roman', 'times', 'serif'; font-size: 24px; font-weight: bold" text="Single Page CRUD With Form"/>
+                <webuijsf:staticText binding="#{Masthead.poweredBy}" id="poweredBy"
+                    style="color: #ffffff; font-family: 'Georgia','Times New Roman','times','serif'; font-size: 10px" text="Empowered by NetBeans 6"/>
+            </h:panelGrid>
+            <h:panelGrid binding="#{Masthead.navPanel}" columns="3" id="navPanel" style="background-color: #dde2ee; height: 24px; width: 760px">
+                <h:panelGrid binding="#{Masthead.fillerPanel}" id="fillerPanel" style="height: 24px; width: 380px"/>
+                <webuijsf:imageHyperlink binding="#{Masthead.home}" id="home" imageURL="/resources/home.gif" text="Home" url="http://visualweb.netbeans.org/" target="_blank"/>
+                <webuijsf:imageHyperlink binding="#{Masthead.help}" id="help" imageURL="/resources/help.gif" text="Help" url="readme.html" target="_blank"/>
+            </h:panelGrid>
+        </h:panelGrid>
+    </f:subview>
+</div>

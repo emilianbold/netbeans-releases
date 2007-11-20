@@ -50,9 +50,8 @@ made subject to such option by the copyright holder.
         <!-- properties -->
         <property name="webapps.dest"       location="${build.classes.dir}/org/netbeans/modules/visualweb/samples/bundled" />
         <property name="webapps.desc.dest"  location="${webapps.dest}/descriptions" />
-        <property name="webapps.repos"      location="../webapps" />
+        <property name="webapps.repos"      location="webapps" />
         <property name="webapps.desc"       location="${webapps.repos}/descriptions" />
-        <property name="complibs.dest"      location="${cluster}/samples/complibs" />
     </target>
 
     <target name="gather-samples" depends="-init">
@@ -73,9 +72,4 @@ made subject to such option by the copyright holder.
         <zip basedir="${webapps.repos}/VehicleIncidentReportApplication" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/VehicleIncidentReportApplication.zip" />
     </target>
     
-    <target name="netbeans-extra" depends="-init">
-        <echo message="Copying sample complibs." />
-        <!-- sample complibs -->
-        <mkdir dir="${complibs.dest}" /> <!-- Create the dir because complibs mgr looks there for complibs. -->
-    </target>
 </project>
