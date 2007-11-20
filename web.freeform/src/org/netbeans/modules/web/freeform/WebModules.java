@@ -45,6 +45,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -61,6 +62,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -354,6 +356,14 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
                             all.add(javaRoots[j]);
                         }
                     }
+                }
+                
+                // #122200
+                if (all.isEmpty() && ClassPath.BOOT.equals(type)) {
+                    // we don't have any possibility how to find out which source level/platform should be used
+                    //  so get the actual platform
+                    ClassPath bootCP = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+                    all.addAll(Arrays.asList(bootCP.getRoots()));
                 }
 
                 for (int i = 0; i < webClassPath.getRoots().length; i++) {
