@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
                 <path refid="cp"/>
                 <pathelement location="${ant.jar}"/>
                 <pathelement location="${tools.jar}"/>
-                  <fileset dir="../external">
+                  <fileset dir="../j2eeapis/external">
                       <include name="*.jar"/>
                   </fileset>
             </classpath>

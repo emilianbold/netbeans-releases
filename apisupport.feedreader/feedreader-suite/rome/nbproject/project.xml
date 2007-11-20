@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+            <code-name-base>com.sun.syndication</code-name-base>
+            <suite-component/>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.jdom</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
+            <public-packages>
+                <package>com.sun.syndication.feed.atom</package>
+                <package>com.sun.syndication.io</package>
+                <package>com.sun.syndication.feed.module.impl</package>
+                <package>com.sun.syndication.io.impl</package>
+                <package>com.sun.syndication.feed.synd</package>
+                <package>com.sun.syndication.feed.rss</package>
+                <package>com.sun.syndication.feed.module</package>
+                <package>com.sun.syndication.feed.synd.impl</package>
+                <package>com.sun.syndication.feed.impl</package>
+                <package>com.sun.syndication.feed</package>
+            </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/rome-0.6.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/rome-0.6.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

@@ -43,9 +43,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
 -->
 <project basedir="." default="netbeans" name="ide/branding">
 
-  <property name="nbroot" location="../.."/>
-
-  <import file="${nbroot}/nbbuild/templates/projectized.xml"/>
+  <import file="${nb_all}/nbbuild/templates/projectized.xml"/>
 
   <property name="locjar.warnMissingDir" value="true"/>
 
@@ -67,23 +65,23 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
   
   
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM"
-             classpath="${nbroot}/nbbuild/nbantext.jar"/>
+             classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="locmakenbm" classname="org.netbeans.nbbuild.LocMakeNBM"
-             classpath="${nbroot}/nbbuild/nbantext.jar"/>
+             classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="locjhindexer" classname="org.netbeans.nbbuild.LocJHIndexer"
-             classpath="${nbroot}/nbbuild/nbantext.jar"/>
+             classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar"
-             classpath="${nbroot}/nbbuild/nbantext.jar"/>
+             classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="grabLocalizableFiles"
              classname="org.netbeans.nbbuild.GetL9eFiles"
-             classpath="${nbroot}/nbbuild/nbantext.jar"/>
+             classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="makelayer" 
              classname="org.netbeans.nbbuild.MakeLayer" 
-	     classpath="${nbroot}/nbbuild/nbantext.jar"/>
+	     classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef 
         name="createmodulexml" 
         classname="org.netbeans.nbbuild.CreateModuleXML" 
-        classpath="${nbroot}/nbbuild/nbantext.jar"
+        classpath="${nb_all}/nbbuild/nbantext.jar"
     />
   </target>
   
@@ -161,7 +159,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
 
   <target name="release-ml" depends="basic-init,check-run-mlbuild" if="run.ml.build">
       <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat"
-               classpath="${nbroot}/nbbuild/nbantext.jar"/>
+               classpath="${nb_all}/nbbuild/nbantext.jar"/>
       <repeat target="release-one-locale" name="locale" values="${locales}"/>
   </target>
   
@@ -252,7 +250,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
               jarfile="${cluster}/modules/org-netbeans-modules-ide-branding.jar"/>      
       <mkdir dir="build/classes-ml/core/startup/src"/>
       <copy todir="build/classes-ml/core/startup/src">
-          <fileset dir="${nbroot}/translatedfiles/src/ide/branding/core/startup/src">
+          <fileset dir="${nb_all}/translatedfiles/src/ide/branding/core/startup/src">
               <include name="**/*"/>
           </fileset>
       </copy>
@@ -263,7 +261,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       
       <mkdir dir="build/classes-ml/core/src"/>
       <copy todir="build/classes-ml/core/src">
-          <fileset dir="${nbroot}/translatedfiles/src/ide/branding/core/src">
+          <fileset dir="${nb_all}/translatedfiles/src/ide/branding/core/src">
               <include name="**/*"/>
           </fileset>
       </copy>
@@ -274,7 +272,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       
       <mkdir dir="build/classes-ml/core/windows/src"/>
       <copy todir="build/classes-ml/core/windows/src">
-          <fileset dir="${nbroot}/translatedfiles/src/ide/branding/core/windows/src">
+          <fileset dir="${nb_all}/translatedfiles/src/ide/branding/core/windows/src">
               <include name="**/*"/>
           </fileset>
       </copy>
@@ -285,7 +283,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       
       <mkdir dir="build/classes-ml/autoupdate/libsrc"/>
       <copy todir="build/classes-ml/autoupdate/libsrc">
-          <fileset dir="${nbroot}/translatedfiles/src/ide/branding/autoupdate/libsrc">
+          <fileset dir="${nb_all}/translatedfiles/src/ide/branding/autoupdate/libsrc">
               <include name="**/*"/>
           </fileset>
       </copy>
@@ -296,7 +294,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       
       <mkdir dir="build/classes-ml/autoupdate/ui/src"/>
       <copy todir="build/classes-ml/autoupdate/ui/src">
-          <fileset dir="${nbroot}/translatedfiles/src/ide/branding/autoupdate/ui/src">
+          <fileset dir="${nb_all}/translatedfiles/src/ide/branding/autoupdate/ui/src">
               <include name="**/*"/>
           </fileset>
       </copy>

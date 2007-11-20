@@ -45,9 +45,9 @@ made subject to such option by the copyright holder.
     <import file="../../../nbbuild/templates/projectized.xml"/>
 
     <target name="netbeans-extra" depends="build-init">
-        <ant dir="../appsrvbridge" target="jar" inheritall="false"/>
+        <ant dir="appsrvbridge" target="jar" inheritall="false"/>
         <mkdir dir="${cluster}/modules/ext"/>
-        <copy file="../appsrvbridge/dist/appsrvbridge.jar" todir="${cluster}/modules/ext"/>
+        <copy file="appsrvbridge/dist/appsrvbridge.jar" todir="${cluster}/modules/ext"/>
     </target>
 
     <target name="javahelp" depends="init">
@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="clean" depends="projectized-common.clean">
-        <ant dir="../appsrvbridge" target="clean" inheritall="false"/>
+        <ant dir="appsrvbridge" target="clean" inheritall="false"/>
     </target>
     
 </project>

@@ -2,5 +2,4 @@
 read global
 # Custom l10n.list inclusion for appsrvbridge. Not part of global l10n.list
 # since this is a java project 
-serverplugins/sun/appsrvbridge/src/**/Bundle*.properties
-
+serverplugins/sun/appsrv81/appsrvbridge/src/**/Bundle*.properties

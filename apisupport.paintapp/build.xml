@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <target name="zip-project" depends="init">
         <property name="examples" location="${build.classes.dir}/org/netbeans/modules/apisupport/paintapp/"/>
         <mkdir dir="${examples}"/>
-        <zip basedir="../PaintApp-suite" destfile="${examples}/PaintAppProject.zip">
+        <zip basedir="PaintApp-suite" destfile="${examples}/PaintAppProject.zip">
             <exclude name="**/build/"/>
             <exclude name="**/dist/"/>
             <exclude name="**/nbproject/private/"/>

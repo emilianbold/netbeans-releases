@@ -16,7 +16,8 @@ enclosed by brackets [] replaced by your own identifying information:
 The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
---><project basedir="." default="all" name="TestTools XTest Workspace Script">
+-->
+<project basedir="." default="all" name="TestTools XTest Workspace Script">
 
     <!-- Points to directory with IDE to test-->
     <property location="../../../nb_all/nbbuild/netbeans" name="netbeans.home"/>

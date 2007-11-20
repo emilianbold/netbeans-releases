@@ -14,13 +14,11 @@
             </classpath>
         </javac>
         <copy todir="build/antclasses">
-            <fileset dir="antsrc" excludesfile="../../standard-jar-excludes.txt"/>
+            <fileset dir="antsrc" excludes="**/*.java"/>
         </copy>
         <mkdir dir="${cluster}/modules/ext"/>
         <jar jarfile="${cluster}/ant/nblib/${code.name.base.dashes}.jar" compress="false">
-            <fileset dir="build/antclasses">
-                <excludesfile name="../../standard-jar-excludes.txt"/>
-            </fileset>
+            <fileset dir="build/antclasses"/>
         </jar>
     </target>
 

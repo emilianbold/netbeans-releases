@@ -39,7 +39,8 @@ to extend the choice of license to its licensees as provided above.
 However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
---><project basedir="." default="netbeans" name="mobility/project">
+-->
+<project basedir="." default="netbeans" name="mobility/project">
     <import file="../../nbbuild/templates/projectized.xml"/>
     <target name="nblib" depends="init,jar">
         <mkdir dir="build/antclasses"/>
@@ -52,13 +53,11 @@ made subject to such option by the copyright holder.
             </classpath>
         </javac>
         <copy todir="build/antclasses">
-            <fileset dir="antsrc" excludesfile="../standard-jar-excludes.txt"/>
+            <fileset dir="antsrc" excludes="**/*.java"/>
         </copy>
         <mkdir dir="${cluster}/ant/nblib"/>
         <jar jarfile="${cluster}/ant/nblib/${code.name.base.dashes}.jar" compress="false">
-            <fileset dir="build/antclasses">
-                 <excludesfile name="../standard-jar-excludes.txt"/>
-            </fileset>
+            <fileset dir="build/antclasses"/>
         </jar>
         <copy todir="${cluster}/modules/scr">
             <fileset dir="scripts"/>

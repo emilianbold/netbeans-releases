@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <target name="zip-project" depends="init">
         <property name="examples" location="${build.classes.dir}/org/netbeans/modules/apisupport/feedreader/"/>
         <mkdir dir="${examples}"/>
-        <zip basedir="../feedreader-suite" destfile="${examples}/FeedReaderProject.zip">
+        <zip basedir="feedreader-suite" destfile="${examples}/FeedReaderProject.zip">
             <exclude name="**/build/"/>
             <exclude name="**/dist/"/>
             <exclude name="**/nbproject/private/"/>

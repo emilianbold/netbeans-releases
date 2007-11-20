@@ -172,12 +172,8 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="${nbroot}/usersguide/javahelp/org/netbeans/modules/usersguide/ide.css" tofile="javahelp/org/netbeans/modules/usersguide/ide.css"/>
     <mkdir dir="${cluster}/modules/docs"/>
     <jar jarfile="${cluster}/modules/docs/testtools.jar" compress="true">
-        <fileset dir="javahelp" excludesfile="${nbext}/standard-jar-excludes.txt" excludes="org/netbeans/modules/usersguide/"/>
+        <fileset dir="javahelp" excludes="org/netbeans/modules/usersguide/"/>
     </jar>
   </target>
 
-
 </project>
-
-
-

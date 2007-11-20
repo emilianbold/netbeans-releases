@@ -39,6 +39,7 @@ to extend the choice of license to its licensees as provided above.
 However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
---><project basedir="." default="netbeans" name="mobility/deployment/ftpscp">
+-->
+<project basedir="." default="netbeans" name="mobility/deployment/ftpscp">
     <import file="../../../nbbuild/templates/projectized.xml"/>
 </project>

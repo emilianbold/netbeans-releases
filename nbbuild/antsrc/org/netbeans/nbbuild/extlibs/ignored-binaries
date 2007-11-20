@@ -86,8 +86,7 @@ visualweb/ravelibs/jsf-portlet/jsf-portlet-src.zip
 nbbuild/external/apitest-*.jar
 
 # Developed under CDDL inside nb.org (later snapshot moved to dev.java.net):
-apisupport/samples/PaintApp-suite/ColorChooser/release/modules/ext/ColorChooser.jar
+apisupport/samples/PaintApp-sample-ui/PaintApp-suite/ColorChooser/release/modules/ext/ColorChooser.jar
 
 # Build by NetBeans team
 ruby/platform/release/*.zip
- 
