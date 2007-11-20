@@ -61,6 +61,7 @@ import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
+import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
@@ -213,23 +214,15 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             
             final List<Product> dependentOnNb = new LinkedList<Product>();
             final List<Product> dependentOnGf = new LinkedList<Product>();
+            boolean nbBasePresent = false;
+            
             for (Product product: registry.getProductsToInstall()) {
                 installationSize += product.getRequiredDiskSpace();
                 downloadSize += product.getDownloadSize();
                 
                 try {
-                    
                     if (product.getLogic().registerInSystem() || product.getUid().equals("jdk")) {
-                        String property = panel.getProperty(
-                                product.getUid().equals("nb-base") ?
-                                    INSTALLATION_FOLDER_NETBEANS_PROPERTY :
-                                    INSTALLATION_FOLDER_PROPERTY);
-                        
-                        text.append(StringUtils.format(property,
-                                product.getDisplayName()));
-                        text.append(StringUtils.LF);
-                        text.append("    " + product.getInstallationLocation());
-                        text.append(StringUtils.LF);
+                        nbBasePresent = product.getUid().equals("nb-base") ? true : nbBasePresent;
                     } else {
                         if (product.getUid().startsWith("nb-")) {
                             dependentOnNb.add(product);
@@ -243,13 +236,72 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 }
             }
             
-            if (dependentOnNb.size() > 0) {
+            
+            File nbLocation = null;
+            Product base = null;
+            // If there are several packs to be installed but Base is already installed
+            // then search it and the corresponding record to text
+            if (dependentOnNb.size() > 0 && !nbBasePresent) {
+                for(Product product : dependentOnNb) {
+                    List <Dependency> bases = product.getDependencyByUid("nb-base");
+                    if(!bases.isEmpty()) {
+                        // dependency is already resolved at this point
+                        base = Registry.getInstance().getProduct(bases.get(0).getUid(), bases.get(0).getVersionResolved());
+                        if(base!=null) {
+                            nbLocation = base.getInstallationLocation();
+                            try {
+                                if(base.getLogic().wrapForMacOs() && SystemUtils.isMacOS()) {
+                                    final File app = nbLocation.getParentFile().getParentFile().getParentFile();
+                                    nbLocation = app;
+                                }
+                            } catch (InitializationException e){
+                                LogManager.log(".. cannot get logic for " + base.getDisplayName() + " (" + base.getVersion() + ")", e);
+                            } catch (NullPointerException e){
+                                LogManager.log(".. cannot get app directory for " + nbLocation);
+                            }
+                            if(nbLocation!=null) {
+                                text.append(StringUtils.LF);
+                                text.append(StringUtils.format(
+                                        panel.getProperty(INSTALLATION_FOLDER_NETBEANS_PROPERTY),
+                                        base.getDisplayName()));
+                                text.append(StringUtils.LF);
+                                text.append("    " + nbLocation);
+                                text.append(StringUtils.LF);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // add top-level components like nb-base, glassfish, tomcat, jdk
+            for (Product product: registry.getProductsToInstall()) {
+                try {
+                    if (product.getLogic().registerInSystem() || product.getUid().equals("jdk")) {
+                        String property = panel.getProperty(
+                                product.getUid().equals("nb-base") ?
+                                    INSTALLATION_FOLDER_NETBEANS_PROPERTY :
+                                    INSTALLATION_FOLDER_PROPERTY);
+                        text.append(StringUtils.format(property,
+                                product.getDisplayName()));
+                        text.append(StringUtils.LF);
+                        text.append("    " + product.getInstallationLocation());
+                        text.append(StringUtils.LF);
+                    }
+                } catch (InitializationException e) {
+                    ErrorManager.notifyError(
+                            panel.getProperty(ERROR_LOGIC_ACCESS_PROPERTY),e);
+                }
+            }
+            // if we could not find nb-base location (very rare case) just mention all the packs to be installed
+            if(!nbBasePresent && nbLocation == null && dependentOnNb.size() > 0) {
                 text.append(StringUtils.LF);
                 text.append(StringUtils.format(
                         panel.getProperty(NB_ADDONS_LOCATION_TEXT_PROPERTY),
                         StringUtils.asString(dependentOnNb)));
                 text.append(StringUtils.LF);
             }
+            // at the end add glassfish components record
             if (dependentOnGf.size() > 0) {
                 text.append(StringUtils.LF);
                 text.append(StringUtils.format(
@@ -481,7 +533,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                     //final String text = (alsoRemoving.isEmpty()) ?
                                     //    StringUtils.format(removeSpecificRuntime, gfProduct.getDisplayName()) :
                                     //    StringUtils.format(removeSpecificRuntimeIncluding, gfProduct.getDisplayName(),
-                                     //       StringUtils.asString(alsoRemoving));                                    
+                                    //       StringUtils.asString(alsoRemoving));
                                     //gfCheckbox.setText(text);
                                     gfCheckbox.setText(gfProduct.getDisplayName());
                                     gfCheckbox.setBorder(new EmptyBorder(0,0,0,0));
@@ -532,7 +584,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                     //final String text = (alsoRemoving.isEmpty()) ?
                                     //    StringUtils.format(removeSpecificRuntime, tomcatProduct.getDisplayName()) :
                                     //    StringUtils.format(removeSpecificRuntimeIncluding, tomcatProduct.getDisplayName(),
-                                    //        StringUtils.asString(alsoRemoving));                                    
+                                    //        StringUtils.asString(alsoRemoving));
                                     //tomcatCheckbox.setText(text);
                                     tomcatCheckbox.setText(tomcatProduct.getDisplayName());
                                     
@@ -650,8 +702,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
         
     }
     
-    /////////////////////////////////////////////////////////////////////////////////
-    // Constants
+/////////////////////////////////////////////////////////////////////////////////
+// Constants
     public static final String INSTALLATION_FOLDER_PROPERTY =
             "installation.folder"; // NOI18N
     public static final String INSTALLATION_FOLDER_NETBEANS_PROPERTY =
