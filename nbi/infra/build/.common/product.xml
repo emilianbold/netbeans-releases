@@ -247,8 +247,8 @@
     -->
     <target name="-build" depends="-build-engine,.build">
         <!-- init the required disk space -->
-        <property name="product.disk.space" 
-                  value="${product.disk.space.modificator}"/>
+        <set property="product.disk.space" 
+             value="${product.disk.space.modificator}"/>
         
         <!-- init several shorthands -->
         <set 
