@@ -353,12 +353,12 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                     downloadSizeValue.setVisible(true);
                 }
             }
-            if(gfCheckbox!=null) {
-                gfCheckbox.doClick();
-            }
-            if(tomcatCheckbox!=null) {
-                tomcatCheckbox.doClick();
-            }
+            //if(gfCheckbox!=null) {
+            //    gfCheckbox.doClick();
+            //}
+            //if(tomcatCheckbox!=null) {
+            //    tomcatCheckbox.doClick();
+            //}
             super.initialize();
         }
         
