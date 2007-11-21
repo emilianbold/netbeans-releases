@@ -39,9 +39,11 @@ import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 
 /**
  * A helper class for generating equals, hashCode and toString methods for entity classes.
@@ -52,10 +54,12 @@ public class EntityMethodGenerator {
 
     private final WorkingCopy copy;
     private final GenerationUtils genUtils;
+    private final TypeElement scope;
     
-    public EntityMethodGenerator(WorkingCopy copy, GenerationUtils genUtils) {
+    public EntityMethodGenerator(WorkingCopy copy, GenerationUtils genUtils, TypeElement scope) {
         this.copy = copy;
         this.genUtils = genUtils;
+        this.scope = scope;
     }
 
     public MethodTree createHashCodeMethod(List<VariableTree> fields) {
@@ -104,7 +108,7 @@ public class EntityMethodGenerator {
         return make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC),
                 Collections.singletonList(genUtils.createAnnotation("java.lang.Override"))), "equals",
                 make.PrimitiveType(TypeKind.BOOLEAN), Collections.<TypeParameterTree>emptyList(),
-                Collections.singletonList(genUtils.createVariable("object", "java.lang.Object")),
+                Collections.singletonList(genUtils.createVariable(scope, "object", "java.lang.Object")),
                 Collections.<ExpressionTree>emptyList(), body.toString(), null);
     }
 
@@ -132,7 +136,7 @@ public class EntityMethodGenerator {
         // XXX Javadoc
         return make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC),
                 Collections.singletonList(genUtils.createAnnotation("java.lang.Override"))), "toString",
-                genUtils.createType("java.lang.String"), Collections.<TypeParameterTree>emptyList(),
+                genUtils.createType("java.lang.String", scope), Collections.<TypeParameterTree>emptyList(),
                 Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body.toString(), null);
     }
 }

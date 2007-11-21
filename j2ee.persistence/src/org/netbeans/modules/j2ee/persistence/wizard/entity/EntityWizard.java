@@ -50,6 +50,9 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.io.IOException;
 import java.util.ArrayList;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import java.util.Collections;
 import java.util.HashSet;
@@ -67,13 +70,15 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.persistence.util.GenerationUtils;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
+import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
+import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.util.EntityMethodGenerator;
 import org.netbeans.modules.j2ee.persistence.util.JPAClassPathHelper;
-import org.netbeans.modules.j2ee.persistence.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
@@ -110,12 +115,11 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
     public void initialize(WizardDescriptor wizardDescriptor) {
         wiz = wizardDescriptor;
         Project project = Templates.getProject(wiz);
-        sourceGroups = Util.getJavaSourceGroups(project);
+        sourceGroups = SourceGroups.getJavaSourceGroups(project);
         ejbPanel = new EntityWizardDescriptor();
         WizardDescriptor.Panel p = new ValidatingPanel(JavaTemplates.createPackageChooser(project,sourceGroups, ejbPanel, true));
         panels = new WizardDescriptor.Panel[] {p};
-        Util.mergeSteps(wiz, panels, null);
-        
+        Wizards.mergeSteps(wiz, panels, null);
     }
     
     public Set instantiate() throws IOException {
@@ -228,13 +232,16 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
+                assert typeElement != null;
+                ClassTree clazz = workingCopy.getTrees().getTree(typeElement);
                 GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                ClassTree clazz = genUtils.getClassTree();
                 ClassTree modifiedClazz = genUtils.ensureNoArgConstructor(clazz);
                 TreeMaker make = workingCopy.getTreeMaker();
                 
                 String idFieldName = "id"; // NO18N
-                TypeMirror type = workingCopy.getTreeUtilities().parseType(primaryKeyClassName, genUtils.getTypeElement());
+                TypeMirror type = workingCopy.getTreeUtilities().parseType(primaryKeyClassName, typeElement);
                 Tree typeTree = make.Type(type);
                 
                 Set<Modifier> serialVersionUIDModifiers = new HashSet<Modifier>();
@@ -242,7 +249,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 serialVersionUIDModifiers.add(Modifier.STATIC);
                 serialVersionUIDModifiers.add(Modifier.FINAL);
                 
-                VariableTree serialVersionUID = make.Variable(make.Modifiers(serialVersionUIDModifiers), "serialVersionUID", genUtils.createType("long"), make.Literal(Long.valueOf("1"))); //NO18N
+                VariableTree serialVersionUID = make.Variable(make.Modifiers(serialVersionUIDModifiers), "serialVersionUID", genUtils.createType("long", typeElement), make.Literal(Long.valueOf("1"))); //NO18N
                 VariableTree idField = make.Variable(genUtils.createModifiers(Modifier.PRIVATE), idFieldName, typeTree, null);
                 ModifiersTree idMethodModifiers = genUtils.createModifiers(Modifier.PUBLIC);
                 MethodTree idGetter = genUtils.createPropertyGetterMethod(idMethodModifiers, idFieldName, typeTree);
@@ -268,8 +275,8 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 modifiedClazz = genUtils.addImplementsClause(modifiedClazz, "java.io.Serializable");
                 modifiedClazz = genUtils.addAnnotation(modifiedClazz, genUtils.createAnnotation("javax.persistence.Entity"));
                 
-                String entityClassFqn = genUtils.getTypeElement().getQualifiedName().toString();
-                EntityMethodGenerator methodGenerator = new EntityMethodGenerator(workingCopy, genUtils);
+                String entityClassFqn = typeElement.getQualifiedName().toString();
+                EntityMethodGenerator methodGenerator = new EntityMethodGenerator(workingCopy, genUtils, typeElement);
                 List<VariableTree> fieldsForEquals = Collections.<VariableTree>singletonList(idField); 
                 modifiedClazz = make.addClassMember(modifiedClazz, methodGenerator.createHashCodeMethod(fieldsForEquals));
                 modifiedClazz = make.addClassMember(modifiedClazz, methodGenerator.createEqualsMethod(targetName, fieldsForEquals));

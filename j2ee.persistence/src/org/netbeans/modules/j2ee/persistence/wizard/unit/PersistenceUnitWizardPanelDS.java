@@ -49,6 +49,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.core.api.support.Strings;
 import org.netbeans.modules.j2ee.persistence.provider.DefaultProvider;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
@@ -207,14 +208,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
      * empty and it's unique.
      */
     private boolean isNameValid() throws InvalidPersistenceXmlException{
-        return isEmptyOrNull(getPersistenceUnitName()) ? false : isNameUnique();
-    }
-    
-    /**
-     * @return true if given str is null, empty or contains only spaces.
-     */
-    private boolean isEmptyOrNull(String str){
-        return str == null || "".equals(str.trim());
+        return Strings.isEmpty(getPersistenceUnitName()) ? false : isNameUnique();
     }
     
     public Provider getSelectedProvider() {

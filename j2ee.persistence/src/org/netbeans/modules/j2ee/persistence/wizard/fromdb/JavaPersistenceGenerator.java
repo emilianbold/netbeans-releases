@@ -43,7 +43,9 @@ package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
 import com.sun.source.tree.*;
 import java.util.HashMap;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
+import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Table;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -68,7 +70,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.persistence.util.GenerationUtils;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.CMPMappingModel;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityClass;
@@ -427,11 +429,16 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             // generated fields. does not include fields of properties, just plain fields 
             protected final List<VariableTree> fields = new ArrayList<VariableTree>();
 
-            // the class tree of the class we are generating
-            protected ClassTree classTree;
+            // the original class tree of the class we are generating
+            protected ClassTree originalClassTree;
+            // the modified class tree of the class we are generating
+            protected ClassTree newClassTree;
+            // the TypeElement corresponding to classTree
+            protected TypeElement typeElement;
 
             public ClassGenerator(WorkingCopy copy, EntityClass entityClass) throws IOException {
                 this.copy = copy;
+                copy.toPhase(Phase.RESOLVED);
 
                 this.entityClass = entityClass;
                 dbMappings = entityClass.getCMPMapping();
@@ -439,13 +446,15 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 pkClassName = needsPKClass ? createPKClassName(entityClass.getClassName()) : null;
                 pkFQClassName = entityClass.getPackage() + "." + pkClassName; // NOI18N
 
-
-                genUtils = GenerationUtils.newInstance(copy);
-                if (genUtils == null) {
+                typeElement = SourceUtils.getPublicTopLevelElement(copy);
+                if (typeElement == null) {
                     throw new IllegalStateException("Cannot find a public top-level class named " + entityClass.getClassName() +  // NOI18N
                             " in " + FileUtil.getFileDisplayName(copy.getFileObject())); // NOI18N
                 }
-                classTree = genUtils.getClassTree();
+                originalClassTree = (ClassTree)copy.getTrees().getTree(typeElement);
+                assert originalClassTree != null;
+                newClassTree = originalClassTree;
+                genUtils = GenerationUtils.newInstance(copy);
             }
 
             protected String createFieldName(String capitalizedFieldName) {
@@ -506,7 +515,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
              * a parameter list when creating a method or constructor.
              */
             protected VariableTree createVariable(EntityMember m) {
-                return genUtils.createVariable(m.getMemberName(), getMemberType(m));
+                return genUtils.createVariable(typeElement, m.getMemberName(), getMemberType(m));
             }
 
             private String getMemberType(EntityMember m) {
@@ -549,24 +558,24 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 TreeMaker make = copy.getTreeMaker();
                 int position = 0;
                 for (VariableTree field : fields){
-                    classTree = make.insertClassMember(classTree, position, field);
+                    newClassTree = make.insertClassMember(newClassTree, position, field);
                     position++;
                 }
                 for (Property property : properties) {
-                    classTree = make.insertClassMember(classTree, position, property.getField());
+                    newClassTree = make.insertClassMember(newClassTree, position, property.getField());
                     position++;
                 }
                 for (MethodTree constructor : constructors) {
-                    classTree = make.addClassMember(classTree, constructor);
+                    newClassTree = make.addClassMember(newClassTree, constructor);
                 }
                 for (Property property : properties) {
-                    classTree = make.addClassMember(classTree, property.getGetter());
-                    classTree = make.addClassMember(classTree, property.getSetter());
+                    newClassTree = make.addClassMember(newClassTree, property.getGetter());
+                    newClassTree = make.addClassMember(newClassTree, property.getSetter());
                 }
                 for (MethodTree method : methods) {
-                    classTree = make.addClassMember(classTree, method);
+                    newClassTree = make.addClassMember(newClassTree, method);
                 }
-                copy.rewrite(genUtils.getClassTree(), classTree);
+                copy.rewrite(originalClassTree, newClassTree);
             }
 
             /**
@@ -605,7 +614,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 private final MethodTree setter;
 
                 public Property(Modifier modifier, List<AnnotationTree> annotations, String type, String name) throws IOException {
-                    this(modifier, annotations, genUtils.createType(type), name);
+                    this(modifier, annotations, genUtils.createType(type, typeElement), name);
                 }
 
                 public Property(Modifier modifier, List<AnnotationTree> annotations, TypeMirror type, String name) throws IOException {
@@ -670,24 +679,22 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             // the prefix or all named queries ("select ... ")
             private String namedQueryPrefix;
 
-
-
             public EntityClassGenerator(WorkingCopy copy, EntityClass entityClass, boolean generateNamedQueries) throws IOException {
                 super(copy, entityClass);
                 this.generateNamedQueries = generateNamedQueries;
                 entityClassName = entityClass.getClassName();
-                assert genUtils.getTypeElement().getSimpleName().contentEquals(entityClassName);
+                assert typeElement.getSimpleName().contentEquals(entityClassName);
                 entityFQClassName = entityClass.getPackage() + "." + entityClassName;
             }
 
             protected void initialize() throws IOException {
-                classTree = genUtils.ensureNoArgConstructor(classTree);
+                newClassTree = genUtils.ensureNoArgConstructor(newClassTree);
                 if (genSerializableEntities) {
-                    classTree = genUtils.addImplementsClause(classTree, "java.io.Serializable"); // NOI18N
+                    newClassTree = genUtils.addImplementsClause(newClassTree, "java.io.Serializable"); // NOI18N
                 }
-                classTree = genUtils.addAnnotation(classTree, genUtils.createAnnotation("javax.persistence.Entity")); // NOI18N
+                newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Entity")); // NOI18N
                 ExpressionTree tableNameArgument = genUtils.createAnnotationArgument("name", dbMappings.getTableName()); // NOI18N
-                classTree = genUtils.addAnnotation(classTree, genUtils.createAnnotation("javax.persistence.Table", Collections.singletonList(tableNameArgument)));
+                newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", Collections.singletonList(tableNameArgument)));
 
                 if (needsPKClass) {
                     String pkFieldName = createFieldName(pkClassName);
@@ -748,7 +755,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             }
 
             protected void afterMembersGenerated() {
-                classTree = genUtils.addAnnotation(classTree, genUtils.createAnnotation("javax.persistence.NamedQueries", // NOI18N
+                newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.NamedQueries", // NOI18N
                         Collections.singletonList(genUtils.createAnnotationArgument(null, namedQueryAnnotations))));
             }
 
@@ -856,7 +863,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
                 TreeMaker make = copy.getTreeMaker();
                 VariableTree serialVersionUID = make.Variable(make.Modifiers(serialVersionUIDModifiers), 
-                        "serialVersionUID", genUtils.createType("long"), make.Literal(Long.valueOf("1"))); //NO18N
+                        "serialVersionUID", genUtils.createType("long", typeElement), make.Literal(Long.valueOf("1"))); //NO18N
                 
                 return serialVersionUID;
             }
@@ -898,7 +905,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 }
 
                 // add equals and hashCode methods
-                EntityMethodGenerator methodGenerator = new EntityMethodGenerator(copy, genUtils);
+                EntityMethodGenerator methodGenerator = new EntityMethodGenerator(copy, genUtils, typeElement);
                 methods.add(methodGenerator.createHashCodeMethod(pkFieldParams));
                 methods.add(methodGenerator.createEqualsMethod(entityClassName, pkFieldParams));
                 methods.add(methodGenerator.createToStringMethod(entityFQClassName, pkFieldParams));
@@ -934,10 +941,10 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             }
 
             protected void initialize() throws IOException {
-                classTree = genUtils.ensureNoArgConstructor(classTree);
+                newClassTree = genUtils.ensureNoArgConstructor(newClassTree);
                 // primary key class must be serializable and @Embeddable
-                classTree = genUtils.addImplementsClause(classTree, "java.io.Serializable"); //NOI18N
-                classTree = genUtils.addAnnotation(classTree, genUtils.createAnnotation("javax.persistence.Embeddable")); // NOI18N
+                newClassTree = genUtils.addImplementsClause(newClassTree, "java.io.Serializable"); //NOI18N
+                newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Embeddable")); // NOI18N
             }
 
             protected void generateMember(EntityMember m) throws IOException {
@@ -963,7 +970,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 constructors.add(genUtils.createAssignmentConstructor(genUtils.createModifiers(Modifier.PUBLIC), pkClassName, parameters));
 
                 // add equals and hashCode methods
-                EntityMethodGenerator methodGenerator = new EntityMethodGenerator(copy, genUtils);
+                EntityMethodGenerator methodGenerator = new EntityMethodGenerator(copy, genUtils, typeElement);
                 methods.add(methodGenerator.createHashCodeMethod(parameters));
                 methods.add(methodGenerator.createEqualsMethod(pkClassName, parameters));
                 methods.add(methodGenerator.createToStringMethod(pkFQClassName, parameters));

@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.jpa.refactoring.safedelete;
 
 import java.text.MessageFormat;
+import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
@@ -50,7 +51,6 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.jpa.refactoring.PersistenceXmlRefactoring;
-import org.netbeans.modules.j2ee.jpa.refactoring.RefactoringUtil;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 
 /**
@@ -75,7 +75,7 @@ public final class PersistenceXmlSafeDelete extends PersistenceXmlRefactoring {
                                                                      PUDataObject pUDataObject,
                                                                      FileObject persistenceXml) {
 
-        return new PersistenceXmlSafeDeleteRefactoringElement(persistenceUnit, RefactoringUtil.getQualifiedName(clazz), pUDataObject, persistenceXml);
+        return new PersistenceXmlSafeDeleteRefactoringElement(persistenceUnit, JavaIdentifiers.getQualifiedName(clazz), pUDataObject, persistenceXml);
     }
 
     

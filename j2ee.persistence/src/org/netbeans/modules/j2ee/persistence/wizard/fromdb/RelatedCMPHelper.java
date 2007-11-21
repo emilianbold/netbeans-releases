@@ -53,6 +53,7 @@ import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.openide.filesystems.*;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.dbschema.SchemaElement;
+import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 
 /**
  * This class provides a simple collector for information necessary to support
@@ -259,7 +260,7 @@ public class RelatedCMPHelper {
                 SourceGroup sourceGroup = Util.getClassSourceGroup(getProject(), fqClassName); // NOI18N
                 if (sourceGroup != null) {
                     genTables.addTable(table.getName(), sourceGroup.getRootFolder(), 
-                            Util.getPackageName(fqClassName), Util.getClassName(fqClassName));
+                            JavaIdentifiers.getPackageName(fqClassName), JavaIdentifiers.unqualify(fqClassName));
                 }
             }
         }

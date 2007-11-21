@@ -54,17 +54,11 @@ import javax.swing.JComponent;
 import java.util.Vector;
 import java.util.Iterator;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -83,7 +77,6 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -152,30 +145,6 @@ public class Util {
     }
     
     /**
-     * Returns the simple class for the passed fully-qualified class name.
-     */
-    public static String getClassName(String fqClassName) {
-        int dot = fqClassName.lastIndexOf("."); // NOI18N
-        if (dot >= 0 && dot < fqClassName.length() - 1) {
-            return fqClassName.substring(dot + 1);
-        } else {
-            return fqClassName;
-        }
-    }
-    
-    /**
-     * Returns the package name of the passed fully-qualified class name.
-     */
-    public static String getPackageName(String fqClassName) {
-        int dot = fqClassName.lastIndexOf("."); // NOI18N
-        if (dot >= 0 && dot < fqClassName.length() - 1) {
-            return fqClassName.substring(0, dot);
-        } else {
-            return ""; // NOI18N
-        }
-    }
-    
-    /**
      * Returns the SourceGroup of the passesd project which contains the
      * fully-qualified class name.
      */
@@ -192,49 +161,6 @@ public class Util {
         return null;
     }
     
-    /**
-     * Returns Java source groups for all source packages in given project.<br>
-     * Doesn't include test packages.
-     *
-     * @param project Project to search
-     * @return Array of SourceGroup. It is empty if any probelm occurs.
-     */
-    public static SourceGroup[] getJavaSourceGroups(Project project) {
-        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA);
-        Set testGroups = getTestSourceGroups(project, sourceGroups);
-        List result = new ArrayList();
-        for (int i = 0; i < sourceGroups.length; i++) {
-            if (!testGroups.contains(sourceGroups[i])) {
-                result.add(sourceGroups[i]);
-            }
-        }
-        return (SourceGroup[]) result.toArray(new SourceGroup[result.size()]);
-    }
-    
-    private static Set/*<SourceGroup>*/ getTestSourceGroups(Project project, SourceGroup[] sourceGroups) {
-        Map foldersToSourceGroupsMap = createFoldersToSourceGroupsMap(sourceGroups);
-        Set testGroups = new HashSet();
-        for (int i = 0; i < sourceGroups.length; i++) {
-            testGroups.addAll(getTestTargets(sourceGroups[i], foldersToSourceGroupsMap));
-        }
-        return testGroups;
-    }
-    
-    private static Map createFoldersToSourceGroupsMap(final SourceGroup[] sourceGroups) {
-        Map result;
-        if (sourceGroups.length == 0) {
-            result = Collections.EMPTY_MAP;
-        } else {
-            result = new HashMap(2 * sourceGroups.length, .5f);
-            for (int i = 0; i < sourceGroups.length; i++) {
-                SourceGroup sourceGroup = sourceGroups[i];
-                result.put(sourceGroup.getRootFolder(), sourceGroup);
-            }
-        }
-        return result;
-    }
-    
     private static List/*<FileObject>*/ getFileObjects(URL[] urls) {
         List result = new ArrayList();
         for (int i = 0; i < urls.length; i++) {
@@ -243,23 +169,6 @@ public class Util {
                 result.add(sourceRoot);
             } else if (Logger.getLogger("global").isLoggable(Level.FINE)) {
                 Logger.getLogger("global").log(Level.FINE, null, new IllegalStateException("No FileObject found for the following URL: " + urls[i]));
-            }
-        }
-        return result;
-    }
-    
-    private static List/*<SourceGroup>*/ getTestTargets(SourceGroup sourceGroup, Map foldersToSourceGroupsMap) {
-        final URL[] rootURLs = UnitTestForSourceQuery.findUnitTests(sourceGroup.getRootFolder());
-        if (rootURLs.length == 0) {
-            return new ArrayList();
-        }
-        List result = new ArrayList();
-        List sourceRoots = getFileObjects(rootURLs);
-        for (int i = 0; i < sourceRoots.size(); i++) {
-            FileObject sourceRoot = (FileObject) sourceRoots.get(i);
-            SourceGroup srcGroup = (SourceGroup) foldersToSourceGroupsMap.get(sourceRoot);
-            if (srcGroup != null) {
-                result.add(srcGroup);
             }
         }
         return result;
@@ -283,49 +192,6 @@ public class Util {
     }
     
     // from ejbcore utils
-    
-    private static final String WIZARD_PANEL_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
-    private static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; //NOI18N;
-    
-    public static void mergeSteps(WizardDescriptor wizard, WizardDescriptor.Panel[] panels, String[] steps) {
-        Object prop = wizard.getProperty(WIZARD_PANEL_CONTENT_DATA);
-        String[] beforeSteps;
-        int offset;
-        if (prop instanceof String[]) {
-            beforeSteps = (String[]) prop;
-            offset = beforeSteps.length;
-            if (offset > 0 && ("...".equals(beforeSteps[offset - 1]))) {// NOI18N
-                offset--;
-            }
-        } else {
-            beforeSteps = null;
-            offset = 0;
-        }
-        String[] resultSteps = new String[ (offset) + panels.length];
-        for (int i = 0; i < offset; i++) {
-            resultSteps[i] = beforeSteps[i];
-        }
-        setSteps(panels, steps, resultSteps, offset);
-    }
-    
-    private static void setSteps(WizardDescriptor.Panel[] panels, String[] steps, String[] resultSteps, int offset) {
-        int n = steps == null ? 0 : steps.length;
-        for (int i = 0; i < panels.length; i++) {
-            final JComponent component = (JComponent) panels[i].getComponent();
-            String step = i < n ? steps[i] : null;
-            if (step == null) {
-                step = component.getName();
-            }
-            component.putClientProperty(WIZARD_PANEL_CONTENT_DATA, resultSteps);
-            component.putClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX, new Integer(i));
-            component.getAccessibleContext().setAccessibleDescription(step);
-            resultSteps[i + offset] = step;
-        }
-    }
-    
-    public static void setSteps(WizardDescriptor.Panel[] panels, String[] steps) {
-        setSteps(panels, steps, steps, 0);
-    }
     
     public static boolean isSupportedJavaEEVersion(Project project) {
         JPAModuleInfo moduleInfo = project.getLookup().lookup(JPAModuleInfo.class);
@@ -510,11 +376,6 @@ public class Util {
                 Exceptions.printStackTrace(ex);
             }
         }
-    }
-    
-    public static String simpleClassName(String fqn) {
-        int lastDot = fqn.lastIndexOf('.');
-        return lastDot > 0 ? fqn.substring(lastDot + 1) : fqn;
     }
     
 }

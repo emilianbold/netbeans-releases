@@ -47,6 +47,7 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
@@ -82,9 +83,9 @@ public class PersistenceXmlMoveClass extends PersistenceXmlRefactoring{
                                                                      PUDataObject pUDataObject,
                                                                      FileObject persistenceXml) {
 
-        String clazzFqn = RefactoringUtil.getQualifiedName(clazz);
+        String clazzFqn = JavaIdentifiers.getQualifiedName(clazz);
         String pkg = getTargetPackageName(clazz.getParent());
-        String newName = pkg + "." + RefactoringUtil.unqualify(clazzFqn);
+        String newName = pkg + "." + JavaIdentifiers.unqualify(clazzFqn);
         return new PersistenceXmlMoveClassRefactoringElement(persistenceUnit, clazzFqn, newName, pUDataObject, persistenceXml);
     }
 

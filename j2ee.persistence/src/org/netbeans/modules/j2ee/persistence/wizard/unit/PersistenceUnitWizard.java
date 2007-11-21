@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
@@ -118,7 +119,7 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
         panels = new WizardDescriptor.Panel[] {descriptor};
         wizard.putProperty("NewFileWizard_Title",
                 NbBundle.getMessage(PersistenceUnitWizard.class, "Templates/Persistence/PersistenceUnit"));
-        Util.mergeSteps(wizard, panels, null);
+        Wizards.mergeSteps(wizard, panels, null);
     }
     
     public Set instantiate() throws java.io.IOException {

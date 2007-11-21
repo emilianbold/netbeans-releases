@@ -62,7 +62,7 @@ import org.netbeans.modules.dbschema.SchemaElementUtil;
 import org.netbeans.modules.dbschema.jdbcimpl.ConnectionProvider;
 import org.netbeans.modules.dbschema.jdbcimpl.SchemaElementImpl;
 import org.netbeans.modules.dbschema.util.NameUtil;
-import org.netbeans.modules.j2ee.persistence.util.EventRequestProcessor;
+import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -76,8 +76,6 @@ import org.openide.util.Utilities;
 public class DBSchemaManager {
 
     public static final String DBSCHEMA_EXT = "dbschema"; // NOI18N
-
-    private final EventRequestProcessor erp = new EventRequestProcessor();
 
     private DatabaseConnection oldDBConn;
     private boolean oldDBConnWasConnected;
@@ -98,13 +96,13 @@ public class DBSchemaManager {
 
         schemaElement = null;
 
-        List<EventRequestProcessor.Action> actions = new ArrayList<EventRequestProcessor.Action>();
+        List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
 
         if (oldDBConn != null && oldDBConn != dbconn && !oldDBConnWasConnected) {
             // need to disconnect the old connection
-            actions.add(new EventRequestProcessor.AsynchronousAction() {
-                public void run(EventRequestProcessor.Context actionContext) {
-                    actionContext.getProgress().progress(NbBundle.getMessage(DBSchemaManager.class, "LBL_ClosingPreviousConnection"));
+            actions.add(new ProgressSupport.BackgroundAction() {
+                public void run(ProgressSupport.Context actionContext) {
+                    actionContext.progress(NbBundle.getMessage(DBSchemaManager.class, "LBL_ClosingPreviousConnection"));
 
                     ConnectionManager.getDefault().disconnect(oldDBConn);
                     oldDBConn = null;
@@ -118,12 +116,13 @@ public class DBSchemaManager {
             conn = null;
         }
 
-        actions.add(new EventRequestProcessor.SynchronousAction() {
-            public void run(EventRequestProcessor.Context actionContext) {
+        actions.add(new ProgressSupport.EventThreadAction() {
+            public void run(ProgressSupport.Context actionContext) {
                 ConnectionManager.getDefault().showConnectionDialog(dbconn);
                 conn = dbconn.getJDBCConnection();
             }
 
+            @Override
             public boolean isEnabled() {
                 conn = dbconn.getJDBCConnection();
                 oldDBConnWasConnected = conn != null;
@@ -131,13 +130,13 @@ public class DBSchemaManager {
             }
         });
 
-        actions.add(new EventRequestProcessor.CancellableAction() {
+        actions.add(new ProgressSupport.Action() {
             
             private SchemaElementImpl schemaElementImpl;
             private boolean cancelled;
             
-            public void run(final EventRequestProcessor.Context actionContext) {
-                actionContext.getProgress().progress(NbBundle.getMessage(DBSchemaManager.class, "LBL_RetrievingSchema"));
+            public void run(final ProgressSupport.Context actionContext) {
+                actionContext.progress(NbBundle.getMessage(DBSchemaManager.class, "LBL_RetrievingSchema"));
                 
                 oldDBConn = dbconn;
                 
@@ -172,10 +171,10 @@ public class DBSchemaManager {
                         
                         if ("totalCount".equals(propertyName)) { // NOI18N
                             int workunits = ((Integer)event.getNewValue()).intValue();
-                            actionContext.getProgress().switchToDeterminate(workunits);
+                            actionContext.switchToDeterminate(workunits);
                         } else if ("progress".equals(propertyName)) { // NOI18N
                             int workunit = ((Integer)event.getNewValue()).intValue();
-                            actionContext.getProgress().progress(workunit);
+                            actionContext.progress(workunit);
                         } else if ("tableName".equals(propertyName)) { // NOI18N
                             message = NbBundle.getMessage(DBSchemaManager.class, "LBL_RetrievingTable", event.getNewValue());
                         } else if ("viewName".equals(propertyName)) { // NOI18N
@@ -187,7 +186,7 @@ public class DBSchemaManager {
                         }
                         
                         if (message != null) {
-                            actionContext.getProgress().progress(message);
+                            actionContext.progress(message);
                         }
                     }
                 });
@@ -195,14 +194,12 @@ public class DBSchemaManager {
                 schemaElementImpl.initTables(connectionProvider);
             }
             
-            public boolean getRunInEventThread() {
-                return false;
-            }
-            
+            @Override
             public boolean isEnabled() {
                 return conn != null;
             }
             
+            @Override
             public boolean cancel() {
                 synchronized (this) {
                     cancelled = true;
@@ -212,10 +209,15 @@ public class DBSchemaManager {
                 }
                 return true;
             }
+
+            @Override
+            protected boolean isBackground() {
+                return true;
+            }
         });
 
         exception = null;
-        boolean success = erp.invoke(actions, true);
+        boolean success = ProgressSupport.invoke(actions, true);
         if (exception != null) {
             throw exception;
         }
@@ -237,18 +239,18 @@ public class DBSchemaManager {
         schemaFileObject = null;
         fileSchemaElement = null;
 
-        List<EventRequestProcessor.Action> actions = new ArrayList<EventRequestProcessor.Action>();
+        List<ProgressSupport.Action> actions = new ArrayList<ProgressSupport.Action>();
 
-        actions.add(new EventRequestProcessor.AsynchronousAction() {
-            public void run(EventRequestProcessor.Context actionContext) {
-                actionContext.getProgress().progress(NbBundle.getMessage(DBSchemaManager.class, "LBL_ReadingSchemaFile"));
+        actions.add(new ProgressSupport.BackgroundAction() {
+            public void run(ProgressSupport.Context actionContext) {
+                actionContext.progress(NbBundle.getMessage(DBSchemaManager.class, "LBL_ReadingSchemaFile"));
 
                 schemaFileObject = fo;
                 fileSchemaElement = SchemaElementUtil.forName(fo);
             }
         });
 
-        erp.invoke(actions);
+        ProgressSupport.invoke(actions);
 
         return fileSchemaElement;
     }

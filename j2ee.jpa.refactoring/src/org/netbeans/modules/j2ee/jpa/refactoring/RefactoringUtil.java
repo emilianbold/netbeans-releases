@@ -177,23 +177,6 @@ public abstract class RefactoringUtil {
     }
     
     /**
-     * Gets the fully qualified name for the given <code>fileObject</code>. If it
-     * represents a java package, will return the name of the package (with dots as separators).
-     *
-     *@param fileObject the file object whose FQN should be get. Must belong to
-     * a project.
-     *@return the FQN for the given file object.
-     */
-    public static String getQualifiedName(FileObject fileObject){
-        Project project = FileOwnerQuery.getOwner(fileObject);
-        assert project != null;
-        ClassPathProvider classPathProvider = project.getLookup().lookup(ClassPathProvider.class);
-        assert classPathProvider != null;
-        return classPathProvider.findClassPath(fileObject, ClassPath.SOURCE).getResourceName(fileObject, '.', false);
-        
-    }
-    
-    /**
      * Gets the name of the property associated with the given accessor.
      *
      * @param accessor the name of the accessor method of the property. Must follow the JavaBeans
@@ -291,20 +274,6 @@ public abstract class RefactoringUtil {
         }, true);
         
         return result[0];
-    }
-
-    /**
-     * Unqualifies the given FQN.
-     *
-     * @param fqn the fully qualified name.
-     * @return the unqualified name.
-     */
-    public static String unqualify(String fqn) {
-        int lastDot = fqn.lastIndexOf(".");
-        if (lastDot < 0) {
-            return fqn;
-        }
-        return fqn.substring(lastDot + 1);
     }
 
     // copied from o.n.m.java.refactoring.RetoucheUtils

@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.persistence.wizard.dao;
 import java.io.File;
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
 import org.netbeans.modules.j2ee.persistence.sourcetestsupport.SourceTestSupport;
@@ -85,7 +86,7 @@ public class EjbFacadeWizardIteratorTest extends SourceTestSupport {
         String golden =
                 "package " + pkgName +";\n\n" + 
                 "import " + annotationType + ";\n\n" +
-                "@" + Util.simpleClassName(annotationType) + "\n" +
+                "@" + JavaIdentifiers.unqualify(annotationType) + "\n" +
                 "public interface " + name + " {\n" +
                 "}";
         FileObject result = wizardIterator.createInterface(name, annotationType, FileUtil.toFileObject(pkg));

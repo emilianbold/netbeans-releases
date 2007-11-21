@@ -64,7 +64,7 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.persistence.util.GenerationUtils;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.persistence.action.GenerationOptions.*;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.openide.util.Parameters;
@@ -107,7 +107,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
                 Collections.<AnnotationTree>emptyList()
                 ),
                 getGenerationOptions().getParameterName(),
-                getGenUtils().createType(getGenerationOptions().getParameterType()),
+                getGenUtils().createType(getGenerationOptions().getParameterType(), getClassElement()),
                 null
                 );
         return Collections.<VariableTree>singletonList(parameter);
@@ -117,7 +117,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
         if (getGenerationOptions().getReturnType() == null || "void".equals(getGenerationOptions().getReturnType())){ //NO18N
             return getTreeMaker().PrimitiveType(TypeKind.VOID);
         }
-        return getGenUtils().createType(getGenerationOptions().getReturnType());
+        return getGenUtils().createType(getGenerationOptions().getReturnType(), getClassElement());
     }
     
     /**
@@ -219,7 +219,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
         return null;
     }
     
-    private TypeElement getClassElement(){
+    TypeElement getClassElement(){
         TreePath path = getWorkingCopy().getTrees().getPath(getWorkingCopy().getCompilationUnit(), getClassTree());
         return (TypeElement) getWorkingCopy().getTrees().getElement(path);
     }
@@ -412,7 +412,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
     
     protected GenerationUtils getGenUtils() {
         if (genUtils == null){
-            genUtils = GenerationUtils.newInstance(getWorkingCopy(), getClassTree());
+            genUtils = GenerationUtils.newInstance(getWorkingCopy());
         }
         return genUtils;
     }

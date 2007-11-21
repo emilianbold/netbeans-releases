@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.core.api.support.Strings;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.xml.multiview.Error;
@@ -86,13 +87,13 @@ public class PersistenceValidator {
         PersistenceUnit[] persistenceUnits = puDataObject.getPersistence().getPersistenceUnit();
         for (int i=0 ;i < persistenceUnits .length; i++) {
             String title = persistenceUnits[i].getName();
-            if (isEmpty(title)) {
+            if (Strings.isEmpty(title)) {
                 Error.ErrorLocation loc = new Error.ErrorLocation(persistenceUnits[i], "name");
                 errors.add(new Error(Error.MISSING_VALUE_MESSAGE, "name", loc));
             }
             for (int j = 0; j < persistenceUnits.length; j++) {
                 String tit = persistenceUnits[j].getName();
-                if (!isEmpty(title) && i != j && title.equals(tit)) {
+                if (!Strings.isEmpty(title) && i != j && title.equals(tit)) {
                     Error.ErrorLocation loc = new Error.ErrorLocation(persistenceUnits[i], "name");
                     errors.add(new Error(Error.TYPE_FATAL, Error.DUPLICATE_VALUE_MESSAGE, title, loc));
                 }
@@ -139,10 +140,6 @@ public class PersistenceValidator {
     protected boolean isJavaSE(){
         Project project = FileOwnerQuery.getOwner(puDataObject.getPrimaryFile());
         return Util.isJavaSE(project);
-    }
-    
-    private boolean isEmpty(String str){
-        return null == str || "".equals(str.trim());
     }
     
 }

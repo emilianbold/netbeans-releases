@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.jpa.refactoring.rename;
 
 import java.text.MessageFormat;
+import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
@@ -76,7 +77,7 @@ public final class PersistenceXmlRename extends PersistenceXmlRefactoring {
                                                                      FileObject persistenceXml) {
 
                                                                      
-        String clazzFqn = RefactoringUtil.getQualifiedName(clazz);
+        String clazzFqn = JavaIdentifiers.getQualifiedName(clazz);
         String newName = RefactoringUtil.renameClass(clazzFqn, renameRefactoring.getNewName());
         return new PersistenceXmlClassRenameRefactoringElement(persistenceUnit, clazzFqn, newName, pUDataObject, persistenceXml);
     }

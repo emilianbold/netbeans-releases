@@ -29,6 +29,7 @@ package org.netbeans.modules.web.refactoring.rename;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -59,7 +60,7 @@ public class WebXmlPackageRename extends BaseWebXmlRename{
         List<FileObject> fos = new ArrayList<FileObject>();
         RefactoringUtil.collectChildren(pkg, fos);
         for (FileObject each : fos){
-            String oldFqn = RefactoringUtil.getQualifiedName(each);
+            String oldFqn = JavaIdentifiers.getQualifiedName(each);
             String newFqn = RefactoringUtil.constructNewName(each, rename);
             result.add(new RenameItem(newFqn, oldFqn));
         }

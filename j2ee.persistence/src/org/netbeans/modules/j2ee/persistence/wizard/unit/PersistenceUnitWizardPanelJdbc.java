@@ -52,6 +52,7 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.j2ee.core.api.support.Strings;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.util.PersistenceProviderComboboxHelper;
@@ -188,14 +189,7 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
      * empty and it's unique.
      */
     private boolean isNameValid() throws InvalidPersistenceXmlException{
-        return isEmptyOrNull(getPersistenceUnitName()) ? false : isNameUnique();
-    }
-    
-    /**
-     * @return true if given str is null, empty or contains only spaces.
-     */
-    private boolean isEmptyOrNull(String str){
-        return str == null || "".equals(str.trim());
+        return Strings.isEmpty(getPersistenceUnitName()) ? false : isNameUnique();
     }
     
     public void setErrorMessage(String msg) {

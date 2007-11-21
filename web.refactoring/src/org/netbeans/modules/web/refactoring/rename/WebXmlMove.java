@@ -30,6 +30,7 @@ package org.netbeans.modules.web.refactoring.rename;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
@@ -60,7 +61,7 @@ public class WebXmlMove extends BaseWebXmlRename{
         String pkg = RefactoringUtil.getPackageName(move.getTarget().lookup(URL.class));
         List<RenameItem> result = new ArrayList<RenameItem>();
         for (String clazz : classes) {
-            String newName = pkg + "." + RefactoringUtil.unqualify(clazz);
+            String newName = pkg + "." + JavaIdentifiers.unqualify(clazz);
             result.add(new RenameItem(newName, clazz));
         }
         return result;

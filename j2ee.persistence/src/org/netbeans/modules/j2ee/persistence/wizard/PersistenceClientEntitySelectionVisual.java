@@ -60,6 +60,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
@@ -506,7 +507,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
             if (value instanceof Entity) {
                 text = ((Entity) value).getClass2();
                 if (text != null) {
-                    String simpleName = Util.simpleClassName(text);
+                    String simpleName = JavaIdentifiers.unqualify(text);
                     String packageName = text.length() > simpleName.length() ? text.substring(0, text.length() - simpleName.length() - 1) : "<default package>";
                     text = simpleName + " (" + packageName + ")";
                 } else {

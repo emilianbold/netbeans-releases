@@ -31,6 +31,7 @@ package org.netbeans.modules.web.refactoring.rename;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
@@ -61,9 +62,9 @@ public class WebXmlFolderMove extends BaseWebXmlRename{
         List<FileObject> fos = new ArrayList<FileObject>();
         RefactoringUtil.collectChildren(folder, fos);
         for (FileObject each : fos){
-            String oldFqn = RefactoringUtil.getQualifiedName(each);
+            String oldFqn = JavaIdentifiers.getQualifiedName(each);
             String targetPackageName = getTargetPackageName(each.getParent());
-            String oldUnqualifiedName = RefactoringUtil.unqualify(oldFqn);
+            String oldUnqualifiedName = JavaIdentifiers.unqualify(oldFqn);
             String newFqn =  targetPackageName.length() == 0 ? oldUnqualifiedName : targetPackageName + "." + oldUnqualifiedName;
             result.add(new RenameItem(newFqn, oldFqn));
         }

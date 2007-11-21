@@ -64,6 +64,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.JavaSource;
@@ -73,10 +74,12 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
+import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
+import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
-import org.netbeans.modules.j2ee.persistence.util.GenerationUtils;
 import org.netbeans.modules.j2ee.persistence.action.EntityManagerGenerator;
 import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
@@ -192,7 +195,7 @@ import org.openide.util.NbBundle;
             String pkg, final boolean hasRemote, final boolean hasLocal, final Class<? extends EntityManagerGenerationStrategy> strategyClass) throws IOException {
         
         final Set<FileObject> createdFiles = new HashSet<FileObject>();
-        final String entitySimpleName = Util.simpleClassName(entityFQN);
+        final String entitySimpleName = JavaIdentifiers.unqualify(entityFQN);
         final String variableName = entitySimpleName.toLowerCase().charAt(0) + entitySimpleName.substring(1);
         
         // create the facade
@@ -202,10 +205,12 @@ import org.openide.util.NbBundle;
         JavaSource source = JavaSource.forFileObject(facade);
         source.runModificationTask(new Task<WorkingCopy>(){
             public void run(WorkingCopy parameter) throws Exception {
+                parameter.toPhase(Phase.RESOLVED);
+                ClassTree classTree = SourceUtils.getPublicTopLevelTree(parameter);
+                assert classTree != null;
                 GenerationUtils genUtils = GenerationUtils.newInstance(parameter);
                 AnnotationTree stateless = genUtils.createAnnotation(EJB_STATELESS);
-                parameter.rewrite(genUtils.getClassTree(), 
-                        genUtils.addAnnotation(genUtils.getClassTree(), stateless));
+                parameter.rewrite(classTree, genUtils.addAnnotation(classTree, stateless));
             }
         }).commit();
 
@@ -221,12 +226,12 @@ import org.openide.util.NbBundle;
         final String remoteInterfaceFQN = pkg + "." + getUniqueClassName(entitySimpleName + FACADE_REMOTE_SUFFIX, targetFolder);
 
         if (hasLocal) {
-            FileObject local = createInterface(Util.simpleClassName(localInterfaceFQN), EJB_LOCAL, targetFolder);
+            FileObject local = createInterface(JavaIdentifiers.unqualify(localInterfaceFQN), EJB_LOCAL, targetFolder);
             addMethodToInterface(methodOptions, local);
             createdFiles.add(local);
         }
         if (hasRemote) {
-            FileObject remote = createInterface(Util.simpleClassName(remoteInterfaceFQN), EJB_REMOTE, targetFolder);
+            FileObject remote = createInterface(JavaIdentifiers.unqualify(remoteInterfaceFQN), EJB_REMOTE, targetFolder);
             addMethodToInterface(methodOptions, remote);
             createdFiles.add(remote);
         }
@@ -235,15 +240,18 @@ import org.openide.util.NbBundle;
         source.runModificationTask(new Task<WorkingCopy>() {
 
             public void run(WorkingCopy parameter) throws Exception {
+                parameter.toPhase(Phase.RESOLVED);
+                ClassTree classTree = SourceUtils.getPublicTopLevelTree(parameter);
+                assert classTree != null;
                 GenerationUtils genUtils = GenerationUtils.newInstance(parameter);
-                ClassTree classTree = genUtils.getClassTree();
+                ClassTree newClassTree = null;
                 if (hasLocal){
-                    classTree = genUtils.addImplementsClause(classTree, localInterfaceFQN);
+                    newClassTree = genUtils.addImplementsClause(newClassTree, localInterfaceFQN);
                 }
                 if (hasRemote){
-                    classTree = genUtils.addImplementsClause(classTree, remoteInterfaceFQN);
+                    newClassTree = genUtils.addImplementsClause(newClassTree, remoteInterfaceFQN);
                 }
-                parameter.rewrite(genUtils.getClassTree(), classTree);
+                parameter.rewrite(classTree, newClassTree);
             }
         }).commit();
         
@@ -298,7 +306,7 @@ import org.openide.util.NbBundle;
      */ 
     private String getEntityName(String entityFQN){
         String result = entityNames.get(entityFQN);
-        return result != null ? result : Util.simpleClassName(entityFQN);
+        return result != null ? result : JavaIdentifiers.unqualify(entityFQN);
     }
     
     /**
@@ -350,17 +358,16 @@ import org.openide.util.NbBundle;
         ModificationResult result = source.runModificationTask(new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws Exception {
-                
-                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                
                 workingCopy.toPhase(Phase.RESOLVED);
+                ClassTree clazz = SourceUtils.getPublicTopLevelTree(workingCopy);
+                assert clazz != null;
+                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                 TreeMaker make = workingCopy.getTreeMaker();
-                        ClassTree clazz = genUtils.getClassTree();
-                        AnnotationTree annotations = genUtils.createAnnotation(annotationType);
-                        ModifiersTree modifiers = make.Modifiers(clazz.getModifiers(), Collections.<AnnotationTree>singletonList(annotations));
-                        ClassTree modifiedClass = make.Class(modifiers, clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), Collections.<ExpressionTree>emptyList(), Collections.<Tree>emptyList());
-                        workingCopy.rewrite(clazz, modifiedClass);
-                    }
+                AnnotationTree annotations = genUtils.createAnnotation(annotationType);
+                ModifiersTree modifiers = make.Modifiers(clazz.getModifiers(), Collections.<AnnotationTree>singletonList(annotations));
+                ClassTree modifiedClass = make.Class(modifiers, clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), Collections.<ExpressionTree>emptyList(), Collections.<Tree>emptyList());
+                workingCopy.rewrite(clazz, modifiedClass);
+            }
         });
         result.commit();
         return source.getFileObjects().iterator().next();
@@ -381,14 +388,17 @@ import org.openide.util.NbBundle;
         ModificationResult result = source.runModificationTask(new Task<WorkingCopy>() {
             
             public void run(WorkingCopy copy) throws Exception {
+                copy.toPhase(Phase.RESOLVED);
                 GenerationUtils utils = GenerationUtils.newInstance(copy);
-                ClassTree original = utils.getClassTree();
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(copy);
+                assert typeElement != null;
+                ClassTree original = copy.getTrees().getTree(typeElement);
                 ClassTree modifiedClass = original;
                 TreeMaker make = copy.getTreeMaker();
                 for (GenerationOptions each : options) {
                     MethodTree method = make.Method(make.Modifiers(Collections.<Modifier>emptySet()), 
-                            each.getMethodName(), utils.createType(each.getReturnType()), 
-                            Collections.<TypeParameterTree>emptyList(), getParameterList(each, make, utils),
+                            each.getMethodName(), utils.createType(each.getReturnType(), typeElement), 
+                            Collections.<TypeParameterTree>emptyList(), getParameterList(each, make, utils, typeElement),
                             Collections.<ExpressionTree>emptyList(), (BlockTree) null, null);
                     modifiedClass = make.addClassMember(modifiedClass, method);
                 }
@@ -398,12 +408,12 @@ import org.openide.util.NbBundle;
         result.commit();
     }
     
-    private List<VariableTree> getParameterList(GenerationOptions options, TreeMaker make, GenerationUtils utils){
+    private List<VariableTree> getParameterList(GenerationOptions options, TreeMaker make, GenerationUtils utils, TypeElement scope){
         if (options.getParameterName() == null){
             return Collections.<VariableTree>emptyList();
         }
         VariableTree vt = make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), 
-                options.getParameterName(), utils.createType(options.getParameterType()), null);
+                options.getParameterName(), utils.createType(options.getParameterType(), scope), null);
         return Collections.<VariableTree>singletonList(vt);
     }
     

@@ -51,6 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -109,23 +110,6 @@ public class RefactoringUtil {
     }
     
     /**
-     * Gets the fully qualified name for the given <code>fileObject</code>. If it
-     * represents a java package, will return the name of the package (with dots as separators).
-     *
-     *@param fileObject the file object whose FQN should be get. Must belong to
-     * a project.
-     *@return the FQN for the given file object.
-     */
-    public static String getQualifiedName(FileObject fileObject){
-        Project project = FileOwnerQuery.getOwner(fileObject);
-        assert project != null;
-        ClassPathProvider classPathProvider = project.getLookup().lookup(ClassPathProvider.class);
-        assert classPathProvider != null;
-        return classPathProvider.findClassPath(fileObject, ClassPath.SOURCE).getResourceName(fileObject, '.', false);
-        
-    }
-    
-    /**
      * Constructs a new fully qualified name for the given <code>newName</code>.
      *
      * @param originalFullyQualifiedName the old fully qualified name of the class.
@@ -181,21 +165,7 @@ public class RefactoringUtil {
     public static boolean isPackage(RenameRefactoring rename){
         return rename.getRefactoringSource().lookup(NonRecursiveFolder.class) != null;
     }
-    
-    /**
-     * Unqualifies the given FQN.
-     *
-     * @param fqn the fully qualified name.
-     * @return the unqualified name.
-     */
-    public static String unqualify(String fqn){
-        int lastDot = fqn.lastIndexOf(".");
-        if (lastDot < 0){
-            return fqn;
-        }
-        return fqn.substring(lastDot + 1);
-    }
-    
+
     /**
      * Gets the new refactored name for the given <code>javaFile</code>.
      *
@@ -207,10 +177,10 @@ public class RefactoringUtil {
      */
     public static String constructNewName(FileObject javaFile, RenameRefactoring rename){
         
-        String fqn = getQualifiedName(javaFile);
+        String fqn = JavaIdentifiers.getQualifiedName(javaFile);
         
         if (isPackage(rename)){
-            return rename.getNewName() + "." + unqualify(fqn);
+            return rename.getNewName() + "." + JavaIdentifiers.unqualify(fqn);
         }
         
         FileObject folder = rename.getRefactoringSource().lookup(FileObject.class);

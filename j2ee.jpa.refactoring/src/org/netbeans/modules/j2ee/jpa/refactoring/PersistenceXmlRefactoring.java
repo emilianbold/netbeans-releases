@@ -69,6 +69,7 @@ import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.jpa.refactoring.util.PositionBoundsResolver;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
@@ -249,7 +250,7 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
             if (!shouldHandle(refactoringSource)){
                 continue;
             }
-            String classNameFQN = RefactoringUtil.getQualifiedName(refactoringSource);
+            String classNameFQN = JavaIdentifiers.getQualifiedName(refactoringSource);
 
             for (FileObject each : getPersistenceXmls(refactoringSource)){
                 try {

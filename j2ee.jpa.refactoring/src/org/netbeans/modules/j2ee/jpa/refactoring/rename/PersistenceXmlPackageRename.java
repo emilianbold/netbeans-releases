@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
@@ -89,7 +90,7 @@ public class PersistenceXmlPackageRename extends PersistenceXmlRefactoring{
     public Problem prepare(RefactoringElementsBag refactoringElementsBag) {
         if (isPackage()){
             FileObject pkg = renameRefactoring.getRefactoringSource().lookup(NonRecursiveFolder.class).getFolder();
-            String oldPackageName = RefactoringUtil.getQualifiedName(pkg);
+            String oldPackageName = JavaIdentifiers.getQualifiedName(pkg);
             
             return doPrepare(refactoringElementsBag, pkg, oldPackageName, renameRefactoring.getNewName());
         } else if (isFolder()){
@@ -168,7 +169,7 @@ public class PersistenceXmlPackageRename extends PersistenceXmlRefactoring{
             if (each.isFolder()){
                 getClasses(each, result);
             } else {
-                result.add(RefactoringUtil.getQualifiedName(each));
+                result.add(JavaIdentifiers.getQualifiedName(each));
             }
         }
         return result;

@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
 import java.util.Set;
+import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.openide.util.NbBundle;
 
@@ -159,7 +160,7 @@ public abstract class Table implements Comparable<Table> {
         private String fqClassName;
 
         public ExistingDisabledReason(String fqClassName) {
-            super(NbBundle.getMessage(Table.class, "LBL_AlreadyMapped", Util.getClassName(fqClassName)),
+            super(NbBundle.getMessage(Table.class, "LBL_AlreadyMapped", JavaIdentifiers.unqualify(fqClassName)),
                     NbBundle.getMessage(Table.class, "LBL_AlreadyMappedDescription", fqClassName));
             this.fqClassName = fqClassName;
         }

@@ -48,6 +48,7 @@ import java.text.MessageFormat;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -113,7 +114,7 @@ public final class PersistenceXmlWhereUsed extends PersistenceXmlRefactoring {
             PUDataObject pUDataObject,
             FileObject persistenceXml) {
         
-        return new PersistenceXmlWhereUsedRefactoringElement(persistenceUnit, RefactoringUtil.getQualifiedName(clazz), pUDataObject, persistenceXml);
+        return new PersistenceXmlWhereUsedRefactoringElement(persistenceUnit, JavaIdentifiers.getQualifiedName(clazz), pUDataObject, persistenceXml);
     } 
 
     protected class PersistenceXmlWhereUsedRefactoringElement extends PersistenceXmlRefactoringElement {
