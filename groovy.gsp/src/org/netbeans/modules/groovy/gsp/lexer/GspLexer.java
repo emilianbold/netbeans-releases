@@ -180,7 +180,18 @@ public final class GspLexer implements Lexer<GspTokenId> {
                     break;
                 case ISA_PC: // after %{
                     switch (actChar) {
-                        case '{': state = GSCRIPT; break;
+                        case '{':
+                            if (input.readLength() == 2) {
+                                state = GSCRIPT;
+                                return token(GspTokenId.DELIMITER);
+                            } else {
+                                input.backup(2);
+                                state = INIT;
+                                return token(GspTokenId.HTML);
+                            }
+                        default:
+                            input.backup(1);
+                            state = INIT; //just content
                     }
                     break;
                 case ISA_AT: // after @{

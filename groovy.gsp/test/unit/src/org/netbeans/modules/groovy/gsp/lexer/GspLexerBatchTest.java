@@ -129,4 +129,20 @@ public class GspLexerBatchTest extends TestCase {
         LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "<p>a!</p>", -1);
     }
 
+    public void testPercent() {
+        String text = 
+                "<%@ page import=\"org.grails.bookmarks.*\" %>" +
+                "<style type=\"text/css\">.searchbar {width:97%;}</style>";
+        TokenHierarchy<?> hierarchy = TokenHierarchy.create(text, GspTokenId.language());
+        TokenSequence<?> sequence = hierarchy.tokenSequence();
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "<%@", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GROOVY_EXPR, " page import=\"org.grails.bookmarks.*\" ", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "%>", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "<style type=\"text/css\">.searchbar {width:97%;}</style>", -1);
+    }
+
 }
