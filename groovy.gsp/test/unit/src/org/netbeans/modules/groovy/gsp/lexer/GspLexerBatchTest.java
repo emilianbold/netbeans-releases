@@ -120,4 +120,13 @@ public class GspLexerBatchTest extends TestCase {
         LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "</div></html>", -1);
     }
     
+    public void testExclamation() {
+        String text =
+                "<p>a!</p>";
+        TokenHierarchy<?> hierarchy = TokenHierarchy.create(text, GspTokenId.language());
+        TokenSequence<?> sequence = hierarchy.tokenSequence();
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "<p>a!</p>", -1);
+    }
+
 }

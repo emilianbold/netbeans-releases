@@ -190,7 +190,18 @@ public final class GspLexer implements Lexer<GspTokenId> {
                     break;
                 case ISA_EX: // after !{
                     switch (actChar) {
-                        case '{': state = GDECLAR; break;
+                        case '{':
+                            if (input.readLength() == 2) {
+                                state = GDECLAR;
+                                return token(GspTokenId.DELIMITER);
+                            } else {
+                                input.backup(2);
+                                state = INIT;
+                                return token(GspTokenId.HTML);
+                            }
+                        default:
+                            input.backup(1);
+                            state = INIT; //just content
                     }
                     break;
                 case ISA_LT_PC: // after <%
