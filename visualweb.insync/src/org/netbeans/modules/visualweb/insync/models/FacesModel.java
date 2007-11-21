@@ -1051,6 +1051,13 @@ public class FacesModel extends Model {
                 openJavaUnits();
             opened = (!hadLiveUnit && liveUnitWrapper != null) || (!hadMarkupUnit && markupUnit != null);
         }
+        
+        //If errors are found in java/jsp source, mark if for syncing
+        if(getErrors().length > 0) {
+            needSyncing = true;
+            return;
+        }
+        
         Unit unit = getTopmostUnit();
     
         // abort creation if the units did not open
