@@ -161,7 +161,7 @@ public class LicensesPanel extends WizardPanel {
                 if(acceptedProducts.size()==0) {
                     everythingAccepted = false;
                 }
-                String licenseValue = SystemUtils.resolveString(
+                final String licenseValue = SystemUtils.resolveString(
                         System.getProperty(OVERALL_LICENSE_RESOURCE_PROPERTY));                
                 text.append(SystemUtils.resolveString(
                         "$R{" + licenseValue + "}"));
