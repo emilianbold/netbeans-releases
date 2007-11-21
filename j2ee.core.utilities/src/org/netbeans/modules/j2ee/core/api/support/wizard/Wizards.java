@@ -64,12 +64,12 @@ public final class Wizards {
      * 
      * @param wizard the wizard to which to merge; must not be null.
      * @param panels the panels to merge; must not be null.
-     * @param steps the steps to merge; must not be null.
+     * @param steps the steps to merge or null if the steps should be taken 
+     *        from the {@link JComponent#getName names} of the panels components.
      */
     public static void mergeSteps(WizardDescriptor wizard, WizardDescriptor.Panel[] panels, String[] steps) {
         Parameters.notNull("wizard", wizard); //NOI18N
         Parameters.notNull("panels", panels); //NOI18N
-        Parameters.notNull("steps", steps); //NOI18N
         
         Object prop = wizard.getProperty(WIZARD_PANEL_CONTENT_DATA);
         String[] beforeSteps;
