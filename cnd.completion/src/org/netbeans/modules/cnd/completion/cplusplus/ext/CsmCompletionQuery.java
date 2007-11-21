@@ -1441,6 +1441,14 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 CompletionResolver.Result res = compResolver.getResult();
                 Iterator it = res.getGlobalProjectNamespaces().iterator();
                 ns = it.hasNext() ? (CsmNamespace) it.next()  : null;
+                if (ns == null) {
+                    // try namespace aliases
+                    it = res.getProjectNamespaceAliases().iterator();
+                    CsmNamespaceAlias alias = it.hasNext() ? (CsmNamespaceAlias) it.next() : null;
+                    if (alias != null) {
+                        ns = alias.getReferencedNamespace();
+                    }
+                }
             }                            
             return ns;
         }

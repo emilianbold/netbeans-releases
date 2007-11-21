@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -317,7 +318,9 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         if (needGlobalNamespaces(context, offset)) {
             globProjectNSs = getGlobalNamespaces(prj, strPrefix, match, offset);
+            projectNsAliases = getProjectNamespaceAliases(prj, strPrefix, match, offset);
         }        
+        
         if (needLibClasses(context, offset)) {
             libClasses = getLibClassesEnums(prj, strPrefix, match);
         }
@@ -332,6 +335,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         if (needLibNamespaces(context, offset)) {
             libNSs = getLibNamespaces(prj, strPrefix, match);
+//            libNsAliases = getLibNamespaceAliases(prj, strPrefix, match, offset);
         }        
         this.result = buildResult(context, 
                 localVars, 
@@ -570,6 +574,18 @@ public class CompletionResolverImpl implements CompletionResolver {
             List res = contResolver.getNestedNamespaces(ns, strPrefix, match);
             out.addAll(res);
         }        
+        return out;
+    }
+    
+    private Collection getProjectNamespaceAliases(CsmProject prj, String strPrefix, boolean match, int offset) {
+        CsmProject inProject = (strPrefix.length() == 0) ? prj : null;
+        Collection aliases = CsmUsingResolver.getDefault().findNamespaceAliases(this.file, offset, inProject);
+        Collection out;
+        if (strPrefix.length() > 0) {
+            out = filterDeclarations(aliases, strPrefix, match, new CsmDeclaration.Kind[] { CsmDeclaration.Kind.NAMESPACE_ALIAS });        
+        } else {
+            out = aliases;
+        }
         return out;
     }
     
