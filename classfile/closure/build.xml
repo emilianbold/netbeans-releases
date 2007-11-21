@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Closure Tool" default="default" basedir=".">
+    <description>Builds, tests, and runs the closure tool project.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <target name="javadoc"/> <!-- No API to document. -->
+</project>
