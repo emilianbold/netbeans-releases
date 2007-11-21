@@ -90,6 +90,10 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
                 wizardTitle = NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_CONTROLLERS");
                 serverCommand = NbBundle.getMessage(NewArtifactWizardIterator.class,"SERVER_COMMAND_CONTROLLERS");
                 break;
+            case SERVICES:
+                wizardTitle = NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_SERVICES");
+                serverCommand = NbBundle.getMessage(NewArtifactWizardIterator.class,"SERVER_COMMAND_SERVICES");
+                break;    
             }
         }
     

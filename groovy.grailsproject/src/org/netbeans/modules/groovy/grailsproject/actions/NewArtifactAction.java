@@ -67,6 +67,9 @@ public class NewArtifactAction extends AbstractAction {
             case CONTROLLERS:
                 wiz = new WizardDescriptor(new NewArtifactWizardIterator(project, cat));
                 break;
+            case SERVICES:
+                wiz = new WizardDescriptor(new NewArtifactWizardIterator(project, cat));
+                break;
             default:
                 return;
             }
