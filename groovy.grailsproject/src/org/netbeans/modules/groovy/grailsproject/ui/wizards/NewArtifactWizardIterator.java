@@ -36,7 +36,6 @@ import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.WizardDescriptor;
-import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -53,8 +52,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import java.io.BufferedReader;
 import java.util.concurrent.CountDownLatch;
 import java.io.InputStreamReader;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 
@@ -69,7 +66,7 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
     private transient WizardDescriptor wiz;
     
     BufferedReader procOutput = null;
-    GetDomainClassNameStep pls = null;
+    GetArtifactNameStep pls = null;
     ProgressHandle handle = null;
     CountDownLatch serverFinished = new CountDownLatch(1);
     boolean        serverRunning = false;
@@ -77,10 +74,23 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
     GrailsServer server = GrailsServerFactory.getServer();
     GrailsProject project;
     SourceCategory cat;
+    String wizardTitle;
+    String serverCommand;
     
     public NewArtifactWizardIterator (GrailsProject project, SourceCategory cat) {
         this.project = project;
         this.cat = cat;
+        
+        switch(cat){
+            case DOMAIN:
+                wizardTitle = NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_DOMAIN");
+                serverCommand = NbBundle.getMessage(NewArtifactWizardIterator.class,"SERVER_COMMAND_DOMAIN");
+                break;
+            case CONTROLLERS:
+                wizardTitle = NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_CONTROLLERS");
+                serverCommand = NbBundle.getMessage(NewArtifactWizardIterator.class,"SERVER_COMMAND_CONTROLLERS");
+                break;
+            }
         }
     
     
@@ -115,7 +125,6 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
             Set<FileObject> resultSet = new HashSet<FileObject>();
 
             return resultSet;
-
     }
 
     
@@ -128,19 +137,15 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
                     "NewGrailsProjectWizardIterator.NoGrailsServerConfigured"));
             serverConfigured = false;
             }
-
         
-        pls = new GetDomainClassNameStep(serverRunning, serverConfigured, project);
+        pls = new GetArtifactNameStep(serverRunning, serverConfigured, project, cat);
         
         Component c = pls.getComponent();
         
         if (c instanceof JComponent) { // assume Swing components
             JComponent jc = (JComponent)c;
             jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(1)); // NOI18N
-            jc.putClientProperty("WizardPanel_contentData", new String[] {
-                NbBundle.getMessage(NewArtifactWizardIterator.class,"DOM_ClassName") 
-                     
-                    }  ); // NOI18N
+            jc.putClientProperty("WizardPanel_contentData", new String[] { wizardTitle }  ); // NOI18N
             }
         
     }
@@ -193,7 +198,15 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
             pls.fireChangeEvent();
             handle.start(100);
             
-            Process process = server.runCommand(project, "create-domain-class " + pls.getDomainClassName(), null, null);
+            Process process = server.runCommand(project, serverCommand + " " + pls.getDomainClassName(), null, null);
+            
+            if(process == null){
+                serverRunning = false;
+                LOG.log(Level.WARNING, "Could not create Grails-Server, process == null ");
+                serverFinished.countDown();
+                return;
+                }
+            
             procOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
             
             String errString;

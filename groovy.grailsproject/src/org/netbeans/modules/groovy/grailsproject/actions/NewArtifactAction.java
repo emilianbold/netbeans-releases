@@ -32,7 +32,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.openide.WizardDescriptor;
 import org.netbeans.modules.groovy.grailsproject.ui.wizards.NewArtifactWizardIterator;
-import org.netbeans.modules.groovy.grailsproject.ui.wizards.NewDomainClassWizardIterator;
 import org.openide.DialogDisplayer;
 import java.awt.Dialog;
 import java.util.Set;
@@ -63,7 +62,7 @@ public class NewArtifactAction extends AbstractAction {
         
         switch(cat){
             case DOMAIN:
-                wiz = new WizardDescriptor(new NewDomainClassWizardIterator(project));
+                wiz = new WizardDescriptor(new NewArtifactWizardIterator(project, cat));
                 break;
             case CONTROLLERS:
                 wiz = new WizardDescriptor(new NewArtifactWizardIterator(project, cat));

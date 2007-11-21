@@ -95,7 +95,7 @@ public class ExternalGrailsServer implements GrailsServer{
 
             waitForOutput();
             }
-         if(cmd.startsWith("create-domain-class")) {
+        else if(cmd.startsWith("create-domain-class") || cmd.startsWith("create-controller")) {
 
             assert io ==  null;
             
@@ -130,6 +130,11 @@ public class ExternalGrailsServer implements GrailsServer{
             new Thread(gsr).start();
 
             waitForOutput();
+        }
+        else {
+            LOG.log(Level.WARNING, "unknown server command: " + cmd);
+            return null;
+        
         }
         
         return gsr.getProcess();
