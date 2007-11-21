@@ -153,6 +153,7 @@ public final class GspLexer implements Lexer<GspTokenId> {
                     }
                     break;
                 case HTML:
+                    state = INIT;
                     break;
                 case ISA_LT: // after <
                     switch (actChar) {
@@ -160,12 +161,21 @@ public final class GspLexer implements Lexer<GspTokenId> {
                         case 'g': state = ISA_LT_G; break; // after <g
                         case '/': state = ISA_LT_BS; break; // after </
                         default:
-                            state = INIT; //just content
+                            input.backup(1);
+                            state = HTML; //just content
                     }
                     break;
                 case ISA_DL: // after ${
                     switch (actChar) {
-                        case '{': state = GEXPR; break;
+                        case '{': 
+                            if (input.readLength() == 2) {
+                                state = GEXPR;
+                                return token(GspTokenId.DELIMITER);
+                            } else {
+                                input.backup(2);
+                                state = INIT;
+                                return token(GspTokenId.HTML);
+                            }
                     }
                     break;
                 case ISA_PC: // after %{
@@ -251,29 +261,27 @@ public final class GspLexer implements Lexer<GspTokenId> {
                     break;
                 case ISA_LT_BS : // after </
                     switch (actChar) {
-                        case 'g': state = ISA_LT_BS_G; break;
+                        case 'g': state = ISA_LT_BS_G; break; // after </g
                         default:
-                            input.backup(3); // return back </g
+                            input.backup(3);
                             state = HTML;
-                            break;
                     }
                     break;
-                case ISA_LT_BS_G:
+                case ISA_LT_BS_G: // after </g:
                     switch (actChar) {
                         case ':':
                             if (input.readLength() == 4) {
                                 state = GEND_TAG;
                                 break;
-//                                return token(GspTokenId.GTAG);
                             } else {
                                 input.backup(4); // return back </g:
                                 state = INIT;
                                 return token(GspTokenId.HTML);
                             }
                         default:
-                            input.backup(4); // return back </g:
+                            input.backup(4);
                             state = HTML;
-                            break;
+                            return token(GspTokenId.HTML);
                     }
                     break;
                 case GEXPR: // after ${
@@ -491,7 +499,7 @@ public final class GspLexer implements Lexer<GspTokenId> {
         // Scanner first checks whether this is completely the last
         // available buffer.
         
-        switch(state) {
+        switch (state) {
             case INIT:
                 if (input.readLength() == 0) {
                     return null;
