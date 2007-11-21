@@ -3094,6 +3094,11 @@ public class InteractionManager {
             SelectionManager sm = webform.getSelection();
             DesignerPane pane = webform.getPane();
             PageBox pageBox = pane.getPageBox();
+            if (pageBox == null) {
+                // XXX #122515 NPE, it seems there is a deeper problem somewhere else (model?).
+                return;
+            }
+            
             int maxWidth = pageBox.getWidth();
             int maxHeight = pageBox.getHeight();
             int resize = sm.getSelectionHandleDir(x, y, maxWidth, maxHeight);
