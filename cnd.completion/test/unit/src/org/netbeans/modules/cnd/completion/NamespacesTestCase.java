@@ -78,4 +78,14 @@ public class NamespacesTestCase extends CompletionBaseTestCase {
         // IZ84115: "Code Completion" works incorrectly with namespaces
         super.performTest("file.cc", 5, 5, "S1::S2::");
     }      
+    
+    public void testInFunctionAliasesS1() throws Exception {
+        // IZ#117792: Code completion should display namespace aliases
+        super.performTest("file.cc", 57, 5, "AliasS1::");
+    }
+    
+    public void testInFunctionAliasesS2() throws Exception {
+        // IZ#117792: Code completion should display namespace aliases
+        super.performTest("file.cc", 57, 5, "AliasS2::");
+    }
 }

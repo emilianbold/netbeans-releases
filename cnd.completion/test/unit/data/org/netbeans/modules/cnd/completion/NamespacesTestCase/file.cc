@@ -49,3 +49,10 @@ void usingS1S2() {
     using namespace S2;
      //
 }
+
+namespace AliasS1 = S1;
+namespace AliasS2 = S1::S2;
+
+void aliases() {
+     //
+}

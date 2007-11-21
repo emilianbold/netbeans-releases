@@ -1,5 +1,6 @@
 argc int
 argv char**
+aliases() void
 main(int argc, char** argv) int
 usingS1() void
 usingS1S2() void
