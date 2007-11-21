@@ -1726,6 +1726,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.5.0.14.3"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk5.resource}"/>
 	    <property name="nbi.bundled.jvm.file" value="${basedir}/cache/jvm/jre-1_5_0_13-windows-i586.exe"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
@@ -1735,6 +1736,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.5.0.14.3"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk5.resource}"/>
 	    <property name="nbi.bundled.jvm.file" value="${basedir}/cache/jvm/jre-1_5_0_13-linux-i586.bin"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
@@ -1744,6 +1746,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.5.0.14.3"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk5.resource}"/>
 	    <property name="nbi.bundled.jvm.file" value="${basedir}/cache/jvm/jre-1_5_0_13-solaris-i586.sh"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
@@ -1753,6 +1756,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.5.0.14.3"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk5.resource}"/>
             <property name="nbi.bundled.jvm.file" value="${basedir}/cache/jvm/jre-1_5_0_13-solaris-sparc.sh"/>
         </create-bundle>
 
@@ -1764,6 +1768,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.6.0.4.8"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
 	    <property name="nbi.bundled.jvm.file" value="${basedir}/cache/jvm/jre-1_5_0_13-windows-i586.exe"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
@@ -1773,6 +1778,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.6.0.4.8"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
 	    <property name="nbi.bundled.jvm.file" value="${basedir}/cache/jvm/jre-1_5_0_13-linux-i586.bin"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
@@ -1782,6 +1788,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.6.0.4.8"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
 	    <property name="nbi.bundled.jvm.file" value="${basedir}/cache/jvm/jre-1_5_0_13-solaris-i586.sh"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
@@ -1791,6 +1798,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.6.0.4.8"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
 	    <property name="nbi.bundled.jvm.file" value="${basedir}/cache/jvm/jre-1_5_0_13-solaris-sparc.sh"/>
         </create-bundle>
     </target>
