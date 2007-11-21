@@ -53,7 +53,7 @@ public class EvalApp {
         The following code must stay where it is, on same line numbers, else all unit tests will fail.
     ************************************************************************************************** */
     public static void main(String[] args) {
-        ix += 10;
+        ix += 10;                       // LBREAKPOINT
         EvalApp app = new EvalApp();
         app.m1();
         app.m2();
