@@ -45,7 +45,7 @@
 #include "Main.h"
 
 const DWORD JAVA_VERIFICATION_PROCESS_TIMEOUT = 10000; // 10sec
-const DWORD UNPACK200_EXTRACTION_TIMEOUT = 20000; //20 seconds on each file
+const DWORD UNPACK200_EXTRACTION_TIMEOUT = 60000; //60 seconds on each file
 const DWORD JAVA_VERIFICATION_PROCESS_PRIORITY = NORMAL_PRIORITY_CLASS;
 const WCHAR * JAVA_EXE_SUFFIX = L"\\bin\\java.exe";
 const WCHAR * UNPACK200_EXE_SUFFIX = L"\\bin\\unpack200.exe";
@@ -53,7 +53,7 @@ const WCHAR * JAVA_LIB_SUFFIX = L"\\lib";
 const WCHAR * PACK_GZ_SUFFIX  = L".pack.gz";
 const WCHAR * JAR_PACK_GZ_SUFFIX = L".jar.pack.gz";
 
-const DWORD JVM_EXTRACTION_TIMEOUT = 60000;  //60sec
+const DWORD JVM_EXTRACTION_TIMEOUT = 180000;  //180sec
 
 WCHAR * JAVA_REGISTRY_KEYS [] = {
     L"SOFTWARE\\JavaSoft\\Java Runtime Environment",
