@@ -80,3 +80,13 @@ if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
 #    exit $ERROR_CODE;
 fi
+
+if [ $ML_BUILD == 1 ]; then
+    cd $DIST/ml
+    bash $DIRNANE/files-info.sh bundles zip
+    ERROR_CODE=$?
+    if [ $ERROR_CODE != 0 ]; then
+        echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
+#        exit $ERROR_CODE;
+    fi
+fi
