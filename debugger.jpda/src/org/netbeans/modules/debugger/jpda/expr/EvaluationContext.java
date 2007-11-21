@@ -41,10 +41,14 @@
 
 package org.netbeans.modules.debugger.jpda.expr;
 
+import com.sun.jdi.Field;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.LocalVariable;
+import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 
@@ -77,6 +81,7 @@ public class EvaluationContext {
     private Trees trees;
     private CompilationUnitTree compilationUnitTree;
     private TreePath treePath;
+    private Map<Tree, VariableInfo> variables = new HashMap<Tree, VariableInfo>();
 
     /**
      * Creates a new context in which to evaluate expresions.
@@ -159,6 +164,29 @@ public class EvaluationContext {
     
     TreePath getTreePath() {
         return treePath;
+    }
+    
+    Map<Tree, VariableInfo> getVariables() {
+        return variables;
+    }
+    
+    static final class VariableInfo {
+        public Field field;
+        public ObjectReference fieldObject;
+        public LocalVariable var;
+        
+        public VariableInfo(Field field) {
+            this.field = field;
+        }
+        
+        public VariableInfo(Field field, ObjectReference fieldObject) {
+            this.field = field;
+            this.fieldObject = fieldObject;
+        }
+        
+        public VariableInfo(LocalVariable var) {
+            this.var = var;
+        }
     }
     
 }

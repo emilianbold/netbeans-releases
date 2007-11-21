@@ -46,19 +46,25 @@ import com.sun.jdi.ArrayType;
 import com.sun.jdi.BooleanType;
 import com.sun.jdi.BooleanValue;
 import com.sun.jdi.ByteType;
+import com.sun.jdi.ByteValue;
 import com.sun.jdi.CharType;
+import com.sun.jdi.CharValue;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.DoubleType;
+import com.sun.jdi.DoubleValue;
 import com.sun.jdi.Field;
 import com.sun.jdi.FloatType;
+import com.sun.jdi.FloatValue;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.IntegerType;
+import com.sun.jdi.IntegerValue;
 import com.sun.jdi.InterfaceType;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.LongType;
+import com.sun.jdi.LongValue;
 import com.sun.jdi.Method;
 import com.sun.jdi.Mirror;
 import com.sun.jdi.NativeMethodException;
@@ -66,6 +72,7 @@ import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.ShortValue;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadReference;
@@ -146,6 +153,7 @@ import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.VariableInfo;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.openide.util.NbBundle;
 
@@ -427,11 +435,353 @@ import org.openide.util.NbBundle;
     }
 
     public Mirror visitCompoundAssignment(CompoundAssignmentTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Mirror var = arg0.getVariable().accept(this, evaluationContext);
+        Mirror exp = arg0.getExpression().accept(this, evaluationContext);
+        VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+        Tree.Kind kind = arg0.getKind();
+        if (var instanceof BooleanValue) {
+            boolean v = ((BooleanValue) var).value();
+            boolean e = ((BooleanValue) exp).value();
+            switch (kind) {
+                case AND_ASSIGNMENT:
+                    v &= e; break;
+                case OR_ASSIGNMENT:
+                    v |= e; break;
+                case XOR_ASSIGNMENT:
+                    v ^= e; break;
+                default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
+            }
+            Value value = vm.mirrorOf(v);
+            setToMirror(arg0.getVariable(), value, evaluationContext);
+            return value;
+        }
+        if (var instanceof DoubleValue) {
+            double v = ((DoubleValue) var).value();
+            double e = ((DoubleValue) exp).value();
+            switch (kind) {
+                case DIVIDE_ASSIGNMENT:
+                    v /= e; break;
+                case MINUS_ASSIGNMENT:
+                    v -= e; break;
+                case MULTIPLY_ASSIGNMENT:
+                    v *= e; break;
+                case PLUS_ASSIGNMENT:
+                    v += e; break;
+                default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
+            }
+            Value value = vm.mirrorOf(v);
+            setToMirror(arg0.getVariable(), value, evaluationContext);
+            return value;
+        }
+        if (var instanceof FloatValue) {
+            float v = ((FloatValue) var).value();
+            float e = ((FloatValue) exp).value();
+            switch (kind) {
+                case DIVIDE_ASSIGNMENT:
+                    v /= e; break;
+                case MINUS_ASSIGNMENT:
+                    v -= e; break;
+                case MULTIPLY_ASSIGNMENT:
+                    v *= e; break;
+                case PLUS_ASSIGNMENT:
+                    v += e; break;
+                default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
+            }
+            Value value = vm.mirrorOf(v);
+            setToMirror(arg0.getVariable(), value, evaluationContext);
+            return value;
+        }
+        if (var instanceof LongValue) {
+            long v = ((LongValue) var).value();
+            long e = ((LongValue) exp).value();
+            switch (kind) {
+                case AND_ASSIGNMENT:
+                    v &= e; break;
+                case DIVIDE_ASSIGNMENT:
+                    v /= e; break;
+                case LEFT_SHIFT_ASSIGNMENT:
+                    v <<= e; break;
+                case MINUS_ASSIGNMENT:
+                    v -= e; break;
+                case MULTIPLY_ASSIGNMENT:
+                    v *= e; break;
+                case OR_ASSIGNMENT:
+                    v |= e; break;
+                case PLUS_ASSIGNMENT:
+                    v += e; break;
+                case REMAINDER_ASSIGNMENT:
+                    v %= e; break;
+                case RIGHT_SHIFT_ASSIGNMENT:
+                    v >>= e; break;
+                case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+                    v >>>= e; break;
+                case XOR_ASSIGNMENT:
+                    v ^= e; break;
+                default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
+            }
+            Value value = vm.mirrorOf(v);
+            setToMirror(arg0.getVariable(), value, evaluationContext);
+            return value;
+        }
+        if (var instanceof IntegerValue) {
+            int v = ((IntegerValue) var).value();
+            int e = ((IntegerValue) exp).value();
+            switch (kind) {
+                case AND_ASSIGNMENT:
+                    v &= e; break;
+                case DIVIDE_ASSIGNMENT:
+                    v /= e; break;
+                case LEFT_SHIFT_ASSIGNMENT:
+                    v <<= e; break;
+                case MINUS_ASSIGNMENT:
+                    v -= e; break;
+                case MULTIPLY_ASSIGNMENT:
+                    v *= e; break;
+                case OR_ASSIGNMENT:
+                    v |= e; break;
+                case PLUS_ASSIGNMENT:
+                    v += e; break;
+                case REMAINDER_ASSIGNMENT:
+                    v %= e; break;
+                case RIGHT_SHIFT_ASSIGNMENT:
+                    v >>= e; break;
+                case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+                    v >>>= e; break;
+                case XOR_ASSIGNMENT:
+                    v ^= e; break;
+                default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
+            }
+            Value value = vm.mirrorOf(v);
+            setToMirror(arg0.getVariable(), value, evaluationContext);
+            return value;
+        }
+        if (var instanceof StringReference) {
+            String v = ((StringReference) var).value();
+            String e = ((StringReference) exp).value();
+            switch (kind) {
+                case PLUS_ASSIGNMENT:
+                    v += e; break;
+                default: throw new IllegalStateException("Unknown assignment: "+kind+" of "+arg0);
+            }
+            Value value = vm.mirrorOf(v);
+            setToMirror(arg0.getVariable(), value, evaluationContext);
+            return value;
+        }
+        throw new IllegalStateException("Unknown assignment var type: "+var);
     }
 
     public Mirror visitBinary(BinaryTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Mirror left = arg0.getLeftOperand().accept(this, evaluationContext);
+        Mirror right = arg0.getRightOperand().accept(this, evaluationContext);
+        VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+        Tree.Kind kind = arg0.getKind();
+        if ((left instanceof BooleanValue) && (right instanceof BooleanValue)) {
+            boolean op1 = ((BooleanValue) left).booleanValue();
+            boolean op2 = ((BooleanValue) right).booleanValue();
+            boolean res;
+            switch (kind) {
+                case AND: res = op1 & op2; break;
+                case CONDITIONAL_AND: res = op1 && op2; break;
+                case CONDITIONAL_OR: res = op1 || op2; break;
+                case EQUAL_TO: res = op1 == op2; break;
+                case NOT_EQUAL_TO: res = op1 != op2; break;
+                case OR: res = op1 | op2; break;
+                case XOR: res = op1 ^ op2; break;
+                default:
+                    throw new IllegalArgumentException("Unhandled binary tree: "+arg0);
+            }
+            return vm.mirrorOf(res);
+        }
+        boolean isLeftNumeric = left instanceof PrimitiveValue && !(left instanceof BooleanValue);
+        boolean isRightNumeric = right instanceof PrimitiveValue && !(right instanceof BooleanValue);
+        if (isLeftNumeric && isRightNumeric) {
+            if ((left instanceof DoubleValue) || (right instanceof DoubleValue)) {
+                double l = ((PrimitiveValue) left).doubleValue();
+                double r = ((PrimitiveValue) right).doubleValue();
+                double v = 0.;
+                boolean b = false;
+                boolean isBoolean = true;
+                switch (kind) {
+                    case DIVIDE:
+                        v = l / r; isBoolean = false; break;
+                    case MINUS:
+                        v = l - r; isBoolean = false; break;
+                    case MULTIPLY:
+                        v = l * r; isBoolean = false; break;
+                    case PLUS:
+                        v = l + r; isBoolean = false; break;
+                    case EQUAL_TO:
+                        b = l == r; break;
+                    case GREATER_THAN:
+                        b = l > r; break;
+                    case GREATER_THAN_EQUAL:
+                        b = l >= r; break;
+                    case LESS_THAN:
+                        b = l < r; break;
+                    case LESS_THAN_EQUAL:
+                        b = l <= r; break;
+                    case NOT_EQUAL_TO:
+                        b = l != r; break;
+                    default: throw new IllegalStateException("Unhandled binary tree: "+arg0);
+                }
+                if (isBoolean) {
+                    return vm.mirrorOf(b);
+                } else {
+                    return vm.mirrorOf(v);
+                }
+            }
+            if ((left instanceof FloatValue) || (right instanceof FloatValue)) {
+                float l = ((PrimitiveValue) left).floatValue();
+                float r = ((PrimitiveValue) right).floatValue();
+                float v = 0.f;
+                boolean b = false;
+                boolean isBoolean = true;
+                switch (kind) {
+                    case DIVIDE:
+                        v = l / r; isBoolean = false; break;
+                    case MINUS:
+                        v = l - r; isBoolean = false; break;
+                    case MULTIPLY:
+                        v = l * r; isBoolean = false; break;
+                    case PLUS:
+                        v = l + r; isBoolean = false; break;
+                    case EQUAL_TO:
+                        b = l == r; break;
+                    case GREATER_THAN:
+                        b = l > r; break;
+                    case GREATER_THAN_EQUAL:
+                        b = l >= r; break;
+                    case LESS_THAN:
+                        b = l < r; break;
+                    case LESS_THAN_EQUAL:
+                        b = l <= r; break;
+                    case NOT_EQUAL_TO:
+                        b = l != r; break;
+                    default: throw new IllegalStateException("Unhandled binary tree: "+arg0);
+                }
+                if (isBoolean) {
+                    return vm.mirrorOf(b);
+                } else {
+                    return vm.mirrorOf(v);
+                }
+            }
+            if ((left instanceof LongValue) || (right instanceof LongValue)) {
+                long l = ((PrimitiveValue) left).longValue();
+                long r = ((PrimitiveValue) right).longValue();
+                long v = 0l;
+                boolean b = false;
+                boolean isBoolean = false;
+                switch (kind) {
+                    case DIVIDE:
+                        v = l / r; break;
+                    case MINUS:
+                        v = l - r; break;
+                    case MULTIPLY:
+                        v = l * r; break;
+                    case PLUS:
+                        v = l + r; break;
+                    case REMAINDER:
+                        v = l % r; break;
+                    case LEFT_SHIFT:
+                        v = l << r; break;
+                    case RIGHT_SHIFT:
+                        v = l >> r; break;
+                    case UNSIGNED_RIGHT_SHIFT:
+                        v = l >>> r; break;
+                    case AND:
+                        v = l & r; break;
+                    case OR:
+                        v = l | r; break;
+                    case XOR:
+                        v = l ^ r; break;
+                    case EQUAL_TO:
+                        b = l == r; isBoolean = true; break;
+                    case GREATER_THAN:
+                        b = l > r; isBoolean = true; break;
+                    case GREATER_THAN_EQUAL:
+                        b = l >= r; isBoolean = true; break;
+                    case LESS_THAN:
+                        b = l < r; isBoolean = true; break;
+                    case LESS_THAN_EQUAL:
+                        b = l <= r; isBoolean = true; break;
+                    case NOT_EQUAL_TO:
+                        b = l != r; isBoolean = true; break;
+                    default: throw new IllegalStateException("Unhandled binary tree: "+arg0);
+                }
+                if (isBoolean) {
+                    return vm.mirrorOf(b);
+                } else {
+                    return vm.mirrorOf(v);
+                }
+            }
+            //if ((left instanceof IntegerValue) || (right instanceof IntegerValue)) {
+            // int, short, char and byte - operations have int result
+                int l = ((PrimitiveValue) left).intValue();
+                int r = ((PrimitiveValue) right).intValue();
+                int v = 0;
+                boolean b = false;
+                boolean isBoolean = false;
+                switch (kind) {
+                    case DIVIDE:
+                        v = l / r; break;
+                    case MINUS:
+                        v = l - r; break;
+                    case MULTIPLY:
+                        v = l * r; break;
+                    case PLUS:
+                        v = l + r; break;
+                    case REMAINDER:
+                        v = l % r; break;
+                    case LEFT_SHIFT:
+                        v = l << r; break;
+                    case RIGHT_SHIFT:
+                        v = l >> r; break;
+                    case UNSIGNED_RIGHT_SHIFT:
+                        v = l >>> r; break;
+                    case AND:
+                        v = l & r; break;
+                    case OR:
+                        v = l | r; break;
+                    case XOR:
+                        v = l ^ r; break;
+                    case EQUAL_TO:
+                        b = l == r; isBoolean = true; break;
+                    case GREATER_THAN:
+                        b = l > r; isBoolean = true; break;
+                    case GREATER_THAN_EQUAL:
+                        b = l >= r; isBoolean = true; break;
+                    case LESS_THAN:
+                        b = l < r; isBoolean = true; break;
+                    case LESS_THAN_EQUAL:
+                        b = l <= r; isBoolean = true; break;
+                    case NOT_EQUAL_TO:
+                        b = l != r; isBoolean = true; break;
+                    default: throw new IllegalStateException("Unhandled binary tree: "+arg0);
+                }
+                if (isBoolean) {
+                    return vm.mirrorOf(b);
+                } else {
+                    return vm.mirrorOf(v);
+                }
+            //}
+        }
+        if (((left == null || left instanceof StringReference) && (right == null || right instanceof StringReference))
+            && kind == Tree.Kind.PLUS) {
+            String s1 = (left == null) ? null : ((StringReference) left).value();
+            String s2 = (left == null) ? null : ((StringReference) right).value();
+            switch (kind) {
+                case PLUS:
+                    return vm.mirrorOf(s1 + s2);
+                default: throw new IllegalStateException("Unhandled binary tree: "+arg0);
+            }
+        }
+        switch (kind) {
+            case EQUAL_TO:
+                return vm.mirrorOf(left == right || (left != null && left.equals(right)));
+            case NOT_EQUAL_TO:
+                return vm.mirrorOf(left == null && right != null || (left != null && !left.equals(right)));
+            default: throw new IllegalStateException("Unhandled binary tree: "+arg0);
+        }
     }
 
     public Mirror visitBlock(BlockTree arg0, EvaluationContext evaluationContext) {
@@ -455,7 +805,16 @@ import org.openide.util.NbBundle;
     }
 
     public Mirror visitConditionalExpression(ConditionalExpressionTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Mirror condition = arg0.getCondition().accept(this, evaluationContext);
+        if (!(condition instanceof BooleanValue)) {
+            throw new IllegalStateException("Condition must be boolean: "+arg0.getCondition());
+        }
+        boolean isTrue = ((BooleanValue) condition).value();
+        if (isTrue) {
+            return arg0.getTrueExpression().accept(this, evaluationContext);
+        } else {
+            return arg0.getFalseExpression().accept(this, evaluationContext);
+        }
     }
 
     public Mirror visitContinue(ContinueTree arg0, EvaluationContext evaluationContext) {
@@ -512,10 +871,12 @@ import org.openide.util.NbBundle;
                     Assert2.error(arg0, "unknownVariable", fieldName);
                 }
                 if (field.isStatic()) {
+                    evaluationContext.getVariables().put(arg0, new VariableInfo(field));
                     return field.declaringType().getValue(field);
                 }
                 ObjectReference thisObject = evaluationContext.getFrame().thisObject();
                 if (thisObject != null) {
+                    evaluationContext.getVariables().put(arg0, new VariableInfo(field, thisObject));
                     return thisObject.getValue(field);
                 } else {
                     throw new IllegalStateException("No current instance available.");
@@ -525,6 +886,7 @@ import org.openide.util.NbBundle;
                 String varName = ve.getSimpleName().toString();
                 try {
                     LocalVariable lv = evaluationContext.getFrame().visibleVariableByName(varName);
+                    evaluationContext.getVariables().put(arg0, new VariableInfo(lv));
                     return evaluationContext.getFrame().getValue(lv);
                 } catch (AbsentInformationException aiex) {
                     return (Value) Assert2.error(arg0, "unknownVariable", varName);
@@ -535,6 +897,7 @@ import org.openide.util.NbBundle;
                 StackFrame frame = evaluationContext.getFrame();
                 try {
                     LocalVariable lv = frame.visibleVariableByName(paramName);
+                    evaluationContext.getVariables().put(arg0, new VariableInfo(lv));
                     return frame.getValue(lv);
                 } catch (AbsentInformationException aiex) {
                     try {
@@ -603,6 +966,9 @@ import org.openide.util.NbBundle;
         }
         if (value instanceof String) {
             return evaluationContext.getDebugger().getVirtualMachine().mirrorOf((String) value);
+        }
+        if (value == null) {
+            return null;
         }
         throw new UnsupportedOperationException("Unsupported value: "+value);
     }
@@ -746,10 +1112,15 @@ import org.openide.util.NbBundle;
                         loggerMethod.fine("FINISHED: "+enumType+"."+valueOfMethod+" ("+constantNameRef+") in thread "+evaluationContext.getFrame().thread());
                     }
                 }
-                
         }
-        arg0.getExpression();
+        Mirror expression = arg0.getExpression().accept(this, evaluationContext);
         String name = arg0.getIdentifier().toString();
+        if (expression instanceof ClassType) {
+            Field f = ((ClassType) expression).fieldByName(name);
+            if (f != null) {
+                return ((ClassType) expression).getValue(f);
+            }
+        }
         throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
     }
 
@@ -822,7 +1193,28 @@ import org.openide.util.NbBundle;
     }
 
     public Mirror visitPrimitiveType(PrimitiveTypeTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        TypeKind type = arg0.getPrimitiveTypeKind();
+        VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+        switch(type) {
+            case BOOLEAN:
+                return vm.mirrorOf(true).type();
+            case BYTE:
+                return vm.mirrorOf((byte) 0).type();
+            case CHAR:
+                return vm.mirrorOf('a').type();
+            case DOUBLE:
+                return vm.mirrorOf(0.).type();
+            case FLOAT:
+                return vm.mirrorOf(0f).type();
+            case INT:
+                return vm.mirrorOf(0).type();
+            case LONG:
+                return vm.mirrorOf(0l).type();
+            case SHORT:
+                return vm.mirrorOf((short) 0).type();
+            default:
+                throw new IllegalStateException("Tree = "+arg0);
+        }
     }
 
     public Mirror visitTypeParameter(TypeParameterTree arg0, EvaluationContext evaluationContext) {
@@ -842,7 +1234,217 @@ import org.openide.util.NbBundle;
     }
 
     public Mirror visitUnary(UnaryTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Mirror expression = arg0.getExpression().accept(this, evaluationContext);
+        VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+        Tree.Kind kind = arg0.getKind();
+        if (expression instanceof BooleanValue) {
+            boolean v = ((BooleanValue) expression).value();
+            switch (kind) {
+                case LOGICAL_COMPLEMENT:
+                    v = !v;
+                    break;
+                default: throw new IllegalStateException("Tree = "+arg0);
+            }
+            return vm.mirrorOf(v);
+        }
+        if (expression instanceof ByteValue) {
+            byte v = ((ByteValue) expression).value();
+            switch (kind) {
+                case BITWISE_COMPLEMENT:
+                    int i = ~v;
+                    return vm.mirrorOf(i);
+                case POSTFIX_DECREMENT:
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v - 1), evaluationContext);
+                    break;
+                case POSTFIX_INCREMENT:
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v + 1), evaluationContext);
+                    break;
+                case PREFIX_DECREMENT:
+                    --v;
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    break;
+                case PREFIX_INCREMENT:
+                    ++v;
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    break;
+                case UNARY_MINUS:
+                    i = -v;
+                    return vm.mirrorOf(i);
+                case UNARY_PLUS:
+                    break;
+                default: throw new IllegalStateException("Tree = "+arg0);
+            }
+            return vm.mirrorOf(v);
+        }
+        if (expression instanceof CharValue) {
+            char v = ((CharValue) expression).value();
+            switch (kind) {
+                case BITWISE_COMPLEMENT:
+                    int i = ~v;
+                    return vm.mirrorOf(i);
+                case POSTFIX_DECREMENT:
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v - 1), evaluationContext);
+                    break;
+                case POSTFIX_INCREMENT:
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v + 1), evaluationContext);
+                    break;
+                case PREFIX_DECREMENT:
+                    --v;
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    break;
+                case PREFIX_INCREMENT:
+                    ++v;
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    break;
+                case UNARY_MINUS:
+                    i = -v;
+                    return vm.mirrorOf(i);
+                case UNARY_PLUS:
+                    break;
+                default: throw new IllegalStateException("Tree = "+arg0);
+            }
+            return vm.mirrorOf(v);
+        }
+        if (expression instanceof ShortValue) {
+            short v = ((ShortValue) expression).value();
+            switch (kind) {
+                case BITWISE_COMPLEMENT:
+                    int i = ~v;
+                    return vm.mirrorOf(i);
+                case POSTFIX_DECREMENT:
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v - 1), evaluationContext);
+                    break;
+                case POSTFIX_INCREMENT:
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v + 1), evaluationContext);
+                    break;
+                case PREFIX_DECREMENT:
+                    --v;
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    break;
+                case PREFIX_INCREMENT:
+                    ++v;
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    break;
+                case UNARY_MINUS:
+                    i = -v;
+                    return vm.mirrorOf(i);
+                case UNARY_PLUS:
+                    break;
+                default: throw new IllegalStateException("Tree = "+arg0);
+            }
+            return vm.mirrorOf(v);
+        }
+        if (expression instanceof IntegerValue) {
+            int v = ((IntegerValue) expression).value();
+            switch (kind) {
+                case BITWISE_COMPLEMENT:
+                    v = ~v;
+                    break;
+                case POSTFIX_DECREMENT:
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v - 1), evaluationContext);
+                    break;
+                case POSTFIX_INCREMENT:
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v + 1), evaluationContext);
+                    break;
+                case PREFIX_DECREMENT:
+                    --v;
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    break;
+                case PREFIX_INCREMENT:
+                    ++v;
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    break;
+                case UNARY_MINUS:
+                    v = -v;
+                    break;
+                case UNARY_PLUS:
+                    break;
+                default: throw new IllegalStateException("Tree = "+arg0);
+            }
+            return vm.mirrorOf(v);
+        }
+        if (expression instanceof LongValue) {
+            long v = ((LongValue) expression).value();
+            switch (kind) {
+                case BITWISE_COMPLEMENT:
+                    v = ~v;
+                    break;
+                case POSTFIX_DECREMENT:
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v - 1), evaluationContext);
+                    break;
+                case POSTFIX_INCREMENT:
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v + 1), evaluationContext);
+                    break;
+                case PREFIX_DECREMENT:
+                    --v;
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    break;
+                case PREFIX_INCREMENT:
+                    ++v;
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    break;
+                case UNARY_MINUS:
+                    v = -v;
+                    break;
+                case UNARY_PLUS:
+                    break;
+                default: throw new IllegalStateException("Tree = "+arg0);
+            }
+            return vm.mirrorOf(v);
+        }
+        if (expression instanceof DoubleValue) {
+            double v = ((DoubleValue) expression).value();
+            switch (kind) {
+                case POSTFIX_DECREMENT:
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v - 1), evaluationContext);
+                    break;
+                case POSTFIX_INCREMENT:
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v + 1), evaluationContext);
+                    break;
+                case PREFIX_DECREMENT:
+                    --v;
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    break;
+                case PREFIX_INCREMENT:
+                    ++v;
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    break;
+                case UNARY_MINUS:
+                    v = -v;
+                    break;
+                case UNARY_PLUS:
+                    break;
+                default: throw new IllegalStateException("Tree = "+arg0);
+            }
+            return vm.mirrorOf(v);
+        }
+        if (expression instanceof FloatValue) {
+            double v = ((FloatValue) expression).value();
+            switch (kind) {
+                case POSTFIX_DECREMENT:
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v - 1), evaluationContext);
+                    break;
+                case POSTFIX_INCREMENT:
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v + 1), evaluationContext);
+                    break;
+                case PREFIX_DECREMENT:
+                    --v;
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    break;
+                case PREFIX_INCREMENT:
+                    ++v;
+                    setToMirror(arg0.getExpression(), vm.mirrorOf(v), evaluationContext);
+                    break;
+                case UNARY_MINUS:
+                    v = -v;
+                    break;
+                case UNARY_PLUS:
+                    break;
+                default: throw new IllegalStateException("Tree = "+arg0);
+            }
+            return vm.mirrorOf(v);
+        }
+        throw new IllegalStateException("Bad expression type: "+expression);
     }
 
     public Mirror visitVariable(VariableTree arg0, EvaluationContext evaluationContext) {
@@ -859,6 +1461,28 @@ import org.openide.util.NbBundle;
 
     public Mirror visitOther(Tree arg0, EvaluationContext evaluationContext) {
         throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+    }
+    
+    private void setToMirror(Tree var, Value value, EvaluationContext evaluationContext) {
+        VariableInfo varInfo = evaluationContext.getVariables().get(var);
+        if (varInfo == null) {
+            throw new IllegalStateException("Unknown variable "+var);
+        }
+        try {
+            if (varInfo.field != null) {
+                if (varInfo.fieldObject != null) {
+                    varInfo.fieldObject.setValue(varInfo.field, value);
+                } else {
+                    ((ClassType) varInfo.field.declaringType()).setValue(varInfo.field, value);
+                }
+            } else {
+                evaluationContext.getFrame().setValue(varInfo.var, value);
+            }
+        } catch (InvalidTypeException itex) {
+            
+        } catch (ClassNotLoadedException cnlex) {
+            
+        }
     }
 
 }
