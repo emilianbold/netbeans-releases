@@ -45,6 +45,7 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import org.netbeans.spi.autoupdate.UpdateProvider;
 import org.openide.util.NbPreferences;
 
 /**
@@ -61,7 +62,7 @@ public class AutoupdateSettings {
     
     private AutoupdateSettings () {
     }
-    
+
     public static void setLastCheck (Date lastCheck) {
         err.log (Level.FINER, "Set the last check to " + lastCheck);
         if (lastCheck != null) {
@@ -70,6 +71,16 @@ public class AutoupdateSettings {
             getPreferences().remove (PROP_LAST_CHECK);
         }
     }
+    
+    public static void setLastCheck (String updateProviderName, Date lastCheck) {
+        err.log (Level.FINER, "Set the last check to " + lastCheck);
+        if (lastCheck != null) {
+            getPreferences().putLong (updateProviderName+"_"+PROP_LAST_CHECK, lastCheck.getTime ());
+        } else {
+            getPreferences().remove (updateProviderName+"_"+PROP_LAST_CHECK);//NOI18N
+        }
+    }
+    
     
     private static Preferences getPreferences () {
         return NbPreferences.root ().node ("/org/netbeans/modules/autoupdate");

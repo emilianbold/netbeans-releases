@@ -49,8 +49,10 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -370,16 +372,25 @@ private class Listener implements ListSelectionListener,  TableModelListener {
             if (uup != null) {
                 StringBuffer sb = new StringBuffer();
                 details.setTitle(uup.getDisplayName());
+                long lastTime = lastModification(uup);
+                if (lastTime > 0) {
+                    sb.append("<b>" + NbBundle.getMessage(UnitTab.class, "UnitTab_ReloadTime", //NOI18N
+                            "</b>")).append(new SimpleDateFormat().format(new Date(lastTime))).append("<br>");
+                } else {
+                    String never = getMessage("UnitTab_ReloadTime_Never");//NOI18N
+                    sb.append("<b>" + NbBundle.getMessage(UnitTab.class, "UnitTab_ReloadTime", "</b>")).append(never).append("<br>");//NOI18N                            
+                }                                
                 URL u = uup.getProviderURL();
                 String desc = uup.getDescription () == null ? "" : uup.getDescription ();
                 if (u != null) {
-                    if (desc.length () > 0) {
+                    if (desc.length() > 0) {
                         sb.append("<b>" + getMessage("SettingsTab_UpdateUnitProvider_Description") + "</b><br>"); // NOI18N
-                        sb.append (desc + "<br><br>"); // NOI18N
+                        sb.append(desc + "<br><br>"); // NOI18N
                     }
-                    sb.append("<b>" + getMessage("SettingsTab_UpdateUnitProvider_URL") +  // NOI18N
+                    sb.append("<b>" + getMessage("SettingsTab_UpdateUnitProvider_URL") + // NOI18N
                             " </b><a href=\"" + u.toExternalForm() + "\">" + u.toExternalForm() + "</a><br>"); // NOI18N
                 }
+
                 details.setText(sb.toString());
                 details.setActionListener(removeAction);
                 details.setActionListener2(editAction);
@@ -394,6 +405,11 @@ private class Listener implements ListSelectionListener,  TableModelListener {
             lsm.setSelectionInterval(0, 0);
         }
     }
+    }
+
+    private long lastModification(UpdateUnitProvider unitProvider) {
+        Preferences p = NbPreferences.root().node("/org/netbeans/modules/autoupdate");//NOI18N
+        return p.getLong(unitProvider.getName()+"_"+UnitTab.PROP_LAST_CHECK, 0);//NOI18N
     }
 
     private void setData (final UpdateUnitProvider provider, UpdateUnitProviderPanel panel) {

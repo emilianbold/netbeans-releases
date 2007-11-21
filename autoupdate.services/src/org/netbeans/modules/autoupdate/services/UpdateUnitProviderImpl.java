@@ -159,10 +159,12 @@ public final class UpdateUnitProviderImpl {
             } else if (ownHandle != null) {
                 ownHandle.progress (getDisplayName ());
             }
-            getUpdateProvider ().refresh (force);
+            final UpdateProvider updateProvider = getUpdateProvider();
+            updateProvider.refresh (force);
             if (force) {
                 // store time of the last check
                 AutoupdateSettings.setLastCheck (new Date ());
+                AutoupdateSettings.setLastCheck (updateProvider.getName(),new Date ());
             }
         } finally {
             if (ownHandle != null) {
@@ -322,10 +324,11 @@ public final class UpdateUnitProviderImpl {
         List<UpdateUnitProvider> providers = getUpdateUnitProviders (true);
         for (UpdateUnitProvider p : providers) {
             p.refresh (handle, force);
+            AutoupdateSettings.setLastCheck (p.getName(),new Date ());//NOI18N
         }
         if (force) {
             // store time of the last check
-            AutoupdateSettings.setLastCheck (new Date ());
+            AutoupdateSettings.setLastCheck (new Date ());            
         }
         // don't remember clean-up update units
         UpdateManagerImpl.getInstance().clearCache ();

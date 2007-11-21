@@ -53,14 +53,19 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -88,9 +93,11 @@ import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
+import org.netbeans.modules.autoupdate.ui.UnitCategoryTableModel.Type;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -99,6 +106,8 @@ import org.openide.util.RequestProcessor.Task;
  * @author  Jiri Rechtacek, Radek Matous
  */
 public class UnitTab extends javax.swing.JPanel {
+    static final String PROP_LAST_CHECK = "lastCheckTime"; // NOI18N    
+    private PreferenceChangeListener preferenceChangeListener;    
     private UnitTable table = null;
     private UnitDetails details = null;
     private UnitCategoryTableModel model = null;
@@ -112,10 +121,8 @@ public class UnitTab extends javax.swing.JPanel {
     private TabAction reloadAction;
     private RowTabAction moreAction;
     private RowTabAction lessAction;
-    
-    
     private RowTabAction removeLocallyDownloaded;
-    
+
     
     private static final RequestProcessor RP = new RequestProcessor ();
     private final RequestProcessor.Task searchTask = RP.create (new Runnable (){
@@ -328,6 +335,7 @@ public class UnitTab extends javax.swing.JPanel {
         bTabAction.setAction (new UninstallAction ());
         prepareTopButton (reloadAction = new ReloadAction ());
         table.setEnableRenderer (new EnableRenderer ());
+         initReloadTooltip();
         break;
         case UPDATE :
         {
@@ -346,6 +354,7 @@ public class UnitTab extends javax.swing.JPanel {
         }
         bTabAction.setAction (new UpdateAction ());
         prepareTopButton (reloadAction = new ReloadAction ());
+         initReloadTooltip();
         break;
         case AVAILABLE :
         {
@@ -365,6 +374,7 @@ public class UnitTab extends javax.swing.JPanel {
         bTabAction.setAction (new AvailableAction ());
         prepareTopButton (reloadAction = new ReloadAction ());
         table.setEnableRenderer (new SourceCategoryRenderer ());
+         initReloadTooltip();
         break;
         case LOCAL :
             removeLocallyDownloaded = new RemoveLocallyDownloadedAction ();
@@ -538,7 +548,7 @@ public class UnitTab extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(topButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 453, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 456, Short.MAX_VALUE)
                         .add(lSearch)
                         .add(4, 4, 4)
                         .add(tfSearch, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 114, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -549,7 +559,7 @@ public class UnitTab extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(lSelectionInfo)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(lWarning, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 631, Short.MAX_VALUE)))
+                        .add(lWarning, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 653, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -747,6 +757,33 @@ public class UnitTab extends javax.swing.JPanel {
         }
         return -1;
     } 
+    
+    
+    private void initReloadTooltip() {
+        Preferences p = NbPreferences.root().node("/org/netbeans/modules/autoupdate");//NOI18N
+        long lastTime = p.getLong(PROP_LAST_CHECK, 0);
+        if (lastTime > 0) {
+            topButton.setToolTipText("<html>"+NbBundle.getMessage(UnitTab.class, "UnitTab_ReloadTime", //NOI18N
+                    "<b>"+new SimpleDateFormat().format(new Date(lastTime)) + "</b>")+"</html>");
+        } else {
+            String never = NbBundle.getMessage(UnitTab.class, "UnitTab_ReloadTime_Never");//NOI18N
+            topButton.setToolTipText("<html>"+NbBundle.getMessage(UnitTab.class, "UnitTab_ReloadTime", "<b>"+never+"</b>") + "/<html>");//NOI18N
+        }
+        if (preferenceChangeListener == null) {
+            preferenceChangeListener = new PreferenceChangeListener() {
+
+                public void preferenceChange(PreferenceChangeEvent evt) {
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        public void run() {
+                             initReloadTooltip();
+                        }
+                    });
+                }
+            };
+            p.addPreferenceChangeListener(preferenceChangeListener);
+        }
+    }
     
     
     static String textForKey (String key) {
