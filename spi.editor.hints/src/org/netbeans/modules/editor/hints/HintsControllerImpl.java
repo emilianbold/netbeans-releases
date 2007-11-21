@@ -46,11 +46,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -77,25 +73,7 @@ import org.openide.text.PositionRef;
  */
 public final class HintsControllerImpl {
     
-    /**
-     * Creates a new instance of HintsControllerImpl
-     */
-    private HintsControllerImpl() {
-    }
-    
-    public static Collection<FileObject> coveredFiles() {
-        return AnnotationHolder.coveredFiles();
-    }
-    
-    public static List<ErrorDescription> getErrors(FileObject file) {
-        AnnotationHolder holder = AnnotationHolder.getInstance(file);
-        
-        if (holder == null) {
-            return Collections.<ErrorDescription>emptyList();
-        }
-        
-        return holder.getErrors();
-    }
+    private HintsControllerImpl() {}
     
     public static void setErrors(Document doc, String layer, Collection<? extends ErrorDescription> errors) {
         DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
@@ -124,10 +102,6 @@ public final class HintsControllerImpl {
         if (holder != null) {
             holder.setErrorDescriptions(layer,errors);
         }
-        
-//        updateInError(file);
-//        
-//        fireChanges();
     }
     
     private static void computeLineSpan(Document doc, int[] offsets) throws BadLocationException {
@@ -251,53 +225,6 @@ public final class HintsControllerImpl {
         }
     }
 
-    public static boolean isInError(Set<FileObject> fos) {
-        for (Iterator<FileObject> i = fos.iterator(); i.hasNext(); ) {
-            FileObject f = i.next();
-            
-            if (isInError(f)) {
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-    public static boolean isInError(FileObject fo) {
-//        if (/*ProvidersList.getEagerness() == ProvidersList.EAGER_ON_DEMAND && */fo.isData() && !PersistentCache.getDefault().isKnown(fo)) {
-//            //never heard of it:
-//            HintsOperator.getDefault().enqueue(fo);
-//        }
-        
-        //temporarily disabling error markers on file icons:
-//        return PersistentCache.getDefault().hasErrors(fo);
-        return false;
-    }
-    
-//    private static void updateInError(FileObject fo) {
-//        //temporarily disabling error markers on file icons:
-//        if (true)
-//            return;
-//        
-//        boolean hasErrors = false;
-//        AnnotationHolder layers = doc2Annotation.get(fo);
-//        
-//        if (layers != null) {
-//            hasErrors = layers.hasErrors();
-//        }
-//        
-//        FileObject recursive = fo;
-//        
-//        while (recursive != null) {
-//            if (hasErrors) {
-//                PersistentCache.getDefault().addErrorFile(recursive, fo);
-//            } else {
-//                PersistentCache.getDefault().removeErrorFile(recursive, fo);
-//            }
-//            recursive = recursive.getParent();
-//        }
-//    }
-    
     private static List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
     public static synchronized void addChangeListener(ChangeListener l) {
@@ -306,20 +233,6 @@ public final class HintsControllerImpl {
     
     public static synchronized void removeChangeListener(ChangeListener l) {
         listeners.remove(l);
-    }
-    
-    private static void fireChanges() {
-        List<ChangeListener> ls;
-        
-        synchronized (HintsControllerImpl.class) {
-            ls = new ArrayList<ChangeListener>(listeners);
-        }
-        
-        ChangeEvent e = new ChangeEvent(HintsControllerImpl.class);
-        
-        for (ChangeListener l : ls) {
-            l.stateChanged(e);
-        }
     }
     
     public static class CompoundLazyFixList implements LazyFixList, PropertyChangeListener {

@@ -51,14 +51,8 @@ import org.openide.modules.ModuleInstall;
 public final class HintsModule extends ModuleInstall {
 
     public void restored () {
-        //create HintsOperator (which registers some listeners)
+        //create HintsUI (which registers some listeners)
         HintsUI.getDefault();
-//        PersistentCache.getDefault().loadCache();
     }
 
-    public void close() {
-        super.close();
-
-//        PersistentCache.getDefault().saveCache();
-    }
 }
