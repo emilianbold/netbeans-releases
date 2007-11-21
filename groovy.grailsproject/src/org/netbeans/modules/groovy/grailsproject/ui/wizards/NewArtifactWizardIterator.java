@@ -189,7 +189,6 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
         
         public void run() {
             serverRunning = true;
-            int progressMeter = 0 ;
             
             pls.fireChangeEvent();
             handle.start(100);

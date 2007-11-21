@@ -144,7 +144,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 // do nothing.
                 break;
             case CONTROLLERS:
-                result.add(new NewArtifactAction(project, SourceCategory.CONTROLLERS, "Create new controller template"));
+                result.add(new NewArtifactAction(project, SourceCategory.CONTROLLERS, "Create new controller"));
                 break;
             case DOMAIN:
                 result.add(new NewArtifactAction(project, SourceCategory.DOMAIN, "Create new Domain Class"));
@@ -161,7 +161,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
             case TAGLIB:
                 result.add(new NewArtifactAction(project, SourceCategory.TAGLIB, "Create new Tag Library"));
                 break;
-            case UTIL:          // result.add(new NewU());
+            case UTIL:          
                 break;
             case VIEWS:
                 result.add(new NewArtifactAction(project, SourceCategory.VIEWS, "Create a new View"));
