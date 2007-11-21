@@ -111,7 +111,18 @@ public final class CppSwitchAction extends BaseAction {
             }
         }
         if (!isToggled) {
-            StatusDisplayer.getDefault().setStatusText(getMessage("cpp-switch-file-not-found")); // NOI18N
+            String status;
+            switch (getTargetNodeKind(TopComponent.getRegistry().getActivatedNodes())) {
+                case HEADER:
+                    status = getMessage("cpp-switch-source-not-found"); //NOI18N
+                    break;
+                case SOURCE:
+                    status = getMessage("cpp-switch-header-not-found"); //NOI18N
+                    break;
+                default:
+                    status = getMessage("cpp-switch-file-not-found");
+            }
+            StatusDisplayer.getDefault().setStatusText(status); // NOI18N
         }
     }
 
