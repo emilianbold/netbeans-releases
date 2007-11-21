@@ -94,8 +94,28 @@
                 </copy>
             </target>
             
-            <target name="test-restbeans" depends="run-deploy,-init-display-browser">
-                <replace file="${{restbeans.test.file}}" token="${{base.url.token}}" value="${{client.url}}"/>
+            <target name="-check-trim">
+                <condition property="do.trim">
+                    <and>
+                        <isset property="client.urlPart"/>
+                        <length string="${{client.urlPart}}" when="greater" length="0" />
+                    </and>
+                </condition>
+            </target>
+            <target name="-trim-url" if="do.trim">
+                <pathconvert pathsep="/" property="rest.base.url">
+                    <propertyset>
+                        <propertyref name="client.url"/>
+                    </propertyset>
+                    <globmapper from="*${{client.urlPart}}" to="*/" />
+                </pathconvert>
+            </target>
+            <target name="-spare-url" unless="do.trim">
+                <property name="rest.base.url" value="${{client.url}}"/>
+            </target>
+            
+            <target name="test-restbeans" depends="run-deploy,-init-display-browser,-check-trim,-trim-url,-spare-url">
+                <replace file="${{restbeans.test.file}}" token="${{base.url.token}}" value="${{rest.base.url}}"/>
                 <nbbrowse url="${{restbeans.test.url}}"/>
             </target>
         </project>
