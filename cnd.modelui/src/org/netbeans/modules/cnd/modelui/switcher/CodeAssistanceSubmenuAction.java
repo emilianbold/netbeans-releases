@@ -28,10 +28,12 @@
 package org.netbeans.modules.cnd.modelui.switcher;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -42,40 +44,35 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Alexander Simon
+ * @author Alexander Simon, Vladimir Voskresensky
  */
 public class CodeAssistanceSubmenuAction extends NodeAction {
 
-    private JMenu subMenu;
-
+    private LazyPopupMenu popupMenu;
+    private final Collection<Action> items = new ArrayList(5);
     @Override
     public JMenuItem getPopupPresenter() {
         createSubMenu();
-        return subMenu;
+        return popupMenu;
     }
 
     @Override
     public JMenuItem getMenuPresenter() {
         createSubMenu();
-        return subMenu;
+        return popupMenu;
     }
 
     private void createSubMenu() {
-        if (subMenu == null) {
-            subMenu = new JMenu(getName()); 
+        if (popupMenu == null) {
+            popupMenu = new LazyPopupMenu(getName(), items); 
         }
-        subMenu.removeAll();
+        items.clear();
         boolean enabled = false;
-        for(Action action : addActionsFromLayers()){
-            if (action instanceof Presenter.Menu) {
-                JMenuItem item = ((Presenter.Menu)action).getMenuPresenter();
-                subMenu.add(item);
-            } else {
-                subMenu.add(action);
-            }
+        for(Action action : addActionsFromLayers()) {
+            items.add(action);
             enabled = true;
         }
-        subMenu.setEnabled(enabled);
+        popupMenu.setEnabled(enabled);
     }
 
     private List<Action> addActionsFromLayers() {
@@ -103,5 +100,31 @@ public class CodeAssistanceSubmenuAction extends NodeAction {
 
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
+    }
+    
+    private final static class LazyPopupMenu extends JMenu {
+        private final Collection<Action> items;
+        public LazyPopupMenu(String name, Collection<Action> items) {
+            super(name);
+            assert items != null : "array must be inited";
+            this.items = items;
+        }
+        
+        @Override
+        public synchronized JPopupMenu getPopupMenu() {
+            super.removeAll();
+            for (Action action : items) {
+                if (action instanceof Presenter.Popup) {
+                    JMenuItem item = ((Presenter.Popup)action).getPopupPresenter();
+                    add(item);
+                } else if (action instanceof Presenter.Menu) {
+                    JMenuItem item = ((Presenter.Menu)action).getMenuPresenter();
+                    add(item);
+                } else {
+                    add(action);
+                }
+            }
+            return super.getPopupMenu();
+        }
     }
 }
