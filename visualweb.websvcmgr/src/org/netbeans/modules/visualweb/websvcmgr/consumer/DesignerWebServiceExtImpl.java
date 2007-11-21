@@ -202,8 +202,15 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
         // TODO: provide the dataprovider classpath also form here
         // Currently obtained by adding ${libs.jsf12-support.classpath} from USER_FILE_PROP
         File designtimeJarFile = InstalledFileLocator.getDefault().locate("modules/ext/designtime.jar", null, true);
+        File designtimeBaseJar = InstalledFileLocator.getDefault().locate("modules/ext/designtime-base.jar", null, true);
+        File propEditors = InstalledFileLocator.getDefault().locate("modules/ext/editors.jar", null, true);
         
-        properties.put(DESIGNTIME_CLASSPATH, designtimeJarFile.getAbsolutePath());
+        String designtimeCP = 
+                designtimeJarFile.getAbsolutePath() + ":" + 
+                designtimeBaseJar.getAbsolutePath() + ":" +
+                propEditors.getAbsolutePath();
+        
+        properties.put(DESIGNTIME_CLASSPATH, designtimeCP);
         
         return properties;
     }
