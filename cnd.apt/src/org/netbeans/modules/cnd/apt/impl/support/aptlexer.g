@@ -928,7 +928,7 @@ protected
 PostInclChar: PostPPKwdChar | '\"' | '<' ;
 
 protected
-PostIfChar: PostPPKwdChar | '(';
+PostIfChar: { !Character.isJavaIdentifierPart(LA(1)) }?;
 
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //!! ALL NEW RULES MUST BE ADDED BEFORE THIS LINE !!
