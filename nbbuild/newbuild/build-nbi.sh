@@ -72,3 +72,11 @@ if [ ! -z $NATIVE_MAC_MACHINE ]; then
         exit 1;
     fi
 fi
+
+cd $DIST
+bash $DIRNANE/files-info.sh bundles zip
+ERROR_CODE=$?
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
+#    exit $ERROR_CODE;
+fi

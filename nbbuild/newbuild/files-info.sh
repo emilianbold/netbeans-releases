@@ -39,23 +39,23 @@ counter=0;
 output_file=./js/files.js
 type digest >> /dev/null 2>&1
 if [ 0 -eq $? ] ; then
-  	alg=`type -p digest`
-	alg="$alg -a md5"
+    alg=`type -p digest`
+    alg="$alg -a md5"
 else
-	type md5sum >> /dev/null 2>&1
- 	if [ 0 -eq $? ] ; then
-		  alg=`type -p md5sum`
-	else 
-		type md5 >> /dev/null 2>&1
-	 	if [ 0 -eq $? ] ; then
-		    alg=`type -p md5`
-                else 
-                    type gmd5sum >> /dev/null 2>&1
-                    if [ 0 -eq $? ] ; then
-                        alg=`type -p gmd5sum`
-                    fi
-		fi
-	fi
+    type md5sum >> /dev/null 2>&1
+    if [ 0 -eq $? ] ; then
+        alg=`type -p md5sum`
+    else 
+        type gmd5sum >> /dev/null 2>&1
+        if [ 0 -eq $? ] ; then
+            alg=`type -p gmd5sum`
+        else
+            type md5 >> /dev/null 2>&1
+            if [ 0 -eq $? ] ; then
+                alg=`type -p md5`
+            fi
+        fi
+    fi
 fi
 if [ -z "$alg" ] ; then
 	echo "Cannot find MD5 calculating programm"
