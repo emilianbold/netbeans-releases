@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
@@ -72,13 +73,17 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
         return getCollector(file, offset, onlyInProject).getVisibleNamespaces();
     }
     
+    public Collection<CsmNamespaceAlias> findNamespaceAliases(CsmFile file, int offset, CsmProject onlyInProject) {
+        return getCollector(file, offset, onlyInProject).getNamespaceAliases();
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // try to cache a little the last request
     
     private Object lock = new Object();
     private Reference<SearchInfo> lastSearch = new SoftReference<SearchInfo>(null);
     
-    private final boolean cache = false; // DO NOT CACHE YET
+    private final boolean cache = true;
     private FileElementsCollector getCollector(CsmFile file, int offset, CsmProject onlyInProject) {
         if (!cache) {
             return new FileElementsCollector(file, offset, onlyInProject);

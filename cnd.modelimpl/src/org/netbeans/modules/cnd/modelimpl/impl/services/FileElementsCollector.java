@@ -147,6 +147,11 @@ public class FileElementsCollector {
         return usingNamespaces;
     }
     
+    public Collection<CsmNamespaceAlias> getNamespaceAliases() {
+        initMaps();
+        return namespaceAliases;
+    }
+    
     private Collection<CsmDeclaration> visibleUsedDeclarations = null;
     public Collection<CsmDeclaration> getUsedDeclarations() {
         initMaps();

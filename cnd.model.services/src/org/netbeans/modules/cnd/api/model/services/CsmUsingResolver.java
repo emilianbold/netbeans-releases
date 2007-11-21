@@ -48,6 +48,7 @@ import java.util.LinkedHashMap;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
@@ -105,6 +106,18 @@ public abstract class CsmUsingResolver {
     public abstract Collection<CsmNamespace> findVisibleNamespaces(CsmFile file, int offset, CsmProject onlyInProject);
 
     /**
+     * return all namespace aliases visible for offsetable element, i.e.
+     *  namespace B = A;
+     *  namespace D = E;
+     *  
+     *  void method(){
+     *  }
+     * returns: B + D
+     * @return sorted collection of namespace aliases visible for input offsetable element
+     */
+    public abstract Collection<CsmNamespaceAlias> findNamespaceAliases(CsmFile file, int offset, CsmProject onlyInProject);
+    
+    /**
      * converts collection of using declarations into ordered list of namespaces
      * each namespace occurs only once according it's first using directive in 'decls' list
      */
@@ -155,6 +168,10 @@ public abstract class CsmUsingResolver {
 
         public Collection<CsmNamespace> findVisibleNamespaces(CsmFile file, int offset, CsmProject onlyInProject) {
             return Collections.<CsmNamespace>emptyList();
+        }
+
+        public Collection<CsmNamespaceAlias> findNamespaceAliases(CsmFile file, int offset, CsmProject onlyInProject) {
+            return Collections.<CsmNamespaceAlias>emptyList();
         }
     }    
 }
