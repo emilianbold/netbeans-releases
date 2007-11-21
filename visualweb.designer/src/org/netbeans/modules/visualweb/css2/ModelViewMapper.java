@@ -1550,6 +1550,10 @@ public final class ModelViewMapper {
      */
 //    public static Rectangle modelToView(PageBox pageBox, Position sourcePos) {
     public static Rectangle modelToView(PageBox pageBox, DomPosition sourcePos) {
+        if (pageBox == null) {
+            // XXX #122515 NPE, which shouldn't happen (it seems there is a deeper issue).
+            return null;
+        }
         // assert that the position is a valid position here?
 //        if (sourcePos == Position.NONE) {
         if (sourcePos == DomPosition.NONE) {
