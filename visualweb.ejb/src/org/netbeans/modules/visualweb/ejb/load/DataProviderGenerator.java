@@ -99,7 +99,7 @@ public class DataProviderGenerator {
             beanClassName = beanClassDescriptor[0].getClassName();
         
         // Now, Generate the BeanInfo class source code
-        DataProviderBeanInfoGenerator beanInfoGenerator = new DataProviderBeanInfoGenerator( beanClassName, methodInfo );
+        DataProviderBeanInfoGenerator beanInfoGenerator = new DataProviderBeanInfoGenerator( beanClassName, methodInfo, clientWrapperClassName );
         ClassDescriptor beanInfoClassDescriptor = beanInfoGenerator.generateClass( srcDir );
         
         // Add generate the DesignInfo class souce code

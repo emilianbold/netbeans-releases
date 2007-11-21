@@ -84,6 +84,8 @@ public class EjbLoader {
     // Two jar files needed for compiling the generated data provider and wrapper classes
     public static final String dataproviderJar = InstalledFileLocator.getDefault().locate("modules/ext/dataprovider.jar", null, false ).getAbsolutePath(); // NOI18N
     public static final String designTimeJar = InstalledFileLocator.getDefault().locate( "modules/ext/designtime.jar", null, false).getAbsolutePath(); // NOI18N
+    public static final String designTimeBaseJar = InstalledFileLocator.getDefault().locate("modules/ext/designtime-base.jar", null, false).getAbsolutePath(); // NOI18N
+    public static final String propEditorsJar = InstalledFileLocator.getDefault().locate("modules/ext/editors.jar", null, false).getAbsolutePath(); // NOI18N
     
     private EjbGroup ejbGroup;
     private URLClassLoader classloader;
@@ -552,6 +554,9 @@ public class EjbLoader {
 		}
         jarFiles.add( dataproviderJar );  // For the data provider classes
         jarFiles.add( designTimeJar ); // For the DesignInfo classes
+        jarFiles.add( designTimeBaseJar );
+        jarFiles.add( propEditorsJar );
+        
         compiler.compile( srcDir, allClassDescriptors, jarFiles );
         
         // Time to jar ....

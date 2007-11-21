@@ -51,6 +51,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.Date;
+import org.netbeans.modules.visualweb.ejb.datamodel.MethodParam;
 
 
 /**
@@ -63,13 +64,24 @@ public class DataProviderBeanInfoGenerator {
     // Hardcode the iconFileName here
     public static final String DATA_PROVIDER_ICON_FILE_NAME = "/org/netbeans/modules/visualweb/ejb/resources/methodPublic.gif";
     public static final String DATA_PROVIDER_ICON_FILE_NAME2 = "/org/netbeans/modules/visualweb/ejb/resources/table_dp_badge.png";
+
+    private static final String[][] DEFAULT_PROPERTIES = {
+        {"dataClassInstance", "prop_dataClassInstance", "\"getDataClassInstance\""},
+        {"dataMethod", "prop_dataMethod", "\"getDataMethod\""},
+        {"dataMethodArguments", "propDataMethodArguments", "\"getDataMethodArguments\""},
+        {"resultObject", "prop_resultObject", "\"getResultObject\""},
+        {"resultObjects", "prop_resultObjects", "\"getResultObjects\""}
+    };
     
     private String fullBeanClassName;
     private MethodInfo method;
+    private PrintWriter out;
+    private String clientWrapperClassName;
     
-    public DataProviderBeanInfoGenerator( String fullBeanClassName, MethodInfo method ) {
+    public DataProviderBeanInfoGenerator( String fullBeanClassName, MethodInfo method, String clientWrapperClassName ) {
         this.fullBeanClassName = fullBeanClassName;
         this.method = method;
+        this.clientWrapperClassName = clientWrapperClassName;
     }
     
     public ClassDescriptor generateClass( String srcDir ) throws EjbLoadException
@@ -82,14 +94,14 @@ public class DataProviderBeanInfoGenerator {
         {
             // Figure out the package name, class name and directory/file name
 
-            int i = fullBeanClassName.lastIndexOf( "." );
-            String beanClassName = fullBeanClassName.substring( i+1 );
+            int j = fullBeanClassName.lastIndexOf( "." );
+            String beanClassName = fullBeanClassName.substring( j+1 );
             
             // Package name
-            if( i == -1 ) // No package
-                i = 0;
+            if( j == -1 ) // No package
+                j = 0;
             
-            String packageName = fullBeanClassName.substring( 0, i );
+            String packageName = fullBeanClassName.substring( 0, j  );
             
             String beanInfoClassName = beanClassName + "BeanInfo";
 
@@ -113,7 +125,7 @@ public class DataProviderBeanInfoGenerator {
             
             // Generate java code
             
-            PrintWriter out = new PrintWriter( new FileOutputStream(javaFile) );
+            out = new PrintWriter( new FileOutputStream(javaFile) );
 
             // pacage
             if( packageName != null && packageName.length() != 0 )
@@ -170,6 +182,58 @@ public class DataProviderBeanInfoGenerator {
             out.println( "        return " + beanDescriptorVariable + ";" );
             out.println( "    }" );
             out.println();
+
+            println("    public PropertyDescriptor[] getPropertyDescriptors() {");
+            println("        if (" + propDescriptorsVariable + " != null) {");
+            println("            return " + propDescriptorsVariable + ";");
+            println("        }");
+            println("        try {");
+
+            String indent = "            ";
+            for (int i = 0; i < DEFAULT_PROPERTIES.length; i++) {
+                String[] p = DEFAULT_PROPERTIES[i];
+                genPropertyDescriptor(indent, p[1], p[0], p[2], "null", true, true);
+            }
+            
+            String clientClass = clientWrapperClassName;
+            String clientProp = Character.toLowerCase(clientClass.charAt(0)) + clientClass.substring(1);
+
+            String clientVar = "prop_" + clientProp;
+            String clientGetter = "\"get" + clientClass + "\"";
+            String clientSetter = "\"set" + clientClass + "\"";
+            genPropertyDescriptor(indent, clientVar, clientProp, clientGetter, clientSetter, false, true);
+
+            for (Object p : method.getParameters()) {
+                MethodParam param = (MethodParam)p;
+                String name = param.getName();
+                String propVar = "prop_" + name;
+                String nameCaps = Character.toUpperCase(name.charAt(0)) + name.substring(1);
+                String getter = "\"get" + nameCaps + "\"";
+                String setter = "\"set" + nameCaps + "\"";
+                
+                genPropertyDescriptor(indent, propVar, name, getter, setter, false, false);
+            }
+
+            println("            " + propDescriptorsVariable + " = new PropertyDescriptor[] {");
+            for (int i = 0; i < DEFAULT_PROPERTIES.length; i++) {
+                println("                " + DEFAULT_PROPERTIES[i][1] + ",");
+            }
+            
+            for (Object p : method.getParameters()) {
+                MethodParam param = (MethodParam)p;
+                println("                prop_" + param.getName() + ",");
+            }
+
+            println("                " + clientVar);
+            println("            };");
+
+            println("            return " + propDescriptorsVariable + ";");
+            println("        }catch (java.beans.IntrospectionException e) {");
+            println("            e.printStackTrace();");
+            println("            return null;");
+            println("        }");
+            println("    }");
+            println();
             
             // private method for merging two images into one
             out.println( "    private Image mergeImages (Image image1, Image image2) {" );
@@ -223,5 +287,33 @@ public class DataProviderBeanInfoGenerator {
             // Throw up as a SYSTEM_ERROR
             throw new EjbLoadException( ex.getMessage() );
         }
+    }
+    
+    private void genPropertyDescriptor(String indent, String propVar, String prop, String getter, String setter, boolean hidden, boolean useCustomEditor) {
+        println(indent + "PropertyDescriptor " + propVar + " = new PropertyDescriptor(\"" + prop + "\",beanClass," + getter + "," + setter + ");");
+        
+        println(indent + propVar + ".setExpert(false);");
+        
+        if (hidden) {
+            println(indent + propVar + ".setHidden(true);");
+        }else {
+            println(indent + propVar + ".setHidden(false);");
+        }
+
+        println(indent + propVar + ".setPreferred(false);");
+        
+        if (useCustomEditor) {
+            println(indent + propVar + ".setPropertyEditorClass(com.sun.rave.propertyeditors.SelectOneDomainEditor.class);");
+            println(indent + propVar + ".setValue(com.sun.rave.designtime.Constants.PropertyDescriptor.CATEGORY,com.sun.rave.designtime.base.CategoryDescriptors.DATA);");
+            println(indent + propVar + ".setValue(\"com.sun.rave.propertyeditors.DOMAIN_CLASS\", com.sun.rave.propertyeditors.domains.InstanceVariableDomain.class);");
+        }
+    }
+
+    private void println(String string) {
+        out.println(string);
+    }
+    
+    private void println() {
+        out.println();
     }
 }
