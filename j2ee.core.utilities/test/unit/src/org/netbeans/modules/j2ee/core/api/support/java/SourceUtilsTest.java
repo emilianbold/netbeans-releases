@@ -46,6 +46,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -161,8 +162,13 @@ public class SourceUtilsTest extends NbTestCase {
         });
     }
 
-    private static void runUserActionTask(FileObject javaFile, Task<CompilationController> taskToTest) throws Exception {
+    private static void runUserActionTask(FileObject javaFile, final Task<CompilationController> taskToTest) throws Exception {
         JavaSource javaSource = JavaSource.forFileObject(javaFile);
-        javaSource.runUserActionTask(taskToTest, true);
+        javaSource.runUserActionTask(new Task<CompilationController>() {
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(Phase.RESOLVED);
+                taskToTest.run(controller);
+            }
+        }, true);
     }
 }

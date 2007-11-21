@@ -43,7 +43,7 @@ package org.netbeans.modules.j2ee.core.api.support.java;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.util.TreePath;
-import java.io.IOException;
+import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -51,11 +51,11 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 /**
+ * Miscellaneous utilities for working with Java sources.
  *
  * @author Andrei Badea
  */
@@ -63,27 +63,76 @@ public final class SourceUtils {
 
     private SourceUtils() {}
 
-    public static TypeElement getPublicTopLevelElement(CompilationController controller) throws IOException {
+    /**
+     * Finds the first public top-level type in the compilation unit given by the
+     * given <code>CompilationController</code>.
+     *
+     * This method assumes the restriction that there is at most a public
+     * top-level type declaration in a compilation unit, as described in the
+     * section 7.6 of the JLS.
+     *
+     * @param  controller a {@link CompilationController}.
+     * @return the <code>TypeElement</code> encapsulating the public top-level type
+     *         in the compilation unit given by <code>controller</code> or null
+     *         if no such type is found.
+     * @throws IllegalStateException when the controller was created with no file
+     *         objects.
+     */
+    public static TypeElement getPublicTopLevelElement(CompilationController controller) {
         Parameters.notNull("controller", controller); // NOI18N
-        controller.toPhase(Phase.ELEMENTS_RESOLVED);
 
         FileObject mainFileObject = controller.getFileObject();
         if (mainFileObject == null) {
             throw new IllegalStateException();
         }
         String mainElementName = mainFileObject.getName();
-        for (TypeElement element : controller.getTopLevelElements()) {
-            if (element.getModifiers().contains(Modifier.PUBLIC) && element.getSimpleName().contentEquals(mainElementName)) {
-                return element;
+        List<? extends TypeElement> elements = controller.getTopLevelElements();
+        if (elements != null) {
+            for (TypeElement element : elements) {
+                if (element.getModifiers().contains(Modifier.PUBLIC) && element.getSimpleName().contentEquals(mainElementName)) {
+                    return element;
+                }
             }
         }
         return null;
     }
 
-    static ClassTree getPublicTopLevelTree(CompilationController controller) throws IOException {
-        return controller.getTrees().getTree(getPublicTopLevelElement(controller));
+    /**
+     * Finds the first public top-level type in the compilation unit given by the
+     * given <code>CompilationController</code>.
+     *
+     * This method assumes the restriction that there is at most a public
+     * top-level type declaration in a compilation unit, as described in the
+     * section 7.6 of the JLS.
+     *
+     * @param  controller a {@link CompilationController}.
+     * @return the <code>TypeElement</code> encapsulating the public top-level type
+     *         in the compilation unit given by <code>controller</code> or null
+     *         if no such type is found.
+     * @throws IllegalStateException when the controller was created with no file
+     *         objects.
+     */
+    public static ClassTree getPublicTopLevelTree(CompilationController controller) {
+        Parameters.notNull("controller", controller); // NOI18N
+
+        TypeElement typeElement = getPublicTopLevelElement(controller);
+        if (typeElement != null) {
+            return controller.getTrees().getTree(typeElement);
+        }
+        return null;
     }
 
+    /**
+     * Finds whether the given <code>TypeElement</code> is the subtype of a
+     * given supertype. This is a convenience method for
+     * {@link javax.lang.model.util.Types#isSubtype}.
+     *
+     * @param  controller a <code>CompilationController</code>.
+     * @param  subtype the presumed subtype.
+     * @param  supertype the presumed supertype.
+     * @return true if <code>subtype</code> if a subtype of </code>supertype</code>,
+     *         false otherwise.
+     */
     public static boolean isSubtype(CompilationController controller, TypeElement subtype, String supertype) {
         Parameters.notNull("controller", controller); // NOI18N
         Parameters.notNull("subtype", subtype); // NOI18N
@@ -96,6 +145,10 @@ public final class SourceUtils {
         return false;
     }
 
+    /**
+     * A convenience method for converting a <code>ClassTree</code> to the 
+     * corresponding <code>TypeElement</code>, if any.
+     */
     static TypeElement classTree2TypeElement(CompilationController controller, ClassTree classTree) {
         assert controller != null;
         assert classTree != null;
@@ -104,10 +157,12 @@ public final class SourceUtils {
         return (TypeElement)controller.getTrees().getElement(classTreePath);
     }
 
-    static ExecutableElement getNoArgConstructor(CompilationController controller, TypeElement typeElement) throws IOException {
+    /**
+     * Finds the no-argument non-synthetic constructor in the specified class.
+     */
+    static ExecutableElement getNoArgConstructor(CompilationController controller, TypeElement typeElement) {
         assert controller != null;
         assert typeElement != null;
-        controller.toPhase(Phase.ELEMENTS_RESOLVED);
 
         for (Element element : typeElement.getEnclosedElements()) {
             if (element.getKind() == ElementKind.CONSTRUCTOR) {

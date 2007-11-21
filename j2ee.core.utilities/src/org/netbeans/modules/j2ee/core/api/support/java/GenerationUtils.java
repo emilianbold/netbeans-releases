@@ -74,7 +74,7 @@ import org.openide.util.Parameters;
 
 /**
  * <code>GenerationUtils</code> is a helper class for creating classes,
- * methods, variables, annotations and types using the Java Model.
+ * methods, variables, annotations and types using the Java source model.
  *
  * @author Andrei Badea
  */
@@ -92,13 +92,22 @@ public final class GenerationUtils {
 
     // <editor-fold desc="Constructors and factory methods">
 
-    private GenerationUtils(WorkingCopy copy) throws IOException {
+    private GenerationUtils(WorkingCopy copy) {
         this.copy = copy;
-        copy.toPhase(Phase.ELEMENTS_RESOLVED);
     }
 
-    public static GenerationUtils newInstance(WorkingCopy copy) throws IOException {
+    /**
+     * Creates a new instance of <code>GenerationUtils</code>.
+     *
+     * @param  copy a <code>WorkingCopy</code>. It must be in {@link Phase#RESOLVED}.
+     * @return a new instance of <code>GenerationUtils</code>.
+     * @throws IllegalStateException if <code>copy</code> if not in the <code>RESOLVED</code> phase.
+     */
+    public static GenerationUtils newInstance(WorkingCopy copy) {
         Parameters.notNull("copy", copy); // NOI18N
+        if (copy.getPhase() != Phase.RESOLVED) {
+            throw new IllegalStateException("The WorkingCopy must be in the RESOLVED phase"); // NOI18N
+        }
         return new GenerationUtils(copy);
     }
 
@@ -343,11 +352,8 @@ public final class GenerationUtils {
      * @param  classTree the class to ensure the constructor for; cannot be null.
      * @return a modified class if a no-arg constructor was added, the original
      *         class otherwise; never null.
-     * @throws IOException if an error occured while setting the javac phase to <code>RESOLVED</code>.
      */
-    public ClassTree ensureNoArgConstructor(ClassTree classTree) throws IOException {
-        copy.toPhase(Phase.RESOLVED);
-
+    public ClassTree ensureNoArgConstructor(ClassTree classTree) {
         TypeElement typeElement = SourceUtils.classTree2TypeElement(copy, classTree);
         if (typeElement == null) {
             throw new IllegalArgumentException("No TypeElement for ClassTree " + classTree.getSimpleName());
@@ -431,7 +437,7 @@ public final class GenerationUtils {
     /**
      * Creates a new field.
      *
-     * @param  scope the scope in which to create the field (will be e.g. used 
+     * @param  scope the scope in which to create the field (will be e.g. used
      *         to parse <code>fieldType</code>).
      * @param  modifiersTree the field modifiers; cannot be null.
      * @param  fieldType the fully-qualified name of the field type; cannot be null.
@@ -455,7 +461,7 @@ public final class GenerationUtils {
      * Creates a new variable (a <code>VariableTree</code> with no
      * modifiers nor initializer).
      *
-     * @param  scope the scope in which to create the variable (will be e.g. used 
+     * @param  scope the scope in which to create the variable (will be e.g. used
      *         to parse <code>variableType</code>).
      * @param  variableType the fully-qualified name of the variable type; cannot be null.
      * @param  variableName the variable name; cannot be null.
@@ -513,19 +519,17 @@ public final class GenerationUtils {
     /**
      * Creates a new public property getter method.
      *
-     * @param  scope the scope in which to create the method (will be e.g. used 
+     * @param  scope the scope in which to create the method (will be e.g. used
      *         to parse <code>propertyType</code>).
      * @param  modifiersTree the method modifiers; cannot be null.
      * @param  propertyType the fully-qualified name of the property type; cannot be null.
      * @param  propertyName the property name; cannot be null.
      * @return the new method; never null.
-     * @throws java.io.IOException 
      */
-    public MethodTree createPropertyGetterMethod(TypeElement scope, ModifiersTree modifiersTree, String propertyName, String propertyType) throws IOException {
+    public MethodTree createPropertyGetterMethod(TypeElement scope, ModifiersTree modifiersTree, String propertyName, String propertyType) {
         Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
         Parameters.javaIdentifier("propertyName", propertyName); // NOI18N
         Parameters.notNull("propertyType", propertyType); // NOI18N
-        copy.toPhase(Phase.RESOLVED);
 
         return createPropertyGetterMethod(modifiersTree, propertyName, createType(propertyType, scope));
     }
@@ -537,13 +541,11 @@ public final class GenerationUtils {
      * @param  propertyType the property type; cannot be null.
      * @param  propertyName the property name; cannot be null.
      * @return the new method; never null.
-     * @throws IOException if an error occured while setting the javac phase to <code>RESOLVED</code>.
      */
-    public MethodTree createPropertyGetterMethod(ModifiersTree modifiersTree, String propertyName, Tree propertyType) throws IOException {
+    public MethodTree createPropertyGetterMethod(ModifiersTree modifiersTree, String propertyName, Tree propertyType) {
         Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
         Parameters.javaIdentifier("propertyName", propertyName); // NOI18N
         Parameters.notNull("propertyType", propertyType); // NOI18N
-        copy.toPhase(Phase.RESOLVED);
 
         return getTreeMaker().Method(
                 modifiersTree,
@@ -559,19 +561,17 @@ public final class GenerationUtils {
     /**
      * Creates a new public property setter method.
      *
-     * @param  scope the scope in which to create the method (will be e.g. used 
+     * @param  scope the scope in which to create the method (will be e.g. used
      *         to parse <code>propertyType</code>).
      * @param  modifiersTree the method modifiers; cannot be null.
      * @param  propertyName the property name; cannot be null.
      * @param  propertyType the fully-qualified name of the property type; cannot be null.
      * @return the new method; never null.
-     * @throws IOException if an error occured while setting the javac phase to <code>RESOLVED</code>.
      */
-    public MethodTree createPropertySetterMethod(TypeElement scope, ModifiersTree modifiersTree, String propertyName, String propertyType) throws IOException {
+    public MethodTree createPropertySetterMethod(TypeElement scope, ModifiersTree modifiersTree, String propertyName, String propertyType) {
         Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
         Parameters.javaIdentifier("propertyName", propertyName); // NOI18N
         Parameters.notNull("propertyType", propertyType); // NOI18N
-        copy.toPhase(Phase.RESOLVED);
 
         return createPropertySetterMethod(modifiersTree, propertyName, createType(propertyType, scope));
     }
@@ -583,13 +583,11 @@ public final class GenerationUtils {
      * @param  propertyType the property type; cannot be null.
      * @param  propertyName the property name; cannot be null.
      * @return the new method; never null.
-     * @throws IOException if an error occured while setting the javac phase to <code>RESOLVED</code>.
      */
-    public MethodTree createPropertySetterMethod(ModifiersTree modifiersTree, String propertyName, Tree propertyType) throws IOException {
+    public MethodTree createPropertySetterMethod(ModifiersTree modifiersTree, String propertyName, Tree propertyType) {
         Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
         Parameters.javaIdentifier("propertyName", propertyName); // NOI18N
         Parameters.notNull("propertyType", propertyType); // NOI18N
-        copy.toPhase(Phase.RESOLVED);
 
         TreeMaker make = getTreeMaker();
         return make.Method(

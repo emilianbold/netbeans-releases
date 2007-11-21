@@ -64,12 +64,12 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -121,19 +121,6 @@ public class GenerationUtilsTest extends NbTestCase {
                 "   public ${name}(){\n" +
                 "   }\n" +
                 "}");
-    }
-
-    public void testPhase() throws Exception {
-        TestUtilities.copyStringToFileObject(testFO,
-                "package foo;" +
-                "public class TestClass {" +
-                "}");
-        runModificationTask(testFO, new Task<WorkingCopy>() {
-            public void run(WorkingCopy copy) throws Exception {
-                GenerationUtils.newInstance(copy);
-                assertEquals(JavaSource.Phase.ELEMENTS_RESOLVED, copy.getPhase());
-            }
-        });
     }
 
     public void testCreateClass() throws Exception {
@@ -438,14 +425,24 @@ public class GenerationUtilsTest extends NbTestCase {
         });
     }
 
-    private static void runUserActionTask(FileObject javaFile, Task<CompilationController> taskToTest) throws Exception {
+    private static void runUserActionTask(FileObject javaFile, final Task<CompilationController> taskToTest) throws Exception {
         JavaSource javaSource = JavaSource.forFileObject(javaFile);
-        javaSource.runUserActionTask(taskToTest, true);
+        javaSource.runUserActionTask(new Task<CompilationController>() {
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(Phase.RESOLVED);
+                taskToTest.run(controller);
+            }
+        }, true);
     }
 
-    private static ModificationResult runModificationTask(FileObject javaFile, Task<WorkingCopy> taskToTest) throws Exception {
+    private static ModificationResult runModificationTask(FileObject javaFile, final Task<WorkingCopy> taskToTest) throws Exception {
         JavaSource javaSource = JavaSource.forFileObject(javaFile);
-        return javaSource.runModificationTask(taskToTest);
+        return javaSource.runModificationTask(new Task<WorkingCopy>() {
+            public void run(WorkingCopy controller) throws Exception {
+                controller.toPhase(Phase.RESOLVED);
+                taskToTest.run(controller);
+            }
+        });
     }
 
     private static void assertImplements(CompilationController controller, TypeElement typeElement, String interfaceName) {
