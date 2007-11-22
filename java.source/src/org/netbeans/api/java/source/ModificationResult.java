@@ -194,6 +194,7 @@ public final class ModificationResult {
             in = new InputStreamReader(new ByteArrayInputStream(arr, 0, arrLength), encoding);
             // initialize standard commit output stream, if user
             // does not provide his own writer
+            boolean ownOutput = out != null;
             if (out == null) {
                 out = new OutputStreamWriter(fo.getOutputStream(), encoding);
             }
@@ -202,8 +203,9 @@ public final class ModificationResult {
                 if (diff.isExcluded())
                     continue;
                 if (Difference.Kind.CREATE == diff.getKind()) {
-                    StringWriter o = new StringWriter();
-                    createUnit(diff, o);
+                    if (!ownOutput) {
+                        createUnit(diff, null);
+                    }
                     continue;
                 }
                 int pos = diff.getStartPosition().getOffset();
