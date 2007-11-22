@@ -101,13 +101,9 @@ public final class GenerationUtils {
      *
      * @param  copy a <code>WorkingCopy</code>. It must be in {@link Phase#RESOLVED}.
      * @return a new instance of <code>GenerationUtils</code>.
-     * @throws IllegalStateException if <code>copy</code> if not in the <code>RESOLVED</code> phase.
      */
     public static GenerationUtils newInstance(WorkingCopy copy) {
         Parameters.notNull("copy", copy); // NOI18N
-        if (copy.getPhase() != Phase.RESOLVED) {
-            throw new IllegalStateException("The WorkingCopy must be in the RESOLVED phase"); // NOI18N
-        }
         return new GenerationUtils(copy);
     }
 
