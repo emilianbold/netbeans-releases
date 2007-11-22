@@ -1622,14 +1622,22 @@ public class Reformatter implements ReformatTask {
 
         @Override
         public Boolean visitUnary(UnaryTree node, Void p) {
-            if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
+            JavaTokenId id = tokens.token().id();
+            if (OPERATOR.equals(id.primaryCategory())) {
                 spaces(cs.spaceAroundUnaryOps() ? 1 : 0);
                 col += tokens.token().length();
                 lastBlankLines = -1;
                 lastBlankLinesTokenIndex = -1;
                 lastBlankLinesDiff = null;
                 tokens.moveNext();
+                int index = tokens.index();
+                int c = col;
+                Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                 spaces(cs.spaceAroundUnaryOps() ? 1 : 0);
+                if (tokens.token().id() == id) {
+                    rollback(index, col, d);
+                    space();
+                }
                 scan(node.getExpression(), p);
             } else {
                 scan(node.getExpression(), p);
