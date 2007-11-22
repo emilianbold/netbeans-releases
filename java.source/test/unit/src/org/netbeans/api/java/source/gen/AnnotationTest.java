@@ -41,6 +41,7 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.TreeScanner;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.java.source.Task;
@@ -68,6 +69,8 @@ public class AnnotationTest extends GeneratorTest {
 //        suite.addTest(new ConstructorRenameTest("testAnnotationRename1"));
 //        suite.addTest(new ConstructorRenameTest("testAnnotationRename2"));
 //        suite.addTest(new ConstructorRenameTest("testClassToAnnotation"));
+//        suite.addTest(new ConstructorRenameTest("testAddDefaultValue"));
+//        suite.addTest(new ConstructorRenameTest("testRemoveDefaultValue"));
         return suite;
     }
     
@@ -183,6 +186,81 @@ public class AnnotationTest extends GeneratorTest {
                 }
             }
             
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    
+    public void testAddDefaultValue() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package aloisovo;\n" +
+            "\n" +
+            "public @interface Traktor {\n" +
+            "    public void zetorBrno(); \n" +
+            "}\n" +
+            "enum A {E}");
+        String golden =
+            "package aloisovo;\n" +
+            "\n" +
+            "public @interface Traktor {\n" +
+            "    public void zetorBrno() default A.E; \n" +
+            "}\n" +
+            "enum A {E}";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitMethod(MethodTree node, Void p) {
+                        workingCopy.rewrite(node, workingCopy.getTreeMaker().setInitialValue(node, workingCopy.getTreeMaker().Identifier("A.E")));
+                        return super.visitMethod(node, p);
+                    }
+                }.scan(cut, null);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveDefaultValue() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package aloisovo;\n" +
+            "\n" +
+            "public @interface Traktor {\n" +
+            "    public void zetorBrno() default A.E; \n" +
+            "}\n" +
+            "enum A {E}");
+        String golden =
+            "package aloisovo;\n" +
+            "\n" +
+            "public @interface Traktor {\n" +
+            "    public void zetorBrno(); \n" +
+            "}\n" +
+            "enum A {E}";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitMethod(MethodTree node, Void p) {
+                        workingCopy.rewrite(node, workingCopy.getTreeMaker().setInitialValue(node, null));
+                        return super.visitMethod(node, p);
+                    }
+                }.scan(cut, null);
+            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

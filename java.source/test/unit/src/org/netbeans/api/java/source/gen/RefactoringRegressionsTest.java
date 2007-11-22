@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import com.sun.source.tree.*;
+import com.sun.source.util.TreeScanner;
 import java.util.List;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
@@ -71,6 +72,7 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new RefactoringRegressionsTest("testAddNewClassInvocParameter2"));
 //        suite.addTest(new RefactoringRegressionsTest("test121181"));
 //        suite.addTest(new RefactoringRegressionsTest("test117913"));
+//        suite.addTest(new RefactoringRegressionsTest("testDefaultAnnotationAttributeValue121873"));
         return suite;
     }
 
@@ -491,6 +493,57 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
                 BlockTree body = method.getBody();
                 BlockTree copy = make.createMethodBody(method, "{ String par3; return null; }");
                 workingCopy.rewrite(body, copy);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * http://www.netbeans.org/issues/show_bug.cgi?id=121873
+     */
+    public void testDefaultAnnotationAttributeValue121873() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package aloisovo;\n" +
+            "\n" +
+            "public @interface Traktor {\n" +
+            "    public void zetorBrno() default A.E; \n" +
+            "}\n" +
+            "enum A {E}");
+        String golden =
+            "package aloisovo;\n" +
+            "\n" +
+            "public @interface Traktor {\n" +
+            "    public void zetorBrno() default A.X; \n" +
+            "}\n" +
+            "enum A {X}";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitMemberSelect(MemberSelectTree node, Void p) {
+                        if ("E".equals(node.getIdentifier().toString())) {
+                            workingCopy.rewrite(node, workingCopy.getTreeMaker().setLabel(node, "X"));
+                        }
+                        
+                        return super.visitMemberSelect(node, p);
+                    }
+                    @Override
+                    public Void visitVariable(VariableTree node, Void p) {
+                        if ("E".equals(node.getName().toString())) {
+                            workingCopy.rewrite(node, workingCopy.getTreeMaker().setLabel(node, "X"));
+                        }
+                        
+                        return super.visitVariable(node, p);
+                    }
+                }.scan(cut, null);
             }
         };
         src.runModificationTask(task).commit();

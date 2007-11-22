@@ -549,7 +549,18 @@ public class CasualDiff {
                 tokenSequence.moveNext();
                 posHint = tokenSequence.offset();
             } else {
-                posHint = endPos(oldT);
+                if (oldT.defaultValue != null) {
+                    tokenSequence.move(getOldPos(oldT.defaultValue));
+                    
+                    while (tokenSequence.movePrevious() && tokenSequence.token().id() != JavaTokenId.DEFAULT)
+                        ;
+                    
+                    moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+                    tokenSequence.moveNext();
+                    posHint = tokenSequence.offset();
+                } else {
+                    posHint = endPos(oldT) - 1;
+                }
             }
         } else {
             posHint = oldT.thrown.iterator().next().getStartPosition();
@@ -557,6 +568,21 @@ public class CasualDiff {
         copyTo(localPointer, localPointer = posHint);
         PositionEstimator est = EstimatorFactory.throwz(oldT.getThrows(), newT.getThrows(), workingCopy);
         localPointer = diffList2(oldT.thrown, newT.thrown, posHint, est);
+        if (oldT.defaultValue != newT.defaultValue) {
+            if (oldT.defaultValue == null) {
+                printer.print(" default ");
+                printer.print(newT.defaultValue);
+            } else {
+                if (newT.defaultValue == null) {
+                    localPointer = endPos(oldT.defaultValue);
+                } else {
+                    int[] restypeBounds = getBounds(oldT.defaultValue);
+                    copyTo(localPointer, restypeBounds[0]);
+                    localPointer = diffTree(oldT.defaultValue, newT.defaultValue, restypeBounds);
+                    copyTo(localPointer, localPointer = restypeBounds[1]);
+                }
+            }
+        }
         if (newT.body == null && oldT.body != null) {
             localPointer = endPos(oldT.body);
             printer.print(";");
