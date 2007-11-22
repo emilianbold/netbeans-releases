@@ -45,6 +45,7 @@ import antlr.CharBuffer;
 import antlr.CharQueue;
 import antlr.LexerSharedInputState;
 import antlr.CharStreamException;
+import antlr.NoViableAltForCharException;
 import antlr.TokenStreamException;
 import java.io.IOException;
 import java.io.Reader;
@@ -148,6 +149,25 @@ final class GroovyLexer implements Lexer<GsfTokenId> {
                 return null;  // no more tokens from tokenManager
             }
         } catch (TokenStreamException e) {
+            int len = lexerInput.readLength() - myCharBuffer.getExtraCharCount();
+            int tokenLength = lexerInput.readLength();
+            
+            scanner.resetText();
+            
+            while (len < tokenLength) {
+                scannerConsumeChar();
+                len++;
+            }
+            
+            scanner.resetText();
+            
+            if (lexerInput.readText().toString().startsWith("/")) {
+                lexerInput.backup(lexerInput.readLength() - 1);
+                return createToken(GroovyTokenTypes.DIV, 1);
+            } else {
+                return createToken(GroovyTokenId.ERROR_INT, tokenLength);
+            }
+        } catch (GroovyScanner.NoViableAltForCharException e) {
             int len = lexerInput.readLength() - myCharBuffer.getExtraCharCount();
             int tokenLength = lexerInput.readLength();
             
