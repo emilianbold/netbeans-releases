@@ -18,7 +18,6 @@
             </folder>
         </folder>
         
-        <!-- TODO: move me to a new "JBI Redelivery Extension" module -->
         <folder name="RedeliveryExtension">
             <attr name="xsdFileName" stringvalue="config-ext.xsd" />
             <attr name="extensionType" stringvalue="connection" />
@@ -45,6 +44,22 @@
                 <file name="waitTimes">
                     <attr name="type" stringvalue="Integer"/>
                     <attr name="description" stringvalue="Maximum redelivery wait time (mil seconds)"/>
+                </file>
+            </folder>
+        </folder>
+        
+        <folder name="ThrottlingExtension">
+            <attr name="xsdFileName" stringvalue="config-ext.xsd" />
+            <attr name="extensionType" stringvalue="connection" />
+            <attr name="extensionTarget" stringvalue="all" />
+            <attr name="prefix" stringvalue="throttling" />
+            <attr name="namespace" stringvalue="http://www.sun.com/jbi/descriptor/throttling"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.namebeans.modules.compapp.configextension.Bundle" />
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/namebeans/modules/compapp/configextension/resources/config-ext.png" />
+            <folder name="throttling">
+                <file name="maximimConcurrencyLimit">
+                    <attr name="type" stringvalue="int"/>
+                    <attr name="description" stringvalue="Maximim Concurrency Limit"/>
                 </file>
             </folder>
         </folder>
