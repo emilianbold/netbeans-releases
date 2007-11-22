@@ -67,6 +67,8 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -75,6 +77,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormModel;
@@ -106,6 +109,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
 /**
@@ -514,7 +518,7 @@ public class J2EEUtils {
         Project project = FileOwnerQuery.getOwner(dir);
         String packageName = scope.getClassPath().getResourceName(dir, '.', false);
 
-        SourceGroup[] groups = SourceGroupSupport.getJavaSourceGroups(project);
+        SourceGroup[] groups = getJavaSourceGroups(project);
         SourceGroup location = groups[0];
         for (int i=0; i<groups.length; i++) {
             if (groups[i].contains(dir)) {
@@ -1099,4 +1103,16 @@ public class J2EEUtils {
         }
     }
 
+    private static SourceGroup[] getJavaSourceGroups(Project project) {
+        Parameters.notNull("project", project); //NOI18N
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        List<SourceGroup> result = new ArrayList<SourceGroup>();
+        for(SourceGroup sourceGroup : sourceGroups){
+            if (UnitTestForSourceQuery.findUnitTests(sourceGroup.getRootFolder()).length > 0){
+                result.add(sourceGroup);
+            }
+        }
+        return result.toArray(new SourceGroup[result.size()]);
+    }
 }
