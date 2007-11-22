@@ -378,8 +378,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     public void valueChanged(javax.swing.event.ListSelectionEvent e) {
         assert (SwingUtilities.isEventDispatchThread());
 
+        documentationCancel();
         if (layout.isDocumentationVisible() || CompletionSettings.INSTANCE.documentationAutoPopup()) {
-            documentationCancel();
             restartDocumentationAutoPopupTimer();
         }
     }
