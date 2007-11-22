@@ -46,12 +46,6 @@ import java.beans.*;
 import org.openide.ErrorManager;
 
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
-import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.jmi.javamodel.PrimitiveTypeKindEnum;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-
-import javax.jmi.reflect.JmiException;
 import org.openide.util.NbBundle;
 
 /** Property editor for the property type property
@@ -76,50 +70,47 @@ public class PropertyTypeEditor extends PropertyEditorSupport implements Enhance
     * <p>   If a non-null value is returned, then the PropertyEditor should
     *       be prepared to parse that string back in setAsText().
     */
-    public String getAsText () {
-        Type type = (Type) getValue();
-        return (type == null) ? "" : type.getName(); // NOI18N
-    }
+//    public String getAsText () {
+//        Type type = (Type) getValue();
+//        return (type == null) ? "" : type.getName(); // NOI18N
+//    }
 
     /**
     * Set the property value by parsing a given String.
     * @param string  The string to be parsed.
     */
-    public void setAsText (String string) throws IllegalArgumentException {
-        String normalizedInput;
-        if (string == null || (normalizedInput = string.trim()).length() == 0) {
-            throw (IllegalArgumentException) ErrorManager.getDefault().annotate(new IllegalArgumentException(string), NbBundle.getMessage(PropertyTypeEditor.class, "MSG_Not_Valid_Type"));
-        }
-        Type oldType = (Type) getValue();
-        Type newType;
-        try {
-            JMIUtils.beginTrans(false);
-            try {
-                JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(oldType);
-                newType = jmodel.getType().resolve(normalizedInput);
-            } finally {
-                JMIUtils.endTrans();
-            }
-            setValue(newType);
-        } catch (JmiException e) {
-            IllegalArgumentException iae = new IllegalArgumentException();
-            iae.initCause(e);
-            throw iae;
-        }
-    }
+//    public void setAsText (String string) throws IllegalArgumentException {
+//        String normalizedInput;
+//        if (string == null || (normalizedInput = string.trim()).length() == 0) {
+//            throw (IllegalArgumentException) ErrorManager.getDefault().annotate(new IllegalArgumentException(string), NbBundle.getMessage(PropertyTypeEditor.class, "MSG_Not_Valid_Type"));
+//        }
+//        Type oldType = (Type) getValue();
+//        Type newType;
+//        try {
+//            BeanUtils.beginTrans(false);
+//            try  finally {
+//                BeanUtils.endTrans();
+//            }
+//            setValue(newType);
+//        } catch (JmiException e) {
+//            IllegalArgumentException iae = new IllegalArgumentException();
+//            iae.initCause(e);
+//            throw iae;
+//        }
+//    }
 
     /**
     * @param v new value
     */
     public void setValue(Object v) {
-        JMIUtils.beginTrans(false);
-        try {
-            if (!(v instanceof Type) || JMIUtils.isPrimitiveType((Type) v, PrimitiveTypeKindEnum.VOID))
-                throw new IllegalArgumentException();
-        } finally {
-            JMIUtils.endTrans();
-        }
-        super.setValue(v);
+//        BeanUtils.beginTrans(false);
+//        try {
+//            if (!(v instanceof Type) || BeanUtils.isPrimitiveType((Type) v, PrimitiveTypeKindEnum.VOID))
+//                throw new IllegalArgumentException();
+//        } finally {
+//            BeanUtils.endTrans();
+//        }
+//        super.setValue(v);
     }
 
     /**

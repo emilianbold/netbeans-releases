@@ -42,6 +42,7 @@
 package org.netbeans.modules.beans;
 
 import java.beans.*;
+import static org.netbeans.modules.beans.BeanUtils.*;
 
 /** property editor for mode property of Prperty patterns
 *
@@ -61,9 +62,9 @@ public class ModePropertyEditor extends PropertyEditorSupport {
     public String[] getTags() {
         if (tags == null) {
             tags = new String[] {
-                PatternNode.getString( "LAB_ReadWriteMODE" ),
-                PatternNode.getString( "LAB_ReadOnlyMODE" ),
-                PatternNode.getString( "LAB_WriteOnlyMODE" )
+                getString( "LAB_ReadWriteMODE" ),
+                getString( "LAB_ReadOnlyMODE" ),
+                getString( "LAB_WriteOnlyMODE" )
             };
         }
         return tags;
@@ -77,7 +78,7 @@ public class ModePropertyEditor extends PropertyEditorSupport {
             if (values[i] == value)
                 return getTags()[i];
 
-        return PatternNode.getString( "LAB_Unsupported" );
+        return getString( "LAB_Unsupported" );
     }
 
     /** @param text A text for the current value. */

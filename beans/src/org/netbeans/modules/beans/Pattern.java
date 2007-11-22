@@ -41,110 +41,161 @@
 
 package org.netbeans.modules.beans;
 
-import org.openide.nodes.Node;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.ErrorManager;
-import org.netbeans.jmi.javamodel.JavaClass;
+import java.awt.Image;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TypeMirrorHandle;
+import org.netbeans.api.java.source.UiUtils;
+import org.openide.util.Utilities;
 
-import javax.jmi.reflect.JmiException;
 
 /** Base class for patterns object. These objects hold information
  * about progarammatic patterns i.e. Properties and Events in the source code
  * @author Petr Hrebejk
  */
-public abstract class  Pattern extends Object {
+public abstract class Pattern {
 
-    /** PatternAnalyser which created this pattern */
-    PatternAnalyser patternAnalyser;
-    private DataObject src;
+    public static final Comparator<Pattern> NAME_COMPARATOR = new NameComparator();
+    public static final String TYPE_COLOR = "#707070";
+    
+    
+    private static final String ICON_BASE = "org/netbeans/modules/beans/resources/";
+    private static final String GIF_EXTENSION = ".gif";
+   
+    protected static final Image PATTERNS = Utilities.loadImage(ICON_BASE + "patternGroup" + GIF_EXTENSION); // NOI18N
+    
+    protected static final Image PROPERTY_READ = Utilities.loadImage(ICON_BASE + "propertyRO" + GIF_EXTENSION); // NOI18N
+    protected static final Image PROPERTY_WRITE = Utilities.loadImage(ICON_BASE + "propertyWO" + GIF_EXTENSION); // NOI18N
+    protected static final Image PROPERTY_READ_WRITE = Utilities.loadImage(ICON_BASE + "propertyRW" + GIF_EXTENSION); // NOI18N
+    
+    protected static final Image IDX_PROPERTY_READ = Utilities.loadImage(ICON_BASE + "propertyIndexedRO" + GIF_EXTENSION); // NOI18N
+    protected static final Image IDX_PROPERTY_WRITE = Utilities.loadImage(ICON_BASE + "propertyIndexedWO" + GIF_EXTENSION); // NOI18N
+    protected static final Image IDX_PROPERTY_READ_WRITE = Utilities.loadImage(ICON_BASE + "propertyIndexedRW" + GIF_EXTENSION); // NOI18N
+    
+    protected static final Image EVENT_SET_UNICAST = Utilities.loadImage(ICON_BASE + "eventSetUnicast" + GIF_EXTENSION); // NOI18N
+    protected static final Image EVENT_SET_MULTICAST = Utilities.loadImage(ICON_BASE + "eventSetMulticast" + GIF_EXTENSION); // NOI18N
+   
+    protected static final Image CLASS = Utilities.icon2Image(UiUtils.getElementIcon(ElementKind.CLASS, Collections.<Modifier>emptySet())); // NOI18N
+    protected static final Image INTERFACE = Utilities.icon2Image(UiUtils.getElementIcon(ElementKind.INTERFACE, Collections.<Modifier>emptySet())); // NOI18N
+   
+    protected final TypeMirrorHandle<TypeMirror> type;
+    protected final String name;
+    protected final Kind kind;
 
+    private PatternAnalyser patternAnalyser;
+   
     /** Constructor of Pattern. The patternAnalyser is the only connetion
      * to class which created this pattern.
      * @param patternAnalyser The patern analayser which created this pattern.
      */
-    public Pattern( PatternAnalyser patternAnalyser ) {
+    public Pattern( PatternAnalyser patternAnalyser, Kind kind, 
+                    String name, TypeMirrorHandle<TypeMirror> type ) {
         this.patternAnalyser = patternAnalyser;
-        try {
-            this.src = DataObject.find(patternAnalyser.findFileObject());
-        } catch (DataObjectNotFoundException e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
-        }
+        this.kind = kind;
+        this.name = name;
+        this.type = type;
+    }
+
+    public PatternAnalyser getPatternAnalyser() {
+        return patternAnalyser;
     }
 
     /** Gets the name of pattern.
      * @return Name of the pattern.
      */
-    public abstract String getName();
+    public String getName() {
+        return name;
+    }
 
     /** Sets the name of the pattern
      * @param name New name of the pattern.
      */
     public abstract void setName( String name );
-
+    
+    public abstract Image getIcon();
+    
+    public String getHtmlDisplayName() {
+        return null;
+    }
+    
     /** Gets the class which declares this Pattern.
      * @return Class in which this pattern is defined.
      */
-    public JavaClass getDeclaringClass() {
-        return patternAnalyser.getClassElement();
+    public ElementHandle<TypeElement> getDeclaringClass() {
+        return patternAnalyser.getClassElementHandle();
     }
 
-    /** Temporary implementation of getCookie
-     * @param type Type of the Cookie.
-     * @return The Cookie.
-     */
-    Node.Cookie getCookie( Class type ) {
-        if (this.src != null && type.isAssignableFrom(this.src.getClass())) {
-            return this.src; 
+    /** Gets the type of property */
+    public TypeMirrorHandle<TypeMirror> getType() {
+        return type;
+    }
+
+    public Kind getKind() {
+        return kind;
+    }
+
+    public List<Pattern> getPatterns() {
+        if ( kind == Kind.CLASS ) {
+            return patternAnalyser.getPatterns();
         }
-        return null;
+        else {
+            return Collections.<Pattern>emptyList();
+        }
     }
 
     /** Default behavior for destroying pattern is to do nothing
      */
-    public void destroy() throws JmiException {
+    public void destroy() {
     }
 
-    // UTILITY METHODS ----------------------------------------------------------
-
-    /** Utility method capitalizes the first letter of string, used to
-     * generate method names for patterns
-     * @param str The string for capitalization.
-     * @return String with the first letter capitalized.
-     */
-    static String capitalizeFirstLetter( String str ) {
-        if ( str == null || str.length() <= 0 )
-            return str;
-
-        char chars[] = str.toCharArray();
-        chars[0] = Character.toUpperCase(chars[0]);
-        return new String(chars);
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Pattern other = (Pattern) obj;
+//        if (this.type != other.type && (this.type == null || !this.type.equals(other.type))) {
+//            return false;
+//        }
+        if (this.name != other.name && (this.name == null || !this.name.equals(other.name))) {
+            return false;
+        }
+        if (this.kind != other.kind && (this.kind == null || !this.kind.equals(other.kind))) {
+            return false;
+        }
+        return true;
     }
 
-    // IMPLEMENTATION OF PropertyChangeSupport ----------------------------------
+    public int hashCode() {
+        int hash = 3;
+//        hash = 67 * hash + (this.type != null ? this.type.hashCode() : 0);
+        hash = 67 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 67 * hash + (this.kind != null ? this.kind.hashCode() : 0);
+        return hash;
+    }
+    
+    public enum Kind {
+        
+        CLASS,          // Good for inerclasses
+        PROPERTY,
+        EVENT_SOURCE;
 
-    /** Utility field used by bound properties. */
-    private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport( this );
-
-    /** Add a PropertyChangeListener to the listener list.
-     * @param l the listener to add. 
-     */
-    public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
-        propertyChangeSupport.addPropertyChangeListener( l );
     }
 
-    /** Removes a PropertyChangeListener from the listener list.
-     * @param l the listener to remove. 
-     */
-    public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
-        propertyChangeSupport.removePropertyChangeListener( l );
-    }
+    private static class NameComparator implements Comparator<Pattern> {
 
-    /** Fires the <CODE>PropertyChangeEvent</CODE> to listeners.
-     * @param evt The event to fire.
-     */
-    protected void firePropertyChange( java.beans.PropertyChangeEvent evt ) {
-        propertyChangeSupport.firePropertyChange( evt );
+        public int compare(Pattern p1, Pattern p2) {
+            return p1.name.compareToIgnoreCase(p2.name);
+        }
+        
     }
-
+    
 }

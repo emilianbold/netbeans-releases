@@ -50,16 +50,14 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.*;
 import org.openide.util.Utilities;
-import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.jmi.javamodel.Method;
 
-import javax.jmi.reflect.JmiException;
+import static org.netbeans.modules.beans.BeanUtils.*;
 
 /** Node representing a event set pattern.
 * @see EventSetPattern
 * @author Petr Hrebejk
 */
-public final class EventSetPatternNode extends PatternNode implements IconBases {
+public final class EventSetPatternNode extends PatternNode {
 
     /** Create a new pattern node.
     * @param pattern pattern to represent
@@ -70,15 +68,15 @@ public final class EventSetPatternNode extends PatternNode implements IconBases 
         superSetName( pattern.getName() );
     }
 
-    protected void setPatternName( String name ) throws JmiException {
-        
-        if ( pattern.getName().equals( name ) ) {
-            return;
-        }
-        
-        if ( testNameValidity(name) ) {
-            ((EventSetPattern)pattern).setName(name);
-        }
+    protected void setPatternName( String name ) {
+//        
+//        if ( pattern.getName().equals( name ) ) {
+//            return;
+//        }
+//        
+//        if ( testNameValidity(name) ) {
+//            ((EventSetPattern)pattern).setName(name);
+//        }
     }
 
     /** Tests if the given string is valid name for associated pattern and if not, notifies
@@ -104,24 +102,13 @@ public final class EventSetPatternNode extends PatternNode implements IconBases 
         return true;
     }
 
-
-    /** Resolve the current icon base.
-    * @return icon base string.
-    */
-    protected String resolveIconBase() {
-        if (((EventSetPattern)pattern).isUnicast() )
-            return EVENTSET_UNICAST;
-        else
-            return EVENTSET_MULTICAST;
-    }
-
     /** Gets the short description of this node.
     * @return A localized short description associated with this node.
     */
     public String getShortDescription() {
         return (((EventSetPattern)pattern).isUnicast () ?
-                PatternNode.getString( "HINT_UnicastEventSet" ) :
-                PatternNode.getString( "HINT_MulticastEventSet" ) )
+                getString( "HINT_UnicastEventSet" ) :
+                getString( "HINT_MulticastEventSet" ) )
                + " : " + getName(); // NOI18N
     }
 
@@ -130,11 +117,11 @@ public final class EventSetPatternNode extends PatternNode implements IconBases 
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = sheet.get(Sheet.PROPERTIES);
 
-        ps.put(createNameProperty( writeable ));
-        ps.put(createTypeProperty( writeable ));
-        ps.put(createIsUnicastProperty( writeable ));
-        ps.put(createAddListenerProperty( false ));
-        ps.put(createRemoveListenerProperty( false ));
+//        ps.put(createNameProperty( writeable ));
+//        ps.put(createTypeProperty( writeable ));
+//        ps.put(createIsUnicastProperty( writeable ));
+//        ps.put(createAddListenerProperty( false ));
+//        ps.put(createRemoveListenerProperty( false ));
 
         return sheet;
     }
@@ -147,110 +134,107 @@ public final class EventSetPatternNode extends PatternNode implements IconBases 
     }
 
 
-    /** Create a property for the field type.
-     * @param canW <code>false</code> to force property to be read-only
-     * @return the property
-     */
+//    /** Create a property for the field type.
+//     * @param canW <code>false</code> to force property to be read-only
+//     * @return the property
+//     */
+//    protected Node.Property createTypeProperty(boolean canW) {
+//        return new PatternPropertySupport(PROP_TYPE, Type.class, canW) {
+//
+//                   /** Gets the value */
+//
+//                   public Object getValue () {
+//                       return ((EventSetPattern)pattern).getType();
+//                   }
+//
+//                   /** Sets the value */
+//                   public void setValue(Object val) throws IllegalArgumentException,
+//                       IllegalAccessException, InvocationTargetException {
+//                       super.setValue(val);
+//                       if (!(val instanceof Type))
+//                           throw new IllegalArgumentException();
+//
+//                       try {
+//                           pattern.patternAnalyser.setIgnore( true );
+//                           ((EventSetPattern)pattern).setType((Type)val);
+//                       } catch (JmiException e) {
+//                           throw new InvocationTargetException(e);
+//                       } finally {
+//                           pattern.patternAnalyser.setIgnore( false );
+//                       }
+//                   }
+//
+//                   public PropertyEditor getPropertyEditor () {
+//                       return new org.netbeans.modules.beans.EventTypeEditor();
+//                   }
+//               };
+//    }
+//
 
-    protected Node.Property createTypeProperty(boolean canW) {
-        return new PatternPropertySupport(PROP_TYPE, Type.class, canW) {
-
-                   /** Gets the value */
-
-                   public Object getValue () {
-                       return ((EventSetPattern)pattern).getType();
-                   }
-
-                   /** Sets the value */
-                   public void setValue(Object val) throws IllegalArgumentException,
-                       IllegalAccessException, InvocationTargetException {
-                       super.setValue(val);
-                       if (!(val instanceof Type))
-                           throw new IllegalArgumentException();
-
-                       try {
-                           pattern.patternAnalyser.setIgnore( true );
-                           ((EventSetPattern)pattern).setType((Type)val);
-                       } catch (JmiException e) {
-                           throw new InvocationTargetException(e);
-                       } finally {
-                           pattern.patternAnalyser.setIgnore( false );
-                       }
-                   }
-
-                   public PropertyEditor getPropertyEditor () {
-                       return new org.netbeans.modules.beans.EventTypeEditor();
-                   }
-               };
-    }
-
-
-    /** Create a property for the field type.
-     * @param canW <code>false</code> to force property to be read-only
-     * @return the property
-     */
-
-
-    protected Node.Property createIsUnicastProperty(boolean canW) {
-        return new PatternPropertySupport(PROP_ISUNICAST, boolean.class, canW) {
-
-                   /** Gets the value */
-
-                   public Object getValue () {
-                       return ((EventSetPattern)pattern).isUnicast() ? Boolean.TRUE : Boolean.FALSE;
-                   }
-
-                   /** Sets the value */
-                   public void setValue(Object val) throws IllegalArgumentException,
-                       IllegalAccessException, InvocationTargetException {
-                       super.setValue(val);
-                       if (!(val instanceof Boolean))
-                           throw new IllegalArgumentException();
-
-                       try {
-                           try {
-                               pattern.patternAnalyser.setIgnore( true );
-                               ((EventSetPattern)pattern).setIsUnicast(((Boolean)val).booleanValue());
-                               setIconBaseWithExtension( resolveIconBase() + ".gif");
-                           } finally {
-                               pattern.patternAnalyser.setIgnore( false );
-                           }
-                       } catch (JmiException e) {
-                           throw new InvocationTargetException(e);
-                       }
-                   }
-
-               };
-    }
-
-    /** Create a property for the addListener method.
-     * @param canW <code>false</code> to force property to be read-only
-     * @return the property
-     */
-
-    protected Node.Property createAddListenerProperty(boolean canW) {
-        return new PatternPropertySupport(PROP_ADDLISTENER, String.class, canW) {
-
-                   public Object getValue () {
-                       Method method = ((EventSetPattern) pattern).getAddListenerMethod();
-                       return getFormattedMethodName(method);
-                   }
-               };
-    }
-
-    /** Create a property for the removeListener method.
-     * @param canW <code>false</code> to force property to be read-only
-     * @return the property
-     */
-
-    protected Node.Property createRemoveListenerProperty(boolean canW) {
-        return new PatternPropertySupport(PROP_REMOVELISTENER, String.class, canW) {
-
-                   public Object getValue () {
-                       Method method = ((EventSetPattern) pattern).getRemoveListenerMethod();
-                       return getFormattedMethodName(method);
-                   }
-               };
-    }
+//    /** Create a property for the field type.
+//     * @param canW <code>false</code> to force property to be read-only
+//     * @return the property
+//     */
+//    protected Node.Property createIsUnicastProperty(boolean canW) {
+//        return new PatternPropertySupport(PROP_ISUNICAST, boolean.class, canW) {
+//
+//                   /** Gets the value */
+//
+//                   public Object getValue () {
+//                       return ((EventSetPattern)pattern).isUnicast() ? Boolean.TRUE : Boolean.FALSE;
+//                   }
+//
+//                   /** Sets the value */
+//                   public void setValue(Object val) throws IllegalArgumentException,
+//                       IllegalAccessException, InvocationTargetException {
+//                       super.setValue(val);
+//                       if (!(val instanceof Boolean))
+//                           throw new IllegalArgumentException();
+//
+//                       try {
+//                           try {
+//                               pattern.patternAnalyser.setIgnore( true );
+//                               ((EventSetPattern)pattern).setIsUnicast(((Boolean)val).booleanValue());
+//                               setIconBaseWithExtension( resolveIconBase() + ".gif");
+//                           } finally {
+//                               pattern.patternAnalyser.setIgnore( false );
+//                           }
+//                       } catch (JmiException e) {
+//                           throw new InvocationTargetException(e);
+//                       }
+//                   }
+//
+//               };
+//    }
+//
+//    /** Create a property for the addListener method.
+//     * @param canW <code>false</code> to force property to be read-only
+//     * @return the property
+//     */
+//
+//    protected Node.Property createAddListenerProperty(boolean canW) {
+//        return new PatternPropertySupport(PROP_ADDLISTENER, String.class, canW) {
+//
+//                   public Object getValue () {
+//                       Method method = ((EventSetPattern) pattern).getAddListenerMethod();
+//                       return getFormattedMethodName(method);
+//                   }
+//               };
+//    }
+//
+//    /** Create a property for the removeListener method.
+//     * @param canW <code>false</code> to force property to be read-only
+//     * @return the property
+//     */
+//
+//    protected Node.Property createRemoveListenerProperty(boolean canW) {
+//        return new PatternPropertySupport(PROP_REMOVELISTENER, String.class, canW) {
+//
+//                   public Object getValue () {
+//                       Method method = ((EventSetPattern) pattern).getRemoveListenerMethod();
+//                       return getFormattedMethodName(method);
+//                   }
+//               };
+//    }
 }
 

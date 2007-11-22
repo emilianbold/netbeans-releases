@@ -52,6 +52,6 @@ public final class EventTypeEditor extends PropertyTypeEditor {
     * @return The tag values for this property.
     */
     public String[] getTags () {
-        return EventSetPattern.WELL_KNOWN_LISTENERS;
+        return BeanUtils.WELL_KNOWN_LISTENERS;
     }
 }

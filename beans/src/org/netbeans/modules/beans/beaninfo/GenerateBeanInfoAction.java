@@ -53,7 +53,7 @@ import org.openide.util.Task;
 import org.openide.util.actions.NodeAction;
 
 import org.netbeans.modules.beans.PatternAnalyser;
-import org.netbeans.modules.beans.JMIUtils;
+import org.netbeans.modules.beans.BeanUtils;
 import org.netbeans.modules.beans.GenerateBeanException;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.openide.DialogDisplayer;
@@ -106,12 +106,10 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
             if (pa == null) {
                 return false;
             }
-            JavaClass theClass = pa.getClassElement();
-            JMIUtils.beginTrans(false);
-            try {
-                return theClass.isValid() && !theClass.isInner();
-            } finally {
-                JMIUtils.endTrans();
+            JavaClass theClass = pa.getClassElementHandle();
+            BeanUtils.beginTrans(false);
+            try  finally {
+                BeanUtils.endTrans();
             }
         }
     }
@@ -153,21 +151,11 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
                 PatternAnalyser pa = (PatternAnalyser)nodes[0].getCookie( PatternAnalyser.class );
                 
                 try {
-                    JMIUtils.beginTrans(true);
+                    BeanUtils.beginTrans(true);
                     boolean rollback = true;
                     BiAnalyser bia;
-                    try {
-                        JavaClass theClass = pa.getClassElement();
-                        JavaClass syntheticSuperClass = BiSuperClass.createForClassElement(theClass);
-                        
-                        pa = new PatternAnalyser(syntheticSuperClass, theClass);
-                        pa.analyzeAll();
-                        
-                        bia = new BiAnalyser(pa, theClass);
-                        biaReference.syntheticClass = syntheticSuperClass;
-                        rollback = false;
-                    } finally {
-                        JMIUtils.endTrans(rollback);
+                    try  finally {
+                        BeanUtils.endTrans(rollback);
                     }
                     final Node biNode = new BiNode( bia );
                     
@@ -198,16 +186,10 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
                 public void run () {
                     analyseTask.waitFinished();
                     biaReference.getReference().regenerateSource();
-                    JMIUtils.beginTrans(true);
+                    BeanUtils.beginTrans(true);
                     boolean rollback = true;
-                    try {
-                        final JavaClass syntheticClass = biaReference.syntheticClass;
-                        if (syntheticClass != null && syntheticClass.isValid()) {
-                            syntheticClass.refDelete();
-                        }
-                        rollback = false;
-                    } finally {
-                        JMIUtils.endTrans(rollback);
+                    try  finally {
+                        BeanUtils.endTrans(rollback);
                     }
                 }
             } );

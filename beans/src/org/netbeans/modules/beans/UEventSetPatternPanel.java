@@ -44,15 +44,16 @@ package org.netbeans.modules.beans;
 import java.awt.Dialog;
 import java.text.MessageFormat;
 import javax.swing.border.TitledBorder;
-import javax.jmi.reflect.JmiException;
 
 import org.openide.DialogDisplayer;
 
 import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
-import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.jmi.javamodel.JavaClass;
+
+import static org.netbeans.modules.beans.BeanUtils.*;
+
+
 /** Customizer for new Unicast Event Set Pattern
  *
  * @author Petr Hrebejk
@@ -79,8 +80,8 @@ public final class UEventSetPatternPanel extends javax.swing.JPanel
         initComponents ();
         initAccessibility();
 
-        for( int i = 0; i < EventSetPattern.WELL_KNOWN_LISTENERS.length; i++ ) {
-            typeComboBox.addItem( EventSetPattern.WELL_KNOWN_LISTENERS[i] );
+        for( int i = 0; i < BeanUtils.WELL_KNOWN_LISTENERS.length; i++ ) {
+            typeComboBox.addItem( BeanUtils.WELL_KNOWN_LISTENERS[i] );
         }
         typeComboBox.setSelectedItem( "" ); // NOI18N
 
@@ -89,36 +90,36 @@ public final class UEventSetPatternPanel extends javax.swing.JPanel
         bg.add( implRadioButton );
 
         ((TitledBorder)eventSetPanel.getBorder()).setTitle(
-            PatternNode.getString( "CTL_UEventSetPanel_eventSetPanel" ));
+            getString( "CTL_UEventSetPanel_eventSetPanel" ));
         ((TitledBorder)optionsPanel.getBorder()).setTitle(
-            PatternNode.getString( "CTL_UEventSetPanel_optionsPanel" ) );
-        typeLabel.setText( PatternNode.getString( "CTL_UEventSetPanel_typeLabel" ) );
-        typeLabel.setDisplayedMnemonic(PatternNode.getString("CTL_UEventSetPanel_typeLabel_Mnemonic").charAt(0));
+            getString( "CTL_UEventSetPanel_optionsPanel" ) );
+        typeLabel.setText( getString( "CTL_UEventSetPanel_typeLabel" ) );
+        typeLabel.setDisplayedMnemonic(getString("CTL_UEventSetPanel_typeLabel_Mnemonic").charAt(0));
         typeLabel.setLabelFor(typeComboBox);
-        typeComboBox.setToolTipText(PatternNode.getString("ACS_UEventSetPanel_typeComboBoxA11yDesc"));
-        textLabel.setText( PatternNode.getString( "CTL_UEventSetPanel_textLabel" ) );
-        emptyRadioButton.setText( PatternNode.getString( "CTL_UEventSetPanel_emptyRadioButton" ) );
-        emptyRadioButton.setMnemonic(PatternNode.getString("CTL_UEventSetPanel_emptyRadioButton_Mnemonic").charAt(0));
-        emptyRadioButton.setToolTipText(PatternNode.getString("ACS_UEventSetPanel_emptyRadioButtonA11yDesc"));
-        implRadioButton.setText( PatternNode.getString( "CTL_UEventSetPanel_implRadioButton" ) );
-        implRadioButton.setMnemonic(PatternNode.getString("CTL_UEventSetPanel_implRadioButton_Mnemonic").charAt(0));
-        implRadioButton.setToolTipText(PatternNode.getString("ACS_UEventSetPanel_implRadioButtonA11yDesc"));
-        fireCheckBox.setText( PatternNode.getString( "CTL_UEventSetPanel_fireCheckBox" ) );
-        fireCheckBox.setMnemonic(PatternNode.getString("CTL_UEventSetPanel_fireCheckBox_Mnemonic").charAt(0));
-        fireCheckBox.setToolTipText(PatternNode.getString("ACS_UEventSetPanel_fireCheckBoxA11yDesc"));
-        passEventCheckBox.setText( PatternNode.getString( "CTL_UEventSetPanel_passEventCheckBox" ) );
-        passEventCheckBox.setMnemonic(PatternNode.getString("CTL_UEventSetPanel_passEventCheckBox_Mnemonic").charAt(0));
-        passEventCheckBox.setToolTipText(PatternNode.getString("ACS_UEventSetPanel_passEventCheckBoxA11yDesc"));
+        typeComboBox.setToolTipText(getString("ACS_UEventSetPanel_typeComboBoxA11yDesc"));
+        textLabel.setText( getString( "CTL_UEventSetPanel_textLabel" ) );
+        emptyRadioButton.setText( getString( "CTL_UEventSetPanel_emptyRadioButton" ) );
+        emptyRadioButton.setMnemonic(getString("CTL_UEventSetPanel_emptyRadioButton_Mnemonic").charAt(0));
+        emptyRadioButton.setToolTipText(getString("ACS_UEventSetPanel_emptyRadioButtonA11yDesc"));
+        implRadioButton.setText( getString( "CTL_UEventSetPanel_implRadioButton" ) );
+        implRadioButton.setMnemonic(getString("CTL_UEventSetPanel_implRadioButton_Mnemonic").charAt(0));
+        implRadioButton.setToolTipText(getString("ACS_UEventSetPanel_implRadioButtonA11yDesc"));
+        fireCheckBox.setText( getString( "CTL_UEventSetPanel_fireCheckBox" ) );
+        fireCheckBox.setMnemonic(getString("CTL_UEventSetPanel_fireCheckBox_Mnemonic").charAt(0));
+        fireCheckBox.setToolTipText(getString("ACS_UEventSetPanel_fireCheckBoxA11yDesc"));
+        passEventCheckBox.setText( getString( "CTL_UEventSetPanel_passEventCheckBox" ) );
+        passEventCheckBox.setMnemonic(getString("CTL_UEventSetPanel_passEventCheckBox_Mnemonic").charAt(0));
+        passEventCheckBox.setToolTipText(getString("ACS_UEventSetPanel_passEventCheckBoxA11yDesc"));
         
         HelpCtx.setHelpIDString(this, HelpCtxKeys.BEAN_EVENTSETS_HELP); //NOI18N
     }
 
     private void initAccessibility()
     {
-        this.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACSD_UEventSetPanelDialog"));
-        typeLabel.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACS_UEventSetPanel_typeLabelA11yDesc"));
-        typeComboBox.getAccessibleContext().setAccessibleName(PatternNode.getString("ACS_UEventSetPanel_typeComboBoxA11yName"));
-        textLabel.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACS_UEventSetPanel_textLabelA11yDesc"));
+        this.getAccessibleContext().setAccessibleDescription(getString("ACSD_UEventSetPanelDialog"));
+        typeLabel.getAccessibleContext().setAccessibleDescription(getString("ACS_UEventSetPanel_typeLabelA11yDesc"));
+        typeComboBox.getAccessibleContext().setAccessibleName(getString("ACS_UEventSetPanel_typeComboBoxA11yName"));
+        textLabel.getAccessibleContext().setAccessibleDescription(getString("ACS_UEventSetPanel_textLabelA11yDesc"));
     }
 
     /** This method is called from within the constructor to
@@ -334,80 +335,80 @@ public final class UEventSetPatternPanel extends javax.swing.JPanel
     }
 
     public void actionPerformed( java.awt.event.ActionEvent e ) {
-        if (dialog == null ) {
-            return;
-        }
-        if ( e.getSource() == org.openide.DialogDescriptor.OK_OPTION ) {
-            //Test wether the string is empty
-            String userText = typeComboBox.getEditor().getItem().toString().trim();
-            if ( userText.length() <= 0) {
-                DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                        PatternNode.getString("MSG_Not_Valid_Type"),
-                        NotifyDescriptor.ERROR_MESSAGE) );
-                typeComboBox.requestFocus();
-                return;
-            }
-            try {
-                JMIUtils.beginTrans(false);
-                try {
-                    if (!validateType(userText))
-                        return;
-                } finally {
-                    JMIUtils.endTrans();
-                }
-            } catch (JmiException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-            }
-        }
-
-        dialog.setVisible( false );
-        dialog.dispose();
+//        if (dialog == null ) {
+//            return;
+//        }
+//        if ( e.getSource() == org.openide.DialogDescriptor.OK_OPTION ) {
+//            //Test wether the string is empty
+//            String userText = typeComboBox.getEditor().getItem().toString().trim();
+//            if ( userText.length() <= 0) {
+//                DialogDisplayer.getDefault().notify(
+//                    new NotifyDescriptor.Message(
+//                        getString("MSG_Not_Valid_Type"),
+//                        NotifyDescriptor.ERROR_MESSAGE) );
+//                typeComboBox.requestFocus();
+//                return;
+//            }
+//            try {
+//                JMIUtils.beginTrans(false);
+//                try {
+//                    if (!validateType(userText))
+//                        return;
+//                } finally {
+//                    JMIUtils.endTrans();
+//                }
+//            } catch (JmiException ex) {
+//                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+//            }
+//        }
+//
+//        dialog.setVisible( false );
+//        dialog.dispose();
     }
     
     /**
      * @return true if type is valid
      *         false if type is invalid
      */
-    private boolean validateType(String typeName) throws JmiException {
-        Type type;
-                
-        try {
-            assert JMIUtils.isInsideTrans();
-            type = patternAnalyser.findType(typeName);
-            if (type == null || !(type instanceof JavaClass)) {
-                DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                        PatternNode.getString("MSG_Not_Valid_Type"),
-                        NotifyDescriptor.ERROR_MESSAGE) );
-                typeComboBox.requestFocus();
-                return false;
-            }
-            // Test wheter property with this name already exists
-            EventSetPattern eventSetPattern = groupNode.findEventSetPattern( type );
-            if (eventSetPattern != null) {
-                String msg = MessageFormat.format( PatternNode.getString("MSG_EventSet_Exists"),
-                                                   new Object[] { eventSetPattern.getName() } );
-                DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE) );
-
-                typeComboBox.requestFocus();
-                return false;
-            }
-        } catch ( JmiException ex ) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-            return false;
-        }
-                
-        // Check whether the property points to a valid listener
-        JavaClass elClass = patternAnalyser.findClassElement("java.util.EventListener"); //NOI18N
-        if (!((JavaClass) type).isSubTypeOf(elClass)) {
-            DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message(PatternNode.getString("MSG_InvalidListenerInterface"),
-                                             NotifyDescriptor.ERROR_MESSAGE) );
-            return false;
-        }
-        return true;
-    }
+//    private boolean validateType(String typeName) throws JmiException {
+//        Type type;
+//
+//        try {
+//            assert JMIUtils.isInsideTrans();
+//            type = patternAnalyser.findType(typeName);
+//            if (type == null || !(type instanceof JavaClass)) {
+//                DialogDisplayer.getDefault().notify(
+//                    new NotifyDescriptor.Message(
+//                        getString("MSG_Not_Valid_Type"),
+//                        NotifyDescriptor.ERROR_MESSAGE) );
+//                typeComboBox.requestFocus();
+//                return false;
+//            }
+//            // Test wheter property with this name already exists
+//            EventSetPattern eventSetPattern = groupNode.findEventSetPattern( type );
+//            if (eventSetPattern != null) {
+//                String msg = MessageFormat.format( getString("MSG_EventSet_Exists"),
+//                                                   new Object[] { eventSetPattern.getName() } );
+//                DialogDisplayer.getDefault().notify(
+//                    new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE) );
+//
+//                typeComboBox.requestFocus();
+//                return false;
+//            }
+//        } catch ( JmiException ex ) {
+//            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+//            return false;
+//        }
+//                
+//        // Check whether the property points to a valid listener
+//        JavaClass elClass = patternAnalyser.findClassElement("java.util.EventListener"); //NOI18N
+//        if (!((JavaClass) type).isSubTypeOf(elClass)) {
+//            DialogDisplayer.getDefault().notify(
+//                new NotifyDescriptor.Message(getString("MSG_InvalidListenerInterface"),
+//                                             NotifyDescriptor.ERROR_MESSAGE) );
+//            return false;
+//        }
+//        return true;
+//    }
 
 }

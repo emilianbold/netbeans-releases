@@ -47,7 +47,6 @@ import java.util.StringTokenizer;
 import java.util.List;
 import java.util.LinkedList;
 import javax.swing.border.TitledBorder;
-import javax.jmi.reflect.JmiException;
 
 import org.openide.DialogDisplayer;
 
@@ -56,7 +55,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.netbeans.jmi.javamodel.Type;
+import static org.netbeans.modules.beans.BeanUtils.*;
 
 /** Customizer for newIndexed Property Pattern
  *
@@ -77,9 +76,9 @@ public final class IdxPropertyPatternPanel extends javax.swing.JPanel
 
     /** Human representable form of properties modes */
     private static final String[] MODES = new String[] {
-                                       PatternNode.getString( "LAB_ReadWriteMODE" ),
-                                       PatternNode.getString( "LAB_ReadOnlyMODE" ),
-                                       PatternNode.getString( "LAB_WriteOnlyMODE" )
+                                       getString( "LAB_ReadWriteMODE" ),
+                                       getString( "LAB_ReadOnlyMODE" ),
+                                       getString( "LAB_WriteOnlyMODE" )
                                    };
 
     static final long serialVersionUID =8551245035767258531L;
@@ -105,53 +104,53 @@ public final class IdxPropertyPatternPanel extends javax.swing.JPanel
         // i18n
 
         ((TitledBorder)propertyPanel.getBorder()).setTitle(
-            PatternNode.getString( "CTL_IdxPropertyPanel_propertyPanel" ) );
+            getString( "CTL_IdxPropertyPanel_propertyPanel" ) );
         ((TitledBorder)optionsPanel.getBorder()).setTitle(
-            PatternNode.getString( "CTL_IdxPropertyPanel_optionsPanel" ) );
+            getString( "CTL_IdxPropertyPanel_optionsPanel" ) );
         ((TitledBorder)nonIndexOptionsPanel.getBorder()).setTitle(
-            PatternNode.getString( "CTL_IdxPropertyPanel_niOptionsPanel" ) );
-        nameLabel.setText( PatternNode.getString( "CTL_IdxPropertyPanel_nameLabel" ) );
-        nameLabel.setDisplayedMnemonic(PatternNode.getString("CTL_IdxPropertyPanel_nameLabel_Mnemonic").charAt(0));
+            getString( "CTL_IdxPropertyPanel_niOptionsPanel" ) );
+        nameLabel.setText( getString( "CTL_IdxPropertyPanel_nameLabel" ) );
+        nameLabel.setDisplayedMnemonic(getString("CTL_IdxPropertyPanel_nameLabel_Mnemonic").charAt(0));
         nameLabel.setLabelFor(nameTextField);
-        nameTextField.setToolTipText(PatternNode.getString("ACS_IdxPropertyPanel_nameTextFieldA11yDesc"));
-        typeLabel.setText( PatternNode.getString( "CTL_IdxPropertyPanel_typeLabel" ) );
-        typeLabel.setDisplayedMnemonic(PatternNode.getString("CTL_IdxPropertyPanel_typeLabel_Mnemonic").charAt(0));
+        nameTextField.setToolTipText(getString("ACS_IdxPropertyPanel_nameTextFieldA11yDesc"));
+        typeLabel.setText( getString( "CTL_IdxPropertyPanel_typeLabel" ) );
+        typeLabel.setDisplayedMnemonic(getString("CTL_IdxPropertyPanel_typeLabel_Mnemonic").charAt(0));
         typeLabel.setLabelFor(typeComboBox);
-        typeComboBox.setToolTipText(PatternNode.getString("ACS_IdxPropertyPanel_typeComboBoxA11yDesc"));
-        modeLabel.setText( PatternNode.getString( "CTL_IdxPropertyPanel_modeLabel" ) );
-        modeLabel.setDisplayedMnemonic(PatternNode.getString("CTL_IdxPropertyPanel_modeLabel_Mnemonic").charAt(0));
+        typeComboBox.setToolTipText(getString("ACS_IdxPropertyPanel_typeComboBoxA11yDesc"));
+        modeLabel.setText(getString( "CTL_IdxPropertyPanel_modeLabel" ) );
+        modeLabel.setDisplayedMnemonic(getString("CTL_IdxPropertyPanel_modeLabel_Mnemonic").charAt(0));
         modeLabel.setLabelFor(modeComboBox);
-        modeComboBox.setToolTipText(PatternNode.getString("ACS_IdxPropertyPanel_modeComboBoxA11yDesc"));
-        boundCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_boundCheckBox" ) );
-        boundCheckBox.setMnemonic(PatternNode.getString("CTL_IdxPropertyPanel_boundCheckBox_Mnemonic").charAt(0));
-        boundCheckBox.setToolTipText(PatternNode.getString("ACS_IdxPropertyPanel_boundCheckBoxA11yDesc"));
-        constrainedCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_constrainedCheckBox" ) );
-        constrainedCheckBox.setMnemonic(PatternNode.getString("CTL_IdxPropertyPanel_constrainedCheckBox_Mnemonic").charAt(0));
-        constrainedCheckBox.setToolTipText(PatternNode.getString("ACS_IdxPropertyPanel_constrainedCheckBoxA11yDesc"));
-        fieldCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_fieldCheckBox" ) );
-        fieldCheckBox.setMnemonic(PatternNode.getString("CTL_IdxPropertyPanel_fieldCheckBox_Mnemonic").charAt(0));
-        fieldCheckBox.setToolTipText(PatternNode.getString("ACS_IdxPropertyPanel_fieldCheckBoxA11yDesc"));
-        returnCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_returnCheckBox" ) );
-        returnCheckBox.setMnemonic(PatternNode.getString("CTL_IdxPropertyPanel_returnCheckBox_Mnemonic").charAt(0));
-        returnCheckBox.setToolTipText(PatternNode.getString("ACS_IdxPropertyPanel_returnCheckBoxA11yDesc"));
-        setCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_setCheckBox" ) );
-        setCheckBox.setMnemonic(PatternNode.getString("CTL_IdxPropertyPanel_setCheckBox_Mnemonic").charAt(0));
-        setCheckBox.setToolTipText(PatternNode.getString("ACS_IdxPropertyPanel_setCheckBoxA11yDesc"));
-        supportCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_supportCheckBox" ) );
-        supportCheckBox.setMnemonic(PatternNode.getString("CTL_IdxPropertyPanel_supportCheckBox_Mnemonic").charAt(0));
-        supportCheckBox.setToolTipText(PatternNode.getString("ACS_IdxPropertyPanel_supportCheckBoxA11yDesc"));
-        niGetterCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_niGetterCheckBox" ) );
-        niGetterCheckBox.setMnemonic(PatternNode.getString("CTL_IdxPropertyPanel_niGetterCheckBox_Mnemonic").charAt(0));
-        niGetterCheckBox.setToolTipText(PatternNode.getString("ACS_IdxPropertyPanel_niGetterCheckBoxA11yDesc"));
-        niReturnCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_niReturnCheckBox" ) );
-        niReturnCheckBox.setMnemonic(PatternNode.getString("CTL_IdxPropertyPanel_niReturnCheckBox_Mnemonic").charAt(0));
-        niReturnCheckBox.setToolTipText(PatternNode.getString("ACS_IdxPropertyPanel_niReturnCheckBoxA11yDesc"));
-        niSetterCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_niSetterCheckBox" ) );
-        niSetterCheckBox.setMnemonic(PatternNode.getString("ACS_IdxPropertyPanel_niSetterCheckBoxA11yDesc").charAt(0));
-        niSetterCheckBox.setToolTipText(PatternNode.getString("ACS_IdxPropertyPanel_boundCheckBoxA11yDesc"));
-        niSetCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_niSetCheckBox" ) );
-        niSetCheckBox.setMnemonic(PatternNode.getString("CTL_IdxPropertyPanel_niSetCheckBox_Mnemonic").charAt(0));
-        niSetCheckBox.setToolTipText(PatternNode.getString("ACS_IdxPropertyPanel_niSetCheckBoxA11yDesc"));
+        modeComboBox.setToolTipText(getString("ACS_IdxPropertyPanel_modeComboBoxA11yDesc"));
+        boundCheckBox.setText(getString( "CTL_IdxPropertyPanel_boundCheckBox" ) );
+        boundCheckBox.setMnemonic(getString("CTL_IdxPropertyPanel_boundCheckBox_Mnemonic").charAt(0));
+        boundCheckBox.setToolTipText(getString("ACS_IdxPropertyPanel_boundCheckBoxA11yDesc"));
+        constrainedCheckBox.setText(getString( "CTL_IdxPropertyPanel_constrainedCheckBox" ) );
+        constrainedCheckBox.setMnemonic(getString("CTL_IdxPropertyPanel_constrainedCheckBox_Mnemonic").charAt(0));
+        constrainedCheckBox.setToolTipText(getString("ACS_IdxPropertyPanel_constrainedCheckBoxA11yDesc"));
+        fieldCheckBox.setText(getString( "CTL_IdxPropertyPanel_fieldCheckBox" ) );
+        fieldCheckBox.setMnemonic(getString("CTL_IdxPropertyPanel_fieldCheckBox_Mnemonic").charAt(0));
+        fieldCheckBox.setToolTipText(getString("ACS_IdxPropertyPanel_fieldCheckBoxA11yDesc"));
+        returnCheckBox.setText(getString( "CTL_IdxPropertyPanel_returnCheckBox" ) );
+        returnCheckBox.setMnemonic(getString("CTL_IdxPropertyPanel_returnCheckBox_Mnemonic").charAt(0));
+        returnCheckBox.setToolTipText(getString("ACS_IdxPropertyPanel_returnCheckBoxA11yDesc"));
+        setCheckBox.setText(getString( "CTL_IdxPropertyPanel_setCheckBox" ) );
+        setCheckBox.setMnemonic(getString("CTL_IdxPropertyPanel_setCheckBox_Mnemonic").charAt(0));
+        setCheckBox.setToolTipText(getString("ACS_IdxPropertyPanel_setCheckBoxA11yDesc"));
+        supportCheckBox.setText(getString( "CTL_IdxPropertyPanel_supportCheckBox" ) );
+        supportCheckBox.setMnemonic(getString("CTL_IdxPropertyPanel_supportCheckBox_Mnemonic").charAt(0));
+        supportCheckBox.setToolTipText(getString("ACS_IdxPropertyPanel_supportCheckBoxA11yDesc"));
+        niGetterCheckBox.setText(getString( "CTL_IdxPropertyPanel_niGetterCheckBox" ) );
+        niGetterCheckBox.setMnemonic(getString("CTL_IdxPropertyPanel_niGetterCheckBox_Mnemonic").charAt(0));
+        niGetterCheckBox.setToolTipText(getString("ACS_IdxPropertyPanel_niGetterCheckBoxA11yDesc"));
+        niReturnCheckBox.setText(getString( "CTL_IdxPropertyPanel_niReturnCheckBox" ) );
+        niReturnCheckBox.setMnemonic(getString("CTL_IdxPropertyPanel_niReturnCheckBox_Mnemonic").charAt(0));
+        niReturnCheckBox.setToolTipText(getString("ACS_IdxPropertyPanel_niReturnCheckBoxA11yDesc"));
+        niSetterCheckBox.setText(getString( "CTL_IdxPropertyPanel_niSetterCheckBox" ) );
+        niSetterCheckBox.setMnemonic(getString("ACS_IdxPropertyPanel_niSetterCheckBoxA11yDesc").charAt(0));
+        niSetterCheckBox.setToolTipText(getString("ACS_IdxPropertyPanel_boundCheckBoxA11yDesc"));
+        niSetCheckBox.setText(getString( "CTL_IdxPropertyPanel_niSetCheckBox" ) );
+        niSetCheckBox.setMnemonic(getString("CTL_IdxPropertyPanel_niSetCheckBox_Mnemonic").charAt(0));
+        niSetCheckBox.setToolTipText(getString("ACS_IdxPropertyPanel_niSetCheckBoxA11yDesc"));
         HelpCtx.setHelpIDString(this, HelpCtxKeys.BEAN_PROPERTIES_HELP); //NOI18N
 
     }
@@ -159,13 +158,13 @@ public final class IdxPropertyPatternPanel extends javax.swing.JPanel
 
     private void initAccessibility()
     {
-        this.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACSD_PropertyPanelDialog"));
-        nameLabel.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACS_IdxPropertyPanel_nameLabelA11yDesc"));
-        nameTextField.getAccessibleContext().setAccessibleName(PatternNode.getString("ACS_IdxPropertyPanel_nameTextFieldA11yName"));
-        typeLabel.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACS_IdxPropertyPanel_typeLabelA11yDesc"));
-        typeComboBox.getAccessibleContext().setAccessibleName(PatternNode.getString("ACS_IdxPropertyPanel_typeComboBoxA11yName"));
-        modeLabel.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACS_IdxPropertyPanel_modeLabelA11yDesc"));
-        modeComboBox.getAccessibleContext().setAccessibleName(PatternNode.getString("ACS_IdxPropertyPanel_modeComboBoxA11yName"));
+        this.getAccessibleContext().setAccessibleDescription(getString("ACSD_PropertyPanelDialog"));
+        nameLabel.getAccessibleContext().setAccessibleDescription(getString("ACS_IdxPropertyPanel_nameLabelA11yDesc"));
+        nameTextField.getAccessibleContext().setAccessibleName(getString("ACS_IdxPropertyPanel_nameTextFieldA11yName"));
+        typeLabel.getAccessibleContext().setAccessibleDescription(getString("ACS_IdxPropertyPanel_typeLabelA11yDesc"));
+        typeComboBox.getAccessibleContext().setAccessibleName(getString("ACS_IdxPropertyPanel_typeComboBoxA11yName"));
+        modeLabel.getAccessibleContext().setAccessibleDescription(getString("ACS_IdxPropertyPanel_modeLabelA11yDesc"));
+        modeComboBox.getAccessibleContext().setAccessibleName(getString("ACS_IdxPropertyPanel_modeComboBoxA11yName"));
     }
 
     /** This method is called from within the constructor to
@@ -578,70 +577,67 @@ public final class IdxPropertyPatternPanel extends javax.swing.JPanel
     }
 
     public void actionPerformed( java.awt.event.ActionEvent e ) {
-        if ( dialog != null ) {
-
-//            if ( e.getActionCommand().equals( "OK" ) ) { // NOI18N
-
-            if ( e.getSource() == org.openide.DialogDescriptor.OK_OPTION ) {
-
-                //Test wether the string is empty
-                String typeName = typeComboBox.getEditor().getItem().toString().trim();
-                if ( typeName.length() <= 0) {
-                    DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(
-                            PatternNode.getString("MSG_Not_Valid_Type"),
-                            NotifyDescriptor.ERROR_MESSAGE) );
-                    typeComboBox.requestFocus();
-                    return;
-                }
-
-                String name = nameTextField.getText().trim();
-                if ( !Utilities.isJavaIdentifier( name ) ) {
-                    DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(
-                            PatternNode.getString("MSG_Not_Valid_Identifier"),
-                            NotifyDescriptor.ERROR_MESSAGE) );
-                    nameTextField.requestFocus();
-                    return;
-                }
-
-                // Test wheter property with this name already exists
-                if ( groupNode.propertyExists( name ) ) {
-                    String msg = MessageFormat.format( PatternNode.getString("MSG_Property_Exists"),
-                                                       new Object[] { name } );
-                    DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE) );
-
-                    nameTextField.requestFocus();
-                    return;
-                }
-                
-                PatternAnalyser patternAnalyser = (PatternAnalyser) groupNode.getLookup().lookup(PatternAnalyser.class);
-                boolean isWrongType = true;
-                try {
-                    JMIUtils.beginTrans(false);
-                    try {
-                        Type type = patternAnalyser.findType(typeName);
-                        isWrongType = type == null;
-                    } finally {
-                        JMIUtils.endTrans();
-                    }
-                } catch (JmiException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-                }
-                if (isWrongType) {
-                    DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(
-                            PatternNode.getString("MSG_Not_Valid_Type"),
-                            NotifyDescriptor.ERROR_MESSAGE) );
-                    typeComboBox.requestFocus();
-                    return;
-                }
-
-            }
-            dialog.setVisible( false );
-            dialog.dispose();
-        }
+//        if ( dialog != null ) {
+//
+////            if ( e.getActionCommand().equals( "OK" ) ) { // NOI18N
+//
+//            if ( e.getSource() == org.openide.DialogDescriptor.OK_OPTION ) {
+//
+//                //Test wether the string is empty
+//                String typeName = typeComboBox.getEditor().getItem().toString().trim();
+//                if ( typeName.length() <= 0) {
+//                    DialogDisplayer.getDefault().notify(
+//                        new NotifyDescriptor.Message(
+//                            getString("MSG_Not_Valid_Type"),
+//                            NotifyDescriptor.ERROR_MESSAGE) );
+//                    typeComboBox.requestFocus();
+//                    return;
+//                }
+//
+//                String name = nameTextField.getText().trim();
+//                if ( !Utilities.isJavaIdentifier( name ) ) {
+//                    DialogDisplayer.getDefault().notify(
+//                        new NotifyDescriptor.Message(
+//                            getString("MSG_Not_Valid_Identifier"),
+//                            NotifyDescriptor.ERROR_MESSAGE) );
+//                    nameTextField.requestFocus();
+//                    return;
+//                }
+//
+//                // Test wheter property with this name already exists
+//                if ( groupNode.propertyExists( name ) ) {
+//                    String msg = MessageFormat.format( getString("MSG_Property_Exists"),
+//                                                       new Object[] { name } );
+//                    DialogDisplayer.getDefault().notify(
+//                        new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE) );
+//
+//                    nameTextField.requestFocus();
+//                    return;
+//                }
+//                
+//                PatternAnalyser patternAnalyser = (PatternAnalyser) groupNode.getLookup().lookup(PatternAnalyser.class);
+//                boolean isWrongType = true;
+//                try {
+//                    BeanUtils.beginTrans(false);
+//                    try  finally {
+//                        BeanUtils.endTrans();
+//                    }
+//                } catch (JmiException ex) {
+//                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+//                }
+//                if (isWrongType) {
+//                    DialogDisplayer.getDefault().notify(
+//                        new NotifyDescriptor.Message(
+//                            getString("MSG_Not_Valid_Type"),
+//                            NotifyDescriptor.ERROR_MESSAGE) );
+//                    typeComboBox.requestFocus();
+//                    return;
+//                }
+//
+//            }
+//            dialog.setVisible( false );
+//            dialog.dispose();
+//        }
     }
     
     public static String[] getTypes() {

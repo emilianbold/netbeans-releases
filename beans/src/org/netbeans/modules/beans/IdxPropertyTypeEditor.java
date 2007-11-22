@@ -45,11 +45,7 @@ import java.awt.*;
 import java.beans.*;
 
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
-import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 
-import javax.jmi.reflect.JmiException;
 
 /** Property editor for the property type property
 *
@@ -57,7 +53,7 @@ import javax.jmi.reflect.JmiException;
 */
 public class IdxPropertyTypeEditor extends PropertyEditorSupport implements EnhancedPropertyEditor {
     /** Current value */
-    private Type type;
+//    private Type type;
     
     /** Default types */
     private final String[] types = new String[] {
@@ -67,45 +63,42 @@ public class IdxPropertyTypeEditor extends PropertyEditorSupport implements Enha
 
     /** Creates new editor */
     public IdxPropertyTypeEditor() {
-        type = null;
+ //       type = null;
     }
 
-    public String getAsText () {
-        Type type = (Type) getValue();
-        return (type == null) ? "" : type.getName(); // NOI18N
-    }
-
-    public void setAsText (String string) throws IllegalArgumentException {
-        String normalizedInput;
-        if (string == null || (normalizedInput = string.trim()).length() == 0 ||
-                !normalizedInput.endsWith("[]")) { // NOI18N
-            throw new IllegalArgumentException(string);
-        }
-        Type oldType = (Type) getValue();
-        Type newType;
-        try {
-            JMIUtils.beginTrans(false);
-            try {
-                JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(oldType);
-                newType = jmodel.getType().resolve(normalizedInput);
-            } finally {
-                JMIUtils.endTrans();
-            }
-            setValue(newType);
-        } catch (JmiException e) {
-            IllegalArgumentException iae = new IllegalArgumentException();
-            iae.initCause(e);
-            throw iae;
-        }
-    }
-
-    public void setValue(Object v) {
-        this.type = (Type) v;
-    }
-
-    public Object getValue() {
-        return type;
-    }
+//    public String getAsText () {
+//        Type type = (Type) getValue();
+//        return (type == null) ? "" : type.getName(); // NOI18N
+//    }
+//
+//    public void setAsText (String string) throws IllegalArgumentException {
+//        String normalizedInput;
+//        if (string == null || (normalizedInput = string.trim()).length() == 0 ||
+//                !normalizedInput.endsWith("[]")) { // NOI18N
+//            throw new IllegalArgumentException(string);
+//        }
+//        Type oldType = (Type) getValue();
+//        Type newType;
+//        try {
+//            BeanUtils.beginTrans(false);
+//            try  finally {
+//                BeanUtils.endTrans();
+//            }
+//            setValue(newType);
+//        } catch (JmiException e) {
+//            IllegalArgumentException iae = new IllegalArgumentException();
+//            iae.initCause(e);
+//            throw iae;
+//        }
+//    }
+//
+//    public void setValue(Object v) {
+//        this.type = (Type) v;
+//    }
+//
+//    public Object getValue() {
+//        return type;
+//    }
 
     /**
     * @return A fragment of Java code representing an initializer for the

@@ -49,10 +49,6 @@ import java.lang.reflect.Modifier;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.netbeans.jmi.javamodel.*;
-import org.netbeans.modules.java.ui.nodes.SourceNodes;
-
-import javax.jmi.reflect.JmiException;
 
 /**
  *
@@ -62,85 +58,85 @@ import javax.jmi.reflect.JmiException;
  */
 final class EventSetInheritanceAnalyser extends Object {
     
-    /** Used to test if PropertyChangeSupport exists
-     * @param clazz Class which be tested for PropertyChangeSupport
-     * @return Class in which PropertySupport exist, or null
-     */    
-    static ClassMember detectPropertyChangeSupport(JavaClass clazz) throws JmiException {
-        return findSupport(clazz, "java.beans.PropertyChangeSupport" ); // NOI18N
-    }
-
-    /** Used to test if VetoableChangeSupport exists
-     * @param clazz Class which be tested for VetoableChangeSupport
-     * @return Class in which VetoableSupport exist, or null
-     */    
-    static ClassMember detectVetoableChangeSupport(JavaClass clazz) throws JmiException {
-        return findSupport(clazz, "java.beans.VetoableChangeSupport" ); // NOI18N
-    }
-    
-    /** Used to test if given ChangeSupport exists
-     * @param clazz Class which be tested for ChangeSupport
-     * @param supportName full name of ChangeSupport
-     * @return Class in which ChangeSupport exist, or null
-     */    
-    private static ClassMember findSupport(JavaClass clazz, String supportName) throws JmiException {
-        assert JMIUtils.isInsideTrans();
-        String propertyChangeField = supportName;
-        
-        if( clazz == null || "java.lang.Object".equals(clazz.getName())) //NOI18N
-            return null;    //no super class given or super class is Object
-        
-        JavaClass superClass = clazz.getSuperClass();
-        if( superClass == null || superClass instanceof UnresolvedClass) //no extends or implements clause
-            return null;
-        
-        List/*<Method>*/ methods = JMIUtils.getMethods(superClass);
-        for (Iterator it = methods.iterator(); it.hasNext();) {
-            Method method = (Method) it.next();
-            if( !Modifier.isPrivate(method.getModifiers()) && method.getParameters().isEmpty() ){
-                Type returnType = method.getType();
-                if( propertyChangeField.equals(returnType.getName()) ){
-                    return method;
-                }
-            }            
-        }            
-        List/*<Field>*/ fields = JMIUtils.getFields(superClass);
-        for (Iterator it = fields.iterator(); it.hasNext();) {
-            Field field = (Field) it.next();
-            if( !Modifier.isPrivate(field.getModifiers()) ){
-                if (propertyChangeField.equals(field.getType().getName())) {
-                    return field;
-                }
-            }            
-        }            
-        return findSupport(superClass, supportName);    //Try to search recursively            
-    }
-
-    static String showInheritanceEventDialog( ClassMember me , String supportTypeName) throws JmiException {        
-        assert JMIUtils.isInsideTrans();
-        String supportName = getInheritanceEventSupportName(me, supportTypeName);
-        if( me != null ){
-            Object msgfields[] = new Object[] {me.getDeclaringClass().getName(), supportTypeName };
-            String msg = MessageFormat.format(PatternNode.getString("MSG_Inheritance_Found"), msgfields);
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( msg , NotifyDescriptor.YES_NO_OPTION );
-            DialogDisplayer.getDefault().notify( nd );
-            if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {     
-                return supportName;
-            }
-        }        
-        return null;
-    }
-    
-    static String getInheritanceEventSupportName( ClassMember me , String supportTypeName) throws JmiException {
-        assert JMIUtils.isInsideTrans();
-        Format format = SourceNodes.createElementFormat("{n}({p})"); // NOI18N
-        String supportName = null;
-        if( me != null ){
-            if( me instanceof Method )
-                supportName = format.format(me);
-            else
-                supportName = me.getName();   //prepare for later usage            
-        }        
-        return supportName;
-    }
+//    /** Used to test if PropertyChangeSupport exists
+//     * @param clazz Class which be tested for PropertyChangeSupport
+//     * @return Class in which PropertySupport exist, or null
+//     */    
+//    static ClassMember detectPropertyChangeSupport(JavaClass clazz) throws JmiException {
+//        return findSupport(clazz, "java.beans.PropertyChangeSupport" ); // NOI18N
+//    }
+//
+//    /** Used to test if VetoableChangeSupport exists
+//     * @param clazz Class which be tested for VetoableChangeSupport
+//     * @return Class in which VetoableSupport exist, or null
+//     */    
+//    static ClassMember detectVetoableChangeSupport(JavaClass clazz) throws JmiException {
+//        return findSupport(clazz, "java.beans.VetoableChangeSupport" ); // NOI18N
+//    }
+//    
+//    /** Used to test if given ChangeSupport exists
+//     * @param clazz Class which be tested for ChangeSupport
+//     * @param supportName full name of ChangeSupport
+//     * @return Class in which ChangeSupport exist, or null
+//     */    
+//    private static ClassMember findSupport(JavaClass clazz, String supportName) throws JmiException {
+//        assert JMIUtils.isInsideTrans();
+//        String propertyChangeField = supportName;
+//        
+//        if( clazz == null || "java.lang.Object".equals(clazz.getName())) //NOI18N
+//            return null;    //no super class given or super class is Object
+//        
+//        JavaClass superClass = clazz.getSuperClass();
+//        if( superClass == null || superClass instanceof UnresolvedClass) //no extends or implements clause
+//            return null;
+//        
+//        List/*<Method>*/ methods = JMIUtils.getMethods(superClass);
+//        for (Iterator it = methods.iterator(); it.hasNext();) {
+//            Method method = (Method) it.next();
+//            if( !Modifier.isPrivate(method.getModifiers()) && method.getParameters().isEmpty() ){
+//                Type returnType = method.getType();
+//                if( propertyChangeField.equals(returnType.getName()) ){
+//                    return method;
+//                }
+//            }            
+//        }            
+//        List/*<Field>*/ fields = JMIUtils.getFields(superClass);
+//        for (Iterator it = fields.iterator(); it.hasNext();) {
+//            Field field = (Field) it.next();
+//            if( !Modifier.isPrivate(field.getModifiers()) ){
+//                if (propertyChangeField.equals(field.getType().getName())) {
+//                    return field;
+//                }
+//            }            
+//        }            
+//        return findSupport(superClass, supportName);    //Try to search recursively            
+//    }
+//
+//    static String showInheritanceEventDialog( ClassMember me , String supportTypeName) throws JmiException {        
+//        assert JMIUtils.isInsideTrans();
+//        String supportName = getInheritanceEventSupportName(me, supportTypeName);
+//        if( me != null ){
+//            Object msgfields[] = new Object[] {me.getDeclaringClass().getName(), supportTypeName };
+//            String msg = MessageFormat.format(PatternNode.getString("MSG_Inheritance_Found"), msgfields);
+//            NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( msg , NotifyDescriptor.YES_NO_OPTION );
+//            DialogDisplayer.getDefault().notify( nd );
+//            if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {     
+//                return supportName;
+//            }
+//        }        
+//        return null;
+//    }
+//    
+//    static String getInheritanceEventSupportName( ClassMember me , String supportTypeName) throws JmiException {
+//        assert JMIUtils.isInsideTrans();
+//        Format format = SourceNodes.createElementFormat("{n}({p})"); // NOI18N
+//        String supportName = null;
+//        if( me != null ){
+//            if( me instanceof Method )
+//                supportName = format.format(me);
+//            else
+//                supportName = me.getName();   //prepare for later usage            
+//        }        
+//        return supportName;
+//    }
 }

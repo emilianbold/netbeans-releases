@@ -167,12 +167,12 @@ public final class BiAnalyser extends Object implements Node.Cookie {
         
         // Fill Descriptor list (only in case we have new templates)
         descriptor = new ArrayList();
-        descriptor.add(new BiFeature.Descriptor(pa.getClassElement()));
+        descriptor.add(new BiFeature.Descriptor(pa.getClassElementpa.getClassElementHandle()));
 
         // Fill methods list (only in case we have new templates)
         methods = new ArrayList();
         if (!olderVersion) {
-            JavaClass superClass = pa.getClassElement();
+            JavaClass superClass = pa.getClassElementHandle();
             List/*<Method>*/ meMethods = JMIUtils.getMethods(superClass);
             for (Iterator it = meMethods.iterator(); it.hasNext();) {
                 Method method = (Method) it.next();

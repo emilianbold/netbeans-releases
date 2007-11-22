@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.beans;
 
-import javax.jmi.reflect.JmiException;
 
 /**
  * Signals a problem while a bean is generated or analyzed
@@ -54,7 +53,4 @@ public class GenerateBeanException extends Exception {
         super(message);
     }
 
-    public GenerateBeanException(JmiException ex) {
-        super(ex);
-    }
 }

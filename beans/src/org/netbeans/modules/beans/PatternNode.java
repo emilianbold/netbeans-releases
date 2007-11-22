@@ -41,22 +41,16 @@
 
 package org.netbeans.modules.beans;
 
+import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.beans.*;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.text.Format;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.openide.nodes.*;
 import org.openide.actions.*;
-import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
-import org.openide.ErrorManager;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.modules.java.ui.nodes.SourceNodes;
-
-import javax.jmi.reflect.JmiException;
 
 /** Superclass of nodes representing bean patterns.
 *
@@ -64,13 +58,8 @@ import javax.jmi.reflect.JmiException;
 */
 
 
-public abstract class PatternNode extends AbstractNode implements IconBases, PatternProperties, PropertyChangeListener {
-
-    /** Default return value of getIconAffectingProperties method. */
-    private static final String[] ICON_AFFECTING_PROPERTIES = new String[] {
-                PROP_MODE
-            };
-
+public class PatternNode extends AbstractNode {
+    
     /** Array of the actions of the java methods, constructors and fields. */
     private static final SystemAction[] DEFAULT_ACTIONS = new SystemAction[] {
                 /*
@@ -106,14 +95,43 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
         this.pattern = pattern;
         this.writeable = writeable;
         
-        setIconBaseWithExtension(resolveIconBase()+".gif");
         setActions(DEFAULT_ACTIONS);
 
         //this.pattern.addPropertyChangeListener(new WeakListeners.PropertyChange (this));
-        this.pattern.addPropertyChangeListener( WeakListeners.propertyChange (this, this.pattern));
+//        this.pattern.addPropertyChangeListener( WeakListeners.propertyChange (this, this.pattern));
         displayFormat = null;
     }
+    
+    public PatternNode( ClassPattern cp, boolean writeable ) {
+        super(new PatternChildren(cp.getPatterns()));
+        this.writeable = writeable;
+        this.pattern = cp;
+    }
 
+    public Pattern getPattern() {
+        return pattern;
+    }
+
+    @Override
+    public Image getIcon(int type) {
+        return pattern.getIcon();
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return pattern.getIcon();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return pattern.getName();
+    }
+
+    @Override
+    public String getHtmlDisplayName() {
+        return pattern.getHtmlDisplayName();
+    }
+    
     /* Gets the short description of this node.
     * @return A localized short description associated with this node.
     */
@@ -121,28 +139,10 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
         return super.getShortDescription(); // If not ovewloaded in ancestors
     }
 
-    /** Get the currently appropriate icon base.
-    * Subclasses should make this sensitive to the state of the element--for example,
-    * a private variable may have a different icon than a public one.
-    * The icon will be automatically changed whenever a
-    * {@link #getIconAffectingProperties relevant} change is made to the element.
-    * @return icon base
-    * @see AbstractNode#setIconBase
-    */
-    abstract protected String resolveIconBase();
-
     public javax.swing.Action getPreferredAction() {
         return SystemAction.get(OpenAction.class);
     }
     
-    /** Get the names of all element properties which might affect the choice of icon.
-    * The default implementation just returns {@link PatternProperties#PROP_MODE}.
-    * @return the property names
-    */
-    protected String[] getIconAffectingProperties() {
-        return ICON_AFFECTING_PROPERTIES;
-    }
-
     /** Test whether this node can be renamed.
     * The default implementation assumes it can if this node is {@link #writeable}.
     *
@@ -207,59 +207,21 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
         systemActions = actions;
     }
 
-    /** Calls super.fireCookieChange. The reason why is redefined
-    * is only to allow the access from this package.
-    */
-    void superFireCookieChange() {
-        fireCookieChange();
-    }
-
-    /** Get a cookie from this node.
-    * First tries the node itself, then {@link Pattern#getCookie}.
-    * @param type the cookie class
-    * @return the cookie or <code>null</code>
-    */
-    public Node.Cookie getCookie (Class type) {
-        Node.Cookie c = super.getCookie(type);
-        if (c == null)
-            c = pattern.getCookie(type);
-
-        return c;
-    }
-
-    /** Test for equality.
-    * @return <code>true</code> if the represented {@link Pattern}s are equal
-    */
-    public boolean equals (Object o) {
-        return (o instanceof PatternNode) && (pattern.equals (((PatternNode)o).pattern));
-    }
-
-    /** Get a hash code.
-    * @return the hash code from the represented {@link Pattern}
-    */
-    public int hashCode () {
-        return pattern.hashCode ();
-    }
-
     /** Sets the name of the node */
     public final void setName( String name ) {
-        try {
-            JMIUtils.beginTrans(true);
-            boolean rollback = true;
-            try {
-                pattern.patternAnalyser.setIgnore(true);
-                setPatternName(name);
-                rollback = false;
-            } finally {
-                pattern.patternAnalyser.setIgnore(false);
-                JMIUtils.endTrans(rollback);
-            }
-            
-            superSetName( name );
-            
-        } catch (JmiException e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
-        }
+//        try {
+//            BeanUtils.beginTrans(true);
+//            boolean rollback = true;
+//            try  finally {
+//                pattern.patternAnalyser.setIgnore(false);
+//                BeanUtils.endTrans(rollback);
+//            }
+//            
+//            superSetName( name );
+//            
+//        } catch (JmiException e) {
+//            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+//        }
 
     }
 
@@ -270,123 +232,121 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
 
     /** Set's the name of pattern. Must be defined in descendants
     */
-    protected abstract void setPatternName(String name) throws JmiException;
+    protected  void setPatternName(String name) {
+        throw new UnsupportedOperationException();
+    };
 
-    /** Create a node property representing the pattern's name.
-    * @param canW if <code>false</code>, property will be read-only
-    * @return the property.
-    */
-    protected Node.Property createNameProperty(boolean canW) {
-        return new PatternPropertySupport(PatternProperties.PROP_NAME, String.class, canW) {
-                   /** Gets the value */
-                   public Object getValue () {
-                       return ((Pattern)pattern).getName();
-                   }
-
-                   /** Sets the value */
-                   public void setValue(Object val) throws IllegalArgumentException,
-                       IllegalAccessException, InvocationTargetException {
-                       super.setValue(val);
-                       String str = (String) val;
-                       try {
-                           JMIUtils.beginTrans(true);
-                           boolean rollback = true;
-                           try {
-                               pattern.patternAnalyser.setIgnore(true);
-                               setPatternName(str);
-                               rollback = false;
-                           } finally {
-                               pattern.patternAnalyser.setIgnore(false);
-                               JMIUtils.endTrans(rollback);
-                           }
-                       } catch (JmiException e) {
-                           throw new InvocationTargetException(e);
-                       } catch (ClassCastException e) {
-                           throw new IllegalArgumentException();
-                       }
-                       superSetName(str);
-                   }
-               };
-    }
+//    /** Create a node property representing the pattern's name.
+//    * @param canW if <code>false</code>, property will be read-only
+//    * @return the property.
+//    */
+//    protected Node.Property createNameProperty(boolean canW) {
+//        return new PatternPropertySupport(PatternProperties.PROP_NAME, String.class, canW) {
+//                   /** Gets the value */
+//                   public Object getValue () {
+//                       return ((Pattern)pattern).getName();
+//                   }
+//
+//                   /** Sets the value */
+//                   public void setValue(Object val) throws IllegalArgumentException,
+//                       IllegalAccessException, InvocationTargetException {
+//                       super.setValue(val);
+//                       String str = (String) val;
+//                       try {
+//                           BeanUtils.beginTrans(true);
+//                           boolean rollback = true;
+//                           try  finally {
+//                               pattern.patternAnalyser.setIgnore(false);
+//                               BeanUtils.endTrans(rollback);
+//                           }
+//                       } catch (JmiException e) {
+//                           throw new InvocationTargetException(e);
+//                       } catch (ClassCastException e) {
+//                           throw new IllegalArgumentException();
+//                       }
+//                       superSetName(str);
+//                   }
+//               };
+//    }
 
     /** Called when the node has to be destroyed */
     public void destroy() throws IOException {
-        try {
-            JMIUtils.beginTrans(true);
-            boolean rollback = true;
-            try {
-                pattern.destroy();
-                rollback = false;
-            } finally {
-                JMIUtils.endTrans(rollback);
-            }
-        } catch (JmiException e) {
-            IOException ioe = new IOException();
-            ioe.initCause(e);
-            throw ioe;
-        }
-        super.destroy();
+//        try {
+//            BeanUtils.beginTrans(true);
+//            boolean rollback = true;
+//            try  finally {
+//                BeanUtils.endTrans(rollback);
+//            }
+//        } catch (JmiException e) {
+//            IOException ioe = new IOException();
+//            ioe.initCause(e);
+//            throw ioe;
+//        }
+//        super.destroy();
     }
 
-    protected static String getFormattedMethodName(Method method) {
-        String name = null;
-        Format fmt = SourceNodes.createElementFormat("{n} ({p})"); // NOI18N
-        try {
-            if (method != null) {
-                name = fmt.format (method);
-            }
-        } catch (IllegalArgumentException e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+//    protected static String getFormattedMethodName(Method method) {
+//        String name = null;
+//        Format fmt = SourceNodes.createElementFormat("{n} ({p})"); // NOI18N
+//        try {
+//            if (method != null) {
+//                name = fmt.format (method);
+//            }
+//        } catch (IllegalArgumentException e) {
+//            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+//        }
+//
+//        return name != null? name: PatternNode.getString("LAB_NoMethod"); // NOI18N
+//    }
+
+    public void updateRecursively( Pattern p ) {
+        Children ch = getChildren();
+        if ( ch instanceof PatternChildren ) {           
+           HashSet<Pattern> oldSubs = new HashSet<Pattern>( p.getPatterns() );
+
+           
+           // Create a hashtable which maps Description to node.
+           // We will then identify the nodes by the description. The trick is 
+           // that the new and old description are equal and have the same hashcode
+           Node[] nodes = ch.getNodes( true );           
+           HashMap<Pattern,PatternNode> oldPattern2node = new HashMap<Pattern, PatternNode>();           
+           for (Node node : nodes) {
+               oldPattern2node.put(((PatternNode)node).pattern, (PatternNode)node);
+           }
+           
+           // Now refresh keys
+           ((PatternChildren)ch).resetKeys(p.getPatterns() /*, pattern.ui.getFilters() */);
+
+           
+           // Reread nodes
+           nodes = ch.getNodes( true );
+           
+           for( Pattern newSub : p.getPatterns() ) {
+           //for( Node newNode : nodes) {
+                //Pattern newSub = ((PatternNode)newNode).pattern;
+                PatternNode node = oldPattern2node.get(newSub);
+                if ( node != null ) { // filtered out
+                    if ( !oldSubs.contains(newSub) && node.getChildren() != Children.LEAF) {                                           
+                        pattern.getPatternAnalyser().getUI().expandNode(node); // Make sure new nodes get expanded
+                    }     
+                    ((PatternNode)node).updateRecursively( newSub ); // update the node recursively
+                }
+           }
         }
+                        
+        Pattern oldPattern = pattern; // Remember old description        
+        pattern = p; // set new descrioption to the new node
 
-        return name != null? name: PatternNode.getString("LAB_NoMethod"); // NOI18N
-    }
+        // XXXX 
 
-    // ================== Pattern listener =================================
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        setIconBaseWithExtension( resolveIconBase() + ".gif");
-        superSetName( pattern.getName() );
-        firePropertyChange( null, null, null );
-    }
-
-    // ================== Property support for element nodes =================
-
-    /** Property support for element nodes properties.
-    */
-    static abstract class PatternPropertySupport extends PropertySupport {
-        /** Constructs a new ElementProp - support for properties of
-        * element hierarchy nodes.
-        *
-        * @param name The name of the property
-        * @param type The class type of the property
-        * @param canW The canWrite flag of the property
-        */
-        public PatternPropertySupport(String name, java.lang.Class type, boolean canW) {
-            super(name, type,
-                  getString("PROP_" + name),
-                  getString("HINT_" + name),
-                  true, canW);
+        
+        if ( oldPattern.getHtmlDisplayName() != null && !oldPattern.getHtmlDisplayName().equals(pattern.getHtmlDisplayName())) {
+            fireDisplayNameChange(oldPattern.name, pattern.name);
         }
-
-        /** Setter for the value. This implementation only tests
-        * if the setting is possible.
-        *
-        * @param val the value of the property
-        * @exception IllegalAccessException when this ElementProp was constructed
-        *            like read-only.
-        */
-
-        public void setValue (Object val) throws IllegalArgumentException,
-            IllegalAccessException, InvocationTargetException {
-            if (!canWrite())
-                throw new IllegalAccessException(getString("MSG_Cannot_Write"));
+          if( oldPattern.getIcon() != null &&  oldPattern.getIcon() != pattern.getIcon()) {
+            fireIconChange();
+            fireOpenedIconChange();
         }
-
-    }
-    
-    static String getString(String key) {
-        return NbBundle.getBundle("org.netbeans.modules.beans.Bundle").getString(key);
     }
 
 }
