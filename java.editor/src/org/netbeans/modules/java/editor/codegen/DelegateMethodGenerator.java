@@ -98,7 +98,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
         
         private static final String ERROR = "<error>"; //NOI18N
         
-        Factory() {            
+        public Factory() {            
         }
         
         public Iterable<? extends CodeGenerator> create(CompilationController controller, TreePath path) throws IOException {

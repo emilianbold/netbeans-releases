@@ -103,7 +103,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         
     public static class Factory implements CodeGenerator.Factory {
         
-        Factory() {
+        public Factory() {
         }
         
         public Iterable<? extends CodeGenerator> create(CompilationController cc, TreePath path) throws IOException {

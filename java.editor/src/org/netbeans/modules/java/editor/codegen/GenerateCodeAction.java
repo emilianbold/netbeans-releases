@@ -50,6 +50,7 @@ import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -69,14 +70,6 @@ public class GenerateCodeAction extends BaseAction {
 
     public static final String generateCode = "generate-code"; //NOI18N
     
-    private CodeGenerator.Factory[] generators = new CodeGenerator.Factory[] {
-        new ConstructorGenerator.Factory(),
-        new GetterSetterGenerator.Factory(),
-        new EqualsHashCodeGenerator.Factory(),
-        new DelegateMethodGenerator.Factory(),
-        new ImplementOverrideMethodGenerator.Factory()
-    };
-
     public GenerateCodeAction(){
         super(generateCode);
         putValue(ExtKit.TRIMMED_TEXT, NbBundle.getBundle(GenerateCodeAction.class).getString("generate-code-trimmed")); //NOI18N
@@ -118,8 +111,8 @@ public class GenerateCodeAction extends BaseAction {
         }
     }
     
-    private CodeGenerator.Factory[] getCodeGeneratorFactories() {
-        return generators;
+    private Iterable<? extends CodeGenerator.Factory> getCodeGeneratorFactories() {
+        return MimeLookup.getLookup("text/x-java").lookupAll(CodeGenerator.Factory.class);
     }
     
     public static final class GlobalAction extends MainMenuAction {

@@ -279,7 +279,25 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-java-editor-overridden-IsOverriddenAnnotationAction.instance">
                         <attr name="position" intvalue="100"/>
                     </file>
-                    </folder>
+                </folder>
+                
+                <folder name="codegenerators">
+                    <file name="org-netbeans-modules-java-editor-codegen-ConstructorGenerator$Factory.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-netbeans-modules-java-editor-codegen-GetterSetterGenerator$Factory.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="org-netbeans-modules-java-editor-codegen-EqualsHashCodeGenerator$Factory.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="org-netbeans-modules-java-editor-codegen-DelegateMethodGenerator$Factory.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="org-netbeans-modules-java-editor-codegen-ImplementOverrideMethodGenerator$Factory.instance">
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                </folder>
             </folder>
 
         </folder>
