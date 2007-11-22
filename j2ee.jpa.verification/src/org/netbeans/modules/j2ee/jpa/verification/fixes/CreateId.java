@@ -59,6 +59,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.jpa.model.AccessType;
 import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
 import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
@@ -165,7 +166,7 @@ public class CreateId implements Fix {
                 TypeElement clazz = classHandle.resolve(workingCopy);
                 
                 if (clazz != null){
-                    GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy, clazz);
+                    GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                     ClassTree clazzTree = workingCopy.getTrees().getTree(clazz);
                     TreeMaker make = workingCopy.getTreeMaker();
                     boolean usedExistingField = true;
@@ -175,7 +176,7 @@ public class CreateId implements Fix {
                     MethodTree accesorTree = null;
                     MethodTree mutatorTree = null;
                     
-                    Tree type = typeName == null ? null : genUtils.createType(typeName);
+                    Tree type = typeName == null ? null : genUtils.createType(typeName, clazz);
                     VariableElement fieldElem = ModelUtils.getField(clazz, fieldName);
                     
                     if (fieldElem != null){
@@ -198,8 +199,8 @@ public class CreateId implements Fix {
                     
                     if (fieldTree == null){
                         fieldTree = genUtils.createField(
-                                make.Modifiers(Collections.singleton(Modifier.PRIVATE)),
-                                fieldName, typeName);
+                                clazz, make.Modifiers(Collections.singleton(Modifier.PRIVATE)),
+                                fieldName, typeName, null);
                         
                         usedExistingField = false;
                     }

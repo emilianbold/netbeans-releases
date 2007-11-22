@@ -53,6 +53,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
@@ -87,7 +88,7 @@ abstract class AbstractCreateAnnotationHint implements Fix {
                 TypeElement clazz = classHandle.resolve(workingCopy);
                 
                 if (clazz != null){
-                    GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy, clazz);
+                    GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                     
                     AnnotationTree annTree = genUtils.createAnnotation(annotationClass);
                     

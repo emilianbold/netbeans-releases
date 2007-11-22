@@ -70,6 +70,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.jpa.model.AccessType;
 import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
 import org.netbeans.modules.j2ee.jpa.model.JPAHelper;
@@ -335,7 +336,7 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
     private void modifyLocalClass(WorkingCopy workingCopy, String mappedBy, boolean owningSide) throws IOException{
         TypeElement localClass = classHandle.resolve(workingCopy);
         
-        GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy, localClass);
+        GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
         
         List<ExpressionTree> annArgs = null;
         
@@ -366,7 +367,7 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
         assert targetClass != null;
         
         ClassTree targetClassTree = workingCopy.getTrees().getTree(targetClass);
-        GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy, targetClass);
+        GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
         
         String remoteFieldType = classHandle.getQualifiedName();
         
@@ -383,7 +384,7 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
             targetField = (VariableTree) workingCopy.getTrees().getTree(targetFieldElem);
         } else {
             ModifiersTree fieldModifiers = workingCopy.getTreeMaker().Modifiers(Collections.singleton(Modifier.PRIVATE));
-            targetField = genUtils.createField(fieldModifiers, mappedBy, remoteFieldType);
+            targetField = genUtils.createField(targetClass, fieldModifiers, mappedBy, remoteFieldType, null);
             modifiedClass = genUtils.addClassFields(targetClassTree, Collections.singletonList(targetField));
         }
 
@@ -394,12 +395,12 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
             ModifiersTree accessorMutatorModifiers = workingCopy.getTreeMaker().Modifiers(Collections.singleton(Modifier.PUBLIC));
 
             if (targetFieldAccesor == null){
-                targetFieldAccesor = genUtils.createPropertyGetterMethod(accessorMutatorModifiers, mappedBy, remoteFieldType);
+                targetFieldAccesor = genUtils.createPropertyGetterMethod(targetClass, accessorMutatorModifiers, mappedBy, remoteFieldType);
                 modifiedClass = workingCopy.getTreeMaker().addClassMember(modifiedClass, targetFieldAccesor);
             }
             
             if (targetFieldMutator == null) {
-                MethodTree mutator = genUtils.createPropertySetterMethod(accessorMutatorModifiers, mappedBy, remoteFieldType);
+                MethodTree mutator = genUtils.createPropertySetterMethod(targetClass, accessorMutatorModifiers, mappedBy, remoteFieldType);
                 modifiedClass = workingCopy.getTreeMaker().addClassMember(modifiedClass, mutator);
             }
         }
