@@ -273,8 +273,6 @@ public class GroovyTokenId extends GsfTokenId {
     public static final GsfTokenId VOCAB = new GsfTokenId("VOCAB", null, "default");
     public static final GsfTokenId WILDCARD_TYPE = new GsfTokenId("WILDCARD_TYPE", null, "default");
     
-    // overriding ERROR from GsfTokenId so that errors from lexer are not underlined (they need to be cleaned-up)
-    public static final GsfTokenId ERROR = new GsfTokenId("GROOVY_ERROR", null, "default");
     
     // </editor-fold>
     
@@ -576,9 +574,9 @@ public class GroovyTokenId extends GsfTokenId {
                     return GroovyTokenId.CASE_GROUP;
             case GroovyTokenTypes.CLASS_DEF:
                     return GroovyTokenId.CLASS_DEF;
-            case GroovyTokenTypes.CLOSABLE_BLOCK:
+            case GroovyTokenTypes.CLOSED_BLOCK:
                     return GroovyTokenId.CLOSED_BLOCK;
-            case GroovyTokenTypes.CLOSURE_LIST:
+            case GroovyTokenTypes.CLOSURE_OP:
                     return GroovyTokenId.CLOSURE_OP;
             case GroovyTokenTypes.COLON:
                     return GroovyTokenId.COLON;

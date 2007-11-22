@@ -117,7 +117,13 @@ final class GroovyLexer implements Lexer<GsfTokenId> {
 
                 if ( len == 0 ) {
                     if ( lexerInput.readLength() > 0 ) {
-                        return createToken(GroovyTokenTypes.WS, lexerInput.readLength());
+                        if ("\"".equals(lexerInput.readText().toString())) {
+                            return createToken(GroovyTokenTypes.STRING_LITERAL, 1);
+                        } else if ("\n".equals(lexerInput.readText().toString())) {
+                            return createToken(GroovyTokenTypes.NLS, 1);
+                        } else {
+                            return createToken(GroovyTokenTypes.WS, lexerInput.readLength());
+                        }
                     }
                 }
 
@@ -131,19 +137,6 @@ final class GroovyLexer implements Lexer<GsfTokenId> {
                     return null;
                 }
 
-                // temp fix
-                if (len < 0) {
-                    len = lexerInput.readLength() - myCharBuffer.getExtraCharCount();
-                    int tokenLength = lexerInput.readLength();
-                    scanner.resetText();
-                    while (len < tokenLength) {
-                        scannerConsumeChar();
-                        len++;
-                    }
-                    scanner.resetText();
-                    return createToken(GroovyTokenId.ERROR_INT, tokenLength);
-                }
-                
                 return createToken(intId, len);
 
             } 
@@ -165,23 +158,14 @@ final class GroovyLexer implements Lexer<GsfTokenId> {
                 len++;
             }
             
-//            if ( len == 0 ) {
-//                return null;
-//            }
-            
             scanner.resetText();
             
-            return createToken(GroovyTokenId.ERROR_INT, tokenLength);
-        } catch (GroovyScanner.NoViableAltForCharException nvafe) {
-            int len = lexerInput.readLength() - myCharBuffer.getExtraCharCount();
-            int tokenLength = lexerInput.readLength();
-            scanner.resetText();
-            while (len < tokenLength) {
-                scannerConsumeChar();
-                len++;
+            if (lexerInput.readText().toString().startsWith("/")) {
+                lexerInput.backup(lexerInput.readLength() - 1);
+                return createToken(GroovyTokenTypes.DIV, 1);
+            } else {
+                return createToken(GroovyTokenId.ERROR_INT, tokenLength);
             }
-            scanner.resetText();
-            return createToken(GroovyTokenId.ERROR_INT, tokenLength);
         }
     }
     
