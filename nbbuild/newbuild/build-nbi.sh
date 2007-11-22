@@ -3,6 +3,7 @@ set -x
 
 DIRNAME=`dirname $0`
 cd ${DIRNAME}
+SCRIPTS_DIR=`pwd`
 source init.sh
 
 cd $BASE_DIR
@@ -85,7 +86,7 @@ if [ ! -z $NATIVE_MAC_MACHINE ]; then
 fi
 
 cd $DIST
-bash $DIRNANE/files-info.sh bundles zip
+bash ${SCRIPTS_DIR}/files-info.sh bundles zip
 ERROR_CODE=$?
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
@@ -94,7 +95,7 @@ fi
 
 if [ $ML_BUILD == 1 ]; then
     cd $DIST/ml
-    bash $DIRNANE/files-info.sh bundles zip
+    bash ${SCRIPTS_DIR}/files-info.sh bundles zip
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
         echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
