@@ -49,8 +49,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- * Copied from java/source TestUtilities. To be removed when SourceUtils
- * is moved to java/source.
  * 
  * @author Andrei Badea
  */
