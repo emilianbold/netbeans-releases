@@ -1480,21 +1480,33 @@ public class CasualDiff {
             PositionEstimator est = EstimatorFactory.annotations(oldT.getAnnotations(),newT.getAnnotations(), workingCopy, parameterPrint);
             localPointer = diffList(oldT.annotations, newT.annotations, startPos, est, Measure.DEFAULT, printer);
         }
+        
+        int endOffset = endPos(oldT);
+
+        if ((oldT.flags & Flags.ANNOTATION) != 0) {
+            tokenSequence.move(endOffset);
+            tokenSequence.movePrevious();
+            moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+
+            tokenSequence.moveNext();
+            
+            endOffset = tokenSequence.offset();
+        }
         if (oldT.flags != newT.flags) {
             if (localPointer == startPos) {
                 // no annotation printed, do modifiers print immediately
                 if ((newT.flags & ~Flags.INTERFACE) != 0) {
                     printer.printFlags(newT.flags & ~Flags.INTERFACE, oldT.getFlags().isEmpty() ? true : false);
-                    localPointer = endPos(oldT) > 0 ? endPos(oldT) : localPointer;
+                    localPointer = endOffset > 0 ? endOffset : localPointer;
                 } else {
-                    if (endPos(oldT) > 0) {
-                        tokenSequence.move(endPos(oldT));
+                    if (endOffset > 0) {
+                        tokenSequence.move(endOffset);
                         while (tokenSequence.moveNext() && JavaTokenId.WHITESPACE == tokenSequence.token().id()) ;
                         localPointer = tokenSequence.offset();
                     }
                 }
             } else {
-                if (!oldT.getFlags().isEmpty()) localPointer = endPos(oldT);
+                if (!oldT.getFlags().isEmpty()) localPointer = endOffset;
                 tokenSequence.move(localPointer);
                 moveToSrcRelevant(tokenSequence, Direction.FORWARD);
                 copyTo(localPointer, localPointer = tokenSequence.offset());
@@ -1502,8 +1514,8 @@ public class CasualDiff {
                 localPointer = tokenSequence.offset();
             }
         } else {
-            if (endPos(oldT) > localPointer) {
-                copyTo(localPointer, localPointer = endPos(oldT));
+            if (endOffset > localPointer) {
+                copyTo(localPointer, localPointer = endOffset);
             }
         }
         return localPointer;
