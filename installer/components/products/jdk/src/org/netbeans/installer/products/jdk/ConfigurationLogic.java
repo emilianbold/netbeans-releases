@@ -125,14 +125,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     }
                     addUninsallationJVM(results, location);
                     
-                    jdkProgress.setPercentage(Progress.COMPLETE);
                     if(!progress.isCanceled() && results.getErrorCode()==0) {
                         if(jre == null) {
                             jreInstallation = true;
                             final File jreInstaller = findJREWindowsInstaller();
                             if(jreInstaller!=null) {
-                                results = runJREInstallerWindows(jreInstaller, jreProgress);
-                                jreProgress.setPercentage(Progress.COMPLETE);
+                                results = runJREInstallerWindows(jreInstaller, jreProgress);                                
                                 addUninsallationJVM(results, JavaUtils.findJreHome(getProduct().getVersion()));
                                 if(results.getErrorCode()==0) {
                                     getProduct().setProperty(JRE_INSTALLED_WINDOWS_PROPERTY,
@@ -244,6 +242,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     ERROR_INSTALL_JDK_ERROR_KEY),e);
         } finally {
             progressThread.finish();
+            progress.setPercentage(Progress.COMPLETE);
         }
     }
     
@@ -314,6 +313,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     LogManager.log(e);
                 }
             }
+            progress.setPercentage(progress.COMPLETE);
         }
         return results;
     }
@@ -377,6 +377,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     ERROR_INSTALL_JRE_ERROR_KEY),e);
         } finally {
             progressThread.finish();
+            progress.setPercentage(progress.COMPLETE);
         }
     }
     private void addUninsallationJVM(ExecutionResults results, File location) {
@@ -499,11 +500,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         String uninstallString = reg.getStringValue(HKLM, utils.UNINSTALL_KEY + reg.SEPARATOR + key,"UninstallString");
                         int index = uninstallString.indexOf("/I{");
                         if(index!=-1) {
-			    uninstallString = uninstallString.substring(index+2);
-			    if(uninstallString.indexOf("}")!=-1) {
-                            	id = uninstallString.substring(0, uninstallString.indexOf("}") + 1);
+                            uninstallString = uninstallString.substring(index+2);
+                            if(uninstallString.indexOf("}")!=-1) {
+                                id = uninstallString.substring(0, uninstallString.indexOf("}") + 1);
                                 break;
-			    }
+                            }
                         }
                     }
                 }
@@ -547,6 +548,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             
         } catch (NativeException e) {
             throw new UninstallationException(ERROR_UNINSTALL_JDK_ERROR_KEY,e);
+        } finally {
+            progress.setPercentage(progress.COMPLETE);
         }
         return results;
     }
@@ -584,6 +587,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             
         } catch (NativeException e) {
             throw new UninstallationException(ERROR_UNINSTALL_JDK_ERROR_KEY,e);
+        } finally {
+            progress.setPercentage(progress.COMPLETE);
         }
         return results;
     }
@@ -619,36 +624,26 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final File location = getProduct().getInstallationLocation();
         ExecutionResults results = null;
         if(SystemUtils.isWindows()) {
-            File logFile = LogManager.getLogFile();
-            File jdkLogFile = null;
-            File jreLogFile = null;
-            
-            if(logFile!=null) {
-                String nameJdk = logFile.getName();
-                String nameJre = logFile.getName();
+            if("true".equals(getProduct().getProperty(JDK_INSTALLED_WINDOWS_PROPERTY))) {
+                final CompositeProgress overallProgress = new CompositeProgress();
+                overallProgress.synchronizeTo(progress);
+                overallProgress.synchronizeDetails(true);
                 
-                if(nameJdk.lastIndexOf(".")==-1) {
-                    nameJdk += "_jdk_uninstall.log";
-                    nameJre += "_jre_uninstall.log";
+                final Progress jdkProgress = new Progress();
+                final Progress jreProgress = new Progress();
+                if("true".equals(getProduct().getProperty(JRE_INSTALLED_WINDOWS_PROPERTY))) {                    
+                    overallProgress.addChild(jdkProgress, progress.COMPLETE * 3 / 5 );
+                    overallProgress.addChild(jreProgress, progress.COMPLETE * 2 / 5);
                 } else {
-                    String ext = nameJdk.substring(nameJdk.lastIndexOf("."));
-                    nameJdk = nameJdk.substring(0, nameJdk.lastIndexOf(".")) +
-                            "_jdk" + ext;
-                    nameJre = nameJre.substring(0, nameJre.lastIndexOf(".")) +
-                            "_jre" + ext;
+                    overallProgress.addChild(jdkProgress, progress.COMPLETE);
                 }
                 
-                jdkLogFile = new File(LogManager.getLogFile().getParentFile(),nameJdk);
-                jreLogFile = new File(LogManager.getLogFile().getParentFile(),nameJre);
-            }
-            
-            if("true".equals(getProduct().getProperty(JDK_INSTALLED_WINDOWS_PROPERTY))) {
-                results = runJDKUninstallerWindows(progress, location);
+                results = runJDKUninstallerWindows(jdkProgress, location);                
                 
                 if(results!=null) {
                     if(results.getErrorCode()==0) {
                         if("true".equals(getProduct().getProperty(JRE_INSTALLED_WINDOWS_PROPERTY))) {
-                            results = runJREUninstallerWindows(progress, JavaUtils.findJreHome(getProduct().getVersion()));
+                            results = runJREUninstallerWindows(jreProgress, JavaUtils.findJreHome(getProduct().getVersion()));                            
                             if(results!=null && results.getErrorCode()!=0) {
                                 throw new UninstallationException(
                                         ResourceUtils.getString(ConfigurationLogic.class,
