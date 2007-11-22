@@ -38,8 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.test.java.editor.codegeneration;
 
 import junit.textui.TestRunner;
@@ -55,66 +53,64 @@ import org.netbeans.test.java.editor.jelly.GenerateConstructorOperator;
  * @author Jiri Prox Jiri.Prox@Sun.COM
  */
 public class CreateConstructor extends GenerateCode {
-    
+
     /** Creates a new instance of CreateConstructor */
     public CreateConstructor(String name) {
         super(name);
     }
-    
-    
-    
+
     public void testSuperConstructor() {
-        openSourceFile("org.netbeans.test.java.editor.codegeneration.CreateConstructor", "testSimpleCase");
+        openSourceFile("org.netbeans.test.java.editor.codegeneration", "testSimpleCase");
         editor = new EditorOperator("testSimpleCase");
         txtOper = editor.txtEditorPane();
         try {
             editor.requestFocus();
-            editor.setCaretPosition(35, 1);
-            GenerateCodeOperator.openDialog(GenerateCodeOperator.GENERATE_CONSTRUCTOR,editor);
+            editor.setCaretPosition(12, 1);
+            GenerateCodeOperator.openDialog(GenerateCodeOperator.GENERATE_CONSTRUCTOR, editor);
             GenerateConstructorOperator gco = new GenerateConstructorOperator();
             JTreeOperator jto = gco.treeTreeView$ExplorerTree();
             jto.selectRow(2);
             gco.btOK().push();
             String expected = "" +
-                    "    public testSimpleCase(ThreadGroup group, Runnable target) {\n"+
-                    "        super(group, target);\n"+
+                    "    public testSimpleCase(ThreadGroup group, Runnable target) {\n" +
+                    "        super(group, target);\n" +
                     "    }\n";
             waitAndCompare(expected);
         } finally {
             editor.close(false);
         }
     }
-    
+
     public void testInitFields() {
-        openSourceFile("org.netbeans.test.java.editor.codegeneration.CreateConstructor", "testSimpleCase");
+        openSourceFile("org.netbeans.test.java.editor.codegeneration", "testSimpleCase");
         editor = new EditorOperator("testSimpleCase");
         txtOper = editor.txtEditorPane();
         try {
             editor.requestFocus();
-            editor.setCaretPosition(35, 1);
-            GenerateCodeOperator.openDialog(GenerateCodeOperator.GENERATE_CONSTRUCTOR,editor);
+            editor.setCaretPosition(12, 1);
+            GenerateCodeOperator.openDialog(GenerateCodeOperator.GENERATE_CONSTRUCTOR, editor);
             GenerateConstructorOperator gco = new GenerateConstructorOperator();
             JTreeOperator jto = gco.treeTreeView$ExplorerTree2();
             jto.selectRow(1);
             gco.btOK().push();
             String expected = "" +
-                    "    public testSimpleCase(int b) {\n"+
-                    "        this.b = b;\n"+
+                    "    public testSimpleCase(int b) {\n" +
+                    "        this.b = b;\n" +
                     "    }\n";
             waitAndCompare(expected);
         } finally {
             editor.close(false);
         }
     }
-    
+
     public void testInitFieldAndSuper() {
-        openSourceFile("org.netbeans.test.java.editor.codegeneration.CreateConstructor", "testSimpleCase");
+        openSourceFile("org.netbeans.test.java.editor.codegeneration", "testSimpleCase");
         editor = new EditorOperator("testSimpleCase");
         txtOper = editor.txtEditorPane();
         try {
             editor.requestFocus();
-            editor.setCaretPosition(35, 1);
-            GenerateCodeOperator.openDialog(GenerateCodeOperator.GENERATE_CONSTRUCTOR,editor);
+            editor.setCaretPosition(12, 1);
+            GenerateCodeOperator.openDialog(GenerateCodeOperator.GENERATE_CONSTRUCTOR, editor);
             GenerateConstructorOperator gco = new GenerateConstructorOperator();
             JTreeOperator jto = gco.treeTreeView$ExplorerTree();
             jto.selectRow(7);
@@ -122,24 +118,24 @@ public class CreateConstructor extends GenerateCode {
             jto.selectRow(2);
             gco.btOK().push();
             String expected = "" +
-                    "    public testSimpleCase(ThreadGroup group, Runnable target, String name, long stackSize, double c) {\n"+
-                    "        super(group, target, name, stackSize);\n"+
-                    "        this.c = c;\n"+
+                    "    public testSimpleCase(ThreadGroup group, Runnable target, String name, long stackSize, double c) {\n" +
+                    "        super(group, target, name, stackSize);\n" +
+                    "        this.c = c;\n" +
                     "    }\n";
             waitAndCompare(expected);
         } finally {
             editor.close(false);
         }
     }
-    
+
     public void testMultipleSuperSelection() {
-        openSourceFile("org.netbeans.test.java.editor.codegeneration.CreateConstructor", "testSimpleCase");
+        openSourceFile("org.netbeans.test.java.editor.codegeneration", "testSimpleCase");
         editor = new EditorOperator("testSimpleCase");
         txtOper = editor.txtEditorPane();
         try {
             editor.requestFocus();
-            editor.setCaretPosition(35, 1);
-            GenerateCodeOperator.openDialog(GenerateCodeOperator.GENERATE_CONSTRUCTOR,editor);
+            editor.setCaretPosition(12, 1);
+            GenerateCodeOperator.openDialog(GenerateCodeOperator.GENERATE_CONSTRUCTOR, editor);
             GenerateConstructorOperator gco = new GenerateConstructorOperator();
             JTreeOperator jto = gco.treeTreeView$ExplorerTree();
             jto.selectRow(2);
@@ -148,23 +144,23 @@ public class CreateConstructor extends GenerateCode {
             jto.selectRow(7);
             gco.btOK().push();
             String expected = "" +
-                    "    public testSimpleCase(ThreadGroup group, Runnable target, String name, long stackSize) {\n"+
-                    "        super(group, target, name, stackSize);\n"+
+                    "    public testSimpleCase(ThreadGroup group, Runnable target, String name, long stackSize) {\n" +
+                    "        super(group, target, name, stackSize);\n" +
                     "    }\n";
             waitAndCompare(expected);
         } finally {
             editor.close(false);
         }
     }
-    
+
     public void testMultipleFiledSelection() {
-        openSourceFile("org.netbeans.test.java.editor.codegeneration.CreateConstructor", "testSimpleCase");
+        openSourceFile("org.netbeans.test.java.editor.codegeneration", "testSimpleCase");
         editor = new EditorOperator("testSimpleCase");
         txtOper = editor.txtEditorPane();
         try {
             editor.requestFocus();
-            editor.setCaretPosition(35, 1);
-            GenerateCodeOperator.openDialog(GenerateCodeOperator.GENERATE_CONSTRUCTOR,editor);
+            editor.setCaretPosition(12, 1);
+            GenerateCodeOperator.openDialog(GenerateCodeOperator.GENERATE_CONSTRUCTOR, editor);
             GenerateConstructorOperator gco = new GenerateConstructorOperator();
             JTreeOperator jto = gco.treeTreeView$ExplorerTree2();
             jto.selectRow(0);
@@ -173,93 +169,101 @@ public class CreateConstructor extends GenerateCode {
             jto.selectRow(0);
             gco.btOK().push();
             String expected = "" +
-                    "    public testSimpleCase(int b, double c) {\n"+
-                    "        this.b = b;\n"+
-                    "        this.c = c;\n"+
+                    "    public testSimpleCase(int b, double c) {\n" +
+                    "        this.b = b;\n" +
+                    "        this.c = c;\n" +
                     "    }";
             waitAndCompare(expected);
         } finally {
             editor.close(false);
         }
     }
-    
+
     public void testCancel() {
-        openSourceFile("org.netbeans.test.java.editor.codegeneration.CreateConstructor", "testSimpleCase");
+        openSourceFile("org.netbeans.test.java.editor.codegeneration", "testSimpleCase");
         editor = new EditorOperator("testSimpleCase");
         txtOper = editor.txtEditorPane();
         try {
             editor.requestFocus();
-            editor.setCaretPosition(35, 1);
-            GenerateCodeOperator.openDialog(GenerateCodeOperator.GENERATE_CONSTRUCTOR,editor);
+            editor.setCaretPosition(12, 1);
+            GenerateCodeOperator.openDialog(GenerateCodeOperator.GENERATE_CONSTRUCTOR, editor);
             GenerateConstructorOperator gco = new GenerateConstructorOperator();
             JTreeOperator jto = gco.treeTreeView$ExplorerTree2();
             jto.selectRow(1);
             gco.btCancel().push();
             String expected = "" +
-                    "    public testSimpleCase(String a) {\n"+
-                    "        this.a = a;\n"+
-                    "    }";
+                    "public class testSimpleCase extends Thread {\n" +
+                    "    \n" +
+                    "    private String a;\n" +
+                    "    \n" +
+                    "    int b;\n" +
+                    "    \n" +
+                    "    public double c;\n" +
+                    "           \n" +
+                    "    \n" +
+                    "    \n" +
+                    "    /** Creates a new instance of testSimpleCase */\n" +
+                    "    public testSimpleCase() {\n" +
+                    "    }\n" +
+                    "    \n" +
+                    "}\n";                        
             waitAndCompare(expected);
         } finally {
             editor.close(false);
         }
     }
-    
+
     public void testUndoRedo() {
-        openSourceFile("org.netbeans.test.java.editor.codegeneration.CreateConstructor", "testSimpleCase");
+        openSourceFile("org.netbeans.test.java.editor.codegeneration", "testSimpleCase");
         editor = new EditorOperator("testSimpleCase");
         txtOper = editor.txtEditorPane();
         try {
             editor.requestFocus();
-            editor.setCaretPosition(35, 1);
-            GenerateCodeOperator.openDialog(GenerateCodeOperator.GENERATE_CONSTRUCTOR,editor);
+            editor.setCaretPosition(12, 1);
+            GenerateCodeOperator.openDialog(GenerateCodeOperator.GENERATE_CONSTRUCTOR, editor);
             GenerateConstructorOperator gco = new GenerateConstructorOperator();
             JTreeOperator jto = gco.treeTreeView$ExplorerTree2();
             jto.selectRow(0);
             gco.btOK().push();
             String expected = "" +
-                    "    public testSimpleCase(String a) {\n"+
-                    "        this.a = a;\n"+
+                    "    public testSimpleCase(String a) {\n" +
+                    "        this.a = a;\n" +
                     "    }";
             waitAndCompare(expected);
-            new Action("Edit|Undo",null).perform();
-            assertFalse("Constuctor not removed",contains(editor.getText(),expected));           
+            new Action("Edit|Undo", null).perform();
+            assertFalse("Constuctor not removed", contains(editor.getText(), expected));
             MainWindowOperator.getDefault().menuBar().pushMenu("Edit");
             MainWindowOperator.getDefault().menuBar().closeSubmenus();
-            new Action("Edit|Redo",null).perform();
-            assertTrue("Constuctor not re-inserted",contains(editor.getText(),expected));
+            new Action("Edit|Redo", null).perform();
+            assertTrue("Constuctor not re-inserted", contains(editor.getText(), expected));
         } finally {
             editor.close(false);
         }
     }
-    
+
     public void testInnerClass() {
-        openSourceFile("org.netbeans.test.java.editor.codegeneration.CreateConstructor", "TestInnerClass");
+        openSourceFile("org.netbeans.test.java.editor.codegeneration", "TestInnerClass");
         editor = new EditorOperator("TestInnerClass");
         txtOper = editor.txtEditorPane();
         try {
             editor.requestFocus();
             editor.setCaretPosition(20, 1);
-            GenerateCodeOperator.openDialog(GenerateCodeOperator.GENERATE_CONSTRUCTOR,editor);
+            GenerateCodeOperator.openDialog(GenerateCodeOperator.GENERATE_CONSTRUCTOR, editor);
             GenerateConstructorOperator gco = new GenerateConstructorOperator();
             JTreeOperator jto = gco.treeTreeView$ExplorerTree();
             jto.selectRow(0);
             gco.btOK().push();
             String expected = "" +
-                    "        public Inner(String afield) {\n"+
-                    "            this.afield = afield;\n"+
+                    "        public Inner(String afield) {\n" +
+                    "            this.afield = afield;\n" +
                     "        }\n";
             waitAndCompare(expected);
         } finally {
             editor.close(false);
         }
     }
-    
+
     public static void main(String[] args) {
-        //new TestRunner().run(CreateConstructor.class);
-        new TestRunner().run(new CreateConstructor("testSuperConstructor"));
-        //new TestRunner().run(new CreateConstructor("testMultipleSuperSelection"));
+        TestRunner.run(CreateConstructor.class);        
     }
-    
-    
 }

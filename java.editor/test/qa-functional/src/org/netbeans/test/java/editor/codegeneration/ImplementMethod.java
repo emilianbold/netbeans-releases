@@ -27,7 +27,6 @@
  */
 package org.netbeans.test.java.editor.codegeneration;
 
-
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
@@ -42,12 +41,12 @@ import org.netbeans.test.java.editor.jelly.ImplementMethodsOperator;
  * @author Jiri Prox
  */
 public class ImplementMethod extends GenerateCode {
-        
+
     /** Creates a new instance of CreateConstructor */
     public ImplementMethod(String name) {
         super(name);
     }
-            
+
     public void testIssue112613() {
         openSourceFile("org.netbeans.test.java.editor.codegeneration.ImplementMethod", "test112613");
         editor = new EditorOperator("test112613");
@@ -55,33 +54,63 @@ public class ImplementMethod extends GenerateCode {
         try {
             editor.requestFocus();
             editor.setCaretPosition(18, 5);
-            assert(GenerateCodeOperator.containsItems(editor,GenerateCodeOperator.GENERATE_CONSTRUCTOR, GenerateCodeOperator.OVERRIDE_METHOD));
-         } finally {
+            assert (GenerateCodeOperator.containsItems(editor, GenerateCodeOperator.GENERATE_CONSTRUCTOR, GenerateCodeOperator.OVERRIDE_METHOD));
+        } finally {
             editor.close(false);
-         }           
-         openSourceFile("org.netbeans.test.java.editor.codegeneration.ImplementMethod", "test112613b");
-         editor = new EditorOperator("test112613b");
-         txtOper = editor.txtEditorPane();
-         try {
+        }
+        openSourceFile("org.netbeans.test.java.editor.codegeneration.ImplementMethod", "test112613b");
+        editor = new EditorOperator("test112613b");
+        txtOper = editor.txtEditorPane();
+        try {
             editor.requestFocus();
             editor.setCaretPosition(17, 1);
-            GenerateCodeOperator.openDialog(GenerateCodeOperator.IMPLEMENT_METHOD,editor);
+            GenerateCodeOperator.openDialog(GenerateCodeOperator.IMPLEMENT_METHOD, editor);
             ImplementMethodsOperator imo = new ImplementMethodsOperator();
             JTreeOperator jto = imo.treeTreeView$ExplorerTree();
             jto.selectRow(1);
             imo.btGenerate().push();
             String expected = "" +
-"    public void m() {\n"+
-"        throw new UnsupportedOperationException(\"Not supported yet.\");\n"+
-"    }\n";                    
+                    "    public void m() {\n" +
+                    "        throw new UnsupportedOperationException(\"Not supported yet.\");\n" +
+                    "    }\n";
             waitAndCompare(expected);
         } finally {
             editor.close(false);
         }
     }
-    
+
+    public void testMoreIfaces() {
+        openSourceFile("org.netbeans.test.java.editor.codegeneration.ImplementMethod", "testMoreIfaces");
+        editor = new EditorOperator("testMoreIfaces");
+        txtOper = editor.txtEditorPane();
+        try {
+            editor.requestFocus();
+            editor.setCaretPosition(7, 5);
+            GenerateCodeOperator.openDialog(GenerateCodeOperator.IMPLEMENT_METHOD, editor);
+            ImplementMethodsOperator imo = new ImplementMethodsOperator();
+            JTreeOperator jto = imo.treeTreeView$ExplorerTree();
+            jto.expandRow(4);
+            jto.selectRow(1);
+            jto.selectRow(5);
+            imo.btGenerate().push();
+            String expected = "" +
+                    "    @Override\n" +
+                    "    public int getColumnCount() {\n" +
+                    "        throw new UnsupportedOperationException(\"Not supported yet.\");\n" +
+                    "    }\n" +
+                    "\n" +
+                    "    @Override\n" +
+                    "    public void run() {\n" +
+                    "        throw new UnsupportedOperationException(\"Not supported yet.\");\n" +
+                    "    }\n";
+            waitAndCompare(expected);
+        } finally {
+            editor.close(false);
+        }
+
+    }
+
     public static void main(String[] args) {
         TestRunner.run(ImplementMethod.class);
     }
-
 }

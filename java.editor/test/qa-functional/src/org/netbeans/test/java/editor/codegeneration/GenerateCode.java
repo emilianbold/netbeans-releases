@@ -27,6 +27,8 @@
  */
 package org.netbeans.test.java.editor.codegeneration;
 
+import junit.framework.TestSuite;
+import junit.textui.TestRunner;
 import lib.EditorTestCase;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
@@ -89,5 +91,19 @@ public class GenerateCode extends EditorTestCase {
         }
         
     }
+    
+    public static TestSuite suite() {
+        TestSuite ts = new TestSuite();
+        ts.addTestSuite(CreateConstructor.class);
+        ts.addTestSuite(CreateEqualsHashcode.class);
+        ts.addTestSuite(CreateGetterSetter.class);
+        ts.addTestSuite(ImplementMethod.class);       
+        return ts;
+    }
+    
+    public static void main(String[] args) {
+        TestRunner.run(suite());        
+    }
+
 
 }
