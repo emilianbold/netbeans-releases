@@ -51,6 +51,8 @@ import java.util.List;
 public class CppUtils {
     
     private static String cygwinBase;
+    private static String mingwBase;
+    private static String msysBase;
     
     public static String reformatWhitespaces(String string)  {
         return reformatWhitespaces(string, ""); // NOI18N
@@ -165,11 +167,93 @@ public class CppUtils {
                 }
             }
             if (cygwinBase == null) {
-                // Fallback value. Its probably wrong but its non-null and shouldn't throw an exception
-                cygwinBase = "C:\\cygwin"; // NOI18N
+                for (String dir : Path.getPath()) {
+                    if (dir.toLowerCase().endsWith("\\cygwin\\bin")) { // NOI18N
+                        cygwinBase = dir.substring(0, dir.length() - 4);
+                        break;
+                    }
+                }
             }
         }
         return cygwinBase;
+    }
+    
+    public static String getMinGWBase() {
+        if (mingwBase == null) {
+            File file = new File("C:/Windows/System32/reg.exe"); // NOI18N
+
+            if (file.exists()) {
+                List<String> list = new ArrayList<String>();
+                list.add(file.getAbsolutePath());
+                list.add("query"); // NOI18N
+                list.add("hklm\\software\\microsoft\\windows\\currentversion\\uninstall\\MinGW"); // NOI18N
+                ProcessBuilder pb = new ProcessBuilder(list);
+                pb.redirectErrorStream(true);
+                try {
+                    Process process = pb.start();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        line = line.trim();
+                        if (line.startsWith("InstallLocation")) { // NOI18N
+                            int pos = line.lastIndexOf('\t');
+                            if (pos != -1 && pos < line.length()) {
+                                mingwBase = line.substring(pos + 1);
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                }
+            }
+            if (mingwBase == null) {
+                for (String dir : Path.getPath()) {
+                    if (dir.toLowerCase().endsWith("\\mingw\\bin")) { // NOI18N
+                        mingwBase = dir.substring(0, dir.length() - 4);
+                        break;
+                    }
+                }
+            }
+        }
+        return mingwBase;
+    }
+    
+    public static String getMSysBase() {
+        if (msysBase == null) {
+            File file = new File("C:/Windows/System32/reg.exe"); // NOI18N
+
+            if (file.exists()) {
+                List<String> list = new ArrayList<String>();
+                list.add(file.getAbsolutePath());
+                list.add("query"); // NOI18N
+                list.add("hklm\\software\\microsoft\\windows\\currentversion\\uninstall\\msys-1.0_is1"); // NOI18N
+                ProcessBuilder pb = new ProcessBuilder(list);
+                pb.redirectErrorStream(true);
+                try {
+                    Process process = pb.start();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        line = line.trim();
+                        if (line.startsWith("Inno Setup: App Path")) { // NOI18N
+                            int pos = line.lastIndexOf('\t');
+                            if (pos != -1 && pos < line.length()) {
+                                msysBase = line.substring(pos + 1);
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                }
+            }
+            if (msysBase == null) {
+                for (String dir : Path.getPath()) {
+                    if (dir.toLowerCase().endsWith("\\msys\\1.0\\bin")) { // NOI18N
+                        msysBase = dir.substring(0, dir.length() - 4);
+                        break;
+                    }
+                }
+            }
+        }
+        return msysBase;
     }
 }
 
