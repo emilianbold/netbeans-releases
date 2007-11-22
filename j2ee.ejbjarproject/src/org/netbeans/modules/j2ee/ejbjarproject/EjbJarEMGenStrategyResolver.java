@@ -42,13 +42,14 @@
 package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.io.IOException;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
+import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
@@ -116,8 +117,9 @@ public class EjbJarEMGenStrategyResolver implements EntityManagerGenerationStrat
         try{
             source.runModificationTask(new AbstractTask<WorkingCopy>(){
                 public void run(WorkingCopy parameter) throws Exception {
-                    GenerationUtils genUtils = GenerationUtils.newInstance(parameter);
-                    result[0] = InjectionTargetQuery.isInjectionTarget(parameter, genUtils.getTypeElement());
+                    parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement typeElement = SourceUtils.getPublicTopLevelElement(parameter);
+                    result[0] = InjectionTargetQuery.isInjectionTarget(parameter, typeElement);
                 }
             });
         } catch (IOException ioe){

@@ -42,14 +42,14 @@
 package org.netbeans.modules.web.project;
 
 import java.io.IOException;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
+import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionInjectableInWeb;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionNonInjectableInWeb;
-import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTAInjectableInEJB;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTAInjectableInWeb;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategy;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategyResolver;
@@ -105,8 +105,9 @@ public class WebEMGenStrategyResolver implements EntityManagerGenerationStrategy
         try{
             source.runModificationTask(new AbstractTask<WorkingCopy>(){
                 public void run(WorkingCopy parameter) throws Exception {
-                    GenerationUtils genUtils = GenerationUtils.newInstance(parameter);
-                    result[0] = InjectionTargetQuery.isInjectionTarget(parameter, genUtils.getTypeElement());
+                    parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement typeElement = SourceUtils.getPublicTopLevelElement(parameter);
+                    result[0] = InjectionTargetQuery.isInjectionTarget(parameter, typeElement);
                 }
             });
         } catch (IOException ioe){

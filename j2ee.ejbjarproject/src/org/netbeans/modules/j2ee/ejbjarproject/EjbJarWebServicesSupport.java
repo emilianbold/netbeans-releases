@@ -63,6 +63,7 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -93,7 +94,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
@@ -668,8 +668,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
-                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                ClassTree javaClass = genUtils.getClassTree();
+                ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
                 IdentifierTree id = make.Identifier("javax.ejb.SessionBean");
                 ClassTree modifiedClass = make.addClassImplementsClause(javaClass, id);
                 

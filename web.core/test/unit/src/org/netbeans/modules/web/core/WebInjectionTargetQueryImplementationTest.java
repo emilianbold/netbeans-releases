@@ -49,8 +49,8 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import static org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -113,10 +113,7 @@ public class WebInjectionTargetQueryImplementationTest extends NbTestCase {
         CancellableTask task = new CancellableTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    CompilationUnitTree cut = controller.getCompilationUnit();
-                    ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
-                    SourceUtils srcUtils = SourceUtils.newInstance(controller, clazz);
-                    TypeElement thisTypeEl = srcUtils.getTypeElement();
+                    TypeElement thisTypeEl = SourceUtils.getPublicTopLevelElement(controller);
                     result[0] = instance.isInjectionTarget(controller, thisTypeEl);
                 }
                 public void cancel() {}

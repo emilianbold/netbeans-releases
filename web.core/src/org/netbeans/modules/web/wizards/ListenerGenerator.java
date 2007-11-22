@@ -59,7 +59,7 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 
 /**
  * Generator for servlet listener class
@@ -99,14 +99,14 @@ public class ListenerGenerator {
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
                 TreeMaker make = workingCopy.getTreeMaker();
 
-
+                gu = GenerationUtils.newInstance(workingCopy);
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     if (Tree.Kind.CLASS == typeDecl.getKind()) {
-                        gu = GenerationUtils.newInstance(workingCopy);
                         Element e = workingCopy.getTrees().getElement(new TreePath(new TreePath(workingCopy.getCompilationUnit()), typeDecl));
                         if (e != null && e.getKind().isClass()) {
                             TypeElement te = (TypeElement) e;
-                            workingCopy.rewrite(gu.getClassTree(), generateInterfaces(workingCopy, te, gu));
+                            ClassTree ct = (ClassTree) typeDecl;
+                            workingCopy.rewrite(ct, generateInterfaces(workingCopy, te, ct, gu));
                         }
                     }
                 }
@@ -124,8 +124,8 @@ public class ListenerGenerator {
 //        if (isRequestAttr) addRequestAttrListenerMethods();
     }
 
-    private ClassTree generateInterfaces(WorkingCopy wc, TypeElement te, GenerationUtils gu) {
-        ClassTree newClassTree = gu.getClassTree();
+    private ClassTree generateInterfaces(WorkingCopy wc, TypeElement te, ClassTree ct, GenerationUtils gu) {
+        ClassTree newClassTree = ct;
 
         List<String> ifList = new ArrayList<String>();
         List<ExecutableElement> methods = new ArrayList<ExecutableElement>();

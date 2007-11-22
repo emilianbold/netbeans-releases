@@ -58,7 +58,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
+import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.ejbcore.test.TestBase;
 import org.netbeans.modules.j2ee.ejbcore.test.TestUtilities;
 import org.openide.filesystems.FileObject;
@@ -119,7 +119,7 @@ public class _RetoucheUtilTest extends TestBase{
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = SourceUtils.newInstance(controller).getTypeElement();
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
                 result1.add(ElementHandle.create(typeElement));
             }
         }, true);
@@ -134,7 +134,7 @@ public class _RetoucheUtilTest extends TestBase{
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = SourceUtils.newInstance(controller).getTypeElement();
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
                 result2.add(ElementHandle.create(typeElement));
             }
         }, true);
@@ -146,7 +146,7 @@ public class _RetoucheUtilTest extends TestBase{
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = SourceUtils.newInstance(controller).getTypeElement();
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
                 List<VariableElement> elements = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
                 VariableElement variableElement = (VariableElement) elements.get(0);
                 assertEquals(isStatic, variableElement.getModifiers().contains(Modifier.STATIC));

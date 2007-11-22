@@ -42,6 +42,8 @@
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
 import com.sun.source.tree.ClassTree;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
+import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
 import java.io.IOException;
 import java.util.HashMap;
@@ -55,7 +57,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
 import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
@@ -201,7 +202,7 @@ public final class SessionGenerator {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                 GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
-                ClassTree classTree = generationUtils.getClassTree();
+                ClassTree classTree = SourceUtils.getPublicTopLevelTree(workingCopy);
                 ClassTree newClassTree = classTree;
                 if (hasRemote) {
                     newClassTree = generationUtils.addImplementsClause(newClassTree, packageNameWithDot + remoteName);

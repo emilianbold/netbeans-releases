@@ -45,13 +45,12 @@ import java.io.IOException;
 import java.util.Collections;
 
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 
@@ -62,7 +61,8 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
+import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 
 /**
  * Generator of attributes for tag handler class
@@ -90,12 +90,13 @@ public class TagHandlerGenerator {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 GenerationUtils gu = GenerationUtils.newInstance(workingCopy);
-                ClassTree oldClassTree = gu.getClassTree();
-                ClassTree classTree = addFields(gu, make, oldClassTree);
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
+                ClassTree oldClassTree = workingCopy.getTrees().getTree(typeElement);
+                ClassTree classTree = addFields(gu, make, typeElement, oldClassTree);
                 if (isBodyTag) {
                     classTree = make.addClassMember(classTree, addBodyEvaluatorCheck(evaluateBody, make));
                 }
-                classTree = addSetters(gu, make, classTree);
+                classTree = addSetters(gu, make, typeElement, classTree);
                 workingCopy.rewrite(oldClassTree, classTree);
             }
         };
@@ -103,9 +104,9 @@ public class TagHandlerGenerator {
         result.commit();
     }
     
-    private ClassTree addFields(GenerationUtils gu, TreeMaker make, ClassTree classTree) throws IOException {
+    private ClassTree addFields(GenerationUtils gu, TreeMaker make, TypeElement typeElement, ClassTree classTree) throws IOException {
         for (int i = 0; i < attributes.length; i++) {
-            VariableTree field = gu.createField(gu.createModifiers(Modifier.PRIVATE), (String) attributes[i][0], (String) attributes[i][1]);
+            VariableTree field = gu.createField(typeElement, gu.createModifiers(Modifier.PRIVATE), (String) attributes[i][0], (String) attributes[i][1], null);
             classTree = make.insertClassMember(classTree, i, field);
             
             //TODO: generate Javadoc
@@ -114,9 +115,9 @@ public class TagHandlerGenerator {
         return classTree;
     }
 
-    private ClassTree addSetters(GenerationUtils gu, TreeMaker make, ClassTree newClassTree) throws IOException {
+    private ClassTree addSetters(GenerationUtils gu, TreeMaker make, TypeElement typeElement, ClassTree newClassTree) throws IOException {
         for (int i = 0; i < attributes.length; i++) {
-            MethodTree setter = gu.createPropertySetterMethod(gu.createModifiers(Modifier.PUBLIC), (String) attributes[i][0], (String) attributes[i][1]);
+            MethodTree setter = gu.createPropertySetterMethod(typeElement, gu.createModifiers(Modifier.PUBLIC), (String) attributes[i][0], (String) attributes[i][1]);
             newClassTree = make.addClassMember(newClassTree, setter);
             
             //TODO: generate Javadoc

@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp;
 
 import java.util.Collections;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
@@ -57,7 +58,6 @@ import java.util.List;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelationshipRole;

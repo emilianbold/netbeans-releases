@@ -73,8 +73,8 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
+import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
@@ -96,9 +96,9 @@ public final class _RetoucheUtil {
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                SourceUtils sourceUtils = SourceUtils.newInstance(controller);
-                if (sourceUtils != null) {
-                    result[0] = sourceUtils.getTypeElement().getQualifiedName().toString();
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                if (typeElement != null) {
+                    result[0] = typeElement.getQualifiedName().toString();
                 }
             }
         }, true);
@@ -145,9 +145,8 @@ public final class _RetoucheUtil {
             javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    SourceUtils sourceUtils = SourceUtils.newInstance(controller);
-                    if (sourceUtils != null) {
-                        TypeElement typeElement = sourceUtils.getTypeElement();
+                    TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                    if (typeElement != null) {
                         result.add(ElementHandle.create(typeElement));
                     }
                 }
@@ -174,7 +173,7 @@ public final class _RetoucheUtil {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(className);
                 TreeMaker treeMaker = workingCopy.getTreeMaker();
-                GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy, typeElement);
+                GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
                 TypeElement returnTypeElement = workingCopy.getElements().getTypeElement(fieldType);
                 // modifiers
                 Set<Modifier> modifiers = new HashSet<Modifier>();

@@ -80,13 +80,14 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 //import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 //import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 //import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 //import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 //import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 //import org.netbeans.modules.j2ee.persistence.wizard.Util;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
+import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
@@ -724,9 +725,9 @@ public class JSFClientGenerator {
         JavaSource converterJavaSource = JavaSource.forFileObject(converterFileObject);
         converterJavaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                 GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
-                TypeElement converterTypeElement = generationUtils.getTypeElement();
+                TypeElement converterTypeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
                 ClassTree classTree = workingCopy.getTrees().getTree(converterTypeElement);
                 ClassTree modifiedClassTree = generationUtils.addImplementsClause(classTree, "javax.faces.convert.Converter");
                 MethodTree getAsObjectTree = MethodModelSupport.createMethodTree(workingCopy, getAsObject);
@@ -771,9 +772,9 @@ public class JSFClientGenerator {
             JavaSource idConverterJavaSource = JavaSource.forFileObject(idConverter);
             idConverterJavaSource.runModificationTask(new Task<WorkingCopy>() {
                 public void run(WorkingCopy workingCopy) throws IOException {
-                    workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                     GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
-                    TypeElement idConverterTypeElement = generationUtils.getTypeElement();
+                    TypeElement idConverterTypeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
                     ClassTree classTree = workingCopy.getTrees().getTree(idConverterTypeElement);
                     ClassTree modifiedClassTree = generationUtils.addImplementsClause(classTree, "javax.faces.convert.Converter");
                     MethodTree getAsObjectETree = MethodModelSupport.createMethodTree(workingCopy, getAsObjectE);

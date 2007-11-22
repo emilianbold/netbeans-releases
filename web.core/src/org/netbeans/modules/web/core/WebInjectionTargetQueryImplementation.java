@@ -40,10 +40,11 @@
  */
 
 package org.netbeans.modules.web.core;
+
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
+import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 
 /**
@@ -66,12 +67,8 @@ public class WebInjectionTargetQueryImplementation implements InjectionTargetQue
                 !webModule.getJ2eePlatformVersion().equals("1.3") && // NOI18N
                 !webModule.getJ2eePlatformVersion().equals("1.4")) { // NOI18N
             
-            SourceUtils srcUtils = SourceUtils.newInstance(controller, typeElement);
-            if (srcUtils!=null) {
-                ret = srcUtils.isSubtype("javax.servlet.Servlet"); //NOI18N
-            }
-            System.out.println("ret = "+ret);
-         }
+            ret = SourceUtils.isSubtype(controller, typeElement, "javax.servlet.Servlet"); // NOI18N
+        }
         return ret;
     }
     
