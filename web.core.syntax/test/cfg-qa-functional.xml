@@ -90,7 +90,7 @@ made subject to such option by the copyright holder.
     <testbag testattribs="j2eecompletion" executor="ide_as" name="JSP Syntax EE5 validation">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="**/J2EECompletionTest.class"/>
+                <include name="**/J2EETest.class"/>
             </patternset>
         </testset>
     </testbag>
