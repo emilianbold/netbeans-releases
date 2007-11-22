@@ -1312,7 +1312,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     private Collection<CsmNamespace> getNamespacesToSearch(CsmFile file, int offset, boolean onlyInProject) {
         CsmProject prj = file.getProject();
         CsmProject inProject = onlyInProject ? prj : null;
-        Collection<CsmNamespace> namespaces = CsmUsingResolver.getDefault().findVisibleNamespaces(file, offset, inProject);
+        Collection<CsmNamespace> namespaces = new ArrayList<CsmNamespace>(CsmUsingResolver.getDefault().findVisibleNamespaces(file, offset, inProject));
         CsmNamespace globNS = prj.getGlobalNamespace();
         namespaces.add(globNS);
         namespaces = filterNamespaces(namespaces, inProject);

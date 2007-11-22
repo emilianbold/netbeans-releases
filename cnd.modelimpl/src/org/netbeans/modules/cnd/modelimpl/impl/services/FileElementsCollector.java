@@ -40,6 +40,7 @@ made subject to such option by the copyright holder.
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -139,17 +140,17 @@ public class FileElementsCollector {
     
     public Collection<CsmUsingDeclaration> getUsingDeclarations() {
         initMaps();
-        return usingDeclarations;
+        return Collections.unmodifiableCollection(usingDeclarations);
     }
     
     public Collection<CsmUsingDirective> getUsingDirectives() {
         initMaps();
-        return usingNamespaces;
+        return Collections.unmodifiableCollection(usingNamespaces);
     }
     
     public Collection<CsmNamespaceAlias> getNamespaceAliases() {
         initMaps();
-        return namespaceAliases;
+        return Collections.unmodifiableCollection(namespaceAliases);
     }
     
     private Collection<CsmDeclaration> visibleUsedDeclarations = null;
@@ -158,7 +159,7 @@ public class FileElementsCollector {
         if (visibleUsedDeclarations == null) {
             visibleUsedDeclarations = CsmUsingResolver.extractDeclarations(usingDeclarations);
         }
-        return visibleUsedDeclarations;
+        return Collections.unmodifiableCollection(visibleUsedDeclarations);
     }
     
     private Collection<CsmNamespace> visibleNamespaces = null;
@@ -169,7 +170,7 @@ public class FileElementsCollector {
             // add scope's and unnamed visible namespaces
             visibleNamespaces.addAll(directVisibleNamespaces);
         }
-        return visibleNamespaces;
+        return Collections.unmodifiableCollection(visibleNamespaces);
     }
     
     private boolean contextFound = false;
