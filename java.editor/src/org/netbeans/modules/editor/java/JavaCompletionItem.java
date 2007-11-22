@@ -247,9 +247,17 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 case '(':
                     Completion.get().hideDocumentation();
                     Completion.get().hideCompletion();
-                case '.':
                     JTextComponent component = (JTextComponent)evt.getSource();
                     int caretOffset = component.getSelectionEnd();
+                    substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
+                    if (evt.getKeyChar() == '.')
+                        Completion.get().showCompletion();
+                    evt.consume();
+                    break;
+                case '.':
+                    Completion.get().hideDocumentation();
+                    component = (JTextComponent)evt.getSource();
+                    caretOffset = component.getSelectionEnd();
                     substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
                     if (evt.getKeyChar() == '.')
                         Completion.get().showCompletion();

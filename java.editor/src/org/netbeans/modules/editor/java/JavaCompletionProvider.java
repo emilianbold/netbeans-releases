@@ -672,8 +672,10 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             if (offset <= sourcePositions.getStartPosition(root, pkg)) {
                 addPackages(env, env.getPrefix());
-            } else if (env.getController().getText().substring((int)sourcePositions.getEndPosition(root, pkg), offset).trim().startsWith(SEMI)) {
-                addKeywordsForCU(env);
+            } else {
+                TokenSequence<JavaTokenId> first = findFirstNonWhitespaceToken(env, (int)sourcePositions.getEndPosition(root, pkg), offset);
+                if (first != null && first.token().id() == JavaTokenId.SEMICOLON)
+                    addKeywordsForCU(env);
             }
         }
         
@@ -685,7 +687,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             CompilationUnitTree root = env.getRoot();
             if (offset <= sourcePositions.getStartPosition(root, im.getQualifiedIdentifier())) {
                 TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, im, offset);
-                if (last.token().id() == JavaTokenId.IMPORT && Utilities.startsWith(STATIC_KEYWORD, prefix))
+                if (last != null && last.token().id() == JavaTokenId.IMPORT && Utilities.startsWith(STATIC_KEYWORD, prefix))
                     addKeyword(env, STATIC_KEYWORD, SPACE, false);
                 addPackages(env, prefix);
             }            
@@ -693,7 +695,6 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private void insideClass(Env env) throws IOException {
             int offset = env.getOffset();
-            String prefix = env.getPrefix();
             TreePath path = env.getPath();
             ClassTree cls = (ClassTree)path.getLeaf();
             CompilationController controller = env.getController();
@@ -720,7 +721,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                 startPos = implPos;
             }
             if (lastImpl != null) {
-                if (controller.getText().substring(startPos, offset).trim().equals(",")) { //NOI18N
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, startPos, offset);
+                if (last != null && last.token().id() == JavaTokenId.COMMA) {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     addTypes(env, EnumSet.of(INTERFACE, ANNOTATION_TYPE), null, Collections.singleton(controller.getTrees().getElement(path)), false);
                 }
@@ -730,8 +732,8 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (ext != null) {
                 int extPos = (int)sourcePositions.getEndPosition(root, ext);
                 if (extPos != Diagnostic.NOPOS && offset > extPos) {
-                    headerText = controller.getText().substring(extPos + 1, offset).trim();
-                    if (IMPLEMENTS_KEYWORD.equals(headerText)) {
+                    TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, extPos + 1, offset);
+                    if (last != null && last.token().id() == JavaTokenId.IMPLEMENTS) {
                         controller.toPhase(Phase.ELEMENTS_RESOLVED);
                         addTypes(env, EnumSet.of(INTERFACE, ANNOTATION_TYPE), null, Collections.singleton(controller.getTrees().getElement(path)), false);
                     } else {
@@ -749,23 +751,26 @@ public class JavaCompletionProvider implements CompletionProvider {
                 startPos = tpPos;
             }
             if (lastTypeParam != null) {
-                headerText = controller.getText().substring(startPos, offset);
-                idx = headerText.indexOf('>'); //NOI18N
-                if (idx > -1) { //NOI18N
-                    headerText = headerText.substring(idx + 1).trim();
-                    if (EXTENDS_KEYWORD.equals(headerText)) {
-                        controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                        addTypes(env, tu.isInterface(cls) ? EnumSet.of(INTERFACE, ANNOTATION_TYPE) : EnumSet.of(CLASS), null, Collections.singleton(controller.getTrees().getElement(path)), false);
-                    } else if (IMPLEMENTS_KEYWORD.equals(headerText)) {
-                        controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                        addTypes(env, EnumSet.of(INTERFACE, ANNOTATION_TYPE), null, Collections.singleton(controller.getTrees().getElement(path)), false);
-                    } else {
-                        if (!tu.isAnnotation(cls)) {
-                            if (!tu.isEnum(cls))
-                                addKeyword(env, EXTENDS_KEYWORD, SPACE, false);
-                            if (!tu.isInterface(cls))
-                                addKeyword(env, IMPLEMENTS_KEYWORD, SPACE, false);
+                TokenSequence<JavaTokenId> first = findFirstNonWhitespaceToken(env, startPos, offset);
+                if (first != null && first.token().id() == JavaTokenId.GT) {
+                    first = nextNonWhitespaceToken(first);
+                    if (first != null && first.offset() < offset) {
+                        if (first.token().id() == JavaTokenId.EXTENDS) {
+                            controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                            addTypes(env, tu.isInterface(cls) ? EnumSet.of(INTERFACE, ANNOTATION_TYPE) : EnumSet.of(CLASS), null, Collections.singleton(controller.getTrees().getElement(path)), false);
+                            return;
                         }
+                        if (first.token().id() == JavaTokenId.IMPLEMENTS) {
+                            controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                            addTypes(env, EnumSet.of(INTERFACE, ANNOTATION_TYPE), null, Collections.singleton(controller.getTrees().getElement(path)), false);
+                            return;
+                        }
+                    }
+                    if (!tu.isAnnotation(cls)) {
+                        if (!tu.isEnum(cls))
+                            addKeyword(env, EXTENDS_KEYWORD, SPACE, false);
+                        if (!tu.isInterface(cls))
+                            addKeyword(env, IMPLEMENTS_KEYWORD, SPACE, false);
                     }
                 } else {
                     if (lastTypeParam.getBounds().isEmpty()) {
@@ -828,10 +833,10 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             Tree init = unwrapErrTree(var.getInitializer());
             if (init == null) {
-                String text = env.getController().getText().substring((int)sourcePositions.getEndPosition(root, type), offset).trim();
-                if (text.length() == 0) {
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, (int)sourcePositions.getEndPosition(root, type), offset);
+                if (last == null) {
                     insideExpression(env, new TreePath(path, type));
-                } else if (text.endsWith("=")) { //NOI18N
+                } else if (last.token().id() == JavaTokenId.EQ) {
                     localResult(env);
                     addValueKeywords(env);
                 }
@@ -840,10 +845,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (pos < 0)
                     return;
                 if (offset <= pos) {
-                    String text = env.getController().getText().substring((int)sourcePositions.getEndPosition(root, type), offset).trim();
-                    if (text.length() == 0) {
+                    TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, (int)sourcePositions.getEndPosition(root, type), offset);
+                    if (last == null) {
                         insideExpression(env, new TreePath(path, type));
-                    } else if (text.endsWith("=")) { //NOI18N
+                    } else if (last.token().id() == JavaTokenId.EQ) {
                         localResult(env);
                         addValueKeywords(env);
                     }
@@ -867,7 +872,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                 int modPos = (int)sourcePositions.getEndPosition(root, mth.getModifiers());
                 if (modPos > startPos)
                     startPos = modPos;
-                if (controller.getText().substring(startPos, offset).trim().length() == 0) {
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, startPos, offset);
+                if (last == null) {
                     addMemberModifiers(env, mth.getModifiers().getFlags(), false);
                     addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null, null, false);
                     return;
@@ -889,7 +895,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                 startPos = thrPos;
             }
             if (lastThr != null) {
-                if (controller.getText().substring(startPos, offset).trim().equals(",")) { //NOI18N
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, startPos, offset);
+                if (last != null && last.token().id() == JavaTokenId.COMMA) {
                     if (queryType == COMPLETION_QUERY_TYPE && mth.getBody() != null) {
                         controller.toPhase(Phase.RESOLVED);
                         Set<TypeMirror> exs = controller.getTreeUtilities().getUncaughtExceptions(new TreePath(path, mth.getBody()));
@@ -1593,11 +1600,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                 addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null, null, false);
                 addPrimitiveTypeKeywords(env);
             } else {
-                String text = env.getController().getText().substring(lastTreePos, offset).trim();
-                if (";".equals(text)) { //NOI18N
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, lastTreePos, offset);
+                if (last != null && last.token().id() == JavaTokenId.SEMICOLON) {
                     localResult(env);
                     addValueKeywords(env);
-                } else if (text.endsWith(")")) { //NOI18N
+                } else if (last != null && last.token().id() == JavaTokenId.RPAREN) {
                     localResult(env);
                     addKeywordsForStatement(env);
                 } else {
@@ -1627,14 +1634,16 @@ public class JavaCompletionProvider implements CompletionProvider {
             CompilationUnitTree root = env.getRoot();
             CompilationController controller = env.getController();
             if (sourcePositions.getStartPosition(root, efl.getExpression()) >= offset) {
-                if (":".equals(controller.getText().substring((int)sourcePositions.getEndPosition(root, efl.getVariable()), offset).trim())) { //NOI18N
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, (int)sourcePositions.getEndPosition(root, efl.getVariable()), offset);
+                if (last != null && last.token().id() == JavaTokenId.COLON) {
                     env.insideForEachExpressiion();
                     addKeyword(env, NEW_KEYWORD, SPACE, false);
                     localResult(env);
                 }
                 return;
             }
-            if (controller.getText().substring((int)sourcePositions.getEndPosition(root, efl.getExpression()), offset).trim().endsWith(")")) { //NOI18N
+            TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, (int)sourcePositions.getEndPosition(root, efl.getExpression()), offset);
+            if (last != null && last.token().id() == JavaTokenId.RPAREN) {
                 addKeywordsForStatement(env);
             } else {
                 env.insideForEachExpressiion();
@@ -1781,8 +1790,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                     lastPos = pos;
                 }
                 if (last != null) {
-                    String text = env.getController().getText().substring(lastPos, offset).trim();
-                    if (",".equals(text)) { //NOI18N
+                    TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(env, lastPos, offset);
+                    if (ts != null && ts.token().id() == JavaTokenId.COMMA) {
                         TreePath parentPath = path.getParentPath();
                         TreePath gparentPath = parentPath.getParentPath();
                         if (parentPath.getLeaf().getKind() == Tree.Kind.ANNOTATION || gparentPath.getLeaf().getKind() == Tree.Kind.ANNOTATION) {
@@ -1870,8 +1879,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                 return;
             pos = (int)sourcePositions.getEndPosition(root, bi.getLeftOperand());
             if (pos != Diagnostic.NOPOS) {
-                String biText = env.getController().getText().substring(pos, offset).trim();
-                if (biText.length() > 0) {
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, pos, offset);
+                if (last != null) {
                     localResult(env);
                     addValueKeywords(env);
                 }
@@ -1884,8 +1893,8 @@ public class JavaCompletionProvider implements CompletionProvider {
             CompilationUnitTree root = env.getRoot();
             int coTextStart = (int)sourcePositions.getStartPosition(root, co);
             if (coTextStart != Diagnostic.NOPOS) {
-                String coText = env.getController().getText().substring(coTextStart, env.getOffset()).trim();
-                if (coText.endsWith("?") || coText.endsWith(":")) { //NOI18N
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, coTextStart, env.getOffset());
+                if (last != null && (last.token().id() == JavaTokenId.QUESTION || last.token().id() == JavaTokenId.COLON)) {
                     localResult(env);
                     addValueKeywords(env);
                 }
@@ -1983,7 +1992,8 @@ public class JavaCompletionProvider implements CompletionProvider {
             CompilationController controller = env.getController();
             int endPos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), et);
             if (endPos != Diagnostic.NOPOS && endPos < offset) {
-                if (controller.getText().substring(endPos, offset).trim().length() > 0)
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, endPos, offset);
+                if (last != null)
                     return;
             }
             controller.toPhase(Phase.ELEMENTS_RESOLVED);
@@ -3794,6 +3804,36 @@ public class JavaCompletionProvider implements CompletionProvider {
             return null;
         }
         
+        private TokenSequence<JavaTokenId> findFirstNonWhitespaceToken(Env env, Tree tree, int position) {
+            int startPos = (int)env.getSourcePositions().getStartPosition(env.getRoot(), tree);
+            return findFirstNonWhitespaceToken(env, startPos, position);
+        }
+        
+        private TokenSequence<JavaTokenId> findFirstNonWhitespaceToken(Env env, int startPos, int endPos) {
+            TokenSequence<JavaTokenId> ts = env.getController().getTokenHierarchy().tokenSequence(JavaTokenId.language());
+            ts.move(startPos);
+            ts = nextNonWhitespaceToken(ts);
+            if (ts == null || ts.offset() >= endPos)
+                return null;
+            return ts;
+        }
+        
+        private TokenSequence<JavaTokenId> nextNonWhitespaceToken(TokenSequence<JavaTokenId> ts) {
+            while(ts.moveNext()) {
+                int offset = ts.offset();
+                switch (ts.token().id()) {
+                    case WHITESPACE:
+                    case LINE_COMMENT:
+                    case BLOCK_COMMENT:
+                    case JAVADOC_COMMENT:
+                        break;
+                    default:
+                        return ts;
+                }
+            }
+            return null;
+        }
+        
         private TokenSequence<JavaTokenId> findLastNonWhitespaceToken(Env env, Tree tree, int position) {
             int startPos = (int)env.getSourcePositions().getStartPosition(env.getRoot(), tree);
             return findLastNonWhitespaceToken(env, startPos, position);
@@ -3802,10 +3842,14 @@ public class JavaCompletionProvider implements CompletionProvider {
         private TokenSequence<JavaTokenId> findLastNonWhitespaceToken(Env env, int startPos, int endPos) {
             TokenSequence<JavaTokenId> ts = env.getController().getTokenHierarchy().tokenSequence(JavaTokenId.language());
             ts.move(endPos);
+            ts = previousNonWhitespaceToken(ts);
+            if (ts == null || ts.offset() < startPos)
+                return null;
+            return ts;
+        }
+        
+        private TokenSequence<JavaTokenId> previousNonWhitespaceToken(TokenSequence<JavaTokenId> ts) {
             while(ts.movePrevious()) {
-                int offset = ts.offset();
-                if (offset < startPos)
-                    return null;
                 switch (ts.token().id()) {
                     case WHITESPACE:
                     case LINE_COMMENT:
@@ -3833,8 +3877,8 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (startPos < 0)
                 return ret;
             if (position > startPos) {
-                String text = env.getController().getText().substring(startPos, position).trim();
-                if ("(".equals(text) || ",".equals(text)) //NOI18N
+                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, startPos, position);
+                if (last != null && (last.token().id() == JavaTokenId.LPAREN || last.token().id() == JavaTokenId.COMMA))
                     return ret;
             }
             return null;
