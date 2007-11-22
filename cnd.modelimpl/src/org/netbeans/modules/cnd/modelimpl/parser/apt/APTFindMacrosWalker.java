@@ -175,71 +175,70 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
             references.add(mf);
         }
     }
-}
 
+    private static class SysMacroReference extends OffsetableBase implements CsmReference {
 
-class SysMacroReference extends OffsetableBase implements CsmReference {
+        private final CsmObject ref;
 
-    private final CsmObject ref;
+        public SysMacroReference(CsmFile file, APTToken token, APTMacro macro) {
+            super(file, token.getOffset(), token.getEndOffset());
+            ref = MacroImpl.createSystemMacro(token.getText(), APTUtils.stringize(macro.getBody()), ((ProjectBase) file.getProject()).getUnresolvedFile());
+        }
 
-    public SysMacroReference(CsmFile file, APTToken token, APTMacro macro) {
-        super(file, token.getOffset(), token.getEndOffset());
-        ref = MacroImpl.createSystemMacro(token.getText(), APTUtils.stringize(macro.getBody()), ((ProjectBase)file.getProject()).getUnresolvedFile());
+        public CsmObject getReferencedObject() {
+            return ref;
+        }
+
+        public CsmObject getOwner() {
+            return null;
+        }
     }
 
-    public CsmObject getReferencedObject() {
-        return ref;
-    }
+    private class MacroReference extends OffsetableBase implements CsmReference {
 
-    public CsmObject getOwner() {
-        return null;
-    }
-}
+        private CsmObject ref;
+        private final String macroName;
+        private final MacroInfo mi;
 
-class MacroReference extends OffsetableBase implements CsmReference {
-
-    private CsmObject ref;
-    private final String macroName;
-    private final MacroInfo mi;
-
-    public MacroReference(CsmFile file, APTToken macro, MacroInfo mi) {
-        super(file, macro.getOffset(), macro.getEndOffset());
-        this.macroName = macro.getText();
-        assert macroName != null;
+        public MacroReference(CsmFile file, APTToken macro, MacroInfo mi) {
+            super(file, macro.getOffset(), macro.getEndOffset());
+            this.macroName = macro.getText();
+            assert macroName != null;
 //        this.isSystem = isSystem != null ? isSystem.booleanValue() : mi != null;
 //        assert !(isSystem != null && isSystem.booleanValue() && mi != null);
-        this.mi = mi;
-    }
+            this.mi = mi;
+        }
 
-    public CsmObject getReferencedObject() {
-        if (ref == null && mi != null) {
-            CsmFile target = getTargetFile();
-            if (target != null) {
-                List<CsmMacro> macros = target.getMacros();
-                for (int i = macros.size() - 1; i >= 0; i--) {
-                    CsmMacro macro = macros.get(i);
-                    if (mi.offset == macro.getStartOffset()) {
-                        ref = macro;
-                        break;
+        public CsmObject getReferencedObject() {
+            if (ref == null && mi != null) {
+                CsmFile target = getTargetFile();
+                if (target != null) {
+                    List<CsmMacro> macros = target.getMacros();
+                    for (int i = macros.size() - 1; i >= 0; i--) {
+                        CsmMacro macro = macros.get(i);
+                        if (mi.offset == macro.getStartOffset()) {
+                            ref = macro;
+                            break;
+                        }
                     }
                 }
             }
+            return ref;
         }
-        return ref;
-    }
 
-    private CsmFile getTargetFile() {
-        CsmFile current = UIDCsmConverter.UIDtoFile(mi.targetFile);
-        if (mi.includePath != null) {
-            ProjectBase targetPrj = ((ProjectBase)current.getProject()).findFileProject(mi.includePath); 
-            if (targetPrj != null) {
-                return targetPrj.getFile(new File(mi.includePath));
+        private CsmFile getTargetFile() {
+            CsmFile current = UIDCsmConverter.UIDtoFile(mi.targetFile);
+            if (mi.includePath != null) {
+                ProjectBase targetPrj = ((ProjectBase) current.getProject()).findFileProject(mi.includePath);
+                if (targetPrj != null) {
+                    return targetPrj.getFile(new File(mi.includePath));
+                }
             }
-        } 
-        return current;
-    }
+            return current;
+        }
 
-    public CsmObject getOwner() {
-        return getTargetFile();
+        public CsmObject getOwner() {
+            return getTargetFile();
+        }
     }
 }
