@@ -222,7 +222,7 @@ public final class ReferencesSupport {
         return ref;
     }
     
-    private static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, int offset, Token token) {
+    public static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, int offset, Token token) {
         assert token != null;
         ReferenceImpl ref = new ReferenceImpl(file, doc, offset, token);
         return ref;
@@ -319,4 +319,16 @@ public final class ReferencesSupport {
         }
         return false;
     }    
+
+    static BaseDocument getDocument(CsmFile file) {
+        BaseDocument doc = null;
+        try {
+            doc = ReferencesSupport.getBaseDocument(file.getAbsolutePath());
+        } catch (DataObjectNotFoundException ex) {
+            ex.printStackTrace(System.err);
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        }
+        return doc;
+    }
 }

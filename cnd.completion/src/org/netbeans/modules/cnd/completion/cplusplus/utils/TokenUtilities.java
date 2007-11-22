@@ -41,15 +41,15 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.utils;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenProcessor;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.completion.cplusplus.NbCsmSyntaxSupport;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.openide.ErrorManager;
@@ -62,6 +62,26 @@ public final class TokenUtilities {
     
     /** Creates a new instance of TokenUtilities */
     private TokenUtilities() {
+    }
+    
+    public static List<Token> getTokens(Document doc) {
+        if (!(doc instanceof BaseDocument))
+            return null;
+        
+        try {
+            SyntaxSupport sup = ((BaseDocument) doc).getSyntaxSupport();
+            NbCsmSyntaxSupport nbSyntaxSup = (NbCsmSyntaxSupport)sup.get(NbCsmSyntaxSupport.class);
+            if (nbSyntaxSup == null) {
+                return null;
+            }
+           
+            AllTokensTP tp = new AllTokensTP();
+            nbSyntaxSup.tokenizeText(tp, 0, doc.getLength(), true);
+            return tp.getTokens();
+        } catch (BadLocationException e) {
+            ErrorManager.getDefault().notify(e);
+            return null;
+        }
     }
     
     public static Token getToken(Document doc, int offset) {
@@ -149,6 +169,35 @@ public final class TokenUtilities {
             String text = new String(buffer, offset, tokenLen);
             token = new Token(bufferStartPos + offset, tokenLen, tokenID, text);
             return false; // no more tokens
+        }
+        
+        public int eot(int offset) {
+            return 0;
+        }
+        
+        public void nextBuffer(char[] buffer, int offset, int len,
+                int startPos, int preScan, boolean lastBuffer) {
+            this.buffer = buffer;
+            bufferStartPos = startPos - offset;
+        }
+        
+    }
+
+    private static class AllTokensTP implements TokenProcessor {
+        
+        private List<Token> tokens = new ArrayList<Token>();
+        private int bufferStartPos;
+        private char[] buffer;
+        
+        public List<Token> getTokens() {
+            return tokens;
+        }
+        
+        public boolean token(TokenID tokenID, TokenContextPath tokenContextPath,
+                int offset, int tokenLen) {
+            String text = new String(buffer, offset, tokenLen);
+            tokens.add( new Token(bufferStartPos + offset, tokenLen, tokenID, text) );
+            return true;
         }
         
         public int eot(int offset) {

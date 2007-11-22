@@ -38,77 +38,60 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.completion.impl.xref;
 
-import java.io.IOException;
-import javax.swing.JEditorPane;
-import javax.swing.text.StyledDocument;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.openide.cookies.EditorCookie;
-import org.openide.nodes.Node;
+import org.netbeans.modules.cnd.completion.cplusplus.utils.Token;
+import org.netbeans.modules.cnd.completion.cplusplus.utils.TokenUtilities;
+import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 
 /**
- * implementation of references resolver
- * @author Vladimir Voskresensky
+ *
+ * @author Sergey Grinev
  */
-public class ReferenceResolverImpl extends CsmReferenceResolver {
-    
-    public ReferenceResolverImpl() {
-    }    
+public class FileReferencesImpl extends CsmFileReferences  {
 
-    public CsmReference findReference(CsmFile file, int offset) {
-        assert file != null;
-        BaseDocument doc = ReferencesSupport.getDocument(file);
-        if (doc == null) {
-            return null;
-        }
-        CsmReference ref = ReferencesSupport.createReferenceImpl(file, doc, offset);
-        return ref;
+    public FileReferencesImpl() {
+        /*System.err.println("FileReferencesImpl registered");
+        CsmModelAccessor.getModel().addProgressListener(new CsmProgressAdapter() {
+
+            @Override
+            public void fileParsingStarted(CsmFile file) {
+                System.err.println("remove cache for " + file);
+                cache.remove(file);
+            }
+            
+            public @Override void fileInvalidated(CsmFile file) {
+                System.err.println("remove cache for " + file);
+                cache.remove(file);
+            }
+        });*/
     }
     
-    public CsmReference findReference(CsmFile file, int line, int column) {
-        assert file != null;
-        BaseDocument doc = ReferencesSupport.getDocument(file);
-        if (doc == null) {
-            return null;
+//    private final Map<CsmFile, List<CsmReference>> cache = new HashMap<CsmFile, List<CsmReference>>();
+
+    public void accept(CsmFile csmFile, CsmReferenceVisitor visitor) {
+        for (CsmReference ref : getIdentifierReferences(csmFile)) {
+            visitor.visit(ref);
         }
-        int offset = ReferencesSupport.getDocumentOffset(doc, line, column);
-        CsmReference ref = ReferencesSupport.createReferenceImpl(file, doc, offset);
-        return ref;
     }
     
-    @Override
-    public CsmReference findReference(Node activatedNode) {
-        assert activatedNode != null : "activatedNode must be not null";
-        EditorCookie cookie = activatedNode.getCookie(EditorCookie.class);
-        if (cookie != null) {
-            JEditorPane[] panes = CsmUtilities.getOpenedPanesInEQ(cookie);
-            if (panes != null && panes.length>0) {
-                int offset = panes[0].getCaret().getDot();
-                CsmFile file = CsmUtilities.getCsmFile(activatedNode,false);
-                StyledDocument doc = null;
-                try {
-                    doc = cookie.openDocument();
-                } catch (IOException ex) {
-                    ex.printStackTrace(System.err);
-                }
-                if (file != null && (doc instanceof BaseDocument)) {
-                    return ReferencesSupport.createReferenceImpl(file, (BaseDocument)doc, offset);
-                }
+    private List<CsmReference> getIdentifierReferences(CsmFile csmFile) {
+        List<CsmReference> out = new ArrayList<CsmReference>();
+        BaseDocument doc = ReferencesSupport.getDocument(csmFile);
+        assert doc != null;
+        List<Token> tokens = TokenUtilities.getTokens(doc);
+        for (Token token : tokens) {
+            if (token.getTokenID() == CCTokenContext.IDENTIFIER) {
+                ReferenceImpl ref = ReferencesSupport.createReferenceImpl(csmFile, doc, token.getStartOffset(), token);
+                out.add(ref);
             }
         }
-        return null;
+        return out;
     }
-    
-
-    @Override
-    public Scope fastCheckScope(CsmReference ref) {
-        return ReferencesSupport.fastCheckScope(ref);
-    }
-    
 }
