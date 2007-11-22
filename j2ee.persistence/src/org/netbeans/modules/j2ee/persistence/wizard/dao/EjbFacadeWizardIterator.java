@@ -244,7 +244,7 @@ import org.openide.util.NbBundle;
                 ClassTree classTree = SourceUtils.getPublicTopLevelTree(parameter);
                 assert classTree != null;
                 GenerationUtils genUtils = GenerationUtils.newInstance(parameter);
-                ClassTree newClassTree = null;
+                ClassTree newClassTree = classTree;
                 if (hasLocal){
                     newClassTree = genUtils.addImplementsClause(newClassTree, localInterfaceFQN);
                 }
