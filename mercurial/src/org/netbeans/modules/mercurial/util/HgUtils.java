@@ -112,6 +112,41 @@ public class HgUtils {
 
     private static final String MSG_TOO_MANY_LINES = "The number of output lines is greater than 500; see message log for complete output";
 
+
+    /**
+     * isSolaris - check you are running onthe Solaris OS
+     *
+     * @return boolean true - on Solaris, false - not on Solaris
+     */
+    public static boolean isSolaris(){
+        return System.getProperty("os.name").equals("SunOS"); // NOI18N
+    }
+
+    /**
+     * isInUserPath - check if passed in name is on the Users PATH environment setting
+     *
+     * @param name to check
+     * @return boolean true - on PATH, false - not on PATH
+     */
+    public static boolean isInUserPath(String name) {
+        String pathEnv = System.getenv().get("PATH");// NOI18N
+        // Work around issues on Windows fetching PATH
+        if(pathEnv == null) pathEnv = System.getenv().get("Path");// NOI18N
+        if(pathEnv == null) pathEnv = System.getenv().get("path");// NOI18N
+        String pathSeparator = System.getProperty("path.separator");// NOI18N
+        if (pathEnv == null || pathSeparator == null) return false;
+
+        String[] paths = pathEnv.split(pathSeparator);
+        for (String path : paths) {
+            File f = new File(path, name);
+            // On Windows isFile will fail on hgk.cmd use !isDirectory
+            if (f.exists() && !f.isDirectory()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * confirmDialog - display a confirmation dialog
      *
@@ -817,6 +852,7 @@ itor tabs #66700).
         } else {
             for (String s : list){
                 out.println(s);
+
             }
         }
         out.close();

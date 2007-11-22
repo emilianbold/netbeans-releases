@@ -56,6 +56,7 @@ import java.net.InetAddress;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 //import org.netbeans.modules.mercurial.options.AnnotationExpression;
 import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
+import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbPreferences;
 import org.netbeans.modules.versioning.util.TableSorter;
 import org.netbeans.modules.versioning.util.Utils;
@@ -195,10 +196,10 @@ public class HgModuleConfig {
 
     public Boolean isExecPathValid(String name) {
         if (name.length() == 0) return true;
-        File file = new File(name, "hg"); // NOI18N
+        File file = new File(name, HgCommand.HG_COMMAND); // NOI18N
         // I would like to call canExecute but that requires Java SE 6.
         if(file.exists() && file.isFile()) return true;
-        file = new File(name, "hg.exe"); // NOI18N
+        file = new File(name, HgCommand.HG_COMMAND + HgCommand.HG_WINDOWS_EXE); // NOI18N
         return file.exists() && file.isFile();
     }
 

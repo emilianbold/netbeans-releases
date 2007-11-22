@@ -72,7 +72,11 @@ import org.openide.util.Utilities;
  * @author jrice
  */
 public class HgCommand {
-    private static final String HG_COMMAND = "hg";  // NOI18N
+    public static final String HG_COMMAND = "hg";  // NOI18N
+    public static final String HG_WINDOWS_EXE = ".exe";  // NOI18N
+    public static final String HG_WINDOWS_CMD = ".cmd";  // NOI18N
+    public static final String HGK_COMMAND = "hgk";  // NOI18N
+    
     private static final String HG_STATUS_CMD = "status";  // NOI18N // need -A to see ignored files, specified in .hgignore, see man hgignore for details
     private static final String HG_OPT_REPOSITORY = "--repository"; // NOI18N
     private static final String HG_OPT_BUNDLE = "--bundle"; // NOI18N
@@ -151,7 +155,8 @@ public class HgCommand {
     private static final String HG_MERGE_FORCE_CMD = "-f"; // NOI18N
     private static final String HG_MERGE_ENV = "EDITOR=success || $TEST -s"; // NOI18N
 
-    private static final String HG_HGK_PATH_SOLARIS10_ENV = "PATH=/usr/bin:/usr/sbin:/usr/demo/mercurial"; // NOI18N
+    public static final String HG_HGK_PATH_SOLARIS10 = "/usr/demo/mercurial"; // NOI18N
+    private static final String HG_HGK_PATH_SOLARIS10_ENV = "PATH=/usr/bin/:/usr/sbin:/bin:"+ HG_HGK_PATH_SOLARIS10; // NOI18N
     
     private static final String HG_PULL_CMD = "pull"; // NOI18N
     private static final String HG_UPDATE_CMD = "-u"; // NOI18N
@@ -541,7 +546,7 @@ public class HgCommand {
         
         List<String> list;
 
-        if(System.getProperty("os.name").equals("SunOS")){
+        if(HgUtils.isSolaris()){
             env.add(HG_HGK_PATH_SOLARIS10_ENV);
             list = execEnv(command, env);
         }else{

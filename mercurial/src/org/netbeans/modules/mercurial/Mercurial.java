@@ -58,6 +58,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbBundle;
 import javax.swing.JOptionPane;
 import java.util.prefs.Preferences;
+import org.openide.util.Utilities;
 
 /**
  * Main entry point for Mercurial functionality, use getInstance() to get the Mercurial object.
@@ -115,8 +116,6 @@ public class Mercurial {
         fileStatusCache = new FileStatusCache();
         mercurialAnnotator = new MercurialAnnotator();
         mercurialInterceptor = new MercurialInterceptor();
-        // Need hgext.hgk added to user's .hgrc file to support Mercurial > View
-        HgModuleConfig.getDefault().addHgkExtension();
         checkVersion(); // Does the Hg check but postpones querying user until menu is activated
     }
 

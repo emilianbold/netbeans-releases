@@ -67,6 +67,8 @@ import org.openide.util.Utilities;
  * @author Padraig O'Briain
  */
 public class HgConfigFiles {    
+    public static final String HG_EXTENSIONS = "extensions";  // NOI18N
+    public static final String HG_EXTENSIONS_HGK = "hgext.hgk";  // NOI18N
 
     /** The HgConfigFiles instance for user and system defaults */
     private static HgConfigFiles instance;
@@ -116,7 +118,7 @@ public class HgConfigFiles {
             setProperty("paths", "default", value); // NOI18N
         } else if (name.equals("hgext.hgk")) { // NOI18N
             // Allow hgext.hgk to be set to some other user defined value if required
-            if(getProperty("extensions", "hgext.hgk").equals("")){
+            if(getProperty("extensions", "hgext.hgk").equals("")){ // NOI18N
                 setProperty("extensions", "hgext.hgk", value, true); // NOI18N
             }
         }
@@ -208,6 +210,11 @@ public class HgConfigFiles {
         return value != null ? value : "";        // NOI18N 
     }
     
+    public boolean containsProperty(String section, String name) {
+        Ini.Section inisection = getSection(hgrc, section, true);
+        return inisection.containsKey(name);
+    }
+
     private void doReload () {
         if (dir == null) {
             hgrc = loadFile("hgrc");                                            // NOI18N  

@@ -53,6 +53,9 @@ import java.io.File;
 import java.util.List;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import org.netbeans.modules.mercurial.config.HgConfigFiles;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * View action for mercurial: 
@@ -83,7 +86,55 @@ public class ViewAction extends AbstractAction {
 
     static void performView(File root) {
         try {
-            List<String> output = HgCommand.doView(root);
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(ViewAction.class, "MSG_VIEW_TITLE")); // NOI18N
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(ViewAction.class, "MSG_VIEW_TITLE_SEP")); // NOI18N
+
+            String hgkCommand = HgCommand.HGK_COMMAND;
+            if(Utilities.isWindows()){ 
+                hgkCommand = hgkCommand + HgCommand.HG_WINDOWS_CMD;
+            }
+            boolean bHgkFound = false;
+            if(HgUtils.isInUserPath(hgkCommand)){
+                    bHgkFound = true;                
+            } else if(HgUtils.isSolaris()){
+                File f = new File(HgCommand.HG_HGK_PATH_SOLARIS10, hgkCommand);
+                if(f.exists() && f.isFile()) 
+                    bHgkFound = true;
+            }
+            boolean bHgkPropExists = HgConfigFiles.getInstance().containsProperty(
+                            HgConfigFiles.HG_EXTENSIONS, HgConfigFiles.HG_EXTENSIONS_HGK);
+            
+            if(!bHgkFound){
+                HgUtils.outputMercurialTabInRed(
+                            NbBundle.getMessage(ViewAction.class, "MSG_VIEW_HGK_NOT_FOUND_INFO")); // NOI18N
+                HgUtils.outputMercurialTab(""); // NOI18N
+                JOptionPane.showMessageDialog(null,
+                        NbBundle.getMessage(ViewAction.class, "MSG_VIEW_HGK_NOT_FOUND"),// NOI18N
+                        NbBundle.getMessage(ViewAction.class, "MSG_VIEW_HGK_NOT_FOUND_TITLE"),// NOI18N
+                        JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            if(!bHgkPropExists){
+                boolean bConfirmSetHgkProp = false;
+                bConfirmSetHgkProp = HgUtils.confirmDialog(
+                        ViewAction.class, "MSG_VIEW_SETHGK_PROP_CONFIRM_TITLE", // NOI18N
+                        "MSG_VIEW_SETHGK_PROP_CONFIRM_QUERY"); // NOI18N                
+                if (bConfirmSetHgkProp) {
+                    HgUtils.outputMercurialTabInRed(
+                            NbBundle.getMessage(ViewAction.class, "MSG_VIEW_SETHGK_PROP_DO_INFO")); // NOI18N
+                    HgConfigFiles.getInstance().setProperty(HgConfigFiles.HG_EXTENSIONS_HGK, ""); // NOI18N
+                }else{
+                    HgUtils.outputMercurialTabInRed(
+                            NbBundle.getMessage(ViewAction.class, "MSG_VIEW_NOTSETHGK_PROP_INFO")); // NOI18N
+                    HgUtils.outputMercurialTab(""); // NOI18N
+                    return;
+                }
+            }
+            
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(ViewAction.class, 
+                    "MSG_VIEW_LAUNCH_INFO", root.getAbsolutePath())); // NOI18N
+            HgUtils.outputMercurialTab(""); // NOI18N
+            HgCommand.doView(root);
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
