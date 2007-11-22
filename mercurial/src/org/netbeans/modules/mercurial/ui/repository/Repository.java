@@ -72,6 +72,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -647,27 +648,34 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         }        
         corectPanel.panel.add(p, BorderLayout.NORTH);
         DialogDescriptor dialogDescriptor = new DialogDescriptor(corectPanel, title); // NOI18N        
-        showDialog(dialogDescriptor, helpCtx);
+        showDialog(dialogDescriptor, helpCtx, null);
         return dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION;
     }
     
-    public Object show(String title, HelpCtx helpCtx, Object[] options) {
+    public Object show(String title, HelpCtx helpCtx, Object[] options, boolean setMaxNeededSize, String name) {
         RepositoryDialogPanel corectPanel = new RepositoryDialogPanel();
         corectPanel.panel.setLayout(new BorderLayout());
         corectPanel.panel.add(getPanel(), BorderLayout.NORTH);
         DialogDescriptor dialogDescriptor = new DialogDescriptor(corectPanel, title); // NOI18N        
+        JPanel p = getPanel();
+        if(setMaxNeededSize) {
+            p.setPreferredSize(maxNeededSize);
+        }        
         if(options!= null) {
             dialogDescriptor.setOptions(options); // NOI18N
         }        
-        showDialog(dialogDescriptor, helpCtx);
+        showDialog(dialogDescriptor, helpCtx, name);
         return dialogDescriptor.getValue();
     }
     
-    private void showDialog(DialogDescriptor dialogDescriptor, HelpCtx helpCtx) {
+    private void showDialog(DialogDescriptor dialogDescriptor, HelpCtx helpCtx, String name) {
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(helpCtx);        
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);        
+        if (name != null) {
+            dialog.addWindowListener(new DialogBoundsPreserver(HgModuleConfig.getDefault().getPreferences(), name)); // NOI18N
+        }
         dialog.setVisible(true);
     }
 

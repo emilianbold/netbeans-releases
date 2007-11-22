@@ -44,33 +44,20 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.awt.Dialog;
 import java.io.File;
 import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
-import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
 import org.netbeans.modules.mercurial.ui.wizards.CloneRepositoryWizardPanel;
-import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.HgModuleConfig;
-import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
-import org.openide.NotifyDescriptor;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Pull Other action for mercurial: 
@@ -100,12 +87,7 @@ public class PullOtherAction extends AbstractAction implements PropertyChangeLis
             repository = new Repository(repositoryModeMask, title);
             repository.addPropertyChangeListener(this);
         }
-        // Workaround for lack of border, should get tip working as well
-        repository.getPanel().setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        repository.setTipVisible(false);
 
-        DialogDescriptor dd = new DialogDescriptor(repository.getPanel(), org.openide.util.NbBundle.getMessage(PullOtherAction.class, "CTL_PullDialog_Title")); //NOI18N
-        dd.setModal(true);
         pullButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(pullButton, org.openide.util.NbBundle.getMessage(PullOtherAction.class, "CTL_Pull_Action_Pull")); // NOI18N
         pullButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PullOtherAction.class, "ACSD_Pull_Action_Pull")); // NOI18N
@@ -116,16 +98,13 @@ public class PullOtherAction extends AbstractAction implements PropertyChangeLis
         cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PullOtherAction.class, "ACSN_Pull_Action_Cancel")); // NOI18N
 
         pullButton.setEnabled(false);
-        dd.setOptions(new Object[] {pullButton, cancelButton}); // NOI18N
-        dd.setHelpCtx(new HelpCtx(PullOtherAction.class));
 
-        repository.getPanel().putClientProperty("DialogDescriptor", dd); // NOI18N
-        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-
-        dialog.addWindowListener(new DialogBoundsPreserver(HgModuleConfig.getDefault().getPreferences(), "hg.pull.dialog")); // NOI18N
-        dialog.pack();
-        dialog.setVisible(true);
-        if (dd.getValue() == pullButton) {
+        Object option = repository.show(org.openide.util.NbBundle.getMessage(PullOtherAction.class, "CTL_PullDialog_Title"), 
+                                        new HelpCtx(PullOtherAction.class),
+                                        new Object[] {pullButton, cancelButton},
+                                        true,
+                                        "hg.pull.dialog");
+        if (option == pullButton) {
             final String pullPath = repository.getSelectedRC().getUrl();
             pull(context, root, pullPath);
         }

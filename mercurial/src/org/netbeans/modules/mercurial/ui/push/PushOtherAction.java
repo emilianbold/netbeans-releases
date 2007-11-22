@@ -44,33 +44,21 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.awt.Dialog;
 import java.io.File;
 import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
-import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
 import org.netbeans.modules.mercurial.ui.wizards.CloneRepositoryWizardPanel;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.HgModuleConfig;
-import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
-import org.openide.NotifyDescriptor;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Push Other action for mercurial: 
@@ -100,12 +88,6 @@ public class PushOtherAction extends AbstractAction implements PropertyChangeLis
             repository = new Repository(repositoryModeMask, title);
             repository.addPropertyChangeListener(this);
         }
-        // Workaround for lack of border, should get tip working as well
-        repository.getPanel().setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        repository.setTipVisible(false);
-
-        DialogDescriptor dd = new DialogDescriptor(repository.getPanel(), org.openide.util.NbBundle.getMessage(PushOtherAction.class, "CTL_PushDialog_Title")); //NOI18N
-        dd.setModal(true);
         pushButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(pushButton, org.openide.util.NbBundle.getMessage(PushOtherAction.class, "CTL_Push_Action_Push")); // NOI18N
         pushButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PushOtherAction.class, "ACSD_Push_Action_Push")); // NOI18N
@@ -116,16 +98,13 @@ public class PushOtherAction extends AbstractAction implements PropertyChangeLis
         cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PushOtherAction.class, "ACSN_Push_Action_Cancel")); // NOI18N
 
         pushButton.setEnabled(false);
-        dd.setOptions(new Object[] {pushButton, cancelButton}); // NOI18N
-        dd.setHelpCtx(new HelpCtx(PushOtherAction.class));
+        Object option = repository.show(org.openide.util.NbBundle.getMessage(PushOtherAction.class, "CTL_PushDialog_Title"),
+                                        new HelpCtx(PushOtherAction.class),
+                                        new Object[] {pushButton, cancelButton},
+                                        true,
+                                        "hg.push.dialog");
 
-        repository.getPanel().putClientProperty("DialogDescriptor", dd); // NOI18N
-        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-
-        dialog.addWindowListener(new DialogBoundsPreserver(HgModuleConfig.getDefault().getPreferences(), "hg.push.dialog")); // NOI18N
-        dialog.pack();
-        dialog.setVisible(true);
-        if (dd.getValue() == pushButton) {
+        if (option == pushButton) {
             final String pushPath = repository.getSelectedRC().getUrl();
             push(context, root, pushPath);
         }
