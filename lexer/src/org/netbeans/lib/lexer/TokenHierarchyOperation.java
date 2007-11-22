@@ -180,6 +180,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     public TokenHierarchyOperation(MutableTextInput<I> mutableTextInput) {
         this.inputSource = LexerSpiPackageAccessor.get().inputSource(mutableTextInput);
         this.mutableTextInput = mutableTextInput;
+        this.rootTokenList = new IncTokenList<T>(this);
         init();
         activity = Activity.NOT_INITED;
     }
@@ -200,10 +201,6 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         return rootTokenList;
     }
 
-    public TokenList<T> validRootTokenList() {
-        return rootTokenList();
-    }
-    
     public int modCount() {
         return rootTokenList.modCount();
     }
@@ -228,46 +225,64 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
     
     public void setActive(boolean active) {
-        assert (isMutable());
+        assert (isMutable()) : "Activity changes only allowed for mutable input sources";
         // Check whether the state has changed
-        Activity activity = active ? Activity.ACTIVE : Activity.INACTIVE;
-        if (this.activity != activity) {
-            boolean noFire = (this.activity == Activity.NOT_INITED);
-            this.activity = activity;
-            if (!noFire && listenerList.getListenerCount() > 0) { // Only if there are already listeners
+        Activity newActivity = active ? Activity.ACTIVE : Activity.INACTIVE;
+        if (activity != newActivity) {
+            IncTokenList<T> incTokenList = (IncTokenList<T>)rootTokenList;
+            boolean doFire = (listenerList.getListenerCount() > 0);
+            TokenListChange<T> change;
+            if (active) { // Wishing to be active
+                if (incTokenList.updateLanguagePath()) {
+                    incTokenList.reinit(); // Initialize lazy lexing
+                    change = doFire ? new TokenListChange<T>(incTokenList) : null;
+                } else { // No valid top language => no change in activity
+                    return;
+                }
+            } else { // Wishing to be inactive
+                change = new TokenListChange<T>(incTokenList);
+//                change.setIndex(0);
+//                change.setOffset(0);
+                incTokenList.replaceTokens(change, incTokenList.tokenCountCurrent(), 0);
+                incTokenList.setLanguagePath(null);
+                incTokenList.reinit();
+            }
+
+            activity = newActivity;
+            incTokenList.incrementModCount();
+            if (doFire) { // Only if there are already listeners
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("Firing ACTIVITY change to " + listenerList.getListenerCount() + " listeners"); // NOI18N
+                    LOG.fine("Firing ACTIVITY change to " + listenerList.getListenerCount() + " listeners: " + activity); // NOI18N
                 }
                 TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
-                        this,
-                        TokenHierarchyEventType.ACTIVITY,
-                        0, 0, "", 0
-                );
+                        this, TokenHierarchyEventType.ACTIVITY, 0, 0, "", 0);
+                CharSequence text = LexerSpiPackageAccessor.get().text(mutableTextInput);
+                eventInfo.setMaxAffectedEndOffset(text.length());
+                if (activity == Activity.INACTIVE) { // Notify the tokens being removed
+                    eventInfo.setTokenChangeInfo(change.tokenChangeInfo());
+                    path2tokenListList = null; // Drop all token list lists
+                }
                 fireTokenHierarchyChanged(eventInfo);
             }
         }
     }
     
+    /**
+     * Check whether the hierarchy is active doing initialization (an attempt to activate the hierarchy)
+     * if it's not active yet (and it was not set to be inactive).
+     *
+     * @return true if the hierarchy is currently active or false otherwise.
+     */
     public boolean isActive() {
-        activateIfPossible();
-        return (activity == Activity.ACTIVE);
-    }
-    
-    public boolean isActiveNoInit() {
-        return (activity == Activity.ACTIVE);
-    }
-    
-    private void activateIfPossible() {
-        if (rootTokenList == null && mutableTextInput != null &&
-                (activity == Activity.NOT_INITED || activity == Activity.NOT_INITED_FIRE)
-        ) {
-            @SuppressWarnings("unchecked")
-            Language<T> language = (Language<T>)LexerSpiPackageAccessor.get().language(mutableTextInput);
-            if (language != null) {
-                rootTokenList = new IncTokenList<T>(this, language);
-                setActive(true);
-            }
+        // Activate if possible
+        if (activity == Activity.NOT_INITED) {
+            setActive(true); // Attempt to activate
         }
+        return isActiveNoInit();
+    }
+    
+    public boolean isActiveNoInit() { // BTW used by tests to check if hierarchy is active or not
+        return (activity == Activity.ACTIVE);
     }
     
     public void ensureReadLocked() {
@@ -291,23 +306,16 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
     
     public TokenSequence<T> tokenSequence() {
-        ensureReadLocked();
-        activateIfPossible();
-        if (rootTokenList != null) {
-            return LexerApiPackageAccessor.get().createTokenSequence(rootTokenList);
-        }
-        return null;
+        return tokenSequence(null);
     }
     
     public TokenSequence<T> tokenSequence(Language<?> language) {
         ensureReadLocked();
-        activateIfPossible();
-        if (rootTokenList != null) {
-            return (rootTokenList.languagePath().topLanguage() == language)
+        synchronized (rootTokenList) {
+            return (isActive() && (language == null || rootTokenList.languagePath().topLanguage() == language))
                     ? LexerApiPackageAccessor.get().createTokenSequence(rootTokenList)
                     : null;
         }
-        return null;
     }
     
     public List<TokenSequence<?>> tokenSequenceList(
@@ -315,11 +323,11 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         if (languagePath == null)
             throw new IllegalArgumentException("languagePath cannot be null"); // NOI18N
         ensureReadLocked();
-        activateIfPossible();
-        if (rootTokenList != null) {
-            return new TokenSequenceList(this, languagePath, startOffset, endOffset);
+        synchronized (rootTokenList) {
+            return isActive()
+                ? new TokenSequenceList(this, languagePath, startOffset, endOffset)
+                : null;
         }
-        return null;
     }
 
     /**
@@ -328,19 +336,18 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      * If the list needs to be created or it was non-mandatory.
      */
     public TokenListList tokenListList(LanguagePath languagePath) {
-        synchronized (validRootTokenList()) {
-            TokenListList tll = path2tokenListList().get(languagePath);
-            if (tll == null) {
-                tll = new TokenListList(this, languagePath);
-                path2tokenListList.put(languagePath, tll);
-                maxTokenListListPathSize = Math.max(languagePath.size(), maxTokenListListPathSize);
-                // Also create parent token list lists if they don't exist yet
-                if (languagePath.size() >= 3) { // Top-level token list list not maintained
-                    tokenListList(languagePath.parent()).increaseChildrenCount();
-                }
+        assert isActiveNoInit() : "Token hierarchy expected to be active.";
+        TokenListList tll = path2tokenListList().get(languagePath);
+        if (tll == null) {
+            tll = new TokenListList(this, languagePath);
+            path2tokenListList.put(languagePath, tll);
+            maxTokenListListPathSize = Math.max(languagePath.size(), maxTokenListListPathSize);
+            // Also create parent token list lists if they don't exist yet
+            if (languagePath.size() >= 3) { // Top-level token list list not maintained
+                tokenListList(languagePath.parent()).increaseChildrenCount();
             }
-            return tll;
         }
+        return tll;
     }
     
     private Map<LanguagePath,TokenListList> path2tokenListList() {
@@ -354,7 +361,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      * Get existing token list list or null if the TLL does not exist yet.
      */
     public TokenListList existingTokenListList(LanguagePath languagePath) {
-        synchronized (validRootTokenList()) {
+        synchronized (rootTokenList()) {
             return (path2tokenListList != null) ? path2tokenListList.get(languagePath) : null;
         }
     }
@@ -364,26 +371,28 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
 
     public void rebuild() {
-        if (activity == Activity.ACTIVE) {
-            IncTokenList<T> incTokenList = (IncTokenList<T>)rootTokenList;
-            incTokenList.incrementModCount();
-            TokenListChange<T> change = new TokenListChange<T>(incTokenList);
-            CharSequence text = LexerSpiPackageAccessor.get().text(mutableTextInput);
-            TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
-                this, TokenHierarchyEventType.REBUILD, 0, 0, text, 0);
-            change.setIndex(0);
-            change.setOffset(0);
-            change.setAddedEndOffset(0); // Tokens will be recreated lazily
+        synchronized (rootTokenList) {
+            if (isActiveNoInit()) {
+                IncTokenList<T> incTokenList = (IncTokenList<T>)rootTokenList;
+                incTokenList.incrementModCount();
+                TokenListChange<T> change = new TokenListChange<T>(incTokenList);
+                CharSequence text = LexerSpiPackageAccessor.get().text(mutableTextInput);
+                TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
+                    this, TokenHierarchyEventType.REBUILD, 0, 0, "", 0);
+                change.setIndex(0);
+                change.setOffset(0);
+                change.setAddedEndOffset(0); // Tokens will be recreated lazily
 
-            incTokenList.replaceTokens(change, incTokenList.tokenCountCurrent(), 0);
-            incTokenList.restartLexing(); // Will relex tokens lazily
-            
-            eventInfo.setTokenChangeInfo(change.tokenChangeInfo());
-            eventInfo.setMaxAffectedEndOffset(text.length());
-            
-            path2tokenListList = null; // Drop all token list lists
-            fireTokenHierarchyChanged(eventInfo);
-        } // not active - no changes fired
+                incTokenList.replaceTokens(change, incTokenList.tokenCountCurrent(), 0);
+                incTokenList.reinit(); // Will relex tokens lazily
+
+                eventInfo.setTokenChangeInfo(change.tokenChangeInfo());
+                eventInfo.setMaxAffectedEndOffset(text.length());
+
+                path2tokenListList = null; // Drop all token list lists
+                fireTokenHierarchyChanged(eventInfo);
+            } // not active - no changes fired
+        }
     }
     
     public void fireTokenHierarchyChanged(TokenHierarchyEventInfo eventInfo) {
@@ -405,7 +414,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     
     public void textModified(int offset, int removedLength, CharSequence removedText, int insertedLength) {
         ensureWriteLocked();
-        if (activity == Activity.ACTIVE) {
+        if (isActiveNoInit()) {
             TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
                     this, TokenHierarchyEventType.MODIFICATION,
                     offset, removedLength, removedText, insertedLength);
@@ -463,29 +472,25 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
 
     public Set<LanguagePath> languagePaths() {
-        activateIfPossible();
         Set<LanguagePath> lps;
-        synchronized (this) {
+        synchronized (rootTokenList) {
             lps = languagePaths;
-        }
-        if (lps == null) {
-            Language<?> lang = (rootTokenList != null)
-                    ? rootTokenList.languagePath().topLanguage()
-                    : null;
-            if (lang == null) // Language not inited yet
-                return Collections.emptySet();
-            LanguageOperation<?> langOp = LexerApiPackageAccessor.get().languageOperation(lang);
-            @SuppressWarnings("unchecked")
-            Set<LanguagePath> clps = (Set<LanguagePath>)
-                    ((HashSet<LanguagePath>)langOp.languagePaths()).clone();
-            lps = clps;
+            if (lps == null) {
+                LanguagePath lp = rootTokenList.languagePath();
+                if (lp == null)
+                    return Collections.emptySet();
+                Language<?> lang = lp.topLanguage();
+                LanguageOperation<?> langOp = LexerApiPackageAccessor.get().languageOperation(lang);
+                @SuppressWarnings("unchecked")
+                Set<LanguagePath> clps = (Set<LanguagePath>)
+                        ((HashSet<LanguagePath>)langOp.languagePaths()).clone();
+                lps = clps;
 
-            @SuppressWarnings("unchecked")
-            Set<Language<?>> cel = (Set<Language<?>>)
-                    ((HashSet<Language<?>>)langOp.exploredLanguages()).clone();
-            synchronized (this) {
-                languagePaths = lps;
+                @SuppressWarnings("unchecked")
+                Set<Language<?>> cel = (Set<Language<?>>)
+                        ((HashSet<Language<?>>)langOp.exploredLanguages()).clone();
                 exploredLanguages = cel;
+                languagePaths = lps;
             }
         }
         return lps;
@@ -613,11 +618,15 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
 //    
     @Override
     public String toString() {
-        activateIfPossible();
         StringBuilder sb = new StringBuilder("TOKEN HIERARCHY"); // NOI18N
         if (inputSource() != null) {
             sb.append(" for " + inputSource());
         }
+        if (!isActive()) {
+            sb.append(" is NOT ACTIVE.");
+            return sb.toString();
+        }
+
         sb.append(":\n"); // NOI18N
         LexerUtilsConstants.appendTokenList(sb, rootTokenList);
         if (path2tokenListList != null && path2tokenListList.size() > 0) {
@@ -636,7 +645,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      */
     public String checkConsistency() {
         // Check root token list first
-        String error = checkConsistencyTokenList(validRootTokenList(), ArrayUtilities.emptyIntArray(), 0);
+        String error = checkConsistencyTokenList(rootTokenList(), ArrayUtilities.emptyIntArray(), 0);
         // Check token-list lists
         if (error == null && path2tokenListList != null) {
             for (TokenListList tll : path2tokenListList.values()) {
@@ -726,7 +735,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
     
     public String findTokenContext(AbstractToken<?> token) {
-        return findTokenContext(token, validRootTokenList(), ArrayUtilities.emptyIntArray());
+        return findTokenContext(token, rootTokenList(), ArrayUtilities.emptyIntArray());
     }
 
     private String findTokenContext(AbstractToken<?> token, TokenList<?> tokenList, int[] parentIndexes) {
@@ -759,7 +768,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
 
     private String tracePath(int[] indexes, LanguagePath languagePath) {
         StringBuilder sb  = new StringBuilder();
-        TokenList<?> tokenList = validRootTokenList();
+        TokenList<?> tokenList = rootTokenList();
         for (int i = 0; i < indexes.length; i++) {
             LexerUtilsConstants.appendTokenInfo(sb, tokenList, i,
                     tokenHierarchy(), false, 0);
@@ -788,7 +797,6 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     static enum Activity {
         
         NOT_INITED, // Initial state for mutable inputs
-        NOT_INITED_FIRE, // Someone has asked for tokenSequence() etc. but MTI.language() not available yet -> fire listeners
         INACTIVE, // Explicitly set to inactive
         ACTIVE; // Default for immutable hierarchies; mutable THs once MTI.language() is non-null
         

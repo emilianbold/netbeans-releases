@@ -186,6 +186,7 @@ public final class TokenListChange<T extends TokenId> {
         return laState;
     }
 
+    @Override
     public String toString() {
         return toString(0);
     }

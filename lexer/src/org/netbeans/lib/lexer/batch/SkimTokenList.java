@@ -92,6 +92,10 @@ public final class SkimTokenList<T extends TokenId> implements TokenList<T> {
         return tokenList.endOffset();
     }
     
+    public boolean isRemoved() {
+        return tokenList.isRemoved();
+    }
+
     char[] getText() {
         return text;
     }

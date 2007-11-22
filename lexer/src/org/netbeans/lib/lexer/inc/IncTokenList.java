@@ -59,6 +59,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.token.TextToken;
+import org.netbeans.spi.lexer.MutableTextInput;
 
 
 /**
@@ -83,7 +84,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     
     private final TokenHierarchyOperation<?,T> tokenHierarchyOperation;
 
-    private final LanguagePath languagePath;
+    private LanguagePath languagePath;
     
     private CharSequence text;
     
@@ -97,22 +98,58 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     private LAState laState;
     
     
-    public IncTokenList(TokenHierarchyOperation<?,T> tokenHierarchyOperation, Language<?> language) {
+    public IncTokenList(TokenHierarchyOperation<?,T> tokenHierarchyOperation) {
         this.tokenHierarchyOperation = tokenHierarchyOperation;
-        this.languagePath = LanguagePath.get(language);
-        this.text = LexerSpiPackageAccessor.get().text(tokenHierarchyOperation.mutableTextInput());
-        this.laState = LAState.empty();
-        initLexing();
     }
     
-    private void initLexing() {
-        this.lexerInputOperation = new TextLexerInputOperation<T>(this, text);
+    /**
+     * Activate this list internally if it's currently active (its languagePath() != null)
+     * or deactivate if LP == null.
+     */
+    public void reinit() {
+        MutableTextInput input = tokenHierarchyOperation.mutableTextInput();
+        if (languagePath != null) {
+            this.text = LexerSpiPackageAccessor.get().text(input);
+            this.lexerInputOperation = new TextLexerInputOperation<T>(this, text);
+        } else {
+            this.text = null;
+            releaseLexerInputOperation();
+        }
+        this.laState = LAState.empty();
+    }
+    
+    private void releaseLexerInputOperation() {
+        if (lexerInputOperation != null)
+            lexerInputOperation.release();
+    }
+
+    public void refreshLexerInputOperation() {
+        releaseLexerInputOperation();
+        int lastTokenIndex = tokenCountCurrent() - 1;
+        lexerInputOperation = createLexerInputOperation(
+                lastTokenIndex + 1,
+                existingTokensEndOffset(),
+                (lastTokenIndex >= 0) ? state(lastTokenIndex) : null
+        );
     }
     
     public LanguagePath languagePath() {
         return languagePath;
     }
+    
+    public void setLanguagePath(LanguagePath languagePath) {
+        this.languagePath = languagePath;
+    }
 
+    public boolean updateLanguagePath() {
+        Language<?> language = LexerSpiPackageAccessor.get().language(tokenHierarchyOperation.mutableTextInput());
+        if (language != null) {
+            setLanguagePath(LanguagePath.get(language));
+            return true;
+        }
+        return false;
+    }
+    
     public synchronized int tokenCount() {
         if (lexerInputOperation != null) { // still lexing
             tokenOrEmbeddingContainerImpl(Integer.MAX_VALUE);
@@ -311,27 +348,6 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         }
     }
     
-    private void releaseLexerInputOperation() {
-        if (lexerInputOperation != null)
-            lexerInputOperation.release();
-    }
-
-    public void refreshLexerInputOperation() {
-        releaseLexerInputOperation();
-        int lastTokenIndex = tokenCountCurrent() - 1;
-        lexerInputOperation = createLexerInputOperation(
-                lastTokenIndex + 1,
-                existingTokensEndOffset(),
-                (lastTokenIndex >= 0) ? state(lastTokenIndex) : null
-        );
-    }
-    
-    public void restartLexing() {
-        // Called when tokens were fully removed and lexing should be restarted
-        releaseLexerInputOperation();
-        initLexing();
-    }
-    
     public boolean isContinuous() {
         return true;
     }
@@ -346,6 +362,10 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
 
     public int endOffset() {
         return text.length();
+    }
+
+    public boolean isRemoved() {
+        return false; // Should never become removed
     }
 
     public String toString() {

@@ -130,7 +130,7 @@ public final class TokenListList extends GapList<EmbeddedTokenList<?>> {
                 relexState = scanTokenList(tokenList, language, relexState);
             }
         } else { // Parent is root token list
-            scanTokenList(operation.validRootTokenList(), language, null);
+            scanTokenList(operation.rootTokenList(), language, null);
         }
     }
     

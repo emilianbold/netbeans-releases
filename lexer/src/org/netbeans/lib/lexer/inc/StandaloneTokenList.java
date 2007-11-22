@@ -54,6 +54,8 @@ import org.netbeans.lib.lexer.token.AbstractToken;
 
 /**
  * Single token list maintains a text for a single token.
+ * <br/>
+ * It's used for token hierarchy snapshots only.
  *
  * @author Miloslav Metelka
  * @version 1.00
@@ -151,6 +153,10 @@ public final class StandaloneTokenList<T extends TokenId> implements TokenList<T
         if (cntM1 >= 0)
             return tokenOffset(cntM1) + LexerUtilsConstants.token(this, cntM1).length();
         return 0;
+    }
+    
+    public boolean isRemoved() {
+        return false; // Should be used when part of a snapshot
     }
 
 }

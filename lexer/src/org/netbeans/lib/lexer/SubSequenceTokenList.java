@@ -291,6 +291,10 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
             return tokenOffset(cntM1) + token(cntM1).length();
         return limitStartOffset;
     }
+    
+    public boolean isRemoved() {
+        return tokenList.isRemoved();
+    }
 
     private AbstractToken<T> token(int index) {
         return LexerUtilsConstants.token(tokenList, index);

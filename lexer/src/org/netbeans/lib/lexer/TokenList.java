@@ -283,4 +283,13 @@ public interface TokenList<T extends TokenId> {
      */
     int endOffset();
     
+    /**
+     * Check if this token list is removed from token hierarchy.
+     * <br/>
+     * Should only be called under the lock of the root token list.
+     * 
+     * @return true if the token list was removed or false otherwise.
+     */
+    boolean isRemoved();
+    
 }

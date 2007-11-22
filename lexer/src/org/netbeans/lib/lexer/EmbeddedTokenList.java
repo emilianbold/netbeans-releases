@@ -131,7 +131,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     private void init() {
         if (embedding.joinSections()) {
             // Find the token list list - it should also init this token list
-            TokenListList tll = root().tokenHierarchyOperation().tokenListList(languagePath);
+            root().tokenHierarchyOperation().tokenListList(languagePath);
         } else { // not joining => can lex individually
             init(null);
         }
@@ -290,6 +290,11 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
                 - embedding.endSkipLength();
     }
     
+    public boolean isRemoved() {
+        embeddingContainer.updateStatusImpl();
+        return embeddingContainer.isRemoved();
+    }
+
     public TokenList<?> root() {
         return embeddingContainer.rootTokenList();
     }

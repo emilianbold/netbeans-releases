@@ -221,6 +221,10 @@ extends ArrayList<Object> implements TokenList<T> {
         return 0;
     }
 
+    public boolean isRemoved() {
+        return false;
+    }
+
     public int modCount() {
         return -1; // immutable input
     }

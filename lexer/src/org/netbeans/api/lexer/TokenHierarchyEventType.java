@@ -53,30 +53,30 @@ package org.netbeans.api.lexer;
 public enum TokenHierarchyEventType {
 
     /**
-     * The token change was caused by modification (insert/remove) of the characters
-     * in the underlying character sequence.
+     * Modification (insert/remove) of the characters
+     * in the underlying character sequence was performed.
      */
     MODIFICATION,
 
     /**
-     * The token change was caused by relexing of a part of the token hierarchy
+     * Explicit relexing of a part of the token hierarchy
      * without any text modification.
      * <br/>
      * This change is notified under modification lock (write lock)
      * of the corresponding input source.
+     * <br/>
+     * This is not actively used yet (no API support yet).
      */
     RELEX,
 
     /**
-     * The token change was caused by a complete rebuild
-     * of the token hierarchy.
+     * Complete rebuild of the token hierarchy.
      * <br/>
-     * That may be necessary because of changes
+     * This may be necessary because of any changes
      * in input attributes that influence the lexing.
      * <br/>
-     * When the whole hierarchy is rebuilt only the removed tokens
-     * will be notified. There will be no added tokens
-     * because they will be created lazily when asked.
+     * Only the removed tokens will be notified.
+     * There will be no added tokens because they will be created lazily when asked by clients.
      * <br/>
      * This change is notified under modification lock (write lock)
      * of the corresponding input source.
@@ -84,22 +84,27 @@ public enum TokenHierarchyEventType {
     REBUILD,
 
     /**
-     * The token change was caused by change in activity
-     * of the token hierarchy.
+     * Token hierarchy became inactive (while being active before) or vice versa.
      * <br/>
-     * The current activity state can be determined by {@link TokenHierarchy#isActive()}.
+     * Current activity state can be determined by {@link TokenHierarchy#isActive()}.
      * <br/>
-     * Firing an event with this type may happen because the input source
-     * (for which the token hierarchy was created) has not been used for a long time
-     * and its token hierarchy is being deactivated. Or the token hierarchy is just going
-     * to be activated again.
+     * A maintainer of the given mutable input source may decide to activate/deactivate
+     * token hierarchy by using {@link TokenHierarchyControl#setActive(boolean)}.
+     * For example if a Swing docuemnt is not showing and it has not been edited for a long time
+     * its token hierarchy may be deactivated to save memory. Once the hierarchy
+     * gets deactivated the clients should drop all the functionality depending
+     * on the tokens (for example not provide a token-dependent syntax highlighting).
      * <br/>
-     * The hierarchy will only notify the tokens being removed (for the case when
-     * the hierarchy is going to be deactivated). There will be no added tokens
-     * because they will be created lazily when asked.
+     * Only the removed tokens will be notified in case the hierarchy becomes inactive.
+     * <br/>
+     * There will be no added tokens notified in case the the hierarchy becomes active because
+     * the tokens will be created lazily when asked by clients.
      * <br/>
      * This change is notified under modification lock (write lock)
-     * of the corresponding input source.
+     * of the corresponding input source. Only the initial (automatic) activation
+     * of the mutable token hierarchy will happen under the read lock of the client
+     * asking for <code>TokenHierarchy.tokenSequence()</code> or a similar method
+     * that leads to automatic activation.
      */
     ACTIVITY,
         
@@ -111,6 +116,9 @@ public enum TokenHierarchyEventType {
      * where the embedding was created and the embedded change
      * {@link TokenChange#embeddedChange(int)} that describes the added
      * embedded language.
+     * <br/>
+     * This change is notified under modification lock (write lock)
+     * of the corresponding input source.
      */
     EMBEDDING_CREATED,
     
@@ -122,12 +130,18 @@ public enum TokenHierarchyEventType {
      * where the embedding was created and the embedded change
      * {@link TokenChange#embeddedChange(int)} that describes the added
      * embedded language.
+     * <br/>
+     * This change is notified under modification lock (write lock)
+     * of the corresponding input source.
      */
     EMBEDDING_REMOVED,
     
     /**
      * Notification that result of
      * {@link TokenHierarchy#languagePaths()} has changed.
+     * <br/>
+     * This change may be notified under both read and write lock
+     * of the corresponding input source.
      */
     LANGUAGE_PATHS;
 

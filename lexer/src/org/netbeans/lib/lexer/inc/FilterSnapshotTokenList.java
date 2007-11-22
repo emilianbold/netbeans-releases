@@ -176,4 +176,8 @@ public final class FilterSnapshotTokenList<T extends TokenId> implements TokenLi
         return tokenOffsetDiff + tokenList.endOffset();
     }
 
+    public boolean isRemoved() {
+        return false;
+    }
+
 }

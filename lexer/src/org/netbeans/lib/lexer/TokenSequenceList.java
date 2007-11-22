@@ -87,7 +87,7 @@ public final class TokenSequenceList extends AbstractList<TokenSequence<?>> {
         if (languagePath.size() == 1) { // Is supported too
             this.tokenListList = null;
             tokenListIndex = Integer.MAX_VALUE; // Mark no mods to tokenSequences
-            TokenList<?> rootTokenList = operation.validRootTokenList();
+            TokenList<?> rootTokenList = operation.rootTokenList();
             if (rootTokenList.languagePath() == languagePath) {
                 TokenSequence<?> rootTS = LexerApiPackageAccessor.get().createTokenSequence(
                             checkWrapTokenList(rootTokenList, startOffset, endOffset));

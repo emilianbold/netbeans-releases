@@ -170,6 +170,10 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
         return 0;
     }
 
+    public boolean isRemoved() {
+        return true; // Collects tokens removed from TH
+    }
+
     public boolean isContinuous() {
         return true;
     }

@@ -330,6 +330,10 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
             return tokenOffset(cntM1) + LexerUtilsConstants.token(this, cntM1).length();
         return 0;
     }
+    
+    public boolean isRemoved() {
+        return false;
+    }
 
     public boolean canModifyToken(int index, AbstractToken token) {
         return liveTokenGapStart != -1
@@ -493,6 +497,7 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
         }
     }
 
+    @Override
     public String toString() {
         return "liveTokenGapStart=" + liveTokenGapStart +
                 ", liveTokenGapEnd=" + liveTokenGapEnd +
@@ -551,6 +556,7 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
             throw new IllegalStateException("Prohibited"); // NOI18N
         }
 
+        @Override
         public String toString() {
             // Debug the offset being held
             return String.valueOf(offset);

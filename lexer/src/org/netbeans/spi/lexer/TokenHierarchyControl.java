@@ -88,6 +88,7 @@ public final class TokenHierarchyControl<I> {
      * so that there will be no tokens.
      */
     public void setActive(boolean active) {
+        operation.ensureWriteLocked(); // Done here since the impl may be called by infra outside write-lock
         operation.setActive(active);
     }
     
