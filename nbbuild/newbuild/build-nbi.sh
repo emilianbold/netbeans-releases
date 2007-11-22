@@ -18,12 +18,15 @@ if [ ! -z $NATIVE_MAC_MACHINE ]; then
        exit $ERROR_CODE;
    fi
    scp -q -v $DIST/zip/$BASENAME*.zip $NATIVE_MAC_MACHINE:$MAC_PATH/zip
+   if [ 1 -eq $ML_BUILD ] ; then
+	scp -q -v $DIST/ml/zip/$BASENAME*.zip $NATIVE_MAC_MACHINE:$MAC_PATH/zip-ml
+   fi
    ERROR_CODE=$?
    if [ $ERROR_CODE != 0 ]; then
        echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't put the zips"
        exit $ERROR_CODE;
    fi
-   ssh $NATIVE_MAC_MACHINE $MAC_PATH/run-mac-installer.sh > $MAC_LOG 2>&1 &
+   ssh $NATIVE_MAC_MACHINE $MAC_PATH/run-mac-installer.sh $ML_BUILD > $MAC_LOG 2>&1 &
 fi
 
 bash build.sh
@@ -66,6 +69,14 @@ if [ ! -z $NATIVE_MAC_MACHINE ]; then
             echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get installers"
             exit $ERROR_CODE;
         fi    
+	if [ 1 -eq $ML_BUILD ] ; then
+		scp $NATIVE_MAC_MACHINE:$MAC_PATH/dist/* $DIST/ml/bundles
+                EXIT_CODE=$?
+                if [ $ERROR_CODE != 0 ]; then
+                    echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get installers"
+                    exit $ERROR_CODE;
+                fi    
+	fi
     else
         tail -100 $MAC_LOG
         echo "ERROR: - Native Mac NBI installers build failed"
