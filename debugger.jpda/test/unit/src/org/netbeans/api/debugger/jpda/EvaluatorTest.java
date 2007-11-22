@@ -41,6 +41,7 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import com.sun.jdi.StringReference;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -72,11 +73,9 @@ public class EvaluatorTest extends NbTestCase {
         super.setUp ();
         System.setProperty("debugger.evaluator2", "true");
         JPDASupport.removeAllBreakpoints ();
-        LineBreakpoint lb = LineBreakpoint.create (
-                Utils.getURL(System.getProperty ("test.dir.src")+
-                             "org/netbeans/api/debugger/jpda/testapps/EvaluatorApp.java"),
-                76
-            );
+        Utils.BreakPositions bp = Utils.getBreakPositions(System.getProperty ("test.dir.src")+
+                                  "org/netbeans/api/debugger/jpda/testapps/EvaluatorApp.java");
+        LineBreakpoint lb = bp.getLineBreakpoints().get(0);
         source = new URL(lb.getURL());
         DebuggerManager.getDebuggerManager ().addBreakpoint (lb);
         support = JPDASupport.attach (
@@ -144,11 +143,12 @@ public class EvaluatorTest extends NbTestCase {
             /*System.err.println("  eMethod JDI Value = "+eMethodJDIValue);
             System.err.println("  eVal JDI Value = "+eValJDIValue);
             System.err.println("   equals = "+eMethodJDIValue.equals(eValJDIValue));*/
-            assertEquals (
-                "Evaluation of expression '" + m.getExpression()+"' of method '"+m.getName()+"()' produced a wrong value:",
-                eMethodJDIValue, 
-                eValJDIValue
-            );
+            if (eMethodJDIValue instanceof StringReference) {
+                eMethodJDIValue = ((StringReference) eMethodJDIValue).value();
+            }
+            if (eValJDIValue instanceof StringReference) {
+                eValJDIValue = ((StringReference) eValJDIValue).value();
+            }
             if (eMethod != null) {
                 assertEquals (
                     "Evaluation of expression '" + m.getExpression()+"' of method '"+m.getName()+"()' produced a wrong type of result:",
@@ -156,8 +156,14 @@ public class EvaluatorTest extends NbTestCase {
                     eVal.getType()
                 );
             }
+            assertEquals (
+                "Evaluation of expression '" + m.getExpression()+"' of method '"+m.getName()+"()' produced a wrong value:",
+                eMethodJDIValue, 
+                eValJDIValue
+            );
             System.err.println("  Method "+m.getName()+"() evaluated successfully.");
         } catch (InvalidExpressionException e) {
+            e.printStackTrace();
             fail (
                 "Evaluation of expression was unsuccessful: " + e
             );

@@ -253,56 +253,7 @@ import org.openide.util.NbBundle;
         if (method == null) {
             Assert2.error(arg0, "noSuchMethod", type.name(), methodName);
         }
-        ThreadReference evaluationThread = evaluationContext.getFrame().thread();
-        try {
-            if (loggerMethod.isLoggable(Level.FINE)) {
-                loggerMethod.fine("STARTED : "+objectReference+"."+method+" ("+argVals+") in thread "+evaluationThread);
-            }
-            evaluationContext.methodToBeInvoked();
-            Value value;
-            if (isStatic) {
-                value = type.invokeMethod(evaluationThread, method, argVals,
-                                          ObjectReference.INVOKE_SINGLE_THREADED);
-            } else {
-                value = objectReference.invokeMethod(evaluationThread, method,
-                                                     argVals,
-                                                     ObjectReference.INVOKE_SINGLE_THREADED);
-            }
-            if (loggerMethod.isLoggable(Level.FINE)) {
-                loggerMethod.fine("   return = "+value);
-            }
-            return value;
-        } catch (InvalidTypeException itex) {
-            throw new IllegalStateException(new InvalidExpressionException (itex));
-        } catch (ClassNotLoadedException cnlex) {
-            throw new IllegalStateException(new InvalidExpressionException (cnlex));
-        } catch (IncompatibleThreadStateException itsex) {
-            InvalidExpressionException ieex = new InvalidExpressionException (itsex);
-            ieex.initCause(itsex);
-            throw new IllegalStateException(ieex);
-        } catch (InvocationException iex) {
-            InvalidExpressionException ieex = new InvalidExpressionException (iex);
-            ieex.initCause(iex);
-            throw new IllegalStateException(ieex);
-        } catch (UnsupportedOperationException uoex) {
-            InvalidExpressionException ieex = new InvalidExpressionException (uoex);
-            ieex.initCause(uoex);
-            throw new IllegalStateException(ieex);
-        } catch (ObjectCollectedException ocex) {
-            throw new IllegalStateException(new InvalidExpressionException(NbBundle.getMessage(
-                Evaluator.class, "CTL_EvalError_collected")));
-        } finally {
-            if (loggerMethod.isLoggable(Level.FINE)) {
-                loggerMethod.fine("FINISHED: "+objectReference+"."+method+" ("+argVals+") in thread "+evaluationThread);
-            }
-            try {
-                evaluationContext.methodInvokeDone();
-            } catch (IncompatibleThreadStateException itsex) {
-                InvalidExpressionException ieex = new InvalidExpressionException (itsex);
-                ieex.initCause(itsex);
-                throw new IllegalStateException(ieex);
-            }
-        }
+        return invokeMethod(arg0, method, isStatic, type, objectReference, argVals, evaluationContext);
     }
     
     /*private Method getConcreteMethod(ReferenceType type, String methodName, List<? extends ExpressionTree> typeArguments) {
@@ -457,7 +408,7 @@ import org.openide.util.NbBundle;
         }
         if (var instanceof DoubleValue) {
             double v = ((DoubleValue) var).value();
-            double e = ((DoubleValue) exp).value();
+            double e = ((PrimitiveValue) exp).doubleValue();
             switch (kind) {
                 case DIVIDE_ASSIGNMENT:
                     v /= e; break;
@@ -475,7 +426,7 @@ import org.openide.util.NbBundle;
         }
         if (var instanceof FloatValue) {
             float v = ((FloatValue) var).value();
-            float e = ((FloatValue) exp).value();
+            float e = ((PrimitiveValue) exp).floatValue();
             switch (kind) {
                 case DIVIDE_ASSIGNMENT:
                     v /= e; break;
@@ -493,7 +444,7 @@ import org.openide.util.NbBundle;
         }
         if (var instanceof LongValue) {
             long v = ((LongValue) var).value();
-            long e = ((LongValue) exp).value();
+            long e = ((PrimitiveValue) exp).longValue();
             switch (kind) {
                 case AND_ASSIGNMENT:
                     v &= e; break;
@@ -525,7 +476,7 @@ import org.openide.util.NbBundle;
         }
         if (var instanceof IntegerValue) {
             int v = ((IntegerValue) var).value();
-            int e = ((IntegerValue) exp).value();
+            int e = ((PrimitiveValue) exp).intValue();
             switch (kind) {
                 case AND_ASSIGNMENT:
                     v &= e; break;
@@ -939,33 +890,42 @@ import org.openide.util.NbBundle;
     }
 
     public Mirror visitLiteral(LiteralTree arg0, EvaluationContext evaluationContext) {
+        VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
         Object value = arg0.getValue();
         if (value instanceof Boolean) {
-            return evaluationContext.getDebugger().getVirtualMachine().mirrorOf(((Boolean) value).booleanValue());
+            return vm.mirrorOf(((Boolean) value).booleanValue());
         }
         if (value instanceof Byte) {
-            return evaluationContext.getDebugger().getVirtualMachine().mirrorOf(((Byte) value).byteValue());
+            return vm.mirrorOf(((Byte) value).byteValue());
         }
         if (value instanceof Character) {
-            return evaluationContext.getDebugger().getVirtualMachine().mirrorOf(((Character) value).charValue());
+            return vm.mirrorOf(((Character) value).charValue());
         }
         if (value instanceof Double) {
-            return evaluationContext.getDebugger().getVirtualMachine().mirrorOf(((Double) value).doubleValue());
+            return vm.mirrorOf(((Double) value).doubleValue());
         }
         if (value instanceof Float) {
-            return evaluationContext.getDebugger().getVirtualMachine().mirrorOf(((Float) value).floatValue());
+            return vm.mirrorOf(((Float) value).floatValue());
         }
         if (value instanceof Integer) {
-            return evaluationContext.getDebugger().getVirtualMachine().mirrorOf(((Integer) value).intValue());
+            return vm.mirrorOf(((Integer) value).intValue());
         }
         if (value instanceof Long) {
-            return evaluationContext.getDebugger().getVirtualMachine().mirrorOf(((Long) value).longValue());
+            return vm.mirrorOf(((Long) value).longValue());
         }
         if (value instanceof Short) {
-            return evaluationContext.getDebugger().getVirtualMachine().mirrorOf(((Short) value).shortValue());
+            return vm.mirrorOf(((Short) value).shortValue());
         }
         if (value instanceof String) {
-            return evaluationContext.getDebugger().getVirtualMachine().mirrorOf((String) value);
+            StringReference str = vm.mirrorOf((String) value);
+            ClassType strClass = (ClassType) vm.classesByName("java.lang.String").get(0);
+            try {
+                List<? extends Value> args = Collections.emptyList();
+                return invokeMethod(arg0, strClass.methodsByName("intern").get(0),
+                                    false, strClass, str, args, evaluationContext);
+            } catch (Exception ex) {
+                return str;
+            }
         }
         if (value == null) {
             return null;
@@ -1070,48 +1030,9 @@ import org.openide.util.NbBundle;
                 Method valueOfMethod = enumType.methodsByName("valueOf").get(0);
                 VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
                 StringReference constantNameRef = vm.mirrorOf(constantName);
-                try {
-                    if (loggerMethod.isLoggable(Level.FINE)) {
-                        loggerMethod.fine("STARTED : "+enumType+"."+valueOfMethod+" ("+constantNameRef+") in thread "+evaluationContext.getFrame().thread());
-                    }
-                    evaluationContext.methodToBeInvoked();
-                    Value enumValue =
-                            ((ClassType) enumType).invokeMethod(evaluationContext.getFrame().thread(),
-                                                                valueOfMethod,
-                                                                Collections.singletonList(constantNameRef),
-                                                                ObjectReference.INVOKE_SINGLE_THREADED);
-                    return enumValue;
-                } catch (InvalidTypeException itex) {
-                    throw new IllegalStateException(new InvalidExpressionException (itex));
-                } catch (ClassNotLoadedException cnlex) {
-                    throw new IllegalStateException(new InvalidExpressionException (cnlex));
-                } catch (IncompatibleThreadStateException itsex) {
-                    InvalidExpressionException ieex = new InvalidExpressionException (itsex);
-                    ieex.initCause(itsex);
-                    throw new IllegalStateException(ieex);
-                } catch (InvocationException iex) {
-                    InvalidExpressionException ieex = new InvalidExpressionException (iex);
-                    ieex.initCause(iex);
-                    throw new IllegalStateException(ieex);
-                } catch (UnsupportedOperationException uoex) {
-                    InvalidExpressionException ieex = new InvalidExpressionException (uoex);
-                    ieex.initCause(uoex);
-                    throw new IllegalStateException(ieex);
-                } catch (ObjectCollectedException ocex) {
-                    throw new IllegalStateException(new InvalidExpressionException(NbBundle.getMessage(
-                        Evaluator.class, "CTL_EvalError_collected")));
-                } finally {
-                    try {
-                        evaluationContext.methodInvokeDone();
-                    } catch (IncompatibleThreadStateException itsex) {
-                        InvalidExpressionException ieex = new InvalidExpressionException (itsex);
-                        ieex.initCause(itsex);
-                        throw new IllegalStateException(ieex);
-                    }
-                    if (loggerMethod.isLoggable(Level.FINE)) {
-                        loggerMethod.fine("FINISHED: "+enumType+"."+valueOfMethod+" ("+constantNameRef+") in thread "+evaluationContext.getFrame().thread());
-                    }
-                }
+                Value enumValue = invokeMethod(arg0, valueOfMethod, true, (ClassType) enumType, null,
+                             Collections.singletonList(constantNameRef), evaluationContext);
+                return enumValue;
         }
         Mirror expression = arg0.getExpression().accept(this, evaluationContext);
         String name = arg0.getIdentifier().toString();
@@ -1419,7 +1340,7 @@ import org.openide.util.NbBundle;
             return vm.mirrorOf(v);
         }
         if (expression instanceof FloatValue) {
-            double v = ((FloatValue) expression).value();
+            float v = ((FloatValue) expression).value();
             switch (kind) {
                 case POSTFIX_DECREMENT:
                     setToMirror(arg0.getExpression(), vm.mirrorOf(v - 1), evaluationContext);
@@ -1482,6 +1403,64 @@ import org.openide.util.NbBundle;
             
         } catch (ClassNotLoadedException cnlex) {
             
+        }
+    }
+    
+    private Value invokeMethod(Tree arg0, Method method, boolean isStatic, ClassType type,
+                               ObjectReference objectReference, List<? extends Value> argVals,
+                               EvaluationContext evaluationContext) {
+        if (!evaluationContext.canInvokeMethods()) {
+            Assert2.error(arg0, "calleeException", new UnsupportedOperationException(), evaluationContext);
+        }
+        ThreadReference evaluationThread = evaluationContext.getFrame().thread();
+        try {
+            if (loggerMethod.isLoggable(Level.FINE)) {
+                loggerMethod.fine("STARTED : "+objectReference+"."+method+" ("+argVals+") in thread "+evaluationThread);
+            }
+            evaluationContext.methodToBeInvoked();
+            Value value;
+            if (isStatic) {
+                value = type.invokeMethod(evaluationThread, method, argVals,
+                                          ObjectReference.INVOKE_SINGLE_THREADED);
+            } else {
+                value = objectReference.invokeMethod(evaluationThread, method,
+                                                     argVals,
+                                                     ObjectReference.INVOKE_SINGLE_THREADED);
+            }
+            if (loggerMethod.isLoggable(Level.FINE)) {
+                loggerMethod.fine("   return = "+value);
+            }
+            return value;
+        } catch (InvalidTypeException itex) {
+            throw new IllegalStateException(new InvalidExpressionException (itex));
+        } catch (ClassNotLoadedException cnlex) {
+            throw new IllegalStateException(new InvalidExpressionException (cnlex));
+        } catch (IncompatibleThreadStateException itsex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (itsex);
+            ieex.initCause(itsex);
+            throw new IllegalStateException(ieex);
+        } catch (InvocationException iex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (iex);
+            ieex.initCause(iex);
+            throw new IllegalStateException(ieex);
+        } catch (UnsupportedOperationException uoex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (uoex);
+            ieex.initCause(uoex);
+            throw new IllegalStateException(ieex);
+        } catch (ObjectCollectedException ocex) {
+            throw new IllegalStateException(new InvalidExpressionException(NbBundle.getMessage(
+                Evaluator.class, "CTL_EvalError_collected")));
+        } finally {
+            if (loggerMethod.isLoggable(Level.FINE)) {
+                loggerMethod.fine("FINISHED: "+objectReference+"."+method+" ("+argVals+") in thread "+evaluationThread);
+            }
+            try {
+                evaluationContext.methodInvokeDone();
+            } catch (IncompatibleThreadStateException itsex) {
+                InvalidExpressionException ieex = new InvalidExpressionException (itsex);
+                ieex.initCause(itsex);
+                throw new IllegalStateException(ieex);
+            }
         }
     }
 

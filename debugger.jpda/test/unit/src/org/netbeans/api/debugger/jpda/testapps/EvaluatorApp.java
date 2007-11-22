@@ -59,6 +59,11 @@ package org.netbeans.api.debugger.jpda.testapps;
 public class EvaluatorApp {
 
     private static int      ix = 74;
+    private static int      ixcopy = 74;
+    private static long     lx = 7400L;
+    private static long     lxcopy = 7400L;
+    private static long     llx = 7400740010101010740L;
+    private static long     llxcopy = 7400740010101010740L;
     private static float    fx = 10.0f;
     private static double   dx = 10.0;
     private static boolean  bx = true;
@@ -73,12 +78,12 @@ public class EvaluatorApp {
         The following code must stay where it is, on same line numbers, else all unit tests will fail.
     ************************************************************************************************** */
     public static void main(String[] args) {
-        EvaluatorApp app = new EvaluatorApp(); // BRKP 1
+        EvaluatorApp app = new EvaluatorApp(); // LBREAKPOINT
         app.instanceMethod();
     }
 
     private void instanceMethod() {
-        int instance = 0; // BRKP 2
+        int instance = 0; // LBREAKPOINT
     }
     
     // TEST METHODS
@@ -458,7 +463,7 @@ public class EvaluatorApp {
         return -50.234e148+6.043e150;
     }
 
-    public static short testOp14e() {
+    public static int testOp14e() {
         return (short) -50 + (short) 6043;
     }
 
@@ -548,32 +553,164 @@ public class EvaluatorApp {
     
     //    +=      -=      *=      /=      &=  |=      ^=      %=      <<=       >>=       >>>=
     
-    public static long testOp25() {
-        return ix += 10;
+    public static int testOp25a() {
+        return ix += (byte) 10;
     }
     
-    public static long testOp25_undo() {
+    public static int testOp25a_undo() {
         return ix -= 10;
+    }
+    
+    public static long testOp25b() {
+        return lx += 10;
+    }
+    
+    public static long testOp25b_undo() {
+        return lx -= 10;
     }
     
     public static long testOp26() {
-        return ix -= 10;
+        return lx -= 10l;
     }
     
     public static long testOp26_undo() {
-        return ix += 10;
+        return lx += 10l;
     }
     
     public static long testOp27() {
-        return ix *= 10;
+        return lx *= (char) 10;
     }
     
     public static long testOp27_undo() {
-        return ix /= 10;
+        return lx /= 10;
+    }
+    
+    public static long testOp28() {
+        return lx /= 10;
+    }
+    
+    public static long testOp28_undo() {
+        return lx *= 10;
+    }
+    
+    public static int testOp29a() {
+        return ix &= (byte) 10;
+    }
+    
+    public static int testOp29a_undo() {
+        return ix = ixcopy;
+    }
+    
+    public static long testOp29b() {
+        return lx &= 123547890l;
+    }
+    
+    public static long testOp29b_undo() {
+        return lx = lxcopy;
+    }
+    
+    public static int testOp30a() {
+        return ix |= (byte) 10;
+    }
+    
+    public static int testOp30a_undo() {
+        return ix = ixcopy;
+    }
+    
+    public static long testOp30b() {
+        return lx |= (byte) 10;
+    }
+    
+    public static long testOp30b_undo() {
+        return lx = lxcopy;
+    }
+    
+    public static int testOp31a() {
+        return ix ^= (short) 10;
+    }
+    
+    public static int testOp31a_undo() {
+        return ix = ixcopy;
+    }
+    
+    public static long testOp31b() {
+        return lx ^= 101010;
+    }
+    
+    public static long testOp31b_undo() {
+        return lx = lxcopy;
+    }
+    
+    public static int testOp32a() {
+        return ix %= (short) 1010;
+    }
+    
+    public static int testOp32a_undo() {
+        return ix = ixcopy;
+    }
+    
+    public static long testOp32b() {
+        return llx %= 11000100;
+    }
+    
+    public static long testOp32b_undo() {
+        return llx = llxcopy;
+    }
+    
+    public static int testOp33a() {
+        return ix <<= (byte) 3;
+    }
+    
+    public static int testOp33a_undo() {
+        return ix = ixcopy;
+    }
+    
+    public static long testOp33b() {
+        return llx <<= 15;
+    }
+    
+    public static long testOp33b_undo() {
+        return llx = llxcopy;
+    }
+    
+    public static int testOp34a() {
+        return ix >>= (byte) 13;
+    }
+    
+    public static int testOp34a_undo() {
+        return ix = ixcopy;
+    }
+    
+    public static long testOp34b() {
+        return llx >>= 15;
+    }
+    
+    public static long testOp34b_undo() {
+        return llx = llxcopy;
+    }
+    
+    public static int testOp35a() {
+        return ix >>>= (byte) 13;
+    }
+    
+    public static int testOp35a_undo() {
+        return ix = ixcopy;
+    }
+    
+    public static long testOp35b() {
+        return llx >>>= 15;
+    }
+    
+    public static long testOp35b_undo() {
+        return llx = llxcopy;
     }
     
     
     
     // Test operand priorities
+    
+    public static long testOpPrio2() {
+        return llx + ix * lx - ix / 5 | llx;
+    }
 
 }
