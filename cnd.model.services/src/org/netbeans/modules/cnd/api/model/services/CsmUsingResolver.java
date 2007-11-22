@@ -89,7 +89,7 @@ public abstract class CsmUsingResolver {
      *  }
      * returns: std::printf() + std::cout
      *
-     * @return sorted collection of declarations visible for input offsetable element through "using" declarations
+     * @return sorted unmodifiable collection of declarations visible for input offsetable element through "using" declarations
      */
     public abstract Collection<CsmDeclaration> findUsedDeclarations(CsmFile file, int offset, CsmProject onlyInProject);
     
@@ -101,7 +101,7 @@ public abstract class CsmUsingResolver {
      *  void method(){
      *  }
      * returns: global namespace (the container of method()) + myNs + std 
-     * @return sorted collection of namespaces visible for input offsetable element
+     * @return sorted unmodifiable collection of namespaces visible for input offsetable element
      */
     public abstract Collection<CsmNamespace> findVisibleNamespaces(CsmFile file, int offset, CsmProject onlyInProject);
 
@@ -113,7 +113,7 @@ public abstract class CsmUsingResolver {
      *  void method(){
      *  }
      * returns: B + D
-     * @return sorted collection of namespace aliases visible for input offsetable element
+     * @return sorted unmodifiable collection of namespace aliases visible for input offsetable element
      */
     public abstract Collection<CsmNamespaceAlias> findNamespaceAliases(CsmFile file, int offset, CsmProject onlyInProject);
     
