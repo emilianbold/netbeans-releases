@@ -151,6 +151,8 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.j2ee.jpa.refactoring</friend>
+                <friend>org.netbeans.modules.j2ee.jpa.verification</friend>
+                <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2ee.persistence</friend>
                 <friend>org.netbeans.modules.web.refactoring</friend>
                 <package>org.netbeans.modules.j2ee.core.api.support</package>
