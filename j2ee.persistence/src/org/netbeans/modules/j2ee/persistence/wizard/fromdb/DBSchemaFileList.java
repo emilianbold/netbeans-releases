@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -65,7 +66,7 @@ public class DBSchemaFileList {
     private final List dbschemaList;
 
     public DBSchemaFileList(Project project, FileObject configFilesFolder) {
-        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
+        SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
 
         // XXX this recursive search is a potential performance problem
         for (int i = 0; i < sourceGroups.length; i++) {

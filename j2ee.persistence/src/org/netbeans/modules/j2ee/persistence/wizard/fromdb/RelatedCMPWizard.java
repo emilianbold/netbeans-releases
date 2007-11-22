@@ -55,6 +55,7 @@ import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -302,7 +303,7 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
         // }
         
         return Collections.<DataObject>singleton(DataFolder.findFolder(
-                SourceGroupSupport.getFolderForPackage(helper.getLocation(), helper.getPackageName())
+                SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName())
                 ));
     }
     
@@ -335,7 +336,7 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
             
             helper.buildBeans();
             
-            FileObject pkg = SourceGroupSupport.getFolderForPackage(helper.getLocation(), helper.getPackageName());
+            FileObject pkg = SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName());
             generator.generateBeans(progressPanel, helper, dbschemaFile, handle);
             
             //            if (EjbJar.VERSION_3_0.equals(dd.getVersion().toString())) {

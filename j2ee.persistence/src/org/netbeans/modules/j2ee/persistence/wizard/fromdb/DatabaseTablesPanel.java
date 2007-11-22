@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
-import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Rectangle;
@@ -65,6 +64,7 @@ import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.dbschema.SchemaElement;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
@@ -181,8 +181,8 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             // should be selected
             int dbschemaCount = dbschemaComboBox.getItemCount();
             if (targetFolder != null) {
-                SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
-                SourceGroup targetSourceGroup = SourceGroupSupport.getFolderSourceGroup(sourceGroups, targetFolder);
+                SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
+                SourceGroup targetSourceGroup = SourceGroups.getFolderSourceGroup(sourceGroups, targetFolder);
                 if (targetSourceGroup != null) {
                     for (int i=0; i<dbschemaCount; i++){
                         Object nextSchema = dbschemaComboBox.getItemAt(i);

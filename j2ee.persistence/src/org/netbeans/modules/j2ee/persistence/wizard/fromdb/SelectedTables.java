@@ -54,6 +54,7 @@ import java.util.TreeMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.persistence.dd.JavaPersistenceQLKeywords;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityMember;
 import org.openide.filesystems.FileObject;
@@ -145,7 +146,7 @@ public final class SelectedTables {
             this.packageName = packageName;
 
             if (location != null && packageName != null) {
-                targetFolder = SourceGroupSupport.getFolderForPackage(location, packageName, false);
+                targetFolder = SourceGroups.getFolderForPackage(location, packageName, false);
             } else {
                 targetFolder = null;
             }

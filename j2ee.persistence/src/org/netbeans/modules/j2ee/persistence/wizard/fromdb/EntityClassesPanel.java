@@ -57,6 +57,8 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
+import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
@@ -130,7 +132,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
         projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
 
-        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
+        SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
         SourceGroupUISupport.connect(locationComboBox, sourceGroups);
 
         packageComboBox.setRenderer(PackageView.listRenderer());
@@ -139,10 +141,10 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
         if (targetFolder != null) {
             // set default source group and package cf. targetFolder
-            SourceGroup targetSourceGroup = SourceGroupSupport.getFolderSourceGroup(sourceGroups, targetFolder);
+            SourceGroup targetSourceGroup = SourceGroups.getFolderSourceGroup(sourceGroups, targetFolder);
             if (targetSourceGroup != null) {
                 locationComboBox.setSelectedItem(targetSourceGroup);
-                String targetPackage = SourceGroupSupport.getPackageForFolder(targetSourceGroup, targetFolder);
+                String targetPackage = SourceGroups.getPackageForFolder(targetSourceGroup, targetFolder);
                 if (targetPackage != null) {
                     packageComboBoxEditor.setText(targetPackage);
                 }
@@ -522,12 +524,12 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 return false;
             }
 
-            if (!SourceGroupSupport.isValidPackageName(packageName)) {
+            if (!JavaIdentifiers.isValidPackageName(packageName)) {
                 setErrorMessage(NbBundle.getMessage(EntityClassesPanel.class,"ERR_JavaTargetChooser_InvalidPackage")); //NOI18N
                 return false;
             }
 
-            if (!SourceGroupSupport.isFolderWritable(sourceGroup, packageName)) {
+            if (!SourceGroups.isFolderWritable(sourceGroup, packageName)) {
                 setErrorMessage(NbBundle.getMessage(EntityClassesPanel.class, "ERR_JavaTargetChooser_UnwritablePackage")); //NOI18N
                 return false;
             }
@@ -537,7 +539,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             // the classpath already contains one)
             ClassPath classPath = null;
             try {
-                FileObject packageFO = SourceGroupSupport.getFolderForPackage(sourceGroup, packageName, false);
+                FileObject packageFO = SourceGroups.getFolderForPackage(sourceGroup, packageName, false);
                 if (packageFO == null) {
                     packageFO = sourceGroup.getRootFolder();
                 }

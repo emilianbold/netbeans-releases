@@ -13,7 +13,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SourceGroupSupport;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SourceGroupUISupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -75,7 +75,7 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
         
         projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
 
-        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
+        SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
         SourceGroupUISupport.connect(locationComboBox, sourceGroups);
 
         packageComboBox.setRenderer(PackageView.listRenderer());
@@ -83,10 +83,10 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
         updateSourceGroupPackages();
 
         // set default source group and package cf. targetFolder
-        SourceGroup targetSourceGroup = SourceGroupSupport.getFolderSourceGroup(sourceGroups, targetFolder);
+        SourceGroup targetSourceGroup = SourceGroups.getFolderSourceGroup(sourceGroups, targetFolder);
         if (targetSourceGroup != null) {
             locationComboBox.setSelectedItem(targetSourceGroup);
-            String targetPackage = SourceGroupSupport.getPackageForFolder(targetSourceGroup, targetFolder);
+            String targetPackage = SourceGroups.getPackageForFolder(targetSourceGroup, targetFolder);
             if (targetPackage != null) {
                 packageComboBoxEditor.setText(targetPackage);
             }
@@ -96,7 +96,7 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
     
     void store(WizardDescriptor settings) {
         try {
-            Templates.setTargetFolder(settings, SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage()));
+            Templates.setTargetFolder(settings, SourceGroups.getFolderForPackage(getLocationValue(), getPackage()));
         } catch (IOException ex) {
             Logger.getLogger("global").log(Level.INFO, null, ex);
         }
