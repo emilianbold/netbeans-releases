@@ -339,4 +339,10 @@ public class AcceptanceTestCase extends JellyTestCase {
     public void tearDown() {
         new SaveAllAction().performAPI();
     }
+
+    protected void startTest(){
+        super.startTest();
+        Helpers.closeUMLWarningIfOpened();
+    }
+
 }

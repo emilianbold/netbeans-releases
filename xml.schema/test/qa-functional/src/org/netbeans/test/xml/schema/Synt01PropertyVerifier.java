@@ -43,6 +43,7 @@ package org.netbeans.test.xml.schema;
 
 import org.netbeans.test.xml.schema.sequential.PropertyVerifier;
 import org.netbeans.test.xml.schema.lib.sequential.SequentialTestSuite;
+import org.netbeans.test.xml.schema.lib.util.Helpers;
 
 /**
  *
@@ -62,6 +63,11 @@ public class Synt01PropertyVerifier extends PropertyVerifier {
     
     protected int getFirstLine() {
         return 5;
+    }
+
+    protected void startTest(){
+        super.startTest();
+        Helpers.closeUMLWarningIfOpened();
     }
     
 }

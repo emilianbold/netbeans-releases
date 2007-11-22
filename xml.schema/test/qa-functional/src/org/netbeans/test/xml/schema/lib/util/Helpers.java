@@ -44,6 +44,7 @@ package org.netbeans.test.xml.schema.lib.util;
 import java.awt.Component;
 import java.awt.Container;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.ComponentChooser;
@@ -53,6 +54,7 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JComponentOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 
 /**
@@ -70,6 +72,18 @@ public class Helpers {
             JComponent theOneToClose = TopComponentOperator.findTopComponent(strName, 0);
             if(theOneToClose != null) {
                 new TopComponentOperator(theOneToClose).close();
+                break;
+            } else {
+                pause(200);
+            }
+        }
+    }
+
+    public static void closeUMLWarningIfOpened() {
+        for (int i = 0; i < 5; i++) {
+            JDialog theOneToClose = JDialogOperator.findJDialog("Platform Warning",true,true);
+            if(theOneToClose != null) {
+                new JDialogOperator(theOneToClose).close();
                 break;
             } else {
                 pause(200);
