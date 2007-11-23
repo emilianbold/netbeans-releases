@@ -56,9 +56,8 @@ import java.util.Set;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
-import org.netbeans.modules.j2ee.common.EventRequestProcessor;
-import org.netbeans.modules.j2ee.common.EventRequestProcessor.AsynchronousAction;
-import org.netbeans.modules.j2ee.common.EventRequestProcessor.Context;
+import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport;
+import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport.Context;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -88,11 +87,11 @@ public abstract class MessageDestinationUiSupport {
         final DestinationsHolder holder = new DestinationsHolder();
         
         // fetch references & datasources asynchronously
-        EventRequestProcessor.Action action = new AsynchronousAction() {
+        ProgressSupport.Action action = new ProgressSupport.BackgroundAction() {
 
             public void run(Context actionContext) {
                 String msg = NbBundle.getMessage(MessageDestinationUiSupport.class, "MSG_RetrievingDestinations");
-                actionContext.getProgress().progress(msg);
+                actionContext.progress(msg);
                 try {
                     holder.setModuleDestinations(j2eeModuleProvider.getConfigSupport().getMessageDestinations());
                     holder.setServerDestinations(j2eeModuleProvider.getConfigSupport().getServerMessageDestinations());
@@ -102,9 +101,8 @@ public abstract class MessageDestinationUiSupport {
             }
         };
         
-        Collection<EventRequestProcessor.Action> asyncActions = Collections.singleton(action);
-        EventRequestProcessor erp = new EventRequestProcessor();
-        erp.invoke(asyncActions);
+        Collection<ProgressSupport.Action> asyncActions = Collections.singleton(action);
+        ProgressSupport.invoke(asyncActions);
         
         return holder;
     }
@@ -199,10 +197,10 @@ public abstract class MessageDestinationUiSupport {
             final String destinationName, final MessageDestination.Type destinationType) {
         final MessageDestination[] messageDestinations = new MessageDestination[1];
         
-        EventRequestProcessor.Action action = new EventRequestProcessor.AsynchronousAction() {
+        ProgressSupport.Action action = new ProgressSupport.BackgroundAction() {
             public void run(Context actionContext) {
                 String msg = NbBundle.getMessage(MessageDestinationUiSupport.class, "MSG_CreatingDestination");
-                actionContext.getProgress().progress(msg);
+                actionContext.progress(msg);
                 try {
                     messageDestinations[0] = 
                             j2eeModuleProvider.getConfigSupport().createMessageDestination(destinationName, destinationType);
@@ -212,9 +210,8 @@ public abstract class MessageDestinationUiSupport {
             }
         };
         
-        Collection<EventRequestProcessor.Action> asyncActions = Collections.singleton(action);
-        EventRequestProcessor erp = new EventRequestProcessor();
-        erp.invoke(asyncActions);
+        Collection<ProgressSupport.Action> asyncActions = Collections.singleton(action);
+        ProgressSupport.invoke(asyncActions);
         
         return messageDestinations[0];
     }

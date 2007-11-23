@@ -61,10 +61,9 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.DatasourceUIHelper;
-import org.netbeans.modules.j2ee.common.EventRequestProcessor;
-import org.netbeans.modules.j2ee.common.EventRequestProcessor.AsynchronousAction;
-import org.netbeans.modules.j2ee.common.EventRequestProcessor.Context;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport;
+import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport.Context;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
@@ -179,12 +178,12 @@ public class UseDatabaseAction extends NodeAction {
         final ResourcesHolder holder = new ResourcesHolder();
         
         // fetch references & datasources asynchronously
-        Collection<EventRequestProcessor.Action> asyncActions = new ArrayList<EventRequestProcessor.Action>(1);
-        asyncActions.add(new AsynchronousAction() {
+        Collection<ProgressSupport.Action> asyncActions = new ArrayList<ProgressSupport.Action>(1);
+        asyncActions.add(new ProgressSupport.BackgroundAction() {
             
             public void run(Context actionContext) {
                 String msg = NbBundle.getMessage(DatasourceUIHelper.class, "MSG_retrievingDS"); //NOI18N
-                actionContext.getProgress().progress(msg);
+                actionContext.progress(msg);
                 try {
                     populateDataSourceReferences(holder, j2eeModuleProvider, fileObject);
                 } catch (ConfigurationException ex) {
@@ -195,8 +194,7 @@ public class UseDatabaseAction extends NodeAction {
             }
         });
         
-        EventRequestProcessor erp = new EventRequestProcessor();
-        erp.invoke(asyncActions);
+        ProgressSupport.invoke(asyncActions);
         
         return holder;
     }

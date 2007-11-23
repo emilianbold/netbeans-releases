@@ -56,11 +56,10 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.j2ee.common.DatasourceUIHelper;
-import org.netbeans.modules.j2ee.common.EventRequestProcessor;
-import org.netbeans.modules.j2ee.common.EventRequestProcessor.Action;
-import org.netbeans.modules.j2ee.common.EventRequestProcessor.AsynchronousAction;
-import org.netbeans.modules.j2ee.common.EventRequestProcessor.Context;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport;
+import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport.Action;
+import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport.Context;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
@@ -450,10 +449,10 @@ public class DataSourceReferencePanel extends JPanel {
         final String username = dsc.getUsername();
         final String driverClassName = dsc.getDriverClassName();
         
-        Action action = new AsynchronousAction() {
+        Action action = new ProgressSupport.BackgroundAction() {
             public void run(Context actionContext) {
                 String msg = NbBundle.getMessage(DatasourceUIHelper.class, "MSG_creatingDS");
-                actionContext.getProgress().progress(msg);
+                actionContext.progress(msg);
                 try {
                     ds[0] = provider.createDatasource(jndiName, url, username, password, driverClassName);
                 } catch (DatasourceAlreadyExistsException daee) {
@@ -476,8 +475,7 @@ public class DataSourceReferencePanel extends JPanel {
         
         // invoke action
         Collection<Action> actions = Collections.singleton(action);
-        EventRequestProcessor eventRequestProcessor = new EventRequestProcessor();
-        eventRequestProcessor.invoke(actions);
+        ProgressSupport.invoke(actions);
         
         return ds[0];
     }
