@@ -43,6 +43,8 @@ package org.netbeans.modules.form.layoutsupport.delegates;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.form.codestructure.CodeGroup;
 import org.netbeans.modules.form.layoutsupport.AbstractLayoutSupport;
 
@@ -78,6 +80,18 @@ public class MenuFakeSupport extends AbstractLayoutSupport {
     {
         for (int i=0; i < components.length; i++) {
             containerDelegate.add(components[i], i + index);
+            // Issue 110587 - the default background of menu depends (on some l&f)
+            // on the location of the menu (if it is top-level menu or not).
+            // The background is changed when "ancestor" property change event
+            // is fired. This usually happens when addNotify() is called.
+            // Unfortunately, addNotify() is not called if the parent doesn't
+            // have peer - this happens for model instances. The following
+            // code fires the property change event explicitly to force
+            // update of the background.
+            PropertyChangeEvent event = new PropertyChangeEvent(components[i], "ancestor", null, container); // NOI18N
+            for (PropertyChangeListener listener : components[i].getPropertyChangeListeners()) {
+                listener.propertyChange(event);
+            }
         }
     }
 }
