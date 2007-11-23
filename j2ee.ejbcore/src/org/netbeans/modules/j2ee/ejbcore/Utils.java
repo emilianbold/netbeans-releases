@@ -47,15 +47,12 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
-import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
-import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.WizardDescriptor;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
@@ -75,17 +72,12 @@ import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.ejbcore.action.CallEjbGenerator;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.filesystems.FileObject;
 
 public class Utils {
-    
-    private static final String WIZARD_PANEL_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
-    private static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; //NOI18N;
     
     public static String toClasspathString(File[] classpathEntries) {
         if (classpathEntries == null) {
@@ -104,44 +96,6 @@ public class Utils {
     public static void notifyError(Exception exception) {
         NotifyDescriptor ndd = new NotifyDescriptor.Message(exception.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
         DialogDisplayer.getDefault().notify(ndd);
-    }
-    
-    public static void mergeSteps(WizardDescriptor wizard, WizardDescriptor.Panel[] panels, String[] steps) {
-        Object prop = wizard.getProperty(WIZARD_PANEL_CONTENT_DATA);
-        String[] beforeSteps;
-        int offset;
-        if (prop instanceof String[]) {
-            beforeSteps = (String[]) prop;
-            offset = beforeSteps.length;
-            if (offset > 0 && ("...".equals(beforeSteps[offset - 1]))) {// NOI18N
-                offset--;
-            }
-        } else {
-            beforeSteps = null;
-            offset = 0;
-        }
-        String[] resultSteps = new String[ (offset) + panels.length];
-        System.arraycopy(beforeSteps, 0, resultSteps, 0, offset);
-        setSteps(panels, steps, resultSteps, offset);
-    }
-    
-    private static void setSteps(WizardDescriptor.Panel[] panels, String[] steps, String[] resultSteps, int offset) {
-        int numberOfSteps = steps == null ? 0 : steps.length;
-        for (int i = 0; i < panels.length; i++) {
-            final JComponent component = (JComponent) panels[i].getComponent();
-            String step = i < numberOfSteps ? steps[i] : null;
-            if (step == null) {
-                step = component.getName();
-            }
-            component.putClientProperty(WIZARD_PANEL_CONTENT_DATA, resultSteps);
-            component.putClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
-            component.getAccessibleContext().setAccessibleDescription(step);
-            resultSteps[i + offset] = step;
-        }
-    }
-    
-    public static void setSteps(WizardDescriptor.Panel[] panels, String[] steps) {
-        setSteps(panels, steps, steps, 0);
     }
     
     public static boolean areInSameJ2EEApp(Project project1, Project project2) {

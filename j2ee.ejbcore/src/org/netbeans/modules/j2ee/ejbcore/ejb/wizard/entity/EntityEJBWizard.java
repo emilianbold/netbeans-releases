@@ -52,7 +52,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.ejbcore.Utils;
+import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.MultiTargetChooserPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
@@ -88,7 +88,7 @@ public final class EntityEJBWizard implements WizardDescriptor.InstantiatingIter
         WizardDescriptor.Panel wizardPanel = new MultiTargetChooserPanel(project,sourceGroups, ejbPanel, true);
 
         panels = new WizardDescriptor.Panel[] {wizardPanel};
-        Utils.mergeSteps(wiz, panels, null);
+        Wizards.mergeSteps(wiz, panels, null);
 
     }
 

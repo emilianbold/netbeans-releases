@@ -52,8 +52,8 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
-import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -93,7 +93,7 @@ public final class ServiceLocatorWizard implements WizardDescriptor.Instantiatin
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         panels = new WizardDescriptor.Panel[] {JavaTemplates.createPackageChooser(project,sourceGroups)};
-        Utils.mergeSteps(wiz, panels, STEPS);
+        Wizards.mergeSteps(wiz, panels, STEPS);
     }
     
     public Set instantiate () throws IOException {

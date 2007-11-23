@@ -54,8 +54,8 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
+import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.MultiTargetChooserPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -90,7 +90,7 @@ public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIte
         ejbPanel = new MessageEJBWizardPanel(wiz);
         WizardDescriptor.Panel wizardPanel = new ValidatingPanel(new MultiTargetChooserPanel(project,sourceGroups, ejbPanel, true));
         panels = new WizardDescriptor.Panel[] {wizardPanel};
-        Utils.mergeSteps(wiz, panels, SESSION_STEPS);
+        Wizards.mergeSteps(wiz, panels, SESSION_STEPS);
     }
 
     public Set instantiate() throws IOException {
