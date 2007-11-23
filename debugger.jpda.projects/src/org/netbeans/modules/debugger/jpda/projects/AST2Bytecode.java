@@ -70,6 +70,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -78,6 +79,7 @@ import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.TreeUtilities;
 
 import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.openide.ErrorManager;
 
 /**
  * This class tries to match the AST expression to bytecode. The result
@@ -192,8 +194,26 @@ class AST2Bytecode {
                                     // There are errors, give it up.
                                     return null;
                                 }
-                                assert type.getKind() == TypeKind.DECLARED;
-                                TypeElement te = (TypeElement) types.asElement(type);
+                                TypeElement te;
+                                if (type.getKind() == TypeKind.DECLARED) {
+                                    te = (TypeElement) types.asElement(type);
+                                } else if (type.getKind() == TypeKind.TYPEVAR) {
+                                    TypeParameterElement tpe = (TypeParameterElement) types.asElement(type);
+                                    List<? extends TypeMirror> exts = tpe.getBounds();
+                                    if (exts.size() == 1) {
+                                        type = exts.get(0);
+                                        if (type.getKind() == TypeKind.DECLARED) {
+                                            te = (TypeElement) types.asElement(type);
+                                        } else {
+                                            return null; // Unsupported
+                                        }
+                                    } else {
+                                        return null; // Unsupported
+                                    }
+                                } else {
+                                    ErrorManager.getDefault().notify(new IllegalStateException("Unexpected type "+type+" in "+treeNodes));
+                                    return null;
+                                }
                                 methodClassType = ElementUtilities.getBinaryName(te);
                             }
                         }
