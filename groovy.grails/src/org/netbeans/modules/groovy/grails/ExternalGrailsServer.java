@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.File;
 import org.netbeans.modules.groovy.grails.settings.Settings;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -55,8 +56,9 @@ public class ExternalGrailsServer implements GrailsServer{
     private  final Logger LOG = Logger.getLogger(ExternalGrailsServer.class.getName());
     
     boolean checkForGrailsExecutable ( File pathToGrails ) {
-        return new File (new File (pathToGrails, "bin"), "grails").isFile ();
-        }
+        String pathToBinary = Utilities.isWindows() ? "\\bin\\grails.bat" : "/bin/grails"; // NOI18N
+        return new File (pathToGrails, pathToBinary).isFile ();
+    }
     
     
     public boolean serverConfigured () {

@@ -38,6 +38,7 @@ import org.netbeans.modules.groovy.grails.settings.Settings;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.concurrent.CountDownLatch;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -62,7 +63,7 @@ public class GrailsServerRunnable implements Runnable {
         this.cmd = cmd;
         this.outputReady = outputReady;
         
-        this.grailsExecutable = settings.getGrailsBase() + File.separator + "bin"+ File.separator +"grails";
+        this.grailsExecutable = settings.getGrailsBase() + ( Utilities.isWindows() ? "\\bin\\grails.bat" : "/bin/grails" ); // NOI18N
         }
     
     public void run() {
