@@ -46,11 +46,13 @@ package org.netbeans.spi.editor.hints;
  */
 public enum Severity {
 
+    @Deprecated
     DISABLED("disabled"),
     ERROR("error"),
     WARNING("warning"),
     VERIFIER("verifier"),
     HINT("hint"),
+    @Deprecated
     TODO("todo");
     
     private String displayName;
