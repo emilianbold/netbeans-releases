@@ -527,11 +527,8 @@ public final class NavigatorController implements LookupListener, ActionListener
         if (navigatorTC.equals(WindowManager.getDefault().getRegistry().getActivated())) {
             return;
         }
-        if (EventQueue.isDispatchThread()) {
-            run();
-        } else {
-            EventQueue.invokeLater(this);
-        }
+        // #122257: update content later to fight possible deadlocks
+        EventQueue.invokeLater(this);
     }
 
     public void childrenAdded(NodeMemberEvent ev) {
