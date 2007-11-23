@@ -1,0 +1,71 @@
+[b|, background, background, 141]
+background
+background-attachment
+background-color
+background-image
+background-position
+background-repeat
+border
+border-bottom
+border-bottom-color
+border-bottom-style
+border-bottom-width
+border-collapse
+border-color
+border-left
+border-left-color
+border-left-style
+border-left-width
+border-right
+border-right-color
+border-right-style
+border-right-width
+border-spacing
+border-style
+border-top
+border-top-color
+border-top-style
+border-top-width
+border-width
+bottom
+End cursor position = 152
+[c|, clip, clip, 166]
+caption-side
+clear
+clip
+color
+content
+counter-increment
+counter-reset
+cue
+cue-after
+cue-before
+cursor
+End cursor position = 171
+[font-s|, font-size, font-size, 225]
+font-size
+font-style
+End cursor position = 235
+[caption{co|}, color, caption{color}, 274]
+color
+content
+counter-increment
+counter-reset
+End cursor position = 288
+[caption{color:blue; p|}, position, caption{color:blue; position}, 349]
+padding
+padding-bottom
+padding-left
+padding-right
+padding-top
+page-break-after
+page-break-before
+page-break-inside
+pause
+pause-after
+pause-before
+pitch
+pitch-range
+play-during
+position
+End cursor position = 378
