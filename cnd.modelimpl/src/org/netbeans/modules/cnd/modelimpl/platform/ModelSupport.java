@@ -274,7 +274,20 @@ public class ModelSupport implements PropertyChangeListener {
 	    ModelImpl.instance().enqueueModelTask(new Runnable() {
 		public void run() {
 		    for(NativeProject project : getNativeProjects()){
-			filesPropertiesChanged(project.getAllSourceFiles());
+                        ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
+                        for(NativeFileItem item : project.getAllFiles()){
+                            if (!item.isExcluded()) {
+                                switch(item.getLanguage()){
+                                    case C:
+                                    case CPP:
+                                        list.add(item);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                        }
+			filesPropertiesChanged(list);
 		    }
 		}
 	    }, "Applying property changes"); // NOI18N
@@ -444,7 +457,6 @@ public class ModelSupport implements PropertyChangeListener {
     }
     
     public void dumpNativeProject(NativeProject nativeProject) {
-        List<NativeFileItem> headers = nativeProject.getAllHeaderFiles();
         System.err.println("\n\n\nDumping project " + nativeProject.getProjectDisplayName());
         System.err.println("\nSystem include paths");
         for (Iterator it = nativeProject.getSystemIncludePaths().iterator(); it.hasNext();) System.err.println("    " + it.next());
@@ -454,17 +466,29 @@ public class ModelSupport implements PropertyChangeListener {
         for (Iterator it = nativeProject.getSystemMacroDefinitions().iterator(); it.hasNext();) System.err.println("    " + it.next());
         System.err.println("\nUser macros");
         for (Iterator it = nativeProject.getUserMacroDefinitions().iterator(); it.hasNext();)   System.err.println("    " + it.next());
-        List<NativeFileItem> files;
-        files = nativeProject.getAllSourceFiles();
-        System.err.println("\nSources: (" + files.size() + " files )");
-        for (Iterator it = files.iterator(); it.hasNext();) {
-            NativeFileItem elem = (NativeFileItem) it.next();
+        List<NativeFileItem> sources = new ArrayList<NativeFileItem>();
+        List<NativeFileItem> headers = new ArrayList<NativeFileItem>();
+        for(NativeFileItem item : nativeProject.getAllFiles()){
+            if (!item.isExcluded()) {
+                switch(item.getLanguage()){
+                    case C:
+                    case CPP:
+                        sources.add(item);
+                        break;
+                    case C_HEADER:
+                        headers.add(item);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        System.err.println("\nSources: (" + sources.size() + " files )");
+        for (NativeFileItem elem : sources) {
             System.err.println(elem.getFile().getAbsolutePath());
         }
-        files = nativeProject.getAllHeaderFiles();
-        System.err.println("\nHeaders: (" + files.size() + " files )");
-        for (Iterator it = files.iterator(); it.hasNext();) {
-            NativeFileItem elem = (NativeFileItem) it.next();
+        System.err.println("\nHeaders: (" + headers.size() + " files )");
+        for (NativeFileItem elem : headers) {
             System.err.println(elem.getFile().getAbsolutePath());
         }
         
@@ -512,13 +536,28 @@ public class ModelSupport implements PropertyChangeListener {
     private void dumpProjectFiles(NativeProject nativeProject) {
         if( TraceFlags.DEBUG ) {
             Diagnostic.trace("+++ Sources:"); // NOI18N
-            for (Iterator it = nativeProject.getAllSourceFiles().iterator(); it.hasNext();) {
-                NativeFileItem elem = (NativeFileItem) it.next();
+            List<NativeFileItem> sources = new ArrayList<NativeFileItem>();
+            List<NativeFileItem> headers = new ArrayList<NativeFileItem>();
+            for(NativeFileItem item : nativeProject.getAllFiles()){
+                if (!item.isExcluded()) {
+                    switch(item.getLanguage()){
+                        case C:
+                        case CPP:
+                            sources.add(item);
+                            break;
+                        case C_HEADER:
+                            headers.add(item);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            for (NativeFileItem elem : sources) {
                 trace(elem);
             }
             Diagnostic.trace("+++ Headers:"); // NOI18N
-            for (Iterator<NativeFileItem> it = nativeProject.getAllHeaderFiles().iterator(); it.hasNext();) {
-                NativeFileItem elem = it.next();
+            for (NativeFileItem elem : headers) {
                 trace(elem);
             }
         }

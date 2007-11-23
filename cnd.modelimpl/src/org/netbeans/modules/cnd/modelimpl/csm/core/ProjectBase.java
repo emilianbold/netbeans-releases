@@ -496,8 +496,34 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 	    public void projectDeleted(NativeProject nativeProject) {}
         };
         nativeProject.addProjectItemsListener(projectItemListener);
-        List<NativeFileItem> sources = nativeProject.getAllSourceFiles();
-        List<NativeFileItem> headers = nativeProject.getAllHeaderFiles();
+        List<NativeFileItem> sources = new ArrayList<NativeFileItem>();
+        List<NativeFileItem> headers = new ArrayList<NativeFileItem>();
+        List<NativeFileItem> excluded = new ArrayList<NativeFileItem>();
+        for(NativeFileItem item : nativeProject.getAllFiles()){
+            if (!item.isExcluded()) {
+                switch(item.getLanguage()){
+                    case C:
+                    case CPP:
+                        sources.add(item);
+                        break;
+                    case C_HEADER:
+                        headers.add(item);
+                        break;
+                    default:
+                        break;
+                }
+            } else {
+                switch(item.getLanguage()){
+                    case C:
+                    case CPP:
+                    case C_HEADER:
+                        excluded.add(item);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
         
         if( TraceFlags.TIMING ) {
             time = System.currentTimeMillis() - time;
@@ -540,6 +566,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
             projectRoots.addSources(sources);
             projectRoots.addSources(headers);
+            projectRoots.addSources(excluded);
             createProjectFilesIfNeed(sources, true, removedFiles, validator);
             createProjectFilesIfNeed(headers, false, removedFiles, validator);
             
@@ -717,15 +744,20 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         Set<String> projectFiles = null;
         if( nativeProject != null ) {
             projectFiles = new HashSet<String>();
-            for( NativeFileItem item : nativeProject.getAllHeaderFiles() ) {
-                projectFiles.add(item.getFile().getAbsolutePath());
-		//this would be a workaround for #116706 Code assistance do not recognize changes in file
-		//projectFiles.add(item.getFile().getCanonicalPath());
-            }
-            for( NativeFileItem item : nativeProject.getAllSourceFiles() ) {
-                projectFiles.add(item.getFile().getAbsolutePath());
-		//this would be a workaround for #116706 Code assistance do not recognize changes in file
-		//projectFiles.add(item.getFile().getCanonicalPath());
+            for(NativeFileItem item : nativeProject.getAllFiles()){
+                if (!item.isExcluded()) {
+                    switch(item.getLanguage()){
+                        case C:
+                        case CPP:
+                        case C_HEADER:
+                            projectFiles.add(item.getFile().getAbsolutePath());
+                            //this would be a workaround for #116706 Code assistance do not recognize changes in file
+                            //projectFiles.add(item.getFile().getCanonicalPath());
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
         }
         

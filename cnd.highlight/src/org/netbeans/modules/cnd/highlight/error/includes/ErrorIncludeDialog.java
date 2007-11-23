@@ -84,6 +84,7 @@ import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.discovery.api.ProjectUtil;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
@@ -284,8 +285,21 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
             }
             Object o = baseProject.getPlatformProject();
             if (o instanceof NativeProject){
+                files = 0;
                 NativeProject nativeProject = (NativeProject) o;
-                files = nativeProject.getAllHeaderFiles().size()+nativeProject.getAllSourceFiles().size();
+                for(NativeFileItem item : nativeProject.getAllFiles()){
+                    if (!item.isExcluded()) {
+                        switch(item.getLanguage()){
+                            case C:
+                            case CPP:
+                            case C_HEADER:
+                                files++;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
                 System.out.println("*Details for project statistic*"); // NOI18N
                 System.out.println("  Amount of native project files:"+files); // NOI18N
                 System.out.println("  Failed   highlight   #includes:"+model.getFailedIncludesSize()); // NOI18N

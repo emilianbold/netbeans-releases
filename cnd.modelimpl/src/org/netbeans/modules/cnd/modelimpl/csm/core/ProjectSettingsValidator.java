@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,8 +97,25 @@ public class ProjectSettingsValidator {
 	    time = System.currentTimeMillis();
 	}
 	data = new Data();
-	updateMap(nativeProject.getAllHeaderFiles());
-	updateMap(nativeProject.getAllSourceFiles());
+        List<NativeFileItem> sources = new ArrayList<NativeFileItem>();
+        List<NativeFileItem> headers = new ArrayList<NativeFileItem>();
+        for(NativeFileItem item : nativeProject.getAllFiles()){
+            if (!item.isExcluded()) {
+                switch(item.getLanguage()){
+                    case C:
+                    case CPP:
+                        sources.add(item);
+                        break;
+                    case C_HEADER:
+                        headers.add(item);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+	updateMap(headers);
+	updateMap(sources);
 	Key key = new ProjectSettingsValidatorKey(csmProject.getUniqueName());
 	RepositoryUtils.put(key, data);
 	if( TraceFlags.TIMING ) {

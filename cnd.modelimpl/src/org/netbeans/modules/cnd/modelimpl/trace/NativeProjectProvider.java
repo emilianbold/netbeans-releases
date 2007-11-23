@@ -168,6 +168,12 @@ public final class NativeProjectProvider {
             return Collections.unmodifiableList(this.headers);
         }
 
+        public List<NativeFileItem> getAllFiles() {
+            ArrayList<NativeFileItem> res = new ArrayList<NativeFileItem>(sources);
+            res.addAll(headers);
+            return res;
+        }
+
         public void addProjectItemsListener(NativeProjectItemsListener listener) {
             synchronized( listenersLock ) {
 		listeners.add(listener);

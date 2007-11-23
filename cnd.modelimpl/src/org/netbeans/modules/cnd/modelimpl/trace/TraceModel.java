@@ -1423,8 +1423,19 @@ public class TraceModel extends TraceModelBase {
 	if( platformProject instanceof NativeProject ) {
 	    NativeProject nativeProject = (NativeProject) platformProject;
 	    if( nativeProject != null ) {
-		result.addAll(nativeProject.getAllSourceFiles());
-		result.addAll(nativeProject.getAllHeaderFiles());
+                for(NativeFileItem item : nativeProject.getAllFiles()){
+                    if (!item.isExcluded()) {
+                        switch(item.getLanguage()){
+                            case C:
+                            case CPP:
+                            case C_HEADER:
+                                result.add(item);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
 	    }
 	}
 	return result;

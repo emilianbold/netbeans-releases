@@ -129,32 +129,51 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         return ProjectUtils.getInformation(project).getDisplayName();
     }
     
-    public List<NativeFileItem> getAllSourceFiles() {
-        ArrayList list = new ArrayList();
-        if (getMakeConfigurationDescriptor() == null || getMakeConfiguration() == null)
+//    public List<NativeFileItem> getAllSourceFiles() {
+//        ArrayList list = new ArrayList();
+//        if (getMakeConfigurationDescriptor() == null || getMakeConfiguration() == null)
+//            return list;
+//        Item[] items = getMakeConfigurationDescriptor().getProjectItems();
+//        for (int i = 0; i < items.length; i++) {
+//            ItemConfiguration itemConfiguration = items[i].getItemConfiguration(getMakeConfiguration()); //ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(items[i].getPath()));
+//            if (itemConfiguration != null && itemConfiguration.isCompilerToolConfiguration() && !itemConfiguration.getExcluded().getValue())
+//                list.add(items[i]);
+//        }
+//        return list;
+//    }
+//    
+//    public List<NativeFileItem> getAllHeaderFiles() {
+//        ArrayList list = new ArrayList();
+//        if (getMakeConfigurationDescriptor() == null || getMakeConfiguration() == null)
+//            return list;
+//        Item[] items = getMakeConfigurationDescriptor().getProjectItems();
+//        for (int i = 0; i < items.length; i++) {
+//	    if (items[i].hasHeaderOrSourceExtension(true, true)) {
+//		ItemConfiguration itemConfiguration = items[i].getItemConfiguration(getMakeConfiguration());
+//		if (itemConfiguration != null && !itemConfiguration.isCompilerToolConfiguration()){
+//		    if (!itemConfiguration.getExcluded().getValue()){
+//			list.add(items[i]);
+//		    }
+//		}		
+//	    }
+//        }
+//        return list;
+//    }
+
+    public List<NativeFileItem> getAllFiles() {
+        List<NativeFileItem> list = new ArrayList<NativeFileItem>();
+        if (getMakeConfigurationDescriptor() == null || getMakeConfiguration() == null) {
             return list;
-        Item[] items = getMakeConfigurationDescriptor().getProjectItems();
-        for (int i = 0; i < items.length; i++) {
-            ItemConfiguration itemConfiguration = items[i].getItemConfiguration(getMakeConfiguration()); //ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(items[i].getPath()));
-            if (itemConfiguration != null && itemConfiguration.isCompilerToolConfiguration() && !itemConfiguration.getExcluded().getValue())
-                list.add(items[i]);
         }
-        return list;
-    }
-    
-    public List<NativeFileItem> getAllHeaderFiles() {
-        ArrayList list = new ArrayList();
-        if (getMakeConfigurationDescriptor() == null || getMakeConfiguration() == null)
-            return list;
         Item[] items = getMakeConfigurationDescriptor().getProjectItems();
         for (int i = 0; i < items.length; i++) {
-	    if (items[i].hasHeaderOrSourceExtension(true, true)) {
-		ItemConfiguration itemConfiguration = items[i].getItemConfiguration(getMakeConfiguration());
-		if (itemConfiguration != null && !itemConfiguration.isCompilerToolConfiguration()){
-		    if (!itemConfiguration.getExcluded().getValue()){
-			list.add(items[i]);
-		    }
-		}		
+            ItemConfiguration itemConfiguration = items[i].getItemConfiguration(getMakeConfiguration());
+            if (itemConfiguration != null){
+                if (itemConfiguration.isCompilerToolConfiguration()){
+                    list.add(items[i]);
+                } else if (items[i].hasHeaderOrSourceExtension(true, true)){
+                    list.add(items[i]);
+                }
 	    }
         }
         return list;

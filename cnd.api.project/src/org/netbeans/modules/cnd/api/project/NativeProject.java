@@ -63,19 +63,25 @@ public interface NativeProject {
      */
     public String getProjectDisplayName();
 
-    /**
-      * Returns a list of all source files in the project.
-      * @return a list of all source files in the project. A source
-      * file is a file directly compiled by the project.
-      */
-     public List<NativeFileItem> getAllSourceFiles();
+//    /**
+//      * Returns a list of all source files in the project.
+//      * @return a list of all source files in the project. A source
+//      * file is a file directly compiled by the project.
+//      */
+//     public List<NativeFileItem> getAllSourceFiles();
+//
+//     /**
+//      * Returns a list of all header files in the project.
+//      * @return a list of all header files in the project. A header
+//      * file is a file with the suffix .h.
+//      */
+//     public List<NativeFileItem> getAllHeaderFiles();
 
      /**
-      * Returns a list of all header files in the project.
-      * @return a list of all header files in the project. A header
-      * file is a file with the suffix .h.
+      * Returns a list of all files in the project.
+      * @return a list of all files in the project.
       */
-     public List<NativeFileItem> getAllHeaderFiles();
+     public List<NativeFileItem> getAllFiles();
 
      /**
       * Adds a listener to changes when items are added to or removed from the project.
