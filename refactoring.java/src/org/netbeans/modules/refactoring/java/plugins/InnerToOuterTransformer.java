@@ -90,7 +90,13 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             Tree newTree = make.setLabel(node, refactoring.getClassName());        
             rewrite(node, newTree);
         } else if (isThisReferenceToOuter()) {
-            IdentifierTree m = make.Identifier(refactoring.getReferenceName() + "." + node.getName().toString()); // NOI18N
+            IdentifierTree m;
+            if (refactoring.getReferenceName()==null) {
+                m = make.Identifier(outer.getSimpleName().toString() + "." + node.getName().toString()); // NOI18N
+            } else {
+                m = make.Identifier(refactoring.getReferenceName() + "." + node.getName().toString()); // NOI18N
+            }
+             
             rewrite(node, m);
         }
         return super.visitIdentifier(node, p);
