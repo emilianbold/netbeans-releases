@@ -58,7 +58,7 @@
         <folder name="MIMEResolver">
             <file name="GspResolver.xml" url="GspResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.gsp.resources.Bundle"/>
-                <attr name="position" intvalue="230"/>
+                <attr name="position" intvalue="255"/>
             </file>
         </folder>
     </folder>
@@ -66,7 +66,7 @@
         <folder name="Groovy">
             <file name="_view.gsp" url="GspTemplate.gsp">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.gsp.resources.Bundle"/>
-                <attr name="position" intvalue="100"/>
+                <attr name="position" intvalue="120"/>
                 <attr name="templateCategory" stringvalue="ruby"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="true"/>
