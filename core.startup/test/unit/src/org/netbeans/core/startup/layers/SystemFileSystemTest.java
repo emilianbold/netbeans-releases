@@ -105,6 +105,11 @@ implements InstanceContent.Convertor<FileSystem,FileSystem>, FileChangeListener 
         MainLookup.unregister(fs1, this);
         MainLookup.unregister(fs2, this);
     }
+    
+    public void testNPEIssue122654() throws Exception {
+        SystemFileSystem sfs = SystemFileSystem.create(null, getWorkDir(), new File[0]);
+        assertNotNull("Created", sfs);
+    }
 
     public void testUserHasPreferenceOverFSs() throws Exception {
         FileObject global = FileUtil.createData(fs.getRoot(), "dir/file.txt");

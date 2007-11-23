@@ -315,7 +315,7 @@ implements FileSystem.Status {
         FileSystem[] arr = new FileSystem[home == null ? 2 : 3];
         arr[0] = new ModuleLayeredFileSystem(user, true, new FileSystem[0], null);
         if (home != null) {
-            File cachedir = new File(new File (userDir.getParentFile(), "var"), "cache"); // NOI18N
+            File cachedir = userDir != null ? new File(new File (userDir.getParentFile(), "var"), "cache") : null; // NOI18N
             arr[1] = new ModuleLayeredFileSystem(home, false, extras, cachedir);
         }
         FixedFileSystem.deflt = new FixedFileSystem
