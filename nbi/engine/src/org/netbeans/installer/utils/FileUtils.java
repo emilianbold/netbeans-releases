@@ -511,9 +511,15 @@ public final class FileUtils {
     }
     
     public static File getRoot(
-            final File file,
+            final File fileRequeted,
             final List<File> roots) {
         File result = null;
+        File file = fileRequeted;
+        try {
+            file = file.getCanonicalFile();
+        } catch (IOException e) {
+            LogManager.log("... cannot get canonical file for " + fileRequeted);
+        }
         for (File root: roots) {
             if (isParent(root, file)) {
                 if(result == null ||
