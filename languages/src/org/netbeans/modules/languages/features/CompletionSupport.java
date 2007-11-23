@@ -298,7 +298,8 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
     }
 
     public boolean instantSubstitution (JTextComponent component) {
-        return false;
+        defaultAction(component);
+        return true;
     }
 
     public int getSortPriority () {
@@ -346,9 +347,9 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
                 Iterator<Feature> it = features.iterator ();
                 while (it.hasNext ()) {
                     Feature feature =  it.next ();
-                    String confirmChars = (String) feature.getValue("confirmChars"); // NOI18N
-                    if (confirmChars != null) {
-                        buf.append(confirmChars);
+                    String confChars = (String) feature.getValue("confirmChars"); // NOI18N
+                    if (confChars != null) {
+                        buf.append(confChars);
                     }
                 }
             } finally {
