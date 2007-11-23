@@ -54,7 +54,7 @@ public abstract class CsmFileReferences {
     /**
      * Provides visiting of the identifiers of the CsmFile
      */
-    public abstract void accept(CsmFile csmFile, CsmReferenceVisitor visitor);
+    public abstract void accept(CsmFile csmFile, Visitor visitor);
 
     /**
      * A dummy resolver that do nothing.
@@ -86,7 +86,7 @@ public abstract class CsmFileReferences {
         }
 
         @Override
-        public void accept(CsmFile csmFile, CsmReferenceVisitor visitor) {
+        public void accept(CsmFile csmFile, Visitor visitor) {
             // do nothing
         }
     }
@@ -94,7 +94,7 @@ public abstract class CsmFileReferences {
     /**
      * visitor inteface
      */
-    public interface CsmReferenceVisitor {
+    public interface Visitor {
         void visit(CsmReference ref);
     }
 }

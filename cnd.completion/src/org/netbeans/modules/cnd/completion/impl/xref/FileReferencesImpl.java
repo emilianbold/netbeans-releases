@@ -75,7 +75,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
     
 //    private final Map<CsmFile, List<CsmReference>> cache = new HashMap<CsmFile, List<CsmReference>>();
 
-    public void accept(CsmFile csmFile, CsmReferenceVisitor visitor) {
+    public void accept(CsmFile csmFile, Visitor visitor) {
         for (CsmReference ref : getIdentifierReferences(csmFile)) {
             visitor.visit(ref);
         }
