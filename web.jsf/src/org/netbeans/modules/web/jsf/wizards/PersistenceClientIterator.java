@@ -46,7 +46,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.DelegatingWizardDescriptorPanel;
+import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 //TODO: RETOUCHE
 //import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Entity;
 //import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
