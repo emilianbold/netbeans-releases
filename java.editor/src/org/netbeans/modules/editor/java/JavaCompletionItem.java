@@ -706,7 +706,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(Phase.RESOLVED);
-                        TreePath path = controller.getTreeUtilities().pathFor(offset);                        
                         DeclaredType type = typeHandle.resolve(controller);
                         TypeElement elem = elementHandle != null ? elementHandle.resolve(controller) : (TypeElement)type.asElement();
                         boolean asTemplate = false;
@@ -714,7 +713,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         int cnt = 1;
                         sb.append("${PAR"); //NOI18N
                         sb.append(cnt++);
-                        if (type.getKind() != TypeKind.ERROR && EnumSet.range(ElementKind.PACKAGE, ElementKind.INTERFACE).contains(elem.getEnclosingElement().getKind())) {
+                        if ((type == null || type.getKind() != TypeKind.ERROR) &&
+                                EnumSet.range(ElementKind.PACKAGE, ElementKind.INTERFACE).contains(elem.getEnclosingElement().getKind())) {
                             sb.append(" type=\""); //NOI18N
                             sb.append(elem.getQualifiedName());
                             sb.append("\" default=\""); //NOI18N
@@ -724,8 +724,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             sb.append(elem.getQualifiedName());
                         }
                         sb.append("\" editable=false}"); //NOI18N
-                        Iterator<? extends TypeMirror> tas = type.getTypeArguments().iterator();
-                        if (tas.hasNext()) {
+                        Iterator<? extends TypeMirror> tas = type != null ? type.getTypeArguments().iterator() : null;
+                        if (tas != null && tas.hasNext()) {
                             sb.append('<'); //NOI18N
                             while (tas.hasNext()) {
                                 TypeMirror ta = tas.next();
@@ -816,7 +816,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 doc.atomicUnlock();
                             }
                             if (insideNew) {
-                                List<ExecutableElement> ctors = type.getKind() == TypeKind.DECLARED ? ElementFilter.constructorsIn(elem.getEnclosedElements()) : null;
+                                List<ExecutableElement> ctors = type != null && type.getKind() == TypeKind.DECLARED ? ElementFilter.constructorsIn(elem.getEnclosedElements()) : null;
                                 if (ctors != null) {
                                     final JavaCompletionItem item = ctors.size() > 1 || Utilities.hasAccessibleInnerClassConstructor(elem, controller.getTreeUtilities().scopeFor(offset), controller.getTrees())
                                             ? null : ctors.size() == 1
