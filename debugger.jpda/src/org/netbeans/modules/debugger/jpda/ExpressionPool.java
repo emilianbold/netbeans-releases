@@ -130,6 +130,10 @@ public class ExpressionPool {
     }
 
     private Expression createExpressionAt(Location loc, String url) {
+        if (!loc.virtualMachine().canGetBytecodes()) {
+            // Can not analyze expressions without bytecode
+            return null;
+        }
         ReferenceType clazzType = loc.declaringType();
         final Method method = loc.method();
         final byte[] bytecodes = method.bytecodes();
