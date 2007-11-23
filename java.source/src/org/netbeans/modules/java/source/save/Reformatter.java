@@ -419,6 +419,7 @@ public class Reformatter implements ReformatTask {
                         space();
                     } else if (afterAnnotation) {
                         blankLines();
+                        afterAnnotation = false;
                     }
                 }
                 JavaTokenId id = accept(CLASS, INTERFACE, ENUM, AT);
@@ -599,6 +600,7 @@ public class Reformatter implements ReformatTask {
                     } else {
                         space();
                     }
+                    afterAnnotation = false;
                 }
             }
             if (isEnumerator(node)) {
@@ -1478,7 +1480,6 @@ public class Reformatter implements ReformatTask {
             } else {
                 scan(node.getExpression(), p);
             }
-            accept(SEMICOLON);
             return true;
         }
 
@@ -1494,7 +1495,6 @@ public class Reformatter implements ReformatTask {
                 tokens.moveNext();
             }
             wrapTree(cs.wrapAssignOps(), cs.spaceAroundAssignOps() ? 1 : 0, node.getExpression());
-            accept(SEMICOLON);
             return true;
         }
 
@@ -2362,6 +2362,10 @@ public class Reformatter implements ReformatTask {
         }
 
         private boolean wrapStatement(CodeStyle.WrapStyle wrapStyle, CodeStyle.BracesGenerationStyle bracesGenerationStyle, int spacesCnt, StatementTree tree) {
+            if (tree.getKind() == Tree.Kind.EMPTY_STATEMENT) {
+                scan(tree, null);
+                return true;
+            }
             if (tree.getKind() == Tree.Kind.BLOCK) {
                 if (bracesGenerationStyle == CodeStyle.BracesGenerationStyle.ELIMINATE) {
                     Iterator<? extends StatementTree> stats = ((BlockTree)tree).getStatements().iterator();
