@@ -1,0 +1,69 @@
+[<jsp:|, < jsp:text >, <jsp:text, 110]
+< jsp:attribute >
+< jsp:body >
+< jsp:doBody />
+< jsp:element >
+< jsp:expression >
+< jsp:fallback >
+< jsp:forward >
+< jsp:getProperty />
+< jsp:include >
+< jsp:invoke >
+< jsp:param />
+< jsp:params >
+< jsp:plugin >
+< jsp:setProperty />
+< jsp:text >
+< jsp:useBean >
+End cursor position = 120
+[<jsp:include page="testJSPElements|", testJSPElements.tag, <jsp:include page="testJSPElements.tag", 264]
+../
+testJSPElements.tag
+End cursor position = 303
+[<jsp:useBean id="myBean" scope="request" class="java.lang.S|", String, <jsp:useBean id="myBean" scope="request" class="java.lang.String", 448]
+SecurityException
+SecurityManager
+Short
+StackOverflowError
+StackTraceElement
+StrictMath
+String
+StringBuffer
+StringBuilder
+StringIndexOutOfBoundsException
+System
+End cursor position = 513
+[<% m|, Byte myBean, <% myBean, 608]
+Byte myBean
+void mergedScriptlets (HttpServletRequest req 
+Math
+End cursor position = 618
+[<% myBean.|, int SIZE, <% myBean.SIZE, 714]
+byte MAX_VALUE
+byte MIN_VALUE
+int SIZE
+Class <Byte> TYPE
+byte byteValue ()
+int compareTo (Byte anotherByte )
+Byte decode (String nm )
+double doubleValue ()
+boolean equals (Object obj )
+float floatValue ()
+Class <?> getClass ()
+int hashCode ()
+int intValue ()
+long longValue ()
+void notify ()
+void notifyAll ()
+byte parseByte (String s )
+byte parseByte (String s , int radix )
+short shortValue ()
+String toString ()
+String toString (byte b )
+Byte valueOf (String s )
+Byte valueOf (byte b )
+Byte valueOf (String s , int radix )
+void wait ()
+void wait (long timeout )
+void wait (long timeout , int nanos )
+End cursor position = 729

@@ -1,0 +1,53 @@
+[<h|, <html>, <html>, 95]
+<h1>
+<h2>
+<h3>
+<h4>
+<h5>
+<h6>
+<head>
+<hr>
+<html>
+End cursor position = 102
+[<a |, href, <a href="", 170]
+accesskey
+charset
+class
+coords
+dir
+href
+hreflang
+id
+lang
+name
+onblur
+onclick
+ondblclick
+onfocus
+onkeydown
+onkeypress
+onkeyup
+onmousedown
+onmousemove
+onmouseout
+onmouseover
+onmouseup
+rel
+rev
+shape
+style
+tabindex
+target
+title
+type
+End cursor position = 180
+[<p dir="|, rtl, <p dir="rtl", 247]
+ltr
+rtl
+End cursor position = 260
+[&q|, &quot;, &quot;, 317]
+&quot;
+End cursor position = 324
+[<bo|, <body>, <body>, 388]
+<body>
+End cursor position = 395

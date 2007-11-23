@@ -1,0 +1,264 @@
+[<% LinkedList<B|, Boolean, <% LinkedList<Boolean, 990]
+Boolean
+Byte
+End cursor position = 1012
+[<% list.|, Boolean element (), <% list.element(), 1050]
+boolean add (Boolean e )
+void add (int index , Boolean element )
+boolean addAll (Collection <? extends Boolean> c )
+boolean addAll (int index , Collection <? exten 
+void addFirst (Boolean e )
+void addLast (Boolean e )
+void clear ()
+Object clone ()
+boolean contains (Object o )
+boolean containsAll (Collection <?> c )
+Iterator <Boolean> descendingIterator ()
+Boolean element ()
+boolean equals (Object o )
+Boolean get (int index )
+Class <?> getClass ()
+Boolean getFirst ()
+Boolean getLast ()
+int hashCode ()
+int indexOf (Object o )
+boolean isEmpty ()
+Iterator <Boolean> iterator ()
+int lastIndexOf (Object o )
+ListIterator <Boolean> listIterator ()
+ListIterator <Boolean> listIterator (int index )
+void notify ()
+void notifyAll ()
+boolean offer (Boolean e )
+boolean offerFirst (Boolean e )
+boolean offerLast (Boolean e )
+Boolean peek ()
+Boolean peekFirst ()
+Boolean peekLast ()
+Boolean poll ()
+Boolean pollFirst ()
+Boolean pollLast ()
+Boolean pop ()
+void push (Boolean e )
+Boolean remove ()
+boolean remove (Object o )
+Boolean remove (int index )
+boolean removeAll (Collection <?> c )
+Boolean removeFirst ()
+boolean removeFirstOccurrence (Object o )
+Boolean removeLast ()
+boolean removeLastOccurrence (Object o )
+boolean retainAll (Collection <?> c )
+Boolean set (int index , Boolean element )
+int size ()
+List <Boolean> subList (int fromIndex , int toI 
+Object[] toArray ()
+T[] toArray (T[] a )
+String toString ()
+void wait ()
+void wait (long timeout )
+void wait (long timeout , int nanos )
+End cursor position = 1068
+[<% for (Boolean b : list)  b.|, Boolean FALSE, <% for (Boolean b : list)  b.FALSE, 1167]
+Boolean FALSE
+Boolean TRUE
+Class <Boolean> TYPE
+boolean booleanValue ()
+int compareTo (Boolean b )
+boolean equals (Object obj )
+boolean getBoolean (String name )
+Class <?> getClass ()
+int hashCode ()
+void notify ()
+void notifyAll ()
+boolean parseBoolean (String s )
+String toString ()
+String toString (boolean b )
+Boolean valueOf (String s )
+Boolean valueOf (boolean b )
+void wait ()
+void wait (long timeout )
+void wait (long timeout , int nanos )
+End cursor position = 1202
+[<% for (String str : a) a.|, int length, <% for (String str : a) a.length, 1252]
+int length
+Object clone ()
+boolean equals (Object obj )
+Class <?> getClass ()
+int hashCode ()
+void notify ()
+void notifyAll ()
+String toString ()
+void wait ()
+void wait (long timeout )
+void wait (long timeout , int nanos )
+End cursor position = 1285
+[<% suit.|, Suit DIAMONDS, <% suit.DIAMONDS, 1322]
+Suit CLUBS
+Suit DIAMONDS
+Suit HEARTS
+Suit SPADES
+int compareTo (Suit o )
+boolean equals (Object other )
+Class <?> getClass ()
+Class <Suit> getDeclaringClass ()
+int hashCode ()
+String name ()
+void notify ()
+void notifyAll ()
+int ordinal ()
+String toString ()
+Suit valueOf (String name )
+T valueOf (Class <T> enumType , String name )
+Suit[] values ()
+void wait ()
+void wait (long timeout )
+void wait (long timeout , int nanos )
+End cursor position = 1339
+[<% @Card.|, RequestForEnhancement, <% @Card.RequestForEnhancement, 1435]
+RequestForEnhancement
+Second
+End cursor position = 1466
+[<% @Card.RequestForEnhancement(|)%>, String date = "[unimplemented]", <% @Card.RequestForEnhancement(date=)%>, 1556]
+String date = "[unimplemented]"
+String engineer = "[unassigned]"
+int id
+String synopsis
+End cursor position = 1593
+[<%@ page import="|" %>, static, <%@ page import="static " %>, 1652]
+static
+com
+java
+javanet
+javax
+jp
+org
+sun
+sunw
+End cursor position = 1677
+[<% D| %>, int DECEMBER, <% DECEMBER %>, 1702]
+int DATE
+int DAY_OF_MONTH
+int DAY_OF_WEEK
+int DAY_OF_WEEK_IN_MONTH
+int DAY_OF_YEAR
+int DECEMBER
+int DST_OFFSET
+void destroy ()
+void doDelete (HttpServletRequest arg0 , HttpS 
+void doGet (HttpServletRequest arg0 , HttpServ 
+void doHead (HttpServletRequest arg0 , HttpSer 
+void doOptions (HttpServletRequest arg0 , Http 
+void doPost (HttpServletRequest arg0 , HttpSer 
+void doPut (HttpServletRequest arg0 , HttpServ 
+void doTrace (HttpServletRequest arg0 , HttpSe 
+double
+Deprecated
+Double
+End cursor position = 1714
+[<% get| %>, Calendar getInstance (), <% getInstance() %>, 1770]
+Locale[] getAvailableLocales ()
+Class <?> getClass ()
+String getInitParameter (String arg0 )
+Enumeration getInitParameterNames ()
+Calendar getInstance ()
+Calendar getInstance (Locale aLocale )
+Calendar getInstance (TimeZone zone )
+Calendar getInstance (TimeZone zone , Locale a 
+long getLastModified (HttpServletRequest arg0 )
+ServletConfig getServletConfig ()
+ServletContext getServletContext ()
+String getServletInfo ()
+String getServletName ()
+End cursor position = 1787
+[<jsp:useBean id="bean" scope="application" class="|", Boolean, <jsp:useBean id="bean" scope="application" class="Boolean", 1986]
+AbstractMethodError
+ArithmeticException
+ArrayIndexOutOfBoundsException
+ArrayStoreException
+AssertionError
+Boolean
+Byte
+Character
+Class <T>
+ClassCastException
+ClassCircularityError
+ClassFormatError
+ClassLoader
+ClassNotFoundException
+CloneNotSupportedException
+Compiler
+Double
+Enum <E>
+EnumConstantNotPresentException
+Error
+Exception
+ExceptionInInitializerError
+Float
+IllegalAccessError
+IllegalAccessException
+IllegalArgumentException
+IllegalMonitorStateException
+IllegalStateException
+IllegalThreadStateException
+IncompatibleClassChangeError
+IndexOutOfBoundsException
+InheritableThreadLocal <T>
+InstantiationError
+InstantiationException
+Integer
+InternalError
+InterruptedException
+LinkageError
+Long
+Math
+NegativeArraySizeException
+NoClassDefFoundError
+NoSuchFieldError
+NoSuchFieldException
+NoSuchMethodError
+NoSuchMethodException
+NullPointerException
+Number
+NumberFormatException
+Object
+OutOfMemoryError
+Package
+Process
+ProcessBuilder
+Runtime
+RuntimeException
+RuntimePermission
+SecurityException
+SecurityManager
+Short
+StackOverflowError
+StackTraceElement
+StrictMath
+String
+StringBuffer
+StringBuilder
+StringIndexOutOfBoundsException
+System
+Thread
+ThreadDeath
+ThreadGroup
+ThreadLocal <T>
+Throwable
+TypeNotPresentException
+UnknownError
+UnsatisfiedLinkError
+UnsupportedClassVersionError
+UnsupportedOperationException
+VerifyError
+VirtualMachineError
+Void
+com
+java
+javanet
+javax
+jp
+org
+sun
+sunw
+End cursor position = 2044

@@ -1,0 +1,81 @@
+[${|, integer Integer, ${integer, 856]
+calendar Calendar
+date Date
+integer Integer
+applicationScope
+cookie
+headerValues
+header
+initParam
+pageContext
+pageScope
+paramValues
+param
+requestScope
+sessionScope
+End cursor position = 866
+[${d|, date Date, ${date, 891]
+date Date
+End cursor position = 898
+[${i|, initParam, ${initParam[], 933]
+integer Integer
+initParam
+End cursor position = 946
+[${p|, pageContext, ${pageContext, 977]
+pageContext
+pageScope
+paramValues
+param
+End cursor position = 991
+[${pageContext.|, request ServletRequest, ${pageContext.request, 1051]
+errorData ErrorData
+exception Exception
+page Object
+request ServletRequest
+response ServletResponse
+servletConfig ServletConfig
+servletContext ServletContext
+session HttpSession
+End cursor position = 1073
+[#{|, sessionScope, #{sessionScope[], 1098]
+calendar Calendar
+date Date
+integer Integer
+applicationScope
+cookie
+headerValues
+header
+initParam
+pageContext
+pageScope
+paramValues
+param
+requestScope
+sessionScope
+End cursor position = 1114
+[#{c|, calendar Calendar, #{calendar, 1144]
+calendar Calendar
+cookie
+End cursor position = 1155
+[#{calendar.|, time Date, #{calendar.time, 1195]
+availableLocales Locale[]
+firstDayOfWeek int
+instance Calendar
+lenient boolean
+minimalDaysInFirstWeek int
+time Date
+timeInMillis long
+timeZone TimeZone
+toString 
+End cursor position = 1211
+[#{calendar.|, toString , #{calendar.toString, 1250]
+availableLocales Locale[]
+firstDayOfWeek int
+instance Calendar
+lenient boolean
+minimalDaysInFirstWeek int
+time Date
+timeInMillis long
+timeZone TimeZone
+toString 
+End cursor position = 1270

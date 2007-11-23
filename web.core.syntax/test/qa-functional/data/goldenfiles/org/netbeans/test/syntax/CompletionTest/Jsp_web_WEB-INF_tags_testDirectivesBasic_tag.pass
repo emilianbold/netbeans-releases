@@ -1,0 +1,30 @@
+[<%@|, <%@ attribute %>, <%@ attribute  %>, 122]
+<%@ attribute %>
+<%@ include %>
+<%@ tag %>
+<%@ taglib %>
+<%@ variable %>
+End cursor position = 137
+[<%@tag |, large-icon, <%@tag large-icon="", 216]
+body-content
+description
+display-name
+dynamic-attributes
+example
+import
+isELIgnored
+language
+large-icon
+pageEncoding
+small-icon
+End cursor position = 236
+[<%@tag pageEncoding="U|", UTF-8, <%@tag pageEncoding="UTF-8", 324]
+US-ASCII
+UTF-16
+UTF-16BE
+UTF-16LE
+UTF-32
+UTF-32BE
+UTF-32LE
+UTF-8
+End cursor position = 351

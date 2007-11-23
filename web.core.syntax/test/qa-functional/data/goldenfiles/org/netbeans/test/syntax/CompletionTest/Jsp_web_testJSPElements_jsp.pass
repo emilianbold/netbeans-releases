@@ -1,0 +1,55 @@
+[<jsp:|, < jsp:text >, <jsp:text, 145]
+< jsp:attribute >
+< jsp:body >
+< jsp:element >
+< jsp:expression >
+< jsp:fallback >
+< jsp:forward >
+< jsp:getProperty />
+< jsp:include >
+< jsp:param />
+< jsp:params >
+< jsp:plugin >
+< jsp:setProperty />
+< jsp:text >
+< jsp:useBean >
+End cursor position = 155
+[<jsp:include page="testJS|", testJSPElements.jsp, <jsp:include page="testJSPElements.jsp", 290]
+testJSF.jsp
+testJSPDocumentBasic.jspx
+testJSPDocumentHTML.jspx
+testJSPElements.jsp
+End cursor position = 329
+[<jsp:useBean id="myBean" scope="request" class="java.lang.S|", String, <jsp:useBean id="myBean" scope="request" class="java.lang.String", 474]
+SecurityException
+SecurityManager
+Short
+StackOverflowError
+StackTraceElement
+StrictMath
+String
+StringBuffer
+StringBuilder
+StringIndexOutOfBoundsException
+System
+End cursor position = 539
+[<% m|, String myBean, <% myBean, 639]
+String myBean
+void mergedScriptlets (HttpServletRequest req 
+Math
+End cursor position = 649
+[<% myBean.c|, char charAt (int index ), <% myBean.charAt(index), 771]
+Comparator <String> CASE_INSENSITIVE_ORDER
+char charAt (int index )
+int codePointAt (int index )
+int codePointBefore (int index )
+int codePointCount (int beginIndex , int endIn 
+int compareTo (String anotherString )
+int compareToIgnoreCase (String str )
+String concat (String str )
+boolean contains (CharSequence s )
+boolean contentEquals (CharSequence cs )
+boolean contentEquals (StringBuffer sb )
+String copyValueOf (char[] data )
+String copyValueOf (char[] data , int offset , 
+End cursor position = 794
