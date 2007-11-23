@@ -186,7 +186,8 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
                     // Document was just closed
                     return;
                 }
-
+                doc.readLock();
+                try {
                 int length = doc.getLength();
                 int startPos = pos.getStartOffset();
                 int endPos = pos.getEndOffset();
@@ -229,6 +230,9 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
                             closest instanceof GlobalAsgnNode || closest instanceof ConstDeclNode)) {
                         closest = null;
                     }
+                }
+                } finally {
+                    doc.readUnlock();
                 }
             } catch (BadLocationException ble) {
                 Exceptions.printStackTrace(ble);

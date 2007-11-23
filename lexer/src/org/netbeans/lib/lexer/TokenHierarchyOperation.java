@@ -248,8 +248,10 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                 incTokenList.reinit();
             }
 
+            if (activity != Activity.NOT_INITED) { // Increase modCount if not doing init
+                incTokenList.incrementModCount();
+            }
             activity = newActivity;
-            incTokenList.incrementModCount();
             if (doFire) { // Only if there are already listeners
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("Firing ACTIVITY change to " + listenerList.getListenerCount() + " listeners: " + activity); // NOI18N
