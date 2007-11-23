@@ -58,6 +58,7 @@ import java.lang.ref.Reference;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -345,7 +346,10 @@ public class DataEditorSupport extends CloneableEditorSupport {
      */
     @Override
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
-        final Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+        Charset c = this.getDataObject() == charsetForObject ? charsetForSaveAndLoad : null;
+        if (c == null) {
+            c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+        }
         final Reader r = new InputStreamReader (stream, c);
         kit.read(r, doc, 0);
     }
@@ -353,7 +357,8 @@ public class DataEditorSupport extends CloneableEditorSupport {
     /** can hold the right charset to be used during save, needed for communication
      * between saveFromKitToStream and saveDocument
      */
-    private static ThreadLocal<Charset> charsetForSave = new ThreadLocal<Charset>();
+    private static Charset charsetForSaveAndLoad;
+    private static DataObject charsetForObject;
     /**
      * @inheritDoc
      */
@@ -366,7 +371,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
             throw new NullPointerException("Kit is null"); // NOI18N
         }
         
-        Charset c = charsetForSave != null ? charsetForSave.get() : null;
+        Charset c = this.getDataObject() == charsetForObject ? charsetForSaveAndLoad : null;
         if (c == null) {
             c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
         }
@@ -382,7 +387,20 @@ public class DataEditorSupport extends CloneableEditorSupport {
         } finally {
             w.close();
         }
-    }        
+    }
+
+    @Override
+    public StyledDocument openDocument() throws IOException {
+        Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+        try {
+            charsetForSaveAndLoad = c;
+            charsetForObject = getDataObject();
+            return super.openDocument();
+        } finally {
+            charsetForSaveAndLoad = null;
+            charsetForObject = null;
+        }
+    }
 
     /** Saves document. Overrides superclass method, adds checking
      * for read-only property of saving file and warns user in that case. */
@@ -399,12 +417,13 @@ public class DataEditorSupport extends CloneableEditorSupport {
         }
         
         Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
-        Charset prev = charsetForSave.get();
         try {
-            charsetForSave.set(c);
+            charsetForSaveAndLoad = c;
+            charsetForObject = getDataObject();
             super.saveDocument();
         } finally {
-            charsetForSave.set(prev);
+            charsetForSaveAndLoad = null;
+            charsetForObject = null;
         }
     }
 
