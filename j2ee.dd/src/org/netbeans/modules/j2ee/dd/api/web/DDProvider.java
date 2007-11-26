@@ -69,20 +69,20 @@ import org.openide.util.Parameters;
 
 public final class DDProvider {
     private static DDProvider ddProvider;
-    private Map ddMap;
-    private Map baseBeanMap;
-    private Map errorMap;
-    private FCA fileChangeListener;
-    private Map musMap;
-
-    private static final Logger LOG = Logger.getLogger(DDProvider.class.getName());
+    private final Map ddMap;
+    private final Map baseBeanMap;
+    private final Map errorMap;
+    private final FCA fileChangeListener;
+  
+    private static final Logger LOGGER = Logger.getLogger(DDProvider.class.getName());
     
-    /** Creates a new instance of WebModule */
+    /** 
+     * Creates a new instance of DDProvider. 
+     */
     private DDProvider() {
-        ddMap=new java.util.HashMap(5);
-        baseBeanMap=new java.util.HashMap(5);
-        errorMap=new java.util.HashMap(5);
-        musMap=new HashMap(5);
+        ddMap = new HashMap(5);
+        baseBeanMap = new HashMap(5);
+        errorMap = new HashMap(5);
         fileChangeListener = new FCA();
     }
     
@@ -91,7 +91,9 @@ public final class DDProvider {
      * @return DDProvider object
      */
     public static synchronized DDProvider getDefault() {
-        if (ddProvider==null) ddProvider = new DDProvider();
+        if (ddProvider == null) {
+            ddProvider = new DDProvider();
+        }
         return ddProvider;
     }
     
@@ -104,8 +106,8 @@ public final class DDProvider {
      * @throws IOException if the given <code>fo</code> could not be read
      * or if parsing it failed.
      */ 
-    public WebApp getDDRoot(FileObject fo) throws java.io.IOException {
-        Parameters.notNull("fo", fo); //NO18N
+    public WebApp getDDRoot(FileObject fo) throws IOException {
+        Parameters.notNull("fo", fo); //NOI18N
         WebAppProxy webApp = null;
         
         synchronized (ddMap) {
@@ -153,7 +155,7 @@ public final class DDProvider {
             // to the one in the aforementioned issue without NPEs. handling of the declared IOE in the
             // clients of this method is a can of worms that i do not want to open right now. moreover,
             // the situation when the FNFE is thrown is similar to when a SAXException is thrown.
-            LOG.log(Level.INFO,
+            LOGGER.log(Level.INFO,
                     "A file referenced from [" +
                     FileUtil.getFileDisplayName(fo) + "] could not be found",
                     fnfe); // NO18N
@@ -179,14 +181,11 @@ public final class DDProvider {
      * @param fo FileObject representing the web.xml file
      * @return WebApp object - root of the deployment descriptor bean graph
      */
-    public WebApp getDDRootCopy(FileObject fo) throws java.io.IOException {
+    public WebApp getDDRootCopy(FileObject fo) throws IOException {
         return (WebApp)getDDRoot(fo).clone();
     }
     
-    private WebAppProxy getFromCache(FileObject fo) throws java.io.IOException {
-        if (fo == null) {
-            return null;
-        }
+    private WebAppProxy getFromCache(FileObject fo) throws IOException {
         WeakReference wr = (WeakReference) ddMap.get(fo.getURL());
         if (wr == null) {
             return null;
@@ -198,7 +197,7 @@ public final class DDProvider {
         return webApp;
     }
     
-    private WebApp getOriginalFromCache(FileObject fo) throws java.io.IOException {
+    private WebApp getOriginalFromCache(FileObject fo) throws IOException {
         WeakReference wr = (WeakReference) baseBeanMap.get(fo.getURL());
         if (wr == null) {
             return null;
@@ -228,8 +227,11 @@ public final class DDProvider {
      * @deprecated do not use - temporary workaround that exposes the schema2beans implementation
      */
     public org.netbeans.modules.schema2beans.BaseBean getBaseBean(org.netbeans.modules.j2ee.dd.api.common.CommonDDBean bean) {
-        if (bean instanceof org.netbeans.modules.schema2beans.BaseBean) return (org.netbeans.modules.schema2beans.BaseBean)bean;
-        else if (bean instanceof WebAppProxy) return (org.netbeans.modules.schema2beans.BaseBean) ((WebAppProxy)bean).getOriginal();
+        if (bean instanceof org.netbeans.modules.schema2beans.BaseBean) {
+            return (org.netbeans.modules.schema2beans.BaseBean) bean;
+        } else if (bean instanceof WebAppProxy) {
+            return (org.netbeans.modules.schema2beans.BaseBean) ((WebAppProxy) bean).getOriginal();
+        }
         return null;
     }
     
@@ -252,13 +254,13 @@ public final class DDProvider {
             }
             baseBeanMap.remove(foUrl);
             errorMap.remove(foUrl);
-            musMap.remove(fo);
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
     
     private class FCA extends FileChangeAdapter {
+        @Override
         public void fileChanged(FileEvent evt) {
             FileObject fo=evt.getFile();
             try {
@@ -266,6 +268,7 @@ public final class DDProvider {
                     return;
                 }
             } catch (DataObjectNotFoundException e) {
+                LOGGER.log(Level.INFO, null, e);
             }
             try {
                 synchronized (ddMap) {
@@ -315,9 +318,12 @@ public final class DDProvider {
                         }
                     }
                 }
-            } catch (java.io.IOException ex){}
+            } catch (IOException ex){
+                LOGGER.log(Level.INFO, "Merging of webApp graphs failed.", ex);//NOI18N
+            }
         }
         
+        @Override
         public void fileDeleted(FileEvent fe) {
             // need to remove cache entries, see #76431.
             removeFromCache(fe.getFile());

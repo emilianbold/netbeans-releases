@@ -83,11 +83,12 @@ public final class DDProvider {
     private static final String EJB_20_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN"; //NOI18N
     private static final String EJB_11_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 1.1//EN"; //NOI18N
     private static final DDProvider ddProvider = new DDProvider();
-    private Map ddMap;
+    private final Map ddMap;
 
-    /** Creates a new instance of EjbModule */
+    /** 
+     * Creates a new instance of DDProvider.
+     */
     private DDProvider() {
-        //ddMap=new java.util.WeakHashMap(5);
         ddMap = new HashMap(5);
     }
 
@@ -337,6 +338,7 @@ public final class DDProvider {
     }
 
     private class DDFileChangeListener extends FileChangeAdapter {
+        @Override
         public void fileChanged(FileEvent evt) {
             FileObject fo = evt.getFile();
             try {

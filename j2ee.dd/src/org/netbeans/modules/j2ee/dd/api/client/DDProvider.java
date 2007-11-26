@@ -76,7 +76,6 @@ public final class DDProvider {
     private final Map<URL, SAXParseException> errorMap;
     
     private DDProvider() {
-        //ddMap=new WeakHashMap(5);
         ddMap = new HashMap<URL, WeakReference<AppClientProxy>>(5);
         baseBeanMap = new HashMap<URL, WeakReference<AppClient>>(5);
         errorMap = new HashMap<URL, SAXParseException>(5);
@@ -204,10 +203,6 @@ public final class DDProvider {
         if (appClient == null) {
             baseBeanMap.remove(fo.getURL());
             errorMap.remove(fo.getURL());
-            /*
-            if (ddMap.get (fo.getURL ()) == null) {
-            }
-             */
         }
         return appClient;
     }

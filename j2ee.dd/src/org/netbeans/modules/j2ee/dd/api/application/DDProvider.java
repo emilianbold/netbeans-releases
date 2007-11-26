@@ -46,6 +46,8 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -74,11 +76,12 @@ import org.xml.sax.SAXParseException;
 public final class DDProvider {
     
     private static final String APP_13_DOCTYPE = "-//Sun Microsystems, Inc.//DTD J2EE Application 1.3//EN"; //NOI18N
-    //private static final String EJB_11_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 1.1//EN"; //NOI18N
     private static final DDProvider ddProvider = new DDProvider();
     
-    private Map ddMap;
-    
+    private final Map ddMap;
+
+    private static final Logger LOGGER = Logger.getLogger(DDProvider.class.getName());
+
     static ResourceBundle bundle = ResourceBundle.getBundle("org/netbeans/modules/j2ee/dd/Bundle");
     
     private DDProvider() {
@@ -114,6 +117,7 @@ public final class DDProvider {
         }
         
         fo.addFileChangeListener(new FileChangeAdapter() {
+            @Override
             public void fileChanged(FileEvent evt) {
                 FileObject fo=evt.getFile();
                 try {
@@ -155,13 +159,14 @@ public final class DDProvider {
                             }
                         }
                     }
-                } catch (IOException ex){}
+                } catch (IOException ex){
+                    LOGGER.log(Level.INFO, "Merging of Application graphs failed", ex); //NOI18N
+                }
             }
         });
         
         try {
             DDParse parseResult = parseDD(fo);
-            SAXParseException error = parseResult.getWarning();
             Application original = createApplication(parseResult);
             applicationProxy = new ApplicationProxy(original,parseResult.getVersion());
             setProxyErrorStatus(applicationProxy, parseResult);
@@ -198,15 +203,6 @@ public final class DDProvider {
     }
 
     private ApplicationProxy getFromCache (FileObject fo) {
- /*       WeakReference wr = (WeakReference) ddMap.get(fo);
-        if (wr == null) {
-            return null;
-        }
-        EjbJarProxy ejbJarProxy = (EjbJarProxy) wr.get ();
-        if (ejbJarProxy == null) {
-            ddMap.remove (fo);
-        }
-        return ejbJarProxy;*/
         return (ApplicationProxy) ddMap.get(fo);
     }
     
@@ -270,10 +266,6 @@ public final class DDProvider {
             return resolver;
         }        
         public InputSource resolveEntity (String publicId, String systemId) {
-//            if (EJB_11_DOCTYPE.equals(publicId)) { 
-                  // return a special input source
-//             return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/ejb-jar_1_1.dtd"); //NOI18N
-//            } else 
             if (APP_13_DOCTYPE.equals(publicId)) {
                   // return a special input source
              return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/application_1_3.dtd"); //NOI18N
