@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.autoupdate.ui.actions;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collection;
@@ -50,6 +53,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
@@ -327,7 +332,7 @@ public class AutoupdateCheckScheduler {
             return ;
         }
         // Some modules found
-        Runnable onMouseClick = new Runnable () {
+        final Runnable onMouseClick = new Runnable () {
             @SuppressWarnings("unchecked")
             public void run () {
                 boolean wizardFinished = false;
@@ -354,13 +359,29 @@ public class AutoupdateCheckScheduler {
         };
         flasher = AvailableUpdatesNotification.getFlasher (onMouseClick);
         assert flasher != null : "Updates Flasher cannot be null.";
-        flasher.setToolTipText (
-                elems.size () == 1 ?
-                    NbBundle.getMessage(AutoupdateCheckScheduler.class,
-                        "AutoupdateCheckScheduler_UpdateFound_ToolTip", elems.size()) : // NOI18N
-                    NbBundle.getMessage(AutoupdateCheckScheduler.class,
-                        "AutoupdateCheckScheduler_UpdatesFound_ToolTip", elems.size())); // NOI18N
         flasher.startFlashing ();
+        final Runnable showBalloon = new Runnable() {
+            public void run() {
+                JLabel balloon = new JLabel( elems.size() == 1 ?
+                            NbBundle.getMessage(AutoupdateCheckScheduler.class,
+                                "AutoupdateCheckScheduler_UpdateFound_ToolTip", elems.size()) : // NOI18N
+                            NbBundle.getMessage(AutoupdateCheckScheduler.class,
+                                "AutoupdateCheckScheduler_UpdatesFound_ToolTip", elems.size())); // NOI18N
+                BalloonManager.show( flasher, balloon, new AbstractAction() {
+                    public void actionPerformed(ActionEvent e) {
+                        onMouseClick.run();
+                    }
+                });
+            }
+        };
+        SwingUtilities.invokeLater( showBalloon );
+        flasher.addMouseListener( new MouseAdapter() {
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                showBalloon.run();
+            }
+        }  );
     }
     
 }
