@@ -388,7 +388,7 @@ class OutlinePanel extends JPanel implements ExplorerManager.Provider, Lookup.Pr
     public HelpCtx getHelpCtx() {
         return ExplorerUtils.getHelpCtx(
                 getExplorerManager().getSelectedNodes(),
-                new HelpCtx("projrave_ui_elements_project_nav_about_app_outline")); // NOI18N
+                new HelpCtx("projrave_ui_elements_navigator_win_about_navigator_win")); // NOI18N
     }
     
     private static class OutlineTreeView extends BeanTreeView {
