@@ -6,7 +6,6 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-
 package org.netbeans.modules.web.jsf.navigation;
 
 import java.awt.EventQueue;
@@ -36,13 +35,20 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.web.jsf.navigation");
     //    public boolean refactoringIsLikely = false;
     //    PageFlowUtilities pfUtil = PageFlowUtilities.getInstance();
-
     public FacesModelPropertyChangeListener(PageFlowController pfc) {
         this.pfc = pfc;
         view = pfc.getView();
     }
 
     public void propertyChange(final PropertyChangeEvent ev) {
+
+
+        LogRecord record = new LogRecord(Level.FINE, "Faces Config File Changed:" + pfc.getConfigDataObject().getName());
+        record.setSourceClassName("FacesModelPropertyChangeListener");
+        record.setSourceMethodName("propertyChangeEvent.");
+        record.setParameters(new Object[]{ev.getPropertyName(), ev.getOldValue(), ev.getNewValue()});
+        LOGGER.log(record);
+
         //        String oldManagedBeanInfo = null;
         //        String newManagedBeanInfo = null;
         //        boolean managedBeanClassModified = false;
@@ -55,7 +61,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 }
             });
         } else if (ev.getPropertyName().equals("managed-bean-class") || ev.getPropertyName().equals("managed-bean-name") || ev.getNewValue() == State.NOT_SYNCED) {
-            /* Do Nothing */
+        /* Do Nothing */
         } else if (ev.getPropertyName().equals("navigation-case")) {
             final NavigationCase myNewCase = (NavigationCase) ev.getNewValue(); //Should also check if the old one is null.
             final NavigationCase myOldCase = (NavigationCase) ev.getOldValue();
@@ -97,7 +103,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
 
                 public void run() {
                     replaceFromViewIdToViewIdEventHandler(ev, source, oldName, newName);
-                    //                    replaceFromViewIdToViewIdEventHandler(oldName, newName, refactoringIsLikely);
+                //                    replaceFromViewIdToViewIdEventHandler(oldName, newName, refactoringIsLikely);
                 }
             });
         } else if (ev.getPropertyName().equals("from-outcome")) {
@@ -158,7 +164,8 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 try {
                     final Node delegate = DataObject.find(fileObj).getNodeDelegate();
                     oldPageNode.replaceWrappedNode(delegate);
-                    view.resetNodeWidget(oldPageNode, true); /*** JUST PUT TRUE HERE AS A HOLDER */
+                    view.resetNodeWidget(oldPageNode, true);
+                    /*** JUST PUT TRUE HERE AS A HOLDER */
                     view.validateGraph();
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
@@ -175,12 +182,12 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             NavigationCaseEdge newCaseEdge = new NavigationCaseEdge(view.getPageFlowController(), navCase);
             pfc.putNavCase2NavCaseEdge(navCase, newCaseEdge);
             navigationCaseEdgeEventHandler(newCaseEdge, oldCaseEdge);
-            //            if ( !pfc.isPageInFacesConfig(oldName) ){
-            //                LOGGER.finest("CASE 3b: OldPage no longer exists in faces config.");
-            //                view.removeNodeWithEdges(oldPageNode);
-            //                pfc.removePageName2Node(oldPageNode, true);
-            //                view.validateGraph();
-            //            }
+        //            if ( !pfc.isPageInFacesConfig(oldName) ){
+        //                LOGGER.finest("CASE 3b: OldPage no longer exists in faces config.");
+        //                view.removeNodeWithEdges(oldPageNode);
+        //                pfc.removePageName2Node(oldPageNode, true);
+        //                view.validateGraph();
+        //            }
         } else if (navRule != null && pfc.isPageInAnyFacesConfig(oldName)) {
             LOGGER.finest("CASE 4: NavRule is not null.");
             final List<NavigationCase> navCases = navRule.getNavigationCases();
@@ -220,13 +227,13 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         if (myNewCase != null) {
             newCaseEdge = new NavigationCaseEdge(view.getPageFlowController(), myNewCase);
             pfc.putNavCase2NavCaseEdge(myNewCase, newCaseEdge);
-            //            pfc.createEdge(newCaseEdge);
+        //            pfc.createEdge(newCaseEdge);
         }
         if (myOldCase != null) {
             oldCaseEdge = pfc.removeNavCase2NavCaseEdge(myOldCase);
         }
         navigationCaseEdgeEventHandler(newCaseEdge, oldCaseEdge);
-        //        view.validateGraph();
+    //        view.validateGraph();
     }
 
     private final void navigationCaseEdgeEventHandler(NavigationCaseEdge newCaseEdge, NavigationCaseEdge oldCaseEdge) {
@@ -278,14 +285,14 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         //Because it does not consistantly work, I can't account for reactions.
         if (myOldRule != null) {
             final String fromPage = pfc.removeNavRule2String(myOldRule);
-            
+
             List<NavigationCase> cases = myOldRule.getNavigationCases();
-            for( NavigationCase navCase : cases ){
+            for (NavigationCase navCase : cases) {
                 navigationCaseEventHandler(null, navCase);
             }
             removePageIfNoReference(fromPage);
-                    
-            //Must account for cases being removed with in the rule.
+
+        //Must account for cases being removed with in the rule.
         }
         if (myNewRule != null) {
             pfc.putNavRule2String(myNewRule, FacesModelUtility.getFromViewIdFiltered(myNewRule));
