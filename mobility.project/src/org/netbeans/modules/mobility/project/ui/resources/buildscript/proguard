@@ -10,9 +10,17 @@
                 </uptodate>
             </or>
         </condition>
+        <uptodate property="obfuscation.up-to-date" targetfile="${{obfuscator.destjar}}">
+            <srcfiles dir="${{buildsystem.baton}}"/>
+        </uptodate>
     </target>
-    
-    <target name="proguard" depends="proguard-init" description="Obfuscate project classes." unless="no.obfusc">
+
+    <target name="skip-obfuscation" depends="proguard-init" if="obfuscation.up-to-date">
+        <fail unless="obfuscated.classes.dir">Must set obfuscated.classes.dir</fail>
+        <nb-overrideproperty name="buildsystem.baton" value="${{obfuscated.classes.dir}}"/>
+    </target>    
+
+    <target name="proguard" depends="skip-obfuscation" description="Obfuscate project classes." unless="no.obfusc">
         <fail unless="obfuscated.classes.dir">Must set obfuscated.classes.dir</fail>
         <fail unless="obfuscator.srcjar">Must set obfuscator.srcjar</fail>
         <fail unless="obfuscator.destjar">Must set obfuscator.destjar</fail>
