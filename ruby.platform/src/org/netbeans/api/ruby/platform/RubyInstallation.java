@@ -784,6 +784,14 @@ public class RubyInstallation {
      * @return The actual root the in the system the file is under.
      */
     public FileObject getSystemRoot(FileObject file) {
+        // Don't initialize the Ruby interpreter here if it hasn't already been initialized 
+        // (see issue #121477). Our class path resolver may be called even when there are no
+        // Ruby projects open, and we don't want to make the user ask about Ruby interpreters
+        // in that case.
+        if (ruby == null) {
+            return null;
+        }
+        
         // See if the file is under the Ruby libraries
         FileObject rubyLibFo = getRubyLibFo();
         FileObject rubyStubs = getRubyStubs();

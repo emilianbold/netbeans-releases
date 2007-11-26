@@ -53,6 +53,7 @@ import org.netbeans.api.gsfpath.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.railsprojects.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.ruby.railsprojects.queries.RailsProjectEncodingQueryImpl;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServer;
@@ -382,6 +383,9 @@ public class RailsProject implements Project, RakeProjectListener {
         public ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
+            // Force Ruby interpreter initialization
+            RubyInstallation.getInstance().getRuby(false);
+
             open();
         }
         
