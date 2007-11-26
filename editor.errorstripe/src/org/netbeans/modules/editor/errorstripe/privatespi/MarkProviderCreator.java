@@ -42,16 +42,21 @@
 package org.netbeans.modules.editor.errorstripe.privatespi;
 import javax.swing.text.JTextComponent;
 
-/**A creator for MarkProviders. Should register an instance under <code>Editors/text/base/Services</code>
- * or <code>Editors/&lt;MIME-Type&gt;/Services</code>.
+/**
+ * A factory for <code>MarkProvider</code>s. Implementations of this interface should
+ * be registered in module layers under the <code>Editors/&lt;mime-type&gt;/UpToDateStatusProvider</code>
+ * folder.
  *
  * @author Jan Lahoda
  */
 public interface MarkProviderCreator {
 
-    /**Create an instance of {@link MarkProvider} for a given {@link Document}.
+    /**
+     * Create an instance of {@link MarkProvider} for the given {@link Document}.
      *
-     * @return an instance {@link MarkProvider} for a given {@link Document}
+     * @param document The document to create a <code>MarkProvider</code> for.
+     * 
+     * @return The requested {@link MarkProvider}.
      */
     public MarkProvider createMarkProvider(JTextComponent document);
     
