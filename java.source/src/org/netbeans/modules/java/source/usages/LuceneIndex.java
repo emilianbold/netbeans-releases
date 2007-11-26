@@ -113,7 +113,7 @@ class LuceneIndex extends Index {
     /** Creates a new instance of LuceneIndex */
     private LuceneIndex (final File refCacheRoot) throws IOException {
         assert refCacheRoot != null;
-        this.directory = FSDirectory.getDirectory(refCacheRoot, Index.isTest() ? NoLockFactory.getNoLockFactory() : new NBLockFactory());
+        this.directory = FSDirectory.getDirectory(refCacheRoot, NoLockFactory.getNoLockFactory());      //Locking controlled by rwlock
     }
 
 
@@ -534,6 +534,7 @@ class LuceneIndex extends Index {
     }
     
     public void store (final Map<Pair<String,String>, List<String>> refs, final List<Pair<String,String>> topLevels) throws IOException {
+        assert ClassIndexManager.getDefault().holdsWriteLock();
         this.rootPkgCache = null;
         boolean create = !isValid (false);
         long timeStamp = System.currentTimeMillis();
@@ -556,6 +557,7 @@ class LuceneIndex extends Index {
     }
 
     public void store(final Map<Pair<String,String>, List<String>> refs, final Set<Pair<String,String>> toDelete) throws IOException {
+        assert ClassIndexManager.getDefault().holdsWriteLock();
         this.rootPkgCache = null;
         boolean create = !isValid (false);        
         long timeStamp = System.currentTimeMillis();

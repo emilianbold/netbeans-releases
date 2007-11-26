@@ -53,7 +53,6 @@ import javax.management.ObjectName;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.LuceneIndexMBean;
 import org.netbeans.modules.java.source.usages.LuceneIndexMBeanImpl;
-import org.netbeans.modules.java.source.usages.NBLockFactory;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.java.source.util.LowMemoryNotifierMBean;
 import org.netbeans.modules.java.source.util.LowMemoryNotifierMBeanImpl;
@@ -76,7 +75,6 @@ public class JBrowseModule extends ModuleInstall {
 
     public @Override void restored() {
         super.restored();
-        NBLockFactory.clearLocks();
         JavaSourceTaskFactoryManager.register();
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
             public void run () {

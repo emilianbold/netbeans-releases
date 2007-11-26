@@ -70,6 +70,7 @@ public final class ClassIndexManager {
     private Set<URL> added;
     private Set<URL> removed;
     private int depth = 0;
+    private Thread owner;
     
     
     
@@ -90,28 +91,33 @@ public final class ClassIndexManager {
     public <T> T writeLock (final ExceptionAction<T> r) throws IOException, InterruptedException {
         this.lock.writeLock().lock();
         try {
-            depth++;
+            this.owner = Thread.currentThread();
             try {
-                if (depth == 1) {
-                    this.added = new HashSet<URL>();
-                    this.removed = new HashSet<URL>();
-                }
+                depth++;
                 try {
-                    return r.run();
-                } finally {
                     if (depth == 1) {
-                        if (!removed.isEmpty()) {
-                            fire (removed, OP_REMOVE);
-                            removed.clear();
-                        }
-                        if (!added.isEmpty()) {
-                            fire (added, OP_ADD);
-                            added.clear();
-                        }                
+                        this.added = new HashSet<URL>();
+                        this.removed = new HashSet<URL>();
                     }
+                    try {
+                        return r.run();
+                    } finally {
+                        if (depth == 1) {
+                            if (!removed.isEmpty()) {
+                                fire (removed, OP_REMOVE);
+                                removed.clear();
+                            }
+                            if (!added.isEmpty()) {
+                                fire (added, OP_ADD);
+                                added.clear();
+                            }                
+                        }
+                    }
+                } finally {
+                    depth--;
                 }
             } finally {
-                depth--;
+                this.owner = null;
             }
         } finally {
             this.lock.writeLock().unlock();
@@ -125,6 +131,10 @@ public final class ClassIndexManager {
         } finally {
             this.lock.readLock().unlock();
         }
+    }
+    
+    public boolean holdsWriteLock () {
+        return Thread.currentThread().equals(this.owner);
     }
     
     public synchronized ClassIndexImpl getUsagesQuery (final URL root) throws IOException {
