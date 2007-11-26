@@ -478,9 +478,9 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         synchronized (rootTokenList) {
             lps = languagePaths;
             if (lps == null) {
-                LanguagePath lp = rootTokenList.languagePath();
-                if (lp == null)
+                if (!isActive())
                     return Collections.emptySet();
+                LanguagePath lp = rootTokenList.languagePath();
                 Language<?> lang = lp.topLanguage();
                 LanguageOperation<?> langOp = LexerApiPackageAccessor.get().languageOperation(lang);
                 @SuppressWarnings("unchecked")
