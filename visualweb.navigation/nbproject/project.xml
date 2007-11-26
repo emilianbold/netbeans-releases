@@ -246,9 +246,6 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.web.jsf12</code-name-base>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.visualweb.libs.jsf.ri12</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.libs.xerces</code-name-base>
                     </test-dependency>
                     <!--
