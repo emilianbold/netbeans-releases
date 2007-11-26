@@ -52,6 +52,7 @@ import javax.swing.JButton;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.options.OptionsDisplayer;
@@ -474,6 +475,8 @@ public class PluginPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_reloadNewButtonActionPerformed
 
     private void addUrlButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addUrlButtonActionPerformed
+        assert SwingUtilities.isEventDispatchThread();
+
         NewUrlPanel panel = new NewUrlPanel();
 
         DialogDescriptor descriptor = new DialogDescriptor(panel, NbBundle.getMessage(PluginPanel.class,
@@ -503,6 +506,8 @@ public class PluginPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_proxyButtonActionPerformed
 
     private void discoverButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_discoverButtonActionPerformed
+        assert SwingUtilities.isEventDispatchThread();
+
         // Bring up a selection list
         String wait = getWaitMsg();
         RepositorySelectionPanel panel = new RepositorySelectionPanel();
@@ -557,6 +562,8 @@ public class PluginPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_reloadReposButtonActionPerformed
 
     private void unregisterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unregisterButtonActionPerformed
+        assert SwingUtilities.isEventDispatchThread();
+
         int[] indices = repositoryList.getSelectedIndices();
         List<String> repositories = new ArrayList<String>();
         if (indices != null) {
@@ -580,6 +587,8 @@ public class PluginPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_unregisterButtonActionPerformed
 
     private void repositoryPanelComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_repositoryPanelComponentShown
+        assert SwingUtilities.isEventDispatchThread();
+
         // Make sure the list is shown
         if (!repositoriesInitialized) {
             repositoriesInitialized = true;
@@ -603,6 +612,8 @@ public class PluginPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_repositoryPanelComponentShown
 
     private void newPanelComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_newPanelComponentShown
+        assert SwingUtilities.isEventDispatchThread();
+
         // Make sure the list is shown
         if (!newInitialized) {
             newInitialized = true;
@@ -617,6 +628,8 @@ public class PluginPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_newPanelComponentShown
 
     private void installButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installButtonActionPerformed
+        assert SwingUtilities.isEventDispatchThread();
+
         int[] indices = newList.getSelectedIndices();
         List<Plugin> plugins = new ArrayList<Plugin>();
         for (int index : indices) {
@@ -639,7 +652,7 @@ public class PluginPanel extends javax.swing.JPanel {
                 if (result.equals(NotifyDescriptor.OK_OPTION)) {
                     Plugin plugin = new Plugin(panel.getPluginName(), null);
                     // XXX Do I really need to refresh it right way?
-                    PluginListRefresher completionTask = new PluginListRefresher(newList, true);
+                    PluginListRefresher completionTask = new PluginListRefresher(newList, false);
                     boolean changed = pluginManager.install(new Plugin[] { plugin }, this, null, panel.isSvnExternals(), panel.isSvnCheckout(), panel.getRevision(), 
                             true, completionTask);
                     installedModified = installedModified || changed;
@@ -660,6 +673,8 @@ public class PluginPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_updateAllButtonActionPerformed
 
     private void updateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateButtonActionPerformed
+        assert SwingUtilities.isEventDispatchThread();
+
         int[] indices = installedList.getSelectedIndices();
         List<Plugin> plugins = new ArrayList<Plugin>();
         if (indices != null) {
@@ -680,6 +695,8 @@ public class PluginPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_updateButtonActionPerformed
 
     private void uninstallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uninstallButtonActionPerformed
+        assert SwingUtilities.isEventDispatchThread();
+
         int[] indices = installedList.getSelectedIndices();
         List<Plugin> plugins = new ArrayList<Plugin>();
         if (indices != null) {
@@ -704,6 +721,8 @@ public class PluginPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_reloadInstalledButtonActionPerformed
 
     private void installedPanelComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_installedPanelComponentShown
+        assert SwingUtilities.isEventDispatchThread();
+
         // Make sure the list is shown
         if (!installedInitialized) {
             installedInitialized = true;
@@ -724,6 +743,8 @@ public class PluginPanel extends javax.swing.JPanel {
 
     /** Refresh the list of displayed plugins. If refresh is true, refresh the list from the plugin manager, otherwise just refilter list */
     private void refreshPluginList(final String filter, final boolean refresh, final JList list, final boolean local) {        
+        assert SwingUtilities.isEventDispatchThread();
+
         boolean showRefreshMessage = true;
         //        if (!pluginManager.hasUptodateAvailableList()) {
         //            // No need to ask for cached version if the full version will be displayed shortly
@@ -744,7 +765,7 @@ public class PluginPanel extends javax.swing.JPanel {
         Runnable runner = new Runnable() {
             public void run() {
                 synchronized(this) {
-                    DefaultListModel model = new DefaultListModel();
+                    final DefaultListModel model = new DefaultListModel();
                     List<String> lines = new ArrayList<String>(500);
                     List<Plugin> plugins;
                     if (local) {
@@ -800,25 +821,32 @@ public class PluginPanel extends javax.swing.JPanel {
                             model.addElement("<html><span color=\"red\">" + line + "</span></html>"); // NOI18N
                         }
                     }
-                    list.clearSelection();
-                    list.setModel(model);
-                    list.invalidate();
-                    list.repaint();
-                    if (plugins.size() > 0) {
-                        list.setSelectedIndex(0);
-                    }
+                    
+                    final int pluginsCount = plugins.size();
 
-                    int tabIndex = local ? 0 : 1;
-                    String tabTitle = pluginsTab.getTitleAt(tabIndex);
-                    String originalTabTitle = tabTitle;
-                    int index = tabTitle.lastIndexOf('(');
-                    if (index != -1) {
-                        tabTitle = tabTitle.substring(0, index);
-                    }
-                    tabTitle = tabTitle + "(" + plugins.size() + ")";
-                    if (!tabTitle.equals(originalTabTitle)) {
-                        pluginsTab.setTitleAt(tabIndex, tabTitle);
-                    }
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            list.clearSelection();
+                            list.setModel(model);
+                            list.invalidate();
+                            list.repaint();
+                            if (pluginsCount > 0) {
+                                list.setSelectedIndex(0);
+                            }
+
+                            int tabIndex = local ? 0 : 1;
+                            String tabTitle = pluginsTab.getTitleAt(tabIndex);
+                            String originalTabTitle = tabTitle;
+                            int index = tabTitle.lastIndexOf('(');
+                            if (index != -1) {
+                                tabTitle = tabTitle.substring(0, index);
+                            }
+                            tabTitle = tabTitle + "(" + pluginsCount + ")";
+                            if (!tabTitle.equals(originalTabTitle)) {
+                                pluginsTab.setTitleAt(tabIndex, tabTitle);
+                            }
+                        }
+                    });
                 }
             }
         };
@@ -838,10 +866,12 @@ public class PluginPanel extends javax.swing.JPanel {
 
     /** Refresh the list of displayed plugins. If refresh is true, refresh the list from the plugin manager, otherwise just refilter list */
     private void refreshRepositoryList(final String filter, final boolean refresh, final JList list, final boolean local) {        
+        assert SwingUtilities.isEventDispatchThread();
+
         Runnable runner = new Runnable() {
             public void run() {
                 synchronized(this) {
-                    DefaultListModel model = new DefaultListModel();
+                    final DefaultListModel model = new DefaultListModel();
                     List<String> lines = new ArrayList<String>(500);
                     List<String> repositories;
                     if (local) {
@@ -888,13 +918,19 @@ public class PluginPanel extends javax.swing.JPanel {
                             model.addElement("<html><span color=\"red\">" + line + "</span></html>"); // NOI18N
                         }
                     }
-                    list.clearSelection();
-                    list.setModel(model);
-                    list.invalidate();
-                    list.repaint();
-                    if (repositories.size() > 0) {
-                        list.setSelectedIndex(0);
-                    }
+                    final int repositoryCount = repositories.size();
+                    
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            list.clearSelection();
+                            list.setModel(model);
+                            list.invalidate();
+                            list.repaint();
+                            if (repositoryCount > 0) {
+                                list.setSelectedIndex(0);
+                            }
+                        }
+                    });
                 }
             }
         };
@@ -910,8 +946,9 @@ public class PluginPanel extends javax.swing.JPanel {
         }
     }
     
-    
     private String getRepositoryFilter(boolean local) {
+        assert SwingUtilities.isEventDispatchThread();
+
         String filter = null;
         if (local) {
             filter = searchReposText.getText().trim();
@@ -924,6 +961,8 @@ public class PluginPanel extends javax.swing.JPanel {
     }
 
     private String getPluginFilter(boolean local) {
+        assert SwingUtilities.isEventDispatchThread();
+
         String filter = null;
         JTextField tf = local ? instSearchText : searchNewText;
         filter = tf.getText().trim();
@@ -944,6 +983,10 @@ public class PluginPanel extends javax.swing.JPanel {
         }
 
         public void run() {
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(this);
+                return;
+            }
             refreshPluginList(getPluginFilter(local), true, list, local);
             if (list == newList) {
                 newModified = false;
@@ -964,6 +1007,10 @@ public class PluginPanel extends javax.swing.JPanel {
         }
 
         public void run() {
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(this);
+                return;
+            }
             refreshRepositoryList(getRepositoryFilter(local), true, list, local);
             if (list == repositoryList) {
                 repositoriesModified = false;

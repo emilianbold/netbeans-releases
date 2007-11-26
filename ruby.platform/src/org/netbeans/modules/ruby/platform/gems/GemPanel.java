@@ -55,6 +55,7 @@ import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.options.OptionsDisplayer;
@@ -134,10 +135,16 @@ public class GemPanel extends javax.swing.JPanel implements Runnable {
     
     public void run() {
         // This will also update the New and Installed lists because Update depends on these
-        refreshUpdated();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                refreshUpdated();
+            }
+        });
     }
     
     private void updateGemDescription(JTextPane pane, Gem gem) {
+        assert SwingUtilities.isEventDispatchThread();
+
         if (gem == null) {
             pane.setText("");
             return;
@@ -196,6 +203,8 @@ public class GemPanel extends javax.swing.JPanel implements Runnable {
      * @return True iff we're done with the updates
      */
     private synchronized boolean updateGems() {
+        assert SwingUtilities.isEventDispatchThread();
+
         if (!(fetchingRemote || fetchingLocal)) {
             updatedProgress.setVisible(false);
             updatedProgressLabel.setVisible(false);
@@ -250,6 +259,8 @@ public class GemPanel extends javax.swing.JPanel implements Runnable {
     }
     
     private void updateList(int tab, boolean showCount) {
+        assert SwingUtilities.isEventDispatchThread();
+
         Pattern pattern = null;
         String filter = getGemFilter(tab);
         String lcFilter = null;
@@ -351,6 +362,8 @@ public class GemPanel extends javax.swing.JPanel implements Runnable {
     }
 
     private synchronized void refreshInstalled(boolean fetch) {
+        assert SwingUtilities.isEventDispatchThread();
+
         if (installedList.getSelectedIndex() != -1) {
             updateGemDescription(installedDesc, null);
         }
@@ -364,6 +377,8 @@ public class GemPanel extends javax.swing.JPanel implements Runnable {
     }
     
     private synchronized void refreshNew(boolean fetch) {
+        assert SwingUtilities.isEventDispatchThread();
+
         if (newList.getSelectedIndex() != -1) {
             updateGemDescription(newDesc, null);
         }
@@ -376,6 +391,8 @@ public class GemPanel extends javax.swing.JPanel implements Runnable {
     }
 
     private void refreshUpdated() {
+        assert SwingUtilities.isEventDispatchThread();
+
         if (updatedList.getSelectedIndex() != -1) {
             updateGemDescription(updatedDesc, null);
         }
@@ -790,6 +807,8 @@ public class GemPanel extends javax.swing.JPanel implements Runnable {
     }//GEN-LAST:event_reloadReposButtonActionPerformed
 
     private void installButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installButtonActionPerformed
+        assert SwingUtilities.isEventDispatchThread();
+
         int[] indices = newList.getSelectedIndices();
         List<Gem> gems = new ArrayList<Gem>();
         for (int index : indices) {
@@ -836,6 +855,8 @@ public class GemPanel extends javax.swing.JPanel implements Runnable {
     }//GEN-LAST:event_updateAllButtonActionPerformed
 
     private void updateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateButtonActionPerformed
+        assert SwingUtilities.isEventDispatchThread();
+
         int[] indices = updatedList.getSelectedIndices();
         List<Gem> gems = new ArrayList<Gem>();
         if (indices != null) {
@@ -856,6 +877,8 @@ public class GemPanel extends javax.swing.JPanel implements Runnable {
     }//GEN-LAST:event_updateButtonActionPerformed
 
     private void uninstallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uninstallButtonActionPerformed
+        assert SwingUtilities.isEventDispatchThread();
+
         int[] indices = installedList.getSelectedIndices();
         List<Gem> gems = new ArrayList<Gem>();
         if (indices != null) {
@@ -884,6 +907,8 @@ public class GemPanel extends javax.swing.JPanel implements Runnable {
         Runnable runner = new Runnable() {
             public void run() {
                 synchronized(this) {
+                    assert !SwingUtilities.isEventDispatchThread();
+
                     List<String> errors = new ArrayList<String>(500);
                     if (tab == INSTALLED_TAB_INDEX) {
                         installedGems = gemManager.reloadInstalledGems(errors);
@@ -897,15 +922,19 @@ public class GemPanel extends javax.swing.JPanel implements Runnable {
                         fetchingRemote = false;
                     }
                     
-                    // Recompute lists
-                    boolean done = updateGems();
-                    
-                    if (!done) {
-                        // Just filter
-                        updateList(tab, false);
-                    } else if (tab == INSTALLED_TAB_INDEX) {
-                        updateList(tab, true);
-                    }
+                    // Update UI
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            boolean done = updateGems();
+
+                            if (!done) {
+                                // Just filter
+                                updateList(tab, false);
+                            } else if (tab == INSTALLED_TAB_INDEX) {
+                                updateList(tab, true);
+                            }
+                        }
+                    });
                 }
             }
         };
@@ -917,6 +946,8 @@ public class GemPanel extends javax.swing.JPanel implements Runnable {
         Runnable runner = new Runnable() {
             public void run() {
                 synchronized(this) {
+                    assert !SwingUtilities.isEventDispatchThread();
+
                     List<String> lines = Collections.emptyList();
                     remoteFailure = null;
                     if (!useCached) {
@@ -932,14 +963,18 @@ public class GemPanel extends javax.swing.JPanel implements Runnable {
                         remoteFailure = lines;
                     }
                     
-                    // Recompute lists
-                    updateGems();
-                    updateList(INSTALLED_TAB_INDEX, true);
-                    
-                    if (remoteFailure != null && !fetchingLocal) {
-                        // Update the local list which shouldn't have any errors
-                        refreshInstalled(true);
-                    }
+                    // Update UI
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            updateGems();
+                            updateList(INSTALLED_TAB_INDEX, true);
+
+                            if (remoteFailure != null && !fetchingLocal) {
+                                // Update the local list which shouldn't have any errors
+                                refreshInstalled(true);
+                            }
+                        }
+                    });
                 }
             }
         };
@@ -948,6 +983,8 @@ public class GemPanel extends javax.swing.JPanel implements Runnable {
     }
     
     private String getGemFilter(int tab) {
+        assert SwingUtilities.isEventDispatchThread();
+
         String filter = null;
         JTextField tf;
         if (tab == INSTALLED_TAB_INDEX) {
