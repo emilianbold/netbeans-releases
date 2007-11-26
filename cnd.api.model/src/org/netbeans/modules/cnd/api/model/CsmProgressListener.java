@@ -41,11 +41,13 @@
 
 package org.netbeans.modules.cnd.api.model;
 
+import java.util.EventListener;
+
 /**
  * Gets notification on parsing events
  * @author Vladimir Kvashin
  */
-public interface CsmProgressListener {
+public interface CsmProgressListener extends EventListener {
     
     void projectParsingStarted(CsmProject project /*, boolean initial*/);
     

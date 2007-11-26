@@ -41,10 +41,12 @@
 
 package org.netbeans.modules.cnd.api.model;
 
+import java.util.EventListener;
+
 /**
  * Listener that is notified when the model changes its state
  * @author Vladimir Kvashin
  */
-public interface CsmModelStateListener {
+public interface CsmModelStateListener extends EventListener {
     void modelStateChanged(CsmModelState newState, CsmModelState oldState);
 }
