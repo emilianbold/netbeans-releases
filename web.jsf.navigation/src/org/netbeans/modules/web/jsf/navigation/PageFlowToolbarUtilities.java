@@ -162,7 +162,6 @@ public class PageFlowToolbarUtilities {
             scopeBox.setSelectedItem(getScopeLabel(currentScope));
         }
     }
-    private static final Logger LOGGERUI = Logger.getLogger("org.netbeans.ui.web.jsf.navigation");
     private JComboBox scopeBox;
 
     /**
@@ -193,11 +192,11 @@ public class PageFlowToolbarUtilities {
                     /* Save Locations before switching scope */
                     view.saveLocations();
 
-                    LogRecord record = new LogRecord(Level.FINE, "PageFLowEditor Scope Changed");
+                    LogRecord record = new LogRecord(Level.FINE, "PageFLowEditor Scope Changed To:" + newScope);
                     record.setSourceClassName("PageFlowUtilities.ItemListener");
                     record.setSourceMethodName("itemStateChanged");
                     record.setParameters(new Object[]{newScope, new Date()});
-                    LOGGERUI.log(record);
+                    LOGGER.log(record);
 
                     setCurrentScope(getScope(newScope));
                     //As we are setting the current scope, we should update the controller and update the scene.  But what happens with setup?
