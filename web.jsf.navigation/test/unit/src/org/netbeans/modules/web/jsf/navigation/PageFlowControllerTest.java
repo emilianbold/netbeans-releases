@@ -732,29 +732,17 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         Page page = controller.getPageName2Page("");
         assertNull(page);
     }
-//
-//    /**
-//     * Test of printThreadInfo method, of class PageFlowController.
-//     */
-//    public void testPrintThreadInfo() {
-//        System.out.println("printThreadInfo");
-//        PageFlowController instance = null;
-//        instance.printThreadInfo();
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
+
+
 //    /**
 //     * Test of renamePageInModel method, of class PageFlowController.
 //     */
 //    public void testRenamePageInModel() {
 //        System.out.println("renamePageInModel");
-//        String oldDisplayName = "";
-//        String newDisplayName = "";
-//        PageFlowController instance = null;
-//        instance.renamePageInModel(oldDisplayName, newDisplayName);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
+//        String oldDisplayName = "welcomeJSF.jsp";
+//        String newDisplayName = "newName";
+//        controller.renamePageInModel(oldDisplayName, newDisplayName);
+//        tu.getFacesConfig().getNavigationRules();
 //    }
 //
 //    /**
