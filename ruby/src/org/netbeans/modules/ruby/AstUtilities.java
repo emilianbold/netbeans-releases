@@ -1798,7 +1798,8 @@ public class AstUtilities {
         }
 
         Node leaf = path.root();
-        
+
+      while_loop:
         while (it.hasNext()) {
             Node n = it.next();
             switch (n.nodeId) {
@@ -1813,7 +1814,7 @@ public class AstUtilities {
             case NodeTypes.SCLASSNODE:
             case NodeTypes.MODULENODE:
                 leaf = n;
-                break;
+                break while_loop;
             }
         }
 

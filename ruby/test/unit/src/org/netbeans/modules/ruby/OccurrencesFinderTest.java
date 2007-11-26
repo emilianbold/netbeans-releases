@@ -199,6 +199,10 @@ public class OccurrencesFinderTest extends RubyTestBase {
         checkOccurrences("testfiles/nestedblocks.rb", "[4,5,6].each { |ou^ter|");
     }
 
+    public void testNestedBlocks2() throws Exception {
+        checkOccurrences("testfiles/nestedblocks2.rb", "arg.each_pair do |fo^o, val|");
+    }
+
     public void testParellelBlocks() throws Exception {
         checkOccurrences("testfiles/parallelblocks.rb", "foo.each { |i^| puts i } #1");
     }

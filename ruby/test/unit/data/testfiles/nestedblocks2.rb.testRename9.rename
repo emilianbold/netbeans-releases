@@ -1,0 +1,2 @@
+5:     arg.each_pair do ||>foo<|, val|
+6:       @matches[|>foo<|] = Match.match_factory(val)

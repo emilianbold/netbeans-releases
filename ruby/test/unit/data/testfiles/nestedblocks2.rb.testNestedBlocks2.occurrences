@@ -1,0 +1,2 @@
+    arg.each_pair do ||>MARK_OCCURRENCES:fo^o<|, val|
+      @matches[|>MARK_OCCURRENCES:foo<|] = Match.match_factory(val)
