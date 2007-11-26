@@ -2434,7 +2434,7 @@ public class Reformatter implements ReformatTask {
             int idx = 0;
             while ((idx = text.indexOf('\n', idx)) >= 0) { //NOI18N
                 int i = idx + 1;
-                while(text.charAt(i) <= ' ') //NOI18N
+                while(text.charAt(i) <= ' ' && text.charAt(i) != '\n') //NOI18N
                     i++;
                 String s = text.charAt(i) == '*' ? indent + SPACE : indent;
                 if (!s.equals(text.substring(idx + 1, i)))
