@@ -63,6 +63,8 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
@@ -75,7 +77,11 @@ import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.FieldTokenizer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
+import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
@@ -114,6 +120,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public static final String          STATE_STOPPED = "state_stopped"; // NOI18N
     public static final String          STATE_SILENT_STOP = "state_silent_stop"; // NOI18N
     public static final String          STATE_EXITED  = "state_exited"; // NOI18N
+    
+    private static final int            DEBUG_ATTACH = 999;
     
     /* Some breakpoint flags used only on Windows XP (with Cygwin) */
     public static final int             GDB_TMP_BREAKPOINT = 1;
@@ -198,7 +206,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             runDirectory = pae.getProfile().getRunDirectory().replace("\\", "/") + "/";  // NOI18N
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
             int conType = pae.getProfile().getConsoleType().getValue();
-            if (!Utilities.isWindows() && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
+            if (!Utilities.isWindows() && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW &&
+                    pae.getID() != DEBUG_ATTACH) {
                 termpath = pae.getProfile().getTerminalPath();
             }
             startupTimer = new Timer("GDB Startup Timer Thread"); // NOI18N
@@ -217,33 +226,39 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             gdb = new GdbProxy(this, gdbCommand, pae.getProfile().getEnvironment().getenv(),
                     runDirectory, termpath);
             gdb.gdb_version();
-            gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
             gdb.environment_directory(runDirectory);
             gdb.gdb_show("language"); // NOI18N
+            if (pae.getID() == DEBUG_ATTACH) {
+                gdb.target_attach(Long.toString(programPID));
+                gdb.file_symbol_file(pae.getExecutable());
+                setLoading();
+            } else {
+                gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
         
-            if (Utilities.isWindows()) {
-                if (conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    gdb.set_new_console();
+                if (Utilities.isWindows()) {
+                    if (conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
+                        gdb.set_new_console();
+                    }
                 }
-            }
-            if (pae.getID() == ProjectActionEvent.DEBUG_STEPINTO) {
-                continueAfterFirstStop = false; // step into project
-            }
-            gdb.break_insert(GDB_TMP_BREAKPOINT, "main"); // NOI18N
-            if (Utilities.isWindows()) {
-                // WinAPI apps don't have a "main" function. Use "WinMain" if Windows.
-                gdb.break_insert(GDB_TMP_BREAKPOINT, "WinMain"); // NOI18N
-            }
-            try {
-                gdb.exec_run(pae.getProfile().getArgsFlat());
-            } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ex);
-                ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
-            }
-            if (Utilities.isWindows()) {
-                gdb.info_threads(); // we get the PID from this...
-            } else if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
-                gdb.info_proc(); // we get the PID from this...
+                if (pae.getID() == ProjectActionEvent.DEBUG_STEPINTO) {
+                    continueAfterFirstStop = false; // step into project
+                }
+                gdb.break_insert(GDB_TMP_BREAKPOINT, "main"); // NOI18N
+                if (Utilities.isWindows()) {
+                    // WinAPI apps don't have a "main" function. Use "WinMain" if Windows.
+                    gdb.break_insert(GDB_TMP_BREAKPOINT, "WinMain"); // NOI18N
+                }
+                try {
+                    gdb.exec_run(pae.getProfile().getArgsFlat());
+                } catch (Exception ex) {
+                    ErrorManager.getDefault().notify(ex);
+                    ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
+                }
+                if (Utilities.isWindows()) {
+                    gdb.info_threads(); // we get the PID from this...
+                } else if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
+                    gdb.info_proc(); // we get the PID from this...
+                }
             }
         } catch (Exception ex) {
             if (startupTimer != null) {
@@ -348,8 +363,14 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
             if (gdb != null) {
                 if (state.equals(STATE_RUNNING)) {
-                    gdb.exec_interrupt(); // Does this work? (Don't think so)
-                    gdb.exec_abort();
+                    ProjectActionEvent pae = (ProjectActionEvent) lookupProvider.lookupFirst(
+                            null, ProjectActionEvent.class);
+                    gdb.exec_interrupt();
+                    if (pae.getID() == DEBUG_ATTACH) {
+                        gdb.target_detach();
+                    } else {
+                        gdb.exec_abort();
+                    }
                 }
                 gdb.gdb_exit();
             }
@@ -1473,19 +1494,37 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * @param hostName a name of computer to attach to
      * @param portNumber a port number
      */
-    public static GdbDebugger attach(String hostName, int pid, Object[] services)
-		    throws DebuggerStartException {
-        DebuggerEngine[] es = DebuggerManager.getDebuggerManager().startDebugging(
-                DebuggerInfo.create(SESSION_ID, null));
-	int k = es.length;
+    public static void attach(String pid, ProjectInformation pinfo)
+            throws DebuggerStartException {
+        Project project = pinfo.getProject();
+        ConfigurationDescriptorProvider cdp =
+                (ConfigurationDescriptorProvider) project.getLookup().
+                lookup(ConfigurationDescriptorProvider.class);
+        if (cdp != null) {
+            MakeConfigurationDescriptor mcd =
+                    (MakeConfigurationDescriptor) cdp.getConfigurationDescriptor();
+            MakeConfiguration conf = (MakeConfiguration) mcd.getConfs().getActive();
+            MakeArtifact ma = new MakeArtifact(mcd, conf);
+            String path = ma.getOutput();
+            ProjectActionEvent pae = new ProjectActionEvent(
+                    project,
+                    DEBUG_ATTACH,
+                    pinfo.getDisplayName(),
+                    path,
+                    conf,
+                    null,
+                    false);
+            DebuggerEngine[] es = DebuggerManager.getDebuggerManager().startDebugging(
+                    DebuggerInfo.create(SESSION_PROVIDER_ID, new Object[] { pae }));
+            int k = es.length;
 
-        for (int i = 0; i < k; i++) {
-            GdbDebugger d = (GdbDebugger) es [i].lookupFirst(null, GdbDebugger.class);
-            if (d == null) {
-		continue;
-	    }
-            d.waitRunning();
-            return d;
+            for (int i = 0; i < k; i++) {
+                GdbDebugger d = (GdbDebugger) es [i].lookupFirst(null, GdbDebugger.class);
+                if (d != null) {
+                    d.programPID = Long.valueOf(pid);
+                    return;
+                }
+            }
         }
         throw new DebuggerStartException(new InternalError());
     }
@@ -1625,19 +1664,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 gdb.break_enable(impl.getBreakpointNumber());
             }
         }
-    }
-        
-    /**
-     * Waits till the Virtual Machine is started and returns
-     * {@link DebuggerStartException} if some problem occurres.
-     *
-     * @throws DebuggerStartException is some problems occurres during debugger
-     *         start
-     *
-     * @see AbstractDICookie#getVirtualMachine()
-     */
-    public void waitRunning() throws DebuggerStartException {
-        throw new DebuggerStartException("tmp - Not fully implemented..."); // XXX - Debug // NOI18N
     }
     
     /**
@@ -1897,10 +1923,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private void firePropertyChange(String name, Object o, Object n) {
         pcs.firePropertyChange(name, o, n);
     }
-    
-//    private void firePropertyChange(PropertyChangeEvent ev) {
-//        pcs.firePropertyChange(ev);
-//    }
     
     public void break_disable(int breakpointNumber) {
         gdb.break_disable(breakpointNumber);

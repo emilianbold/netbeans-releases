@@ -116,7 +116,28 @@ public class GdbProxy implements GdbMiDefinitions {
      * @param program - a name of an external program to debug
      */
     public int file_exec_and_symbols(String programName) {
-        return engine.sendCommand(MI_CMD_FILE_EXEC_AND_SYMBOLS + programName.toString());
+        return engine.sendCommand(MI_CMD_FILE_EXEC_AND_SYMBOLS + programName);
+    }
+    
+    /** Attach to a running program */
+    public int target_attach(String pid) {
+//        return engine.sendCommand("-target-attach " + pid); // NOI18N - no implementaion
+        return engine.sendCommand("attach " + pid); // NOI18N
+    }
+    
+    /** Detach from a running program */
+    public int target_detach() {
+//        return engine.sendCommand("-target-detach"); // NOI18N - no implementaion
+        return engine.sendCommand("detach"); // NOI18N
+    }
+
+    /**
+     * Load the symbol table only. Used to get symbols for an attached program.
+     *
+     * @param program - a name of an external program to debug
+     */
+    public int file_symbol_file(String path) {
+        return engine.sendCommand("-file-symbol-file " + path); // NOI18N
     }
 
     /** Ask gdb for its version */

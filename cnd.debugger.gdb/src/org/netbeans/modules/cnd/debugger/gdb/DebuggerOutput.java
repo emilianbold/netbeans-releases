@@ -120,28 +120,10 @@ public class DebuggerOutput extends LazyActionsManagerListener implements Proper
         } else if (debuggerState.equals(GdbDebugger.STATE_EXITED)) {
             print("CTL_Debugger_finished", new String[] { }, null); // NOI18N
         } else if (debuggerState.equals(GdbDebugger.STATE_NONE)) {
-            Throwable e = null;
-            try {
-                synchronized (this) {
-                    if (debugger != null) {
-                        debugger.waitRunning();
-                    }
-                }
-            } catch (DebuggerStartException ex) {
-                e = ex.getTargetException();
+            print("CTL_Debugger_finished", null, null); // NOI18N
+            if (ioManager != null) {
+                ioManager.closeStream();
             }
-            if (e == null) {
-                print("CTL_Debugger_finished", null, null); // NOI18N
-            } else {
-                String message = e.getMessage();
-                if (message != null) {
-                    ioManager.println(message, null);
-                } else {
-                    ioManager.println(e.toString(), null);
-                }
-                //e.printStackTrace ();
-            }
-            ioManager.closeStream();
         } else if (debuggerState.equals(GdbDebugger.STATE_STOPPED)) {
             print("CTL_Debugger_stopped", new String[] { }, null); // NOI18N
         }
