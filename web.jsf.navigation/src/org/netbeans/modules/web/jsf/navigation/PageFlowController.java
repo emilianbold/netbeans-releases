@@ -831,17 +831,26 @@ public class PageFlowController {
         }
     }
 
-    public void printThreadInfo() {
+    private void printThreadInfo() {
         if (!SwingUtilities.isEventDispatchThread()) {
             Thread.dumpStack();
             throw new RuntimeException("Not a Dispatched Thread");
         }
     }
 
-    public void renamePageInModel(String oldDisplayName, String newDisplayName) {
-        FacesModelUtility.renamePageInModel(configModel, oldDisplayName, newDisplayName);
+    /**
+     * Rename all references to a given page int eh faces config file.
+     * @param oldName String old name, if null thrown npe.
+     * @param newName String new name, if null thrown npe.
+     */
+    public void renamePageInModel(String oldName, String newName) {
+        FacesModelUtility.renamePageInModel(configModel, oldName, newName);
     }
 
+    /**
+     * Remove page from the scene.
+     * @param pageNode 
+     */
     public void removeSceneNodeEdges(Page pageNode) {
 
         Collection<NavigationCaseEdge> navCaseNodes = view.getNodeEdges(pageNode);
