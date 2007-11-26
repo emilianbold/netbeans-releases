@@ -70,7 +70,7 @@ public class FormLAF {
     /** User UIDefaults of the IDE. */
     private static Map<Object,Object> netbeansDefaults = new HashMap<Object,Object>();
     /** User UIDefaults of components */
-    private static Map<Object,Object> userDefaults = new HashMap<Object,Object>(UIManager.getDefaults());
+    private static Map<Object,Object> userDefaults = new HashMap<Object,Object>();
     /** Maps LAF class to its theme. */
     private static Map<Class, MetalTheme> lafToTheme = new HashMap<Class, MetalTheme>();
     /** Determines whether the IDE LAF is subclass of MetalLookAndFeel. */
@@ -300,13 +300,14 @@ public class FormLAF {
     private static void useIDELookAndFeel() {
         userDefaults.clear();
         userDefaults.putAll(UIManager.getDefaults());
-        UIManager.getDefaults().putAll(netbeansDefaults);
 
         if (!preview) {
             setUseDesignerDefaults(null);
         } else if (ideLafIsMetal) {
             MetalLookAndFeel.setCurrentTheme(lafToTheme.get(UIManager.getLookAndFeel().getClass()));
         }
+
+        UIManager.getDefaults().putAll(netbeansDefaults);
     }
 
     /**

@@ -202,10 +202,12 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         initialized = true;
         removeAll();
 
+        formModel = formEditor.getFormModel();
+
         componentLayer = new ComponentLayer(formModel);
         handleLayer = new HandleLayer(this);
         nonVisualTray = FormEditor.isNonVisualTrayEnabled() ?
-                        new NonVisualTray(formEditor.getFormModel()) : null;
+                        new NonVisualTray(formModel) : null;
 
         JPanel designPanel = new JPanel(new BorderLayout());
         designPanel.add(componentLayer, BorderLayout.CENTER);
@@ -227,8 +229,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         layeredPane.setLayout(new OverlayLayout(layeredPane));
         layeredPane.add(designPanel, new Integer(1000));
         layeredPane.add(handleLayer, new Integer(1001));
-
-        formModel = formEditor.getFormModel();
 
         updateAssistant();
         settingsListener = new PreferenceChangeListener() {
