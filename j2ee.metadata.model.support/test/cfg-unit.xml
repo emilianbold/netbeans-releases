@@ -48,7 +48,6 @@ made subject to such option by the copyright holder.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
-                <exclude name="org/netbeans/modules/j2ee/metadata/model/api/support/annotation/PersistentObjectManagerTest.class"/>
             </patternset>
         </testset>
     </testbag>
