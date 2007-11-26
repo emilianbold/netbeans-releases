@@ -249,7 +249,11 @@ public class SimplifiedJSPServlet {
 
         JspSyntaxSupport jspSyntax = JspSyntaxSupport.get(doc);
         try {
-            jspSyntax.getParseResult().getNodes().visit(visitor);
+            JspParserAPI.ParseResult parseResult = jspSyntax.getParseResult();
+            
+            if (parseResult != null){
+                parseResult.getNodes().visit(visitor);
+            }
         } catch (JspException ex) {
             Exceptions.printStackTrace(ex);
         }
