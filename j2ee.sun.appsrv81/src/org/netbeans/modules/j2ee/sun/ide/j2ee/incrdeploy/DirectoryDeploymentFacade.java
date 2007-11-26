@@ -73,7 +73,7 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
     Object inner = null;
     private File[] resourceDirs = null;
     private DeploymentManager dm;
-    private boolean issue2999Fixed = true;
+    private Boolean issue2999Fixed = null;
     
     private static Map cache = new WeakHashMap();
 
@@ -117,12 +117,17 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
         else
             throw new java.lang.IllegalArgumentException("setDeploymentManager: Invalid manager type, expecting SunDeploymentManager and got " +
                     manager.getClass().getName());
-        checkIssue2999(manager);
+        issue2999Fixed = null;
     }
     
     private void checkIssue2999(DeploymentManager manager) {
         org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface sdmi =
                 (org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface) manager;
+        if (!sdmi.isLocal()) {
+            issue2999Fixed = false;
+            return;
+        }
+        issue2999Fixed = true;
         if (ServerLocationManager.getAppServerPlatformVersion(sdmi.getPlatformRoot()) <=
                 ServerLocationManager.GF_V2) {
             Target[] targs = manager.getTargets();
@@ -224,6 +229,9 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
         if (null == module){
             retVal = false;
         } else {
+            if (null == issue2999Fixed) {
+                checkIssue2999(dm);
+            }
             // TODO find out why this is here..
             resourceDirs = Utils.getResourceDirs(module);
             

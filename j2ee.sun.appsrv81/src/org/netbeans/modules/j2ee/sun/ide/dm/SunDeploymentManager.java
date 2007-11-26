@@ -384,6 +384,9 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     
     boolean lastIsSharedMem = false;
     public boolean isDebugSharedMemory() throws java.rmi.RemoteException{
+        if (!isLocal()) {
+            return false;
+        }
         boolean retVal = lastIsSharedMem;
         JvmOptions jvmInfo = null;
         try {

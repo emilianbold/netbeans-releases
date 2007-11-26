@@ -191,7 +191,7 @@ public class EarActionProvider implements ActionProvider {
                         new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
                 return null;
             }
-            if (isDebugged()) {
+            if (command.equals (COMMAND_RUN) && isDebugged()) {
                 p.setProperty("is.debugged", "true"); // NOI18N
             }
             if (command.equals (EjbProjectConstants.COMMAND_REDEPLOY)) {
@@ -281,10 +281,8 @@ public class EarActionProvider implements ActionProvider {
             // XXX this is a bug that I don't know about fixing yet
             return false;
         }
-        ServerDebugInfo sdi = jmp.getServerDebugInfo ();
-        if (null == sdi) {
-            return false;
-        }
+        
+        ServerDebugInfo sdi = null;
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
         
         for (int i=0; i < sessions.length; i++) {
@@ -292,6 +290,13 @@ public class EarActionProvider implements ActionProvider {
             if (s != null) {
                 Object o = s.lookupFirst(null, AttachingDICookie.class);
                 if (o != null) {
+                    // calculate the sdi as late as possible.
+                    if (null == sdi) {
+                        sdi = jmp.getServerDebugInfo ();
+                        if (null == sdi) {
+                            return false;
+                        }
+                    }
                     AttachingDICookie attCookie = (AttachingDICookie)o;
                     if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
                         if (attCookie.getSharedMemoryName().equalsIgnoreCase(sdi.getShmemName())) {
