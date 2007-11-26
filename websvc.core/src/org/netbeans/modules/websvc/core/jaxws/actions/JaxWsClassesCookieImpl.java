@@ -58,7 +58,8 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
+import org.netbeans.modules.websvc.api.support.java.GenerationUtils;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
@@ -81,9 +82,10 @@ public class JaxWsClassesCookieImpl implements JaxWsClassesCookie {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);            
                 TreeMaker make = workingCopy.getTreeMaker();
-                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                if (genUtils!=null) {
-                    ClassTree javaClass = genUtils.getClassTree();
+                ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
+                if (javaClass!=null) {
+                    GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                    
                     TypeElement webMethodAn = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
                     TypeElement webParamAn = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
                     

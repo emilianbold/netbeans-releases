@@ -81,8 +81,8 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
+import org.netbeans.modules.websvc.api.support.java.GenerationUtils;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
@@ -196,14 +196,14 @@ public class AddWsOperationHelper {
                 MethodTree method = MethodModelSupport.createMethodTree(workingCopy, methodModel);
                 if (method!=null) {
                     TreeMaker make = workingCopy.getTreeMaker();
-                    GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                    if (genUtils!=null) {
+                    TypeElement typeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
+                    if (typeElement!=null) {
 
                         boolean increaseProgress = true;
                         
                         if (createAnnotations) {
                             if (seiClass[0] == null) {
-                                seiClass[0] = getEndpointInterface(genUtils, workingCopy);
+                                seiClass[0] = getEndpointInterface(typeElement, workingCopy);
                             } else {
                                 seiClass[0] = null;
                                 increaseProgress = false;
@@ -212,7 +212,7 @@ public class AddWsOperationHelper {
                         
                         if (increaseProgress) handle.progress(20);
                         
-                        ClassTree javaClass = genUtils.getClassTree();
+                        ClassTree javaClass = workingCopy.getTrees().getTree(typeElement);
                         TypeElement webMethodAn = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
                         TypeElement webParamAn = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
                                                
@@ -227,7 +227,7 @@ public class AddWsOperationHelper {
 
                             String methodName = method.getName().toString();
                             // find value for @WebMethod:oparationName
-                            String operationName = findNewOperationName(genUtils, workingCopy, methodName);
+                            String operationName = findNewOperationName(typeElement, workingCopy, methodName);
                                                      
                             AssignmentTree opName = make.Assignment(make.Identifier("operationName"), make.Literal(operationName)); //NOI18N
 
@@ -256,7 +256,7 @@ public class AddWsOperationHelper {
                             if (!methodName.equals(operationName)) {
                                 // generate Request/Response wrapper annotations to avoid class conflicts
                                 // this enables to generate operations with identical method names
-                                String packagePrefix = getPackagePrefix(genUtils.getTypeElement().getQualifiedName().toString());
+                                String packagePrefix = getPackagePrefix(typeElement.getQualifiedName().toString());
 
                                 TypeElement reqWrapperAn = workingCopy.getElements().getTypeElement("javax.xml.ws.RequestWrapper"); //NOI18N
                                 AssignmentTree className = make.Assignment(make.Identifier("className"), make.Literal(packagePrefix+operationName)); //NOI18N
@@ -290,6 +290,7 @@ public class AddWsOperationHelper {
                                         Collections.<ExpressionTree>singletonList(
                                         make.Assignment(make.Identifier("name"), make.Literal(param.getName().toString()))) //NOI18N
                                         );
+                                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                                 newParameters.add(genUtils.addAnnotation(param, paramAnnotation));
                             }
                         } else {
@@ -298,7 +299,7 @@ public class AddWsOperationHelper {
                                                
                         if (increaseProgress) handle.progress(70);
                         // create new (annotated) method
-                        MethodTree  annotatedMethod = genUtils.getTypeElement().getKind() == ElementKind.CLASS ?
+                        MethodTree  annotatedMethod = typeElement.getKind() == ElementKind.CLASS ?
                             make.Method(
                                 modifiersTree,
                                 method.getName(),
@@ -375,9 +376,8 @@ public class AddWsOperationHelper {
 
     }
 
-    private String getEndpointInterface(GenerationUtils genUtils, CompilationController controller) {
+    private String getEndpointInterface(TypeElement classEl, CompilationController controller) {
         TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
-        TypeElement classEl = genUtils.getTypeElement();
         if (wsElement != null) {
             List<? extends AnnotationMirror> annotations = classEl.getAnnotationMirrors();
             for (AnnotationMirror anMirror : annotations) {
@@ -400,11 +400,10 @@ public class AddWsOperationHelper {
         return null;
     }
     
-    private String findNewOperationName(GenerationUtils genUtils, CompilationController controller, String suggestedMethodName) 
+    private String findNewOperationName(TypeElement classEl, CompilationController controller, String suggestedMethodName) 
         throws IOException {
         
         TypeElement methodElement = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
-        TypeElement classEl = genUtils.getTypeElement();
         Set<String> operationNames = new HashSet<String>();
         if (methodElement != null) {
             List<ExecutableElement> methods = getMethods(controller,classEl);
@@ -490,10 +489,10 @@ public class AddWsOperationHelper {
             CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                    if (srcUtils!=null) {
+                    TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                    if (typeElement!=null) {
                         // find methods
-                        List<ExecutableElement> allMethods = getMethods(controller, srcUtils.getTypeElement());
+                        List<ExecutableElement> allMethods = getMethods(controller, typeElement);
                         Collection<MethodModel> wsOperations = new ArrayList<MethodModel>();
                         boolean foundWebMethodAnnotation=false;
                         for(ExecutableElement method:allMethods) {

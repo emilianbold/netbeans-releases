@@ -71,6 +71,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlChangeListener;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -78,7 +79,6 @@ import org.openide.nodes.AbstractNode;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
@@ -251,12 +251,12 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
                             CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
                                 public void run(CompilationController controller) throws IOException {
                                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                                    SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                                    if (srcUtils!=null) {
+                                    TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                                    if (typeElement!=null) {
                                         // find WS operations
                                         // either annotated (@WebMethod) public mathods 
                                         // or all public methods
-                                        List<ExecutableElement> publicMethods = getPublicMethods(controller, srcUtils.getTypeElement());
+                                        List<ExecutableElement> publicMethods = getPublicMethods(controller, typeElement);
                                         List<ExecutableElement> webMethods = new ArrayList<ExecutableElement>();
                                         List<WebOperationInfo> webOperations = new ArrayList<WebOperationInfo>();
                                         TypeElement webMethodEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N

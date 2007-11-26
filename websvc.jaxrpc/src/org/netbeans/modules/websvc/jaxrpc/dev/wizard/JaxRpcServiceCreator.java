@@ -61,7 +61,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.modules.websvc.core.ServiceCreator;
@@ -341,8 +341,7 @@ public class JaxRpcServiceCreator implements ServiceCreator {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
-                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                ClassTree javaClass = genUtils.getClassTree();
+                ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
                 handle.progress(70);
                 // create new (annotated) method
                 StringBuffer buffer = new StringBuffer(NbBundle.getMessage(

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.jaxrpc.dev.wizard;
 
+import org.netbeans.modules.websvc.api.support.java.GenerationUtils;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.Project;
 import java.io.IOException;
@@ -70,7 +71,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.websvc.jaxrpc.dev.dd.gen.Configuration;
 import org.netbeans.modules.websvc.jaxrpc.dev.dd.gen.InterfaceType;
 import org.netbeans.modules.websvc.jaxrpc.dev.dd.gen.WsdlType;

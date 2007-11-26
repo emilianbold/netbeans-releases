@@ -43,6 +43,7 @@ package org.netbeans.modules.websvc.jaxrpc.actions;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.core._RetoucheUtil;
 import org.netbeans.modules.websvc.core.AddWsOperationHelper;
 import org.netbeans.modules.websvc.core.AddOperationCookie;
@@ -62,7 +63,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
 import org.netbeans.modules.j2ee.dd.api.webservices.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
@@ -137,9 +137,8 @@ public class JaxRpcAddOperation implements AddOperationCookie {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
-                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                if (genUtils != null) {
-                    ClassTree javaClass = genUtils.getClassTree();
+                ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
+                if (javaClass != null) {
                     TreeMaker make = workingCopy.getTreeMaker();
                     List<String> exceptions = new ArrayList<String>();
                     exceptions.addAll(methodModel.getExceptions());

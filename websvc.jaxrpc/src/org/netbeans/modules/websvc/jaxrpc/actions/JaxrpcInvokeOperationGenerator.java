@@ -76,9 +76,8 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -640,10 +639,10 @@ public class JaxrpcInvokeOperationGenerator {
                 errors.addAll(ierrors);
  
                 workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
-                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                if (genUtils!=null) {
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
+                if (typeElement!=null) {
                     TreeMaker make  = workingCopy.getTreeMaker();
-                    ClassTree javaClass = genUtils.getClassTree();
+                    ClassTree javaClass = workingCopy.getTrees().getTree(typeElement);
                     
                     if (stubType == null) {
                         errors.add(NbBundle.getMessage(JaxrpcInvokeOperationGenerator.class, "ERR_CannotDeterminedStubType", serviceName)); // NOI18N
@@ -651,80 +650,76 @@ public class JaxrpcInvokeOperationGenerator {
                         boolean createServiceDelegate = true;
                         boolean createPortDelegate = true;
                         
-                        SourceUtils srcUtils = SourceUtils.newInstance(workingCopy);
-                        if (srcUtils!=null) {
-                            // find methods
-                            List<ExecutableElement> allMethods = getMethods(workingCopy, srcUtils.getTypeElement());
-                            for(ExecutableElement method:allMethods) {
-                                if(method.getSimpleName().toString().equals(serviceDelegateName) && method.getParameters().size() ==0){
-                                    if(method.getReturnType().toString().equals(fqServiceClassName)){
-                                        createServiceDelegate = false;
-                                    } 
-                                    else{
-                                        serviceDelegateName += "_1";
-                                    }
-                                }
-                                if (method.getSimpleName().toString().equals(portDelegateName) && method.getParameters().size() == 0) { 
-                                    if (method.getReturnType().toString().equals(fqPortTypeName)) {
-                                        createPortDelegate = false;
-                                    } 
-                                    else {
-                                        portDelegateName += "_1";
-                                    }
+                        // find methods
+                        List<ExecutableElement> allMethods = getMethods(workingCopy, typeElement);
+                        for(ExecutableElement method:allMethods) {
+                            if(method.getSimpleName().toString().equals(serviceDelegateName) && method.getParameters().size() ==0){
+                                if(method.getReturnType().toString().equals(fqServiceClassName)){
+                                    createServiceDelegate = false;
+                                } 
+                                else{
+                                    serviceDelegateName += "_1";
                                 }
                             }
-                            
-                            
-                            ClassTree modifiedClass =null;
-                            int methodIndex = javaClass.getMembers().size() - 1;
-                            if (createServiceDelegate) {
-                                // Add service delegate
-                                ModifiersTree modifiersTree = make.Modifiers(
-                                        Collections.<Modifier>singleton(Modifier.PRIVATE),
-                                        Collections.<AnnotationTree>emptyList()
-                                        );
-                                Object [] args = new Object [] { serviceName, serviceVarName, fqServiceClassName };
-                                String delegateBody = "{" + MessageFormat.format(SERVICE_DELEGATE_BODY, args) + "}";
-                                MethodTree serviceDelegate = make.Method(  //Not a statement block
-                                        modifiersTree, // private
-                                        serviceDelegateName, // operation name
-                                        make.Identifier(fqServiceClassName), // return type
-                                        Collections.<TypeParameterTree>emptyList(), // type parameters - none
-                                        Collections.<VariableTree>emptyList(),
-                                        Collections.<ExpressionTree>emptyList(), // throws
-                                        delegateBody, // body text
-                                        null // default value - not applicable here, used by annotations
-                                        );
-                                modifiedClass =  make.insertClassMember(javaClass, ++methodIndex, serviceDelegate);
-                            }
-                            
-                            
-                            if (createPortDelegate) {
-                                // Add port delegate
-                                ModifiersTree modifiersTree = make.Modifiers(
-                                        Collections.<Modifier>singleton(Modifier.PRIVATE),
-                                        Collections.<AnnotationTree>emptyList()
-                                        );
-                                Object [] args = new Object [] { servicePortVarName, servicePortJaxRpcName, serviceDelegateName, fqPortTypeName };
-                                String delegateBody = "{" + MessageFormat.format(PORT_DELEGATE_BODY, args) + "}";
-                                MethodTree serviceDelegate = make.Method(
-                                        modifiersTree, // public
-                                        portDelegateName, // operation name
-                                        make.Identifier(fqPortTypeName), // return type
-                                        Collections.<TypeParameterTree>emptyList(), // type parameters - none
-                                        Collections.<VariableTree>emptyList(),
-                                        Collections.<ExpressionTree>emptyList(), // throws
-                                        delegateBody, // body text
-                                        null // default value - not applicable here, used by annotations
-                                        );
-                                if(modifiedClass != null){
-                                    modifiedClass =  make.insertClassMember(modifiedClass, ++methodIndex, serviceDelegate);
-                                }else{
-                                    modifiedClass =  make.insertClassMember(javaClass, +methodIndex, serviceDelegate);
+                            if (method.getSimpleName().toString().equals(portDelegateName) && method.getParameters().size() == 0) { 
+                                if (method.getReturnType().toString().equals(fqPortTypeName)) {
+                                    createPortDelegate = false;
+                                } 
+                                else {
+                                    portDelegateName += "_1";
                                 }
+                            }
+                        }
+
+
+                        ClassTree modifiedClass =null;
+                        int methodIndex = javaClass.getMembers().size() - 1;
+                        if (createServiceDelegate) {
+                            // Add service delegate
+                            ModifiersTree modifiersTree = make.Modifiers(
+                                    Collections.<Modifier>singleton(Modifier.PRIVATE),
+                                    Collections.<AnnotationTree>emptyList()
+                                    );
+                            Object [] args = new Object [] { serviceName, serviceVarName, fqServiceClassName };
+                            String delegateBody = "{" + MessageFormat.format(SERVICE_DELEGATE_BODY, args) + "}";
+                            MethodTree serviceDelegate = make.Method(  //Not a statement block
+                                    modifiersTree, // private
+                                    serviceDelegateName, // operation name
+                                    make.Identifier(fqServiceClassName), // return type
+                                    Collections.<TypeParameterTree>emptyList(), // type parameters - none
+                                    Collections.<VariableTree>emptyList(),
+                                    Collections.<ExpressionTree>emptyList(), // throws
+                                    delegateBody, // body text
+                                    null // default value - not applicable here, used by annotations
+                                    );
+                            modifiedClass =  make.insertClassMember(javaClass, ++methodIndex, serviceDelegate);
+                        }
+
+
+                        if (createPortDelegate) {
+                            // Add port delegate
+                            ModifiersTree modifiersTree = make.Modifiers(
+                                    Collections.<Modifier>singleton(Modifier.PRIVATE),
+                                    Collections.<AnnotationTree>emptyList()
+                                    );
+                            Object [] args = new Object [] { servicePortVarName, servicePortJaxRpcName, serviceDelegateName, fqPortTypeName };
+                            String delegateBody = "{" + MessageFormat.format(PORT_DELEGATE_BODY, args) + "}";
+                            MethodTree serviceDelegate = make.Method(
+                                    modifiersTree, // public
+                                    portDelegateName, // operation name
+                                    make.Identifier(fqPortTypeName), // return type
+                                    Collections.<TypeParameterTree>emptyList(), // type parameters - none
+                                    Collections.<VariableTree>emptyList(),
+                                    Collections.<ExpressionTree>emptyList(), // throws
+                                    delegateBody, // body text
+                                    null // default value - not applicable here, used by annotations
+                                    );
+                            if(modifiedClass != null){
+                                modifiedClass =  make.insertClassMember(modifiedClass, ++methodIndex, serviceDelegate);
+                            }else{
+                                modifiedClass =  make.insertClassMember(javaClass, +methodIndex, serviceDelegate);
+                            }
                                 
-                                
-                            }
                             if(modifiedClass != null){
                                 workingCopy.rewrite(javaClass, modifiedClass);
                             }

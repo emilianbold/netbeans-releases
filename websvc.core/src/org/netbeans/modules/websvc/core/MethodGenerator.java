@@ -63,12 +63,12 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -99,14 +99,13 @@ public class MethodGenerator {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
-                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                if (genUtils!=null) {
+                ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
+                if (javaClass!=null) {
                     
                     // get proper wsdlOperation;
                     WsdlOperation wsdlOperation = getWsdlOperation(wsdlModel, operationName);
                     
                     TreeMaker make = workingCopy.getTreeMaker();
-                    ClassTree javaClass = genUtils.getClassTree();
                     
                     // return type
                     String returnType = wsdlOperation.getReturnTypeName();
@@ -174,12 +173,11 @@ public class MethodGenerator {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                 //workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
-                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                if (genUtils!=null) {
+                ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
+                if (javaClass!=null) {
                     ExecutableElement method = new MethodVisitor(workingCopy).getMethod( operationName);
                     TreeMaker make  = workingCopy.getTreeMaker();
                     if(method != null){
-                        ClassTree javaClass = genUtils.getClassTree();
                         MethodTree methodTree = workingCopy.getTrees().getTree(method);
                         ClassTree modifiedJavaClass = make.removeClassMember(javaClass, methodTree);
                         workingCopy.rewrite(javaClass, modifiedJavaClass);
@@ -218,16 +216,15 @@ public class MethodGenerator {
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
-                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                if (genUtils!=null) {
+                TypeElement classEl = SourceUtils.getPublicTopLevelElement(workingCopy);
+                if (classEl!=null) {
                     ExecutableElement method = new MethodVisitor(workingCopy).getMethod( operationName);
                     if(method != null){
-                        ClassTree javaClass = genUtils.getClassTree();
+                        ClassTree javaClass = workingCopy.getTrees().getTree(classEl);
                         //first find out if @WebService annotation is present in the class
                         boolean foundWebServiceAnnotation = false;
                         TypeElement wsElement = workingCopy.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
                         if (wsElement!=null) {
-                            TypeElement classEl = genUtils.getTypeElement();
                             List<? extends AnnotationMirror> annotations = classEl.getAnnotationMirrors();
                             for (AnnotationMirror anMirror : annotations) {
                                 if (workingCopy.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
@@ -267,7 +264,7 @@ public class MethodGenerator {
                                 AnnotationMirror webMethodAnMirr =  getWebMethodAnnotation(workingCopy, method);
                                 if(webMethodAnMirr != null){
                                     ModifiersTree modifiersTree = methodTree.getModifiers();
-                                    AnnotationTree annotTree = (AnnotationTree)workingCopy.getTrees().getTree(genUtils.getTypeElement(),webMethodAnMirr);
+                                    AnnotationTree annotTree = (AnnotationTree)workingCopy.getTrees().getTree(classEl,webMethodAnMirr);
                                     ModifiersTree newModTree = make.removeModifiersAnnotation(modifiersTree, annotTree);
                                     workingCopy.rewrite(modifiersTree, newModTree);
                                 }

@@ -80,8 +80,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -91,6 +89,8 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.api.support.java.GenerationUtils;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModel;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModelFactory;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.GlobalBindings;
@@ -197,10 +197,10 @@ public class JaxWsUtils {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
-                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                if (genUtils!=null) {
+                ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
+                if (javaClass!=null) {
                     TreeMaker make = workingCopy.getTreeMaker();
-                    ClassTree javaClass = genUtils.getClassTree();
+                    GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                     
                     // add implementation clause
                     ExpressionTree implClause = make.Identifier("javax.xml.ws.Provider<javax.xml.transform.Source>"); //NOI18N
@@ -327,10 +327,10 @@ public class JaxWsUtils {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
-                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                if (genUtils!=null) {
+                ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
+                if (javaClass!=null) {
                     TreeMaker make = workingCopy.getTreeMaker();
-                    ClassTree javaClass = genUtils.getClassTree();
+                    GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                     
                     // add implementation clause
                     ClassTree modifiedClass = genUtils.addImplementsClause(javaClass, port.getJavaName());
@@ -712,10 +712,10 @@ public class JaxWsUtils {
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
-                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                if (genUtils!=null) {
+                ClassTree classTree = SourceUtils.getPublicTopLevelTree(workingCopy);
+                if (classTree!=null) {
                     TreeMaker make = workingCopy.getTreeMaker();
-                    ClassTree classTree = genUtils.getClassTree();
+                    GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                     
                     ExpressionTree attrExpr =
                             (attrValue==null?null:genUtils.createAnnotationArgument(attrName, attrValue));

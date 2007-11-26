@@ -67,7 +67,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
@@ -86,6 +85,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChain;
 import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChains;
 import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChainsProvider;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.core.WebServiceReference;
 import org.netbeans.modules.websvc.core.WebServiceTransferable;
@@ -456,13 +456,13 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
 
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    SourceUtils srcUtils = SourceUtils.newInstance(controller);
+                    TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
                     TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
-                    if (srcUtils != null && wsElement != null) {
-                        boolean foundWsAnnotation = resolveServiceUrl(moduleType, controller, srcUtils, wsElement, serviceName, name);
+                    if (typeElement != null && wsElement != null) {
+                        boolean foundWsAnnotation = resolveServiceUrl(moduleType, controller, typeElement, wsElement, serviceName, name);
                         if (!foundWsAnnotation) {
                             TypeElement wsProviderElement = controller.getElements().getTypeElement("javax.xml.ws.WebServiceProvider"); //NOI18N
-                            List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
+                            List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
                             for (AnnotationMirror anMirror : annotations) {
                                 if (controller.getTypes().isSameType(wsProviderElement.asType(), anMirror.getAnnotationType())) {
                                     isProvider[0] = true;
@@ -505,9 +505,9 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         }
     }
 
-    private boolean resolveServiceUrl(Object moduleType, CompilationController controller, SourceUtils srcUtils, TypeElement wsElement, String[] serviceName, String[] name) throws IOException {
+    private boolean resolveServiceUrl(Object moduleType, CompilationController controller, TypeElement targetElement, TypeElement wsElement, String[] serviceName, String[] name) throws IOException {
         boolean foundWsAnnotation = false;
-        List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
+        List<? extends AnnotationMirror> annotations = targetElement.getAnnotationMirrors();
         for (AnnotationMirror anMirror : annotations) {
             if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
                 foundWsAnnotation = true;
@@ -667,8 +667,8 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
 
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                AnnotationMirror handlerAnnotation = getAnnotation(controller, srcUtils, "javax.jws.HandlerChain"); //NOI18N
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                AnnotationMirror handlerAnnotation = getAnnotation(controller, typeElement, "javax.jws.HandlerChain"); //NOI18N
                 if (handlerAnnotation != null) {
                     isNew[0] = false;
                     Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = handlerAnnotation.getElementValues();
@@ -733,10 +733,10 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         dialog.setVisible(true);
     }
 
-    static AnnotationMirror getAnnotation(CompilationController controller, SourceUtils srcUtils, String annotationType) {
+    static AnnotationMirror getAnnotation(CompilationController controller, TypeElement typeElement, String annotationType) {
         TypeElement anElement = controller.getElements().getTypeElement(annotationType);
         if (anElement != null) {
-            List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
+            List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
             for (AnnotationMirror annotation : annotations) {
                 if (controller.getTypes().isSameType(anElement.asType(), annotation.getAnnotationType())) {
                     return annotation;

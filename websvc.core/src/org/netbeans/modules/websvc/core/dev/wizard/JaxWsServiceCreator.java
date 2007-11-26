@@ -41,7 +41,8 @@
 
 package org.netbeans.modules.websvc.core.dev.wizard;
 
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
+import org.netbeans.modules.websvc.api.support.java.GenerationUtils;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.core.ProjectInfo;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
@@ -89,7 +90,6 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.project.config.ServiceAlreadyExistsExeption;
@@ -426,9 +426,8 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
                 TreeMaker make = workingCopy.getTreeMaker();
 
-                SourceUtils srcUtils = SourceUtils.newInstance(workingCopy);
-                if (srcUtils!=null) {
-                    ClassTree javaClass = srcUtils.getClassTree();
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
+                if (typeElement!=null) {
                     VariableTree ejbRefInjection=null;
                     interfaceClass[0] = ref.getLocal();
                     if (interfaceClass[0] == null) interfaceClass[0] = ref.getRemote();
@@ -441,11 +440,12 @@ public class JaxWsServiceCreator implements ServiceCreator {
                         make.addComment(ejbRefInjection, Comment.create(Comment.Style.LINE, 0, 0, 4, comment1), false);
                         make.addComment(ejbRefInjection, Comment.create(Comment.Style.LINE, 0, 0, 4, comment2), false);
 
+                        ClassTree javaClass = workingCopy.getTrees().getTree(typeElement);
                         ClassTree modifiedClass = make.insertClassMember(javaClass, 0, ejbRefInjection);
                         
                         if (onClassPath[0]) {
                             TypeElement beanInterface = workingCopy.getElements().getTypeElement(interfaceClass[0]);
-                            modifiedClass = generateMethods(workingCopy, make, srcUtils.getTypeElement(), modifiedClass, beanInterface);
+                            modifiedClass = generateMethods(workingCopy, make, typeElement, modifiedClass, beanInterface);
                         }
 
                         workingCopy.rewrite(javaClass, modifiedClass);

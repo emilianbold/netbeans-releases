@@ -88,7 +88,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.design.util.SourceUtils;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
 import static org.netbeans.api.java.source.JavaSource.Phase;
@@ -112,11 +112,10 @@ public class Utils {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                 //CompilationUnitTree cut = controller.getCompilationUnit();
                 
-                SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                if (srcUtils!=null) {
+                TypeElement classEl = SourceUtils.getPublicTopLevelElement(controller);
+                if (classEl !=null) {
                     //ClassTree javaClass = srcUtils.getClassTree();
                     // find if class is Injection Target
-                    TypeElement classEl = srcUtils.getTypeElement();
                     TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
                     if (wsElement!=null) {
                         List<? extends AnnotationMirror> annotations = classEl.getAnnotationMirrors();
@@ -617,7 +616,7 @@ public class Utils {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
-                ClassTree classTree = SourceUtils.findPublicTopLevelClass(workingCopy);
+                ClassTree classTree = SourceUtils.getPublicTopLevelTree(workingCopy);
                 List<? extends Tree> members = classTree.getMembers();
                 TypeElement methodAnotationEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
                 if (methodAnotationEl==null) return;
@@ -745,10 +744,10 @@ public class Utils {
             CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    SourceUtils srcUtils = SourceUtils.newInstance(controller);
+                    TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
                     TypeElement wsElement = controller.getElements().getTypeElement(annotationClass);
-                    if(srcUtils != null && wsElement != null){
-                        List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
+                    if(typeElement != null && wsElement != null){
+                        List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
                         for (AnnotationMirror anMirror : annotations) {
                             Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
                             for(ExecutableElement ex:expressions.keySet()) {

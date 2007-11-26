@@ -63,8 +63,9 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
+import org.netbeans.modules.websvc.api.support.java.GenerationUtils;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.core.webservices.ui.panels.MessageHandlerPanel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Handler;
 import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChain;
@@ -117,8 +118,8 @@ public class HandlerButtonListener implements ActionListener{
                 CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
                     public void run(WorkingCopy workingCopy) throws IOException {
                         workingCopy.toPhase(Phase.RESOLVED);
-                        GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                        if (genUtils!=null) {
+                        ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
+                        if (javaClass!=null) {
                             TreeMaker make = workingCopy.getTreeMaker();
                             TypeElement chainElement = workingCopy.getElements().getTypeElement("javax.jws.HandlerChain"); //NOI18N
                             List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
@@ -128,7 +129,7 @@ public class HandlerButtonListener implements ActionListener{
                                     make.QualIdent(chainElement),
                                     attrs
                                     );
-                            ClassTree javaClass = genUtils.getClassTree();
+                            GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                             ClassTree modifiedClass = genUtils.addAnnotation(javaClass, chainAnnotation);
                             workingCopy.rewrite(javaClass, modifiedClass);
                         }
@@ -188,13 +189,13 @@ public class HandlerButtonListener implements ActionListener{
                 CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
                     public void run(WorkingCopy workingCopy) throws IOException {
                         workingCopy.toPhase(Phase.RESOLVED);
-                        GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                        if (genUtils!=null) {
+                        TypeElement typeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
+                        if (typeElement!=null) {
                             TreeMaker make = workingCopy.getTreeMaker();
-                            AnnotationMirror chainAnnotation = JaxWsNode.getAnnotation(workingCopy, genUtils, "javax.jws.HandlerChain"); //NOI18N
+                            AnnotationMirror chainAnnotation = JaxWsNode.getAnnotation(workingCopy, typeElement, "javax.jws.HandlerChain"); //NOI18N
                             if (chainAnnotation!=null) {
-                                ClassTree classTree = genUtils.getClassTree();
-                                AnnotationTree anotTree = (AnnotationTree)workingCopy.getTrees().getTree(genUtils.getTypeElement(),chainAnnotation);
+                                ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
+                                AnnotationTree anotTree = (AnnotationTree)workingCopy.getTrees().getTree(typeElement,chainAnnotation);
                                 ClassTree modifiedClass = make.Class(
                                         make.removeModifiersAnnotation(classTree.getModifiers(), anotTree),
                                         classTree.getSimpleName(),

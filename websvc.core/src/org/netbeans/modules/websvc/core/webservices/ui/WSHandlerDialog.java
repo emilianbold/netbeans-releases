@@ -59,7 +59,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.core.webservices.ui.panels.SelectHandlerPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -209,9 +209,9 @@ public class WSHandlerDialog {
         }
     }
     public static int getHandlerType(CompilationController cc, boolean isJaxWS) throws IOException {
-        SourceUtils srcUtils = SourceUtils.newInstance(cc);
-        if (srcUtils!=null) {
-            TypeMirror classMirror = srcUtils.getTypeElement().asType();
+        TypeElement typeElement = SourceUtils.getPublicTopLevelElement(cc);
+        if (typeElement!=null) {
+            TypeMirror classMirror = typeElement.asType();
             
             if(isJaxWS) {
                 // test if class extends "javax.xml.ws.handler.LogicalHandler<C extends javax.xml.ws.handler.LogicalMessageContext>"

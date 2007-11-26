@@ -76,6 +76,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.core.InvokeOperationCookie;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import static com.sun.source.tree.Tree.Kind.*;
@@ -85,7 +86,6 @@ import org.netbeans.api.project.Project;
 
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
@@ -471,15 +471,14 @@ public class JaxWsCodeGenerator {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     CompilationUnitTree cut = controller.getCompilationUnit();
                     
-                    SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                    if (srcUtils!=null) {
-                        ClassTree javaClass = srcUtils.getClassTree();
+                    TypeElement thisTypeEl = SourceUtils.getPublicTopLevelElement(controller);
+                    if (thisTypeEl!=null) {
+                        ClassTree javaClass = controller.getTrees().getTree(thisTypeEl);
                         // find if class is Injection Target
-                        TypeElement thisTypeEl = srcUtils.getTypeElement();
                         generateWsRefInjection[0] = InjectionTargetQuery.isInjectionTarget(controller, thisTypeEl);
                         
                         insertServiceDef[0] = !generateWsRefInjection[0];
-                        if (isServletClass(controller, javaClass)) {
+                        if (isServletClass(controller, thisTypeEl)) {
                             // PENDING Need to compute pronter name from the method
                             printerName[0]="out";
                             argumentInitPart[0] = fixNamesInInitializationPart(argumentInitPart[0]);
@@ -569,9 +568,8 @@ public class JaxWsCodeGenerator {
                             
                             TreeMaker make = workingCopy.getTreeMaker();
                             
-                            SourceUtils srcUtils = SourceUtils.newInstance(workingCopy);
-                            if (srcUtils!=null) {
-                                ClassTree javaClass = srcUtils.getClassTree();
+                            ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
+                            if (javaClass!=null) {
                                 VariableTree serviceRefInjection = generateServiceRefInjection(workingCopy, make, serviceFName[0], serviceJavaName, localWsdlUrl);
                                 ClassTree modifiedClass = make.insertClassMember(javaClass, 0, serviceRefInjection);
                                 workingCopy.rewrite(javaClass, modifiedClass);
@@ -867,14 +865,13 @@ public class JaxWsCodeGenerator {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                 CompilationUnitTree cut = controller.getCompilationUnit();
                 
-                SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                if (srcUtils!=null) {
-                    ClassTree javaClass = srcUtils.getClassTree();
+                TypeElement thisTypeEl = SourceUtils.getPublicTopLevelElement(controller);
+                if (thisTypeEl!=null) {
+                    ClassTree javaClass = controller.getTrees().getTree(thisTypeEl);
                     // find if class is Injection Target
-                    TypeElement thisTypeEl = srcUtils.getTypeElement();
                     generateWsRefInjection[0] = InjectionTargetQuery.isInjectionTarget(controller, thisTypeEl);
                     insertServiceDef[0] = !generateWsRefInjection[0];
-                    if (isServletClass(controller, javaClass)) {
+                    if (isServletClass(controller, thisTypeEl)) {
                         printerName[0]="out";
                         argumentInitPart[0] = fixNamesInInitializationPart(argumentInitPart[0]);
                         argumentDeclPart[0] = fixNamesInDeclarationPart(argumentDeclPart[0]);
@@ -958,9 +955,8 @@ public class JaxWsCodeGenerator {
                         
                         TreeMaker make = workingCopy.getTreeMaker();
                         
-                        SourceUtils srcUtils = SourceUtils.newInstance(workingCopy);
-                        if (srcUtils!=null) {
-                            ClassTree javaClass = srcUtils.getClassTree();
+                        ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
+                        if (javaClass!=null) {
                             VariableTree serviceRefInjection = generateServiceRefInjection(workingCopy, make, serviceFName[0], serviceJavaName, localWsdlUrl);
                             ClassTree modifiedClass = make.insertClassMember(javaClass, 0, serviceRefInjection);
                             workingCopy.rewrite(javaClass, modifiedClass);
@@ -1036,9 +1032,8 @@ public class JaxWsCodeGenerator {
         return name; //NOI18N
     }
     
-    private static boolean isServletClass(CompilationController controller, ClassTree classTree) {
-        SourceUtils srcUtils = SourceUtils.newInstance(controller, classTree);
-        return srcUtils.isSubtype("javax.servlet.http.HttpServlet");
+    private static boolean isServletClass(CompilationController controller, TypeElement typeElement) {
+        return SourceUtils.isSubtype(controller, typeElement, "javax.servlet.http.HttpServlet"); // NOI18N
     }
     
     private static String getJavaInvocationBody(

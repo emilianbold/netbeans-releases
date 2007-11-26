@@ -65,7 +65,7 @@ import org.netbeans.api.java.source.CompilationController;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -157,10 +157,10 @@ public class WebServiceChildren extends Children.Keys {
                             CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
                                 public void run(CompilationController controller) throws IOException {
                                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                                    SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                                    if (srcUtils!=null) {
+                                    TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                                    if (typeElement!=null) {
                                         // find WS operations as all public methods
-                                        List<ExecutableElement> publicMethods = getPublicMethods(controller, srcUtils.getTypeElement());
+                                        List<ExecutableElement> publicMethods = getPublicMethods(controller, typeElement);
                                         keys.addAll(publicMethods);
                                     }
                                 }

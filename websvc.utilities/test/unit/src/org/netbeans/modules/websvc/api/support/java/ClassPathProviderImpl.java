@@ -39,34 +39,31 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.core;
+package org.netbeans.modules.websvc.api.support.java;
 
-import java.io.IOException;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.websvc.api.support.java.SourceUtils;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 
 /**
- *
- * @author Martin Adamek
+ * A ClassPathProvider impl for tests. 
+ * 
+ * @author Erno Mononen
  */
-public final class _RetoucheUtil {
+public class ClassPathProviderImpl implements ClassPathProvider {
     
-    private _RetoucheUtil() {}
-    
-    /** never call this from javac task */
-    public static String getMainClassName(final FileObject classFO) throws IOException {
-        JavaSource javaSource = JavaSource.forFileObject(classFO);
-        final String[] result = new String[1];
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                result[0] = SourceUtils.getPublicTopLevelElement(controller).getQualifiedName().toString();
-            }
-        }, true);
-        return result[0];
-    }
+    private final ClassPath sourcePath;
 
+    public ClassPathProviderImpl(FileObject[] sourceRoots) {
+        this.sourcePath = ClassPathSupport.createClassPath(sourceRoots);
+    }
+    
+    public ClassPath findClassPath(FileObject file, String type) {
+        if (ClassPath.SOURCE.equals(type)){
+            return sourcePath;
+        }
+        return null;
+    }
+    
 }

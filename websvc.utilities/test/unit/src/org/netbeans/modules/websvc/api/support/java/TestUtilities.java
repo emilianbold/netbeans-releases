@@ -39,34 +39,65 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.core;
+package org.netbeans.modules.websvc.api.support.java;
 
+import java.io.ByteArrayInputStream;
+import java.io.EOFException;
+import java.io.File;
 import java.io.IOException;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.websvc.api.support.java.SourceUtils;
+import java.io.InputStream;
+import java.io.OutputStream;
+import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
+ * Copied from java/source TestUtilities. To be removed when SourceUtils
+ * is moved to java/source.
  *
- * @author Martin Adamek
+ * @author Andrei Badea
  */
-public final class _RetoucheUtil {
-    
-    private _RetoucheUtil() {}
-    
-    /** never call this from javac task */
-    public static String getMainClassName(final FileObject classFO) throws IOException {
-        JavaSource javaSource = JavaSource.forFileObject(classFO);
-        final String[] result = new String[1];
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                result[0] = SourceUtils.getPublicTopLevelElement(controller).getQualifiedName().toString();
-            }
-        }, true);
-        return result[0];
+public class TestUtilities {
+
+    private TestUtilities() {
     }
 
+    public static final FileObject copyStringToFileObject(FileObject fo, String content) throws IOException {
+        OutputStream os = fo.getOutputStream();
+        try {
+            InputStream is = new ByteArrayInputStream(content.getBytes("UTF-8"));
+            FileUtil.copy(is, os);
+            return fo;
+        } finally {
+            os.close();
+        }
+    }
+
+    public static final String copyFileObjectToString (FileObject fo) throws java.io.IOException {
+        int s = (int)FileUtil.toFile(fo).length();
+        byte[] data = new byte[s];
+        InputStream stream = fo.getInputStream();
+        try {
+            int len = stream.read(data);
+            if (len != s) {
+                throw new EOFException("truncated file");
+            }
+            return new String (data);
+        } finally {
+            stream.close();
+        }
+    }
+    
+    /**
+     * Creates a cache folder for the Java infrastructure.
+     * 
+     * @param folder the parent folder for the cache folder, 
+     * typically the working dir.
+     */ 
+    public static void setCacheFolder(File folder){
+        File cacheFolder = new File(folder,"cache");
+        cacheFolder.mkdirs();
+        IndexUtil.setCacheFolder(cacheFolder);
+    }
+    
 }
