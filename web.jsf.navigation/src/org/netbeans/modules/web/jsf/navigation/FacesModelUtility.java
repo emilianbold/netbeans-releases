@@ -104,6 +104,9 @@ public class FacesModelUtility {
      * @param newDisplayName
      */
     public static void renamePageInModel(JSFConfigModel configModel, String oldDisplayName, String newDisplayName ) {
+        if (oldDisplayName.equals(newDisplayName)){
+            return;
+        }
         configModel.startTransaction();
         final FacesConfig facesConfig = configModel.getRootComponent();
         final List<NavigationRule> navRules = facesConfig.getNavigationRules();
