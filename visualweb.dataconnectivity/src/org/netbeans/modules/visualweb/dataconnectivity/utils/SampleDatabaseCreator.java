@@ -51,10 +51,11 @@ package org.netbeans.modules.visualweb.dataconnectivity.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileLock;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -67,7 +68,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.modules.derby.api.DerbyDatabases;
-import org.netbeans.modules.derby.spi.support.DerbySupport;
 
 /**
  *
@@ -77,7 +77,8 @@ public class SampleDatabaseCreator  {
 
     public static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
     public static final String DRIVER_DISP_NAME_NET = "Java DB (Network)"; // NOI18N
-
+    private static Logger LOGGER = Logger.getLogger(SampleDatabaseCreator.class.getName());
+    
     /** Creates a new instance of SampleDatabaseUtils */
     public SampleDatabaseCreator() {
     }
@@ -123,6 +124,11 @@ public class SampleDatabaseCreator  {
 
         File sourceFO = InstalledFileLocator.getDefault().locate(zipFile, null, false); // NOI18N
         FileObject systemHomeFO = FileUtil.toFileObject(systemHomeFile);
+        // Partial fix for Issue 121195.  If toFileObject can't find the file on disk, it returns null
+        if (systemHomeFO == null) {
+            LOGGER.log(Level.WARNING, org.openide.util.NbBundle.getMessage(SampleDatabaseCreator.class, "MSG_DERBY_SYSTEM_FOLDER_NOT_FOUND"));
+            throw new FileNotFoundException(org.openide.util.NbBundle.getMessage(SampleDatabaseCreator.class, "MSG_DERBY_SYSTEM_FOLDER_NOT_FOUND") + systemHomeFile.getCanonicalPath());
+        }
         FileObject sampleFO = systemHomeFO.getFileObject(databaseName); // NOI18N
         if (sampleFO == null) {
             sampleFO = systemHomeFO.createFolder(databaseName);
