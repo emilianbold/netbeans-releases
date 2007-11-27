@@ -79,9 +79,9 @@ public class EntityResourcesSetupPanelVisual extends javax.swing.JPanel implemen
     
     /** Creates new form CrudSetupPanel */
     public EntityResourcesSetupPanelVisual(String name) {
+        initComponents();
         setName(name);
         this.listeners = new ArrayList<ChangeListener>();
-        initComponents();
         resourcePackageComboBox.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 fireChange();

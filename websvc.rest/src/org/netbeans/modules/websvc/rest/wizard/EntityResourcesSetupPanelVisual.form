@@ -31,10 +31,10 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="locationComboBox" pref="382" max="32767" attributes="1"/>
-                  <Component id="projectTextField" alignment="0" pref="382" max="32767" attributes="1"/>
-                  <Component id="converterPackageComboBox" alignment="1" pref="382" max="32767" attributes="1"/>
-                  <Component id="resourcePackageComboBox" alignment="1" pref="382" max="32767" attributes="1"/>
+                  <Component id="locationComboBox" pref="389" max="32767" attributes="1"/>
+                  <Component id="projectTextField" alignment="0" pref="389" max="32767" attributes="1"/>
+                  <Component id="converterPackageComboBox" alignment="1" pref="389" max="32767" attributes="1"/>
+                  <Component id="resourcePackageComboBox" alignment="1" pref="389" max="32767" attributes="1"/>
               </Group>
           </Group>
           <Component id="jScrollPane1" alignment="0" pref="489" max="32767" attributes="0"/>
