@@ -180,13 +180,40 @@ public abstract class InstanceProperties {
      */
     public static InstanceProperties createInstanceProperties(String url, String username, 
             String password, String displayName) throws InstanceCreationException {
+
+        return createInstanceProperties(url, username, password, displayName, null);
+    }
+    
+    /**
+     * Create new instance and returns instance properties for the server instance.
+     *
+     * @param url the url connection string to get the instance deployment manager.
+     * @param username username which is used by the deployment manager.
+     * @param password password which is used by the deployment manager.
+     * @param displayName display name which is used by IDE to represent this
+     *             server instance.
+     * @param initialProperties any other properties to set during the instance creation.
+     *             If the map contains any of InstanceProperties.URL_ATTR,
+     *             InstanceProperties.USERNAME_ATTR, InstanceProperties.PASSWORD_ATTR
+     *             or InstanceProperties.DISPLAY_NAME_ATTR they will be ignored
+     *             - the explicit parameter values are always used.
+     *             <code>null</code> is accepted.
+     *
+     * @return the <code>InstanceProperties</code> object, <code>null</code> if
+     *             instance does not exists.
+     * @exception InstanceCreationException when instance with same url already
+     *             registered.
+     * @since 1.35.0
+     */
+    public static InstanceProperties createInstanceProperties(String url, String username, 
+            String password, String displayName, Map<String, String> initialProperties) throws InstanceCreationException {
         ServerRegistry registry = ServerRegistry.getInstance();
-        registry.addInstance(url, username, password, displayName);
+        registry.addInstance(url, username, password, displayName, initialProperties);
         ServerInstance inst = registry.getServerInstance(url);
         InstanceProperties ip = inst.getInstanceProperties();
         return ip;
     }
-    
+
     /**
      * Returns list of URL strings of all registered instances
      * @return array of URL strings

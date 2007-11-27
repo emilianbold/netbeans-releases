@@ -292,11 +292,18 @@ public final class ServerRegistry implements java.io.Serializable {
      * @param  username username used by the deployment manager.
      * @param  password password used by the deployment manager.
      * @param  displayName display name wich represents server instance in IDE.
+     * @param initialProperties any other properties to set during the instance creation.
+     *             If the map contains any of InstanceProperties.URL_ATTR,
+     *             InstanceProperties.USERNAME_ATTR, InstanceProperties.PASSWORD_ATTR
+     *             or InstanceProperties.DISPLAY_NAME_ATTR they will be ignored
+     *             - the explicit parameter values are always used.
+     *             <code>null</code> is accepted.
+     * 
      * @throws InstanceCreationException when instance with same url is already 
      *         registered.
      */
     public void addInstance(String url, String username, String password, 
-            String displayName) throws InstanceCreationException {
+            String displayName, Map<String, String> initialproperties) throws InstanceCreationException {
         // should never have empty url; UI should have prevented this
         if (url == null || url.equals("")) { //NOI18N
             Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(ServerRegistry.class, "MSG_EmptyUrl"));
@@ -304,7 +311,7 @@ public final class ServerRegistry implements java.io.Serializable {
         }
         
         checkInstanceAlreadyExists(url);
-        if (!addInstanceImpl(url, username, password, displayName)) {
+        if (!addInstanceImpl(url, username, password, displayName, initialproperties)) {
             throw new InstanceCreationException(NbBundle.getMessage(ServerRegistry.class, "MSG_FailedToCreateInstance", displayName));
         }
     }    
@@ -344,17 +351,28 @@ public final class ServerRegistry implements java.io.Serializable {
     /**
      * Add a new server instance in the server registry.
      *
-     * @param  url URL to access deployment manager.
-     * @param  username username used by the deployment manager.
-     * @param  password password used by the deployment manager.
-     * @param  displayName display name wich represents server instance in IDE.
+     * @param url URL to access deployment manager.
+     * @param username username used by the deployment manager.
+     * @param password password used by the deployment manager.
+     * @param displayName display name wich represents server instance in IDE.
+     * @param initialProperties any other properties to set during the instance creation.
+     *             If the map contains any of InstanceProperties.URL_ATTR,
+     *             InstanceProperties.USERNAME_ATTR, InstanceProperties.PASSWORD_ATTR
+     *             or InstanceProperties.DISPLAY_NAME_ATTR they will be ignored
+     *             - the explicit parameter values are always used.
+     *             <code>null</code> is accepted.
      *
      * @return <code>true</code> if the server instance was created successfully,
-     *         <code>false</code> otherwise.
+     *             <code>false</code> otherwise.
      */
-    private synchronized boolean addInstanceImpl(String url, String username, 
-            String password, String displayName) {
-        if (instancesMap().containsKey(url)) return false;
+    private synchronized boolean addInstanceImpl(String url, String username,
+            String password, String displayName, Map<String, String> initialProperties) {
+        if (instancesMap().containsKey(url)) {
+            return false;
+        }
+
+        Map<String, String> properties = cleanInitialProperties(initialProperties);
+
         for (Iterator i = serversMap().values().iterator(); i.hasNext();) {
             Server server = (Server) i.next();
             try {
@@ -366,8 +384,15 @@ public final class ServerRegistry implements java.io.Serializable {
                     // whether the instance is not corrupted - see #46929
                     ServerString str = new ServerString(server.getShortName(),url,null);
                     writeInstanceToFile(url,username,password);
-                    if (displayName != null) instance.getInstanceProperties().setProperty(
+                    if (displayName != null) {
+                        instance.getInstanceProperties().setProperty(
                            InstanceProperties.DISPLAY_NAME_ATTR, displayName);
+                    }
+
+                    for (Map.Entry<String, String> entry : properties.entrySet()) {
+                        instance.getInstanceProperties().setProperty(entry.getKey(), entry.getValue());
+                    }
+
                     DeploymentManager manager = server.getDisconnectedDeploymentManager(url);
                     if (manager != null) {
                         fireInstanceListeners(url, true);
@@ -387,6 +412,19 @@ public final class ServerRegistry implements java.io.Serializable {
         }
         return false;
     }
+
+    private Map<String, String> cleanInitialProperties(Map<String, String> initialProperties) {
+        if (initialProperties == null) {
+            return Collections.<String, String>emptyMap();
+        }
+
+        Map<String,String> properties = new HashMap(initialProperties);
+        properties.remove(InstanceProperties.URL_ATTR);
+        properties.remove(InstanceProperties.USERNAME_ATTR);
+        properties.remove(InstanceProperties.PASSWORD_ATTR);
+        properties.remove(InstanceProperties.DISPLAY_NAME_ATTR);
+        return properties;
+    }
     
     public void addInstance(FileObject fo) {
         String url = (String) fo.getAttribute(URL_ATTR);
@@ -394,7 +432,7 @@ public final class ServerRegistry implements java.io.Serializable {
         String password = (String) fo.getAttribute(PASSWORD_ATTR);
         String displayName = (String) fo.getAttribute(InstanceProperties.DISPLAY_NAME_ATTR);
         //        System.err.println("Adding instance " + fo);
-        addInstanceImpl(url, username, password, displayName);
+        addInstanceImpl(url, username, password, displayName, null);
     }
     
     public Collection getInstances(InstanceListener il) {
@@ -514,12 +552,23 @@ public final class ServerRegistry implements java.io.Serializable {
         String password = defaultServerProp.getProperty(PASSWORD_ATTR);
         String targetName = defaultServerProp.getProperty(TARGETNAME_ATTR);
         
+        Map<String, String> defaults = new HashMap<String, String>();
+        for (Enumeration e = defaultServerProp.propertyNames(); e.hasMoreElements(); ) {
+            String name = (String) e.nextElement();
+            String value = defaultServerProp.getProperty(name);
+            if (value != null) {
+                defaults.put(name, value);
+            }
+        }
+        
         try {
             if (url != null) {
                 InstanceProperties instProp = InstanceProperties.getInstanceProperties(url);
-                if (instProp == null)
-                    instProp = InstanceProperties.createInstanceProperties(url, user, password);
-                instProp.setProperties(defaultServerProp);
+                if (instProp == null) {
+                    instProp = InstanceProperties.createInstanceProperties(url,
+                            user, password, null, defaults);
+                }
+                //instProp.setProperties(defaultServerProp);
                 
                 ServerInstance inst = getServerInstance(url);
                 if (inst != null)

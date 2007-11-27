@@ -85,7 +85,7 @@ public class TargetServerTest extends NbTestCase {
         if (name != null)
             url += "_"+name;
         try {
-            registry.addInstance(url, "user", "password", "TestInstance");
+            registry.addInstance(url, "user", "password", "TestInstance", null);
         } catch (IOException ioe) { throw new RuntimeException(ioe); }
         
         server = new ServerString(registry.getServerInstance(url).getServerTarget("Target 1"));

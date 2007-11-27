@@ -109,6 +109,28 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="createInstanceProperties">
+	    <api name="j2eeserver"/>
+	    <summary>
+                Adding InstanceProperties.createInstanceProperties(String, String, 
+                    String, String, Map&lt;String, String&gt;) method.
+	    </summary>
+	    <version major="1" minor="35"/>
+	    <date day="27" month="11" year="2007"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                    The InstanceProperties.createInstanceProperties(String, String, String, String)
+                    method does not provide any way how to pass other initial properties
+                    required by the plugin. This is usually needed and workarounded
+                    in many plugins. New method provides additional parameter containing
+                    the any plugin required properties.
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="InstanceProperties"/>
+	    <issue number="120379"/>
+	</change>        
         <change id="findJndiNameForEjb2">
 	    <api name="j2eeserver"/>
 	    <summary>
