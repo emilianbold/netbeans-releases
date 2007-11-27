@@ -155,6 +155,7 @@
                 <friend>org.netbeans.modules.j2ee.ejbcore</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2ee.persistence</friend>
+                <friend>org.netbeans.modules.j2ee.common</friend>
                 <friend>org.netbeans.modules.web.core</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.project</friend>

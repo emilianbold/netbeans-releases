@@ -70,13 +70,13 @@ import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport;
+import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport.Action;
+import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport.Context;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
-import org.netbeans.modules.j2ee.common.EventRequestProcessor.Action;
-import org.netbeans.modules.j2ee.common.EventRequestProcessor.AsynchronousAction;
-import org.netbeans.modules.j2ee.common.EventRequestProcessor.Context;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -340,10 +340,11 @@ public final class DatasourceUIHelper {
         // fetch datasources asynchronously
         Collection<Action> actions = new ArrayList<Action>();
         final List<Datasource> datasources = new ArrayList<Datasource>();
-        actions.add(new AsynchronousAction() {
+        actions.add(new ProgressSupport.BackgroundAction() {
+
             public void run(Context actionContext) {
                 String msg = NbBundle.getMessage(DatasourceUIHelper.class, "MSG_retrievingDS");
-                actionContext.getProgress().progress(msg);
+                actionContext.progress(msg);
                 try {
                     datasources.addAll(getDatasources(provider));
                 } catch (ConfigurationException e) {
@@ -351,8 +352,8 @@ public final class DatasourceUIHelper {
                 }
             }
         });
-        EventRequestProcessor eventRP = new EventRequestProcessor();
-        eventRP.invoke(actions);
+        
+        ProgressSupport.invoke(actions);
 
         populate(datasources, provider.isDatasourceCreationSupported(), combo, selectedDatasource, false);
         Component toListenOn = (combo.isEditable() ? combo.getEditor().getEditorComponent() : combo);
@@ -415,10 +416,10 @@ public final class DatasourceUIHelper {
             final String url      = dsc.getUrl();
             final String username = dsc.getUsername();
             final String driverClassName = dsc.getDriverClassName();
-            actions.add(new AsynchronousAction() {
+            actions.add(new ProgressSupport.BackgroundAction() {
                 public void run(Context actionContext) {
                     String msg = NbBundle.getMessage(DatasourceUIHelper.class, "MSG_creatingDS");
-                    actionContext.getProgress().progress(msg);
+                    actionContext.progress(msg);
                     try {
                         ds[0] = provider.createDatasource(jndiName, url, username, password, driverClassName);
                     } catch (DatasourceAlreadyExistsException daee) { // it should not occur bcs it should be already handled in DatasourceCustomizer
@@ -441,10 +442,10 @@ public final class DatasourceUIHelper {
         }
         // fetch datasources asynchronously
         final List<Datasource> datasources = new ArrayList<Datasource>();
-        actions.add(new AsynchronousAction() {
+        actions.add(new ProgressSupport.BackgroundAction() {
             public void run(Context actionContext) {
                 String msg = NbBundle.getMessage(DatasourceUIHelper.class, "MSG_retrievingDS");
-                actionContext.getProgress().progress(msg);
+                actionContext.progress(msg);
                 try {
                     datasources.addAll(getDatasources(provider));
                 } catch (ConfigurationException e) {
@@ -456,8 +457,7 @@ public final class DatasourceUIHelper {
                 return ds[0] != null;
             }
         });
-        EventRequestProcessor eventRP = new EventRequestProcessor();
-        eventRP.invoke(actions);
+        ProgressSupport.invoke(actions);
         
         combo.setPopupVisible(false);
         if (ds[0] == null) {
