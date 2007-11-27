@@ -63,8 +63,9 @@ public class ZoomInAction extends CallableSystemAction {
     /** Perform action. */
     public void performAction() {
         TopComponent curComponent = TopComponent.getRegistry().getActivated();
-        if(curComponent instanceof ImageViewer)
+        if (curComponent instanceof ImageViewer) {
             ((ImageViewer) curComponent).zoomIn();
+        }
     }
     
     /** Gets action name. Implements superclass abstract method. */
