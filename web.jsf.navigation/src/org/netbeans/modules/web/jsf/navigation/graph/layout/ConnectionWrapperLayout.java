@@ -27,8 +27,13 @@
  */
 package org.netbeans.modules.web.jsf.navigation.graph.layout;
 
+import java.util.Date;
 import java.util.EnumSet;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.api.visual.anchor.Anchor;
+import org.netbeans.api.visual.anchor.Anchor.Entry;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
@@ -64,27 +69,42 @@ public class ConnectionWrapperLayout implements Layout {
         connectionWidgetLayout.justify(widget);
     }
 
+    private static final Logger LOGGER = Logger.getLogger(ConnectionWrapperLayout.class.toString());
     private static final void resetLabelConstraint(ConnectionWidget connectionWidget, LabelWidget label) {
         assert connectionWidget != null;
-        
+
         if (label != null) {
 
             connectionWidget.removeConstraint(label);
             connectionWidget.removeChild(label);
+            Anchor sourceAnchor = connectionWidget.getSourceAnchor();
+            Entry sourceAnchorEntry = connectionWidget.getSourceAnchorEntry();
+            assert sourceAnchor != null;
+            assert sourceAnchorEntry != null;
 
-            EnumSet<Anchor.Direction> directions = connectionWidget.getSourceAnchor().compute(connectionWidget.getSourceAnchorEntry()).getDirections();
-            if (directions.contains(Anchor.Direction.TOP)) {
-                label.setOrientation(LabelWidget.Orientation.ROTATE_90);
-                connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
-            } else if (directions.contains(Anchor.Direction.BOTTOM)) {
-                label.setOrientation(LabelWidget.Orientation.ROTATE_90);
-                connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.BOTTOM_RIGHT, 10);
-            } else if (directions.contains(Anchor.Direction.RIGHT)) {
-                connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
-                label.setOrientation(LabelWidget.Orientation.NORMAL);
+            if (sourceAnchor != null && sourceAnchorEntry != null) {
+                EnumSet<Anchor.Direction> directions = sourceAnchor.compute(sourceAnchorEntry).getDirections();
+                if (directions.contains(Anchor.Direction.TOP)) {
+                    label.setOrientation(LabelWidget.Orientation.ROTATE_90);
+                    connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
+                } else if (directions.contains(Anchor.Direction.BOTTOM)) {
+                    label.setOrientation(LabelWidget.Orientation.ROTATE_90);
+                    connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.BOTTOM_RIGHT, 10);
+                } else if (directions.contains(Anchor.Direction.RIGHT)) {
+                    connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
+                    label.setOrientation(LabelWidget.Orientation.NORMAL);
+                } else {
+                    connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_LEFT, 10);
+                    label.setOrientation(LabelWidget.Orientation.NORMAL);
+                }
             } else {
-                connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_LEFT, 10);
-                label.setOrientation(LabelWidget.Orientation.NORMAL);
+                    LogRecord record = new LogRecord(Level.FINE, "Problems Reseting Label Constraint");
+                    record.setSourceClassName("ConnectionWrapperLayout");
+                    record.setSourceMethodName("resetLabelConstraint");
+                    record.setParameters(new Object[]{connectionWidget, label, new Date()});
+                    LOGGER.log(record);
+                    connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_LEFT, 10);
+                    label.setOrientation(LabelWidget.Orientation.NORMAL);
             }
             connectionWidget.addChild(label);
         }
