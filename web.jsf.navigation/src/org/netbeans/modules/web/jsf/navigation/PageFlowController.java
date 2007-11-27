@@ -706,7 +706,7 @@ public class PageFlowController {
      */
     public Page removePageName2Page(String pageName, boolean permDestroy) {
         LOGGER.finest("PageName2Page: remove " + pageName);
-        printThreadInfo();
+        checkAWTThread();
         synchronized (pageName2Page) {
             Page node = null;
             WeakReference<Page> nodeRef = pageName2Page.remove(pageName);
@@ -740,7 +740,7 @@ public class PageFlowController {
             throw new NullPointerException("Page can not be null.");
         }
 
-        printThreadInfo();
+        checkAWTThread();
         synchronized (pageName2Page) {
             WeakReference<Page> page2Ref = pageName2Page.remove(oldName);
             if (page2Ref != null) {
@@ -788,7 +788,7 @@ public class PageFlowController {
             throw new NullPointerException( "putPageName2Page does not accept null pages.");
         }
         
-        printThreadInfo();
+        checkAWTThread();
         synchronized (pageName2Page) {
             pageName2Page.put(displayName, new WeakReference<Page>(page));
         }
@@ -802,7 +802,7 @@ public class PageFlowController {
     protected Page getPageName2Page(String displayName) {
         
         
-        printThreadInfo();
+        checkAWTThread();
         if ( displayName == null ){
             throw new NullPointerException("Displayname should not be null. You may be using this method incorrectly.");
         } 
@@ -831,7 +831,10 @@ public class PageFlowController {
         }
     }
 
-    private void printThreadInfo() {
+    /* This methods makes sure that the call if from the AWT Thread.
+     * If not it will dump the thread stack
+     */
+    private void checkAWTThread() {
         if (!SwingUtilities.isEventDispatchThread()) {
             Thread.dumpStack();
             throw new RuntimeException("Not a Dispatched Thread");
