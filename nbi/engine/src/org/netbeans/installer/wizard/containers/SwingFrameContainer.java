@@ -53,7 +53,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.border.LineBorder;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -374,9 +373,10 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         private NbiPanel titlePanel;
         
         /**
-         * Container for the title and description image.
+         * Container for the title and description images (left&right).
          */
-        private NbiPanel titleDescriptionImagePanel;
+        private NbiPanel titleDescriptionImageRightPanel;
+        private NbiPanel titleDescriptionImageLeftPanel;
         
         /**
          * Separator between the wizard page header (title and description) and the
@@ -534,21 +534,41 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             titlePanel.setLayout(new GridBagLayout());
             titlePanel.setOpaque(true);
             
+            final String leftImageUri = System.getProperty(WIZARD_FRAME_HEAD_LEFT_IMAGE_URI_PROPERTY);
+            int titlePanelDx = 0;
+            if(leftImageUri!=null) {
+                titleDescriptionImageLeftPanel  = new NbiPanel();
+                titleDescriptionImageLeftPanel .setBackgroundImage(leftImageUri , NbiPanel.ANCHOR_TOP_RIGHT);
+                final ImageIcon icon = titleDescriptionImageLeftPanel .getBackgroundImage(NbiPanel.ANCHOR_TOP_RIGHT);
+                titleDescriptionImageLeftPanel .setPreferredSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
+                titleDescriptionImageLeftPanel .setPreferredSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));
+                titleDescriptionImageLeftPanel .setMaximumSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));
+                titleDescriptionImageLeftPanel .setMinimumSize(new Dimension(icon.getIconWidth(),0));
+                titleDescriptionImageLeftPanel .setSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));                
+                titleDescriptionImageLeftPanel .setOpaque(false);
+                titlePanel.add(titleDescriptionImageLeftPanel , new GridBagConstraints(
+                    titlePanelDx++, 0,                             // x, y
+                    1, 2,                             // width, height
+                    0.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.NORTH,    // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(0, 0, 0, 0),        // padding
+                    0, 0));                           // padx, pady - ???
+            }
             
-            
-            String imageUri = System.getProperty(WIZARD_FRAME_HEAD_IMAGE_URI_PROPERTY);
-            if(imageUri!=null) {
-                titleDescriptionImagePanel = new NbiPanel();
-                titleDescriptionImagePanel.setBackgroundImage(imageUri, NbiPanel.ANCHOR_TOP_RIGHT);
-                ImageIcon icon = titleDescriptionImagePanel.getBackgroundImage(NbiPanel.ANCHOR_TOP_RIGHT);
-                titleDescriptionImagePanel.setPreferredSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
-                titleDescriptionImagePanel.setPreferredSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));
-                titleDescriptionImagePanel.setMaximumSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));
-                titleDescriptionImagePanel.setMinimumSize(new Dimension(icon.getIconWidth(),0));
-                titleDescriptionImagePanel.setSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));                
-                titleDescriptionImagePanel.setOpaque(false);
-                titlePanel.add(titleDescriptionImagePanel, new GridBagConstraints(
-                    1, 0,                             // x, y
+            final String rightImageUri = System.getProperty(WIZARD_FRAME_HEAD_RIGHT_IMAGE_URI_PROPERTY);
+            if(rightImageUri!=null) {
+                titleDescriptionImageRightPanel = new NbiPanel();
+                titleDescriptionImageRightPanel.setBackgroundImage(rightImageUri , NbiPanel.ANCHOR_TOP_RIGHT);
+                final ImageIcon icon = titleDescriptionImageRightPanel.getBackgroundImage(NbiPanel.ANCHOR_TOP_RIGHT);
+                titleDescriptionImageRightPanel.setPreferredSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
+                titleDescriptionImageRightPanel.setPreferredSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));
+                titleDescriptionImageRightPanel.setMaximumSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));
+                titleDescriptionImageRightPanel.setMinimumSize(new Dimension(icon.getIconWidth(),0));
+                titleDescriptionImageRightPanel.setSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));                
+                titleDescriptionImageRightPanel.setOpaque(false);
+                titlePanel.add(titleDescriptionImageRightPanel, new GridBagConstraints(
+                    titlePanelDx + 1, 0,                             // x, y
                     1, 2,                             // width, height
                     0.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.NORTH,    // anchor
@@ -561,7 +581,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             topSeparator = new NbiSeparator();
             
             titlePanel.add(titleLabel, new GridBagConstraints(
-                    0, 0,                             // x, y
+                    titlePanelDx , 0,                             // x, y
                     1, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
@@ -569,7 +589,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                     new Insets(11, 11, 0, 11),        // padding
                     0, 0));                           // padx, pady - ???
             titlePanel.add(descriptionPane, new GridBagConstraints(
-                    0, 1,                             // x, y
+                    titlePanelDx, 1,                             // x, y
                     1, 1,                             // width, height
                     1.0, 1.0,                         // weight-x, weight-y
                     GridBagConstraints.PAGE_START,    // anchor
@@ -578,7 +598,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                     0, 0));                           // padx, pady - ???
             titlePanel.add(topSeparator, new GridBagConstraints(
                     0, 2,                             // x, y
-                    2, 1,                             // width, height
+                    2 + titlePanelDx, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.CENTER,        // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
@@ -739,10 +759,16 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
     
     /**
      * Name of the system property which is expected to contain the desired value
-     * for the URI of the wizard frame head background image.
+     * for the URI of the wizard frame head background image (right side).
      */
-    public static final String WIZARD_FRAME_HEAD_IMAGE_URI_PROPERTY =
-            "nbi.wizard.ui.swing.frame.head.image"; // NOI18N
+    public static final String WIZARD_FRAME_HEAD_RIGHT_IMAGE_URI_PROPERTY =
+            "nbi.wizard.ui.swing.frame.head.right.image"; // NOI18N
+    /**
+     * Name of the system property which is expected to contain the desired value
+     * for the URI of the wizard frame head background image (left side).
+     */
+    public static final String WIZARD_FRAME_HEAD_LEFT_IMAGE_URI_PROPERTY =
+            "nbi.wizard.ui.swing.frame.head.left.image"; // NOI18N
     
     
     /**
