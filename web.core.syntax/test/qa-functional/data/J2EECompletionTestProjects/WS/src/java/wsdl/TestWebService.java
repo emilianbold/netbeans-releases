@@ -71,9 +71,9 @@ wsdl/
 */
 
 /**
-@WebService(wsdlLocation="file://../|)
-wsdl/
-@WebService(wsdlLocation="file://../wsdl/)
+@WebService(wsdlLocation="")
+testWSDL.wsdl
+@WebService(wsdlLocation="META-INF/wsdl/testWSDL.wsdl")
 */
 
 public interface TestWebService extends java.rmi.Remote {
