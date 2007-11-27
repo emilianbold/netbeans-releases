@@ -52,11 +52,11 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
@@ -191,7 +191,7 @@ public class SendJMSMessageAction extends NodeAction {
                 if (javaSource == null || elementHandle == null) {
                     return false;
                 }
-                javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+                javaSource.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         TypeElement typeElement = elementHandle.resolve(controller);

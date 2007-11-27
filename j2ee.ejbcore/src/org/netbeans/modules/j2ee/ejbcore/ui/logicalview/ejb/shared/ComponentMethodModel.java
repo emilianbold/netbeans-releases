@@ -45,6 +45,7 @@ import java.io.IOException;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.RootsEvent;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TypesEvent;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
@@ -68,7 +69,6 @@ import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.openide.util.Exceptions;
 
 public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
@@ -92,7 +92,7 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
         final List<MethodModel> keys = new ArrayList<MethodModel>();
         try {
             JavaSource javaSource = JavaSource.create(cpInfo);
-            javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            javaSource.runUserActionTask(new Task<CompilationController>() {
                 public void run(final CompilationController controller) throws IOException {
                     Elements elements = controller.getElements();
                     final ElementUtilities elementUtilities = controller.getElementUtilities();
@@ -151,7 +151,7 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
     private void registerListeners() {
         try {
             JavaSource javaSource = JavaSource.create(cpInfo);
-            javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            javaSource.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     ClassIndex classIndex = controller.getClasspathInfo().getClassIndex();
@@ -169,7 +169,7 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
         }
         try {
             JavaSource javaSource = JavaSource.create(cpInfo);
-            javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            javaSource.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     ClassIndex classIndex = controller.getClasspathInfo().getClassIndex();

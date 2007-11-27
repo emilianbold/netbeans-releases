@@ -51,9 +51,9 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.ejbcore.test.TestBase;
@@ -89,7 +89,7 @@ public class BusinessMethodGeneratorTest extends TestBase {
         // ejb class
         final boolean[] found = new boolean[] { false };
         JavaSource javaSource = JavaSource.forFileObject(beanClass);
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 MethodModel ejbClassMethodModel = MethodModel.create(
@@ -114,7 +114,7 @@ public class BusinessMethodGeneratorTest extends TestBase {
         found[0] = false;
         FileObject interfaceFileObject = testModule.getSources()[0].getFileObject("statelesslr/StatelessLRLocal.java");
         javaSource = JavaSource.forFileObject(interfaceFileObject);
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement("statelesslr.StatelessLRLocal");
@@ -133,7 +133,7 @@ public class BusinessMethodGeneratorTest extends TestBase {
         found[0] = false;
         interfaceFileObject = testModule.getSources()[0].getFileObject("statelesslr/StatelessLRRemote.java");
         javaSource = JavaSource.forFileObject(interfaceFileObject);
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 MethodModel interfaceMethodModel = MethodModel.create(
@@ -179,7 +179,7 @@ public class BusinessMethodGeneratorTest extends TestBase {
         // ejb class
         final boolean[] found = new boolean[] { false };
         JavaSource javaSource = JavaSource.forFileObject(beanClass);
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 MethodModel ejbClassMethodModel = MethodModel.create(
@@ -204,7 +204,7 @@ public class BusinessMethodGeneratorTest extends TestBase {
         found[0] = false;
         FileObject interfaceFileObject = testModule.getSources()[0].getFileObject("statelesslr/StatelessLRLocal.java");
         javaSource = JavaSource.forFileObject(interfaceFileObject);
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement("statelesslr.StatelessLRLocal");
@@ -223,7 +223,7 @@ public class BusinessMethodGeneratorTest extends TestBase {
         found[0] = false;
         interfaceFileObject = testModule.getSources()[0].getFileObject("statelesslr/StatelessLRRemote.java");
         javaSource = JavaSource.forFileObject(interfaceFileObject);
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 MethodModel interfaceMethodModel = MethodModel.create(

@@ -62,11 +62,11 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
@@ -183,7 +183,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
                             final EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
                             JavaSource javaSource = JavaSource.forFileObject(srcFile);
                             if (enterpriseBeans != null && javaSource != null) {
-                                javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+                                javaSource.runUserActionTask(new Task<CompilationController>() {
                                     public void run(CompilationController controller) throws IOException {
                                         controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                                         TypeElement beanClass = controller.getElements().getTypeElement(CallEjbPanel.this.className);

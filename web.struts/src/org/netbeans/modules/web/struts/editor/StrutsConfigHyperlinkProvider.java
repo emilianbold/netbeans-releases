@@ -51,6 +51,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
@@ -59,7 +60,6 @@ import org.netbeans.editor.ext.ExtSyntaxSupport;
 //import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 //import org.netbeans.modules.editor.java.JMIUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.struts.StrutsConfigDataObject;
@@ -238,7 +238,7 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
                     final ClasspathInfo cpi = ClasspathInfo.create(wm.getDocumentBase());
                     JavaSource js = JavaSource.create(cpi, Collections.EMPTY_LIST);
                     
-                    js.runUserActionTask(new AbstractTask<CompilationController>() {
+                    js.runUserActionTask(new Task<CompilationController>() {
                         
                         public void run(CompilationController cc) throws Exception {
                             Elements elements = cc.getElements();

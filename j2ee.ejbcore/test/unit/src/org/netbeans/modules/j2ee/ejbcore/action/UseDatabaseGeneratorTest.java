@@ -55,9 +55,9 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -92,7 +92,7 @@ public class UseDatabaseGeneratorTest extends TestBase {
         generator.generate(beanClass, elementHandle, j2eeModuleProvider, "referenceName", datasource, false, null);
         
         JavaSource javaSource = JavaSource.forFileObject(beanClass);
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = elementHandle.resolve(workingCopy);
@@ -118,7 +118,7 @@ public class UseDatabaseGeneratorTest extends TestBase {
         generator.generate(beanClass, elementHandle2, j2eeModuleProvider, "referenceName", datasource, false, null);
         
         javaSource = JavaSource.forFileObject(beanClass);
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = elementHandle2.resolve(workingCopy);

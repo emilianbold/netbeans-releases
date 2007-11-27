@@ -55,10 +55,10 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
@@ -110,7 +110,7 @@ public final class CmFieldGenerator extends AbstractMethodGenerator {
         
         // ejb class
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFileObject);
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(ejbClass);
@@ -131,7 +131,7 @@ public final class CmFieldGenerator extends AbstractMethodGenerator {
         if (localGetter || localSetter) {
             FileObject localFileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, local);
             javaSource = JavaSource.forFileObject(localFileObject);
-            javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+            javaSource.runModificationTask(new Task<WorkingCopy>() {
                 public void run(WorkingCopy workingCopy) throws IOException {
                     workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = workingCopy.getElements().getTypeElement(local);
@@ -154,7 +154,7 @@ public final class CmFieldGenerator extends AbstractMethodGenerator {
         if (remoteGetter || remoteSetter) {
             FileObject remoteFileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, remote);
             javaSource = JavaSource.forFileObject(remoteFileObject);
-            javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+            javaSource.runModificationTask(new Task<WorkingCopy>() {
                 public void run(WorkingCopy workingCopy) throws IOException {
                     workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = workingCopy.getElements().getTypeElement(remote);
@@ -181,7 +181,7 @@ public final class CmFieldGenerator extends AbstractMethodGenerator {
     private static boolean containsField(FileObject fileObject, final String className, final MethodModel.Variable field) throws IOException {
         final boolean[] result = new boolean[] { false };
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 String getterName = "get" + Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1);

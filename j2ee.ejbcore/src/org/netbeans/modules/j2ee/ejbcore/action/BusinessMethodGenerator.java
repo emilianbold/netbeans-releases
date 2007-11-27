@@ -52,9 +52,9 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -108,7 +108,7 @@ public final class BusinessMethodGenerator extends AbstractMethodGenerator {
             final boolean isEjb2x = (version != null && version.doubleValue() <= 2.1);
             
             JavaSource javaSource = JavaSource.forFileObject(ejbClassFileObject);
-            javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            javaSource.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     if (isEjb2x) {

@@ -57,7 +57,7 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.ejbcore.test.TestBase;
 import org.netbeans.modules.j2ee.ejbcore.test.TestUtilities;
@@ -116,7 +116,7 @@ public class _RetoucheUtilTest extends TestBase{
                 "}");
         final List<ElementHandle<TypeElement>> result1 = new ArrayList<ElementHandle<TypeElement>>(1);
         JavaSource javaSource = JavaSource.forFileObject(testFO);
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
@@ -131,7 +131,7 @@ public class _RetoucheUtilTest extends TestBase{
                 "}");
         final List<ElementHandle<TypeElement>> result2 = new ArrayList<ElementHandle<TypeElement>>(1);
         javaSource = JavaSource.forFileObject(testFO);
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
@@ -143,7 +143,7 @@ public class _RetoucheUtilTest extends TestBase{
     
     private void testAddedField(FileObject fileObject, final boolean isStatic) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);

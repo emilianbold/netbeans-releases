@@ -50,6 +50,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -61,7 +62,6 @@ import org.netbeans.modules.j2ee.api.ejbjar.MessageDestinationReference;
 import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
@@ -229,7 +229,7 @@ public class JarContainerImpl implements EnterpriseReferenceContainer {
     private void writeDD(FileObject referencingFile, final String referencingClassName) throws IOException {
         final CarImplementation jp = webProject.getLookup().lookup(CarImplementation.class);
         JavaSource javaSource = JavaSource.forFileObject(referencingFile);
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
                 TypeElement typeElement = controller.getElements().getTypeElement(referencingClassName);
                 if (isDescriptorMandatory(jp.getJ2eePlatformVersion()) || 

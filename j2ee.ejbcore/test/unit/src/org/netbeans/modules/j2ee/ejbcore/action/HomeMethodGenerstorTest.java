@@ -51,9 +51,9 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.ejbcore.test.TestBase;
@@ -89,7 +89,7 @@ public class HomeMethodGenerstorTest extends TestBase {
         // ejb class
         final boolean[] found = new boolean[] { false };
         JavaSource javaSource = JavaSource.forFileObject(beanClass);
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement("cmplr.CmpLRBean");
@@ -114,7 +114,7 @@ public class HomeMethodGenerstorTest extends TestBase {
         found[0] = false;
         FileObject interfaceFileObject = testModule.getSources()[0].getFileObject("cmplr/CmpLRLocalHome.java");
         javaSource = JavaSource.forFileObject(interfaceFileObject);
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement("cmplr.CmpLRLocalHome");
@@ -139,7 +139,7 @@ public class HomeMethodGenerstorTest extends TestBase {
         found[0] = false;
         interfaceFileObject = testModule.getSources()[0].getFileObject("cmplr/CmpLRRemoteHome.java");
         javaSource = JavaSource.forFileObject(interfaceFileObject);
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement("cmplr.CmpLRRemoteHome");

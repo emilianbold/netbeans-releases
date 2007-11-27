@@ -53,10 +53,10 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.SessionMethodController;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.ComponentMethodModel;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.ComponentMethodViewStrategy;
@@ -113,7 +113,7 @@ public class MethodChildren extends ComponentMethodModel {
             final List<ElementHandle<ExecutableElement>> methodHandle = new ArrayList<ElementHandle<ExecutableElement>>();
             try {
                 JavaSource javaSource = JavaSource.forFileObject(implClassFO);
-                javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+                javaSource.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         TypeElement typeElement = controller.getElements().getTypeElement(implClass);

@@ -44,10 +44,10 @@ package org.netbeans.modules.j2ee.ejbcore;
 import java.util.ArrayList;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -145,7 +145,7 @@ public class Utils {
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
         final String[] ejbClassName = new String[1];
         final MethodModel[] methodModel = new MethodModel[1];
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 ExecutableElement executableElement = methodHandle.resolve(workingCopy);
@@ -169,7 +169,7 @@ public class Utils {
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
         final String[] ejbClassName = new String[1];
         final MethodModel[] methodModel = new MethodModel[1];
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 ExecutableElement method = methodHandle.resolve(workingCopy);
@@ -186,7 +186,7 @@ public class Utils {
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
         final String[] ejbClassName = new String[1];
         final MethodModel[] methodModel = new MethodModel[1];
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 ExecutableElement executableElement = methodHandle.resolve(workingCopy);
@@ -210,7 +210,7 @@ public class Utils {
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
         final String[] ejbClassName = new String[1];
         final MethodModel[] methodModel = new MethodModel[1];
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 ExecutableElement method = methodHandle.resolve(workingCopy);
@@ -290,7 +290,7 @@ public class Utils {
         }
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final boolean[] result = new boolean[] { false };
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(className);

@@ -49,9 +49,9 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
@@ -80,7 +80,7 @@ public class CmFieldGeneratorTest extends TestBase {
         generator.addCmpField(field, true, true, false, false, "");
         
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement("cmplr.CmpLRBean");
@@ -109,7 +109,7 @@ public class CmFieldGeneratorTest extends TestBase {
 
         final FileObject localInterfaceFO = testModule.getSources()[0].getFileObject("cmplr/CmpLRLocal.java");
         javaSource = JavaSource.forFileObject(localInterfaceFO);
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement("cmplr.CmpLRLocal");

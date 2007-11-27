@@ -47,7 +47,7 @@ import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
@@ -93,7 +93,7 @@ public class GoToSourceActionGroup extends EJBActionGroup {
         MetadataModel<EjbJarMetadata> model = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject).getMetadataModel();
 
         try {
-            javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            javaSource.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     ejbClass[0] = SourceUtils.getPublicTopLevelElement(controller).getQualifiedName().toString();

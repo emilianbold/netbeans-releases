@@ -72,7 +72,6 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.openide.filesystems.FileObject;
@@ -93,7 +92,7 @@ public final class _RetoucheUtil {
     public static String getMainClassName(final FileObject classFO) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(classFO);
         final String[] result = new String[1];
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
@@ -142,7 +141,7 @@ public final class _RetoucheUtil {
         }
         final List<ElementHandle<TypeElement>> result = new ArrayList<ElementHandle<TypeElement>>();
         try {
-            javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            javaSource.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
@@ -168,7 +167,7 @@ public final class _RetoucheUtil {
     public static ElementHandle<VariableElement> generateAnnotatedField(FileObject fileObject, final String className, final String annotationType,
             final String name, final String fieldType, final Map<String, String> attributes, final boolean isStatic) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(className);
@@ -215,7 +214,7 @@ public final class _RetoucheUtil {
         if (javaSource == null || elementHandle == null) {
             return false;
         }
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = elementHandle.resolve(controller);
@@ -237,7 +236,7 @@ public final class _RetoucheUtil {
     public static String uniqueMemberName(FileObject fileObject, final String className, final String memberName, final String defaultValue) throws IOException{
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final String[] result = new String[1];
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 String newName = convertToJavaIdentifier(memberName, defaultValue);
@@ -292,7 +291,7 @@ public final class _RetoucheUtil {
     public static FileObject resolveFileObjectForClass(FileObject referenceFileObject, final String className) throws IOException {
         final FileObject[] result = new FileObject[1];
         JavaSource javaSource = JavaSource.forFileObject(referenceFileObject);
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) {
                 TypeElement typeElement = controller.getElements().getTypeElement(className);
                 if (typeElement != null) {
@@ -384,7 +383,7 @@ public final class _RetoucheUtil {
         final Set<MethodModel> result = new HashSet<MethodModel>();
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         try {
-            javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            javaSource.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = controller.getElements().getTypeElement(className);

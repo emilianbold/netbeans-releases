@@ -45,10 +45,10 @@ import java.io.IOException;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -115,7 +115,7 @@ public class EjbJarEMGenStrategyResolver implements EntityManagerGenerationStrat
         final boolean[] result = new boolean[1];
         JavaSource source = JavaSource.forFileObject(target);
         try{
-            source.runModificationTask(new AbstractTask<WorkingCopy>(){
+            source.runModificationTask(new Task<WorkingCopy>(){
                 public void run(WorkingCopy parameter) throws Exception {
                     parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = SourceUtils.getPublicTopLevelElement(parameter);

@@ -44,9 +44,9 @@ package org.netbeans.modules.web.project;
 import java.io.IOException;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionInjectableInWeb;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ApplicationManagedResourceTransactionNonInjectableInWeb;
@@ -103,7 +103,7 @@ public class WebEMGenStrategyResolver implements EntityManagerGenerationStrategy
         final boolean[] result = new boolean[1];
         JavaSource source = JavaSource.forFileObject(target);
         try{
-            source.runModificationTask(new AbstractTask<WorkingCopy>(){
+            source.runModificationTask(new Task<WorkingCopy>(){
                 public void run(WorkingCopy parameter) throws Exception {
                     parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = SourceUtils.getPublicTopLevelElement(parameter);

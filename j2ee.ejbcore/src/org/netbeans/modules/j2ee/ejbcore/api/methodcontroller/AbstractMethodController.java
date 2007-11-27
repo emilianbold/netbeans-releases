@@ -63,8 +63,8 @@ import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
@@ -378,7 +378,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         if (ejbClassFO != null) {
             JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
             try {
-                javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+                javaSource.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(Phase.ELEMENTS_RESOLVED);
                         TypeElement typeElement = controller.getElements().getTypeElement(className);
@@ -592,7 +592,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         });
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
         final boolean [] result = new boolean[] {false};
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+        javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(clazz);
@@ -614,7 +614,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
             }
         });
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                 Trees trees = workingCopy.getTrees();
@@ -634,7 +634,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
             }
         });
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                 if (methodFindInClass(className, methodModel)) {

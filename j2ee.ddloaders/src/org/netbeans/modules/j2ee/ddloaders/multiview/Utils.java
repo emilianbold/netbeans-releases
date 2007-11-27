@@ -61,9 +61,9 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -367,7 +367,7 @@ public class Utils {
             final List<ElementHandle<TypeElement>> handle = new ArrayList<ElementHandle<TypeElement>>(1);
             if (classFo != null) {
                 JavaSource source = JavaSource.forFileObject(classFo);
-                source.runUserActionTask(new AbstractTask<CompilationController>() {
+                source.runUserActionTask(new Task<CompilationController>() {
 
                             public void run(CompilationController controller) throws Exception {
                                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);

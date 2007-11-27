@@ -53,12 +53,12 @@ import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
@@ -254,7 +254,7 @@ public class StrutsConfigUtilities {
                 ClasspathInfo cpi = ClasspathInfo.create(dd);
                 JavaSource js =  JavaSource.create(cpi, Collections.EMPTY_LIST);
                 final int[] index = new int[]{-1};
-                js.runUserActionTask( new AbstractTask <CompilationController>(){
+                js.runUserActionTask( new Task <CompilationController>(){
                     public void run(CompilationController  cc) throws Exception {                        
                         Elements elements = cc.getElements();
                         TypeElement strutsServletElement = elements.getTypeElement("org.apache.struts.action.ActionServlet"); //NOI18N

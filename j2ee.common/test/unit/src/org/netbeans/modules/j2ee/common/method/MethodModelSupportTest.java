@@ -63,10 +63,10 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.FakeJavaDataLoaderPool;
 import org.netbeans.modules.j2ee.common.source.RepositoryImpl;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
@@ -111,7 +111,7 @@ public class MethodModelSupportTest extends NbTestCase {
                 "        return null;" +
                 "    }" +
                 "}");
-        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
+        runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = SourceUtils.newInstance(controller).getTypeElement();
@@ -166,7 +166,7 @@ public class MethodModelSupportTest extends NbTestCase {
                 "package foo;" +
                 "public class TestClass {" +
                 "}");
-        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
+        runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 Elements elements = controller.getElements();
@@ -208,7 +208,7 @@ public class MethodModelSupportTest extends NbTestCase {
                 "package foo;" +
                 "public class TestClass {" +
                 "}");
-        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+        runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 MethodTree methodTree = MethodModelSupport.createMethodTree(workingCopy, methodModel);
@@ -231,7 +231,7 @@ public class MethodModelSupportTest extends NbTestCase {
                 "  private String name;" +
                 "  private final String address;" +
                 "}");
-        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
+        runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 TypeElement typeElement = SourceUtils.newInstance(controller).getTypeElement();
                 List<VariableElement> fields = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
