@@ -179,6 +179,11 @@ public class ClientStubModel {
                             ((NavigationMethod) m).setNavigationUri(value);
                         }
                         String returnType = tree.getReturnType().toString();
+                        if(returnType != null) {
+                            int ndx = returnType.lastIndexOf(".");
+                            if(ndx != -1)
+                                returnType = returnType.substring(ndx+1);
+                        }
                         String linkName = RestUtils.findStubNameFromClass(returnType);
                         ((NavigationMethod) m).setLinkName(linkName);
                     } else if (Constants.HTTP_METHOD_ANNOTATION.equals(mAnonType) || Constants.HTTP_METHOD.equals(mAnonType)) {
