@@ -189,7 +189,7 @@ public class JavaUtils {
                 LogManager.log("... can`t get jdkInfo from " + location);
             }
         } catch (IOException e) {
-            ErrorManager.notifyError(ResourceUtils.getString(
+            LogManager.log(ResourceUtils.getString(
                     JavaUtils.class, ERROR_VERIFICATION_KEY), e);
         }
         
