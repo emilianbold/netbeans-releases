@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -16,13 +16,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -315,6 +315,10 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                     RESOURCE_ERROR_SET_CLOSE_OPERATION),
                     e);
         }
+        final String resizable = System.getProperty(WIZARD_FRAME_RESIZABLE_PROPERTY);
+        if(resizable!=null && (resizable.equals("false") || resizable.equals("FALSE"))) {
+            setResizable(false);
+        }
         
         contentPane = new WizardFrameContentPane();
         setContentPane(contentPane);
@@ -544,16 +548,16 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                 titleDescriptionImageLeftPanel .setPreferredSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));
                 titleDescriptionImageLeftPanel .setMaximumSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));
                 titleDescriptionImageLeftPanel .setMinimumSize(new Dimension(icon.getIconWidth(),0));
-                titleDescriptionImageLeftPanel .setSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));                
+                titleDescriptionImageLeftPanel .setSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));
                 titleDescriptionImageLeftPanel .setOpaque(false);
                 titlePanel.add(titleDescriptionImageLeftPanel , new GridBagConstraints(
-                    titlePanelDx++, 0,                             // x, y
-                    1, 2,                             // width, height
-                    0.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.NORTH,    // anchor
-                    GridBagConstraints.BOTH,          // fill
-                    new Insets(0, 0, 0, 0),        // padding
-                    0, 0));                           // padx, pady - ???
+                        titlePanelDx++, 0,                             // x, y
+                        1, 2,                             // width, height
+                        0.0, 0.0,                         // weight-x, weight-y
+                        GridBagConstraints.NORTH,    // anchor
+                        GridBagConstraints.BOTH,          // fill
+                        new Insets(0, 0, 0, 0),        // padding
+                        0, 0));                           // padx, pady - ???
             }
             
             final String rightImageUri = System.getProperty(WIZARD_FRAME_HEAD_RIGHT_IMAGE_URI_PROPERTY);
@@ -565,16 +569,16 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                 titleDescriptionImageRightPanel.setPreferredSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));
                 titleDescriptionImageRightPanel.setMaximumSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));
                 titleDescriptionImageRightPanel.setMinimumSize(new Dimension(icon.getIconWidth(),0));
-                titleDescriptionImageRightPanel.setSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));                
+                titleDescriptionImageRightPanel.setSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));
                 titleDescriptionImageRightPanel.setOpaque(false);
                 titlePanel.add(titleDescriptionImageRightPanel, new GridBagConstraints(
-                    titlePanelDx + 1, 0,                             // x, y
-                    1, 2,                             // width, height
-                    0.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.NORTH,    // anchor
-                    GridBagConstraints.BOTH,          // fill
-                    new Insets(0, 0, 0, 0),        // padding
-                    0, 0));                           // padx, pady - ???
+                        titlePanelDx + 1, 0,                             // x, y
+                        1, 2,                             // width, height
+                        0.0, 0.0,                         // weight-x, weight-y
+                        GridBagConstraints.NORTH,    // anchor
+                        GridBagConstraints.BOTH,          // fill
+                        new Insets(0, 0, 0, 0),        // padding
+                        0, 0));                           // padx, pady - ???
             }
             
             // topSeparator /////////////////////////////////////////////////////////
@@ -779,6 +783,15 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
     public static final String WIZARD_FRAME_TITLE_PATTERN_PROPERTY =
             "nbi.wizard.ui.swing.frame.title.pattern"; // NOI18N
     
+    /**
+     * Name of the system property which is expected to contain the desired value
+     * for the making the wizard window be resizable.
+     * <br>If this property is not set at all or set to any string different from
+     * "false" and "FALSE" then the wizard is resiazable.
+     */
+    public static final String WIZARD_FRAME_RESIZABLE_PROPERTY =
+            "nbi.wizard.ui.swing.frame.resizable"; // NOI18N
+        
     /**
      * Default value for the wizard frame's initial width.
      */
