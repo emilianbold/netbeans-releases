@@ -409,20 +409,20 @@ implements LookupListener {
                 String s = u.toExternalForm();
                 x += 3199876987199633L;
                 x ^= s.hashCode();
-                URL u2;
-                if (s.startsWith("jar:")) { // NOI18N
-                    int bangSlash = s.lastIndexOf("!/"); // NOI18N
-                    if (bangSlash != -1) {
-                        // underlying URL inside jar:, generally file:
-                        u2 = new URL(s.substring(4, bangSlash));
-                    } else {
-                        err.warning("Weird JAR URL: " + u);
-                        u2 = u;
+                URL u2 = null;
+
+                int bangSlash = s.lastIndexOf("!/"); // NOI18N
+                if (bangSlash != -1) {
+                    int colon = s.indexOf(':');
+                    if (colon >= 0 && colon < bangSlash) {
+                        u2 = new URL(s.substring(colon+1, bangSlash));
                     }
-                } else {
-                    // something else... plain file: URL?
+                }
+                if (u2 == null){
+                    err.warning("Weird JAR URL: " + u);
                     u2 = u;
                 }
+
                 File extracted = new File(URI.create(u2.toExternalForm()));
                 if (extracted != null) {
                     // the JAR file containing the layer entry:
