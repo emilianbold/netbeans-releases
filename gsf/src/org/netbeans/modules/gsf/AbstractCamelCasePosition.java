@@ -81,14 +81,15 @@ public abstract class AbstractCamelCasePosition extends BaseAction {
                     originalAction.actionPerformed(evt);
                 }
             } else {
-                target.getDocument().render(new Runnable() {
-                    public void run() {
+// Causes #122901                
+//                target.getDocument().render(new Runnable() {
+//                    public void run() {
                         int offset = newOffset(target);
                         if (offset != -1) {
                             moveToNewOffset(target, offset);
                         }
-                    }
-                });
+//                    }
+//                });
             }
         }
     }
