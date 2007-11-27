@@ -103,6 +103,7 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
     private int           priority;
     private int           processKeyEventOffset;
     private String        confirmChars;
+    private CompletionItem.Type type;
 
     CompletionSupport (CompletionItem item, String prefix) {
         text = item.getText ();
@@ -111,7 +112,7 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
         priority = item.getPriority ();
         
         String color = "000000";
-        CompletionItem.Type type = item.getType ();
+        type = item.getType ();
         if (type == null) type = CompletionItem.Type.FIELD;
         boolean bold = false;
         String key = item.getText ();
@@ -187,6 +188,7 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
     public void defaultAction (JTextComponent component) {
         NbEditorDocument doc = (NbEditorDocument) component.getDocument ();
         int offset = component.getCaret ().getDot ();
+        boolean isMethod = type == CompletionItem.Type.METHOD || type == CompletionItem.Type.CONSTRUCTOR;
         try {
             TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
             if (doc instanceof NbEditorDocument)
@@ -209,25 +211,28 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
                 Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
                 List<Feature> features = l.getFeatures (CompletionProviderImpl.COMPLETION, tokenType);
                 Iterator<Feature> it = features.iterator ();
-                t = text;
+                t = isMethod ? text + "()" : text;
                 boolean found = false;
                 while (it.hasNext ()) {
                     Feature feature =  it.next ();
                     String completionType = getCompletionType (feature, tokenType);
                     if (completionType == CompletionProviderImpl.COMPLETION_COMPLETE) {
-                        t = text.substring (offset - sequence.offset ());
+                        t = t.substring (offset - sequence.offset ());
                         found = true;
                         break;
                     }
                 }
                 if (!found && filledPrefix != null) {
-                    t = text.substring(filledPrefix.length());
+                    t = t.substring(filledPrefix.length());
                 }
             } finally {
                 if (doc instanceof NbEditorDocument)
                     ((NbEditorDocument) doc).readUnlock ();
             }
             doc.insertString (offset, t, null);
+            if (isMethod) {
+                component.setCaretPosition(component.getCaret ().getDot () - 1);
+            }
             processKeyEventOffset = offset + t.length();
         } catch (BadLocationException ex) {
             ErrorManager.getDefault ().notify (ex);
