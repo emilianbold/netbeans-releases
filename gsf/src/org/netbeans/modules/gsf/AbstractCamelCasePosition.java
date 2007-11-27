@@ -45,6 +45,7 @@ import java.util.MissingResourceException;
 import javax.swing.Action;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
+import org.netbeans.editor.BaseDocument;
 import org.openide.util.NbBundle;
 
 /** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com) */
@@ -81,15 +82,16 @@ public abstract class AbstractCamelCasePosition extends BaseAction {
                     originalAction.actionPerformed(evt);
                 }
             } else {
-// Causes #122901                
-//                target.getDocument().render(new Runnable() {
-//                    public void run() {
-                        int offset = newOffset(target);
-                        if (offset != -1) {
-                            moveToNewOffset(target, offset);
-                        }
-//                    }
-//                });
+                BaseDocument doc = (BaseDocument) target.getDocument();
+                try {
+                    doc.atomicLock();
+                    int offset = newOffset(target);
+                    if (offset != -1) {
+                        moveToNewOffset(target, offset);
+                    }
+                } finally {
+                    doc.atomicUnlock();
+                }
             }
         }
     }
