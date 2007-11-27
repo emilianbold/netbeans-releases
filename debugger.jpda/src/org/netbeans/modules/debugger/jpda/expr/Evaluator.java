@@ -1071,6 +1071,8 @@ public class Evaluator implements JavaParserVisitor {
             } catch (ClassNotLoadedException e) {
                 // TODO: load class
                 continue;
+            } catch (ObjectCollectedException ocex) {
+                continue;
             }
 
             // TODO: probably incomplete handling of an implicit constructor of a nested type
@@ -1115,6 +1117,8 @@ public class Evaluator implements JavaParserVisitor {
             try {
                 methodArguments = methodCall.method.argumentTypes();
             } catch (ClassNotLoadedException e) {
+                continue;
+            } catch (ObjectCollectedException ocex) {
                 continue;
             }
             int cc = conversionsCount(methodArguments, args);
