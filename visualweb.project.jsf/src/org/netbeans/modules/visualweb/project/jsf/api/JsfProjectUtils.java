@@ -70,6 +70,7 @@ import java.beans.PropertyChangeEvent;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.awt.EventQueue;
+import java.nio.charset.Charset;
 import javax.swing.JFileChooser ;
 
 import org.netbeans.api.java.classpath.ClassPath;
@@ -86,6 +87,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.api.WebProjectLibrariesModifier;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
@@ -601,8 +603,10 @@ public class JsfProjectUtils {
                 try {
                     String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
                     content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, pageName));
+                    Charset encoding = FileEncodingQuery.getDefaultEncoding();
+                    content = content.replaceAll("__ENCODING__", encoding.name());
                     FileObject target = FileUtil.createData(webModule.getDocumentBase(), FORWARD_JSF);//NOI18N
-                    createFile(target, content, "UTF-8");  //NOI18N
+                    createFile(target, content, encoding.name());
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
