@@ -146,7 +146,7 @@ public class FindUsagesVisitor extends FindVisitor {
         if (el == null) {
             return;
         }
-        if (elementToFind.getKind() == ElementKind.METHOD && el.getKind() == ElementKind.METHOD) {
+        if (elementToFind!=null&& elementToFind.getKind() == ElementKind.METHOD && el.getKind() == ElementKind.METHOD) {
             if (el.equals(elementToFind) || workingCopy.getElements().overrides((ExecutableElement) el, (ExecutableElement) elementToFind, (TypeElement) elementToFind.getEnclosingElement())) {
                 addUsage(getCurrentPath());
             }
