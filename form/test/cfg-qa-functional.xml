@@ -55,7 +55,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
 
-    <testbag testattribs="validation,test" executor="ide" name="testbag_binding">
+    <testbag testattribs="validation" executor="ide" name="testbag_binding">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/binding/SimpleBeansBinding.class"/>
@@ -111,7 +111,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-   <testbag testattribs="validation" executor="ide" name="testbag_visualdevelopment">
+   <testbag testattribs="test" executor="ide" name="testbag_visualdevelopment">
 
         <testset dir="qa-functional/src">
             <patternset>
@@ -150,7 +150,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
 
-    <testbag testattribs="my" executor="ide" name="testbag_editor_basictest">
+    <testbag testattribs="validation" executor="ide" name="testbag_editor_basictest">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/editor/formatting/BasicTest.*"/>                
