@@ -70,7 +70,7 @@ public class ZoomInAction extends CallableSystemAction {
     
     /** Gets action name. Implements superclass abstract method. */
     public String getName() {
-        return NbBundle.getBundle(ZoomInAction.class).getString("LBL_ZoomIn");
+        return NbBundle.getMessage(ZoomInAction.class, "LBL_ZoomIn");   //NOI18N
     }
     
     /** Gets action help context. Implemenets superclass abstract method.*/
