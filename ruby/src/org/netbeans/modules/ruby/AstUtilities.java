@@ -1070,8 +1070,20 @@ public class AstUtilities {
      */
     @SuppressWarnings("unchecked")
     public static OffsetRange getRange(Node node) {
-        OffsetRange range;
-        if (node.nodeId == NodeTypes.HASHNODE) {
+        if (node.nodeId == NodeTypes.NOTNODE) {
+            ISourcePosition pos = node.getPosition();
+            // "unless !(x < 5)" gives a not-node with wrong offsets - starts
+            // with ! but doesn't include the closing )
+            List<Node> list = node.childNodes();
+            if (list != null && list.size() > 0) {
+                Node first = list.get(0);
+                if (first.nodeId == NodeTypes.NEWLINENODE) {
+                    OffsetRange range = getRange(first);
+                    return new OffsetRange(pos.getStartOffset(), range.getEnd());
+                }
+            } 
+            return new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
+        } else if (node.nodeId == NodeTypes.HASHNODE) {
             // Workaround for incorrect JRuby AST offsets for hashnodes :
             //   render :action => 'list'
             // has wrong argument offsets, which we want to correct.
@@ -1081,17 +1093,15 @@ public class AstUtilities {
             if (list != null && list.size() > 0) {
                 int start = list.get(0).getPosition().getStartOffset();
                 int end = list.get(list.size()-1).getPosition().getEndOffset();
-                range = new OffsetRange(start, end);
+                return new OffsetRange(start, end);
             } else {
                 ISourcePosition pos = node.getPosition();
-                range = new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
+                return new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
             }
         } else {
             ISourcePosition pos = node.getPosition();
-            range = new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
+            return new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
         }
-
-        return range;
     }
     
     /**
