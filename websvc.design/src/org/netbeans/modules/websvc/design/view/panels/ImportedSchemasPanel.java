@@ -80,6 +80,7 @@ public class ImportedSchemasPanel extends javax.swing.JPanel {
         listModel = new DefaultListModel();
         importedSchemasList.setModel(listModel);
         importedSchemasList.setCellRenderer(new ImportedSchemasPanelListCellRenderer());
+        importedSchemasList.addListSelectionListener(new SchemaListSelectionListener());
         populateSchemas();
         removeBtn.setEnabled(false);
     }
@@ -107,8 +108,8 @@ public class ImportedSchemasPanel extends javax.swing.JPanel {
         public void actionPerformed(ActionEvent e) {
             int selectedRow = getSelectedRow();
             if(selectedRow == -1) return;
-            String className = (String)listModel.getElementAt(selectedRow);
-            if(confirmDeletion(className)){
+            Schema schema = (Schema)listModel.getElementAt(selectedRow);
+            if(confirmDeletion(schema.getTargetNamespace())){
                 listModel.removeElementAt(selectedRow);
             }
         }
@@ -149,7 +150,11 @@ public class ImportedSchemasPanel extends javax.swing.JPanel {
     
     class SchemaListSelectionListener implements ListSelectionListener{
         public void valueChanged(ListSelectionEvent e) {
-            
+            if (importedSchemasList.getSelectedIndex()>=0) {
+                removeBtn.setEnabled(true);
+            } else {
+                removeBtn.setEnabled(false);
+            }
         }
         
     }
