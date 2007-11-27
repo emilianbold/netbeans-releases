@@ -284,6 +284,34 @@ class LuceneIndex extends Index {
                     }
                     break;
                 }
+            case CAMEL_CASE_INSENSITIVE:
+                if (name.length() == 0) {
+                    //Special case (all) handle in different way
+                    emptyPrefixSearch(in, convertor, result, cancel);
+                    return;
+                }
+                else {                    
+                    final Term nameTerm = DocumentUtil.caseInsensitiveNameTerm(name.toLowerCase());     //XXX: I18N, Locale
+                    prefixSearh(nameTerm, in, toSearch, cancel);
+                    StringBuilder sb = new StringBuilder();
+                    String prefix = null;
+                    int lastIndex = 0;
+                    int index;
+                    do {
+                        index = findNextUpper(name, lastIndex + 1);
+                        String token = name.substring(lastIndex, index == -1 ? name.length(): index);
+                        if ( lastIndex == 0 ) {
+                            prefix = token;
+                        }
+                        sb.append(token); 
+                        sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N         
+                        lastIndex = index;
+                    }
+                    while(index != -1);
+                    final Pattern pattern = Pattern.compile(sb.toString());
+                    regExpSearch(pattern,DocumentUtil.simpleNameTerm(prefix),in,toSearch,cancel, true);
+                    break;
+                }
             default:
                 throw new UnsupportedOperationException (kind.toString());
         }           

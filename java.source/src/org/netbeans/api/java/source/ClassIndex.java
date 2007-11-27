@@ -148,7 +148,14 @@ public final class ClassIndex {
          * The name parameter of the {@link ClassIndex#getDeclaredTypes} is 
          * an case insensitive regular expression of the declared type name.
          */
-        CASE_INSENSITIVE_REGEXP
+        CASE_INSENSITIVE_REGEXP,
+        
+        /**
+         * The name parameter of the {@link ClassIndex#getDeclaredTypes} is 
+         * a camel case or case insensitive prefix of the declared type name.
+         * For example all these names NPE, NulPoEx, NULLPOInter leads to NullPointerException returned.
+         */
+        CAMEL_CASE_INSENSITIVE
     };
     
     
