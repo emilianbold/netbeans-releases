@@ -110,9 +110,9 @@ end]]>
   </codetemplate>
   <codetemplate contexts="rspec" abbreviation="it" descriptionId="ct_it" uuid="AD51AA2B-09C9-40DE-9720-2FD43C967FA9">
     <code>
-<![CDATA[it "${2 default="should" }${1 default="description"}" ${3 default="do
-  $0
-end"}]]>
+<![CDATA[it "${2 default="should "}${1 default="description"}" do
+  ${cursor}
+end]]>
     </code>
   </codetemplate>
   <codetemplate contexts="rspec" abbreviation="mat" descriptionId="ct_mat" uuid="55BF6C99-B4C4-4772-B7DC-0A18407E429C">
