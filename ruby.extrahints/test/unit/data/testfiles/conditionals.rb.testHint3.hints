@@ -1,0 +1,6 @@
+i^f x < 5
+
+HINT:Convert conditional statements to modifiers
+FIX:Change statement into a modifier
+FIX:Disable this hint
+end

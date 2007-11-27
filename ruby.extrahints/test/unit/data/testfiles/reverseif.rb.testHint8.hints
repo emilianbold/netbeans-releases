@@ -1,0 +1,5 @@
+x = 10 if ^x != 11
+-----------------
+HINT:Convert negative if statement to an unless statement
+FIX:Change if into an unless statement and reverse condition logic
+FIX:Disable this hint
