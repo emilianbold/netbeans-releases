@@ -63,6 +63,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.java.BinaryElementOpen;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.jumpto.type.SearchType;
@@ -70,6 +71,7 @@ import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Lookup;
 
 /**
  * @author Petr Hrebejk
@@ -126,6 +128,7 @@ public class JavaTypeProvider implements TypeProvider {
 //    }
 
    public List<? extends TypeDescriptor> getTypeNames(Project project, String text, SearchType searchType) {
+        boolean hasBinaryOpen = Lookup.getDefault().lookup(BinaryElementOpen.class) != null;
         ClassIndex.NameKind nameKind;
         switch (searchType) {
         case EXACT_NAME: nameKind = ClassIndex.NameKind.SIMPLE_NAME; break;
@@ -181,10 +184,12 @@ public class JavaTypeProvider implements TypeProvider {
                             return null;
                         }
                         time = System.currentTimeMillis();
+                        if (!hasBinaryOpen) {
                         SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(roots[i].getURL());
                         if ( result.getRoots().length == 0 ) {
                             continue;
                         }       
+                        }
                         sfb += System.currentTimeMillis() - time;                        
                         time = System.currentTimeMillis();                        
                         root[0] = roots[i];

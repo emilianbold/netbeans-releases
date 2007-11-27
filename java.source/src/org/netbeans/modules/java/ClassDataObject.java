@@ -63,6 +63,7 @@ import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
     
@@ -102,10 +103,10 @@ public final class ClassDataObject extends MultiDataObject {
                     resourceName = cp.getResourceName(fo,'.',false);  //NOI18N
                 }
                 FileObject resource = null;
+                final ElementHandle<TypeElement> handle = resourceName != null ? ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, resourceName.replace('/', '.')) : null;
+                final ClasspathInfo cpInfo = cp != null ? ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[0]), cp, ClassPathSupport.createClassPath(new URL[0])) : null;
                 if (binaryRoot != null) {
                     //Todo: Ideally it should do the same as ElementOpen.open () but it will require a copy of it because of the reverese module dep.
-                    final ElementHandle<TypeElement> handle = ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, resourceName.replace('/', '.'));
-                    final ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[0]),cp,ClassPathSupport.createClassPath(new URL[0]));
                     resource = SourceUtils.getFile(handle, cpInfo);
                 }
                 if (resource !=null ) {
@@ -117,10 +118,15 @@ public final class ClassDataObject extends MultiDataObject {
                         Logger.getLogger(ClassDataObject.class.getName()).warning("SourceFile: "+FileUtil.getFileDisplayName (resource) +" has no OpenCookie"); //NOI18N
                     }
                 } else {
-                    if (resourceName == null)
-                        resourceName = fo.getName();
-                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ClassDataObject.class,"TXT_NoSources",
-                            resourceName.replace('/','.'))); //NOI18N
+                    BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
+                    
+                    if (beo == null || handle == null || cpInfo == null || !beo.open(cpInfo, handle)) {
+                        if (resourceName == null) {
+                            resourceName = fo.getName();
+                        }
+                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ClassDataObject.class, "TXT_NoSources",
+                                resourceName.replace('/', '.'))); //NOI18N
+                    }
                 }
             } catch (DataObjectNotFoundException nf) {
                 Exceptions.printStackTrace(nf);

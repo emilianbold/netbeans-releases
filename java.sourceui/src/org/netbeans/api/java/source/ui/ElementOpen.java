@@ -43,6 +43,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.java.BinaryElementOpen;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
@@ -51,6 +52,7 @@ import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /** Utility class for opening elements in editor.
  *
@@ -76,7 +78,14 @@ public final class ElementOpen {
 	    assert openInfo[1] instanceof Integer;
 	    return doOpen((FileObject)openInfo[0],(Integer)openInfo[1]);
 	}
-	return false;
+        
+        BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
+        
+        if (beo != null) {
+            return beo.open(cpInfo, ElementHandle.create(el));
+        } else {
+            return false;
+        }
     }
     
     /**
@@ -98,7 +107,14 @@ public final class ElementOpen {
             assert openInfo[1] instanceof Integer;
             return doOpen((FileObject)openInfo[0],(Integer)openInfo[1]);
         }
-        return false;
+        
+        BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
+
+        if (beo != null) {
+            return beo.open(ClasspathInfo.create(toSearch), toOpen);
+        } else {
+            return false;
+        }
     }
     
     
