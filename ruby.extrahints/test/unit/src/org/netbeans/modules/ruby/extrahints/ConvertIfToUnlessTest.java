@@ -71,6 +71,10 @@ public class ConvertIfToUnlessTest extends HintTestBase {
         findHints(this, new ConvertIfToUnless(), "testfiles/conditionals2.rb", "(uri =~ /.(https?|ftp|file):/) ? u^ri : \"http://#{uri}\"");
     }
     
+    public void testNoHint6() throws Exception {
+        findHints(this, new ConvertIfToUnless(), "testfiles/emptycondition.rb", "if (^)");
+    }
+    
     public void testHint2() throws Exception {
         findHints(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", "if !tr^ue");
     }

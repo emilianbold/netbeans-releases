@@ -59,6 +59,10 @@ public class ConvertConditionalsTest extends HintTestBase {
         findHints(this, new ConvertConditionals(), "testfiles/conditionals2.rb", "(uri =~ /.(https?|ftp|file):/) ? u^ri : \"http://#{uri}\"");
     }
     
+    public void testNoHint4() throws Exception {
+        findHints(this, new ConvertConditionals(), "testfiles/emptycondition.rb", "if (^)");
+    }
+    
     public void testHint2() throws Exception {
         findHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "if tr^ue");
     }

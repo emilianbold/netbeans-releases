@@ -78,6 +78,13 @@ public class ConvertConditionals implements AstRule {
     public void run(CompilationInfo info, Node node, AstPath path, int caretOffset,
                      List<Description> result) {
         IfNode ifNode = (IfNode) node;
+        if (ifNode.getCondition() == null) {
+            // Can happen for this code:
+            //   if ()
+            //   end
+            // (typically while editing)
+            return;
+        }
         Node body = ifNode.getThenBody();
         Node elseNode = ifNode.getElseBody();
 

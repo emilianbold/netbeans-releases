@@ -87,6 +87,13 @@ public class ConvertIfToUnless implements AstRule {
 
         // Convert unless blocks?
         Node condition = ifNode.getCondition();
+        if (condition == null) {
+            // Can happen for this code:
+            //   if ()
+            //   end
+            // (typically while editing)
+            return;
+        }
         if (condition.nodeId == NodeTypes.NOTNODE ||
                 (condition.nodeId == NodeTypes.NEWLINENODE &&
                 condition.childNodes().size() == 1 &&
