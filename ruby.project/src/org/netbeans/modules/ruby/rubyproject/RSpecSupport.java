@@ -230,7 +230,7 @@ public class RSpecSupport {
                 desc = descProvider.getScriptDescriptor(pwd, null/*specFile?*/, target, displayName, project.getLookup(), debug, extraRecognizers);
                 
                 // Override args
-                desc. additionalArgs(additionalArgs.toArray(
+                desc.additionalArgs(additionalArgs.toArray(
                             new String[additionalArgs.size()])); // NOI18N
             }
         } else {
