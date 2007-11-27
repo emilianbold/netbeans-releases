@@ -97,38 +97,59 @@ DiscountCode.prototype = {
          var myObj = eval('(' +c+')');
          var discountCode = myObj.discountCode;
          this.uri = discountCode['@uri'];
-         this.discountCode = discountCode['discountCode']['$'];
-         this.rate = discountCode['rate']['$'];
+         this.discountCode = this.findValue(this.discountCode, discountCode['discountCode']);
+         this.rate = this.findValue(this.rate, discountCode['rate']);
          this.customers = new Customers(discountCode['customers']['@uri']);
 
          this.initialized = true;
       }
    },
 
+   findValue : function(field, value) {
+      if(value == undefined)
+          return field;
+      if(value['$'] == undefined) {
+         var r = {};
+         for(var i in value) {
+            r[i] = value[i]['$'];
+         }
+         return r;
+      } else {
+         return value['$'];
+      }
+   },
+
    flush : function() {
       var remote = new DiscountCodeRemote(this.uri);
-      return remote.putJson(this.toString());
+      return remote.putJson('{'+this.toString()+'}');
    },
 
    delete_ : function() {
       var remote = new DiscountCodeRemote(this.uri);
       return remote.delete_();
-   }, 
-   
+   },
+
    toString : function() {
       if(!this.initialized)
          this.init();
       var myObj = 
-         '{"discountCode":'+
+         '"discountCode":'+
          '{'+
          '"@uri":"'+this.uri+'",'+
                   '"discountCode":{"$":"'+this.discountCode+'"},'+
          '"rate":{"$":"'+this.rate+'"},'+
-         this.customers.toString()+
+         this.customers.toString()+''+
 
-         '}'+
-      '}';
+         '}';
       return myObj;
+   },
+
+   getFields : function() {
+      var fields = [];
+         fields.push('discountCode');
+         fields.push('rate');
+
+      return fields;
    }
 
 }
@@ -140,23 +161,23 @@ function DiscountCodeRemote(uri_) {
 DiscountCodeRemote.prototype = {
 
    getXml : function() {
-      return get_(this.uri, 'application/xml');
+      return rjsSupport.get(this.uri, 'application/xml');
    },
 
    getJson : function() {
-      return get_(this.uri, 'application/json');
+      return rjsSupport.get(this.uri, 'application/json');
    },
 
    putXml : function(content) {
-      return put_(this.uri, 'application/xml', content);
+      return rjsSupport.put(this.uri, 'application/xml', content);
    },
 
    putJson : function(content) {
-      return put_(this.uri, 'application/json', content);
+      return rjsSupport.put(this.uri, 'application/json', content);
    },
 
    delete_ : function() {
-      return delete__(this.uri);
+      return rjsSupport.delete_(this.uri);
    },
 
    getCustomersResource : function(customers) {

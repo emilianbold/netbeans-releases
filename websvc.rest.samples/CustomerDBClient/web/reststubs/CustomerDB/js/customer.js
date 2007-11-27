@@ -196,38 +196,52 @@ Customer.prototype = {
          var myObj = eval('(' +c+')');
          var customer = myObj.customer;
          this.uri = customer['@uri'];
-         this.customerId = customer['customerId']['$'];
-         this.zip = customer['zip']['$'];
-         this.name = customer['name']['$'];
-         this.addressline1 = customer['addressline1']['$'];
-         this.addressline2 = customer['addressline2']['$'];
-         this.city = customer['city']['$'];
-         this.state = customer['state']['$'];
-         this.phone = customer['phone']['$'];
-         this.fax = customer['fax']['$'];
-         this.email = customer['email']['$'];
-         this.creditLimit = customer['creditLimit']['$'];
+         this.customerId = this.findValue(this.customerId, customer['customerId']);
+         this.zip = this.findValue(this.zip, customer['zip']);
+         this.name = this.findValue(this.name, customer['name']);
+         this.addressline1 = this.findValue(this.addressline1, customer['addressline1']);
+         this.addressline2 = this.findValue(this.addressline2, customer['addressline2']);
+         this.city = this.findValue(this.city, customer['city']);
+         this.state = this.findValue(this.state, customer['state']);
+         this.phone = this.findValue(this.phone, customer['phone']);
+         this.fax = this.findValue(this.fax, customer['fax']);
+         this.email = this.findValue(this.email, customer['email']);
+         this.creditLimit = this.findValue(this.creditLimit, customer['creditLimit']);
          this.discountCodeRef = new DiscountCode(customer['discountCodeRef']['@uri']);
 
          this.initialized = true;
       }
    },
 
+   findValue : function(field, value) {
+      if(value == undefined)
+          return field;
+      if(value['$'] == undefined) {
+         var r = {};
+         for(var i in value) {
+            r[i] = value[i]['$'];
+         }
+         return r;
+      } else {
+         return value['$'];
+      }
+   },
+
    flush : function() {
       var remote = new CustomerRemote(this.uri);
-      return remote.putJson(this.toString());
+      return remote.putJson('{'+this.toString()+'}');
    },
-   
+
    delete_ : function() {
       var remote = new CustomerRemote(this.uri);
       return remote.delete_();
-   },   
+   },
 
    toString : function() {
       if(!this.initialized)
          this.init();
       var myObj = 
-         '{"customer":'+
+         '"customer":'+
          '{'+
          '"@uri":"'+this.uri+'",'+
                   '"customerId":{"$":"'+this.customerId+'"},'+
@@ -241,11 +255,27 @@ Customer.prototype = {
          '"fax":{"$":"'+this.fax+'"},'+
          '"email":{"$":"'+this.email+'"},'+
          '"creditLimit":{"$":"'+this.creditLimit+'"},'+
-         '"discountCodeRef":{"@uri":"'+this.discountCodeRef.getUri()+'", "discountCode":{"$":"'+this.discountCodeRef.getDiscountCode()+'"}}'+
+         '"discountCodeRef":{"@uri":"'+this.discountCodeRef.getUri()+'", "discountCode":{"$":"'+eval("this.discountCodeRef.get"+this.discountCodeRef.getFields()[0].substring(0,1).toUpperCase()+this.discountCodeRef.getFields()[0].substring(1)+"()")+'"}}'+
 
-         '}'+
-      '}';
+         '}';
       return myObj;
+   },
+
+   getFields : function() {
+      var fields = [];
+         fields.push('customerId');
+         fields.push('zip');
+         fields.push('name');
+         fields.push('addressline1');
+         fields.push('addressline2');
+         fields.push('city');
+         fields.push('state');
+         fields.push('phone');
+         fields.push('fax');
+         fields.push('email');
+         fields.push('creditLimit');
+
+      return fields;
    }
 
 }
@@ -257,23 +287,23 @@ function CustomerRemote(uri_) {
 CustomerRemote.prototype = {
 
    getXml : function() {
-      return get_(this.uri, 'application/xml');
+      return rjsSupport.get(this.uri, 'application/xml');
    },
 
    getJson : function() {
-      return get_(this.uri, 'application/json');
+      return rjsSupport.get(this.uri, 'application/json');
    },
 
    putXml : function(content) {
-      return put_(this.uri, 'application/xml', content);
+      return rjsSupport.put(this.uri, 'application/xml', content);
    },
 
    putJson : function(content) {
-      return put_(this.uri, 'application/json', content);
+      return rjsSupport.put(this.uri, 'application/json', content);
    },
 
    delete_ : function() {
-      return delete__(this.uri);
+      return rjsSupport.delete_(this.uri);
    },
 
    getDiscountCodeResource : function(discountCode) {

@@ -60,29 +60,37 @@ DiscountCodes.prototype = {
    addItem : function(item) {
       this.items[this.items.length+1] = item;
    },
-   
+
    removeItem : function(item) {
       var status = item.delete_();
       if(status != '-1')
         this.init(); //re-read items
       return status;
-   },  
-   
+   },
+
    init : function() {
       var remote = new DiscountCodesRemote(this.uri);
       var c = remote.getJson();
       if(c != -1) {
          var myObj = eval('('+c+')');
          var discountCodes = myObj.discountCodes;
-         var refs = discountCodes.discountCodeRef;         
-         if(refs.length == undefined) {
-             this.initChild(refs, 0);
-         } else {
-             var j = 0;
-             for(j=0;j<refs.length;j++) {
-                var ref = refs[j];
-                this.initChild(ref, j);
+         if(discountCodes == null || discountCodes == undefined) {
+            rjsSupport.debug('discountCodes is undefined, so skipping init of DiscountCodes');
+            return;
+         }
+         var refs = discountCodes.discountCodeRef;
+         if(refs != undefined) {
+             if(refs.length == undefined) {
+                 this.initChild(refs, 0);
+             } else {
+                 var j = 0;
+                 for(j=0;j<refs.length;j++) {
+                    var ref = refs[j];
+                    this.initChild(ref, j);
+                 }
              }
+         } else {
+            rjsSupport.debug('discountCodeRef is undefined, so skipping initChild for DiscountCodes');
          }
          this.initialized = true;
       }
@@ -95,7 +103,12 @@ DiscountCodes.prototype = {
 
    flush : function() {
       var remote = new DiscountCodesRemote(this.uri);
-      remote.postJson(this.toString());
+      remote.postJson('{'+this.toString()+'}');
+   },
+
+   flush : function(discountCode) {
+      var remote = new DiscountCodesRemote(this.uri);
+      return remote.postJson('{'+discountCode.toString()+'}');
    },
 
    toString : function() {
@@ -103,19 +116,24 @@ DiscountCodes.prototype = {
          this.init();
       var s = '';
       var j = 0;
+      if(this.items.length > 1)
+          s = s + '[';
       for(j=0;j<this.items.length;j++) {
          var c = this.items[j];
          if(j<this.items.length-1)
-            s = s + '{"@uri":"'+c.getUri()+'", "discountCodeId":{"$":"'+findIdFromUrl(c.getUri())+'"}},';
+            s = s + '{"@uri":"'+c.getUri()+'", "discountCodeId":{"$":"'+rjsSupport.findIdFromUrl(c.getUri())+'"}},';
          else
-            s = s + '{"@uri":"'+c.getUri()+'", "discountCodeId":{"$":"'+findIdFromUrl(c.getUri())+'"}}';
+            s = s + '{"@uri":"'+c.getUri()+'", "discountCodeId":{"$":"'+rjsSupport.findIdFromUrl(c.getUri())+'"}}';
       }
-      var myObj = 
-         '{"discountCodes":{'+
-            '"@uri":"'+this.getUri()+'",'+
-            '"discountCodeRef":['+s+']'+
-          '}'+
-         '}';
+      if(this.items.length > 1)
+          s = s + ']';
+      var myObj = '';
+      if(s == '') {
+          myObj = '"discountCodes":{"@uri":"'+this.getUri()+'"}';
+      } else {
+          myObj = 
+            '"discountCodes":{'+'"@uri":"'+this.getUri()+'",'+'"discountCodeRef":'+s+''+'}';
+      }
       return myObj;
    }
 
@@ -128,19 +146,19 @@ function DiscountCodesRemote(uri_) {
 DiscountCodesRemote.prototype = {
 
    getXml : function() {
-      return get_(this.uri, 'application/xml');
+      return rjsSupport.get(this.uri, 'application/xml');
    },
 
    getJson : function() {
-      return get_(this.uri, 'application/json');
+      return rjsSupport.get(this.uri, 'application/json');
    },
 
    postXml : function(content) {
-      return post_(this.uri, 'application/xml', content);
+      return rjsSupport.post(this.uri, 'application/xml', content);
    },
 
    postJson : function(content) {
-      return post_(this.uri, 'application/json', content);
+      return rjsSupport.post(this.uri, 'application/json', content);
    },
 
    getDiscountCodeResource : function(discountCode) {

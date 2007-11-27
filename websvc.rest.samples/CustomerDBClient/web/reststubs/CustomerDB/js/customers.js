@@ -60,13 +60,13 @@ Customers.prototype = {
    addItem : function(item) {
       this.items[this.items.length+1] = item;
    },
-   
+
    removeItem : function(item) {
       var status = item.delete_();
       if(status != '-1')
         this.init(); //re-read items
       return status;
-   },   
+   },
 
    init : function() {
       var remote = new CustomersRemote(this.uri);
@@ -74,15 +74,23 @@ Customers.prototype = {
       if(c != -1) {
          var myObj = eval('('+c+')');
          var customers = myObj.customers;
-         var refs = customers.customerRef;         
-         if(refs.length == undefined) {
-             this.initChild(refs, 0);
-         } else {
-             var j = 0;
-             for(j=0;j<refs.length;j++) {
-                var ref = refs[j];
-                this.initChild(ref, j);
+         if(customers == null || customers == undefined) {
+            rjsSupport.debug('customers is undefined, so skipping init of Customers');
+            return;
+         }
+         var refs = customers.customerRef;
+         if(refs != undefined) {
+             if(refs.length == undefined) {
+                 this.initChild(refs, 0);
+             } else {
+                 var j = 0;
+                 for(j=0;j<refs.length;j++) {
+                    var ref = refs[j];
+                    this.initChild(ref, j);
+                 }
              }
+         } else {
+            rjsSupport.debug('customerRef is undefined, so skipping initChild for Customers');
          }
          this.initialized = true;
       }
@@ -95,33 +103,37 @@ Customers.prototype = {
 
    flush : function() {
       var remote = new CustomersRemote(this.uri);
-      return remote.postJson(this.toString());
+      remote.postJson('{'+this.toString()+'}');
    },
-   
+
    flush : function(customer) {
       var remote = new CustomersRemote(this.uri);
-      return remote.postJson(customer.toString());
-   },   
+      return remote.postJson('{'+customer.toString()+'}');
+   },
 
    toString : function() {
       if(!this.initialized)
          this.init();
       var s = '';
       var j = 0;
+      if(this.items.length > 1)
+          s = s + '[';
       for(j=0;j<this.items.length;j++) {
          var c = this.items[j];
-         var id = findIdFromUrl(c.getUri());
          if(j<this.items.length-1)
-            s = s + '{"@uri":"'+c.getUri()+'", "customerId":{"$":"'+id+'"}},';
+            s = s + '{"@uri":"'+c.getUri()+'", "customerId":{"$":"'+rjsSupport.findIdFromUrl(c.getUri())+'"}},';
          else
-            s = s + '{"@uri":"'+c.getUri()+'", "customerId":{"$":"'+id+'"}}';
+            s = s + '{"@uri":"'+c.getUri()+'", "customerId":{"$":"'+rjsSupport.findIdFromUrl(c.getUri())+'"}}';
       }
-      var myObj = 
-         '{"customers":{'+
-            '"@uri":"'+this.getUri()+'",'+
-            '"customerRef":['+s+']'+
-          '}'+
-         '}';
+      if(this.items.length > 1)
+          s = s + ']';
+      var myObj = '';
+      if(s == '') {
+          myObj = '"customers":{"@uri":"'+this.getUri()+'"}';
+      } else {
+          myObj = 
+            '"customers":{'+'"@uri":"'+this.getUri()+'",'+'"customerRef":'+s+''+'}';
+      }
       return myObj;
    }
 
@@ -134,19 +146,19 @@ function CustomersRemote(uri_) {
 CustomersRemote.prototype = {
 
    getXml : function() {
-      return get_(this.uri, 'application/xml');
+      return rjsSupport.get(this.uri, 'application/xml');
    },
 
    getJson : function() {
-      return get_(this.uri, 'application/json');
+      return rjsSupport.get(this.uri, 'application/json');
    },
 
    postXml : function(content) {
-      return post_(this.uri, 'application/xml', content);
+      return rjsSupport.post(this.uri, 'application/xml', content);
    },
 
    postJson : function(content) {
-      return post_(this.uri, 'application/json', content);
+      return rjsSupport.post(this.uri, 'application/json', content);
    },
 
    getCustomerResource : function(customerId) {

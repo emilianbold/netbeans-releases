@@ -60,6 +60,7 @@ CustomerDB.prototype = {
    },
 
    init : function() {
+      rjsSupport.debug('Initializing scripts...');
       this.resources[0] = new Customers(this.uri+'/customers/');
       this.resources[1] = new DiscountCodes(this.uri+'/discountCodes/');
 
@@ -72,7 +73,7 @@ CustomerDB.prototype = {
         r.flush();
       }
    },
-   
+
    toString : function() {
       var s = '';
       for(j=0;j<this.resources.length;j++) {
