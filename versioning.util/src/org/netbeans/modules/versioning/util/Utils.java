@@ -785,6 +785,26 @@ public final class Utils {
         return new InputStreamReader(file.getInputStream(), FileEncodingQuery.getEncoding(file));
     }
     
+    /**
+     * Convenience method for awkward Logger invocation.
+     *  
+     * @param caller caller object for logger name determination
+     * @param e exception that defines the error
+     */
+    public static void logError(Object caller, Throwable e) {
+        Logger.getLogger(caller.getClass().getName()).log(Level.SEVERE, e.getMessage(), e);
+    }
+
+    /**
+     * Convenience method for awkward Logger invocation.
+     *  
+     * @param caller caller object for logger name determination
+     * @param e exception that defines the error
+     */
+    public static void logFine(Object caller, Exception e) {
+        Logger.getLogger(caller.getClass().getName()).log(Level.FINE, e.getMessage(), e);
+    }
+
     private static class ViewEnv implements CloneableEditorSupport.Env {
         
         private final FileObject    file;
