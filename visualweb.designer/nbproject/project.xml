@@ -180,6 +180,11 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                </test-type>
+            </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.designer.decoration</friend>
                 <friend>org.netbeans.modules.visualweb.designer.jsf</friend>

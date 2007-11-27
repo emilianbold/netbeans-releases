@@ -103,18 +103,15 @@ public class WebFormTest extends NbTestCase {
         assertNotNull("Null webForm for domProvider, domProvider=" + domProvider, webForm); // NOI18N
     }
 
-//    /**
-//     * Test of getDomProviderService method, of class WebForm.
-//     */
-//    public void testGetDomProviderService() {
-//        System.out.println("getDomProviderService");
-//        DomProviderService expResult = null;
-//        DomProviderService result = WebForm.getDomProviderService();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
+    /**
+     * Test of getDomProviderService method, of class WebForm.
+     */
+    public void testGetDomProviderService() {
+        System.out.println("getDomProviderService");
+        DomProviderService domProviderService = WebForm.getDomProviderService();
+        assertNotNull("There may not be a null DomProviderService!", domProviderService); // NOI18N
+    }
+
 //    /**
 //     * Test of findAllWebFormsForElement method, of class WebForm.
 //     */
