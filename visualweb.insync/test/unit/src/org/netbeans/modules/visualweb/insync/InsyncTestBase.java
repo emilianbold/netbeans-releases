@@ -27,16 +27,24 @@
  */
 package org.netbeans.modules.visualweb.insync;
 
+import com.sun.rave.designtime.Constants;
+import java.beans.BeanInfo;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLStreamHandlerFactory;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 import junit.framework.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.core.startup.layers.NbinstURLStreamHandlerFactory;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.visualweb.insync.beans.Bean;
+import org.netbeans.modules.visualweb.insync.beans.BeansUnit;
+import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import org.netbeans.modules.web.project.WebProject;
 import org.openide.filesystems.FileObject;
@@ -131,6 +139,51 @@ public class InsyncTestBase extends NbTestCase {
             str[i++] = s;
         }         
         return str;
+    }
+    
+    protected List<Bean> createBeans(String[] types) {                
+        FacesModelSet modelSet = createFacesModelSet();
+        FacesModel model = modelSet.getFacesModel(getJavaFile(getPageBeans()[0]));
+        model.sync();
+        BeansUnit bu = model.getBeansUnit();
+        List<Bean> beans = new ArrayList<Bean>();
+        for(String type : types) {
+            beans.add(createBean(bu, type));
+        }
+        return beans;
+    }
+
+    private Bean createBean(BeansUnit bu, String type) {
+        Constructor ctor = null;
+        java.lang.reflect.Method m = null;
+        ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Class clazz = Class.forName("org.netbeans.modules.visualweb.insync.beans.Bean");
+            ctor = clazz.getDeclaredConstructor(BeansUnit.class, BeanInfo.class, String.class);
+            ctor.setAccessible(true);
+            clazz = Class.forName("org.netbeans.modules.visualweb.insync.beans.BeansUnit");
+            m = clazz.getDeclaredMethod("nextNameForType", String.class);
+            m.setAccessible(true);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        try {
+            Thread.currentThread().setContextClassLoader(bu.getClassLoader());
+            Class beanClass = bu.getBeanClass(type);
+            if (beanClass != null) {
+                BeanInfo beanInfo = BeansUnit.getBeanInfo(beanClass, bu.getClassLoader());
+                String name = (String) beanInfo.getBeanDescriptor().getValue(Constants.BeanDescriptor.INSTANCE_NAME);
+                if(name == null) {
+                    name = (String)m.invoke(bu, type);
+                }
+                return (Bean) ctor.newInstance(bu, beanInfo, name);
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldContextClassLoader);
+        }
+        return null;
     }
     
     protected FileObject getJavaFile(String name) {

@@ -180,30 +180,30 @@ public class Method {
         return findPropertyStatement(beanName, methodName);
     }
     
-    /*
-     * Adds a expression statement of the form a.setFoo(arg);
-     * 
-     */ 
-    public Statement addPropertyStatement(final String beanName, final String methodName, 
-            final String valueSource) {
-       WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
-            public Object run(WorkingCopy wc) {
-                TreeMaker make = wc.getTreeMaker();
-                ExecutableElement elem = execElementHandle.resolve(wc);
-                ArrayList<ExpressionTree> args = new ArrayList<ExpressionTree>();
-                if(valueSource != null) {
-                    SourcePositions[] positions = new SourcePositions[1];
-                    args.add(wc.getTreeUtilities().parseExpression(valueSource, positions));
-                }
-                addMethodInvocationStatement(wc, wc.getTrees().getTree(elem),
-                        TreeMakerUtils.createMethodInvocation(wc, beanName, methodName, args));
-                return null;
-            }
-        }, javaClass.getFileObject());
-        return findPropertyStatement(beanName, methodName);
-    }
+//    /*
+//     * Adds a expression statement of the form a.setFoo(arg);
+//     * 
+//     */ 
+//    public Statement addPropertyStatement(final String beanName, final String methodName, 
+//            final String valueSource) {
+//       WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
+//            public Object run(WorkingCopy wc) {
+//                TreeMaker make = wc.getTreeMaker();
+//                ExecutableElement elem = execElementHandle.resolve(wc);
+//                ArrayList<ExpressionTree> args = new ArrayList<ExpressionTree>();
+//                if(valueSource != null) {
+//                    SourcePositions[] positions = new SourcePositions[1];
+//                    args.add(wc.getTreeUtilities().parseExpression(valueSource, positions));
+//                }
+//                addMethodInvocationStatement(wc, wc.getTrees().getTree(elem),
+//                        TreeMakerUtils.createMethodInvocation(wc, beanName, methodName, args));
+//                return null;
+//            }
+//        }, javaClass.getFileObject());
+//        return findPropertyStatement(beanName, methodName);
+//    }
     
-    public void addCleanupStatements(WorkingCopy wc, List<Bean> beans) {
+    void addCleanupStatements(WorkingCopy wc, List<Bean> beans) {
         ExecutableElement elem = execElementHandle.resolve(wc);
         BlockTree oldBlockTree = wc.getTrees().getTree(elem).getBody();
         BlockTree newBlockTree = oldBlockTree;
@@ -215,7 +215,7 @@ public class Method {
         wc.rewrite(oldBlockTree, newBlockTree);
     }
 
-    public void removeCleanupStatements(WorkingCopy wc, List<Bean> beans) {
+    void removeCleanupStatements(WorkingCopy wc, List<Bean> beans) {
         ExecutableElement elem = execElementHandle.resolve(wc);
         BlockTree oldBlockTree = wc.getTrees().getTree(elem).getBody();
         BlockTree newBlockTree = oldBlockTree;

@@ -190,44 +190,13 @@ public class JavaClassTest extends InsyncTestBase {
 
 
     private List<Bean> createBeans() {
-        FacesModelSet modelSet = createFacesModelSet();
-        FacesModel model = modelSet.getFacesModel(getJavaFile(getPageBeans()[0]));
-        model.sync();
-        BeansUnit bu = model.getBeansUnit();
-        String[] types = {"com.sun.webui.jsf.component.Button", "com.sun.webui.jsf.component.TextField"};
-        List<Bean> beans = new ArrayList<Bean>();
-        for(String type : types) {
-            beans.add(createBean(bu, type));
-        }
-        return beans;
+        String[] types = {
+            "com.sun.webui.jsf.component.Button",
+            "com.sun.webui.jsf.component.TextField"
+        };
+        return createBeans(types);
     }
-
-    private Bean createBean(BeansUnit bu, String type) {
-        Constructor ctor = null;
-        ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
-        try {
-            Class clazz = Class.forName("org.netbeans.modules.visualweb.insync.beans.Bean");
-            ctor = clazz.getDeclaredConstructor(BeansUnit.class, BeanInfo.class, String.class);
-            ctor.setAccessible(true);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        try {
-            Thread.currentThread().setContextClassLoader(bu.getClassLoader());
-            Class beanClass = bu.getBeanClass(type);
-            if (beanClass != null) {
-                BeanInfo beanInfo = BeansUnit.getBeanInfo(beanClass, bu.getClassLoader());
-                String name = (String) beanInfo.getBeanDescriptor().getValue(Constants.BeanDescriptor.INSTANCE_NAME);
-                return (Bean) ctor.newInstance(bu, beanInfo, name);
-            }
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        } finally {
-            Thread.currentThread().setContextClassLoader(oldContextClassLoader);
-        }
-        return null;
-    }
-
+                
     /* Test of addBeans method, of class JavaClass. */
     public void testAddBeans() {
         System.out.println("addBeans");
@@ -272,7 +241,7 @@ public class JavaClassTest extends InsyncTestBase {
         JavaClass instance = createJavaClass();
         String name = "foo";
         Class[] params = new Class[] {String.class};
-        ContextMethod cm =  new ContextMethod(null, "foo", Modifier.PUBLIC,
+        ContextMethod cm =  new ContextMethod(null, name, Modifier.PUBLIC,
             Void.TYPE, params, new String[] {"name"});
         Method result = instance.addMethod(cm);
         assertNotNull(result);
