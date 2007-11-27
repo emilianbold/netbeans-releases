@@ -236,6 +236,10 @@ public final class IndentImpl {
             // Fallback to Formatter
             if (!done && doc instanceof BaseDocument && defaultFormatter != null) {
                 if (indentNewLine) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Defaulting reindent() to indentNewLine() in legacy formatter " + // NOI18N
+                                defaultFormatter + '\n');
+                    }
                     // Fallback to indentNewLine() will insert '\n'
                     int newCaretOffset = defaultFormatter.indentNewLine(doc, caretOffset);
                     indentHandler.setCaretOffset(newCaretOffset);
@@ -243,6 +247,10 @@ public final class IndentImpl {
                     // Original formatter does not have reindentation of multiple lines
                     // so reformat start line and continue for each line.
                     Position endPos = doc.createPosition(endOffset);
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Defaulting reindent() to indentLine() in legacy formatter " + // NOI18N
+                                defaultFormatter + '\n');
+                    }
                     do {
                         startOffset = defaultFormatter.indentLine(doc, startOffset);
                         int startLineIndex = lineRootElem.getElementIndex(startOffset) + 1;
@@ -290,6 +298,10 @@ public final class IndentImpl {
 
             // Fallback to Formatter
             if (!done && doc instanceof BaseDocument && defaultFormatter != null) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Defaulting reformat() to reformat() in legacy formatter " + // NOI18N
+                            defaultFormatter + '\n');
+                }
                 BaseDocument bdoc = (BaseDocument)doc;
                 defaultFormatter.reformat(bdoc, startOffset, endOffset);
             }

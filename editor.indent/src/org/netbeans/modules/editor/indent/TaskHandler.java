@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -137,20 +138,23 @@ public final class TaskHandler {
 
     boolean collectTasks() {
         TokenHierarchy<?> th = TokenHierarchy.get(document());
-        List<LanguagePath> languagePaths;
-        
-        Set<LanguagePath> languagePathSet;
-        if (th != null && (languagePathSet = th.languagePaths()).size() > 0) {
-            // Should contain top-level path and zero or more embedded paths
-            languagePaths = new ArrayList<LanguagePath>(languagePathSet);
-            
-            Collections.sort(languagePaths, LanguagePathSizeComparator.ASCENDING);
-            
-            for (LanguagePath lp : languagePaths) {
-                addItem(MimePath.parse(lp.mimePath()), lp);
+        Set<LanguagePath> languagePathSet = Collections.emptySet();
+        if (doc instanceof AbstractDocument) {
+            AbstractDocument adoc = (AbstractDocument)doc;
+            adoc.readLock();
+            try {
+                languagePathSet = th.languagePaths();
+                List<LanguagePath> languagePaths = new ArrayList<LanguagePath>(languagePathSet);
+                Collections.sort(languagePaths, LanguagePathSizeComparator.ASCENDING);
+                for (LanguagePath lp : languagePaths) {
+                    addItem(MimePath.parse(lp.mimePath()), lp);
+                }
+            } finally {
+                adoc.readUnlock();
             }
-            
-        } else { // Add a single item corresponding to the document's mime-type
+        }
+        
+        if (languagePathSet.isEmpty()) {
             addItem(MimePath.parse(docMimeType()), null);
         }
 

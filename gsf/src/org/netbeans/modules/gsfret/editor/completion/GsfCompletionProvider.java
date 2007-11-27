@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JToolTip;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -156,22 +157,32 @@ public class GsfCompletionProvider implements CompletionProvider {
     
     // From Utilities
     public static boolean isJavaContext(final JTextComponent component, final int offset) {
-        org.netbeans.api.lexer.Language language = (org.netbeans.api.lexer.Language)component.getDocument().getProperty(org.netbeans.api.lexer.Language.class);
+        Document doc = component.getDocument();
+        org.netbeans.api.lexer.Language language = (org.netbeans.api.lexer.Language)doc.getProperty(org.netbeans.api.lexer.Language.class);
         if (language == null) {
             return true;
         }
-        TokenSequence ts = TokenHierarchy.get(component.getDocument()).tokenSequence();
+        if (doc instanceof AbstractDocument) {
+            ((AbstractDocument)doc).readLock();
+        }
+        try {
+            TokenSequence ts = TokenHierarchy.get(component.getDocument()).tokenSequence();
 
-        if (ts == null) {
-            return false;
+            if (ts == null) {
+                return false;
+            }
+            if (!ts.moveNext() || ts.move(offset) == 0) {
+                return true;
+            }
+            ts.moveNext(); // Move to the next token after move(offset)
+
+            TokenId tokenId = ts.token().id();
+            return !language.tokenCategoryMembers("comment").contains(tokenId); //NOI18N
+        } finally {
+            if (doc instanceof AbstractDocument) {
+                ((AbstractDocument) doc).readUnlock();
+            }
         }
-        if (!ts.moveNext() || ts.move(offset) == 0) {
-            return true;
-        }
-        ts.moveNext(); // Move to the next token after move(offset)
-        
-        TokenId tokenId = ts.token().id();
-        return !language.tokenCategoryMembers("comment").contains(tokenId); //NOI18N
     }
 
     public static boolean startsWith(String theString, String prefix) {

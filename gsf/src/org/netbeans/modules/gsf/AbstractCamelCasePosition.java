@@ -72,7 +72,7 @@ public abstract class AbstractCamelCasePosition extends BaseAction {
         }
     }
 
-    public final void actionPerformed(ActionEvent evt, JTextComponent target) {
+    public final void actionPerformed(ActionEvent evt, final JTextComponent target) {
         if (target != null) {
             if (originalAction != null && !isUsingCamelCase()) {
                 if (originalAction instanceof BaseAction) {
@@ -81,10 +81,14 @@ public abstract class AbstractCamelCasePosition extends BaseAction {
                     originalAction.actionPerformed(evt);
                 }
             } else {
-                int offset = newOffset(target);
-                if (offset != -1) {
-                    moveToNewOffset(target, offset);
-                }
+                target.getDocument().render(new Runnable() {
+                    public void run() {
+                        int offset = newOffset(target);
+                        if (offset != -1) {
+                            moveToNewOffset(target, offset);
+                        }
+                    }
+                });
             }
         }
     }

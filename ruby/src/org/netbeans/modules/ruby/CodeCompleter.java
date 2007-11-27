@@ -427,7 +427,8 @@ public class CodeCompleter implements Completable {
             BaseDocument doc = (BaseDocument)info.getDocument();
 
             TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-
+            doc.readLock(); // Read-lock due to token hierarchy use
+            try {
             int requireStart = LexUtilities.getRequireStringOffset(lexOffset, th);
 
             if (requireStart != -1) {
@@ -665,6 +666,9 @@ public class CodeCompleter implements Completable {
 
                     return prefix;
                 }
+            }
+            } finally {
+                doc.readUnlock();
             }
             // Else: normal identifier: just return null and let the machinery do the rest
         } catch (IOException ioe) {
@@ -2070,6 +2074,8 @@ public class CodeCompleter implements Completable {
         boolean showSymbols = false;
         char first = 0;
 
+        doc.readLock(); // Read-lock due to Token hierarchy use
+        try {
         if (prefix.length() > 0) {
             first = prefix.charAt(0);
 
@@ -2433,6 +2439,9 @@ public class CodeCompleter implements Completable {
         if (queryType == QueryType.DOCUMENTATION) {
             proposals = filterDocumentation(proposals, root, doc, info, astOffset, lexOffset, prefix, path,
                     index);
+        }
+        } finally {
+            doc.readUnlock();
         }
 
         return proposals;

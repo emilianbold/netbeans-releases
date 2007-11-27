@@ -56,6 +56,8 @@ import java.util.regex.Pattern;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.*;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -196,8 +198,13 @@ public class Utilities {
         return null;        
     }        
     
-    public static boolean isJavaContext(final JTextComponent component, final int offset) {        
-        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(component.getDocument()), offset);
+    public static boolean isJavaContext(final JTextComponent component, final int offset) {
+        Document doc = component.getDocument();
+        if (doc instanceof AbstractDocument) {
+            ((AbstractDocument)doc).readLock();
+        }
+        try {
+        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
         if (ts == null)
             return false;        
         if (!ts.moveNext() && !ts.movePrevious())
@@ -221,6 +228,11 @@ public class Utilities {
                 return false;
         }
         return true;
+        } finally {
+            if (doc instanceof AbstractDocument) {
+                ((AbstractDocument) doc).readUnlock();
+            }
+        }
     }
     
     public static CharSequence getTypeName(TypeMirror type, boolean fqn) {
