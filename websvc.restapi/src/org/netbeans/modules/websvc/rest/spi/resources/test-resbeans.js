@@ -236,9 +236,8 @@ TestSupport.prototype = {
             mediaType = this.getDefaultMime();
         //ts.debug(req + uri + mName + mediaType);
         var str = "<div id='formSubmittal'>";
-        str += "<form action='' method="+mName+" name='form1'>";
+        str += "<form action='' method="+mName+" id='form1' name='form1'>";
         str += "<div id='paramHook'></div>";
-        //str += getParamRep(req, mName);
         str += "<input name='path' value='"+uri+"' type='hidden'>";
         str += "<input id='methodName' name='methodName' value='"+mName+"' type='hidden'>";
         str += "<input id='mimeType' name='mimeType' value='"+mediaType+"' type='hidden'>";
@@ -252,12 +251,60 @@ TestSupport.prototype = {
         var str = "<span class=bld>MSG_TEST_RESBEANS_NewParamName:&nbsp;</span>"+
             "<input id='newParamNames' name='param"+paramNumber+"' type='text' value='param"+paramNumber+"' size='25'>"+
             "&nbsp;&nbsp;&nbsp;<span class=bld>MSG_TEST_RESBEANS_NewParamValue:&nbsp;</span>"+
-            "<input id='newParamValues' name='value"+paramNumber+"' type='text' value='value"+paramNumber+"' size='55'>"+"<br>";
+            "<input id='newParamValues' name='value"+paramNumber+"' type='text' value='value"+paramNumber+"' size='25'>"+"<br>";
         var prevParam = document.getElementById("paramHook").innerHTML;
         document.getElementById("paramHook").innerHTML = prevParam + "<br>" + str;
+        this.saveFormInput('form1', 'resttest-');
         paramNumber++;
     },
     
+    setCookie : function (name, value, expires, path, domain, secure) {
+        var today = new Date();
+        today.setTime( today.getTime() );
+        if(expires) {
+            expires = expires * 1000 * 60 * 60 * 24;
+        }
+        var expires_date = new Date( today.getTime() + (expires) );
+        document.cookie = name+"="+escape( value ) +
+            ( ( expires ) ? ";expires="+expires_date.toGMTString() : "" ) +
+            ( ( path ) ? ";path=" + path : "" ) +
+            ( ( domain ) ? ";domain=" + domain : "" ) +
+            ( ( secure ) ? ";secure" : "" );
+    },
+    
+    getCookie : function ( name ) {
+        var start = document.cookie.indexOf( name + "=" );
+        var len = start + name.length + 1;
+        if((!start) && (name != document.cookie.substring(0, name.length))) {
+            return null;
+        }
+        if(start == -1) 
+            return null;
+        var end = document.cookie.indexOf( ";", len );
+        if(end == -1) 
+            end = document.cookie.length;
+        return unescape(document.cookie.substring(len, end));
+    },
+
+    saveFormInput : function (form_id, pfx) {
+        var form = document.getElementById(form_id);
+        var els = document.getElementsByTagName('input');
+        for (var i = 0; i < els.length; i++) {
+            var el = els.item(i);
+            if (el.type == 'text') {
+                el.onblur = function() {
+                    var name = this.name;
+                    var value = this.value;
+                    ts.setCookie( pfx + name, value);
+                };
+                var old_value = this.getCookie(pfx + el.name);
+                if (old_value && old_value != '') {
+                    el.value = old_value;
+                }
+            }
+        }
+    },
+
     showBreadCrumbs : function (uri) {
         var nav = document.getElementById('navigation');
         var disp = this.getDisplayUri(uri);
@@ -366,6 +413,7 @@ TestSupport.prototype = {
 
         //process user added parameters
         var newParamNames = document.forms[0].newParamNames;
+        var newParamValues = document.forms[0].newParamValues;
         if(newParamNames != null) {
             if(newParamNames.length == undefined) {
                 p += newParamNames.value+"="+newParamValues.value;
@@ -746,9 +794,12 @@ TestSupport.prototype = {
         var uris = c.split('\"');
         var str = '';
         var count = 1;
+        var cvl = this.currentValidUrl.indexOf("?");
+        if(cvl == -1)
+            cvl = this.currentValidUrl.length;
         for(var i=0;i<uris.length;i++) {
             var uri = uris[i];
-            if(uri.indexOf(baseURL) != -1 && uri.length > this.currentValidUrl.length) {
+            if(uri.indexOf(baseURL) == 0 && uri.length > cvl) {
                 str += "<tr>";    
                 str += "<td>"+(count++)+"</td>";
                 str += "<td>";
