@@ -83,12 +83,14 @@ public class GlassFishUtils {
         // does nothing
     }
     
-    public static void createDomain(File location, String domainName, String username, String password, String httpPort, String httpsPort, String adminPort) throws IOException {
-        createDomain(location, domainName, username, password, httpPort, httpsPort, adminPort, null);
+    public static void createDomain(File location, String domainName, String username, String adminPassword, String httpPort, String httpsPort, String adminPort) throws IOException {
+        createDomain(location, domainName, username, adminPassword, httpPort, httpsPort, adminPort, null);
     }
-    
-    public static void createDomain(File location, String domainName, String username, String password, String httpPort, String httpsPort, String adminPort, String domainProperties) throws IOException {
-        final File passwordFile = createPasswordFile(password, location);
+    public static void createDomain(File location, String domainName, String username, String adminPassword, String httpPort, String httpsPort, String adminPort, String domainProperties) throws IOException {
+        createDomain(location, domainName, username, adminPassword, DEFAULT_MASTER_PASSWORD, httpPort, httpsPort, adminPort, null);
+    }
+    public static void createDomain(File location, String domainName, String username, String adminPassword, String masterPassword, String httpPort, String httpsPort, String adminPort, String domainProperties) throws IOException {
+        final File passwordFile = createPasswordFile(adminPassword, masterPassword, location);
         
         if (passwordFile == null) {
             throw new DomainCreationException();
@@ -170,13 +172,16 @@ public class GlassFishUtils {
         return results.getErrorCode() != ExecutionResults.TIMEOUT_ERRORCODE;
     }
     
-    public static File createPasswordFile(String password, File location) throws IOException {
+    public static File createPasswordFile(String adminPassword, File location) throws IOException {    
+        return createPasswordFile(adminPassword,DEFAULT_MASTER_PASSWORD,location);
+    }
+    
+    public static File createPasswordFile(String adminPassword, String masterPassword, File location) throws IOException {    
         File passwordFile = FileUtils.createTempFile(location);
         
-        String contents =
-                "AS_ADMIN_ADMINPASSWORD="  + password + "\n" +
-                "AS_ADMIN_PASSWORD="       + password + "\n" +
-                "AS_ADMIN_MASTERPASSWORD=" + password;
+        String contents =                
+                "AS_ADMIN_PASSWORD="       + adminPassword + "\n" +
+                "AS_ADMIN_MASTERPASSWORD=" + masterPassword;
         
         FileUtils.writeFile(passwordFile, contents);
         
@@ -229,13 +234,16 @@ public class GlassFishUtils {
         
         return version;
     }
+    public static boolean validateCredentials(File location, String domainName, String username, String adminPassword) throws IOException, XMLException {
+        return validateCredentials(location,domainName,username,adminPassword, DEFAULT_MASTER_PASSWORD);
+    }
     
-    public static boolean validateCredentials(File location, String domainName, String username, String password) throws IOException, XMLException {
+    public static boolean validateCredentials(File location, String domainName, String username, String adminPassword, String masterPassword) throws IOException, XMLException {
         String executable = getAsadmin(location).getAbsolutePath();
         
         int adminPort = getAdminPort(location, domainName);
         
-        File passwordFile = createPasswordFile(password, location);
+        File passwordFile = createPasswordFile(adminPassword, masterPassword, location);
         
         startDomain(location, domainName);
         
@@ -383,10 +391,13 @@ public class GlassFishUtils {
         }
     }
     
-    public static void deployWar(File location, File war, String domainName, String user, String password) throws IOException, XMLException {
+    public static void deployWar(File location, File war, String domainName, String user, String adminPassword) throws IOException, XMLException {
+        deployWar(location, war, domainName, user, adminPassword, DEFAULT_MASTER_PASSWORD);
+    }
+    public static void deployWar(File location, File war, String domainName, String user, String adminPassword, String masterPassword) throws IOException, XMLException {
         String executable = getAsadmin(location).getAbsolutePath();
         
-        File passwordFile = createPasswordFile(password, location);
+        File passwordFile = createPasswordFile(adminPassword, masterPassword, location);
         String adminPort = Integer.toString(getAdminPort(location, domainName));
         
         try {
@@ -411,11 +422,14 @@ public class GlassFishUtils {
             FileUtils.deleteFile(passwordFile);
         }
     }
+    public static void undeployWar(File location, String name, String domainName, String user, String adminPassword) throws IOException, XMLException {
+        undeployWar(location, name, domainName, user, adminPassword, DEFAULT_MASTER_PASSWORD);
+    }
     
-    public static void undeployWar(File location, String name, String domainName, String user, String password) throws IOException, XMLException {
+    public static void undeployWar(File location, String name, String domainName, String user, String adminPassword, String masterPassword) throws IOException, XMLException {
         String executable = getAsadmin(location).getAbsolutePath();
         
-        File passwordFile = createPasswordFile(password, location);
+        File passwordFile = createPasswordFile(adminPassword, masterPassword, location);
         String adminPort = Integer.toString(getAdminPort(location, domainName));
         
         try {
@@ -656,7 +670,9 @@ public class GlassFishUtils {
             "start-database"; //NOI18N
     public static final String STOP_DATABASE_COMMAND = 
             "stop-database"; //NOI18N
-    
+    public static final String DEFAULT_MASTER_PASSWORD = 
+            "changeit"; //NOI18N
+            
     public static final String COULD_NOT_CREATE_DOMAIN_MARKER =
             CLI_130 + " Could not create domain"; // NOI18N
     
