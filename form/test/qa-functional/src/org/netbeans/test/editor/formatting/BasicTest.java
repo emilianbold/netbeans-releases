@@ -53,8 +53,6 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.junit.NbTestSuite;
 //import org.netbeans.test.editor.LineDiff;
-import org.netbeans.qa.form.VisualDevelopmentUtil;
-//import org.netbeans.test.editor.LineDiff;
 
 /**
  *
