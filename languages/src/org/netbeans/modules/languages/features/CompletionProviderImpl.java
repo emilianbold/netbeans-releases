@@ -274,18 +274,20 @@ public class CompletionProviderImpl implements CompletionProvider {
         }
     
         private String getCompletionType (Feature feature, String tokenType) {
-            String projectType = (String) feature.getValue("project_type");
-            if (projectType != null) {
-                if (fileObject == null) return null;
-                Project p = FileOwnerQuery.getOwner (fileObject);
-                if (p == null) return null;
-                Object o = p.getLookup ().lookup (ActionProvider.class);
-                if (o == null) return null;
-                if (o.getClass ().getName ().indexOf (projectType) < 0)
-                    return null;
+            if (feature != null) {
+                String projectType = (String) feature.getValue("project_type");
+                if (projectType != null) {
+                    if (fileObject == null) return null;
+                    Project p = FileOwnerQuery.getOwner (fileObject);
+                    if (p == null) return null;
+                    Object o = p.getLookup ().lookup (ActionProvider.class);
+                    if (o == null) return null;
+                    if (o.getClass ().getName ().indexOf (projectType) < 0)
+                        return null;
+                }
+                String completionType = (String) feature.getValue ("type");
+                if (completionType != null) return completionType;
             }
-            String completionType = (String) feature.getValue ("type");
-            if (completionType != null) return completionType;
             if (tokenType.indexOf ("whitespace") >= 0 ||
                 tokenType.indexOf ("operator") >= 0 || 
                 tokenType.indexOf ("separator") >= 0
@@ -395,7 +397,15 @@ public class CompletionProviderImpl implements CompletionProvider {
             DatabaseContext context = DatabaseManager.getRoot (node);
             if (context == null) return;
             List<DatabaseDefinition> definitions = context.getAllVisibleDefinitions (offset);
-            String start = token.getIdentifier ().substring (0, offset - tokenOffset).trim ();
+            String completionType = getCompletionType (null, token.getTypeName ());
+            String start = null;
+            if (completionType == null || (COMPLETION_APPEND.equals (completionType) && 
+                    offset < tokenOffset + token.getLength ())) {
+                start = token.getIdentifier().substring(0, offset - tokenOffset).trim ();
+            } else {
+                start = COMPLETION_COMPLETE.equals (completionType) ? 
+                    token.getIdentifier().substring(0, offset - tokenOffset).trim () : ""; // NOI18N
+            }
             Set<String> names = new HashSet<String> ();
             Iterator<DatabaseDefinition> it = definitions.iterator ();
             while (it.hasNext ()) {
