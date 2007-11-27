@@ -1,0 +1,5 @@
+      @scanner.set_prompt d^o
+                          --
+HINT:Convert between {}-blocks and do/end blocks
+FIX:Convert do/end-block to a {}-block
+FIX:Disable this hint

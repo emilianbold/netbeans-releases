@@ -1,0 +1,10 @@
+x = []
+x.each { |foo| 
+  puts foo1
+}
+x.each { |foo| 
+  puts foo2
+}
+for i in 1..10
+  puts i
+end

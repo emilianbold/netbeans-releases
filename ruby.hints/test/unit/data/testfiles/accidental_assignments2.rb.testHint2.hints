@@ -1,0 +1,5 @@
+        if args.size = 2  
+           -------------
+HINT:Accidental Assignment (if x = y instead of x == y)
+FIX:Convert assignment to comparison (change = to ==)
+FIX:Disable this hint

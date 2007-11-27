@@ -1,0 +1,6 @@
+    kenReloaded = Developer.find_by_name 'Ken'
+    -----------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to ken_reloaded
+FIX:Rename...
+FIX:Disable this hint

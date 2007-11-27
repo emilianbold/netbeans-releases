@@ -1,0 +1,10 @@
+          elsif match = /^find_or_(initialize|create)_by_([_a-zA-Z]\w*)$/.match(method_id.to_s)
+                -------------------------------------------------------------------------------
+HINT:Accidental Assignment (if x = y instead of x == y)
+FIX:Convert assignment to comparison (change = to ==)
+FIX:Disable this hint
+        elsif md = self.class.match_attribute_method?(method_name)
+              ----------------------------------------------------
+HINT:Accidental Assignment (if x = y instead of x == y)
+FIX:Convert assignment to comparison (change = to ==)
+FIX:Disable this hint

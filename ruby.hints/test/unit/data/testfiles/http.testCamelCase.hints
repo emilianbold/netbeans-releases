@@ -1,0 +1,10 @@
+    def HTTP.Proxy(p_addr, p_port = nil, p_user = nil, p_pass = nil)
+             -----
+HINT:Style: Method names traditionally use lowercase letters only
+FIX:Rename...
+FIX:Disable this hint
+    def D(msg)
+        -
+HINT:Style: Method names traditionally use lowercase letters only
+FIX:Rename...
+FIX:Disable this hint

@@ -1,0 +1,22 @@
+x = 1
+y = 2
+case (x)
+when 1:
+  puts "hello"
+end
+def call(*foo)
+end
+call( (x<y) && true, 2)
+if (x < y) 
+  puts "yes"
+else 
+  puts "no"
+end
+
+puts x,
+  y+1
+
+puts x,
+  (1+y)
+
+

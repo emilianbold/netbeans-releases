@@ -1,0 +1,6 @@
+x.each { ^|foo| 
+       -
+HINT:Convert between {}-blocks and do/end blocks
+FIX:Convert {}-block to a do/end-block
+FIX:Collapse multi-line block to a single line
+FIX:Disable this hint

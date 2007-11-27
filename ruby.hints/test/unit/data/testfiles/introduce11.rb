@@ -1,0 +1,53 @@
+class ExtractMethodSample
+  def stress_test0(a)
+    c = 1
+    
+    # begin
+    if (a < 5)
+      puts c
+    end
+    c = 2
+    c += a
+    # end
+    
+    puts a,c
+  end
+
+  def stress_test1(a,b)
+    c = 1, d = 2, e = 3
+
+    # Begin
+    if (b > 4)
+      a = 1
+    end
+    c = a
+    f = d+2
+    g = b+3
+    h = g
+    i = 5
+    c += h
+    # End
+
+    puts g
+    if (a < 5)
+      i = 55
+    end
+    h = 5
+    puts h, e, c, i
+  end 
+end
+
+# Notice:
+# a, b and d are accessed from within the fragment, so they are passed in.
+# c is reassigned in the fragment without reading the previous value, so
+#   doesn't need to be passed in.
+# f and h are assigned locally inside the extracted fragment, but are not read
+#   outside of it, so does not need to be passed back out
+# g is assigned inside the fragment, and read later outside, so it is returned
+#   from the new method but not passed in
+# h is assigned inside the fragment, and is read later, but it is assigned
+#   before this read access so the value doesn't need to be passed back
+# i is also assigned inside the fragment, and -may- be read after the fragment,
+#   so it too is passed back out
+
+

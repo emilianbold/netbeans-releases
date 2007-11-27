@@ -44,18 +44,33 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="org-netbeans-modules-ruby-hints">
         <folder name="rules">
+            <folder name="errors">
+                <file name="org-netbeans-modules-ruby-hints-InsertParens.instance"/>
+                <file name="org-netbeans-modules-ruby-hints-CommonSyntaxErrors.instance"/>
+            </folder>    
+            <folder name="selection">
+                <file name="org-netbeans-modules-ruby-hints-introduce-IntroduceHint.instance"/>
+            </folder>    
             <folder name="hints">
                 <folder name="general">
                    <attr name="position" intvalue="100"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.hints.Bundle"/>
                     <file name="org-netbeans-modules-ruby-hints-BlockVarReuse.instance"/>
                     <file name="org-netbeans-modules-ruby-hints-ExpandSameLineDef.instance"/>
+                    <file name="org-netbeans-modules-ruby-hints-NestedLocal.instance"/>
+                    <file name="org-netbeans-modules-ruby-hints-ConvertBlockType.instance"/>
+                    <file name="org-netbeans-modules-ruby-hints-ConstantNames.instance"/>
+                    <file name="org-netbeans-modules-ruby-hints-CamelCaseNames.instance"/>
+                    <file name="org-netbeans-modules-ruby-hints-UnsafeIdentifierChars.instance"/>
+                    <file name="org-netbeans-modules-ruby-hints-AttributeIsLocal.instance"/>
+                    <file name="org-netbeans-modules-ruby-hints-AccidentalAssignment.instance"/>
                 </folder>    
                 
                 <folder name="rails">
                     <attr name="position" intvalue="200"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.hints.Bundle"/>
                     <file name="org-netbeans-modules-ruby-hints-RailsDeprecations.instance"/>
+                    <file name="org-netbeans-modules-ruby-hints-RailsViews.instance"/>
                 </folder>    
             </folder>    
         </folder>
@@ -96,5 +111,4 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
 </filesystem>

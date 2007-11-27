@@ -1,0 +1,5 @@
+  def Token(token, value = nil)
+      -----
+HINT:Style: Method names traditionally use lowercase letters only
+FIX:Rename...
+FIX:Disable this hint

@@ -1,0 +1,7 @@
+  @context3.instance_eval {^ @io = input_method; foobar; foo }
+                          -
+HINT:Convert between {}-blocks and do/end blocks
+FIX:Convert {}-block to a do/end-block, and expand to multiple lines
+FIX:Convert {}-block to a do/end-block
+FIX:Expand single-line block to multiple lines
+FIX:Disable this hint

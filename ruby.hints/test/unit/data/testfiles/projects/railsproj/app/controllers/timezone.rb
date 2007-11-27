@@ -4,6 +4,9 @@ require 'tzinfo/time_or_datetime'
 require 'tzinfo/timezone_period'
 
 module TZInfo
+  def whatever
+  end
+
   def period_for_local(local, dst = nil)            
     results = periods_for_local(local)
       

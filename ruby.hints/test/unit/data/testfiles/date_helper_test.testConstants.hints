@@ -1,0 +1,3 @@
+    Post = Struct.new("Post", :id, :written_on, :updated_at)
+    ----
+HINT:Style: Constants traditionally use uppercase letters only

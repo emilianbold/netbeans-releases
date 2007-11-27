@@ -1,0 +1,15 @@
+class Hello
+  def world(x)
+    y, z = extract
+    y,z = y+1,z+1
+    puts x,y,z
+  end
+  
+  # TODO Comment
+  def extract
+    y = 10
+    z = 20
+    return y, z
+  end
+end
+

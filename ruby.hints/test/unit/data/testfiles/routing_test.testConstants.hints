@@ -1,0 +1,3 @@
+RunTimeTests = ARGV.include? 'time'
+------------
+HINT:Style: Constants traditionally use uppercase letters only

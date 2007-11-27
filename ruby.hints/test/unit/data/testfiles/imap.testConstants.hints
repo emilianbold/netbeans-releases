@@ -1,0 +1,48 @@
+    ContinuationRequest = Struct.new(:data, :raw_data)
+    -------------------
+HINT:Style: Constants traditionally use uppercase letters only
+    UntaggedResponse = Struct.new(:name, :data, :raw_data)
+    ----------------
+HINT:Style: Constants traditionally use uppercase letters only
+    TaggedResponse = Struct.new(:tag, :name, :data, :raw_data)
+    --------------
+HINT:Style: Constants traditionally use uppercase letters only
+    ResponseText = Struct.new(:code, :text)
+    ------------
+HINT:Style: Constants traditionally use uppercase letters only
+    ResponseCode = Struct.new(:name, :data)
+    ------------
+HINT:Style: Constants traditionally use uppercase letters only
+    MailboxList = Struct.new(:attr, :delim, :name)
+    -----------
+HINT:Style: Constants traditionally use uppercase letters only
+    MailboxQuota = Struct.new(:mailbox, :usage, :quota)
+    ------------
+HINT:Style: Constants traditionally use uppercase letters only
+    MailboxQuotaRoot = Struct.new(:mailbox, :quotaroots)
+    ----------------
+HINT:Style: Constants traditionally use uppercase letters only
+    MailboxACLItem = Struct.new(:user, :rights)
+    --------------
+HINT:Style: Constants traditionally use uppercase letters only
+    StatusData = Struct.new(:mailbox, :attr)
+    ----------
+HINT:Style: Constants traditionally use uppercase letters only
+    FetchData = Struct.new(:seqno, :attr)
+    ---------
+HINT:Style: Constants traditionally use uppercase letters only
+    Envelope = Struct.new(:date, :subject, :from, :sender, :reply_to,
+    --------
+HINT:Style: Constants traditionally use uppercase letters only
+    Address = Struct.new(:name, :route, :mailbox, :host)
+    -------
+HINT:Style: Constants traditionally use uppercase letters only
+    ContentDisposition = Struct.new(:dsp_type, :param)
+    ------------------
+HINT:Style: Constants traditionally use uppercase letters only
+    ThreadMember = Struct.new(:seqno, :children)
+    ------------
+HINT:Style: Constants traditionally use uppercase letters only
+      Token = Struct.new(:symbol, :value)
+      -----
+HINT:Style: Constants traditionally use uppercase letters only

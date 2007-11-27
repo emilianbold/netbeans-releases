@@ -1,0 +1,7 @@
+  @context1.instance_eval d^o 
+                          --
+HINT:Convert between {}-blocks and do/end blocks
+FIX:Convert do/end-block to a {}-block, and collapse to a single line
+FIX:Convert do/end-block to a {}-block
+FIX:Collapse multi-line block to a single line
+FIX:Disable this hint

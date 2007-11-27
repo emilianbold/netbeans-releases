@@ -1,0 +1,9 @@
+   BadConstant = 50
+   -----------
+HINT:Style: Constants traditionally use uppercase letters only
+   def badMethod
+       ---------
+HINT:Style: Method names traditionally use lowercase letters only
+     badSymbol = 50
+     ---------
+HINT:Style: Variables traditionally use lowercase letters only

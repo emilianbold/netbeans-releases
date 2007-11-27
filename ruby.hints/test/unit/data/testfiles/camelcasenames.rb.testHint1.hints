@@ -1,0 +1,11 @@
+   def badMethod
+       ---------
+HINT:Style: Method names traditionally use lowercase letters only
+FIX:Rename...
+FIX:Disable this hint
+     badSymbol = 50
+     ---------
+HINT:Style: Variables traditionally use lowercase letters only
+FIX:Rename to bad_symbol
+FIX:Rename...
+FIX:Disable this hint

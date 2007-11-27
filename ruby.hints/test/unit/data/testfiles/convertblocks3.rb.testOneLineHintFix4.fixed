@@ -1,0 +1,12 @@
+    self.gsub!(pattern) do |c| h[c] end
+    self.gsub!(pattern) { |c| h[c] }
+    sort do |a1, a2|
+      a1[0].id2name <=> a2[0].id2name
+    end
+    sort do|a1, a2| a1[0].id2name <=> a2[0].id2name end
+
+
+    #Broken
+    #for k, v in sort{|a1, a2| a1[0].id2name <=> a2[0].id2name}
+    #end
+

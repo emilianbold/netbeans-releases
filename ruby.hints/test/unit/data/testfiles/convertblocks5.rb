@@ -1,0 +1,7 @@
+["a","b","c"].each do |word|
+  reverse = word.reverse
+  puts reverse
+end
+
+
+[1,2,4].each { |number| double = 2*number; tripple = 3*number; puts double,tripple }

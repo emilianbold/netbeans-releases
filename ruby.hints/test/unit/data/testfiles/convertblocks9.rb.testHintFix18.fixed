@@ -1,0 +1,7 @@
+class CreatePosts < ActiveRecord::Migration
+  def self.up
+    create_table(:posts) { |t| t.column "hello", :string }
+  end
+end
+
+

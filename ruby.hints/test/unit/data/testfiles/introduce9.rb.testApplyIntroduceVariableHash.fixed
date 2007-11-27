@@ -1,0 +1,7 @@
+def mymethod
+  foo = 5
+  bar = 20
+  myhash = { :foo => :bar }
+  test(foo, bar, myhash, :baz => :booy)
+end
+
