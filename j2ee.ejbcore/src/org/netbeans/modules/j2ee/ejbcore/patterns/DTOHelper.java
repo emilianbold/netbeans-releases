@@ -49,7 +49,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
@@ -285,7 +285,7 @@ public class DTOHelper {
      */
     public SourceGroup getSourceGroup(){
         SourceGroup entityFolder = null;
-        SourceGroup[] folders= Util.getJavaSourceGroups(project);
+        SourceGroup[] folders= SourceGroups.getJavaSourceGroups(project);
 
         for(int i = 0; i < folders.length; i++){
             if(folders[i].contains(fileObject)){
