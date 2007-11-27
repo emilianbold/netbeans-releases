@@ -47,7 +47,7 @@ import javax.swing.JComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
-// XXX remove this class when possible and try to use EventRequestProcessor 
+// XXX remove this class when possible and try to use ProgressSupport
 // instead
 
 /**
