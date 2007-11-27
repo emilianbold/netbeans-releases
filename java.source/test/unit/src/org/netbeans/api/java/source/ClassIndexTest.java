@@ -63,6 +63,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
@@ -224,6 +225,45 @@ public class ClassIndexTest extends NbTestCase {
         spiCp.setImpls(Collections.<PathResourceImplementation>emptyList());
         assertTrue(testListener.awaitEvent(10, TimeUnit.SECONDS));
         assertExpectedEvents (et, testListener.getEventLog());
+    }
+    
+    public void testholdsWriteLock () throws Exception {
+        //Test basics
+        final ClassIndexManager m = ClassIndexManager.getDefault();
+        m.readLock(new ClassIndexManager.ExceptionAction<Void>() {
+            public Void run() throws IOException, InterruptedException {
+                assertFalse(m.holdsWriteLock());
+                return null;
+            }
+        });
+        m.writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+            public Void run() throws IOException, InterruptedException {
+                assertTrue(m.holdsWriteLock());
+                return null;
+            }
+        });
+        //Test nesting of [write|read] lock in write lock
+        //the opposite is forbidden
+        m.writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+            public Void run() throws IOException, InterruptedException {                           
+                assertTrue(m.holdsWriteLock());
+                m.writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+                    public Void run() throws IOException, InterruptedException {                
+                        assertTrue(m.holdsWriteLock());
+                        return null;
+                    }
+                });
+                assertTrue(m.holdsWriteLock());
+                m.writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+                    public Void run() throws IOException, InterruptedException {                
+                        assertTrue(m.holdsWriteLock());
+                        return null;
+                    }
+                });                
+                assertTrue(m.holdsWriteLock());
+                return null;
+            }
+        });
     }
     
     

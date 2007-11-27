@@ -91,7 +91,9 @@ public final class ClassIndexManager {
     public <T> T writeLock (final ExceptionAction<T> r) throws IOException, InterruptedException {
         this.lock.writeLock().lock();
         try {
-            this.owner = Thread.currentThread();
+            if (depth == 0) {
+                this.owner = Thread.currentThread();
+            }
             try {
                 depth++;
                 try {
@@ -115,9 +117,11 @@ public final class ClassIndexManager {
                     }
                 } finally {
                     depth--;
-                }
+                }            
             } finally {
-                this.owner = null;
+                if (depth == 0) {
+                    this.owner = null;
+                }
             }
         } finally {
             this.lock.writeLock().unlock();
