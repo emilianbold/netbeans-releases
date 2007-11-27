@@ -89,7 +89,7 @@ public enum TokenHierarchyEventType {
      * Current activity state can be determined by {@link TokenHierarchy#isActive()}.
      * <br/>
      * A maintainer of the given mutable input source may decide to activate/deactivate
-     * token hierarchy by using {@link TokenHierarchyControl#setActive(boolean)}.
+     * token hierarchy by using {@link org.netbeans.spi.lexer.TokenHierarchyControl#setActive(boolean)}.
      * For example if a Swing docuemnt is not showing and it has not been edited for a long time
      * its token hierarchy may be deactivated to save memory. Once the hierarchy
      * gets deactivated the clients should drop all the functionality depending

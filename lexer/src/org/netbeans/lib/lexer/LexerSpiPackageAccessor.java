@@ -67,31 +67,21 @@ import org.netbeans.spi.lexer.TokenValidator;
 
 public abstract class LexerSpiPackageAccessor {
     
-    static {
-        // Cause spi accessor impl to get initialized
-        try {
-            Class.forName(LanguageHierarchy.class.getName(), true, LexerSpiPackageAccessor.class.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            // Should never happen
-        }
-    }
-    
     private static LexerSpiPackageAccessor INSTANCE;
-    
+
     public static LexerSpiPackageAccessor get() {
+        if (INSTANCE == null) {
+            // Cause spi accessor impl to get initialized
+            try {
+                Class.forName(LanguageHierarchy.class.getName(), true, LexerSpiPackageAccessor.class.getClassLoader());
+            } catch (ClassNotFoundException e) {
+            // Should never happen
+            }
+        }
         return INSTANCE;
     }
 
-    /**
-     * Register the accessor. The method can only be called once
-     * - othewise it throws IllegalStateException.
-     * 
-     * @param accessor instance.
-     */
     public static void register(LexerSpiPackageAccessor accessor) {
-        if (INSTANCE != null) {
-            throw new IllegalStateException("Already registered"); // NOI18N
-        }
         INSTANCE = accessor;
     }
 

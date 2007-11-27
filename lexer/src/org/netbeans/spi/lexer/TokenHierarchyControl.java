@@ -59,13 +59,23 @@ public final class TokenHierarchyControl<I> {
     TokenHierarchyControl(MutableTextInput<I> input) {
         this.operation = new TokenHierarchyOperation<I,TokenId>(input);
     }
-    
+
+    /**
+     * Get token hierarchy managed by this control object.
+     * 
+     * @return non-null token hierarchy.
+     */
     public TokenHierarchy<I> tokenHierarchy() {
         return operation.tokenHierarchy();
     }
     
     /**
      * Notify that the text of the mutable text input was modified.
+     * <p>
+     * This method should only be invoked under modification lock (write-lock)
+     * over the mutable input source.
+     * </p>
+     * 
      *
      * @param offset &gt;=0 offset where the modification occurred.
      * @param removedLength &gt;=0 number of characters removed from the input.
@@ -85,13 +95,34 @@ public final class TokenHierarchyControl<I> {
 
     /**
      * Making the token hierarchy inactive will release all the tokens in the hierarchy
-     * so that there will be no tokens.
+     * so that there will be no tokens. The hierarchy can be made active again
+     * later.
+     * <br/>
+     * Making the hierarchy inactive will free memory occupied by tokens. It can be done
+     * e.g. once a document is not edited for a long time (and is not showing on screen).
+     * 
+     * <p>
+     * This method should only be invoked under modification lock (write-lock)
+     * over the mutable input source.
+     * </p>
+     * 
+     * @param active whether the hierarchy should become active or inactive.
      */
     public void setActive(boolean active) {
-        operation.ensureWriteLocked(); // Done here since the impl may be called by infra outside write-lock
         operation.setActive(active);
     }
     
+    /**
+     * Check whether the hierarchy is currently active or not. Inactive hierarchy
+     * does not hold any tokens and its {@link TokenHierarchy#tokenSequence()}
+     * returns null.
+     * 
+     * <p>
+     * This method should only be invoked under read/write lock over the mutable input source.
+     * </p>
+     * 
+     * @return true if the hierarchy is active or false when inactive.
+     */
     public boolean isActive() {
         return operation.isActive();
     }

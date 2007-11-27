@@ -225,6 +225,13 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
     
     public void setActive(boolean active) {
+        ensureWriteLocked();
+        synchronized (rootTokenList) {
+            setActiveImpl(active);
+        }
+    }
+
+    public void setActiveImpl(boolean active) {
         assert (isMutable()) : "Activity changes only allowed for mutable input sources";
         // Check whether the state has changed
         Activity newActivity = active ? Activity.ACTIVE : Activity.INACTIVE;
@@ -276,9 +283,16 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      * @return true if the hierarchy is currently active or false otherwise.
      */
     public boolean isActive() {
+        ensureReadLocked();
+        synchronized (rootTokenList) {
+            return isActiveImpl();
+        }
+    }
+    
+    public boolean isActiveImpl() {
         // Activate if possible
         if (activity == Activity.NOT_INITED) {
-            setActive(true); // Attempt to activate
+            setActiveImpl(true); // Attempt to activate
         }
         return isActiveNoInit();
     }
@@ -314,7 +328,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     public TokenSequence<T> tokenSequence(Language<?> language) {
         ensureReadLocked();
         synchronized (rootTokenList) {
-            return (isActive() && (language == null || rootTokenList.languagePath().topLanguage() == language))
+            return (isActiveImpl() && (language == null || rootTokenList.languagePath().topLanguage() == language))
                     ? LexerApiPackageAccessor.get().createTokenSequence(rootTokenList)
                     : null;
         }
@@ -326,7 +340,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             throw new IllegalArgumentException("languagePath cannot be null"); // NOI18N
         ensureReadLocked();
         synchronized (rootTokenList) {
-            return isActive()
+            return isActiveImpl()
                 ? new TokenSequenceList(this, languagePath, startOffset, endOffset)
                 : null;
         }
@@ -373,6 +387,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
 
     public void rebuild() {
+        ensureWriteLocked();
         synchronized (rootTokenList) {
             if (isActiveNoInit()) {
                 IncTokenList<T> incTokenList = (IncTokenList<T>)rootTokenList;
@@ -474,11 +489,12 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
 
     public Set<LanguagePath> languagePaths() {
+        ensureReadLocked();
         Set<LanguagePath> lps;
         synchronized (rootTokenList) {
             lps = languagePaths;
             if (lps == null) {
-                if (!isActive())
+                if (!isActiveImpl())
                     return Collections.emptySet();
                 LanguagePath lp = rootTokenList.languagePath();
                 Language<?> lang = lp.topLanguage();

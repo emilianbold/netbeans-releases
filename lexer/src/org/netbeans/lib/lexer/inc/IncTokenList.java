@@ -107,8 +107,8 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
      * or deactivate if LP == null.
      */
     public void reinit() {
-        MutableTextInput input = tokenHierarchyOperation.mutableTextInput();
         if (languagePath != null) {
+            MutableTextInput input = tokenHierarchyOperation.mutableTextInput();
             this.text = LexerSpiPackageAccessor.get().text(input);
             this.lexerInputOperation = new TextLexerInputOperation<T>(this, text);
         } else {

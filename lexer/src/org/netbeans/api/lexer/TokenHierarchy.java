@@ -177,7 +177,7 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      * obtained by calling {@link TokenSequence#embedded()}.
      *
      * @return token sequence of the top level of the token hierarchy
-     *  or null if the token hierarchy is currently not active.
+     *  or null if the token hierarchy is currently inactive ({@link #isActive()} returns false).
      */
     public TokenSequence<?> tokenSequence() {
         return operation.tokenSequence();
@@ -203,8 +203,8 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      * Get immutable list of token sequences with the given language path
      * from this hierarchy.
      * <br/>
-     * For mutable token hierarchies the list should only be used
-     * under read-locked input source. A new list should be
+     * For mutable token hierarchies the method should only be invoked
+     * within read-locked input source. A new list should be
      * obtained after each modification.
      * {@link java.util.ConcurrentModificationException} may be thrown
      * when iterating over (or retrieving items) from the obsolete list.
@@ -218,7 +218,8 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      *  If the particular TS ends after this offset then it will be returned.
      * @param endOffset ending offset of the TS to get. Use Integer.MAX_VALUE for no limit.
      *  If the particular TS starts before this offset then it will be returned.
-     * @return non-null list of <code>TokenSequence</code>s.
+     * @return non-null list of <code>TokenSequence</code>s or null if the token hierarchy
+     *  is inactive ({@link #isActive()} returns false).
      */
     public List<TokenSequence<?>> tokenSequenceList(
     LanguagePath languagePath, int startOffset, int endOffset) {
@@ -237,6 +238,11 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      * (<code>backwardBias == true</code>) of the <code>offset</code> or
      * on the right hand side (<code>backwardBias == false</code>).
      * 
+     * <p>
+     * For token hierarchies over mutable input sources this method must only be invoked
+     * within a read-lock over the mutable input source.
+     * </p>
+     * 
      * @param offset The offset to look at.
      * @param backwardBias If <code>true</code> the backward lying token will
      *   be used in case that the <code>offset</code> specifies position between
@@ -244,7 +250,8 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      * 
      * @return The list of all sequences embedded at the given offset. The list
      *   may be empty if there are no tokens in the top level <code>TokenSequence</code>
-     *   at the given offset and in the specified direction.
+     *   at the given offset and in the specified direction or if the token hierarchy
+     *   is inactive ({@link #isActive()} returns false).
      *   The sequences in the list are ordered from the top level sequence to the bottom one.
      * 
      * @since 1.20
@@ -287,7 +294,15 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      * token ids of the top language and searching for the default embeddings
      * that could be created by
      * {@link org.netbeans.spi.lexer.LanguageHierarchy#embedding(Token,LanguagePath,InputAttributes)}.
+     *
+     * <p>
+     * For token hierarchies over mutable input sources this method must only be invoked
+     * within a read-lock over the mutable input source.
+     * </p>
      * 
+     * 
+     * @return non-null set of language paths. The set will be empty
+     *  if the token hierarchy is inactive ({@link #isActive()} returns false).
      */
     public Set<LanguagePath> languagePaths() {
         return operation.languagePaths();
@@ -319,9 +334,17 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
     /**
      * Token hierarchy may be set inactive to release resources consumed
      * by tokens.
-     * <br>
+     * <br/>
      * Only token hierarchies over a mutable input can become inactive.
+     * <br/>
+     * When inactive the hierarchy does not hold any tokens and
+     * {@link #tokenSequence()} return null.
      *
+     * <p>
+     * For token hierarchies over mutable input sources this method must only be invoked
+     * within a read-lock over the mutable input source.
+     * </p>
+     * 
      * @return true if valid tokens exist for this hierarchy
      *  or false if the token hierarchy is inactive and there are currently
      *  no active tokens to represent it.

@@ -125,6 +125,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
 
         if (embeddingContainer != null) { // ec may be null for NO_DEFAULT_EMBEDDING only
             laState = LAState.initState();
+            embeddingContainer.updateStatusImpl(); // Ensure startOffset() is up-to-date
         }
     }
 
@@ -140,7 +141,6 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     public void init(Object relexState) {
         laState = (modCount() != -1 || testing) ? LAState.empty() : null;
 
-        embeddingContainer.updateStatusImpl(); // Ensure startOffset() is up-to-date
         // Lex the whole input represented by token at once
         LexerInputOperation<T> lexerInputOperation = createLexerInputOperation(
                 0, startOffset(), relexState);

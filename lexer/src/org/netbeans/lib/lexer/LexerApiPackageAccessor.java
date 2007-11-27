@@ -61,31 +61,21 @@ import org.netbeans.spi.lexer.LanguageHierarchy;
 
 public abstract class LexerApiPackageAccessor {
     
-    static {
-        // Cause api accessor impl to get initialized
-        try {
-            Class.forName(Language.class.getName(), true, LexerApiPackageAccessor.class.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            // Should never happen
-        }
-    }
-    
     private static LexerApiPackageAccessor INSTANCE;
     
     public static LexerApiPackageAccessor get() {
+        if (INSTANCE == null) {
+            // Cause api accessor impl to get initialized
+            try {
+                Class.forName(Language.class.getName(), true, LexerApiPackageAccessor.class.getClassLoader());
+            } catch (ClassNotFoundException e) {
+                // Should never happen
+            }
+        }
         return INSTANCE;
     }
 
-    /**
-     * Register the accessor. The method can only be called once
-     * - othewise it throws IllegalStateException.
-     * 
-     * @param accessor instance.
-     */
     public static void register(LexerApiPackageAccessor accessor) {
-        if (INSTANCE != null) {
-            throw new IllegalStateException("Already registered"); // NOI18N
-        }
         INSTANCE = accessor;
     }
     
