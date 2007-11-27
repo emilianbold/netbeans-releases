@@ -53,7 +53,7 @@ public class PlatformSolaris  extends Platform {
 	new LibraryItem.StdLibItem("SocketsNetworkServices", "Sockets and Network Services Library", new String[] {"socket", "nsl"}), // NOI18N
 	new LibraryItem.StdLibItem("SolarisThreads", "Solaris Threads", new String[] {"thread"}), // NOI18N
 	new LibraryItem.StdLibItem("PosixThreads", "Posix Threads", new String[] {"pthread"}), // NOI18N
-	new LibraryItem.StdLibItem("Posix4", "Posix 4", new String[] {"possix4"}), // NOI18N
+	new LibraryItem.StdLibItem("Posix4", "Posix 4", new String[] {"posix4"}), // NOI18N
 	new LibraryItem.StdLibItem("Internationalization", "Internationalization", new String[] {"intl"}), // NOI18N
 	new LibraryItem.StdLibItem("PatternMatching", "Pattern Matching and Pathname Manipulation", new String[] {"gen"}), // NOI18N
 	new LibraryItem.StdLibItem("Curses", "Curses: CRT Screen Handling", new String[] {"curses"}), // NOI18N

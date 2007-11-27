@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="27">
+<configurationDescriptor version="39">
   <logicalFolder name="root" displayName="root" projectFiles="true">
-    <logicalFolder name="ExternalFiles"
-                   displayName="Important Files"
-                   projectFiles="false">
-      <itemPath>Makefile</itemPath>
-    </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
@@ -19,15 +14,16 @@
                    displayName="Resource Files"
                    projectFiles="true">
     </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
   </logicalFolder>
-  <defaultConf>1</defaultConf>
+  <projectmakefile>Makefile</projectmakefile>
   <confs>
     <conf name="Debug" type="1">
       <compileType>
-        <cCompilerTool>
-        </cCompilerTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
         <linkerTool>
           <output>dist/Debug/mp</output>
           <linkerLibItems>
@@ -36,16 +32,10 @@
       </compileType>
       <item path="mp.cc">
         <itemTool>1</itemTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
       </item>
     </conf>
     <conf name="Debug_mp" type="1">
       <compileType>
-        <cCompilerTool>
-        </cCompilerTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
         <linkerTool>
           <output>dist/Debug_mp/mp</output>
           <linkerLibItems>
@@ -54,8 +44,6 @@
       </compileType>
       <item path="mp.cc">
         <itemTool>1</itemTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
       </item>
     </conf>
     <conf name="Release" type="1">
@@ -74,8 +62,6 @@
       </compileType>
       <item path="mp.cc">
         <itemTool>1</itemTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
       </item>
     </conf>
     <conf name="Release_mp" type="1">
@@ -94,8 +80,6 @@
       </compileType>
       <item path="mp.cc">
         <itemTool>1</itemTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
       </item>
     </conf>
   </confs>
