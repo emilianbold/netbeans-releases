@@ -118,7 +118,7 @@ public class ImageOpenSupport extends OpenSupport implements OpenCookie, CloseCo
                         // Post in new task.
                         if(reloadTask == null || reloadTask.isFinished()) {
                         
-                            reloadTask = RequestProcessor.postRequest(
+                            reloadTask = RequestProcessor.getDefault().post(
                                 new Runnable() {
                                     public void run() {
                                         reload(evt);
