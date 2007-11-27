@@ -3,7 +3,6 @@
  *
  * Created on 04 April 2007, 10:33
  */
-
 package org.netbeans.test.editor.formatting;
 
 /**
@@ -11,33 +10,34 @@ package org.netbeans.test.editor.formatting;
  * @author  Admin
  */
 public class testReformat extends javax.swing.JFrame {
-    
+
     /** Creates new form testReformat */
     public testReformat() {
         initComponents();
     }
-    
+
     public String doSmt(int a,
             String b,
             boolean c) {
         do {
             switch (a) {
-            case 1:
-                System.out.println("one");
-                break;
-            case 2:
-                System.out.println("two");
-            default:
-                if(a>4) {
-                    while(a!=4) {
-                        a--;
+                case 1:
+                    System.out.println("one");
+                    break;
+                case 2:
+                    System.out.println("two");
+                default:
+                    if (a > 4) {
+                        while (a != 4) {
+                            a--;
+                        }
+                    } else if (a > 2) {
+                        a = 4;
                     }
-                } else if(a>2)
-                    a=4;
             }
-        } while (a==2);
-        //comment
-        
+        } while (a == 2);
+//comment
+
         /**
          *  a     g
          *   b   f
@@ -48,9 +48,9 @@ public class testReformat extends javax.swing.JFrame {
          *  a     g
          */
         return "done";
-        // comments
+// comments
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -104,29 +104,29 @@ public class testReformat extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>                        
-    
+
 private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {                                         
     // TODO add your handling code here:
     System.out.println("Button Cancel was pressed");
-    System.exit(1);
+System.exit(1);    
 }                                        
 
 private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {                                         
-    System.out.println("Button OK was pressed");
+System.out.println("Button OK was pressed");
     System.exit(0);
 }                                        
-
-/**
- * @param args the command line arguments
- */
-public static void main(String args[]) {
-    java.awt.EventQueue.invokeLater(new Runnable() {
-        public void run() {
-            new testReformat().setVisible(true);
-        }
-    });
-}
-
+    
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new testReformat().setVisible(true);
+            }
+        });
+    }
+    
     // Variables declaration - do not modify                     
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;

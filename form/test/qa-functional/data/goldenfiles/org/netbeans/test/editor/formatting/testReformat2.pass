@@ -3,7 +3,6 @@
  *
  * Created on 04 April 2007, 10:33
  */
-
 package org.netbeans.test.editor.formatting;
 
 import java.awt.Graphics;
@@ -17,15 +16,14 @@ import javax.swing.JButton;
  * @author  Janie
  */
 public class testReformat2 extends javax.swing.JFrame {
-    
+
     /** Creates new form testReformat2 */
     public testReformat2() {
         initComponents();
     }
-    
-    
+
     //                               .:xxxxxxxx:.
-    //                             .xxxxxxxxxxxxxxxx.
+//                             .xxxxxxxxxxxxxxxx.
     //                            :xxxxxxxxxxxxxxxxxxx:.
     //                           .xxxxxxxxxxxxxxxxxxxxxxx:
     //                          :xxxxxxxxxxxxxxxxxxxxxxxxx:
@@ -53,7 +51,7 @@ public class testReformat2 extends javax.swing.JFrame {
     //              xxxx:'                                    ::xxxxxxxxxxxx
     //              xxxx               .                      ::xxxxxxxxxxxx.
     //          .:xxxxxx               :                      ::xxxxxxxxxxxx::
-    //          xxxxxxxx               :                      ::xxxxxxxxxxxxx:
+//          xxxxxxxx               :                      ::xxxxxxxxxxxxx:
     //          xxxxxxxx               :                      ::xxxxxxxxxxxxx:
     //          ':xxxxxx               '                      ::xxxxxxxxxxxx:'
     //            .:. xx:.                                   .:xxxxxxxxxxxxx'
@@ -69,7 +67,6 @@ public class testReformat2 extends javax.swing.JFrame {
     //    '::::::::::::::::::::::: xxxxxxxxxxxxxxxxxxxxxxx :::::::::::::::'
     //        ':::::::::::::::::::_xxxxxx::'''::xxxxxxxxxx '::::::::::::'
     //             '':.::::::::::'                        `._'::::::''
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -128,12 +125,11 @@ public class testReformat2 extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>                        
-    
-    
     class myButton extends JButton {
-        
+
         public myButton() {
             this.addActionListener(new ActionListener() {
+
                 public void actionPerformed(ActionEvent arg0) {
                     //              a8888b.
                     //             d888888b.
@@ -143,7 +139,7 @@ public class testReformat2 extends javax.swing.JFrame {
                     //             8`._.' Y8.
                     //            d/      `8b.
                     //           dP   .    Y8b.
-                    //          d8:'  "  `::88b
+//          d8:'  "  `::88b
                     //         d8"         'Y88b
                     //        :8P    '      :888
                     //         8a.   :     _a88P
@@ -155,7 +151,7 @@ public class testReformat2 extends javax.swing.JFrame {
                 }
             });
         }
-        
+
         /**
          * A javadoc comment
          */
@@ -163,42 +159,39 @@ public class testReformat2 extends javax.swing.JFrame {
             System.out.println("-==-" +
                     "These smiling eyes are just a mirror for the sun.");
         }
-        
+
         @Override
         @SuppressWarnings("unchecked")
         public void paint(Graphics arg0) {
             super.paint(arg0);
         }
-        
-        
     }
-    
+
     @Deprecated
     class Doktor implements Serializable {
     }
-    
-    
-    
-    
+
     class Objects {
+
         @SuppressWarnings({
-            "unchecked","unused"
-        })
-                <T> T cast(final Object target) {
+    "unchecked", "unused"
+})
+        <T> T cast(final Object target) {
             return (T) target;
         }
     }
+
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 new testReformat2().setVisible(true);
             }
         });
     }
-    
     // Variables declaration - do not modify                     
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JMenu jMenu1;
@@ -208,5 +201,4 @@ public class testReformat2 extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration                   
-    
 }
