@@ -141,7 +141,7 @@ public class FileStatusCache {
      * @return boolean true if this context contains at least one file with the includeStatus, false otherwise
      */
     public boolean containsFileOfStatus(VCSContext context, int includeStatus){
-        Map allFiles = cacheProvider.getAllModifiedValues();
+        Map<File, FileInformation> allFiles = cacheProvider.getAllModifiedValues();
         if(allFiles == null){
             Mercurial.LOG.log(Level.FINE, "containsFileOfStatus(): allFiles == null"); // NOI18N
             return false;
@@ -149,7 +149,7 @@ public class FileStatusCache {
 
         Set<File> roots = context.getRootFiles();
         Set<File> exclusions = context.getExclusions();
-        Set<File> setAllFiles = (Set<File>) allFiles.keySet();
+        Set<File> setAllFiles = allFiles.keySet();
         boolean bExclusions = exclusions != null && exclusions.size() > 0;
         boolean bContainsFile = false;
         
