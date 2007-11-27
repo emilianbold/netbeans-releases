@@ -124,7 +124,7 @@ public class WSDLSemanticValidatorTest extends TestCase {
     }
     
     public void testValidatePortTypeOperationDuplicateInputName() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/portTypeMultiOpsNonuniqueInputNames_error.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/ptMultiOpsDupInput_error.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         
@@ -136,7 +136,7 @@ public class WSDLSemanticValidatorTest extends TestCase {
     }
     
     public void testValidatePortTypeOperationInputInvalidMessage() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/RequestResponse/portTypeRRFOperationInputBogusMessage_error.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/reqrep/inputBogusMsg_error.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         
@@ -148,7 +148,7 @@ public class WSDLSemanticValidatorTest extends TestCase {
     }
     
     public void testValidatePortTypeOperationDuplicateOutputName() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/portTypeMultiOpsNonuniqueOutputNames_error.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/ptMultiOpsDupOutput_error.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         
@@ -160,7 +160,7 @@ public class WSDLSemanticValidatorTest extends TestCase {
     }
     
     public void testValidatePortTypeOperationOutputInvalidMessage() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/RequestResponse/portTypeRRFOperationOutputBogusMessage_error.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/reqrep/outputBogusMsg_error.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         
@@ -172,7 +172,7 @@ public class WSDLSemanticValidatorTest extends TestCase {
     }
     
     public void testValidateRequestResponseOperationDuplicateFaultName() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/portTypeMultiOpsNonuniqueFaultNamesSameOps_error.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/ptMultiOpsDupFaultSameOps_error.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         
@@ -182,7 +182,7 @@ public class WSDLSemanticValidatorTest extends TestCase {
     }
      
     public void testValidateRequestResponseOperationFaultInvalidMessage() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/RequestResponse/portTypeRRFOperationFaultBogusMessage_error.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/reqrep/faultBogusMsg_error.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         
@@ -192,7 +192,7 @@ public class WSDLSemanticValidatorTest extends TestCase {
     }
     
     public void testValidateSolicitResponseOperationDuplicateFaultName() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/SolicitResponse/portTypeMultiOpsNonuniqueFaultNamesSameOps_error.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/solrep/multiOpsDupFaultSameOps_error.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         
@@ -202,7 +202,7 @@ public class WSDLSemanticValidatorTest extends TestCase {
     }
      
     public void testValidateSolicitResponseOperationFaultInvalidMessage() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/SolicitResponse/portTypeSRFOperationFaultBogusMessage_error.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/solrep/faultBogusMsg_error.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         
@@ -212,7 +212,7 @@ public class WSDLSemanticValidatorTest extends TestCase {
     }
     
     public void testValidateOnewayOperationFaultShouldNotBeDefined() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/OneWay/portTypeOWOperationFaultDefined_error.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/oneway/faultDefined_error.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         
@@ -222,7 +222,7 @@ public class WSDLSemanticValidatorTest extends TestCase {
     }
     
     public void testValidateNotificationOperationFaultShouldNotBeDefined() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/Notification/portTypeNOperationFaultDefined_error.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/notify/faultDefined_error.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         
@@ -417,7 +417,7 @@ public class WSDLSemanticValidatorTest extends TestCase {
       
      
      public void testRequestReplyOperationParameterOrderValid() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/RequestResponse/portTypeRRFOperatorparamOrder_valid.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/reqrep/prmOrd_valid.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         HashSet<String> expectedErrors = new HashSet<String>();
@@ -427,7 +427,7 @@ public class WSDLSemanticValidatorTest extends TestCase {
      
      
      public void testRequestReplyOperationParameterOrderBogusPartsInvalid() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/RequestResponse/portTypeRRFOperatorparamOrderBogusPartNames_error.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/reqrep/prmOrdBogusPartNames_error.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         HashSet<String> expectedErrors = new HashSet<String>();
@@ -437,7 +437,7 @@ public class WSDLSemanticValidatorTest extends TestCase {
      }
       
      public void testRequestReplyOperationParameterOrderMoreThanOnePartFromOutputMessageMissingInvalid() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/RequestResponse/portTypeRRFOperatorparamOrderMoreThanOneOutputMessagePartMissing_error.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/reqrep/prmOrdOpPartMissing_error.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         HashSet<String> expectedErrors = new HashSet<String>();
@@ -447,7 +447,7 @@ public class WSDLSemanticValidatorTest extends TestCase {
      }
     
      public void testSolicitResponseOperationParameterOrderValid() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/SolicitResponse/portTypeSRFOperationparmOrder_valid.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/solrep/prmOrd_valid.wsdl";
                           
         URL url = getClass().getResource(fileName);                                                                        
         URI uri = url.toURI();
@@ -458,7 +458,7 @@ public class WSDLSemanticValidatorTest extends TestCase {
      
      
      public void testSolicitResponseOperationParameterOrderBogusPartsInvalid() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/SolicitResponse/portTypeSRFOperationparmOrderBogusPartNames_error.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/solrep/prmOrdBogusPartNames_error.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         HashSet<String> expectedErrors = new HashSet<String>();
@@ -468,7 +468,7 @@ public class WSDLSemanticValidatorTest extends TestCase {
      }
       
      public void testSolicitResponseOperationParameterOrderMoreThanOnePartFromOutputMessageMissingInvalid() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/portTypeTests/OperationTests/SolicitResponse/portTypeSRFOperationparmOrderrMoreThanOneOutputMessagePartMissing_error.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/solrep/prmOrdOutputPartMissing_error.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         HashSet<String> expectedErrors = new HashSet<String>();
