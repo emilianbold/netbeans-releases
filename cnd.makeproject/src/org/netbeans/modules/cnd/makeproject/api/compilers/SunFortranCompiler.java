@@ -49,7 +49,7 @@ public class SunFortranCompiler extends BasicCompiler {
         "",  // Fast Build // NOI18N
         "-g", // Debug" // NOI18N
         "-g -O", // Performance Debug" // NOI18N
-        "--g", // Test Coverage // NOI18N
+        "-g", // Test Coverage // NOI18N
         "-g -O2", // Dianosable Release // NOI18N
         "-O3", // Release // NOI18N
         "-O4", // Performance Release // NOI18N
