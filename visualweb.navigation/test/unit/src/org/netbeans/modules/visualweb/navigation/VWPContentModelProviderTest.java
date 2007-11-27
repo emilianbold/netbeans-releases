@@ -49,52 +49,56 @@ package org.netbeans.modules.visualweb.navigation;
 import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.web.jsf.navigation.PageFlowTestUtility;
-import org.netbeans.modules.web.jsf.navigation.PageFlowView;
-import org.netbeans.modules.web.jsf.navigation.TestServices;
-import org.openide.util.Lookup;
-import org.openide.util.test.MockLookup;
+//import org.netbeans.modules.web.jsf.navigation.PageFlowTestUtility;
+//import org.netbeans.modules.web.jsf.navigation.PageFlowView;
+//import org.netbeans.modules.web.jsf.navigation.TestServices;
+//import org.openide.util.Lookup;
+//import org.openide.util.test.MockLookup;
 
 /**
  *
  * @author joelle
  */
-public class VWPContentModelProviderTest extends NbTestCase implements TestServices {
+public class VWPContentModelProviderTest extends NbTestCase {
+//    implements TestServices {
 
 
-    PageFlowTestUtility tu;
+//
+//    PageFlowTestUtility tu;
     public VWPContentModelProviderTest() {
         super("VWPContentModelProviderTest");
     }
-
+//
     public static Test suite() {
         TestSuite suite = new NbTestSuite(VWPContentModelProviderTest.class);
         return suite;
     }
 
+    @Override
     public  void setUp() throws Exception {
-        tu = new PageFlowTestUtility(this);
-        super.setUp();
-        tu.setUp(VWPContentModelProviderTest.class.getResource("vwp.zip").getPath(), "vwp");
+//        tu = new PageFlowTestUtility(this);
+//        super.setUp();
+//        tu.setUp(VWPContentModelProviderTest.class.getResource("vwp.zip").getPath(), "vwp");
     }
-
+//
+    @Override
     public void tearDown() throws Exception {
-        super.tearDown();
-        tu.tearDown();
-        tu.destroy();
-        tu = null;
+//        super.tearDown();
+//        tu.tearDown();
+//        tu.destroy();
+//        tu = null;
     }
-
-    public void testImportantValuesNotNull() {
-
-        assertNotNull(tu.getProject());
-        assertNotNull(tu.getJsfDO());
-        assertNotNull(tu.getFacesConfig());
-        PageFlowView view = tu.getPageFlowView();
-    }
-    
+//
+//    public void testImportantValuesNotNull() {
+//
+//        assertNotNull(tu.getProject());
+//        assertNotNull(tu.getJsfDO());
+//        assertNotNull(tu.getFacesConfig());
+//        PageFlowView view = tu.getPageFlowView();
+//    }
+//    
     public void setupServices() {
-            Lookup lookup = MockLookup.getDefault();
-            ClassLoader l = this.getClass().getClassLoader();
+//            Lookup lookup = MockLookup.getDefault();
+//            ClassLoader l = this.getClass().getClassLoader();
     }
 }
