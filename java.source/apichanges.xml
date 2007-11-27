@@ -105,6 +105,18 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="CAMEL_CASE_INSENSITIVE">
+            <api name="general"/>
+            <summary>Added ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE</summary>
+            <version major="0" minor="28"/>
+            <date day="26" month="11" year="2007"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                Added ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE used by code completion for getting camel case names.
+            </description>
+            <issue number="122864"/>
+        </change>
         <change id="jsp-dialogs">
             <api name="general"/>
             <summary>Support for JSPs and dialogs</summary>
