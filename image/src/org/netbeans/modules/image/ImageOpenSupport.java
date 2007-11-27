@@ -39,19 +39,11 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.modules.image;
 
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Enumeration;
-import javax.swing.Icon;
 import javax.swing.SwingUtilities;
-
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileChangeListener;
@@ -77,7 +69,6 @@ import org.openide.util.RequestProcessor.Task;
  * @author Peter Zavadsky
  * @author Marian Petras
  */
-
 public class ImageOpenSupport extends OpenSupport implements OpenCookie, CloseCookie {
 
     /** Saves last modified time. */
