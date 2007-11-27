@@ -119,27 +119,27 @@ public class EntityAssociationResolver {
      * @return the references or an empty list if there were none.
      */
     public List<EntityAnnotationReference> resolveReferences() throws IOException{
-        
+
         final List<EntityAnnotationReference> result = new ArrayList<EntityAnnotationReference>();
-        final List<Reference> references = getReferringProperties();
-        
+            final List<Reference> references = getReferringProperties();
+
         entityMappingsModel.runReadAction(new MetadataModelAction<EntityMappingsMetadata, Void>(){
-            
+
             public Void run(EntityMappingsMetadata metadata) throws Exception {
                 
                 for (Reference reference : references){
-                    Entity entity = getByClass(metadata.getRoot().getEntity(), reference.getClassName());
+                        Entity entity = getByClass(metadata.getRoot().getEntity(), reference.getClassName());
                     if (entity == null){
-                        continue;
-                    }
+                            continue;
+                        }
                     result.addAll(getOneToX(entity, reference));
-                }
+                    }
                 return null;
-            }
+                }
             
-        });
+            });
         return result;
-    }
+        }
     
     private List<EntityAnnotationReference> getOneToX(Entity entity, Reference reference) throws IOException{
         
@@ -203,8 +203,10 @@ public class EntityAssociationResolver {
             private List<IdentifierTree> getTypeArgs(ParameterizedTypeTree ptt){
                 List<IdentifierTree> result = new ArrayList<IdentifierTree>();
                 for (Tree typeArg : ptt.getTypeArguments()){
-                    IdentifierTree it = (IdentifierTree) typeArg;
-                    result.add(it);
+                    if (Tree.Kind.IDENTIFIER == typeArg.getKind()){
+                        IdentifierTree it = (IdentifierTree) typeArg;
+                        result.add(it);
+                    }
                 }
                 return result;
             }
