@@ -131,12 +131,12 @@ public class ProxyFileManager implements JavaFileManager {
     }
     
     public Iterable<JavaFileObject> list(Location l, String packageName, Set<JavaFileObject.Kind> kinds, boolean recurse) throws IOException {
-        List<Iterator<JavaFileObject>> iterators = new LinkedList<Iterator<JavaFileObject>>();
+        List<Iterable<JavaFileObject>> iterables = new LinkedList<Iterable<JavaFileObject>>();
         JavaFileManager[] fms = getFileManager (l);
         for (JavaFileManager fm : fms) {
-            iterators.add( fm.list(l, packageName, kinds, recurse).iterator() ); 
+            iterables.add( fm.list(l, packageName, kinds, recurse)); 
         }        
-        return Iterators.toIterable(Iterators.chained( iterators ));
+        return Iterators.chained(iterables);
     }
 
     public FileObject getFileForInput(Location l, String packageName, String relativeName) throws IOException {

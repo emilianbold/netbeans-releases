@@ -50,6 +50,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
@@ -73,6 +74,8 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
     protected final ClassPath cp;
     protected final boolean cacheFile;
     protected final boolean ignoreExcludes;
+    
+    private static final Logger LOG = Logger.getLogger(CachingFileManager.class.getName());
     
     
     public CachingFileManager( CachingArchiveProvider provider, final ClassPath cp, boolean cacheFile, boolean ignoreExcludes) {
@@ -104,20 +107,19 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
         
         String folderName = FileObjects.convertPackage2Folder( packageName );
                         
-        List<Iterator<JavaFileObject>> idxs = new LinkedList<Iterator<JavaFileObject>>();
+        List<Iterable<JavaFileObject>> idxs = new LinkedList<Iterable<JavaFileObject>>();
         for(ClassPath.Entry entry : this.cp.entries()) {
             try {
                 Archive archive = provider.getArchive( entry.getURL(), cacheFile );
                 if (archive != null) {
                     Iterable<JavaFileObject> entries = archive.getFiles( folderName, ignoreExcludes?null:entry, kinds, filter);
-                    idxs.add( entries.iterator() );
+                    idxs.add(entries);
                 }
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
         }
-        // System.out.println("  LIST TIME for " + packageName + " = " + ( System.currentTimeMillis() - start ) );
-        return Iterators.toIterable( Iterators.chained( idxs ) );
+        return Iterators.chained(idxs);
     }
        
     public javax.tools.FileObject getFileForInput( Location l, String pkgName, String relativeName ) {        
