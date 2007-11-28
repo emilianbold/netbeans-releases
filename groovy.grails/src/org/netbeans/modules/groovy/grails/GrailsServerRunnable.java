@@ -33,7 +33,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import org.openide.execution.NbProcessDescriptor;
-import org.openide.util.Exceptions;
 import org.netbeans.modules.groovy.grails.settings.Settings;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -75,12 +74,11 @@ public class GrailsServerRunnable implements Runnable {
 
                 process = grailsProcessDesc.exec(null, null, cwd);
 
-                // procOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 outputReady.countDown();
 
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                    LOG.log(Level.WARNING, "Problem creating Process");
+                    LOG.log(Level.WARNING, "Problem creating Process: " + ex.getLocalizedMessage());
+                    outputReady.countDown();
                     }                
            
         } else {
@@ -88,9 +86,6 @@ public class GrailsServerRunnable implements Runnable {
             }
     }
 
-//    public BufferedReader getProcOutput() {
-//        return procOutput;
-//    }
     
     public Process getProcess() {
         return process;
