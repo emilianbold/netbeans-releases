@@ -140,6 +140,10 @@ public class GetArtifactNameStep implements  WizardDescriptor.Panel<WizardDescri
         return component.getDomainClassName();
         }
     
-    public GrailsProject getGrailsProject() { return project; }   
+    public GrailsProject getGrailsProject() { return project; }  
+    
+    public void setArtifactName(String text){
+            component.setArtifactName(text);
+    }
     
 }

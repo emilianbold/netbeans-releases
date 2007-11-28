@@ -90,7 +90,7 @@ public final class GrailsProject implements Project {
                 new GrailsServerState(),
                 new GrailsProjectCustomizerProvider(this),
                 new GrailsProjectDeleteImplementation(this),
-                new TemplatesImpl(),
+                // new TemplatesImpl(),
                 logicalView //Logical view of project implementation
             );
         }

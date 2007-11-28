@@ -99,6 +99,7 @@ public class ExternalGrailsServer implements GrailsServer{
             }
         else if(cmd.startsWith("create-domain-class") || 
                 cmd.startsWith("create-controller")   || 
+                cmd.startsWith("generate-views")   || 
                 cmd.startsWith("create-service")) {
 
             assert io ==  null;

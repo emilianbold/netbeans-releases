@@ -76,6 +76,7 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
     SourceCategory cat;
     String wizardTitle;
     String serverCommand;
+    String artifactName = "";
     
     public NewArtifactWizardIterator (GrailsProject project, SourceCategory cat) {
         this.project = project;
@@ -93,11 +94,19 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
             case SERVICES:
                 wizardTitle = NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_SERVICES");
                 serverCommand = NbBundle.getMessage(NewArtifactWizardIterator.class,"SERVER_COMMAND_SERVICES");
+                break; 
+            case VIEWS:
+                wizardTitle = NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_VIEWS");
+                serverCommand = NbBundle.getMessage(NewArtifactWizardIterator.class,"SERVER_COMMAND_VIEWS");
                 break;    
             }
         }
-    
-    
+   
+   public NewArtifactWizardIterator (GrailsProject project, SourceCategory cat, String artifactName) {
+        this (project, cat);
+        this.artifactName = artifactName;
+    } 
+       
    public Set instantiate(ProgressHandle handle) throws IOException {
         
             this.handle = handle;
@@ -145,6 +154,8 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
         pls = new GetArtifactNameStep(serverRunning, serverConfigured, project, cat);
         
         Component c = pls.getComponent();
+        
+        pls.setArtifactName(artifactName);
         
         if (c instanceof JComponent) { // assume Swing components
             JComponent jc = (JComponent)c;

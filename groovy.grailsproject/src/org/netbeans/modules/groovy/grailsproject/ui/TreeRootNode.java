@@ -74,9 +74,10 @@ import org.netbeans.modules.groovy.grailsproject.actions.*;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import java.io.File;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
-
-
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObjectNotFoundException;
 
 
 /**
@@ -90,6 +91,8 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
     private SourceCategory category = SourceCategory.NONE;
     private final Logger LOG = Logger.getLogger(TreeRootNode.class.getName());
     GrailsProject project;
+    
+    private static DataObject[] templates;
 
     public TreeRootNode(SourceGroup g, GrailsProject project) {
         this(DataFolder.findFolder(g.getRootFolder()), g);
@@ -133,6 +136,47 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         g.addPropertyChangeListener(WeakListeners.propertyChange(this, g));
     }
 
+    public DataObject[] getTemplates() {
+        
+        if ( templates == null ) {
+            
+            ArrayList<DataObject> tList = new ArrayList<DataObject>( 2 );
+            DataObject template;
+            
+            template = findTemplate( "Templates/Other/file" );
+            if ( template != null ) {
+                tList.add( template );
+            }
+                        
+            template = findTemplate( "Templates/Other/Folder" ); 
+            if ( template != null ) {
+                tList.add( template );
+            }
+        
+            templates = new DataObject[tList.size()]; 
+            tList.toArray( templates );
+        }
+        return templates;
+    }
+    
+    private  DataObject findTemplate( String name ) {
+        LOG.log(Level.WARNING, "findTemplate: " + name);
+        FileObject tFo = Repository.getDefault().getDefaultFileSystem().findResource( name );
+        if ( tFo == null ) {
+            return null;
+        }
+        try {
+            return DataObject.find( tFo );
+        }
+        catch ( DataObjectNotFoundException e ) {
+            return null;
+        }
+        
+    }    
+    
+    
+    
+    
     /*  Here we can customize the Actions on the different source-directories.
     Dispatching based on the Nodes name (better type) needs to be done here.
      */
@@ -153,6 +197,8 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 // result.add(new NewMessageAction());
                 // result.add(new org.openide.actions.NewTemplateAction());
                 
+                getTemplates();
+              
                 result.add(org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction());
                 break;
             case SERVICES:
@@ -164,7 +210,9 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
             case UTIL:          
                 break;
             case VIEWS:
-                result.add(new NewArtifactAction(project, SourceCategory.VIEWS, "Create a new View"));
+                // we don't create views on the "Views and Layouts" logical view, but by selecting a Domain Class
+                // and invoking the action in the context-menu of the domain-class.
+                // result.add(new NewArtifactAction(project, SourceCategory.VIEWS, "Create a new View"));
                 break;
         }
 

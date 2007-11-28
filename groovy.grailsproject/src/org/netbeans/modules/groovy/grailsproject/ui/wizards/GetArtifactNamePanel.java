@@ -74,6 +74,10 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
             case SERVICES:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_SERVICES")); // NOI18N
                 subDirName = "services";
+                break; 
+            case VIEWS:
+                setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_VIEWS")); // NOI18N
+                subDirName = "views";
                 break;    
             }
         
@@ -223,6 +227,9 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         return grailsServerOutputTextArea;
     }
 
-    
+    public void setArtifactName(String text){
+        classNameTextField.setText(text);
+        parentStep.fireChangeEvent();
+    }
     
 }
