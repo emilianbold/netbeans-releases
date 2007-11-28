@@ -44,7 +44,10 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.completion.cplusplus.utils.Token;
 import org.netbeans.modules.cnd.completion.cplusplus.utils.TokenUtilities;
@@ -75,21 +78,37 @@ public class FileReferencesImpl extends CsmFileReferences  {
     
 //    private final Map<CsmFile, List<CsmReference>> cache = new HashMap<CsmFile, List<CsmReference>>();
 
-    public void accept(CsmFile csmFile, Visitor visitor) {
-        for (CsmReference ref : getIdentifierReferences(csmFile)) {
+    public void accept(CsmScope csmScope, Visitor visitor) {
+        if (!CsmKindUtilities.isOffsetable(csmScope)){
+            return;
+        }
+        CsmFile csmFile = null;
+        if (CsmKindUtilities.isFile(csmScope)){
+            csmFile = (CsmFile) csmScope;
+        } else {
+            csmFile = ((CsmOffsetable)csmScope).getContainingFile();
+        }
+        int start = ((CsmOffsetable)csmScope).getStartOffset();
+        int end = ((CsmOffsetable)csmScope).getEndOffset();
+        for (CsmReference ref : getIdentifierReferences(csmFile,start,end)) {
             visitor.visit(ref);
         }
     }
     
-    private List<CsmReference> getIdentifierReferences(CsmFile csmFile) {
+    private List<CsmReference> getIdentifierReferences(CsmFile csmFile, int start, int end) {
         List<CsmReference> out = new ArrayList<CsmReference>();
         BaseDocument doc = ReferencesSupport.getDocument(csmFile);
         assert doc != null;
         List<Token> tokens = TokenUtilities.getTokens(doc);
         for (Token token : tokens) {
-            if (token.getTokenID() == CCTokenContext.IDENTIFIER) {
-                ReferenceImpl ref = ReferencesSupport.createReferenceImpl(csmFile, doc, token.getStartOffset(), token);
-                out.add(ref);
+            if (token.getEndOffset() > end) {
+                break;
+            }
+            if (token.getStartOffset() >= start) {
+                if (token.getTokenID() == CCTokenContext.IDENTIFIER) {
+                    ReferenceImpl ref = ReferencesSupport.createReferenceImpl(csmFile, doc, token.getStartOffset(), token);
+                    out.add(ref);
+                }
             }
         }
         return out;

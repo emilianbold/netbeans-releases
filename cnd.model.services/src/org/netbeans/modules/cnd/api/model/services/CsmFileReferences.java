@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.api.model.services;
 
-import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.openide.util.Lookup;
 
@@ -54,7 +54,7 @@ public abstract class CsmFileReferences {
     /**
      * Provides visiting of the identifiers of the CsmFile
      */
-    public abstract void accept(CsmFile csmFile, Visitor visitor);
+    public abstract void accept(CsmScope csmScope, Visitor visitor);
 
     /**
      * A dummy resolver that do nothing.
@@ -86,7 +86,7 @@ public abstract class CsmFileReferences {
         }
 
         @Override
-        public void accept(CsmFile csmFile, Visitor visitor) {
+        public void accept(CsmScope csmScope, Visitor visitor) {
             // do nothing
         }
     }
