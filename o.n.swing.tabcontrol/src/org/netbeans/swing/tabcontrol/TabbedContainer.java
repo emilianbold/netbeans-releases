@@ -873,7 +873,7 @@ public class TabbedContainer extends JComponent implements Accessible {
             mouseWheelListener = new MouseWheelListener() {
                 public void mouseWheelMoved(MouseWheelEvent me) {
                     if( isTransparencyMouseEvent( me ) ) {
-                        updateTransparency( me.getWheelRotation() < 0 );
+                        updateTransparency( me.getWheelRotation() > 0 );
                         me.consume();
                     }
                 }
@@ -894,7 +894,7 @@ public class TabbedContainer extends JComponent implements Accessible {
                             return;
                         MouseWheelEvent me = (MouseWheelEvent)event;
                         if( isTransparencyMouseEvent( me ) ) {
-                            updateTransparency( me.getWheelRotation() < 0 );
+                            updateTransparency( me.getWheelRotation() > 0 );
                             me.consume();
                         }
                     }
