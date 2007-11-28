@@ -526,6 +526,10 @@ public class Utilities {
         extendedModules.addAll (newModules);
         for (Module updatedModule : updatedModules) {
             for (Module affectedModule : Utilities.findDependingModules (updatedModule, updatedModule.getManager ())) {
+                if (affectedModule.getProblems () != null && ! affectedModule.getProblems ().isEmpty ()) {
+                    // skip this module because it has own problems already
+                    continue;
+                }
                 Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (affectedModule.getDependencies (), limitedModules);
                 if (! brokenDeps.isEmpty ()) {
                     getLogger ().log (Level.FINEST, "Module " + affectedModule + " has broken dependecies " + brokenDeps);
