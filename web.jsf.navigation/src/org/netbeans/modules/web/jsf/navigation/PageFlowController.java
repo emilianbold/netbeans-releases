@@ -397,14 +397,9 @@ public class PageFlowController {
         }
         otherFacesConfigListener = null;
     }
-
-    public boolean setupGraphNoSaveData() {
-        LOGGER.entering(PageFlowController.class.toString(), "setupGraphNoSaveData()");
-
-        assert configModel != null;
-        //        assert webFolder != null;
-        assert webFiles != null;
-
+    
+    
+    protected void releaseGraphInfo() {
         /* This listener is only created when it was a All_FACES scope */
         if (otherFacesConfigListener != null) {
             removeOtherFacesConfigListener();
@@ -414,6 +409,16 @@ public class PageFlowController {
         clearPageName2Page();
         navCase2NavCaseEdge.clear();
         navRule2String.clear();
+
+    }
+
+    public boolean setupGraphNoSaveData() {
+        LOGGER.entering(PageFlowController.class.toString(), "setupGraphNoSaveData()");
+
+        assert configModel != null;
+        //        assert webFolder != null;
+        assert webFiles != null;
+        releaseGraphInfo();
 
         FacesConfig facesConfig = configModel.getRootComponent();
 

@@ -315,10 +315,10 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
      **/
     public void clearGraph() {
         //Workaround: Temporarily Wrapping Collection because of  http://www.netbeans.org/issues/show_bug.cgi?id=97496
-        Collection<Page> nodes = new HashSet<Page>(getScene().getNodes());
-        for (Page node : nodes) {
-            getScene().removeNodeWithEdges(node);
-            node.destroy2();
+        Collection<Page> pages = new HashSet<Page>(getScene().getNodes());
+        for (Page page : pages) {
+            getScene().removeNodeWithEdges(page);
+            page.destroy2();
         }
         getScene().validate();
     }
@@ -403,7 +403,9 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
      * For the background process to start startBackgroundPinAddingProcess() must be called.
      * If you no longer need the page to complete loading, you can call the clear equivalent.
      **/
-    private void runPinSetup(final Page pageNode, final VMDNodeWidget widget) {
+    private void runPinSetup(Page page, VMDNodeWidget widget) {
+        final WeakReference<Page> pageRef = new WeakReference<Page>(page);
+        final WeakReference<VMDNodeWidget> widgetRef = new WeakReference<VMDNodeWidget>(widget);
         LOG.entering(PageFlowView.class.getName(), "runPinSetup");
         final LabelWidget loadingWidget = new LabelWidget(getScene(), "Loading...");
         widget.addChild(loadingWidget);
@@ -413,19 +415,23 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
                         /* This is called in redrawPins and edges setupPinsInNode(pageNode);*/
                         /* Need to do updateNodeWidgetActions after setupPinInNode because this is when the model is set. */
                         LOG.finest("    PFE: Inside Thread: " + java.util.Calendar.getInstance().getTime());
-                        if (!pageNode.isDataNode()) {
+                        //Page page = pageRef.get();
+                        if( pageRef.get() == null || widgetRef.get() == null ){
+                            LOG.finest("    PFE: runPinSetup will not completed because the page is now null.  It may have been removed to reset graph.");
+                        }
+                        if (!pageRef.get().isDataNode()) {
                             EventQueue.invokeLater(new Runnable() {
 
                                         public void run() {
                                             if (getScene() != null) {
-                                                widget.removeChild(loadingWidget);
+                                                widgetRef.get().removeChild(loadingWidget);
                                                 getScene().validate();
                                             }
                                         }
                                     });
                             return;
                         }
-                        final java.util.Collection<org.netbeans.modules.web.jsf.navigation.Pin> newPinNodes = pageNode.getPinNodes();
+                        final java.util.Collection<org.netbeans.modules.web.jsf.navigation.Pin> newPinNodes = pageRef.get().getPinNodes();
 
                         LOG.finest("    PFE: Completed Nodes Setup: " + java.util.Calendar.getInstance().getTime());
 
@@ -438,10 +444,10 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
                                             Collection<NavigationCaseEdge> redrawCaseNodes = new ArrayList<NavigationCaseEdge>();
                                             Collection<Pin> pinNodes = new ArrayList<Pin>(getScene().getPins());
 
-                                            widget.removeChild(loadingWidget);
+                                            widgetRef.get().removeChild(loadingWidget);
                                             for (Pin pin : pinNodes) {
-                                                if (pin.getPage() == pageNode) {
-                                                    assert pin.getPage().getDisplayName().equals(pageNode.getDisplayName());
+                                                if (pin.getPage() == pageRef.get()) {
+                                                    assert pin.getPage().getDisplayName().equals(pageRef.get().getDisplayName());
                                                     java.util.Collection<NavigationCaseEdge> caseNodes = getScene().findPinEdges(pin, true, false);
                                                     redrawCaseNodes.addAll(caseNodes);
                                                     if (!pin.isDefault()) {
@@ -451,13 +457,13 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
                                             }
                                             if (newPinNodes.size() > 0) {
                                                 for (org.netbeans.modules.web.jsf.navigation.Pin pinNode : newPinNodes) {
-                                                    createPin(pageNode, pinNode);
+                                                    createPin(pageRef.get(), pinNode);
                                                 }
                                             }
                                             for (org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge caseNode : redrawCaseNodes) {
-                                                setEdgeSourcePin(caseNode, pageNode);
+                                                setEdgeSourcePin(caseNode, pageRef.get());
                                             }
-                                            getScene().updateNodeWidgetActions(pageNode);
+                                            getScene().updateNodeWidgetActions(pageRef.get());
                                             getScene().validate();
                                             LOG.finest("    PFE: Ending Redraw: " + java.util.Calendar.getInstance().getTime());
                                         }

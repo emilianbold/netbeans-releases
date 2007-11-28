@@ -39,7 +39,10 @@
 package org.netbeans.modules.web.jsf.navigation;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.openide.filesystems.FileObject;
@@ -51,6 +54,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.*;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
+import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneElement;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.util.lookup.Lookups;
@@ -731,6 +735,23 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         System.out.println("getPageName2Page given an empty string");
         Page page = controller.getPageName2Page("");
         assertNull(page);
+    }
+    
+    public void testReleaseGraphInfoMemoryLeakFinder() {
+        System.out.println("releaseGraphInfo - Looking for memory leaks");
+        Set<PageFlowSceneElement> elements = (Set<PageFlowSceneElement>) scene.getObjects();
+        Collection<WeakReference<PageFlowSceneElement>> references = new ArrayList<WeakReference<PageFlowSceneElement>>();
+        for( PageFlowSceneElement element: elements ){
+            references.add(new WeakReference<PageFlowSceneElement>(element));
+        }
+        elements = null;
+        
+        controller.releaseGraphInfo();
+        
+        for( WeakReference<PageFlowSceneElement> ref : references){
+            assertGC("PageFlowElement should be GC'ed", ref);
+        }
+        
     }
 
 
