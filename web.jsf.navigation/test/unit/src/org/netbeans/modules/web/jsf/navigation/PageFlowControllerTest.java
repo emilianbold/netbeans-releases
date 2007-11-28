@@ -55,6 +55,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.*;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneElement;
+import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentModelProvider;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.util.lookup.Lookups;
@@ -120,6 +121,12 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
 
         ClassLoader l = this.getClass().getClassLoader();
         MockLookup.setLookup(Lookups.fixed(l), Lookups.metaInfServices(l));
+    }
+    
+    
+    public void testCheckPageFlowControllerMemorySize() {
+        System.out.println("Check PageFlowController Memory Size.");
+        assertSize("PageFlowController MemorySize:", 3000000, controller);
     }
 
     /**
@@ -752,6 +759,41 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
             assertGC("PageFlowElement should be GC'ed", ref);
         }
         
+    }
+    
+    public void testsetupGraphMemoryLeakFinder() {
+        System.out.println("setupGraph - Looking for memory leaks");
+        
+        final Collection<WeakReference<PageFlowSceneElement>> references = new ArrayList<WeakReference<PageFlowSceneElement>>();
+        
+        Set<PageFlowSceneElement> elements = (Set<PageFlowSceneElement>) scene.getObjects();
+        for( PageFlowSceneElement element: elements ){
+            references.add(new WeakReference<PageFlowSceneElement>(element));
+        }
+        elements = null;
+        
+        Collection<? extends PageContentModelProvider> providers = controller.getPageContentModelProviders();
+        
+        controller.setupGraph();
+        
+        Set<PageFlowSceneElement> elements2 = (Set<PageFlowSceneElement>) scene.getObjects();
+        for( PageFlowSceneElement element: elements2 ){
+            references.add(new WeakReference<PageFlowSceneElement>(element));
+        }
+        elements = null;
+        
+        controller.setupGraph();
+        
+        for( WeakReference<PageFlowSceneElement> ref : references){
+            assertGC("PageFlowElement should be GC'ed", ref);
+        }
+        
+        
+    }
+    
+    public void testCheckPageFlowControllerMemorySizeEndOfTests(){
+        System.out.println("Check PageFlowController Memory Size.");
+        assertSize("PageFlowController MemorySize:", 3000000, controller);
     }
 
 
