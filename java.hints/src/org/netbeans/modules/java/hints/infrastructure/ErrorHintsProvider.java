@@ -41,7 +41,10 @@
 
 package org.netbeans.modules.java.hints.infrastructure;
 
-import org.netbeans.modules.java.hints.*;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,7 +63,6 @@ import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import com.sun.source.util.TreePath;
@@ -70,6 +72,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
@@ -78,12 +81,12 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.HintsController;
-import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.text.NbDocument;
 
@@ -241,6 +244,12 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
         }
     }
     
+    private static final Set<String> INVALID_METHOD_INVOCATION = new HashSet<String>(Arrays.asList(
+        "compiler.err.prob.found.req",
+        "compiler.err.cant.apply.symbol",
+        "compiler.err.cant.resolve.location"
+    ));
+    
     private static final Set<String> CANNOT_RESOLVE = new HashSet<String>(Arrays.asList(
             "compiler.err.cant.resolve",
             "compiler.err.cant.resolve.location",
@@ -252,6 +261,38 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
             "compiler.err.var.might.not.have.been.initialized"
     ));
     
+    private int[] handlePossibleMethodInvocation(CompilationInfo info, Diagnostic d, final Document doc, int startOffset, int endOffset) throws IOException {
+        int pos = (int) getPrefferedPosition(info, d);
+        TreePath tp = info.getTreeUtilities().pathFor(pos + 1);
+        
+        if (tp != null && tp.getParentPath().getLeaf() != null && (tp.getParentPath().getLeaf().getKind() == Kind.METHOD_INVOCATION || tp.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS)) {
+            int[] index = new int[1];
+            
+            tp = tp.getParentPath();
+            
+            if (Utilities.fuzzyResolveMethodInvocation(info, tp, new TypeMirror[1], index) != null) {
+                Tree a;
+                
+                if (tp.getLeaf().getKind() == Kind.METHOD_INVOCATION) {
+                    MethodInvocationTree mit = (MethodInvocationTree) tp.getLeaf();
+                    
+                    a = mit.getArguments().get(index[0]);
+                } else {
+                    NewClassTree mit = (NewClassTree) tp.getLeaf();
+                    
+                    a = mit.getArguments().get(index[0]);
+                }
+            
+                return new int[] {
+                    (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), a),
+                    (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), a)
+                };
+            }
+        }
+        
+        return null;
+    }
+    
     private Position[] getLine(CompilationInfo info, Diagnostic d, final Document doc, int startOffset, int endOffset) throws IOException {
         StyledDocument sdoc = (StyledDocument) doc;
         DataObject dObj = (DataObject)doc.getProperty(doc.StreamDescriptionProperty );
@@ -262,7 +303,17 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
         
         boolean rangePrepared = false;
         
-        if (CANNOT_RESOLVE.contains(d.getCode())) {
+        if (INVALID_METHOD_INVOCATION.contains(d.getCode())) {
+            int[] span = handlePossibleMethodInvocation(info, d, doc, startOffset, endOffset);
+            
+            if (span != null) {
+                startOffset = span[0];
+                endOffset = span[1];
+                rangePrepared = true;
+            }
+        }
+        
+        if (CANNOT_RESOLVE.contains(d.getCode()) && !rangePrepared) {
             int[] span = translatePositions(info, findUnresolvedElementSpan(info, (int) getPrefferedPosition(info, d)));
             
             if (span != null) {

@@ -58,6 +58,27 @@ public class AddCastTest extends ErrorHintsTestBase {
                        "package test; public class Test {private Object[][] o; private String test() {return (String) o[0][0];} }");
     }
 
+    public void testMethodInvocation1() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {private void test() {Object o = null; |x(o);} private void x(String s) {}}",
+                       "[AddCastFix:...o:String]",
+                       "package test; public class Test {private void test() {Object o = null; x((String) o);} private void x(String s) {}}");
+    }
+    
+    public void testMethodInvocation2() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {private void test() {java.util.List<String> l = null; Object o = null; |l.add(o);} }",
+                       "[AddCastFix:...o:String]",
+                       "package test; public class Test {private void test() {java.util.List<String> l = null; Object o = null; l.add((String) o);} }");
+    }
+    
+    public void testNewClass1() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {private static void test() {Object o = null; |new Test(o);} public Test(String s) {} }",
+                       "[AddCastFix:...o:String]",
+                       "package test; public class Test {private static void test() {Object o = null; new Test((String) o);} public Test(String s) {} }");
+    }
+    
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
         return new AddCast().run(info, null, pos, path, null);

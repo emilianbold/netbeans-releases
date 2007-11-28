@@ -89,6 +89,11 @@ final class AddCastFix implements Fix {
                     
                     AddCast.computeType(working, position, tm, expression, leaf);
                     
+                    if (tm[0] == null) {
+                        //cannot resolve anymore:
+                        return ;
+                    }
+                    
                     TreeMaker make = working.getTreeMaker();
                     ExpressionTree toCast = expression[0];
                     

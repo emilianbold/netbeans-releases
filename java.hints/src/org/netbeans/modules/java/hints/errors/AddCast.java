@@ -53,19 +53,29 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
@@ -81,7 +91,7 @@ import static com.sun.source.tree.Tree.Kind.*;
 public final class AddCast implements ErrorRule<Void> {
     
     static void computeType(CompilationInfo info, int offset, TypeMirror[] tm, ExpressionTree[] expression, Tree[] leaf) {
-        TreePath path = info.getTreeUtilities().pathFor(offset);
+        TreePath path = info.getTreeUtilities().pathFor(offset + 1);
         
         //TODO: this does not seem nice:
         while (path != null) {
@@ -115,6 +125,17 @@ public final class AddCast implements ErrorRule<Void> {
                 }
             }
             
+            if (scope.getKind() == Kind.METHOD_INVOCATION || scope.getKind() == Kind.NEW_CLASS) {
+                TypeMirror[] proposed = new TypeMirror[1];
+                int[] index = new int[1];
+                
+                if (Utilities.fuzzyResolveMethodInvocation(info, path, proposed, index) != null) {
+                    expected = proposed[0];
+                    found = scope.getKind() == Kind.METHOD_INVOCATION ? ((MethodInvocationTree) scope).getArguments().get(index[0]) : ((NewClassTree) scope).getArguments().get(index[0]);
+                    resolved = info.getTrees().getTypeMirror(new TreePath(path, found));
+                }
+            }
+            
             if (expected != null && resolved != null) {
                 TypeMirror foundTM = info.getTrees().getTypeMirror(new TreePath(path, found));
                 
@@ -138,7 +159,7 @@ public final class AddCast implements ErrorRule<Void> {
     }
     
     public Set<String> getCodes() {
-        return Collections.singleton("compiler.err.prob.found.req"); // NOI18N
+        return new HashSet<String>(Arrays.asList("compiler.err.prob.found.req", "compiler.err.cant.apply.symbol", "compiler.err.cant.resolve.location")); // NOI18N
     }
     
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
