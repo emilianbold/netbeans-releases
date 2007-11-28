@@ -41,8 +41,6 @@
 
 package org.netbeans.core.windows.view.ui.slides;
 
-import org.openide.windows.TopComponent;
-
 /*
  * Controller for slide related user actions.
  *
@@ -55,4 +53,9 @@ public interface SlideController {
      */
     public void userToggledAutoHide(int tabIndex, boolean enabled);
 
+    /**
+     * Called when user toggles transparency of slided-in window
+     * @param tabIndex Index of the tab to make transparent/opaque
+     */
+    public void userToggledTransparency(int tabIndex);
 }

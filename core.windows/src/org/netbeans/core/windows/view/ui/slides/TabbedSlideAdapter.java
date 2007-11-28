@@ -80,14 +80,6 @@ import org.openide.windows.TopComponent;
  *
  * @author Dafe Simonek
  */
-
-/*
- * Adapts SlideBar to match Tabbed interface, which is used by TabbedHandler
- * for talking to component containers. SlideBar is driven indirectly,
- * through modifications of its model.
- *
- * @author Dafe Simonek
- */
 public final class TabbedSlideAdapter implements Tabbed {
     
     /** data model of informations about top components in container */
@@ -349,10 +341,10 @@ public final class TabbedSlideAdapter implements Tabbed {
             lbl.setIcon(new ImageIcon(img));
             width = width + (img.getWidth(null) == -1 ? 16 : img.getWidth(null)) + 6;
             height = Math.max(height + 5, img.getHeight(null) == -1 ? 21 : 5 + img.getHeight(null));
-            
+        
             GraphicsConfiguration config = GraphicsEnvironment.getLocalGraphicsEnvironment()
                         .getDefaultScreenDevice().getDefaultConfiguration();
-            
+    
             
             BufferedImage image = config.createCompatibleImage(width, height);
             Graphics2D g = image.createGraphics();
@@ -370,18 +362,27 @@ public final class TabbedSlideAdapter implements Tabbed {
     /** Add action for disabling slide */
     public Action[] getPopupActions(Action[] defaultActions, int tabIndex) {
         boolean isMDI = WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_JOINED;
-        Action[] result = new Action[defaultActions.length + (isMDI ? 1 : 0)];
+        Action[] result = new Action[defaultActions.length + (isMDI ? 2 : 0)];
         System.arraycopy(defaultActions, 0, result, 0, defaultActions.length);
         if (isMDI) {
-            result[defaultActions.length] = 
+            result[defaultActions.length-1] = 
                 new ActionUtils.AutoHideWindowAction(slideBar, tabIndex, true);
+            result[defaultActions.length] = 
+                new ActionUtils.ToggleWindowTransparencyAction(slideBar, tabIndex, slideBar.isSlidedTabTransparent());
         }
         return result;
     }
     
     public Rectangle getTabBounds(int tabIndex) {
         return slideBar.getTabBounds(tabIndex);
-    }    
-    
+    }
+
+    public boolean isTransparent() {
+        return false;
+    }
+
+    public void setTransparent(boolean transparent) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }
 

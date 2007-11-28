@@ -172,6 +172,13 @@ final class CommandManager implements ActionListener {
         postEvent(new SlideBarActionEvent(slideBar, SlideBar.COMMAND_DISABLE_AUTO_HIDE, operation, null, tabIndex));
     }
     
+    public void toggleTransparency() {
+        if( isCompSlided() ) {
+            TabbedContainer container = (TabbedContainer)getSlidedComp();
+            container.setTransparent( !container.isTransparent() );
+        }
+    }
+    
     public void showPopup(MouseEvent mouseEvent, int tabIndex) {
         postEvent(new SlideBarActionEvent(slideBar, SlideBar.COMMAND_POPUP_REQUEST, mouseEvent, tabIndex));
     }
@@ -218,6 +225,8 @@ final class CommandManager implements ActionListener {
             }
         } else if (TabbedContainer.COMMAND_DISABLE_AUTO_HIDE.equals(e.getActionCommand())) {
             slideIntoDesktop(curSlidedIndex, true);
+        } else if (TabbedContainer.COMMAND_TOGGLE_TRANSPARENCY.equals(e.getActionCommand())) {
+            toggleTransparency();
         } else if (TabbedContainer.COMMAND_MAXIMIZE.equals(e.getActionCommand())) {
             //inform the window system that the slided window changes its maximized status
             postEvent(new SlideBarActionEvent(slideBar, SlideBar.COMMAND_MAXIMIZE, null, null, curSlidedIndex));

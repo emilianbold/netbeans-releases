@@ -107,7 +107,7 @@ public interface Tabbed {
     public Object getConstraintForLocation(Point location, boolean attachingPossible);
     
     public Image createImageOfTab (int tabIndex);
-
+    
     /** Accessor for visual component holding components */
     public Component getComponent();
     
@@ -118,6 +118,10 @@ public interface Tabbed {
     
     /** Returns bounds of tab with given index */
     public Rectangle getTabBounds(int tabIndex);
+    
+    public boolean isTransparent();
+    
+    public void setTransparent( boolean transparent );
     
     /** Interface for simple accessing of Tabbed instance */
     public interface Accessor {

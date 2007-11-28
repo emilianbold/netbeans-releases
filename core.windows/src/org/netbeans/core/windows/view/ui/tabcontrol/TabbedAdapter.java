@@ -492,6 +492,10 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
     public void userToggledAutoHide(int tabIndex, boolean enabled) {
         postActionEvent(new TabActionEvent(this, TabbedContainer.COMMAND_ENABLE_AUTO_HIDE, tabIndex));
     }    
+
+    public void userToggledTransparency(int tabIndex) {
+        postActionEvent(new TabActionEvent(this, TabbedContainer.COMMAND_TOGGLE_TRANSPARENCY, tabIndex));
+    }    
     
     /********* implementation of Tabbed.Accessor **************/
     

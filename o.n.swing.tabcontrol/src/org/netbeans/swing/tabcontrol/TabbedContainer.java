@@ -46,8 +46,11 @@ import org.netbeans.swing.tabcontrol.plaf.DefaultTabbedContainerUI;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.AWTEventListener;
 import java.awt.event.ActionListener;
-import java.awt.event.HierarchyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -211,6 +214,8 @@ public class TabbedContainer extends JComponent implements Accessible {
 
     public static final String COMMAND_DISABLE_AUTO_HIDE = "disableAutoHide"; //NOI18N
     
+    public static final String COMMAND_TOGGLE_TRANSPARENCY = "toggleTransparency"; //NOI18N
+    
     //XXX support supressing close buttons
     
     /**
@@ -373,6 +378,7 @@ public class TabbedContainer extends JComponent implements Accessible {
      * If no UIManager UI class is defined, this method will silently use an
      * instance of DefaultTabbedContainerUI.
      */
+    @Override
     public void updateUI() {
         if (!initialized) {
             //Block the superclass call to updateUI(), which comes before the
@@ -414,6 +420,7 @@ public class TabbedContainer extends JComponent implements Accessible {
     /**
      * Returns <code>TabbedContainer.TABBED_CONTAINER_UI_CLASS_ID</code>
      */
+    @Override
     public String getUIClassID() {
         return TABBED_CONTAINER_UI_CLASS_ID;
     }
@@ -502,6 +509,7 @@ public class TabbedContainer extends JComponent implements Accessible {
         return contentPolicy;
     }
     
+    @Override
     public boolean isValidateRoot() {
         return true;
     }
@@ -687,7 +695,7 @@ public class TabbedContainer extends JComponent implements Accessible {
     public Image createImageOfTab(int idx) {
         return getUI().createImageOfTab (idx);
     }
-
+    
     /** Get the number of tabs.  Equivalent to <code>getModel().size()</code> */
     public int getTabCount() {
         return getModel().size();
@@ -814,9 +822,11 @@ public class TabbedContainer extends JComponent implements Accessible {
         }
     }
 
+    @Override
     public javax.accessibility.AccessibleContext getAccessibleContext() {
         if( null == accessibleContext ) {
             accessibleContext = new AccessibleJComponent() {
+                        @Override
                         public AccessibleRole getAccessibleRole() {
                             return AccessibleRole.PAGE_TAB_LIST;
                         }
@@ -829,4 +839,141 @@ public class TabbedContainer extends JComponent implements Accessible {
         return accessibleContext;
     }
     
+    //+++++++++++++++++++++++++
+    //Begin: Transparency support 
+    //+++++++++++++++++++++++++
+    private static final float ALPHA_TRESHOLD = 0.2f;
+    private float currentAlpha = 1.0f;
+    
+    /**
+     * @return True if the container is transparent, i.e. painted if Alpha set to 0.2 or less.
+     */
+    public boolean isTransparent() {
+        return isSliding() && currentAlpha <= ALPHA_TRESHOLD;
+    }
+    
+    /**
+     * Turn container transparency on/off
+     * @param transparent True to make the container transparent
+     */
+    public void setTransparent( boolean transparent ) {
+        if( !isSliding() ) {
+            //support only slided-in windows
+            throw new IllegalStateException( "Transparency is supported for sliding windows only." );
+        }
+        float oldAlpha = currentAlpha;
+        currentAlpha = transparent ? ALPHA_TRESHOLD : 1.0f;
+        if( oldAlpha != currentAlpha )
+            repaint();
+    }
+    
+    MouseWheelListener mouseWheelListener = null;
+    private MouseWheelListener getMouseWheelListener() {
+        if( null == mouseWheelListener ) {
+            mouseWheelListener = new MouseWheelListener() {
+                public void mouseWheelMoved(MouseWheelEvent me) {
+                    if( isTransparencyMouseEvent( me ) ) {
+                        updateTransparency( me.getWheelRotation() < 0 );
+                        me.consume();
+                    }
+                }
+            };
+        }
+        return mouseWheelListener;
+    }
+
+    AWTEventListener awtListener = null;
+    private AWTEventListener getAWTListener() {
+        if( null == awtListener ) {
+            awtListener = new AWTEventListener() {
+                public void eventDispatched(AWTEvent event) {
+                    if( event instanceof MouseWheelEvent ) {
+                        //ignore mouse events outside the tabbed container
+                        if( event.getSource() instanceof Component &&
+                            !SwingUtilities.isDescendingFrom( (Component)event.getSource(), TabbedContainer.this) )
+                            return;
+                        MouseWheelEvent me = (MouseWheelEvent)event;
+                        if( isTransparencyMouseEvent( me ) ) {
+                            updateTransparency( me.getWheelRotation() < 0 );
+                            me.consume();
+                        }
+                    }
+                }
+            };
+        }
+        return awtListener;
+    }
+
+    /**
+     * Check event modifiers for transparency toggle
+     */
+    private boolean isTransparencyMouseEvent( MouseWheelEvent me ) {
+        return (me.getModifiers() & (MouseEvent.ALT_MASK + MouseEvent.SHIFT_MASK)) == MouseEvent.ALT_MASK + MouseEvent.SHIFT_MASK
+                && me.getID() == MouseEvent.MOUSE_WHEEL;
+    }
+    
+    private void updateTransparency( boolean increaseTransparency ) {
+        float oldAlpha = currentAlpha;
+        if( increaseTransparency ) {
+            currentAlpha = Math.max( ALPHA_TRESHOLD, currentAlpha-0.1f );
+        } else {
+            currentAlpha = Math.min( 1.0f, currentAlpha+0.1f );
+        }
+        if( currentAlpha != oldAlpha ) {
+            JLayeredPane.getLayeredPaneAbove(TabbedContainer.this).repaint();
+        }
+    }
+    
+    /**
+     * @return True if the container holds slided-in window.
+     */
+    private boolean isSliding() {
+        boolean res = false;
+        if( getModel().size() == 1 ) {
+            Component c = getModel().getTab(0).getComponent();
+            if( c instanceof JComponent ) {
+                Object val = ((JComponent)c).getClientProperty("isSliding"); //NOI18N
+                res = null != val && val instanceof Boolean && ((Boolean)val).booleanValue();
+            }
+        }
+        return res;
+    }
+    
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        if( isSliding() ) {
+            //register AWT listener in case the inner top component has its only mouse listener
+            Toolkit.getDefaultToolkit().addAWTEventListener( getAWTListener(), MouseEvent.MOUSE_WHEEL_EVENT_MASK );
+            addMouseWheelListener( getMouseWheelListener() );
+        }
+    }
+    
+    @Override
+    public void removeNotify() {
+        if( null != mouseWheelListener ) {
+            removeMouseWheelListener( mouseWheelListener );
+            Toolkit.getDefaultToolkit().removeAWTEventListener( awtListener );
+            mouseWheelListener = null;
+            awtListener = null;
+        }
+        super.removeNotify();
+        currentAlpha = 1.0f;
+    }
+
+    @Override
+    public void paint(Graphics g) {
+        if( isSliding() && currentAlpha != 1.0f ) {
+            Graphics2D g2d = (Graphics2D)g;
+            Composite oldComposite = g2d.getComposite();
+            g2d.setComposite( AlphaComposite.getInstance(AlphaComposite.SRC_OVER, currentAlpha) );
+            super.paint(g);
+            g2d.setComposite(oldComposite);
+        } else {
+            super.paint(g);
+        }
+    }
+    //+++++++++++++++++++++++++
+    //End: Transparency support 
+    //+++++++++++++++++++++++++    
 }

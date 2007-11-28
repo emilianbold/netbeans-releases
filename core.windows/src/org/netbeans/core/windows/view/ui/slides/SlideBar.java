@@ -46,25 +46,16 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.DefaultSingleSelectionModel;
-import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.SingleSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
@@ -72,17 +63,14 @@ import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ui.Tabbed;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
-import org.netbeans.swing.tabcontrol.DefaultTabDataModel;
 import org.netbeans.swing.tabcontrol.SlideBarDataModel;
 import org.netbeans.swing.tabcontrol.SlidingButton;
 import org.netbeans.swing.tabcontrol.TabData;
-import org.netbeans.swing.tabcontrol.TabDataModel;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.netbeans.swing.tabcontrol.WinsysInfoForTabbed;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
-import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 import org.openide.windows.TopComponent;
 
 /*
@@ -272,6 +260,11 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     
     public void userToggledAutoHide(int tabIndex, boolean enabled) {
         commandMgr.slideIntoDesktop(tabIndex, true);
+    }
+    
+    public void userToggledTransparency(int tabIndex) {
+        if( tabIndex == getSelectionModel().getSelectedIndex() )
+            commandMgr.toggleTransparency();
     }
     
     public void userTriggeredPopup(MouseEvent mouseEvent, Component clickedButton) {
@@ -474,45 +467,11 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         repaint();
     }
     
+    boolean isSlidedTabTransparent() {
+        boolean res = false;
+        if( null != getSlidedComp() ) {
+            res = ((TabbedContainer)getSlidedComp()).isTransparent();
+        }
+        return res;
+    }
 }
-
-
-    /********* Swing standard handling mechanism for asociated UI class - will
-      see if we need our own UI class or not */
-    
-    /** String ID of UI class for slide bar used in UIManager */ 
-    //private static final String uiClassID = "SlideBarUI";
-
-    /**
-     * Returns the tool bar's current UI.
-     * @see #setUI
-     */
-    /*public SlideBarUI getUI() {
-        return (SlideBarUI)ui;
-    }*
-    
-    /**
-     * Sets the L&F object that renders this component.
-     */
-    /*public void setUI(SlideBarUI ui) {
-        super.setUI(ui);
-    }*/
-    
-    /**
-     * Notification from the <code>UIFactory</code> that the L&F has changed. 
-     * Called to replace the UI with the latest version from the 
-     * <code>UIFactory</code>.
-     *
-     * @see JComponent#updateUI
-     */
-    /*public void updateUI() {
-        setUI((SlideBarUI)UIManager.getUI(this));
-        invalidate();
-    }*/
-
-    /**
-     * Returns the name of the L&F class that renders this component.
-     */
-    /*public String getUIClassID() {
-        return uiClassID;
-    }*/

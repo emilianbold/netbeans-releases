@@ -55,7 +55,6 @@ import org.openide.actions.SaveAction;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.*;
 import org.openide.util.actions.Presenter;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 
 
@@ -168,6 +167,58 @@ public abstract class ActionUtils {
         }
         
     } // End of class AutoHideWindowAction
+
+    /**
+     * Toggle transparency of slided-in window
+     */
+    public static final class ToggleWindowTransparencyAction extends AbstractAction implements Presenter.Popup {
+        
+        private final SlideController slideController;
+        
+        private final int tabIndex;
+        
+        private boolean state;
+        
+        private JCheckBoxMenuItem menuItem;
+        
+        public ToggleWindowTransparencyAction(SlideController slideController, int tabIndex, boolean initialState) {
+            super();
+            this.slideController = slideController;
+            this.tabIndex = tabIndex;
+            this.state = initialState;
+            putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class, "LBL_ToggleWindowTransparencyAction"));
+        }
+        
+        public HelpCtx getHelpCtx() {
+            return null;
+        }
+        
+        /** Chnage boolean state and delegate event to winsys through
+         * SlideController (implemented by SlideBar component)
+         */
+        public void actionPerformed(ActionEvent e) {
+            // update state and menu item
+            state = !state;
+            getMenuItem().setSelected(state);
+            // send event to winsys
+            slideController.userToggledTransparency(tabIndex);
+        }
+
+        public JMenuItem getPopupPresenter() {
+            return getMenuItem();
+        }
+        
+        private JCheckBoxMenuItem getMenuItem() {
+            if (menuItem == null) {
+                menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME), state);
+                //TODO make shortcut configurable
+                menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_NUMPAD0, InputEvent.CTRL_DOWN_MASK));
+                menuItem.addActionListener(this);
+            }
+            return menuItem;
+        }
+        
+    } // End of class ToggleWindowTransparencyAction
 
     private static class SaveDocumentAction extends AbstractAction implements PropertyChangeListener {
         private final TopComponent tc;
