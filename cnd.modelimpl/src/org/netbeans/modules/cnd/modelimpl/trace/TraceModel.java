@@ -1423,19 +1423,21 @@ public class TraceModel extends TraceModelBase {
 	if( platformProject instanceof NativeProject ) {
 	    NativeProject nativeProject = (NativeProject) platformProject;
 	    if( nativeProject != null ) {
-                for(NativeFileItem item : nativeProject.getAllFiles()){
-                    if (!item.isExcluded()) {
-                        switch(item.getLanguage()){
-                            case C:
-                            case CPP:
-                            case C_HEADER:
-                                result.add(item);
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
+		result.addAll(nativeProject.getAllFiles());
+// these are all files specified in command line; it does not make sense to filter them
+//                for(NativeFileItem item : nativeProject.getAllFiles()){
+//                    if (!item.isExcluded()) {
+//                        switch(item.getLanguage()){
+//                            case C:
+//                            case CPP:
+//                            case C_HEADER:
+//                                result.add(item);
+//                                break;
+//                            default:
+//                                break;
+//                        }
+//                    }
+//                }
 	    }
 	}
 	return result;

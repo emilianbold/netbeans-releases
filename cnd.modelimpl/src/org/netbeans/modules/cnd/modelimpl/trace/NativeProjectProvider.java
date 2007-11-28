@@ -98,8 +98,7 @@ public final class NativeProjectProvider {
 	private final List<String> sysMacros;
 	private final List<String> usrMacros;
 	    
-        private final List<NativeFileItem> headers = new ArrayList<NativeFileItem>();
-        private final List<NativeFileItem> sources = new ArrayList<NativeFileItem>();
+        private final List<NativeFileItem> files  = new ArrayList<NativeFileItem>();
 	
         private final String projectRoot;
 	private boolean pathsRelCurFile;
@@ -160,18 +159,8 @@ public final class NativeProjectProvider {
             return getProjectRoot();
         }
 
-        public List<NativeFileItem> getAllSourceFiles() {
-            return Collections.unmodifiableList(this.sources);
-        }
-
-        public List<NativeFileItem> getAllHeaderFiles() {
-            return Collections.unmodifiableList(this.headers);
-        }
-
         public List<NativeFileItem> getAllFiles() {
-            ArrayList<NativeFileItem> res = new ArrayList<NativeFileItem>(sources);
-            res.addAll(headers);
-            return res;
+            return Collections.unmodifiableList(files);
         }
 
         public void addProjectItemsListener(NativeProjectItemsListener listener) {
@@ -191,16 +180,20 @@ public final class NativeProjectProvider {
 	    synchronized( listenersLock ) {
 		listenersCopy = new ArrayList<NativeProjectItemsListener>(listeners);
 	    }
-	    List<NativeFileItem> items = new ArrayList<NativeFileItem>(sources);
-	    items.addAll(headers);
+	    List<NativeFileItem> items = Collections.unmodifiableList(files);
 	    for( NativeProjectItemsListener listener : listenersCopy ) {
 		listener.filesPropertiesChanged(items);
 	    }
 	}
 
         public NativeFileItem findFileItem(File file) {
-            NativeFileItem item = findItem(file, sources);
-            return item == null ? findItem(file, headers) : item;
+            String path = file.getAbsolutePath();
+            for (NativeFileItem item : files) {
+                if (item.getFile().getAbsolutePath().equalsIgnoreCase(path)) {
+                    return item;
+                }
+            }
+            return null;
         }
 
         public List<String> getSystemIncludePaths() {
@@ -219,24 +212,13 @@ public final class NativeProjectProvider {
             return this.usrMacros;
         }
         
-        private NativeFileItem findItem(File file, List<NativeFileItem> col) {
-            String path = file.getAbsolutePath();
-            for (NativeFileItem item : col) {
-                if (item.getFile().getAbsolutePath().equalsIgnoreCase(path)) {
-                    return item;
-                }
-            }
-            return null;
-        }
-        
 	private void addFile(File file) {
             DataObject dobj = getDataObject(file);
 	    NativeFileItem.Language lang = getLanguage(file, dobj);
 	    NativeFileItem item = new NativeFileItemImpl(file, this, lang);
 	    //TODO: put item in loockup of DataObject
             // registerItemInDataObject(dobj, item);
-            List<NativeFileItem> data = (item.getLanguage() == NativeFileItem.Language.C_HEADER) ? this.headers : this.sources;
-	    data.add(item);
+	    this.files.add(item);
 	}
 	
 	NativeFileItem.Language getLanguage(File file, DataObject dobj) {
