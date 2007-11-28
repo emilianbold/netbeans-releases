@@ -13,7 +13,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.netbeans.modules.web.jsf.navigation.PageFlowToolbarUtilities;
+//import org.netbeans.modules.web.jsf.navigation.PageFlowToolbarUtilities;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneData.PageData;
 
@@ -28,11 +28,11 @@ public class SceneSerializer {
     private static final String SCENE_SCOPE_ELEMENT = "Scope"; // NOI18N
     private static final String VERSION_ATTR = "version"; // NOI18NC
     
-    private static final String SCENE_FACES_SCOPE = PageFlowToolbarUtilities.getScopeLabel(PageFlowToolbarUtilities.Scope.SCOPE_FACESCONFIG); //NOI18N
-    private static final String SCENE_PROJECT_SCOPE = PageFlowToolbarUtilities.getScopeLabel(PageFlowToolbarUtilities.Scope.SCOPE_PROJECT);
-    
-    private static final String SCENE_NODE_COUNTER_ATTR = "nodeIDcounter"; // NOI18N
-    private static final String SCENE_EDGE_COUNTER_ATTR = "edgeIDcounter"; // NOI18N
+//    private static final String SCENE_FACES_SCOPE = PageFlowToolbarUtilities.getScopeLabel(PageFlowToolbarUtilities.Scope.SCOPE_FACESCONFIG); //NOI18N
+//    private static final String SCENE_PROJECT_SCOPE = PageFlowToolbarUtilities.getScopeLabel(PageFlowToolbarUtilities.Scope.SCOPE_PROJECT);
+
+//    private static final String SCENE_NODE_COUNTER_ATTR = "nodeIDcounter"; // NOI18N
+//    private static final String SCENE_EDGE_COUNTER_ATTR = "edgeIDcounter"; // NOI18N
     
     private static final String NODE_ELEMENT = "Node"; // NOI18N
     private static final String NODE_ID_ATTR = "id"; // NOI18N
@@ -40,10 +40,10 @@ public class SceneSerializer {
     private static final String NODE_Y_ATTR = "y"; // NOI18N    
     private static final String NODE_ZOOM_ATTR = "zoom"; // NOI18N
     
-    private static final String EDGE_ELEMENT = "Edge"; // NOI18N
-    private static final String EDGE_ID_ATTR = "id"; // NOI18N
-    private static final String EDGE_SOURCE_ATTR = "source"; // NOI18N
-    private static final String EDGE_TARGET_ATTR = "target"; // NOI18N
+//    private static final String EDGE_ELEMENT = "Edge"; // NOI18N
+//    private static final String EDGE_ID_ATTR = "id"; // NOI18N
+//    private static final String EDGE_SOURCE_ATTR = "source"; // NOI18N
+//    private static final String EDGE_TARGET_ATTR = "target"; // NOI18N
     
     private static final String VERSION_VALUE_1 = "1"; // NOI18N
     private static final String VERSION_VALUE_2 = "2"; // NOI18N
@@ -116,14 +116,18 @@ public class SceneSerializer {
         
         Node sceneElement = document.getFirstChild();
         setAttribute(document, sceneElement, VERSION_ATTR, VERSION_VALUE_2);
-        setAttribute(document, sceneElement, SCENE_LAST_USED_SCOPE_ATTR, sceneData.getCurrentScopeStr());
-        Node scopeFacesElement = createScopeElement(document, sceneData, SCENE_FACES_SCOPE);
+        setAttribute(document, sceneElement, SCENE_LAST_USED_SCOPE_ATTR, XmlScope.getInstance(sceneData.getCurrentScopeStr() ).toString());
+        Node scopeFacesElement = createScopeElement(document, sceneData, XmlScope.SCOPE_FACES);
         if( scopeFacesElement != null ) {
             sceneElement.appendChild( scopeFacesElement );
         }
-        Node scopeProjectElement = createScopeElement(document, sceneData, SCENE_PROJECT_SCOPE);
+        Node scopeProjectElement = createScopeElement(document, sceneData, XmlScope.SCOPE_PROJECT);
         if( scopeProjectElement != null ) {
             sceneElement.appendChild( scopeProjectElement );
+        }
+        Node scopeAllElement = createScopeElement(document, sceneData, XmlScope.SCOPE_ALL);
+        if( scopeAllElement != null ) {
+            sceneElement.appendChild( scopeAllElement );
         }
         
         writeToFile(document, file);
@@ -134,12 +138,12 @@ public class SceneSerializer {
     /**
      * @param Should be either SCENE_PROJECT_SCOPR or SCENE_FACES_SCOPE
      **/
-    private final static Node createScopeElement( Document document, PageFlowSceneData sceneData, String scopeType ){
+    private final static Node createScopeElement( Document document, PageFlowSceneData sceneData, XmlScope scopeXml ){
         Node sceneScopeElement =  null;
-        Map<String,PageFlowSceneData.PageData> facesConfigScopeMap = sceneData.getScopeData(scopeType);
+        Map<String,PageFlowSceneData.PageData> facesConfigScopeMap = sceneData.getScopeData(scopeXml.getScope());
         if( facesConfigScopeMap != null ){
             sceneScopeElement = document.createElement(SCENE_SCOPE_ELEMENT);
-            setAttribute(document, sceneScopeElement, SCENE_SCOPE_ATTR, scopeType);
+            setAttribute(document, sceneScopeElement, SCENE_SCOPE_ATTR, scopeXml.toString());
             
             for( String key : facesConfigScopeMap.keySet()){
                 PageFlowSceneData.PageData data = facesConfigScopeMap.get(key);
@@ -196,11 +200,11 @@ public class SceneSerializer {
                 
             }
         }
-        sceneData.setScopeData(SCENE_PROJECT_SCOPE, sceneInfo);
+        sceneData.setScopeData(XmlScope.SCOPE_PROJECT.getScope(), sceneInfo);
         LOG.exiting("SceneSerializer", "deserialize");
     }
     
-    
+
     public static void deserialize(PageFlowSceneData sceneData, FileObject file) {
         LOG.entering("SceneSerializer", "deserialize(PageFlowSceneData sceneData, File file)");
         Node sceneElement = getRootNode(file);
@@ -208,9 +212,9 @@ public class SceneSerializer {
             deserializeV1(sceneData, file);
         } else if ( VERSION_VALUE_2.equals(getAttributeValue(sceneElement, VERSION_ATTR))) {
             
-            String lastUsedScope = getAttributeValue(sceneElement, SCENE_LAST_USED_SCOPE_ATTR);
-            
-            sceneData.setCurrentScope( PageFlowToolbarUtilities.getScope(lastUsedScope)  );
+            String lastUsedScopeXML = getAttributeValue(sceneElement, SCENE_LAST_USED_SCOPE_ATTR);
+            XmlScope lastUsedScope = XmlScope.getInstance(lastUsedScopeXML);
+            sceneData.setCurrentScope(lastUsedScope.getScope());
             LOG.fine("Last Used Scope: " + lastUsedScope);
             // TODO: Save the Last Used Scope
             
@@ -219,7 +223,7 @@ public class SceneSerializer {
             for( int i = 0; i < scopeNodes.getLength(); i++ ){
                 Node scopeElement = scopeNodes.item(i);
                 if( scopeElement.getNodeName().equals(SCENE_SCOPE_ELEMENT) ){
-                    String scope = getAttributeValue(scopeElement, SCENE_SCOPE_ATTR);
+                    String scopeXMLStr = getAttributeValue(scopeElement, SCENE_SCOPE_ATTR);
                     NodeList pageNodes = scopeElement.getChildNodes();
                     Map<String,PageData> sceneInfo = new HashMap<String,PageData>();
                     for( int j = 0; j < pageNodes.getLength(); j++ ){
@@ -237,7 +241,7 @@ public class SceneSerializer {
                             sceneInfo.put(pageDisplayName, data);                                    
                         }
                     }
-                    sceneData.setScopeData(scope, sceneInfo);
+                    sceneData.setScopeData(XmlScope.getInstance(scopeXMLStr).getScope(), sceneInfo);
                 }
             }
         }

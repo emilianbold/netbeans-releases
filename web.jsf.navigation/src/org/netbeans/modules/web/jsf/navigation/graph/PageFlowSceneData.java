@@ -199,8 +199,9 @@ public class PageFlowSceneData {
         utilities.setCurrentScope(newScope);
     }
 
-    public void setScopeData(String scope, Map<String, PageData> map) {
-        switch (PageFlowToolbarUtilities.getScope(scope)) {
+    public void setScopeData(Scope scope, Map<String, PageData> map) {
+        //switch (PageFlowToolbarUtilities.getScope(scope)) {
+        switch (scope) {
             case SCOPE_FACESCONFIG:
                 facesConfigSceneData.clear();
                 facesConfigSceneData.putAll(map);
@@ -223,9 +224,9 @@ public class PageFlowSceneData {
         //        }
     }
 
-    public Map<String, PageData> getScopeData(String scopeStr) {
+    public Map<String, PageData> getScopeData(Scope scope) {
         Map<String, PageData> sceneInfo = null;
-        PageFlowToolbarUtilities.Scope scope = PageFlowToolbarUtilities.getScope(scopeStr);
+       // PageFlowToolbarUtilities.Scope scope = PageFlowToolbarUtilities.getScope(scopeStr);
         switch (scope) {
             case SCOPE_FACESCONFIG:
                 sceneInfo = facesConfigSceneData;
