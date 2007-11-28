@@ -209,9 +209,11 @@ public class EjbLibReferenceHelper {
                         + File.separator + EJB_REFS_XML);
                 Collection ejbGroups = refMaintainer.getRefferedEjbGroups();
 
+                if (ejbGroups == null) return;
+                
                 // Now lets see whehther the ejb groups are still in the data
                 // model
-                for (Iterator iter = ejbGroups.iterator(); iter.hasNext();) {
+                for (Iterator iter = ejbGroups.iterator(); iter != null && iter.hasNext();) {
                     EjbGroup ejbGrp = (EjbGroup) iter.next();
                     EjbGroup ejbGrpInModel = EjbDataModel.getInstance()
                             .findEjbGroupForClientWrapperJar(
