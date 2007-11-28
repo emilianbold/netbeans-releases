@@ -47,13 +47,13 @@ import com.sun.source.util.Trees;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Scanner;
 import javax.lang.model.element.*;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.openide.text.PositionBounds;
 
 /**
  *
@@ -89,15 +89,14 @@ public class FindUsagesVisitor extends FindVisitor {
                 Token t = ts.token();
                 
                 if (t.id() == JavaTokenId.BLOCK_COMMENT || t.id() == JavaTokenId.LINE_COMMENT || t.id() == JavaTokenId.JAVADOC_COMMENT) {
-                    int index = -1;
-                    String text = t.text().toString();
-                            
-                    while ((index = text.indexOf(originalName, index + 1)) != (-1)) {
-                        if (index > 0 && !Character.isJavaIdentifierPart(text.charAt(index)))
-                            continue;
-                        if (index + 1 < text.length() && !Character.isJavaIdentifierPart(text.charAt(index +1)))
-                            continue;
-                        usagesInComments.add(new UsageInComment(ts.offset() + index, ts.offset() + index + originalName.length()));
+                    Scanner tokenizer = new Scanner(t.text().toString());
+                    tokenizer.useDelimiter("[^a-zA-Z_]"); //NO18N
+                    
+                    while (tokenizer.hasNext()) {
+                        String current = tokenizer.next();
+                        if (current.equals(originalName)) {
+                            usagesInComments.add(new UsageInComment(ts.offset() + tokenizer.match().start(), ts.offset() + tokenizer.match().end()));
+                        }
                     }
                 }
             }
