@@ -615,19 +615,18 @@ public class PageFlowController {
         Collection<String> pages = new HashSet<String>(pagesInConfig);
 
         //Create all pages in the project...
-        for (FileObject webFile : webFiles) {
+        Collection<FileObject> webFilesTmp = Collections.unmodifiableCollection(webFiles);  //Use Unmodifiable set because you may need to remove these files.
+        for (FileObject webFile : webFilesTmp) {
+            //DISPLAYNAME:
+            String webFileName = Page.getFolderDisplayName(getWebFolder(), webFile);
+            Page node = null;
             try {
-                //DISPLAYNAME:
-                String webFileName = Page.getFolderDisplayName(getWebFolder(), webFile);
-                Page node = null;
                 node = createPage((DataObject.find(webFile)).getNodeDelegate());
                 view.createNode(node, null, null);
                 //Do not remove the webFile page until it has been created with a data Node.  If the dataNode throws and exception, then it can be created with an Abstract node.
                 pages.remove(webFileName);
             } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ClassCastException cce) {
-                Exceptions.printStackTrace(cce);
+                webFiles.remove(webFile); //Remove this file because it may have been deleted. 
             }
         }
 
@@ -784,10 +783,10 @@ public class PageFlowController {
 
         LOGGER.finest("PageName2Page: put " + displayName);
         //assert displayName.length() != 0;
-        if( page == null ){
-            throw new NullPointerException( "putPageName2Page does not accept null pages.");
+        if (page == null) {
+            throw new NullPointerException("putPageName2Page does not accept null pages.");
         }
-        
+
         checkAWTThread();
         synchronized (pageName2Page) {
             pageName2Page.put(displayName, new WeakReference<Page>(page));
@@ -800,13 +799,13 @@ public class PageFlowController {
      * @return the Page that is associated with the given key.
      */
     protected Page getPageName2Page(String displayName) {
-        
-        
+
+
         checkAWTThread();
-        if ( displayName == null ){
+        if (displayName == null) {
             throw new NullPointerException("Displayname should not be null. You may be using this method incorrectly.");
-        } 
-       // assert displayName.length() != 0;
+        }
+        // assert displayName.length() != 0;
         synchronized (pageName2Page) {
             /*
              * Begin Test
