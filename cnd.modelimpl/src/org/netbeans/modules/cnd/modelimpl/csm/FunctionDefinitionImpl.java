@@ -49,7 +49,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -59,7 +58,6 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  */
 public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmFunctionDefinition<T> {
 
-    private CsmFunction declarationOLD;
     private CsmUID<CsmFunction> declarationUID;
     
     private final CsmCompoundStatement body;
@@ -77,6 +75,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         }
     }
     
+    @Override
     public CsmCompoundStatement getBody() {
         return body;
     }
@@ -96,22 +95,14 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     }
     
     private CsmFunction _getDeclaration() {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmFunction decl = UIDCsmConverter.UIDtoDeclaration(this.declarationUID);
-            // null object is OK here, because of changed cached reference
-            return decl;
-        } else {
-            return this.declarationOLD;
-        }
+        CsmFunction decl = UIDCsmConverter.UIDtoDeclaration(this.declarationUID);
+        // null object is OK here, because of changed cached reference
+        return decl;
     }
     
     private void _setDeclaration(CsmFunction decl) {
-        if (TraceFlags.USE_REPOSITORY) {
-            this.declarationUID = UIDCsmConverter.declarationToUID(decl);
-            assert this.declarationUID != null || decl == null;
-        } else {
-            this.declarationOLD = decl;
-        }
+        this.declarationUID = UIDCsmConverter.declarationToUID(decl);
+        assert this.declarationUID != null || decl == null;
     }
     
     private CsmFunction findDeclaration(Resolver parent) {
@@ -141,10 +132,12 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 	return null;
     }
     
+    @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.FUNCTION_DEFINITION;
     }
 
+    @Override
     protected String findQualifiedName() {
         CsmFunction declaration= _getDeclaration();
 	if( declaration != null ) {
@@ -155,16 +148,19 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 	}
     }
     
+    @Override
     public CsmScope getScope() {
         return getContainingFile();
     }
 
+    @Override
     public List<CsmScopeElement> getScopeElements() {
         List<CsmScopeElement> l = super.getScopeElements();
         l.add(getBody());
         return l;
     }
 
+    @Override
     public CsmFunctionDefinition getDefinition() {
         return this;
     }
@@ -172,6 +168,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeCompoundStatement(this.body, output);

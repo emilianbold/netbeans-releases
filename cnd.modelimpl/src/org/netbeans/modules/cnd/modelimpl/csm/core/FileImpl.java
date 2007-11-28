@@ -104,22 +104,19 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private FileBuffer fileBuffer;
     
-    // only one of project/projectUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)  
+    // only one of project/projectUID must be used (based on USE_UID_TO_CONTAINER)  
     private /*final*/ ProjectBase projectRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmProject> projectUID;
 
     /** 
      * It's a map since we need to eliminate duplications 
      */
-    private Map<String, CsmOffsetableDeclaration> declarationsOLD = Collections.synchronizedSortedMap(new TreeMap<String, CsmOffsetableDeclaration>());
     private Map<String, CsmUID<CsmOffsetableDeclaration>> declarations = new TreeMap<String, CsmUID<CsmOffsetableDeclaration>>();
     private ReadWriteLock  declarationsLock = new ReentrantReadWriteLock();
 
-    private Set<CsmInclude> includesOLD = Collections.<CsmInclude>synchronizedSortedSet(new TreeSet<CsmInclude>(START_OFFSET_COMPARATOR));
     private Set<CsmUID<CsmInclude>> includes = createIncludes();
     private ReadWriteLock includesLock = new ReentrantReadWriteLock();
 
-    private Set<CsmMacro> macrosOLD = Collections.<CsmMacro>synchronizedSortedSet(new TreeSet<CsmMacro>(START_OFFSET_COMPARATOR));    
     private Set<CsmUID<CsmMacro>> macros = createMacros();
     private ReadWriteLock macrosLock = new ReentrantReadWriteLock();
     
@@ -141,8 +138,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private Collection<FunctionImplEx> fakeRegistrationsOLD = new ArrayList<FunctionImplEx>();
     private Collection<CsmUID<FunctionImplEx>> fakeRegistrationUIDs = new CopyOnWriteArrayList<CsmUID<FunctionImplEx>>();
     
-    private final Object fakeLock;
-
     // TODO: move this field and correspondent logic to FileContainer.MyFile
     private final GuardBlockState guardState;
     
@@ -161,15 +156,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public FileImpl(FileBuffer fileBuffer, ProjectBase project, int fileType, NativeFileItem nativeFileItem) {
 	state = State.INITIAL;
         setBuffer(fileBuffer);
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            this.projectUID = UIDCsmConverter.projectToUID(project);
-            this.projectRef = null;
-        } else {
-            this.projectRef = project;
-            this.projectUID = null;
-        }
+        this.projectUID = UIDCsmConverter.projectToUID(project);
+        this.projectRef = null;
         this.fileType = fileType;
-        this.fakeLock = new String("File Lock for " + fileBuffer.getFile().getAbsolutePath()); // NOI18N
         this.guardState = new GuardBlockState();
         if (nativeFileItem != null){
             project.putNativeFileItem(getUID(), nativeFileItem);
@@ -189,12 +178,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private ProjectBase _getProject(boolean assertNotNull) {
         ProjectBase prj = this.projectRef;
         if (prj == null) {
-            if (TraceFlags.USE_REPOSITORY) {
-                prj = (ProjectBase)UIDCsmConverter.UIDtoProject(this.projectUID);
-		if( assertNotNull ) {
-		    assert (prj != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
-		}
-            }    
+            prj = (ProjectBase)UIDCsmConverter.UIDtoProject(this.projectUID);
+            if( assertNotNull ) {
+                assert (prj != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
+            }
         }
         return prj;
     }
@@ -362,9 +349,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	finally {
 	    //Notificator.instance().endTransaction();
             // update this file and it's project     
-            if (TraceFlags.USE_REPOSITORY) {
-                RepositoryUtils.put(this);
-            }
+            RepositoryUtils.put(this);
             if (TraceFlags.USE_DEEP_REPARSING) {
                 getProjectImpl().getGraph().putFile(this);
             }
@@ -395,46 +380,28 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private void disposeAll(boolean clearNonDisposable) {
         //NB: we're copying declarations, because dispose can invoke this.removeDeclaration
         //for( Iterator iter = declarations.values().iterator(); iter.hasNext(); ) {
-        if (TraceFlags.USE_REPOSITORY) {
-            Collection<CsmUID<CsmOffsetableDeclaration>> uids;
-            try {
-                declarationsLock.writeLock().lock();
-                uids = declarations.values();
-                declarations = new TreeMap<String, CsmUID<CsmOffsetableDeclaration>>();
-            }   finally {
-                declarationsLock.writeLock().unlock();
-            }
-            
-            if (clearNonDisposable) {
-                _clearIncludes();
-                _clearMacros();
-            }
-            List<CsmOffsetableDeclaration> arr = UIDCsmConverter.UIDsToDeclarations(uids);
-            Utils.disposeAll(arr);          
-            RepositoryUtils.remove(uids);
-        } else {
-            Collection<CsmOffsetableDeclaration> arr;
-            synchronized (declarationsOLD) {
-                arr = declarationsOLD.values();
-                declarationsOLD = Collections.synchronizedSortedMap(new TreeMap<String, CsmOffsetableDeclaration>());
-                if (clearNonDisposable) {
-                    _clearIncludes();
-                    _clearMacros();
-                }
-            }
-            Utils.disposeAll(arr);
+        Collection<CsmUID<CsmOffsetableDeclaration>> uids;
+        try {
+            declarationsLock.writeLock().lock();
+            uids = declarations.values();
+            declarations = new TreeMap<String, CsmUID<CsmOffsetableDeclaration>>();
+        }   finally {
+            declarationsLock.writeLock().unlock();
         }
 
+        if (clearNonDisposable) {
+            _clearIncludes();
+            _clearMacros();
+        }
+        List<CsmOffsetableDeclaration> arr = UIDCsmConverter.UIDsToDeclarations(uids);
+        Utils.disposeAll(arr);          
+        RepositoryUtils.remove(uids);
     }
         
     private void _clearMacros() {
-        if (TraceFlags.USE_REPOSITORY) {
-            Set<CsmUID<CsmMacro>> copy = macros;
-            macros = createMacros();
-            RepositoryUtils.remove(copy);
-        } else {
-            macrosOLD.clear();
-        }        
+        Set<CsmUID<CsmMacro>> copy = macros;
+        macros = createMacros();
+        RepositoryUtils.remove(copy);
     }
     
     private Set<CsmUID<CsmMacro>> createMacros() {
@@ -442,16 +409,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     private void _clearIncludes() {
-        if (TraceFlags.USE_REPOSITORY) {
-            try {
-                includesLock.writeLock().lock();
-		RepositoryUtils.remove(includes);
-                includes = createIncludes();
-            } finally {
-                includesLock.writeLock().unlock();
-            }
-        } else {
-            includesOLD.clear();
+        try {
+            includesLock.writeLock().lock();
+            RepositoryUtils.remove(includes);
+            includes = createIncludes();
+        } finally {
+            includesLock.writeLock().unlock();
         }
     }
     
@@ -502,7 +465,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 return ast;
             }
         } finally {
-            if (TraceFlags.USE_REPOSITORY && isValid()) {   // FIXUP: use a special lock here
+            if (isValid()) {   // FIXUP: use a special lock here
                 RepositoryUtils.put(this);
             }
             if (TraceFlags.USE_DEEP_REPARSING && isValid()) {	// FIXUP: use a special lock here
@@ -697,17 +660,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     public void addInclude(IncludeImpl includeImpl) {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmInclude> inclUID = RepositoryUtils.put(includeImpl);
-            assert inclUID != null;
-            try {
-                includesLock.writeLock().lock();
-                includes.add(inclUID);
-            } finally {
-                includesLock.writeLock().unlock();
-            }
-        } else {
-            includesOLD.add(includeImpl);
+        CsmUID<CsmInclude> inclUID = RepositoryUtils.put(includeImpl);
+        assert inclUID != null;
+        try {
+            includesLock.writeLock().lock();
+            includes.add(inclUID);
+        } finally {
+            includesLock.writeLock().unlock();
         }
     }
     
@@ -787,73 +746,51 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public List<CsmInclude> getIncludes() {
-        if (TraceFlags.USE_REPOSITORY) {
-            List<CsmInclude> out;
-            try {
-                includesLock.readLock().lock();
-                out = UIDCsmConverter.UIDsToIncludes(includes);
-            } finally {
-                includesLock.readLock().unlock();
-            }
-            return out;
-        } else {
-            synchronized (includesOLD) {
-                return new ArrayList<CsmInclude>(includesOLD);
-            }
+        List<CsmInclude> out;
+        try {
+            includesLock.readLock().lock();
+            out = UIDCsmConverter.UIDsToIncludes(includes);
+        } finally {
+            includesLock.readLock().unlock();
         }
+        return out;
     }
 
     public List<CsmOffsetableDeclaration> getDeclarations() {
         if (!SKIP_UNNECESSARY_FAKE_FIXES) {
             fixFakeRegistrations();
         }
-        if (TraceFlags.USE_REPOSITORY) {
-            List<CsmOffsetableDeclaration> decls;
-            try {
-                declarationsLock.readLock().lock();
-                Collection<CsmUID<CsmOffsetableDeclaration>> uids = declarations.values();
-                decls = UIDCsmConverter.UIDsToDeclarations(uids);
-            } finally {
-                declarationsLock.readLock().unlock();
-            }
-            return decls;
-        } else {
-            synchronized (declarationsOLD) {
-                return new ArrayList<CsmOffsetableDeclaration>(declarationsOLD.values());
-            }
+        List<CsmOffsetableDeclaration> decls;
+        try {
+            declarationsLock.readLock().lock();
+            Collection<CsmUID<CsmOffsetableDeclaration>> uids = declarations.values();
+            decls = UIDCsmConverter.UIDsToDeclarations(uids);
+        } finally {
+            declarationsLock.readLock().unlock();
         }
+        return decls;
     }
     
     public void addMacro(CsmMacro macro) {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmMacro> macroUID = RepositoryUtils.put(macro);
-            assert macroUID != null;
-            try {
-                macrosLock.writeLock().lock();
-                macros.add(macroUID);
-            } finally {
-                macrosLock.writeLock().unlock();
-            }
-        } else {
-            macrosOLD.add(macro);
+        CsmUID<CsmMacro> macroUID = RepositoryUtils.put(macro);
+        assert macroUID != null;
+        try {
+            macrosLock.writeLock().lock();
+            macros.add(macroUID);
+        } finally {
+            macrosLock.writeLock().unlock();
         }
     }
     
     public List<CsmMacro> getMacros() {
-        if (TraceFlags.USE_REPOSITORY) {
-           List<CsmMacro> out;
-           try {
-                macrosLock.readLock().lock();
-                out = UIDCsmConverter.UIDsToMacros(macros);
-            } finally {
-                macrosLock.readLock().unlock();
-            }
-            return out;
-        } else {
-            synchronized (macrosOLD) {
-                return new ArrayList<CsmMacro>(macrosOLD);
-            }
+       List<CsmMacro> out;
+       try {
+            macrosLock.readLock().lock();
+            out = UIDCsmConverter.UIDsToMacros(macros);
+        } finally {
+            macrosLock.readLock().unlock();
         }
+        return out;
     }
     
     public void addDeclaration(CsmOffsetableDeclaration decl) {
@@ -868,16 +805,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     private void _addDeclaration(CsmOffsetableDeclaration decl) {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmOffsetableDeclaration> uidDecl = RepositoryUtils.put(decl);
-            try {
-                declarationsLock.writeLock().lock();
-                declarations.put(getSortKey(decl), uidDecl);
-            } finally {
-                declarationsLock.writeLock().unlock();
-            }
-        } else {
-            declarationsOLD.put(getSortKey(decl), decl);
+        CsmUID<CsmOffsetableDeclaration> uidDecl = RepositoryUtils.put(decl);
+        try {
+            declarationsLock.writeLock().lock();
+            declarations.put(getSortKey(decl), uidDecl);
+        } finally {
+            declarationsLock.writeLock().unlock();
         }
     }
     
@@ -904,20 +837,16 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     private void _removeDeclaration(CsmOffsetableDeclaration declaration) {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmOffsetableDeclaration> uidDecl;
-            try {
-                declarationsLock.writeLock().lock();
-                uidDecl = declarations.remove(getSortKey(declaration));
-            } finally {
-                declarationsLock.writeLock().unlock();
-            }
-            RepositoryUtils.remove(uidDecl);
-            // update repository
-            RepositoryUtils.put(this);
-        } else {
-            declarationsOLD.remove(getSortKey(declaration));
+        CsmUID<CsmOffsetableDeclaration> uidDecl;
+        try {
+            declarationsLock.writeLock().lock();
+            uidDecl = declarations.remove(getSortKey(declaration));
+        } finally {
+            declarationsLock.writeLock().unlock();
         }
+        RepositoryUtils.remove(uidDecl);
+        // update repository
+        RepositoryUtils.put(this);
     }
     
     public static String getSortKey(CsmDeclaration declaration) {
@@ -1029,14 +958,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }    
     
     public void onFakeRegisration(FunctionImplEx decl) {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<FunctionImplEx> uidDecl = UIDCsmConverter.declarationToUID(decl);
-                fakeRegistrationUIDs.add(uidDecl);
-        } else {
-            synchronized( fakeLock ) {
-                fakeRegistrationsOLD.add(decl);
-            }
-        }
+        CsmUID<FunctionImplEx> uidDecl = UIDCsmConverter.declarationToUID(decl);
+        fakeRegistrationUIDs.add(uidDecl);
     }
     
     public void fixFakeRegistrations() {
@@ -1045,18 +968,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         Collection<FunctionImplEx> fakes = Collections.<FunctionImplEx>emptySet();
         
-        if (TraceFlags.USE_REPOSITORY) {
-            if (fakeRegistrationUIDs.size() > 0) {
-                fakes = UIDCsmConverter.UIDsToDeclarationsUnsafe(fakeRegistrationUIDs);
-                fakeRegistrationUIDs.clear();
-            }
-        } else {
-            synchronized( fakeLock ) {
-                // Right now we do not need to make a copy, fakeRegistrations is cleared anyway
-                fakes = fakeRegistrationsOLD;
-                //fakes = (FunctionDefinitionImpl[]) fakeRegistrations.toArray(new FunctionDefinitionImpl[fakeRegistrations.size()]);
-                fakeRegistrationsOLD = new ArrayList<FunctionImplEx>();
-            }
+        if (fakeRegistrationUIDs.size() > 0) {
+            fakes = UIDCsmConverter.UIDsToDeclarationsUnsafe(fakeRegistrationUIDs);
+            fakeRegistrationUIDs.clear();
         }
 	for (FunctionImplEx curElem: fakes) {
 	    curElem.fixFakeRegistration();
@@ -1129,11 +1043,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         
         assert fileBuffer != null;
         assert fileBuffer.isFileBased();
-        fakeLock = new String("File Lock for " + fileBuffer.getFile().getAbsolutePath()); // NOI18N 
         guardState = new GuardBlockState(input);
 	lastParsed = input.readLong();
         state = State.valueOf(input.readUTF());
-        assert TraceFlags.USE_REPOSITORY;
     }
 
     public @Override int hashCode() {

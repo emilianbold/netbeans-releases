@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  * @author Vladimir Kvashin
  */
 public class OffsetableBase implements CsmOffsetable, Disposable {
-    // only one of fileRef/fileUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
+    // only one of fileRef/fileUID must be used (USE_UID_TO_CONTAINER)
     private /*final*/ CsmFile fileRef; // can be set in onDispose or contstructor only
     private final CsmUID<CsmFile> fileUID;
     
@@ -64,13 +64,8 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
     private final int endPosition;
     
     protected OffsetableBase(AST ast, CsmFile file) {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            this.fileUID = UIDCsmConverter.fileToUID(file);
-            this.fileRef = null;// to prevent error with "final"
-        } else {
-            this.fileRef = file;
-            this.fileUID = null;// to prevent error with "final"
-        }
+        this.fileUID = UIDCsmConverter.fileToUID(file);
+        this.fileRef = null;// to prevent error with "final"
         //this.ast = ast;
         CsmAST startAST = getStartAst(ast);
         startPosition = (startAST == null) ? 0 : startAST.getOffset();
@@ -85,13 +80,8 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
     }
     
     public OffsetableBase(CsmFile file, int start, int end) {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            this.fileUID = UIDCsmConverter.fileToUID(file);
-            this.fileRef = null;// to prevent error with "final"
-        } else {
-            this.fileRef = file;
-            this.fileUID = null;// to prevent error with "final"
-        }        
+        this.fileUID = UIDCsmConverter.fileToUID(file);
+        this.fileRef = null;// to prevent error with "final"
         this.startPosition = start;
         this.endPosition = end;
     }
@@ -167,10 +157,8 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
     private CsmFile _getFile() {
         CsmFile file = this.fileRef;
         if (file == null) {
-            if (TraceFlags.USE_REPOSITORY) {
-                file = UIDCsmConverter.UIDtoFile(fileUID);
-                assert file != null : "no object for UID " + fileUID;
-            }            
+            file = UIDCsmConverter.UIDtoFile(fileUID);
+            assert file != null : "no object for UID " + fileUID;
         }
         return file;
     }
@@ -191,8 +179,6 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         // not null UID
         assert this.fileUID != null;          
         this.fileRef = null;
-        
-        assert TraceFlags.USE_REPOSITORY;
     }
     
     // test trace method

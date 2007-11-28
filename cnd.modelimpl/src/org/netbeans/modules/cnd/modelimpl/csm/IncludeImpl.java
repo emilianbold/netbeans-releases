@@ -62,22 +62,14 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
     private final String name;
     private final boolean system;
     
-    // only one of includeFileOLD/includeFileUID must be used (based on USE_REPOSITORY)   
-    private final CsmFile includeFileOLD;
     private CsmUID<CsmFile> includeFileUID;
     
     public IncludeImpl(String name, boolean system, CsmFile includeFile, CsmFile containingFile, CsmOffsetable inclPos) {
         super(containingFile, inclPos);
         this.name = FileNameCache.getString(name);
         this.system = system;
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            this.includeFileUID = UIDCsmConverter.fileToUID(includeFile);
-            assert (includeFileUID != null || includeFile == null);
-            this.includeFileOLD = null;// to prevent error with "final"            
-        } else {
-            this.includeFileOLD = includeFile;
-            this.includeFileUID = null;// to prevent error with "final"            
-        }
+        this.includeFileUID = UIDCsmConverter.fileToUID(includeFile);
+        assert (includeFileUID != null || includeFile == null);
     }
     
     public CsmFile getIncludeFile() {
@@ -92,6 +84,7 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
         return system;
     }
     
+    @Override
     public String toString() {
         char beg = isSystem() ? '<' : '"';
         char end = isSystem() ? '>' : '"';
@@ -104,6 +97,7 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
                 " [" + getStartPosition() + "-" + getEndPosition() + "]"; // NOI18N
     }
 
+    @Override
     public boolean equals(Object obj) {
         boolean retValue;
         if (obj == null || !(obj instanceof IncludeImpl)) {
@@ -122,6 +116,7 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
                 (one.getStartOffset() == other.getStartOffset());
     }
     
+    @Override
     public int hashCode() {
         int retValue = 17*(isSystem() ? 1 : -1);
         retValue = 31*retValue + getStartOffset();
@@ -130,44 +125,41 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
     }
 
     private CsmFile _getIncludeFile() {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            CsmFile file = UIDCsmConverter.UIDtoFile(includeFileUID);
-            if (file == null && includeFileUID != null) {
-                // include file was removed
-                includeFileUID = null;
-            }
-            if (TraceFlags.NEED_TO_TRACE_UNRESOLVED_INCLUDE) {
-                if (file == null && "yes".equals(System.getProperty("cnd.modelimpl.trace.trace_now"))){ //NOI18N
-                    CsmFile container = getContainingFile();
-                    if (container != null){
-                        CsmProject prj = container.getProject();
-                        if (prj instanceof ProjectImpl){
-                            System.out.println("File "+container.getAbsolutePath()); // NOI18N
-                            ProjectImpl impl = (ProjectImpl) prj;
-                            boolean find = false;
-                            for(CsmFile top : impl.getGraph().getTopParentFiles(container)){
-                                if (container != top) {
-                                    System.out.println("  icluded from "+top.getAbsolutePath()); //NOI18N
-                                    find = true;
-                                }
+        CsmFile file = UIDCsmConverter.UIDtoFile(includeFileUID);
+        if (file == null && includeFileUID != null) {
+            // include file was removed
+            includeFileUID = null;
+        }
+        if (TraceFlags.NEED_TO_TRACE_UNRESOLVED_INCLUDE) {
+            if (file == null && "yes".equals(System.getProperty("cnd.modelimpl.trace.trace_now"))){ //NOI18N
+                CsmFile container = getContainingFile();
+                if (container != null){
+                    CsmProject prj = container.getProject();
+                    if (prj instanceof ProjectImpl){
+                        System.out.println("File "+container.getAbsolutePath()); // NOI18N
+                        ProjectImpl impl = (ProjectImpl) prj;
+                        boolean find = false;
+                        for(CsmFile top : impl.getGraph().getTopParentFiles(container)){
+                            if (container != top) {
+                                System.out.println("  icluded from "+top.getAbsolutePath()); //NOI18N
+                                find = true;
                             }
-                            if (!find){
-                                System.out.println("  there are no files included the file"); //NOI18N
-                            }
+                        }
+                        if (!find){
+                            System.out.println("  there are no files included the file"); //NOI18N
                         }
                     }
                 }
             }
-            return file;
-        } else {
-            return includeFileOLD;
         }
+        return file;
     }
 
     protected CsmUID createUID() {
         return UIDUtilities.createIncludeUID(this);
     }
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
@@ -182,8 +174,5 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
         assert this.name != null;
         this.system = input.readBoolean();
         this.includeFileUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-        
-        assert TraceFlags.USE_REPOSITORY;
-        this.includeFileOLD = null;// to prevent error with "final"        
     }    
 }

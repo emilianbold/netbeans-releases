@@ -49,7 +49,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -60,18 +59,16 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  */
 public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMember<CsmEnum> {
     
-    private List<CsmEnumerator> enumeratorsOLD = new ArrayList<CsmEnumerator>();
     private final List<CsmUID<CsmEnumerator>> enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
     
     private EnumImpl(AST ast, CsmFile file) {
         super(findName(ast), file, ast);
     }
     
+    @Override
     protected void init(CsmScope scope, AST ast) {
 	super.init(scope, ast);
-        if (TraceFlags.USE_REPOSITORY) {
-            RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
-        }
+        RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
         initEnumeratorList(ast);
         register(scope);
     }
@@ -130,21 +127,13 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
     }
     
     public List<CsmEnumerator> getEnumerators() {
-        if (TraceFlags.USE_REPOSITORY) {
-            List<CsmEnumerator> out = UIDCsmConverter.UIDsToDeclarations(enumerators);
-            return out;
-        } else {
-            return enumeratorsOLD;
-        }
+        List<CsmEnumerator> out = UIDCsmConverter.UIDsToDeclarations(enumerators);
+        return out;
     }
     
     public void addEnumerator(CsmEnumerator enumerator) {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmEnumerator> uid = RepositoryUtils.put(enumerator);
-            enumerators.add(uid);
-        } else {
-            enumeratorsOLD.add(enumerator);
-        }
+        CsmUID<CsmEnumerator> uid = RepositoryUtils.put(enumerator);
+        enumerators.add(uid);
     }
     
     public List<CsmScopeElement> getScopeElements() {
@@ -155,6 +144,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
         return CsmDeclaration.Kind.ENUM;
     }
     
+    @Override
     public void dispose() {
         _clearEnumerators();
         super.dispose();
@@ -163,16 +153,13 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
     private void _clearEnumerators() {
         List<CsmEnumerator> enumers = getEnumerators();
         Utils.disposeAll(enumers);
-        if (TraceFlags.USE_REPOSITORY) {
-            RepositoryUtils.remove(enumerators);
-        } else {
-            enumeratorsOLD.clear();
-        }
+        RepositoryUtils.remove(enumerators);
     }
     
 ////////////////////////////////////////////////////////////////////////////
 // impl of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         UIDObjectFactory.getDefaultFactory().writeUIDCollection(this.enumerators, output, false);

@@ -83,14 +83,9 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
             
     public TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, String name) {
         super(ast, file);
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            this.containerUID = UIDCsmConverter.identifiableToUID((CsmIdentifiable)container);
-            assert (containerUID != null || container == null);
-            this.containerRef = null;
-        } else {
-            this.containerRef = (CsmIdentifiable)container;
-            this.containerUID = null;
-        }        
+        this.containerUID = UIDCsmConverter.identifiableToUID((CsmIdentifiable)container);
+        assert (containerUID != null || container == null);
+        this.containerRef = null;
         if (type == null) {
             this.type = createType(ast);
         } else {
@@ -127,6 +122,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
         }
     }
 
+    @Override
     public void dispose() {
         super.dispose();
         onDispose();
@@ -230,10 +226,8 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
     private CsmObject _getContainer() {
         CsmIdentifiable container = this.containerRef;
         if (container == null) {
-            if (TraceFlags.USE_REPOSITORY) {
-                container = UIDCsmConverter.UIDtoIdentifiable(this.containerUID);
-                assert (container != null || this.containerUID == null) : "null object for UID " + this.containerUID;
-            } 
+            container = UIDCsmConverter.UIDtoIdentifiable(this.containerUID);
+            assert (container != null || this.containerUID == null) : "null object for UID " + this.containerUID;
         }
         return (CsmObject) container;
     }
@@ -241,6 +235,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
@@ -266,8 +261,5 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
         // not null UID
         assert this.containerUID != null;
         this.containerRef = null;
-        
-        assert TraceFlags.USE_REPOSITORY;
-        
     }       
 }

@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<CsmNamespaceDefinition>
     implements CsmNamespaceDefinition, MutableDeclarationsContainer, Disposable {
 
-    private List<CsmOffsetableDeclaration> declarationsOLD = Collections.synchronizedList(new ArrayList<CsmOffsetableDeclaration>());
     private List<CsmUID<CsmOffsetableDeclaration>> declarations = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>());
     
     private final String name;
@@ -79,14 +78,9 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         NamespaceImpl nsImpl = ((ProjectBase) file.getProject()).findNamespaceCreateIfNeeded(parent, name);
         
         // set parent ns, do it in constructor to have final fields
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            namespaceUID = UIDCsmConverter.namespaceToUID(nsImpl);
-            assert namespaceUID != null;
-            this.namespaceRef = null;
-        } else {
-            this.namespaceRef = nsImpl;
-            this.namespaceUID = null;
-        }
+        namespaceUID = UIDCsmConverter.namespaceToUID(nsImpl);
+        assert namespaceUID != null;
+        this.namespaceRef = null;
         
         if( nsImpl instanceof NamespaceImpl ) {
             nsImpl.addNamespaceDefinition(this);
@@ -98,43 +92,29 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     }
             
     public List<CsmOffsetableDeclaration> getDeclarations() {
-        if (TraceFlags.USE_REPOSITORY) {
-            List<CsmOffsetableDeclaration> decls;
-            synchronized (declarations) {
-                decls = UIDCsmConverter.UIDsToDeclarations(declarations);
-            }
-            return decls;
-        } else {
-            synchronized (declarationsOLD) {
-                return new ArrayList<CsmOffsetableDeclaration>(declarationsOLD);
-            }
+        List<CsmOffsetableDeclaration> decls;
+        synchronized (declarations) {
+            decls = UIDCsmConverter.UIDsToDeclarations(declarations);
         }
+        return decls;
     }
     
     public void addDeclaration(CsmOffsetableDeclaration decl) {
-        if (TraceFlags.USE_REPOSITORY) {        
-            CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
-            assert uid != null;
-            declarations.add(uid);
-            // update repository
-            RepositoryUtils.put(this);
-        } else {
-            declarationsOLD.add(decl);
-        }
+        CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
+        assert uid != null;
+        declarations.add(uid);
+        // update repository
+        RepositoryUtils.put(this);
     }
     
     public void removeDeclaration(CsmOffsetableDeclaration declaration) {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmOffsetableDeclaration> uid = UIDCsmConverter.declarationToUID(declaration);
-            assert uid != null;
-            boolean res = declarations.remove(uid);
-            assert res;
-            RepositoryUtils.remove(uid);
-            // update repository
-            RepositoryUtils.put(this);
-        } else {
-            declarationsOLD.remove(declaration);
-        }
+        CsmUID<CsmOffsetableDeclaration> uid = UIDCsmConverter.declarationToUID(declaration);
+        assert uid != null;
+        boolean res = declarations.remove(uid);
+        assert res;
+        RepositoryUtils.remove(uid);
+        // update repository
+        RepositoryUtils.put(this);
     }
 
     public String getQualifiedName() {
@@ -162,24 +142,15 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         super.dispose();
         onDispose();
         //NB: we're copying declarations, because dispose can invoke this.removeDeclaration
-        if (TraceFlags.USE_REPOSITORY) {
-            List<CsmOffsetableDeclaration> decls;
-            List<CsmUID<CsmOffsetableDeclaration>> uids;
-            synchronized (declarations) {
-                decls = getDeclarations();
-                uids = declarations;
-                declarations  = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>());
-            }
-            Utils.disposeAll(decls);            
-            RepositoryUtils.remove(uids);                      
-        } else {
-            List/*<CsmDeclaration>*/ decls;
-            synchronized (declarationsOLD) {
-                decls = getDeclarations();
-                declarationsOLD  = Collections.synchronizedList(new ArrayList());
-            }
-            Utils.disposeAll(decls);
-        }  
+        List<CsmOffsetableDeclaration> decls;
+        List<CsmUID<CsmOffsetableDeclaration>> uids;
+        synchronized (declarations) {
+            decls = getDeclarations();
+            uids = declarations;
+            declarations  = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>());
+        }
+        Utils.disposeAll(decls);            
+        RepositoryUtils.remove(uids);                      
         NamespaceImpl ns = _getNamespaceImpl();
         assert ns != null;
         ns.removeNamespaceDefinition(this);
@@ -196,10 +167,8 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     private NamespaceImpl _getNamespaceImpl() {
         NamespaceImpl impl = this.namespaceRef;
         if (impl == null) {
-            if (TraceFlags.USE_REPOSITORY) {
-                impl = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(this.namespaceUID);
-                assert impl != null || this.namespaceUID == null : "null object for UID " + this.namespaceUID;
-            }
+            impl = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(this.namespaceUID);
+            assert impl != null || this.namespaceUID == null : "null object for UID " + this.namespaceUID;
         }
         return impl;
     }
@@ -232,8 +201,5 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         
         this.name = TextCache.getString(input.readUTF());
         assert this.name != null;
-        
-        assert TraceFlags.USE_REPOSITORY;
-        this.declarationsOLD = null;
     }      
 }

@@ -133,20 +133,12 @@ public class Utils {
             if( elem  instanceof Disposable ) {
                 Disposable decl = (Disposable) elem;
                 if (TraceFlags.TRACE_DISPOSE) {
-                    if (TraceFlags.USE_REPOSITORY) {                        
-                        System.err.println("disposing with UID " + ((CsmIdentifiable)elem).getUID());
-                    } else {
-                        System.err.println("disposing " + elem);
-                    }
+                    System.err.println("disposing with UID " + ((CsmIdentifiable)elem).getUID());
                 }
                 decl.dispose();
             } else {
                 if (TraceFlags.TRACE_DISPOSE) {
-                    if (TraceFlags.USE_REPOSITORY) {
-                        System.err.println("non disposable with UID " + ((CsmIdentifiable)elem).getUID());
-                    } else {
-                        System.err.println("non disposable " + elem);
-                    }
+                    System.err.println("non disposable with UID " + ((CsmIdentifiable)elem).getUID());
                 }
             }            
         }

@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.ObjectBasedUID;
 
 /**
@@ -67,11 +66,7 @@ public class BuiltinTypes {
         
         private BuiltinImpl(String name) {
             this.name = TextCache.getString(name);
-            if (TraceFlags.USE_REPOSITORY) {
-                this.uid = new BuiltInUID(this);
-            } else {
-                this.uid = null;
-            }
+            this.uid = new BuiltInUID(this);
         }
         
         public String getQualifiedName() {
@@ -100,10 +95,12 @@ public class BuiltinTypes {
             return uid;
         }
         
+        @Override
         public int hashCode() {
             return name.hashCode();
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (this == obj) {
                 return true;
@@ -115,6 +112,7 @@ public class BuiltinTypes {
             return name.equals(other.name);
         }
 
+        @Override
         public String toString() {
             return "" + getKind() + " " +  getQualifiedName(); // NOI18N
         }
@@ -162,11 +160,13 @@ public class BuiltinTypes {
             super(decl);
         }
         
+        @Override
         public String toString() {
             String retValue = "<BUILT-IN UID> " + super.toString(); // NOI18N
             return retValue;
         } 
 
+        @Override
         public void write(DataOutput output) throws IOException {
             BuiltinImpl ref = (BuiltinImpl) getObject();
             assert ref != null;

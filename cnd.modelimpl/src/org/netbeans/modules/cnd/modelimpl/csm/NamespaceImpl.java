@@ -67,11 +67,11 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer,
         Persistent, SelfPersistent, Disposable {
     
-    // only one of project/projectUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
+    // only one of project/projectUID must be used (based on USE_UID_TO_CONTAINER)
     private /*final*/ ProjectBase projectRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmProject> projectUID;
     
-    // only one of parent/parentUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
+    // only one of parent/parentUID must be used (based on USE_UID_TO_CONTAINER)
     private /*final*/ CsmNamespace parentRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmNamespace> parentUID;
     
@@ -79,15 +79,12 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private final String qualifiedName;
     
     /** maps namespaces FQN to namespaces */
-    private Map<String, CsmNamespace> nestedMapOLD = new ConcurrentHashMap<String, CsmNamespace>();
     private Map<String, CsmUID<CsmNamespace>> nestedMap = new ConcurrentHashMap<String, CsmUID<CsmNamespace>>();
     
-    private Map<String,CsmOffsetableDeclaration> declarationsOLD = new ConcurrentHashMap<String,CsmOffsetableDeclaration>();
     private Map<String,CsmUID<CsmOffsetableDeclaration>> declarations = new ConcurrentHashMap<String,CsmUID<CsmOffsetableDeclaration>>();
     //private Collection/*<CsmNamespace>*/ nestedNamespaces = Collections.synchronizedList(new ArrayList/*<CsmNamespace>*/());
     
 //    private Collection/*<CsmNamespaceDefinition>*/ definitions = new ArrayList/*<CsmNamespaceDefinition>*/();
-    private Map<String,CsmNamespaceDefinition> definitionsOLD = Collections.synchronizedSortedMap(new TreeMap<String,CsmNamespaceDefinition>());
     private Map<String,CsmUID<CsmNamespaceDefinition>> nsDefinitions = new TreeMap<String,CsmUID<CsmNamespaceDefinition>>();
     private ReadWriteLock nsDefinitionsLock = new ReentrantReadWriteLock();
     
@@ -101,16 +98,11 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.parentRef = null;
         this.global = true;
         assert project != null;
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            this.projectUID = UIDCsmConverter.projectToUID(project);
-            assert this.projectUID != null;
+        
+        this.projectUID = UIDCsmConverter.projectToUID(project);
+        assert this.projectUID != null;
             
-            this.projectRef = null;
-        } else {
-            this.projectRef = project;
-            
-            this.projectUID = null;
-        }
+        this.projectRef = null;
         project.registerNamespace(this);
     }
     
@@ -120,16 +112,11 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.name = name;
         this.global = false;
         assert project != null;
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            this.projectUID = UIDCsmConverter.projectToUID(project);
-            assert this.projectUID != null;
-            
-            this.projectRef = null;
-        } else {
-            this.projectRef = project;
-            
-            this.projectUID = null;
-        }
+        
+        this.projectUID = UIDCsmConverter.projectToUID(project);
+        assert this.projectUID != null;
+
+        this.projectRef = null;
         this.qualifiedName = qualifiedName;
         // TODO: rethink once more
         // now all classes do have namespaces
@@ -139,16 +126,11 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
 //        // getGlobalNamespace() and getTopLevelNamespaces()
 //        this.parent = (parent == null || parent.isGlobal()) ? null : parent;
         assert !CHECK_PARENT || parent != null;
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            this.parentUID = UIDCsmConverter.namespaceToUID(parent);
-            assert parentUID != null || parent == null;
-            
-            this.parentRef = null;
-        } else {
-            this.parentRef = parent;
-            
-            this.parentUID = null;
-        }
+
+        this.parentUID = UIDCsmConverter.namespaceToUID(parent);
+        assert parentUID != null || parent == null;
+
+        this.parentRef = null;
         
         project.registerNamespace(this);
         if( parent != null ) {
@@ -210,21 +192,13 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
     
     public Collection<CsmNamespace> getNestedNamespaces() {
-        if (TraceFlags.USE_REPOSITORY) {
-            List<CsmNamespace> out = UIDCsmConverter.UIDsToNamespaces(new ArrayList(nestedMap.values()));
-            return out;
-        } else {
-            return new ArrayList<CsmNamespace>(nestedMapOLD.values());
-        }
+        List<CsmNamespace> out = UIDCsmConverter.UIDsToNamespaces(new ArrayList(nestedMap.values()));
+        return out;
     }
     
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
-        if (TraceFlags.USE_REPOSITORY) {
-            List<CsmOffsetableDeclaration> decls = UIDCsmConverter.UIDsToDeclarations(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations.values()));
-            return decls;
-        } else {
-            return new ArrayList<CsmOffsetableDeclaration>(declarationsOLD.values());
-        }
+        List<CsmOffsetableDeclaration> decls = UIDCsmConverter.UIDsToDeclarations(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations.values()));
+        return decls;
     }
     
     public boolean isGlobal() {
@@ -252,38 +226,24 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
     
     private NamespaceImpl _getNestedNamespace(String fqn) {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmNamespace> uid = nestedMap.get(fqn);
-            NamespaceImpl out = (NamespaceImpl)UIDCsmConverter.UIDtoNamespace(uid);
-            assert out != null || uid == null;
-            return out;
-        } else {
-            return (NamespaceImpl) nestedMapOLD.get(fqn);
-        }
+        CsmUID<CsmNamespace> nestedNsUid = nestedMap.get(fqn);
+        NamespaceImpl out = (NamespaceImpl)UIDCsmConverter.UIDtoNamespace(nestedNsUid);
+        assert out != null || nestedNsUid == null;
+        return out;
     }
     
     private void addNestedNamespace(NamespaceImpl nsp) {
-        if (TraceFlags.USE_REPOSITORY) {
-            assert nsp != null;
-            CsmUID<CsmNamespace> uid = RepositoryUtils.put(nsp);
-            assert uid != null;
-            nestedMap.put(nsp.getQualifiedName(), uid);
-        } else {
-            nestedMapOLD.put(nsp.getQualifiedName(), nsp);
-        }
-        if (TraceFlags.USE_REPOSITORY) {
-            RepositoryUtils.put(this);
-        }
+        assert nsp != null;
+        CsmUID<CsmNamespace> nestedNsUid = RepositoryUtils.put(nsp);
+        assert nestedNsUid != null;
+        nestedMap.put(nsp.getQualifiedName(), nestedNsUid);
+        RepositoryUtils.put(this);
     }
     
     private void removeNestedNamespace(NamespaceImpl nsp) {
-        if (TraceFlags.USE_REPOSITORY) {
-            assert nsp != null;
-            CsmUID<CsmNamespace> uid = nestedMap.remove(nsp.getQualifiedName());
-            assert uid != null;
-        } else {
-            nestedMapOLD.remove(nsp.getQualifiedName());
-        }
+        assert nsp != null;
+        CsmUID<CsmNamespace> nestedNsUid = nestedMap.remove(nsp.getQualifiedName());
+        assert nestedNsUid != null;
         // handle unnamed namespace index
         if (nsp.getName().length() == 0) {
             String fqn = nsp.getQualifiedName();
@@ -317,20 +277,16 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
                 return;
             }
         }
-//	else if( declaration instanceof FunctionImpl ) {
-//	}
+
         String uniqueName = declaration.getUniqueName();
         CsmOffsetableDeclaration oldDecl;
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmOffsetableDeclaration> uid = declarations.get(uniqueName);
-            oldDecl = UIDCsmConverter.UIDtoDeclaration(uid);
-            // use TraceFlags.SAFE_UID_ACCESS as workaround
-            // see IZ#101952
-            if (!TraceFlags.SAFE_UID_ACCESS ) {
-                assert (oldDecl != null || uid == null): "no object for UID " + uid;
-            }
-        } else {
-            oldDecl = (CsmOffsetableDeclaration) declarationsOLD.get(uniqueName);
+        
+        CsmUID<CsmOffsetableDeclaration> oldDeclarationUid = declarations.get(uniqueName);
+        oldDecl = UIDCsmConverter.UIDtoDeclaration(oldDeclarationUid);
+        // use TraceFlags.SAFE_UID_ACCESS as workaround
+        // see IZ#101952
+        if (!TraceFlags.SAFE_UID_ACCESS ) {
+            assert (oldDecl != null || oldDeclarationUid == null): "no object for UID " + oldDeclarationUid;
         }
         
 //	// replace declaration with new one unless
@@ -349,20 +305,14 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             //}
         }
         
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmOffsetableDeclaration> uid = UIDCsmConverter.declarationToUID(declaration);
-            declarations.put(uniqueName, uid);
-        } else {
-            declarationsOLD.put(uniqueName, declaration);
-        }
+        CsmUID<CsmOffsetableDeclaration> newDeclarationUID = UIDCsmConverter.declarationToUID(declaration);
+        declarations.put(uniqueName, newDeclarationUID);
         
 //        if( "Cursor".equals(declaration.getName()) ) {
 //            System.err.println("Cursor");
 //        }
         // update repository
-        if (TraceFlags.USE_REPOSITORY) {
-            RepositoryUtils.put(this);
-        }
+        RepositoryUtils.put(this);
         
         if( oldDecl != null ) { //&& oldDecl.getKind() == declaration.getKind() ) {
             //Notificator.instance().registerChangedDeclaration(oldDecl,declaration);
@@ -382,75 +332,57 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
     
     public void removeDeclaration(CsmOffsetableDeclaration declaration) {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmOffsetableDeclaration> uid = declarations.remove(declaration.getUniqueName());
-            // do not clean repository, it must be done from physical container of declaration
-            if (false) RepositoryUtils.remove(uid);
-            // update repository
-            RepositoryUtils.put(this);
-        } else {
-            declarationsOLD.remove(declaration.getUniqueName());
-        }
+        CsmUID<CsmOffsetableDeclaration> declarationUid = declarations.remove(declaration.getUniqueName());
+        // do not clean repository, it must be done from physical container of declaration
+        if (false) RepositoryUtils.remove(declarationUid);
+        // update repository
+        RepositoryUtils.put(this);
         Notificator.instance().registerRemovedDeclaration(declaration);
     }
     
     public Collection<CsmNamespaceDefinition> getDefinitions()  {
-//        return definitions;
-        if (TraceFlags.USE_REPOSITORY) {
-            List<CsmUID<CsmNamespaceDefinition>> uids = new ArrayList<CsmUID<CsmNamespaceDefinition>>();
-            try {
-                nsDefinitionsLock.readLock().lock();
-                uids.addAll(nsDefinitions.values());
-            } finally {
-                nsDefinitionsLock.readLock().unlock();
-            }
-            List<CsmNamespaceDefinition> defs = UIDCsmConverter.UIDsToDeclarations(uids);
-            return defs;
-        } else {
-            return new ArrayList<CsmNamespaceDefinition>(definitionsOLD.values());
+        List<CsmUID<CsmNamespaceDefinition>> uids = new ArrayList<CsmUID<CsmNamespaceDefinition>>();
+        try {
+            nsDefinitionsLock.readLock().lock();
+            uids.addAll(nsDefinitions.values());
+        } finally {
+            nsDefinitionsLock.readLock().unlock();
         }
+        List<CsmNamespaceDefinition> defs = UIDCsmConverter.UIDsToDeclarations(uids);
+        return defs;
     }
     
     public void addNamespaceDefinition(CsmNamespaceDefinition def) {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmNamespaceDefinition> uid = RepositoryUtils.put(def);
-            try {
-                nsDefinitionsLock.writeLock().lock();
-                nsDefinitions.put(getSortKey(def), uid);
-            } finally {
-                nsDefinitionsLock.writeLock().unlock();
-            }
-            // update repository
-            RepositoryUtils.put(this);
-        } else {
-            definitionsOLD.put(getSortKey(def), def);
+        CsmUID<CsmNamespaceDefinition> definitionUid = RepositoryUtils.put(def);
+        try {
+            nsDefinitionsLock.writeLock().lock();
+            nsDefinitions.put(getSortKey(def), definitionUid);
+        } finally {
+            nsDefinitionsLock.writeLock().unlock();
         }
+        // update repository
+        RepositoryUtils.put(this);
     }
     
     public void removeNamespaceDefinition(CsmNamespaceDefinition def) {
         assert !this.isGlobal();
         boolean remove = false;
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmNamespaceDefinition> uid = null;
-            try {
-                nsDefinitionsLock.writeLock().lock();
-                uid = nsDefinitions.remove(getSortKey(def));
-            } finally {
-                nsDefinitionsLock.writeLock().unlock();
-            }
-            // does not remove unregistered declaration from repository, it's responsibility of physical container
-            if (false) RepositoryUtils.remove(uid);
-            // update repository about itself
-            RepositoryUtils.put(this);
-            try {
-                nsDefinitionsLock.readLock().lock();
-                remove =  (nsDefinitions.size() == 0);
-            } finally {
-                nsDefinitionsLock.readLock().unlock();
-            }
-        } else {
-            definitionsOLD.remove(getSortKey(def));
-            remove = (definitionsOLD.size() == 0);
+        CsmUID<CsmNamespaceDefinition> definitionUid = null;
+        try {
+            nsDefinitionsLock.writeLock().lock();
+            definitionUid = nsDefinitions.remove(getSortKey(def));
+        } finally {
+            nsDefinitionsLock.writeLock().unlock();
+        }
+        // does not remove unregistered declaration from repository, it's responsibility of physical container
+        if (false) RepositoryUtils.remove(definitionUid);
+        // update repository about itself
+        RepositoryUtils.put(this);
+        try {
+            nsDefinitionsLock.readLock().lock();
+            remove =  (nsDefinitions.size() == 0);
+        } finally {
+            nsDefinitionsLock.readLock().unlock();
         }
         if (remove) {
             NamespaceImpl parent = (NamespaceImpl) _getParentNamespace();
@@ -498,10 +430,8 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private ProjectBase _getProject() {
         ProjectBase prj = this.projectRef;
         if (prj == null) {
-            if (TraceFlags.USE_REPOSITORY) {
-                prj = (ProjectBase)UIDCsmConverter.UIDtoProject(this.projectUID);
-                assert (prj != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
-            }
+            prj = (ProjectBase)UIDCsmConverter.UIDtoProject(this.projectUID);
+            assert (prj != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
         }
         return prj;
     }
@@ -509,14 +439,13 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private CsmNamespace _getParentNamespace() {
         CsmNamespace ns = this.parentRef;
         if (ns == null) {
-            if (TraceFlags.USE_REPOSITORY) {
-                ns = UIDCsmConverter.UIDtoNamespace(this.parentUID);
-                assert (ns != null || this.parentUID == null) : "null object for UID " + this.parentUID;   
-            }
+            ns = UIDCsmConverter.UIDtoNamespace(this.parentUID);
+            assert (ns != null || this.parentUID == null) : "null object for UID " + this.parentUID;   
         }
         return ns;
     }
     
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(getName());
         sb.append(' ');

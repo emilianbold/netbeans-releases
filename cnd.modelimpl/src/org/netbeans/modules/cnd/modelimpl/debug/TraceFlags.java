@@ -91,10 +91,10 @@ public interface TraceFlags {
     
     public static final boolean DEBUG = Boolean.getBoolean("org.netbeans.modules.cnd.modelimpl.trace")  || Boolean.getBoolean("cnd.modelimpl.trace");
     
-    public static final boolean USE_REPOSITORY = DebugUtils.getBoolean("cnd.modelimpl.use.repository", true);
+    //public static final boolean USE_REPOSITORY = DebugUtils.getBoolean("cnd.modelimpl.use.repository", true);
     public static final boolean PERSISTENT_REPOSITORY = DebugUtils.getBoolean("cnd.modelimpl.persistent", true);
-    public static final boolean RESTORE_CONTAINER_FROM_UID = USE_REPOSITORY && DebugUtils.getBoolean("cnd.modelimpl.use.uid.container", true);
-    public static final boolean UID_CONTAINER_MARKER = true;
+    public static final boolean RESTORE_CONTAINER_FROM_UID = DebugUtils.getBoolean("cnd.modelimpl.use.uid.container", true);
+    //public static final boolean UID_CONTAINER_MARKER = true;
 
     public static final boolean CLEAN_MACROS_AFTER_PARSE = DebugUtils.getBoolean("cnd.clean.macros.after.parse", true);
     

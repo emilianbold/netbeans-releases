@@ -51,7 +51,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
@@ -77,17 +76,15 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
     public CsmScope getScope() {
         CsmScope scope = this.scopeRef;
         if (scope == null) {
-            if (TraceFlags.USE_REPOSITORY) {
-                scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
-                assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
-            }
+            scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
+            assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
         }
         return scope;
     }
     
     protected void setScope(CsmScope scope) {
 	// within bodies scope is a statement - it is not Identifiable
-        if ((scope instanceof CsmIdentifiable) && TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
+        if (scope instanceof CsmIdentifiable) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
             assert (scopeUID != null || scope == null);
         } else {
@@ -99,6 +96,7 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
         return ast;
     }
     
+    @Override
     protected void write(DataOutput output) throws IOException {
         super.write(output);
         UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
@@ -110,6 +108,7 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }   
 
+    @Override
     public String toString() {
         return "" + getKind() + ' ' + getOffsetString(); // NOI18N
     }

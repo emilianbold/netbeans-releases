@@ -74,7 +74,6 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     // FIX for lazy resolver calls
     private String[] qname = null;
     private int firstOffset;
-    private CsmClassifier classifierOLD;
     private CsmUID<CsmClassifier> classifierUID;
     
     // package-local - for facory only
@@ -110,6 +109,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         this.classifierText = initClassifierText(classifier);
     }
     
+    @Override
     protected CsmAST getEndAst(AST node) {
         AST ast = node;
         if( ast == null ) {
@@ -168,6 +168,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
 	return getText(true, null).toString();
     }
     
+    @Override
     public String getText() {
 	// TODO: resolve typedefs
 	return getText(false, null).toString();
@@ -344,22 +345,14 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     }
 
     private CsmClassifier _getClassifier() {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmClassifier classifier = UIDCsmConverter.UIDtoDeclaration(classifierUID);
-            // can be null if cached one was removed 
-            return classifier;
-        } else {
-            return this.classifierOLD;
-        }     
+        CsmClassifier classifier = UIDCsmConverter.UIDtoDeclaration(classifierUID);
+        // can be null if cached one was removed 
+        return classifier;
     }
 
     private void _setClassifier(CsmClassifier classifier) {
-        if (TraceFlags.USE_REPOSITORY) {
-            this.classifierUID = UIDCsmConverter.declarationToUID(classifier);
-            assert (classifierUID != null || classifier == null);
-        } else {
-            this.classifierOLD = classifier;
-        }
+        this.classifierUID = UIDCsmConverter.declarationToUID(classifier);
+        assert (classifierUID != null || classifier == null);
     }
 
     public boolean isBuiltInBased(boolean resolveTypeChain) {
@@ -376,6 +369,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     }
     
 
+    @Override
     public String toString() {
         return "TYPE " + getText()  + getOffsetString(); // NOI18N
     }    
@@ -392,6 +386,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         output.writeInt(pointerDepth);
@@ -418,9 +413,6 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         this.qname = PersistentUtils.readStrings(input, TextCache.getManager());
         this.firstOffset = input.readInt();
         this.classifierUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-        
-        assert TraceFlags.USE_REPOSITORY;
-        this.classifierOLD = null;
     }
 
 }

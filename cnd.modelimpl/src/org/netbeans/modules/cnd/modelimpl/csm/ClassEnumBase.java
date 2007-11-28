@@ -97,14 +97,9 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
      * to call super.init()
      */
     protected void init(CsmScope scope, AST ast) {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-	    assert (this.scopeUID != null || scope == null) : "null UID for class scope " + scope;
-            this.scopeRef = null;
-        } else {
-            this.scopeRef = scope;
-            this.scopeUID = null;
-        }   
+        this.scopeUID = UIDCsmConverter.scopeToUID(scope);
+        assert (this.scopeUID != null || scope == null) : "null UID for class scope " + scope;
+        this.scopeRef = null;
 	
 	String qualifiedNamePostfix = getQualifiedNamePostfix();
         if(  CsmKindUtilities.isNamespace(scope) ) {
@@ -123,9 +118,9 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     abstract public Kind getKind();
     
     protected void register(CsmScope scope) {
-        if (TraceFlags.USE_REPOSITORY) {
-            RepositoryUtils.put(this);
-        }
+        
+        RepositoryUtils.put(this);
+        
         if( ProjectBase.canRegisterDeclaration(this) ) {
             registerInProject();
 	    
@@ -160,10 +155,8 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     public CsmScope getScope() {
         CsmScope scope = this.scopeRef;
         if (scope == null) {
-            if (TraceFlags.USE_REPOSITORY) {
-                scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
-                assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
-            }
+            scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
+            assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
         }
         return scope;
     }
@@ -261,8 +254,6 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         this.visibility = PersistentUtils.readVisibility(input);
         assert this.visibility != null;
                 
-        assert TraceFlags.USE_REPOSITORY;
-        
         // restore UID for unnamed classifier
         if (getName().length() == 0) {
             super.readUID(input);

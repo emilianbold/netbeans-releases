@@ -80,10 +80,8 @@ public class FriendFunctionImpl extends FunctionImpl<CsmFriendFunction> implemen
     
     public CsmClass getContainingClass() {
         CsmClass cls = null;
-        if (TraceFlags.USE_REPOSITORY) {
-            cls = UIDCsmConverter.UIDtoClass(friendClassUID);
-            assert (friendClassUID != null) : "null object for UID " + friendClassUID;
-        }
+        cls = UIDCsmConverter.UIDtoClass(friendClassUID);
+        assert (friendClassUID != null) : "null object for UID " + friendClassUID;
         return cls;
     }
     

@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -63,7 +62,6 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  */
 /*package-local*/ class ClassifierContainer implements Persistent, SelfPersistent {
 
-    private Map/*<String, ClassImpl>*/ classifiersOLD = new ConcurrentHashMap(/*<String, ClassImpl>*/);
     private Map<String, CsmUID<CsmClassifier>> classifiers = new ConcurrentHashMap<String, CsmUID<CsmClassifier>>();
     private Map<String, CsmUID<CsmClassifier>> typedefs = new ConcurrentHashMap<String, CsmUID<CsmClassifier>>();
     
@@ -77,65 +75,46 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     
     public CsmClassifier getClassifier(String qualifiedName) {
         CsmClassifier result;
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmClassifier> uid = classifiers.get(qualifiedName);
-            if (uid == null) {
-                uid = typedefs.get(qualifiedName);
-            }
-            result = UIDCsmConverter.UIDtoDeclaration(uid);
-        } else {
-            result = (CsmClassifier) classifiersOLD.get(qualifiedName);
+        CsmUID<CsmClassifier> uid = classifiers.get(qualifiedName);
+        if (uid == null) {
+            uid = typedefs.get(qualifiedName);
         }
+        result = UIDCsmConverter.UIDtoDeclaration(uid);
         return result;
     }
     
     public boolean putClassifier(CsmClassifier decl) {
         String qn = decl.getQualifiedName();
-        if (TraceFlags.USE_REPOSITORY) {
-            Map<String, CsmUID<CsmClassifier>> map;
-            if (isTypedef(decl)) {
-                map = typedefs;
-            } else {
-                map = classifiers;
-            }
-            if (!map.containsKey(qn)) {
-                CsmUID<CsmClassifier> uid = UIDCsmConverter.declarationToUID(decl);
-                assert uid != null;
-                map.put(qn, uid);
-                assert (UIDCsmConverter.UIDtoDeclaration(uid) != null);
-                return true;
-            }
+        Map<String, CsmUID<CsmClassifier>> map;
+        if (isTypedef(decl)) {
+            map = typedefs;
         } else {
-            if (!classifiersOLD.containsKey(qn)){
-                classifiersOLD.put(qn, decl);
-                return true;
-            }
+            map = classifiers;
+        }
+        if (!map.containsKey(qn)) {
+            CsmUID<CsmClassifier> uid = UIDCsmConverter.declarationToUID(decl);
+            assert uid != null;
+            map.put(qn, uid);
+            assert (UIDCsmConverter.UIDtoDeclaration(uid) != null);
+            return true;
         }
         return false;
     }
 
     public void removeClassifier(CsmDeclaration decl) {
-        if (TraceFlags.USE_REPOSITORY) {
-            Map<String, CsmUID<CsmClassifier>> map;
-            if (isTypedef(decl)) {
-                map = typedefs;
-            } else {
-                map = classifiers;
-            }
-            CsmUID<CsmClassifier> uid = map.remove(decl.getQualifiedName());
-            assert (uid == null) || (UIDCsmConverter.UIDtoCsmObject(uid) != null) : " no object for UID " + uid;
+        Map<String, CsmUID<CsmClassifier>> map;
+        if (isTypedef(decl)) {
+            map = typedefs;
         } else {
-            classifiersOLD.remove(decl.getQualifiedName());
+            map = classifiers;
         }
+        CsmUID<CsmClassifier> uid = map.remove(decl.getQualifiedName());
+        assert (uid == null) || (UIDCsmConverter.UIDtoCsmObject(uid) != null) : " no object for UID " + uid;
     }
 
     public void clearClassifiers() {
-        if (TraceFlags.USE_REPOSITORY) {
-            classifiers.clear();
-            typedefs.clear();
-        } else {
-            classifiersOLD.clear();
-        }
+        classifiers.clear();
+        typedefs.clear();
     }
 
     private boolean isTypedef(CsmDeclaration decl){

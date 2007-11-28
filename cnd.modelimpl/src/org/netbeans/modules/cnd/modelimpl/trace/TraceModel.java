@@ -735,15 +735,6 @@ public class TraceModel extends TraceModelBase {
     private boolean waitParsed(ProjectBase project, boolean trace) {
 	boolean wasWait = false;
 	project.waitParse();
-	if (false && TraceFlags.USE_REPOSITORY) {
-	    for (Iterator it = project.getAllFiles().iterator(); it.hasNext();) {
-		FileImpl file = (FileImpl) it.next();
-		if (!file.isParsed()) {
-		    wasWait = true;
-		    sleep(100);
-		}
-	    }
-	}
 	return wasWait;
     }
 

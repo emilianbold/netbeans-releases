@@ -56,19 +56,16 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -79,9 +76,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  * @author Alexander Simon
  */
 public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefinition> implements CsmVariableDefinition {
-    private CsmVariable declaration;
-    private CsmUID<CsmVariable> declarationUID;
     
+    private CsmUID<CsmVariable> declarationUID;
     private String qualifiedName;
     private final String[] classOrNspNames;
 
@@ -100,6 +96,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         return name;
     }
 
+    @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.VARIABLE_DEFINITION;
     }
@@ -115,24 +112,16 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     }
 
     private CsmVariable _getDeclaration() {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmVariable declaration = UIDCsmConverter.UIDtoDeclaration(this.declarationUID);
-            // null object is OK here, because of changed cached reference
-            return declaration;
-        } else {
-            return this.declaration;
-        }
+        // null object is OK here, because of changed cached reference
+        return UIDCsmConverter.UIDtoDeclaration(this.declarationUID);
     }
     
     private void _setDeclaration(CsmVariable decl) {
-        if (TraceFlags.USE_REPOSITORY) {
-            this.declarationUID = UIDCsmConverter.declarationToUID(decl);
-            assert declarationUID != null || decl == null;
-        } else {
-            this.declaration = decl;
-        }        
+        this.declarationUID = UIDCsmConverter.declarationToUID(decl);
+        assert declarationUID != null || decl == null;
     }
     
+    @Override
     public String getQualifiedName() {
 	if( qualifiedName == null ) {
 	    qualifiedName = findQualifiedName();
@@ -276,6 +265,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);    
         assert this.qualifiedName != null;

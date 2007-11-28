@@ -275,7 +275,6 @@ public final class LibraryManager {
     }
     
     private LibraryEntry getOrCreateLibrary(final ModelImpl model, final String includeFolder) {
-        assert TraceFlags.USE_REPOSITORY;
         LibraryEntry entry = librariesEntries.get(includeFolder);
         if (entry == null) {
             boolean needFire = false;
@@ -326,7 +325,6 @@ public final class LibraryManager {
     
     private void closeLibraries(Collection<LibraryEntry> entries) {
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
-        assert TraceFlags.USE_REPOSITORY;
         for (LibraryEntry entry : entries) {
             CsmUID<CsmProject> uid = entry.getLibrary();
             ProjectBase lib = (ProjectBase) uid.getObject();

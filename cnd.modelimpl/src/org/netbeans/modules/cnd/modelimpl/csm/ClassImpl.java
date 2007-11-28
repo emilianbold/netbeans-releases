@@ -50,7 +50,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -64,10 +63,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 
     private final CsmDeclaration.Kind kind;
     
-    private final List<CsmMember> membersOLD = new ArrayList<CsmMember>();
     private final List<CsmUID<CsmMember>> members = new ArrayList<CsmUID<CsmMember>>();
 
-    private final List<CsmFriend> friendsOLD = new ArrayList<CsmFriend>();
     private final List<CsmUID<CsmFriend>> friends = new ArrayList<CsmUID<CsmFriend>>();
     
     private final List<CsmInheritance> inheritances = new ArrayList<CsmInheritance>();
@@ -83,6 +80,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             super((FileImpl) ClassImpl.this.getContainingFile());
         }
         
+        @Override
         protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, 
 		MutableDeclarationsContainer container1, MutableDeclarationsContainer container2,CsmScope scope) {
 	    
@@ -91,6 +89,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             return field;
         }
         
+        @Override
         public void render(AST ast) {
 	    boolean rcurlyFound = false;
             CsmTypedef[] typedefs;
@@ -283,6 +282,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 	    return true;
 	}
 	
+        @Override
         protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, String name) {
             return new MemberTypedef(ClassImpl.this, ast, type, name, curentVisibility);
         }
@@ -311,6 +311,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         ////////////////////////////////////////////////////////////////////////////
         // impl of SelfPersistent
 
+        @Override
         public void write(DataOutput output) throws IOException {
             super.write(output);
             assert this.visibility != null;
@@ -341,11 +342,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 	kind = findKind(ast);
     }
     
+    @Override
     protected void init(CsmScope scope, AST ast) {
 	super.init(scope, ast);
-        if (TraceFlags.USE_REPOSITORY) {
-            RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
-        }
+        RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
         new ClassAstRenderer().render(ast);
         leftBracketPos = initLeftBracketPos(ast);
         register(scope);
@@ -362,27 +362,19 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     }
     
     public List<CsmMember> getMembers() {
-        if (TraceFlags.USE_REPOSITORY) {
-            List<CsmMember> out;
-            synchronized (members) {
-                out = UIDCsmConverter.UIDsToDeclarations(members);
-            }
-            return out;
-        } else {
-            return membersOLD;
+        List<CsmMember> out;
+        synchronized (members) {
+            out = UIDCsmConverter.UIDsToDeclarations(members);
         }
+        return out;
     }
 
     public List<CsmFriend> getFriends() {
-        if (TraceFlags.USE_REPOSITORY) {
-            List<CsmFriend> out;
-            synchronized (friends) {
-                out = UIDCsmConverter.UIDsToDeclarations(friends);
-            }
-            return out;
-        } else {
-            return friendsOLD;
+        List<CsmFriend> out;
+        synchronized (friends) {
+            out = UIDCsmConverter.UIDsToDeclarations(friends);
         }
+        return out;
     }
     
     public List<CsmInheritance> getBaseClasses() {
@@ -394,26 +386,18 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     }
 
     private void addMember(CsmMember member) {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmMember> uid = RepositoryUtils.put(member);
-            assert uid != null;
-            synchronized (members) {
-                members.add(uid);       
-            }
-        } else {
-            membersOLD.add(member);
+        CsmUID<CsmMember> uid = RepositoryUtils.put(member);
+        assert uid != null;
+        synchronized (members) {
+            members.add(uid);       
         }
     }
 
     private void addFriend(CsmFriend friend) {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmFriend> uid = RepositoryUtils.put(friend);
-            assert uid != null;
-            synchronized (friends) {
-                friends.add(uid);       
-            }
-        } else {
-            friendsOLD.add(friend);
+        CsmUID<CsmFriend> uid = RepositoryUtils.put(friend);
+        assert uid != null;
+        synchronized (friends) {
+            friends.add(uid);       
         }
     }
     
@@ -430,6 +414,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         return (List)getMembers();
     }
     
+    @Override
     public void dispose() {
         _clearMembers();
         _clearFriends();
@@ -439,25 +424,17 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     private void _clearMembers() {
         List<CsmMember> members2dispose = getMembers();
         Utils.disposeAll(members2dispose);
-        if (TraceFlags.USE_REPOSITORY) {
-            synchronized (members) {
-                RepositoryUtils.remove(this.members);
-            }
-        } else {
-            membersOLD.clear();
-        }        
+        synchronized (members) {
+            RepositoryUtils.remove(this.members);
+        }
     }    
 
     private void _clearFriends() {
         List<CsmFriend> friends2dispose = getFriends();
         Utils.disposeAll(friends2dispose);
-        if (TraceFlags.USE_REPOSITORY) {
-            synchronized (friends) {
-                RepositoryUtils.remove(this.friends);
-            }
-        } else {
-            friendsOLD.clear();
-        }        
+        synchronized (friends) {
+            RepositoryUtils.remove(this.friends);
+        }
     }    
 
     private CsmDeclaration.Kind findKind(AST ast) {
@@ -486,6 +463,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
 
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
 //    private final CsmDeclaration.Kind kind;

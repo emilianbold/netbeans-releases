@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
@@ -80,13 +79,12 @@ public class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<CsmFrie
     
     public CsmClass getContainingClass() {
         CsmClass cls = null;
-        if (TraceFlags.USE_REPOSITORY) {
-            cls = UIDCsmConverter.UIDtoClass(friendClassUID);
-            assert (friendClassUID != null) : "null object for UID " + friendClassUID;
-        }
+        cls = UIDCsmConverter.UIDtoClass(friendClassUID);
+        assert (friendClassUID != null) : "null object for UID " + friendClassUID;
         return cls;
     }
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         UIDObjectFactory.getDefaultFactory().writeUID(friendClassUID, output);

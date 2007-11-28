@@ -79,11 +79,8 @@ public class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunction> imp
     }
     
     public CsmClass getContainingClass() {
-        CsmClass cls = null;
-        if (TraceFlags.USE_REPOSITORY) {
-            cls = UIDCsmConverter.UIDtoClass(friendClassUID);
-            assert (friendClassUID != null) : "null object for UID " + friendClassUID;
-        }
+        CsmClass cls = UIDCsmConverter.UIDtoClass(friendClassUID);
+        assert (friendClassUID != null) : "null object for UID " + friendClassUID;
         return cls;
     }
     

@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
@@ -66,12 +65,8 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
     private CsmVisibility visibility;
     private boolean virtual;
     
-    // only one of resolvedAncestorClassCacheOLD/resolvedAncestorClassCacheUID must be used (based on USE_REPOSITORY) 
-    private CsmClass resolvedAncestorClassCacheOLD;
     private CsmUID<CsmClass> resolvedAncestorClassCacheUID;
     
-    // only one of classifierCacheOLD/classifierCacheUID must be used (based on USE_REPOSITORY) 
-    private CsmClassifier classifierCacheOLD;
     private CsmUID<CsmClassifier> classifierCacheUID;
     
     private String ancestorName;
@@ -173,47 +168,31 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
     }
     
     public CsmClass _getAncestorCache() {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            CsmClass ancestorCache = UIDCsmConverter.UIDtoDeclaration(resolvedAncestorClassCacheUID);
-            // can be null if cached one was removed 
-            return ancestorCache;            
-        } else {
-            return resolvedAncestorClassCacheOLD;
-        }        
+        // can be null if cached one was removed 
+        return UIDCsmConverter.UIDtoDeclaration(resolvedAncestorClassCacheUID);
     }
 
     public void _setAncestorCache(CsmClass ancestorCache) {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            resolvedAncestorClassCacheUID = UIDCsmConverter.declarationToUID(ancestorCache);
-            assert (resolvedAncestorClassCacheUID != null || ancestorCache == null);
-        } else {
-            this.resolvedAncestorClassCacheOLD = ancestorCache;
-        }        
+        resolvedAncestorClassCacheUID = UIDCsmConverter.declarationToUID(ancestorCache);
+        assert (resolvedAncestorClassCacheUID != null || ancestorCache == null);
     }
     
 
     private CsmClassifier _getClassifierCache() {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            CsmClassifier classifierCache = UIDCsmConverter.UIDtoDeclaration(classifierCacheUID);
-            // can be null if cached one was removed 
-            return classifierCache;            
-        } else {
-            return classifierCacheOLD;
-        } 
+        CsmClassifier classifierCache = UIDCsmConverter.UIDtoDeclaration(classifierCacheUID);
+        // can be null if cached one was removed 
+        return classifierCache;            
     }
 
     private void _setClassifierCache(CsmClassifier classifierCache) {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            classifierCacheUID = UIDCsmConverter.declarationToUID(classifierCache);
-            assert (classifierCacheUID != null || classifierCacheUID == null);
-        } else {
-            this.classifierCacheOLD = classifierCache;
-        }  
+        classifierCacheUID = UIDCsmConverter.declarationToUID(classifierCache);
+        assert (classifierCacheUID != null || classifierCacheUID == null);
     }
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeVisibility(this.visibility, output);
@@ -248,6 +227,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
         }
     }    
 
+    @Override
     public String toString() {
         return "INHERITANCE " + visibility + " " + (isVirtual() ? "virtual " : "") + ancestorName + getOffsetString(); // NOI18N
     }  

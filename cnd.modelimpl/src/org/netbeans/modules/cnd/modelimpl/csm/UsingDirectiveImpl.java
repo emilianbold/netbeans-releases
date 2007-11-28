@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -65,7 +64,6 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     private final int startOffset;
     private final String[] rawName;
     // TODO: don't store declaration here since the instance might change
-    private CsmNamespace referencedNamespaceOLD = null;
     private CsmUID<CsmNamespace> referencedNamespaceUID = null;
     
     public UsingDirectiveImpl(AST ast, CsmFile file) {
@@ -102,24 +100,16 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     }
     
     private CsmNamespace _getReferencedNamespace() {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            CsmNamespace referencedNamespace = UIDCsmConverter.UIDtoNamespace(referencedNamespaceUID);
-            // can be null if namespace was removed 
-            return referencedNamespace;
-        } else {
-            return this.referencedNamespaceOLD;
-        }
+        // can be null if namespace was removed 
+        return UIDCsmConverter.UIDtoNamespace(referencedNamespaceUID);
     }    
 
     private void _setReferencedNamespace(CsmNamespace referencedNamespace) {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            this.referencedNamespaceUID = UIDCsmConverter.namespaceToUID(referencedNamespace);
-            assert this.referencedNamespaceUID != null || referencedNamespace == null;
-        } else {
-            this.referencedNamespaceOLD = referencedNamespace;
-        }
+        this.referencedNamespaceUID = UIDCsmConverter.namespaceToUID(referencedNamespace);
+        assert this.referencedNamespaceUID != null || referencedNamespace == null;
     }
     
+    @Override
     public int getStartOffset() {
         return startOffset;
     }
@@ -148,6 +138,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;

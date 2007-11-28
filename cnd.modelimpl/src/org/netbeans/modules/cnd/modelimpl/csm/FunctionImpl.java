@@ -71,12 +71,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     private String name;
     private final CsmType returnType;
-    private final List<CsmParameter>  parametersOLD;
     private final List<CsmUID<CsmParameter>>  parameters;
     private final boolean isVoidParameterList;
     private String signature;
     
-    // only one of scopeRef/scopeAccessor must be used (based on USE_REPOSITORY)
+    // only one of scopeRef/scopeAccessor must be used 
     private /*final*/ CsmScope scopeRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmScope> scopeUID;
     
@@ -94,21 +93,14 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);
         // set scope, do it in constructor to have final fields
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-            assert (this.scopeUID != null || scope == null);
-            this.scopeRef = null;
-        } else {
-            this.scopeRef = scope;
-            this.scopeUID = null;
-        }
+        this.scopeUID = UIDCsmConverter.scopeToUID(scope);
+        assert (this.scopeUID != null || scope == null);
+        this.scopeRef = null;
         
         name = initName(ast);
         rawName = AstUtil.getRawNameInChildren(ast);
 	
-        if (TraceFlags.USE_REPOSITORY) {
-            RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
-        }
+        RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
 	
         _const = initConst(ast);
         returnType = initReturnType(ast);
@@ -116,16 +108,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         
         // set parameters, do it in constructor to have final fields
         List<CsmParameter> params = initParameters(ast);
-        if (TraceFlags.USE_REPOSITORY) {
-            if (params == null) {
-                this.parameters = null;
-            } else {
-                this.parameters = RepositoryUtils.put(params);
-            }
-            this.parametersOLD = null;
-        } else {
-            this.parametersOLD = params;
+        if (params == null) {
             this.parameters = null;
+        } else {
+            this.parameters = RepositoryUtils.put(params);
         }
         if (params == null || params.size() == 0) {
             isVoidParameterList = isVoidParameter(ast);
@@ -146,22 +132,22 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     protected String classTemplateSuffix;
     
     private void initTemplate(AST node) {
-        boolean template = false, specialization = false;
+        boolean _template = false, specialization = false;
         switch(node.getType()) {
             case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION: 
             case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DEFINITION: 
             case CPPTokenTypes.CSM_CTOR_TEMPLATE_DECLARATION: 
             case CPPTokenTypes.CSM_CTOR_TEMPLATE_DEFINITION:  
-                template = true;
+                _template = true;
                 break;
             case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
             case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
-                template = true;
+                _template = true;
                 specialization = true;
                 break;
         }
 
-        if (template) {
+        if (_template) {
             AST templateNode = node.getFirstChild();
             assert ( templateNode != null && templateNode.getType() == CPPTokenTypes.LITERAL_template );
             // 0. our grammar can't yet differ template-class's method from template-method
@@ -199,13 +185,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                             templateNode = templateSiblingNode;
                         } else {
                             // we have no template-method at all
-                            template = false;
+                            _template = false;
                         }
                     }
                 }
             }
             
-            if (template) {
+            if (_template) {
                 // 3. We are sure now what we have template-method, 
                 // let's check is it specialization template or not
                 if (specialization) { 
@@ -224,7 +210,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                 }
             }
         }
-        this.template = template;
+        this.template = _template;
     }
     
     protected String getScopeSuffix() {
@@ -334,6 +320,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return rawName;
     }
     
+    @Override
     public String getUniqueNameWithoutPrefix() {
         return getQualifiedName() + (template ? templateSuffix : "") + getSignature().substring(getName().length());
     }
@@ -528,6 +515,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return sb.toString();
     }
     
+    @Override
     public void dispose() {
         super.dispose();
         onDispose();
@@ -576,40 +564,31 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private CsmScope _getScope() {
         CsmScope scope = this.scopeRef;
         if (scope == null) {
-            if (TraceFlags.USE_REPOSITORY) {
-                scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
-                assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
-            }
+            scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
+            assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
         }
         return scope;
     }
     
     private List _getParameters() {
-        if (TraceFlags.USE_REPOSITORY) {
-            if (this.parameters == null) {
-                return Collections.EMPTY_LIST;
-            } else {
-                List<CsmParameter> out = UIDCsmConverter.UIDsToDeclarations(parameters);
-                return out;
-            }
+        if (this.parameters == null) {
+            return Collections.EMPTY_LIST;
         } else {
-            return parametersOLD;
+            List<CsmParameter> out = UIDCsmConverter.UIDsToDeclarations(parameters);
+            return out;
         }
     }
     
     private void _disposeParameters() {
-        if (TraceFlags.USE_REPOSITORY) {
-            if (parameters != null) {
-                RepositoryUtils.remove(parameters);
-            }
-        } else {
-            this.parametersOLD.clear();
+        if (parameters != null) {
+            RepositoryUtils.remove(parameters);
         }
     }
     
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
@@ -653,9 +632,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         // not null UID
         assert !CHECK_SCOPE || this.scopeUID != null;
         this.scopeRef = null;
-        
-        assert TraceFlags.USE_REPOSITORY;
-        parametersOLD = null;
         
         this.signature = PersistentUtils.readUTF(input);
         if (this.signature != null) {

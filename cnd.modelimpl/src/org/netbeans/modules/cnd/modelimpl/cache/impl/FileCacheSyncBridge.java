@@ -72,8 +72,6 @@ final class FileCacheSyncBridge {
     private boolean aptMaybeOnDisk;
     private boolean aptLightMaybeOnDisk;
     
-    // only one of fileUID/fileImplOLD must be used (based on USE_REPOSITORY)
-    private FileImpl fileImplOLD;
     private CsmUID<CsmFile> fileUID;
     
     private String absPath;
@@ -372,21 +370,13 @@ final class FileCacheSyncBridge {
     
     private void _setFile(FileImpl file) {
         this.absPath = file.getAbsolutePath();
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            this.fileUID = UIDCsmConverter.fileToUID(file);
-        } else {
-            this.fileImplOLD = file;
-        }
+        this.fileUID = UIDCsmConverter.fileToUID(file);
     }
     
     private FileImpl _getFile() {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            FileImpl file = (FileImpl) UIDCsmConverter.UIDtoFile(fileUID);
-            assert (file != null);
-            return file;
-        } else {
-            return fileImplOLD;
-        }
+        FileImpl file = (FileImpl) UIDCsmConverter.UIDtoFile(fileUID);
+        assert (file != null);
+        return file;
     } 
     ////////////////////////////////////////////////////////////////////////////
     // locks

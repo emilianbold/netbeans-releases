@@ -49,9 +49,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
@@ -64,7 +62,6 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
     private final String namespace;
     private final String[] rawName;
     
-    private CsmNamespace referencedNamespaceOLD = null;
     private CsmUID<CsmNamespace> referencedNamespaceUID = null;
     
     public NamespaceAliasImpl(AST ast, CsmFile file) {
@@ -104,25 +101,6 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
         return getContainingFile().getProject().findNamespace(namespace);
     }
 
-    private CsmNamespace _getReferencedNamespace() {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmNamespace referencedNamespace = UIDCsmConverter.UIDtoNamespace(referencedNamespaceUID);
-            // can be null if namespace was removed 
-            return referencedNamespace;
-        } else {
-            return this.referencedNamespaceOLD;
-        }
-    }    
-
-    private void _setReferencedNamespace(CsmNamespace referencedNamespace) {
-        if (TraceFlags.USE_REPOSITORY) {
-            this.referencedNamespaceUID = UIDCsmConverter.namespaceToUID(referencedNamespace);
-            assert this.referencedNamespaceUID != null || referencedNamespace == null;
-        } else {
-            this.referencedNamespaceOLD = referencedNamespace;
-        }
-    }
-    
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.NAMESPACE_ALIAS;
     }
@@ -157,6 +135,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
         return rawName;
     }
     
+    @Override
     public String toString() {
         return "" + getKind() + ' ' + alias + '=' + namespace /*+ " rawName=" + Utils.toString(getRawName())*/; // NOI18N
     }
@@ -169,6 +148,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.alias != null;

@@ -137,6 +137,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return getName();
     }
     
+    @Override
     public String getUniqueNameWithoutPrefix() {
         if (isExtern()) {
             return getQualifiedName() + " (EXTERN)"; // NOI18N
@@ -202,9 +203,9 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
     
     public boolean isConst() {
-        CsmType type = getType();
-        if( type != null ) {
-            return type.isConst();
+        CsmType _type = getType();
+        if( _type != null ) {
+            return _type.isConst();
         }
         return false;
     }
@@ -241,6 +242,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return _getScope();
     }
     
+    @Override
     public void dispose() {
         super.dispose();
         onDispose();
@@ -271,17 +273,15 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     private CsmScope _getScope() {
         CsmScope scope = this.scopeRef;
         if (scope == null) {
-            if (TraceFlags.USE_REPOSITORY) {
-                scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
-                assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
-            }
+            scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
+            assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
         }
         return scope;
     }
     
     private void _setScope(CsmScope scope) {
 	// for variables declared in bodies scope is CsmCompoundStatement - it is not Identifiable
-        if ((scope instanceof CsmIdentifiable) && TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
+        if ((scope instanceof CsmIdentifiable)) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
             assert (scopeUID != null || scope == null);
         } else {
@@ -291,16 +291,16 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     
     public String getDisplayText() {
 	StringBuilder sb = new StringBuilder();
-	CsmType type = getType();
-	if( type instanceof TypeImpl ) {
-	    return ((TypeImpl) type).getText(false, this.getName()).toString();
+	CsmType _type = getType();
+	if( _type instanceof TypeImpl ) {
+	    return ((TypeImpl) _type).getText(false, this.getName()).toString();
 	}
-	else if( type != null ) {
-	    sb.append(type.getText());
-	    String name = getName();
-	    if (name != null && name.length() >0) {
+	else if( _type != null ) {
+	    sb.append(_type.getText());
+	    String _name = getName();
+	    if (_name != null && _name.length() >0) {
 		sb.append(' ');
-		sb.append(name);
+		sb.append(_name);
 	    }
 	}
 	return sb.toString();
@@ -309,6 +309,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output); 
         assert this.name != null;
@@ -336,6 +337,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         this.scopeRef = null;
     }    
     
+    @Override
     public String toString() {
         return (isExtern() ? "EXTERN " : "") + super.toString(); // NOI18N
     }     

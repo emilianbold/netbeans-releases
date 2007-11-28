@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerator> implements CsmEnumerator {
     private final String name;
     
-    // only one of enumerationRef/enumerationUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)    
+    // only one of enumerationRef/enumerationUID must be used (USE_UID_TO_CONTAINER)    
     private /*final*/ CsmEnum enumerationRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmEnum> enumerationUID;
 
@@ -70,13 +70,8 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
         this.name = ast.getText();
         
         // set parent enum, do it in constructor to have final fields
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            this.enumerationUID = UIDCsmConverter.declarationToUID((CsmEnum)enumeration);
-            this.enumerationRef = null;
-        } else {
-            this.enumerationRef = enumeration;
-            this.enumerationUID = null;
-        }
+        this.enumerationUID = UIDCsmConverter.declarationToUID((CsmEnum)enumeration);
+        this.enumerationRef = null;
         
         enumeration.addEnumerator(this);
     }
@@ -108,14 +103,13 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     private CsmEnum _getEnumeration() {
         CsmEnum enumeration = this.enumerationRef;
         if (enumeration == null) {
-            if (TraceFlags.USE_REPOSITORY) {
-                enumeration = UIDCsmConverter.UIDtoDeclaration(this.enumerationUID);
-                assert (enumeration != null || this.enumerationUID == null) : "null object for UID " + this.enumerationUID;
-            }
+            enumeration = UIDCsmConverter.UIDtoDeclaration(this.enumerationUID);
+            assert (enumeration != null || this.enumerationUID == null) : "null object for UID " + this.enumerationUID;
         }
         return enumeration;
     }    
 
+    @Override
     public void dispose() {
         super.dispose();
         onDispose();
@@ -131,6 +125,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
 
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
@@ -149,7 +144,5 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
         // not null UID
         assert this.enumerationUID != null;
         this.enumerationRef = null;
-        
-        assert TraceFlags.USE_REPOSITORY;
     }
 }

@@ -53,10 +53,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 
 /**
@@ -110,6 +107,7 @@ public final class Unresolved implements Disposable {
             return Collections.<CsmInheritance>emptyList();
         }
         
+        @Override
         public boolean isValid() {
             return false; // false for dummy class, to allow reconstruct in usage place
         }
@@ -125,6 +123,7 @@ public final class Unresolved implements Disposable {
 	
         ////////////////////////////////////////////////////////////////////////////
         // impl of SelfPersistent
+        @Override
         public void write(DataOutput output) throws IOException {
             throw new IllegalCallException();
         }        
@@ -136,6 +135,7 @@ public final class Unresolved implements Disposable {
             super(project, null, "$unresolved$","$unresolved$"); // NOI18N
         }
 
+        @Override
         protected void notifyCreation() {
             // skip registration
         }
@@ -152,33 +152,10 @@ public final class Unresolved implements Disposable {
 	}
     }
     
-    public final static class UnresolvedFile implements CsmFile, Disposable  {
+    public final class UnresolvedFile implements CsmFile {
 	
-        // only one of projectRef/projectUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
-        private /*final*/ ProjectBase projectRef;// can be set in onDispose or contstructor only
-        private final CsmUID<CsmProject> projectUID;
-    
-        private UnresolvedFile(ProjectBase project) {
-            if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-                this.projectUID = UIDCsmConverter.projectToUID(project);
-                this.projectRef = null;
-            } else {
-                this.projectRef = project;
-                this.projectUID = null;
-            }            
+        private UnresolvedFile() {
         }
-        
-        public void dispose() {
-            onDispose();
-        }
-
-        private void onDispose() {
-            if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
-                // restore container from it's UID
-                this.projectRef = (ProjectBase)UIDCsmConverter.UIDtoProject(this.projectUID);
-                assert (this.projectRef != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
-            }
-        } 
         
         public String getText(int start, int end) {
             return "";
@@ -189,9 +166,17 @@ public final class Unresolved implements Disposable {
         public List<CsmScopeElement> getScopeElements() {
             return Collections.<CsmScopeElement>emptyList();
         }
+        
         public CsmProject getProject() {
-            return _getProject(projectUID, projectRef);
+            if( projectRef == null ) {
+                assert projectUID != null;
+                return (ProjectBase)UIDCsmConverter.UIDtoProject(projectUID);
+            }
+            else {
+                return projectRef;
+            }
         }
+        
         public String getName() {
             return "$unresolved file$"; // NOI18N
         }
@@ -234,7 +219,7 @@ public final class Unresolved implements Disposable {
         }
     };
     
-    // only one of projectRef/projectUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
+    // only one of projectRef/projectUID must be used (based on USE_UID_TO_CONTAINER)
     private /*final*/ ProjectBase projectRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmProject> projectUID;
     
@@ -246,14 +231,9 @@ public final class Unresolved implements Disposable {
     private Map<String, Reference<UnresolvedClass>> dummiesForUnresolved = new HashMap<String, Reference<UnresolvedClass>>();
     
     public Unresolved(ProjectBase project) {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            this.projectUID = UIDCsmConverter.projectToUID(project);
-            this.projectRef = null;
-        } else {
-            this.projectRef = project;
-            this.projectUID = null;
-        }
-        unresolvedFile = new UnresolvedFile(project);
+        this.projectUID = UIDCsmConverter.projectToUID(project);
+        this.projectRef = null;
+        unresolvedFile = new UnresolvedFile();
         unresolvedNamespace = new UnresolvedNamespace(project);
     }
     
@@ -268,21 +248,6 @@ public final class Unresolved implements Disposable {
             assert (this.projectRef != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
         }
     }    
-    
-    private ProjectBase _getProject() {       
-        return _getProject(this.projectUID, this.projectRef);
-    }
-    
-    private static ProjectBase _getProject(CsmUID<CsmProject> projectUID, ProjectBase project) {
-        ProjectBase prj = project;
-        if (prj == null) {
-            if (TraceFlags.USE_REPOSITORY) {
-                assert projectUID != null;
-                prj = (ProjectBase)UIDCsmConverter.UIDtoProject(projectUID);
-            }        
-        }
-        return prj;
-    }
     
     public CsmClass getDummyForUnresolved(String[] nameTokens) {
 	return getDummyForUnresolved(getName(nameTokens));

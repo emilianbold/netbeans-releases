@@ -159,19 +159,12 @@ public class TraceModelBase {
     }
 
     public ProjectBase getProject() {
-        if (TraceFlags.USE_REPOSITORY) {
-	    synchronized( this ) {
-		if( projectUID == null ) {
-		    projectUID = createProject().getUID();
-		}
-	    }
-            return (projectUID == null) ? null : (ProjectBase) projectUID.getObject();
-        } else {
-	    if( this.project == null ) {
-		this.project = createProject();
-	    }
-            return this.project;
+        synchronized( this ) {
+            if( projectUID == null ) {
+                projectUID = createProject().getUID();
+            }
         }
+        return (projectUID == null) ? null : (ProjectBase) projectUID.getObject();
     }
     
     public static void closeProject(CsmProject project) {

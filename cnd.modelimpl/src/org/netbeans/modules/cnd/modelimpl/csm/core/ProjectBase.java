@@ -104,25 +104,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         init(model, platformProject);
         NamespaceImpl ns = new NamespaceImpl(this);
         assert ns != null;
-        if (TraceFlags.USE_REPOSITORY) {
-            this.globalNamespaceUID = UIDCsmConverter.namespaceToUID(ns);
-            this.globalNamespaceOLD = null;
-            declarationsSorageKey = new DeclarationContainer(this).getKey();
-            fileContainerKey = new FileContainer(this).getKey();
-            graphStorageKey = new GraphContainer(this).getKey();
-        } else {
-            this.globalNamespaceOLD = ns;
-            this.globalNamespaceUID = null;
-        }
+        this.globalNamespaceUID = UIDCsmConverter.namespaceToUID(ns);
+        declarationsSorageKey = new DeclarationContainer(this).getKey();
+        fileContainerKey = new FileContainer(this).getKey();
+        graphStorageKey = new GraphContainer(this).getKey();
     }
 
     private void init(ModelImpl model, Object platformProject) {
         this.model = model;
         this.platformProject = platformProject;
-        if (TraceFlags.USE_REPOSITORY) {
-            // remember in repository
-            RepositoryUtils.hang(this);
-        }
+        // remember in repository
+        RepositoryUtils.hang(this);
         // create global namespace
         
         if (TraceFlags.CLOSE_AFTER_PARSE) {
@@ -324,10 +316,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         
         if( !ProjectBase.canRegisterDeclaration(decl) ) {
             if (TraceFlags.TRACE_REGISTRATION) {
-                System.err.println("not registered " + decl);
-                if (TraceFlags.USE_REPOSITORY) {
-                    System.err.println("not registered UID " + decl.getUID());
-                }
+                System.err.println("not registered decl " + decl + " UID " + decl.getUID()); //NOI18N
             }
             
             return;
@@ -358,20 +347,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
         if (TraceFlags.TRACE_REGISTRATION) {
-            System.err.println("registered " + decl);
-            if (TraceFlags.USE_REPOSITORY) {
-                System.err.println("registered UID " + decl.getUID());
-            }
+            System.err.println("registered " + decl + " UID " + decl.getUID()); //NOI18N
         }
         
     }
     
     public void unregisterDeclaration(CsmDeclaration decl) {
         if (TraceFlags.TRACE_REGISTRATION) {
-            System.err.println("unregistered " + decl);
-            if (TraceFlags.USE_REPOSITORY) {
-                System.err.println("unregistered UID " + decl.getUID());
-            }
+            System.err.println("unregistered " + decl+ " UID " + decl.getUID()); //NOI18N
         }
         if( decl instanceof CsmClassifier ) {
             classifierContainer.removeClassifier(decl);
@@ -1293,29 +1276,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             
             disposeLock.writeLock().lock();
 
-            /*
-             * if the repository is not used - clean all collections as we did before
-             * in the other case - just close the corresponding unit
-             * collections are not cleared to write the valid project content
-             */
-            if (!TraceFlags.USE_REPOSITORY){
-                disposeFiles();
-
-                // we have clear all collections
-                // to protect IDE against the code model client
-                // that stores the instance of the project
-                // and does not release it upon project closure
-                _clearNamespaces();
-                classifierContainer.clearClassifiers();
-                getDeclarationsSorage().clearDeclarations();
-                if (TraceFlags.USE_DEEP_REPARSING) {
-                    getGraph().clear();
-                }
-            } else {
-                ProjectSettingsValidator validator = new ProjectSettingsValidator(this);
-                validator.storeSettings();
-                RepositoryUtils.closeUnit(getUID(), getRequiredUnits(), cleanPersistent);
-            }
+            ProjectSettingsValidator validator = new ProjectSettingsValidator(this);
+            validator.storeSettings();
+            RepositoryUtils.closeUnit(getUID(), getRequiredUnits(), cleanPersistent);
 
             platformProject = null;
             unresolved = null;
@@ -1357,37 +1320,24 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     private NamespaceImpl _getGlobalNamespace() {
-        if (TraceFlags.USE_REPOSITORY) {
-            NamespaceImpl ns = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(globalNamespaceUID);
-            assert ns != null : "Failed to get global namespace by key " + globalNamespaceUID;;
-            return ns;
-        } else {
-            assert globalNamespaceOLD != null;
-            return globalNamespaceOLD;
-        }
+        NamespaceImpl ns = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(globalNamespaceUID);
+        assert ns != null : "Failed to get global namespace by key " + globalNamespaceUID;
+        return ns;
     }
     
     private NamespaceImpl _getNamespace( String key ) {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmNamespace> nsUID = namespaces.get(key);
-            NamespaceImpl ns = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(nsUID);
-            return ns;
-        } else {
-            return namespacesOLD.get(key);
-        }
+        CsmUID<CsmNamespace> nsUID = namespaces.get(key);
+        NamespaceImpl ns = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(nsUID);
+        return ns;
     }
     
     private void _registerNamespace(NamespaceImpl ns ) {
         assert (ns != null);
         String key = ns.getQualifiedName();
         assert (key != null);
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmNamespace> nsUID = RepositoryUtils.put(ns);
-            assert nsUID != null;
-            namespaces.put(key, nsUID);
-        } else {
-            namespacesOLD.put(key, ns);
-        }
+        CsmUID<CsmNamespace> nsUID = RepositoryUtils.put(ns);
+        assert nsUID != null;
+        namespaces.put(key, nsUID);
     }
     
     private void _unregisterNamespace(NamespaceImpl ns ) {
@@ -1395,21 +1345,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert !ns.isGlobal();
         String key = ns.getQualifiedName();
         assert (key != null);
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmNamespace> nsUID = namespaces.remove(key);
-            assert nsUID != null;
-            RepositoryUtils.remove(nsUID);
-        } else {
-            namespacesOLD.remove(key);
-        }
-    }
-    
-    private void _clearNamespaces() {
-        if (TraceFlags.USE_REPOSITORY) {
-            namespaces.clear();
-        } else {
-            namespacesOLD.clear();
-        }
+        CsmUID<CsmNamespace> nsUID = namespaces.remove(key);
+        assert nsUID != null;
+        RepositoryUtils.remove(nsUID);
     }
     
     protected ModelImpl getModel() {
@@ -1913,8 +1851,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private Unresolved unresolved;
     private String name;
     
-    // only one of globalNamespace/globalNamespaceOLD must be used (based on USE_REPOSITORY)
-    private final NamespaceImpl globalNamespaceOLD;
     private final CsmUID<CsmNamespace> globalNamespaceUID;
     
     private Object platformProject;
@@ -1950,8 +1886,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     
     private String uniqueName = null; // lazy initialized
     
-    // only one of namespaces/namespacesOLD must be used (based on USE_REPOSITORY)
-    private Map<String, NamespaceImpl> namespacesOLD = new ConcurrentHashMap<String, NamespaceImpl>();
     private Map<String, CsmUID<CsmNamespace>> namespaces =new ConcurrentHashMap<String, CsmUID<CsmNamespace>>();
    
     private ClassifierContainer classifierContainer = new ClassifierContainer();
@@ -2040,8 +1974,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 	assert uniqueName != null : "uniqueName can not be null";
         
         this.model = (ModelImpl) CsmModelAccessor.getModel();
-        
-        this.globalNamespaceOLD = null;
     }
     
     DeclarationContainer getDeclarationsSorage() {

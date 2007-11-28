@@ -46,12 +46,10 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -66,7 +64,6 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     private final int startOffset;
     private final String[] rawName;
     // TODO: don't store declaration here since the instance might change
-    private CsmDeclaration referencedDeclarationOLD = null;
     private CsmUID<CsmDeclaration> referencedDeclarationUID = null;
     
     public UsingDeclarationImpl(AST ast, CsmFile file) {
@@ -117,24 +114,17 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     }
     
     private CsmDeclaration _getReferencedDeclaration() {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            CsmDeclaration referencedDeclaration = UIDCsmConverter.UIDtoDeclaration(referencedDeclarationUID);
-            // can be null if namespace was removed 
-            return referencedDeclaration;
-        } else {
-            return this.referencedDeclarationOLD;
-        }
+        CsmDeclaration referencedDeclaration = UIDCsmConverter.UIDtoDeclaration(referencedDeclarationUID);
+        // can be null if namespace was removed 
+        return referencedDeclaration;
     }    
 
     private void _setReferencedDeclaration(CsmDeclaration referencedDeclaration) {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
-            this.referencedDeclarationUID = UIDCsmConverter.declarationToUID(referencedDeclaration);
-            assert this.referencedDeclarationUID != null || referencedDeclaration == null;
-        } else {
-            this.referencedDeclarationOLD = referencedDeclaration;
-        }
+        this.referencedDeclarationUID = UIDCsmConverter.declarationToUID(referencedDeclaration);
+        assert this.referencedDeclarationUID != null || referencedDeclaration == null;
     }
     
+    @Override
     public int getStartOffset() {
         return startOffset;
     }
@@ -163,6 +153,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
