@@ -47,6 +47,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
@@ -72,6 +74,8 @@ public class ProxyFileManager implements JavaFileManager {
     
     private JavaFileObject lastInfered;
     private String lastInferedResult;
+    
+    private static final Logger LOG = Logger.getLogger(ProxyFileManager.class.getName());
     
     /** Creates a new instance of ProxyFileManager */
     public ProxyFileManager(JavaFileManager bootPath, JavaFileManager classPath, JavaFileManager sourcePath, JavaFileManager outputhPath) {
@@ -135,8 +139,17 @@ public class ProxyFileManager implements JavaFileManager {
         JavaFileManager[] fms = getFileManager (l);
         for (JavaFileManager fm : fms) {
             iterables.add( fm.list(l, packageName, kinds, recurse)); 
-        }        
-        return Iterators.chained(iterables);
+        }   
+        final Iterable<JavaFileObject> result = Iterators.chained(iterables);
+        if (LOG.isLoggable(Level.FINER)) {
+            final StringBuilder urls = new StringBuilder ();            
+            for (JavaFileObject jfo : result ) {
+                urls.append(jfo.toUri().toString());
+                urls.append(", ");  //NOI18N
+            }
+            LOG.finer(String.format("list %s package: %s type: %s found files: [%s]", l.toString(), packageName, kinds.toString(), urls.toString())); //NOI18N
+        }
+        return result;
     }
 
     public FileObject getFileForInput(Location l, String packageName, String relativeName) throws IOException {

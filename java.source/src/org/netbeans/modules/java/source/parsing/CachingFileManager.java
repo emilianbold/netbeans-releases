@@ -50,6 +50,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
@@ -114,6 +115,22 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
                 if (archive != null) {
                     Iterable<JavaFileObject> entries = archive.getFiles( folderName, ignoreExcludes?null:entry, kinds, filter);
                     idxs.add(entries);
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        final StringBuilder urls = new StringBuilder ();
+                        for (JavaFileObject jfo : entries) {
+                            urls.append(jfo.toUri().toString());
+                            urls.append(", ");  //NOI18N
+                        }
+                        LOG.finest(String.format("cache for %s (%s) package: %s type: %s files: [%s]",   //NOI18N
+                                l.toString(),
+                                entry.getURL().toExternalForm(),
+                                packageName,
+                                kinds.toString(),
+                                urls.toString()));
+                    }
+                }
+                else if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.finest(String.format("no cache for: %s", entry.getURL().toExternalForm()));           //NOI18N
                 }
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
