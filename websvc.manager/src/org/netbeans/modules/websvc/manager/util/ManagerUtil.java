@@ -264,6 +264,34 @@ public class ManagerUtil {
         return tagName.substring(pos+1);
     }
     
+    /* (Taken from insync.beans.Naming) JavaBeans introspector interprets getter 
+     * "getFooBah" corresponding to property "fooBah" but getter "getURL" as 
+     * corresponding to property "URL".
+     *
+     * Examples where we can have problems
+     * ( Type   --> property name --> Getter --> JavaBeans interpretation of property name)
+     * 1) USWeather --> uSWeather --> getUSWeather --> USWeather
+     * 2) eBay      --> eBay      --> getEBay      --> EBay
+     *
+     * Therefore the first two letters are made lower case unless both of them
+     * are upper case
+     *
+     * Also, if the name is a single character, it should be lower case.
+     * For example if the getter is getA(), property name is ambiguous('a' or 'A').
+     *
+     */
+    public static String makeValidJavaBeanName(String name) {
+        char chars[] = name.toCharArray();
+        if (name.length() > 1 && 
+            !(Character.isUpperCase(chars[0]) && Character.isUpperCase(chars[1])) ) {
+            chars[0] = Character.toLowerCase(chars[0]);        
+            chars[1] = Character.toLowerCase(chars[1]);
+        }else if(name.length() == 1 && Character.isUpperCase(chars[0])){
+            chars[0] = Character.toLowerCase(chars[0]);
+        }
+        return new String(chars);
+    }
+    
     public static String decapitalize(String name) {
         if( name == null || name.length() == 0 ) {
             return name;
