@@ -44,7 +44,6 @@ import java.beans.PropertyDescriptor;
 
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import org.netbeans.modules.visualweb.insync.java.JavaClass;
-import org.netbeans.modules.visualweb.insync.java.Method;
 import org.netbeans.modules.visualweb.insync.java.Statement;
 
 /**
@@ -135,7 +134,10 @@ public class Property extends BeansNode {
      */
     protected boolean removeEntry() {
         boolean removed = false;
-        if(inserted & stmt != null) {
+        if(inserted) {
+            if(stmt == null) {
+                stmt = getStatement();
+            }
             removed = stmt.remove();
             stmt = null;
         }
