@@ -61,13 +61,13 @@ import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.netbeans.editor.BaseDocument;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.cnd.highlight.CppHighlightsLayerFactory;
+import org.openide.cookies.EditorCookie;
 import org.openide.text.Annotation;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -109,7 +109,7 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
         TopComponent.getRegistry().removePropertyChangeListener(this);
         List<CsmFile> toDelete = new ArrayList<CsmFile>(annotations.keySet());
         for(CsmFile file : toDelete) {
-            removeAnnotations(null, file);
+            removeAnnotations(file);
         }
         BadgeProvider.getInstance().removeAllProjects();
     }
@@ -129,7 +129,7 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
             }
         }
         for( CsmFile file : toDelete ) {
-            removeAnnotations(null, file);
+            removeAnnotations(file);
         }
         BadgeProvider.getInstance().removeProject(project);
     }
@@ -138,7 +138,7 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
         for(Iterator it = e.getRemovedFiles().iterator(); it.hasNext();){
             CsmFile file = (CsmFile)it.next();
             if (TRACE_ANNOTATIONS)  System.out.println("Removed file: "+file.getName()); // NOI18N
-            removeAnnotations(null, file);
+            removeAnnotations(file);
             BadgeProvider.getInstance().onFileRemoved(file);
         }
     }
@@ -162,7 +162,7 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
     }
 
     public void fileParsingFinished(CsmFile file) {
-        checkFile(file);
+        checkFile(file, null);
         BadgeProvider.getInstance().invalidateFile(file);
     }
 
@@ -205,20 +205,35 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
 	}
     }
     
-    private void checkFile(CsmFile file){
-        DataObject dao = CsmUtilities.getDataObject(file);
-        if (dao != null) {
-            //if (!buffers.contains(dao)){
-            EditorCookie editor = dao.getCookie(EditorCookie.class);
-            Document doc = editor != null ? editor.getDocument() : null;
-            if (doc instanceof BaseDocument){
-                addAnnotations((BaseDocument)doc, file);
-                // one more point to make a global scheduler
-                // todo: optimize to check dependency between changed file and updated one
-                CppHighlightsLayerFactory.getInactiveCodeHighlighter(doc).scheduleUpdate();
-            }
-            //}
+    private void checkFile(CsmFile file, Document doc) {
+        if (doc == null) {
+            doc = findDocument(file);
         }
+        if (doc instanceof BaseDocument){
+            addAnnotations((BaseDocument)doc, file);
+            // one more point to make a global scheduler
+            // todo: optimize to check dependency between changed file and updated one
+            CppHighlightsLayerFactory.getInactiveCodeHighlighter(doc).scheduleUpdate();
+        }
+    }
+
+    private Document findDocument(CsmFile searchFor) {
+        DataObject dao = CsmUtilities.getDataObject(searchFor);
+        if (dao == null) {
+            return null;
+        }
+        EditorCookie editor = dao.getCookie(EditorCookie.class);
+        return editor != null ? editor.getDocument() : null;
+//        for (JTextComponent component : EditorRegistry.componentList()) {
+//            if (component.isShowing()) {
+//                Document doc = component.getDocument();
+//                DataObject found = NbEditorUtilities.getDataObject(doc);
+//                if (dao.equals(found)) {
+//                    return doc;
+//                }
+//            }
+//        }
+//        return null;
     }
     
     private void checkClosed(){
@@ -248,19 +263,7 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
         }
         for( Iterator<CsmFile> it = toDelete.iterator(); it.hasNext(); ) {
             CsmFile file = it.next();
-            DataObject dao = CsmUtilities.getDataObject(file);
-            Document doc = null;
-            if (dao != null) {
-                EditorCookie editor = dao.getCookie(EditorCookie.class);
-                if (editor != null) {
-                    doc =  editor.getDocument();
-                }
-            }
-            if (doc instanceof BaseDocument){
-                    removeAnnotations((BaseDocument)doc, file);
-            } else {
-                removeAnnotations(null, file);
-            }
+            removeAnnotations(file);
         }
     }
     
@@ -275,7 +278,7 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
                 CsmFile file = CsmUtilities.getCsmFile(doc, false);
                 if (file != null && file.isParsed()) {
                     //if (TRACE_ANNOTATIONS)  System.out.println("Activate node: "+file.getName()); // NOI18N
-                    checkFile(file);
+                    checkFile(file, doc);
                 }
             }
         }
@@ -348,16 +351,11 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
         }
     }
     
-    private void removeAnnotations(BaseDocument doc, CsmFile file) {
-        if (doc == null) {
-            DataObject dao = CsmUtilities.getDataObject(file);
-            if (dao != null) {
-                EditorCookie editor = dao.getCookie(EditorCookie.class);
-                StyledDocument sdoc = editor != null ? editor.getDocument() : null;
-                if (sdoc instanceof BaseDocument){
-                    doc = (BaseDocument)sdoc;
-                }
-            }
+    private void removeAnnotations(CsmFile file) {
+        BaseDocument doc = null;
+        Document sdoc = findDocument(file);
+        if (sdoc instanceof BaseDocument){
+            doc = (BaseDocument)sdoc;
         }
         List<Annotation> fileAnnotations = annotations.get(file);
         if (fileAnnotations != null){
