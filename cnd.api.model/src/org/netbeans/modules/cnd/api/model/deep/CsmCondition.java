@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.cnd.api.model.deep;
 
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 
 /**
@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
  * 
  * @author Vladimir Kvashin
  */
-public interface CsmCondition extends CsmOffsetable {
+public interface CsmCondition extends CsmOffsetable, CsmScopeElement {
   
         public enum Kind {            
             EXPRESSION,

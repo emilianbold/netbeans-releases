@@ -50,8 +50,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  *
@@ -69,7 +67,7 @@ public class CaseStatementImpl extends StatementBase implements CsmCaseStatement
         if( expression == null ) {
             for( AST token = getAst().getFirstChild(); token != null; token = token.getNextSibling() ) {
                 if( AstRenderer.isExpression(token) ) {
-                    expression = new AstRenderer((FileImpl) getContainingFile()).renderExpression(token);
+                    expression = new AstRenderer((FileImpl) getContainingFile()).renderExpression(token, getScope());
                     break;
                 }
             }

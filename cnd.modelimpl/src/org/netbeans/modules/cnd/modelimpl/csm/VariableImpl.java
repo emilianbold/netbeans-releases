@@ -160,7 +160,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
                 tok = tok.getNextSibling();
             }
             if( tok != null ) {
-                initExpr = new ExpressionBase(tok, getContainingFile(), null);
+                initExpr = new ExpressionBase(tok, getContainingFile(), null, _getScope());
             }
         }
     }

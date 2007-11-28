@@ -88,5 +88,9 @@ public class ConditionDeclarationImpl extends OffsetableBase implements CsmCondi
     public CsmExpression getExpression() {
         return null;
     }
+
+    public CsmScope getScope() {
+        return declaration.getScope();
+    }
     
 }

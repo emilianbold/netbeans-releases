@@ -43,14 +43,14 @@ package org.netbeans.modules.cnd.api.model.deep;
 
 import java.util.List;
 
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 
 /**
  * Represents expression
  * @author Vladimir Kvashin
  */
-public interface CsmExpression extends CsmOffsetable {
+public interface CsmExpression extends CsmOffsetable, CsmScopeElement {
 
     //TODO: check in accordance to C++ standard
     public enum Kind {

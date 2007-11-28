@@ -99,7 +99,7 @@ public class LoopStatementImpl extends StatementBase implements CsmLoopStatement
                 condition = renderer.renderCondition(token, this);
             }
             else if( AstRenderer.isExpression(type) ) {
-                condition = new ConditionExpressionImpl(token, getContainingFile());
+                condition = new ConditionExpressionImpl(token, getContainingFile(), this);
             }
             else if( AstRenderer.isStatement(type) ) {
                 body = AstRenderer.renderStatement(token, getContainingFile(), this);

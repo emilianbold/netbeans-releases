@@ -50,8 +50,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * Implements condition of kind CsmCondition.Kind.EXPRESSION
@@ -61,9 +59,9 @@ public class ConditionExpressionImpl extends OffsetableBase implements CsmCondit
     
     private CsmExpression expression;
     
-    public ConditionExpressionImpl(AST ast, CsmFile file) {
+    public ConditionExpressionImpl(AST ast, CsmFile file, CsmScope scope) {
             super(ast, file);
-            expression = new AstRenderer((FileImpl)getContainingFile()).renderExpression(ast);
+            expression = new AstRenderer((FileImpl)getContainingFile()).renderExpression(ast, scope);
     }
 
     public CsmCondition.Kind getKind() {
@@ -76,5 +74,9 @@ public class ConditionExpressionImpl extends OffsetableBase implements CsmCondit
 
     public CsmExpression getExpression() {
         return expression;
+    }
+
+    public CsmScope getScope() {
+        return expression.getScope();
     }
 }

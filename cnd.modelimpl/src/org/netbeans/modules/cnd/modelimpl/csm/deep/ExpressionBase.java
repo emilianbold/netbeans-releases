@@ -52,7 +52,10 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  * Common base for all expression implementations
@@ -63,14 +66,40 @@ public class ExpressionBase extends OffsetableBase implements CsmExpression {
     private CsmExpression.Kind kind;
     private final CsmExpression parent;
     private List<CsmExpression> operands;
+    private CsmScope scopeRef;
+    private CsmUID<CsmScope> scopeUID;
     
-    public ExpressionBase(AST ast, CsmFile file, CsmExpression parent) {
+    public ExpressionBase(AST ast, CsmFile file, CsmExpression parent, CsmScope scope) {
         super(ast, file);
         this.parent = parent;
+        if( scope != null ) {
+	    setScope(scope);
+	}
     }
 
     public CsmExpression.Kind getKind() {
         return kind;
+    }
+
+    public CsmScope getScope() {
+        CsmScope scope = this.scopeRef;
+        if (scope == null) {
+            if (TraceFlags.USE_REPOSITORY) {
+                scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
+                assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
+            }
+        }
+        return scope;
+    }
+    
+    protected void setScope(CsmScope scope) {
+	// within bodies scope is a statement - it is not Identifiable
+        if ((scope instanceof CsmIdentifiable) && TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
+            this.scopeUID = UIDCsmConverter.scopeToUID(scope);
+            assert (scopeUID != null || scope == null);
+        } else {
+            this.scopeRef = scope;
+        }
     }
 
     public List/*<CsmExpression>*/ getOperands() {
@@ -92,6 +121,7 @@ public class ExpressionBase extends OffsetableBase implements CsmExpression {
         PersistentUtils.writeExpression(this.parent, output);
         PersistentUtils.writeExpressionKind(this.kind, output);
         PersistentUtils.writeExpressions(this.operands, output);
+        UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
     }  
     
     public ExpressionBase(DataInput input) throws IOException {
@@ -99,5 +129,6 @@ public class ExpressionBase extends OffsetableBase implements CsmExpression {
         this.parent = PersistentUtils.readExpression(input);
         this.kind = PersistentUtils.readExpressionKind(input);
         this.operands = PersistentUtils.readExpressions(new ArrayList<CsmExpression>(), input);
+        this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }      
 }

@@ -1090,8 +1090,8 @@ public class AstRenderer {
         return null;
     }
     
-    public ExpressionBase renderExpression(AST ast) {
-        return isExpression(ast) ? new ExpressionBase(ast, file, null) : null;
+    public ExpressionBase renderExpression(AST ast, CsmScope scope) {
+        return isExpression(ast) ? new ExpressionBase(ast, file, null, scope) : null;
     }
     
     public CsmCondition renderCondition(AST ast, CsmScope scope) {
@@ -1100,7 +1100,7 @@ public class AstRenderer {
             if( first != null ) {
                 int type = first.getType();
                 if( isExpression(type) ) {
-                    return new ConditionExpressionImpl(first, file);
+                    return new ConditionExpressionImpl(first, file, scope);
                 }
                 else if( type == CPPTokenTypes.CSM_TYPE_BUILTIN || type == CPPTokenTypes.CSM_TYPE_COMPOUND ) {
                     return new ConditionDeclarationImpl(ast, file, scope);
