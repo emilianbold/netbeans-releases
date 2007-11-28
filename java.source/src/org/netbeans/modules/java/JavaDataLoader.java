@@ -253,6 +253,8 @@ public final class JavaDataLoader extends MultiFileLoader {
                         getDataObject(),
                         DataFolder.findFolder(target),
                         n);
+                if (attrs == null) //#123006
+                    continue;
                 Object aName = attrs.get("user"); // NOI18N
                 if (aName instanceof String) {
                     map.put("USER", (String) aName); // NOI18N
