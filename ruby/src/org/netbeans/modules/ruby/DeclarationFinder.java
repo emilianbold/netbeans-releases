@@ -2217,7 +2217,10 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
 
                 String filename = null;
                 String url = element.getFilenameUrl();
-                if (url.indexOf("rubystubs") != -1) {
+                if (url == null) {
+                    // Deleted file?
+                    // Just leave out the file name
+                } else if (url.indexOf("rubystubs") != -1) {
                     filename = NbBundle.getMessage(DeclarationFinder.class, "RubyLib");
                     
                     if (url.indexOf("/stub_") == -1) {
