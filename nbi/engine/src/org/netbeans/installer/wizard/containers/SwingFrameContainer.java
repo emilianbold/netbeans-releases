@@ -195,7 +195,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
      * {@inheritDoc}
      */
     public void updateWizardUi(final WizardUi wizardUi) {
-        if (!SwingUtilities.isEventDispatchThread()) {
+        if (!SwingUtilities.isEventDispatchThread()) {         
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     updateWizardUi(wizardUi);
@@ -207,7 +207,9 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         // save the ui reference
         currentUi = wizardUi.getSwingUi(this);
         
-        // update the frame title
+        final int currentHeight = getSize().height;             
+        
+          // update the frame title
         if (currentUi.getTitle() != null) {
             setTitle(StringUtils.format(
                     frameTitlePattern,
@@ -216,10 +218,21 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         } else {
             setTitle(frameTitlePrefix);
         }
-        
-        // display the panel
+           
+        // change the panel
         contentPane.updatePanel(currentUi);
         
+        // resize the frame if needed
+        final int neededMinimumHeight = 
+                this.getLayout().minimumLayoutSize(this).getSize().height;        
+                                   
+        if(isResizable() && (neededMinimumHeight > currentHeight)) {         
+            setPreferredSize(new Dimension(getSize().width, 
+                                neededMinimumHeight + EXTRA_SIZE));
+            pack();             
+        }                      
+        contentPane.repaint();
+                             
         // handle the default buttons - Enter
         getRootPane().setDefaultButton(currentUi.getDefaultEnterButton());
         
@@ -319,7 +332,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         if(resizable!=null && (resizable.equals("false") || resizable.equals("FALSE"))) {
             setResizable(false);
         }
-        
+                 
         contentPane = new WizardFrameContentPane();
         setContentPane(contentPane);
         
@@ -442,8 +455,8 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
          *
          * @param panel
          */
-        public void updatePanel(final SwingUi panel) {
-            if (currentPanel != null) {
+        public void updatePanel(final SwingUi panel) {            
+            if (currentPanel != null) {                
                 remove(currentPanel);
             }
             currentPanel = panel;
@@ -466,8 +479,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             
             add(currentPanel, BorderLayout.CENTER);
             
-            validate();
-            repaint();
+            validate();                         
         }
         
         /**
@@ -782,8 +794,8 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
      */
     public static final String WIZARD_FRAME_TITLE_PATTERN_PROPERTY =
             "nbi.wizard.ui.swing.frame.title.pattern"; // NOI18N
-    
-    /**
+
+     /**
      * Name of the system property which is expected to contain the desired value
      * for the making the wizard window be resizable.
      * <br>If this property is not set at all or set to any string different from
@@ -791,7 +803,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
      */
     public static final String WIZARD_FRAME_RESIZABLE_PROPERTY =
             "nbi.wizard.ui.swing.frame.resizable"; // NOI18N
-        
+              
     /**
      * Default value for the wizard frame's initial width.
      */
@@ -833,7 +845,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
      */
     public static final String DEFAULT_WIZARD_FRAME_ICON_URI =
             NbiFrame.DEFAULT_FRAME_ICON_URI;
-    
+      
     /**
      * Default value for the wizard frame's standard title prefix.
      */
@@ -869,4 +881,6 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
      */
     private static final String CANCEL_ACTION_NAME =
             "evaluate.cancel"; // NOI18N
+    
+    private static final int EXTRA_SIZE = 15; 
 }

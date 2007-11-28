@@ -354,9 +354,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             
             container.getBackButton().setVisible(false);
         }
-        
+      
         @Override
-        protected void initialize() {
+        protected void initialize() {            
             StringBuilder welcomeText = new StringBuilder();
             String header = StringUtils.format(panel.getProperty(WELCOME_TEXT_HEADER_PROPERTY));
             if(type.isJDKBundle()) {
@@ -394,7 +394,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 detailsWarningIconLabel.setVisible(false);                
             }
             
-            
+
             everythingIsInstalled = true;
             welcomeText = new StringBuilder(
                     panel.getProperty(WELCOME_TEXT_OPENTAG_PROPERTY));
@@ -435,20 +435,21 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                         }
                     }
                 }
-            }
+            }                      
             
             welcomeText.append(panel.getProperty(WELCOME_TEXT_FOOTER_PROPERTY));
             
             textScrollPane.setContentType(
                     panel.getProperty(TEXT_PANE_CONTENT_TYPE_PROPERTY));
             textScrollPane.setText(welcomeText);
-            textScrollPane.setCaretPosition(0);
+            textScrollPane.setCaretPosition(0);              
             customizeButton.setText(
-                    panel.getProperty(CUSTOMIZE_BUTTON_TEXT_PROPERTY));
+                    panel.getProperty(CUSTOMIZE_BUTTON_TEXT_PROPERTY));                                                           
             
-            updateSizes();
-            
-            super.initialize();
+            scrollPane.getViewport().setMinimumSize(
+                    textScrollPane.getPreferredScrollableViewportSize());
+            updateSizes();                
+            super.initialize();             
         }
         
         private void updateSizes() {
@@ -737,7 +738,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 customizeButton.setVisible(true);
             } else {
                 customizeButton.setVisible(false);
-            }
+            }  
         }
         
         private void customizeButtonPressed() {
@@ -753,7 +754,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                         callback,
                         registryNodes);
             }
-            
+
             customizeDialog.setVisible(true);
             customizeDialog.requestFocus();
         }
@@ -793,7 +794,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     
     public Registry getBundledRegistry() {
         return bundledRegistry;
-    }
+    }    
     
     
     public enum BundleType {
