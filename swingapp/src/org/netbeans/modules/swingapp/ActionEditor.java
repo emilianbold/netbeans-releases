@@ -217,7 +217,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     @Override
     public String getAsText() {
         if(!isAppFramework()) {
-            return super.getAsText();
+            return null;
         }
         
         if(action == null) {
@@ -231,7 +231,6 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     @Override
     public void setAsText(String string) throws IllegalArgumentException {
         if(!isAppFramework()) {
-            super.setAsText(string);
             return;
         }
         if("null".equals(string)) { //NOI18N
