@@ -80,12 +80,12 @@ implements PropertyChangeListener {
     public ToggleBreakpointActionProvider (ContextProvider lookupProvider) {
         debugger = (JPDADebugger) lookupProvider.lookupFirst 
                 (null, JPDADebugger.class);
-        debugger.addPropertyChangeListener (debugger.PROP_STATE, this);
+        debugger.addPropertyChangeListener (JPDADebugger.PROP_STATE, this);
         EditorContextBridge.getContext().addPropertyChangeListener (this);
     }
     
     private void destroy () {
-        debugger.removePropertyChangeListener (debugger.PROP_STATE, this);
+        debugger.removePropertyChangeListener (JPDADebugger.PROP_STATE, this);
         EditorContextBridge.getContext().removePropertyChangeListener (this);
     }
     
@@ -104,7 +104,7 @@ implements PropertyChangeListener {
             //(EditorContextBridge.getCurrentURL ().endsWith (".java"))
         );
         if ( debugger != null && 
-             debugger.getState () == debugger.STATE_DISCONNECTED
+             debugger.getState () == JPDADebugger.STATE_DISCONNECTED
         ) 
             destroy ();
     }
