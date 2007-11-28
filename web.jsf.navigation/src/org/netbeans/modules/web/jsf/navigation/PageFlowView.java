@@ -418,6 +418,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
                         //Page page = pageRef.get();
                         if( pageRef.get() == null || widgetRef.get() == null ){
                             LOG.finest("    PFE: runPinSetup will not completed because the page is now null.  It may have been removed to reset graph.");
+                            return;
                         }
                         if (!pageRef.get().isDataNode()) {
                             EventQueue.invokeLater(new Runnable() {
