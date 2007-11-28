@@ -43,8 +43,13 @@ package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
@@ -61,6 +66,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -593,4 +599,119 @@ public class Utilities {
             return DEFAULT_VALUE.append((p ? e.getQualifiedName() : e.getSimpleName()).toString());
         }        
     }    
+    
+    /**
+     * @since 2.12
+     */
+    public static ExecutableElement fuzzyResolveMethodInvocation(CompilationInfo info, TreePath path, TypeMirror[] proposed, int[] index) {
+        assert path.getLeaf().getKind() == Kind.METHOD_INVOCATION || path.getLeaf().getKind() == Kind.NEW_CLASS;
+        
+        if (path.getLeaf().getKind() == Kind.METHOD_INVOCATION) {
+            List<TypeMirror> actualTypes = new LinkedList<TypeMirror>();
+            MethodInvocationTree mit = (MethodInvocationTree) path.getLeaf();
+
+            for (Tree a : mit.getArguments()) {
+                TreePath tp = new TreePath(path, a);
+                actualTypes.add(info.getTrees().getTypeMirror(tp));
+            }
+
+            String methodName;
+            TypeMirror on;
+
+            switch (mit.getMethodSelect().getKind()) {
+                case IDENTIFIER:
+                    Scope s = info.getTrees().getScope(path);
+                    on = s.getEnclosingClass().asType();
+                    methodName = ((IdentifierTree) mit.getMethodSelect()).getName().toString();
+                    break;
+                case MEMBER_SELECT:
+                    on = info.getTrees().getTypeMirror(new TreePath(path, ((MemberSelectTree) mit.getMethodSelect()).getExpression()));
+                    methodName = ((MemberSelectTree) mit.getMethodSelect()).getIdentifier().toString();
+                    break;
+                default:
+                    throw new IllegalStateException();
+            }
+
+            return resolveMethod(info, actualTypes, (DeclaredType) on, false, false, methodName, proposed, index);
+        }
+        
+        if (path.getLeaf().getKind() == Kind.NEW_CLASS) {
+            List<TypeMirror> actualTypes = new LinkedList<TypeMirror>();
+            NewClassTree nct = (NewClassTree) path.getLeaf();
+
+            for (Tree a : nct.getArguments()) {
+                TreePath tp = new TreePath(path, a);
+                actualTypes.add(info.getTrees().getTypeMirror(tp));
+            }
+
+            TypeMirror on = info.getTrees().getTypeMirror(new TreePath(path, nct.getIdentifier()));
+            
+            return resolveMethod(info, actualTypes, (DeclaredType) on, false, true, null, proposed, index);
+        }
+        
+        return null;
+    }
+
+    private static Iterable<ExecutableElement> execsIn(Element e, boolean constr, String name) {
+        if (constr) {
+            return ElementFilter.constructorsIn(e.getEnclosedElements());
+        }
+        
+        List<ExecutableElement> result = new LinkedList<ExecutableElement>();
+        
+        for (ExecutableElement ee : ElementFilter.methodsIn(e.getEnclosedElements())) {
+            if (name.equals(ee.getSimpleName().toString())) {
+                result.add(ee);
+            }
+        }
+        
+        return result;
+    }
+    
+    private static ExecutableElement resolveMethod(CompilationInfo info, List<TypeMirror> foundTypes, DeclaredType on, boolean statik, boolean constr, String name, TypeMirror[] candidateType, int[] index) {
+        ExecutableElement found = null;
+        
+        OUTER:
+        for (ExecutableElement ee : execsIn(on.asElement(), constr, name)) {
+            if (ee.getParameters().size() == foundTypes.size() /*XXX: variable arg count*/) {
+                TypeMirror innerCandidate = null;
+                int innerIndex = -1;
+                ExecutableType et = (ExecutableType) info.getTypes().asMemberOf(on, ee);
+                Iterator<? extends TypeMirror> formal = et.getParameterTypes().iterator();
+                Iterator<? extends TypeMirror> actual = foundTypes.iterator();
+                boolean mismatchFound = false;
+                int i = 0;
+
+                while (formal.hasNext() && actual.hasNext()) {
+                    TypeMirror currentFormal = formal.next();
+                    TypeMirror currentActual = actual.next();
+
+                    if (!info.getTypes().isAssignable(currentActual, currentFormal)) {
+                        if (mismatchFound) {
+                            //only one mismatch supported:
+                            continue OUTER;
+                        }
+                        mismatchFound = true;
+                        innerCandidate = currentFormal;
+                        innerIndex = i;
+                    }
+
+                    i++;
+                }
+
+                if (mismatchFound) {
+                    if (candidateType[0] == null) {
+                        candidateType[0] = innerCandidate;
+                        index[0] = innerIndex;
+                        found = ee;
+                    } else {
+                        return null;
+                    }
+                }
+            }
+        }
+
+        return found;
+    }
+    
 }

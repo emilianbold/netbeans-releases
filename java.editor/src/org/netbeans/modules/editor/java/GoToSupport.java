@@ -167,16 +167,24 @@ public class GoToSupport {
                                 }
                             }
                         }
+                        
+                        if (el == null) {
+                            el = controller.getTrees().getElement(path);
+
+                            if (parentLeaf.getKind() == Kind.METHOD_INVOCATION && isError(el)) {
+                                ExecutableElement ee = Utilities.fuzzyResolveMethodInvocation(controller, path.getParentPath(), new TypeMirror[1], new int[1]);
+
+                                if (ee != null) {
+                                    el = ee;
+                                }
+                            }
+                        }
                     } else {
                         if (!tooltip)
                             CALLER.beep();
                         else
                             result[0] = null;
                         return;
-                    }
-                    
-                    if (el == null) {
-                        el = controller.getTrees().getElement(path);
                     }
                     
                     if (isError(el)) {
