@@ -86,7 +86,7 @@ public class FormLAF {
     private FormLAF() {
     }
     
-    static UIDefaults initPreviewLaf(Class lafClass) {
+    public static UIDefaults initPreviewLaf(Class lafClass) {
         try {
             boolean previewLafIsMetal = MetalLookAndFeel.class.isAssignableFrom(lafClass);
             if (!ideLafIsMetal && previewLafIsMetal &&
@@ -392,7 +392,7 @@ public class FormLAF {
     }
 
     static String oldNoXP;
-    static void setUsePreviewDefaults(ClassLoader classLoader, Class previewLAF, UIDefaults uiDefaults) {
+    public static void setUsePreviewDefaults(ClassLoader classLoader, Class previewLAF, UIDefaults uiDefaults) {
         boolean classic = (previewLAF == null)
             ? ((previewLaf == null) ? false : isClassicWinLAF(previewLaf.getName()))
             : isClassicWinLAF(previewLAF.getName());

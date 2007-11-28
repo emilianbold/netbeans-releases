@@ -54,6 +54,8 @@ import org.openide.util.actions.*;
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.palette.PaletteUtils;
+import org.netbeans.modules.form.project.ClassPathUtils;
+import org.openide.filesystems.FileObject;
 
 /**
  * Preview design action.
@@ -129,7 +131,10 @@ public class TestAction extends CallableSystemAction implements Runnable {
             }
 
             // create a copy of form
-            final Frame frame = (Frame) FormDesigner.createFormView(topComp, selectedLaf);
+            final UIDefaults uiDefaults = FormLAF.initPreviewLaf(selectedLaf);
+            final Frame frame = (Frame) FormDesigner.createFormView(topComp, selectedLaf, uiDefaults);
+            FileObject formFile = FormEditor.getFormDataObject(formModel).getFormFile();
+            final ClassLoader classLoader = ClassPathUtils.getProjectClassLoader(formFile);
 
             // set title
             String title = frame.getTitle();
@@ -183,7 +188,12 @@ public class TestAction extends CallableSystemAction implements Runnable {
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     if (pack) {
-                        frame.pack();
+                        try {
+                            FormLAF.setUsePreviewDefaults(classLoader, selectedLaf, uiDefaults);
+                            frame.pack();
+                        } finally {
+                            FormLAF.setUsePreviewDefaults(null, null, null);
+                        }
                     }
                     frame.setBounds(org.openide.util.Utilities.findCenterBounds(frame.getSize()));
                     frame.setVisible(true);

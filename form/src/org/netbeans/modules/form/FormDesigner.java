@@ -539,10 +539,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     public static Container createFormView(final RADComponent metacomp,
-                                           final Class previewLaf)
+                                           final Class previewLaf, final UIDefaults uiDefaults)
         throws Exception
     {
-        final UIDefaults uiDefaults = FormLAF.initPreviewLaf(previewLaf);
         Container result = null;
         FormModel formModel = metacomp.getFormModel();
         FileObject formFile = FormEditor.getFormDataObject(formModel).getFormFile();
