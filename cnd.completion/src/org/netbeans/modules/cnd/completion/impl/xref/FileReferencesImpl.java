@@ -79,17 +79,19 @@ public class FileReferencesImpl extends CsmFileReferences  {
 //    private final Map<CsmFile, List<CsmReference>> cache = new HashMap<CsmFile, List<CsmReference>>();
 
     public void accept(CsmScope csmScope, Visitor visitor) {
-        if (!CsmKindUtilities.isOffsetable(csmScope)){
+        if (!CsmKindUtilities.isOffsetable(csmScope) && !CsmKindUtilities.isFile(csmScope)){
             return;
         }
         CsmFile csmFile = null;
+        int start=0;
+        int end = Integer.MAX_VALUE;
         if (CsmKindUtilities.isFile(csmScope)){
             csmFile = (CsmFile) csmScope;
         } else {
             csmFile = ((CsmOffsetable)csmScope).getContainingFile();
+            start = ((CsmOffsetable)csmScope).getStartOffset();
+            end = ((CsmOffsetable)csmScope).getEndOffset();
         }
-        int start = ((CsmOffsetable)csmScope).getStartOffset();
-        int end = ((CsmOffsetable)csmScope).getEndOffset();
         for (CsmReference ref : getIdentifierReferences(csmFile,start,end)) {
             visitor.visit(ref);
         }
