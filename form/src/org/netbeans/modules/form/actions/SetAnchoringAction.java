@@ -170,15 +170,16 @@ public class SetAnchoringAction extends NodeAction {
             LayoutComponent comp = layoutModel.getLayoutComponent(id);
             int[][] alignment = new int[][] {
                 layoutDesigner.getAdjustableComponentAlignment(comp, LayoutConstants.HORIZONTAL),
-                        layoutDesigner.getAdjustableComponentAlignment(comp, LayoutConstants.VERTICAL)};
-                        for (int i=0; i<4; i++) {
-                            if ((alignment[i/2][1] & (1 << i%2)) == 0) { // the alignment cannot be changed
-                                cannotChangeTo[i] = true;
-                            }
-                            if (alignment[i/2][0] != -1) {
-                                matchAlignment[i] = matchAlignment[i] || (alignment[i/2][0] == i%2);
-                            }
-                        }
+                layoutDesigner.getAdjustableComponentAlignment(comp, LayoutConstants.VERTICAL)
+            };
+            for (int i=0; i<4; i++) {
+                if ((alignment[i/2][1] & (1 << i%2)) == 0) { // the alignment cannot be changed
+                    cannotChangeTo[i] = true;
+                }
+                if (alignment[i/2][0] != -1) {
+                    matchAlignment[i] = matchAlignment[i] || (alignment[i/2][0] == i%2);
+                }
+            }
         }
         for (int i=0; i<4; i++) {
             boolean match;
