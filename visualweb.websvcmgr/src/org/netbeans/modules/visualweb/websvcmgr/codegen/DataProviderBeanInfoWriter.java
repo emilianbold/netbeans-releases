@@ -123,7 +123,7 @@ public class DataProviderBeanInfoWriter extends java.io.PrintWriter {
             genPropertyDescriptor(indent, p[1], p[0], p[2], "null", true, true);
         }
         String clientClass = dataProviderInfo.getClientWrapperClassName();
-        String clientProp = ManagerUtil.decapitalize(clientClass);
+        String clientProp = ManagerUtil.makeValidJavaBeanName(ManagerUtil.decapitalize(clientClass));
         String clientVar = "prop_" + clientProp;
         String clientGetter = "\"get" + clientClass + "\"";
         String clientSetter = "\"set" + clientClass + "\"";

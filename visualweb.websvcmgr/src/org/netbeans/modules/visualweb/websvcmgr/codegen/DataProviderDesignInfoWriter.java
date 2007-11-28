@@ -92,7 +92,8 @@ public class DataProviderDesignInfoWriter extends java.io.PrintWriter {
 
         String fullPackageWrapperClassName = dataProviderInfo.getPackageName() + "." + clientWrapperName;
 
-        String clientWrapperBeanPropName = ManagerUtil.decapitalize(clientWrapperName);
+        String clientWrapperBeanPropName = 
+                ManagerUtil.makeValidJavaBeanName(ManagerUtil.decapitalize(clientWrapperName));
 
         println( "    public Result beanCreatedSetup( DesignBean designBean ) {" );
         println( "        String currentScope = (String)designBean.getDesignContext().getContextData( Constants.ContextData.SCOPE );" );

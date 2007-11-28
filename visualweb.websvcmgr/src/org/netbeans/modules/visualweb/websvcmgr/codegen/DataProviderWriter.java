@@ -119,7 +119,10 @@ public class DataProviderWriter extends java.io.PrintWriter {
         
         // Memeber variables
         String clientWrapperClassName = dataProviderInfo.getClientWrapperClassName();
-        String clientWrapperClassVar = ManagerUtil.decapitalize( clientWrapperClassName );
+        String clientWrapperClassVar = 
+                ManagerUtil.makeValidJavaBeanName(ManagerUtil.decapitalize( clientWrapperClassName ));
+        
+        
         println( "    protected " + clientWrapperClassName + " " + clientWrapperClassVar + ";" );
         println( "    protected ArrayList methodArgumentNames = new ArrayList();" );
         println( "    // Properties. One per method parameter." );
