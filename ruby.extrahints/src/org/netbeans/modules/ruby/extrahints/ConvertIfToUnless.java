@@ -52,10 +52,13 @@ import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
 import org.netbeans.modules.ruby.hints.spi.Fix;
@@ -107,6 +110,32 @@ public class ConvertIfToUnless implements AstRule {
 
                 OffsetRange range = AstUtilities.getRange(node);
 
+                if (RubyUtils.isRhtmlFile(info.getFileObject())) {
+                    // Make sure that we're in a single contiguous Ruby section; if not, this won't work
+                    range = LexUtilities.getLexerOffsets(info, range);
+                    if (range == OffsetRange.NONE) {
+                        return;
+                    }
+
+                    try {
+                        doc.readLock();
+                        TokenHierarchy th = TokenHierarchy.get(doc);
+                        TokenSequence ts = th.tokenSequence();
+                        ts.move(range.getStart());
+                        if (!ts.moveNext() && !ts.movePrevious()) {
+                            return;
+                        }
+
+                        if (ts.offset()+ts.token().length() < range.getEnd()) {
+                            return;
+                        }
+                    } finally {
+                        if (doc != null) {
+                            doc.readUnlock();
+                        }
+                    }
+                }
+
                 Fix fix = new ConvertToUnlessFix(info, ifNode);
                 List<Fix> fixes = Collections.singletonList(fix);
 
@@ -140,8 +169,7 @@ public class ConvertIfToUnless implements AstRule {
     }
 
     public boolean appliesTo(CompilationInfo info) {
-        // Skip for RHTML files for now - isn't implemented properly
-        return info.getFileObject().getMIMEType().equals("text/x-ruby");
+        return true;
     }
 
     public String getDisplayName() {

@@ -46,18 +46,23 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.jruby.ast.IfNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -122,11 +127,41 @@ public class ConvertConditionals implements AstRule {
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
-        
-        
+
         // If statement that is not already a statement modifier
         OffsetRange range = AstUtilities.getRange(node);
 
+        if (RubyUtils.isRhtmlFile(info.getFileObject())) {
+            // Make sure that we're in a single contiguous Ruby section; if not, this won't work
+            range = LexUtilities.getLexerOffsets(info, range);
+            if (range == OffsetRange.NONE) {
+                return;
+            }
+
+            BaseDocument doc = null;
+            try {
+                doc = (BaseDocument) info.getDocument();
+                doc.readLock();
+                TokenHierarchy th = TokenHierarchy.get(doc);
+                TokenSequence ts = th.tokenSequence();
+                ts.move(range.getStart());
+                if (!ts.moveNext() && !ts.movePrevious()) {
+                    return;
+                }
+                
+                if (ts.offset()+ts.token().length() < range.getEnd()) {
+                    return;
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                if (doc != null) {
+                    doc.readUnlock();
+                }
+            }
+        }
+        
+        
         Fix fix = new ConvertToModifier(info, ifNode);
         List<Fix> fixes = Collections.singletonList(fix);
 
@@ -153,8 +188,7 @@ public class ConvertConditionals implements AstRule {
     }
 
     public boolean appliesTo(CompilationInfo info) {
-        // Skip for RHTML files for now - isn't implemented properly
-        return info.getFileObject().getMIMEType().equals("text/x-ruby");
+        return true;
     }
 
     public String getDisplayName() {
@@ -191,6 +225,11 @@ public class ConvertConditionals implements AstRule {
                 bodyNode = ifNode.getElseBody();
             }
             OffsetRange bodyRange = AstUtilities.getRange(bodyNode);
+            bodyRange = LexUtilities.getLexerOffsets(info, bodyRange);
+            if (bodyRange == OffsetRange.NONE) {
+                return;
+            }
+
             String body = doc.getText(bodyRange.getStart(), bodyRange.getLength()).trim();
             if (body.endsWith(";")) {
                 body = body.substring(0, body.length()-1);
@@ -201,9 +240,18 @@ public class ConvertConditionals implements AstRule {
             sb.append(isIf ? "if" : "unless"); // NOI18N
             sb.append(" ");
             OffsetRange range = AstUtilities.getRange(ifNode.getCondition());
+            range = LexUtilities.getLexerOffsets(info, range);
+            if (range == OffsetRange.NONE) {
+                return;
+            }
             sb.append(doc.getText(range.getStart(), range.getLength()));
             
             OffsetRange ifRange = AstUtilities.getRange(ifNode);
+            ifRange = LexUtilities.getLexerOffsets(info, ifRange);
+            if (ifRange == OffsetRange.NONE) {
+                return;
+            }
+            
             try {
                 doc.atomicLock();
                 doc.replace(ifRange.getStart(), ifRange.getLength(), sb.toString(), null);
