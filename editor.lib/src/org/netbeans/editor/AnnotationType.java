@@ -380,16 +380,24 @@ public class AnnotationType {
         if (desc == null) {
             String localizer = (String)getProp(PROP_LOCALIZING_BUNDLE);
             String key = (String)getProp(PROP_DESCRIPTION_KEY);
-            try {
-                ResourceBundle bundle = ImplementationProvider.getDefault().getResourceBundle(localizer);                
-                desc = bundle.getString(key);
-            } catch(java.util.MissingResourceException mre) {
-                if (LOG.isLoggable(Level.WARNING)) {
-                    LOG.warning("Can't find '" + key + "' in " + localizer + " for AnnotationType '" + this.getName() + "'."); //NOI18N
+            if (key != null) {
+                try {
+                    ResourceBundle bundle = ImplementationProvider.getDefault().getResourceBundle(localizer);                
+                    desc = bundle.getString(key);
+                } catch(java.util.MissingResourceException mre) {
+                    if (LOG.isLoggable(Level.WARNING)) {
+                        LOG.warning("Can't find '" + key + "' in " + localizer + " for AnnotationType '" + this.getName() + "'."); //NOI18N
+                    }
+                    desc = key;
                 }
-                desc = key;
             }
             setDescription(desc); // cache it
+        }
+        if (desc == null) {
+            desc = (String)getProp(PROP_NAME);
+        }
+        if (desc == null) {
+            desc = "null"; //NOI18N
         }
         return desc;
     }
