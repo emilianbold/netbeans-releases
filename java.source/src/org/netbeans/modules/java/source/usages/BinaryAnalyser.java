@@ -233,12 +233,20 @@ public class BinaryAnalyser implements LowMemoryListener {
     }
     
     
-    public void finish () throws IOException {
+    public long finish () throws IOException {
+        long time = 0;
         if (cont != null) {
-            cont.finish();
+            time = cont.finish();
             cont = null;
         }
-        store();
+        long startTime = System.currentTimeMillis();
+        try {
+            store();
+        } finally {
+            long endTime =System.currentTimeMillis();            
+            time += (endTime-startTime);
+        }
+        return time;
     }
     
     public void clear () throws IOException {
@@ -641,13 +649,30 @@ public class BinaryAnalyser implements LowMemoryListener {
     }
     
     
-    private static interface Continuation {
-        public Result execute () throws IOException;
+    private static abstract class Continuation {
         
-        public void finish () throws IOException;
+        private long time;
+        
+        protected abstract Result doExecute () throws IOException;
+        protected abstract void doFinish () throws IOException;
+        
+        public final Result execute () throws IOException {
+            final long startTime = System.currentTimeMillis();
+            try {
+                return doExecute();
+            } finally {
+                final long endTime = System.currentTimeMillis();
+                time += (endTime - startTime);
+            }
+        }
+                
+        public final long finish () throws IOException {
+            doFinish();  
+            return time;
+        }        
     }
     
-    private class ZipContinuation implements Continuation {
+    private class ZipContinuation extends Continuation {
         
         private final ZipFile zipFile;
         private final Enumeration<? extends ZipEntry> entries;
@@ -664,16 +689,16 @@ public class BinaryAnalyser implements LowMemoryListener {
             this.closed = closed;
         }
         
-        public Result execute () throws IOException {
+        protected Result doExecute () throws IOException {
             return analyseArchive(zipFile, entries, cancel, closed);
         }
         
-        public void finish () throws IOException {
+        protected void doFinish () throws IOException {
             this.zipFile.close();
         }
     }
     
-    private class FolderContinuation implements Continuation {
+    private class FolderContinuation extends Continuation {
         
         private final LinkedList<File> todo;
         private final String rootPath;
@@ -690,15 +715,15 @@ public class BinaryAnalyser implements LowMemoryListener {
             this.closed = closed;
         }
         
-        public Result execute () throws IOException {            
+        public Result doExecute () throws IOException {            
             return analyseFolder(todo, rootPath, cancel, closed);
         }
         
-        public void finish () throws IOException {                        
-        }
+        public void doFinish () throws IOException {                        
+        }        
     }
     
-    private class FileObjectContinuation implements  Continuation {
+    private class FileObjectContinuation extends  Continuation {
         
         private final Enumeration<? extends FileObject> todo;
         private final AtomicBoolean cancel;
@@ -712,13 +737,13 @@ public class BinaryAnalyser implements LowMemoryListener {
             this.closed = closed;
         }
         
-        public Result execute () throws IOException {
+        public Result doExecute () throws IOException {
             return analyseFileObjects(todo, cancel, closed);
         }
         
-        public void finish () throws IOException {
+        public void doFinish () throws IOException {
             
-        }
+        }        
     }
     
 }

@@ -1202,6 +1202,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         private final AtomicBoolean canceled;
         private BinaryAnalyser activeBinaryAnalyzer;
         
+        //Logging
+        private long cbst;      //Complete binary scan time
+        private long csst;      //Complete source scan time
+        
         public CompileWorker (Work work ) {
             assert work != null;
             this.work = work;
@@ -1263,6 +1267,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }
                         case COMPILE_BATCH:
                         {
+                            cbst = csst = 0L;
                             assert handle == null;
                             handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompileStart"));
                             handle.start();
@@ -1402,6 +1407,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     JavaSourceAccessor.INSTANCE.revalidate(js);
                                 }
                             }
+                            LOGGER.fine(String.format("Complete binary scan time: %d ms. Complete source scan time: %d ms.", cbst, csst));      //NOI18N
                             break;
                         case COMPILE:
                         {
@@ -1576,88 +1582,98 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         
         private boolean scanRoots () {
-            
-            for (Iterator<URL> it = this.newBinaries.iterator(); it.hasNext(); ) {
-                if (this.canceled.getAndSet(false)) {                    
-                    return false;
-                }
-                if (closed.get()) {
-                    return true;
-                }
-                final URL rootURL = it.next();
-                try {
-                    it.remove();
-                    final ClassIndexImpl ci = ClassIndexManager.getDefault().createUsagesQuery(rootURL,false);                                        
-                    RepositoryUpdater.this.scannedBinaries.add (rootURL);                    
-                    long startT = System.currentTimeMillis();
-                    BinaryAnalyser ba = ci.getBinaryAnalyser();
-                    BinaryAnalyser.Result finished = null;
+            long cst = System.currentTimeMillis();
+            try {
+                for (Iterator<URL> it = this.newBinaries.iterator(); it.hasNext(); ) {
+                    if (this.canceled.getAndSet(false)) {                    
+                        return false;
+                    }
+                    if (closed.get()) {
+                        return true;
+                    }
+                    final URL rootURL = it.next();
                     try {
-                        finished = ba.start(rootURL, handle, canceled, closed);
-                    } finally {
-                        if (finished == null || finished == BinaryAnalyser.Result.FINISHED) {                            
-                                ba.finish();
-                        }
-                        else if (finished == BinaryAnalyser.Result.CLOSED) {
-                                ba.clear();                            
-                        }
-                        else {
-                            activeBinaryAnalyzer = ba;
-                            return false;
-                        }
-                    }
-                    long endT = System.currentTimeMillis();
-                    if (PERF_TEST) {
+                        it.remove();
+                        final ClassIndexImpl ci = ClassIndexManager.getDefault().createUsagesQuery(rootURL,false);                                        
+                        RepositoryUpdater.this.scannedBinaries.add (rootURL);                    
+                        long time = 0;
+                        BinaryAnalyser ba = ci.getBinaryAnalyser();
+                        BinaryAnalyser.Result finished = null;
                         try {
-                            Class c = Class.forName("org.netbeans.performance.test.utilities.LoggingScanClasspath",true,Thread.currentThread().getContextClassLoader()); // NOI18N
-                            java.lang.reflect.Method m = c.getMethod("reportScanOfFile", new Class[] {String.class, Long.class}); // NOI18N
-                            m.invoke(c.newInstance(), new Object[] {rootURL.toExternalForm(), new Long(endT - startT)});
-                        } catch (Exception e) {
-                                Exceptions.printStackTrace(e);
-                        }                            
-                    }
-                } catch (Throwable e) {
-                    if (e instanceof ThreadDeath) {
-                        throw (ThreadDeath) e;
-                    }
-                    else {
-                        Exceptions.attachMessage(e, "While scanning: " + rootURL);
-                        Exceptions.printStackTrace(e);
-                    }
-                }
-            }
-            for (java.util.ListIterator<URL> it = this.state.listIterator(this.state.size()); it.hasPrevious(); ) {
-                if (this.canceled.getAndSet(false)) {                    
-                    return false;
-                }
-                if (closed.get()) {
-                    return true;
-                }
-                try {
-                    final URL rootURL = it.previous();
-                    it.remove();                                                                                
-                    if (!oldRoots.remove(rootURL) && !RepositoryUpdater.this.scannedRoots.contains(rootURL)) {
-                        long startT = System.currentTimeMillis();                        
-                        updateFolder (rootURL,rootURL, true, false, handle);
-                        long endT = System.currentTimeMillis();
+                            finished = ba.start(rootURL, handle, canceled, closed);
+                        } finally {
+                            if (finished == null || finished == BinaryAnalyser.Result.FINISHED) {                            
+                                    time = ba.finish();
+                            }
+                            else if (finished == BinaryAnalyser.Result.CLOSED) {
+                                    ba.clear();                            
+                            }
+                            else {
+                                activeBinaryAnalyzer = ba;
+                                return false;
+                            }
+                        }
                         if (PERF_TEST) {
                             try {
                                 Class c = Class.forName("org.netbeans.performance.test.utilities.LoggingScanClasspath",true,Thread.currentThread().getContextClassLoader()); // NOI18N
                                 java.lang.reflect.Method m = c.getMethod("reportScanOfFile", new Class[] {String.class, Long.class}); // NOI18N
-                                m.invoke(c.newInstance(), new Object[] {rootURL.toExternalForm(), new Long(endT - startT)});
+                                m.invoke(c.newInstance(), new Object[] {rootURL.toExternalForm(), new Long(time)});
                             } catch (Exception e) {
                                     Exceptions.printStackTrace(e);
-                            }
+                            }                            
+                        }
+                        LOGGER.fine (String.format("Indexing of: %s took: %d ms",rootURL.toExternalForm(),time));
+                    } catch (Throwable e) {
+                        if (e instanceof ThreadDeath) {
+                            throw (ThreadDeath) e;
+                        }
+                        else {
+                            Exceptions.attachMessage(e, "While scanning: " + rootURL);
+                            Exceptions.printStackTrace(e);
                         }
                     }
-                } catch (Throwable e) {
-                    if (e instanceof ThreadDeath) {
-                        throw (ThreadDeath) e;
+                }
+            } finally {
+                cbst += System.currentTimeMillis() - cst;
+            }
+            cst = System.currentTimeMillis();
+            try {
+                for (java.util.ListIterator<URL> it = this.state.listIterator(this.state.size()); it.hasPrevious(); ) {
+                    if (this.canceled.getAndSet(false)) {                    
+                        return false;
                     }
-                    else {
-                        Exceptions.printStackTrace (e);
+                    if (closed.get()) {
+                        return true;
+                    }
+                    try {
+                        final URL rootURL = it.previous();
+                        it.remove();                                                                                
+                        if (!oldRoots.remove(rootURL) && !RepositoryUpdater.this.scannedRoots.contains(rootURL)) {
+                            long startT = System.currentTimeMillis();                        
+                            updateFolder (rootURL,rootURL, true, false, handle);
+                            long time = System.currentTimeMillis() - startT;                        
+                            if (PERF_TEST) {
+                                try {
+                                    Class c = Class.forName("org.netbeans.performance.test.utilities.LoggingScanClasspath",true,Thread.currentThread().getContextClassLoader()); // NOI18N
+                                    java.lang.reflect.Method m = c.getMethod("reportScanOfFile", new Class[] {String.class, Long.class}); // NOI18N
+                                    m.invoke(c.newInstance(), new Object[] {rootURL.toExternalForm(), new Long(time)});
+                                } catch (Exception e) {
+                                        Exceptions.printStackTrace(e);
+                                }
+                            }
+                            LOGGER.fine(String.format("Scannig of %s took %d ms.", rootURL.toExternalForm(), time));
+                        }
+                    } catch (Throwable e) {
+                        if (e instanceof ThreadDeath) {
+                            throw (ThreadDeath) e;
+                        }
+                        else {
+                            Exceptions.printStackTrace (e);
+                        }
                     }
                 }
+            } finally {
+                csst += System.currentTimeMillis() - cst;
             }
             return true;
         }
