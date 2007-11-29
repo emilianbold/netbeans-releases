@@ -65,6 +65,8 @@ import org.openide.NotifyDescriptor;
  */
 public class NewGrailsProjectWizardIterator implements  WizardDescriptor.InstantiatingIterator,
                                                         WizardDescriptor.ProgressInstantiatingIterator{
+
+    private static final Logger logger = Logger.getLogger(NewGrailsProjectWizardIterator.class.getName());
     
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
@@ -111,6 +113,9 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
             if (dirF != null) {
                 dirF = FileUtil.normalizeFile(dirF);
                 FileObject dir = FileUtil.toFileObject(dirF);
+                if (dir == null) {
+                    logger.warning("Folder was expected, but not found: " + dirF.getCanonicalPath());
+                }
                 resultSet.add(dir);
             }
 
