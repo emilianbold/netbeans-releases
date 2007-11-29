@@ -245,4 +245,10 @@ made subject to such option by the copyright holder.
         </code>
     </codetemplate>
 
+    <codetemplate abbreviation="bcom">
+        <code>
+<![CDATA[/*${selection}*/]]>
+        </code>
+    </codetemplate>
+
 </codetemplates>
