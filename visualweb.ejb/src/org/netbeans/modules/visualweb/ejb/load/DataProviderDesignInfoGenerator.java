@@ -223,7 +223,7 @@ public class DataProviderDesignInfoGenerator {
             out.println( "        if( clientBeans.size() == 0 ) { " );
             out.println( "            if( designBean.getDesignContext().canCreateBean( \"" + fullPackageWrapperClassName + "\", designBean.getBeanParent(), null ) ) {" );
             out.println( "                DesignBean clientBean = designBean.getDesignContext().createBean( \"" + fullPackageWrapperClassName + "\", designBean.getBeanParent(),  null );" );
-            out.println( "                designBean.getProperty( \"" + clientWrapperBeanPropName + "\").setValue( clientBean.getInstance() );" );;
+            out.println( "                designBean.getProperty( \"" + clientWrapperBeanPropName + "\").setValue( clientBean.getInstance() );" );
             out.println( "                return Result.SUCCESS;" );
             out.println( "            }" );
             out.println( "            else {" );
@@ -237,6 +237,9 @@ public class DataProviderDesignInfoGenerator {
             out.println( "             return Result.SUCCESS;" );
             out.println( "         } else {// More than one found" );
             out.println( "             DesignProperty prop = designBean.getProperty( \"" + clientWrapperBeanPropName + "\" );" );
+            out.println( "             DesignBean defaultBean = (DesignBean)clientBeans.get(0);");
+            out.println( "             prop.setValue( defaultBean.getInstance() );");
+            out.println();
             out.println( "             Customizer2 dpCustomizer = new DataClassInstanceCustomizer( \"DataProvider customizer\", designBean, prop, (DesignBean[])clientBeans.toArray(new DesignBean[0]) ); ");
             out.println( "             return new CustomizerResult( designBean, dpCustomizer );");
             out.println( "         }" );
