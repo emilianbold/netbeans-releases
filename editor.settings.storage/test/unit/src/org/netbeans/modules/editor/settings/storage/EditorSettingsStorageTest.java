@@ -44,7 +44,6 @@ package org.netbeans.modules.editor.settings.storage;
 import java.awt.Color;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -77,7 +76,7 @@ public class EditorSettingsStorageTest extends NbTestCase {
         super(testName);
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
     
         EditorTestLookup.setLookup(
@@ -327,7 +326,7 @@ public class EditorSettingsStorageTest extends NbTestCase {
         checkKeyBinding(kb, "O-O");
         
         // Change the coloring
-        MultiKeyBinding newKb = new MultiKeyBinding(Utils.stringToKeyStrokes("DS-D"), "test-action-1");
+        MultiKeyBinding newKb = new MultiKeyBinding(Utilities.stringToKey("DS-D"), "test-action-1");
         setOneKeyBinding("text/x-type-A", newKb);
 
         // Check that the original KeyBindingSettings has not changed
@@ -384,9 +383,9 @@ public class EditorSettingsStorageTest extends NbTestCase {
         
         ArrayList<KeyStroke> list = new ArrayList<KeyStroke>();
         for(String s : keyStrokes) {
-            KeyStroke [] strokes = Utils.stringToKeyStrokes(s);
-            if (strokes != null && strokes.length > 0) {
-                list.addAll(Arrays.asList(strokes));
+            KeyStroke stroke = Utilities.stringToKey(s);
+            if (stroke != null) {
+                list.add(stroke);
             }
         }
         

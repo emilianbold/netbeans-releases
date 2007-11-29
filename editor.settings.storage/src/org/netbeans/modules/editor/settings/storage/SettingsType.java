@@ -43,6 +43,7 @@ package org.netbeans.modules.editor.settings.storage;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,55 +52,51 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.editor.settings.CodeTemplateSettings;
-import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.api.editor.settings.KeyBindingSettings;
+import org.netbeans.modules.editor.settings.storage.fontscolors.ColoringStorage;
+import org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage;
+import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Vita Stejskal
  */
-public enum SettingsType {
+public final class SettingsType {
     
-    FONTSCOLORS(
-        "FontsColors", //NOI18N
-        true, 
-        FontColorSettings.class, 
-        "text/x-nbeditor-fontcolorsettings", //NOI18N
-        null
-    ),
-    KEYBINDINGS(
-        "Keybindings", //NOI18N
-        true, 
-        KeyBindingSettings.class, 
-        "text/x-nbeditor-keybindingsettings", //NOI18N
-        "keybindings.xml" //NOI18N
-    ),
-    CODETEMPLATES(
-        "CodeTemplates", //NOI18N
-        false, 
-        CodeTemplateSettings.class, 
-        "text/x-nbeditor-codetemplatesettings", //NOI18N
-        "abbreviations.xml" //NOI18N
-    );
-    
-    public static SettingsType get(Class apiClass) {
-        assert apiClass != null : "The parameter apiClass can't be null"; //NOI18N
+    public static <K extends Object, V extends Object> StorageDescription<K, V> find(String id) {
+        assert id != null : "The parameter id can't be null"; //NOI18N
         
-        for (SettingsType type : SettingsType.values()) {
-            if (type.apiClass.equals(apiClass)) {
-                return type;
-            }
+        @SuppressWarnings("unchecked")
+        StorageDescription<K, V> sd = Cache.getInstance().find(id);
+        return sd;
+    }
+    
+    public static Locator getLocator(StorageDescription sd) {
+        assert sd != null : "The parameter sd can't be null"; //NOI18N
+        
+        Locator locator;
+
+        if (ColoringStorage.ID.equals(sd.getId())) {
+            locator = new FontsColorsLocator(sd.getId(), sd.isUsingProfiles(), sd.getMimeType(), sd.getLegacyFileName());
+        } else if (KeyMapsStorage.ID.equals(sd.getId())) {
+            locator = new KeybindingsLocator(sd.getId(), sd.isUsingProfiles(), sd.getMimeType(), sd.getLegacyFileName());
+        } else {
+            locator = new DefaultLocator(sd.getId(), sd.isUsingProfiles(), sd.getMimeType(), sd.getLegacyFileName());
         }
-        return null;
+
+        return locator;
     }
     
     public static interface Locator {
         public void scan(FileObject baseFolder, String mimeType, String profileId, boolean fullScan, boolean scanModules, boolean scanUsers, Map<String, List<Object []>> results);
         public String getWritableFileName(String mimeType, String profileId, String fileId, boolean modulesFile);
+        public boolean isUsingProfiles();
     }
     
     // ------------------------------------------------------------------
@@ -108,47 +105,73 @@ public enum SettingsType {
 
     private static final Logger LOG = Logger.getLogger(SettingsType.class.getName());
     
-    private final String settingsTypeId;
-    private final boolean usesProfiles;
-    private final Class apiClass;
-    private final String mimeType;
-    private Locator locator;
-    private final String legacyFileName;
-    
-    private SettingsType(String settingsTypeId, boolean usesProfiles, Class apiClass, String mimeType, String legacyFileName) {
-        this.settingsTypeId = settingsTypeId;
-        this.usesProfiles = usesProfiles;
-        this.apiClass = apiClass;
-        this.mimeType = mimeType;
-        this.legacyFileName = legacyFileName;
+    private SettingsType() {
+        // no-op
     }
+    
+    /* package */ static final class Cache implements LookupListener {
+        
+        public static synchronized Cache getInstance() {
+            if (INSTANCE == null) {
+                INSTANCE = new Cache();
+            }
+            return INSTANCE;
+        }
 
-    public String getId() {
-        return settingsTypeId;
-    }
-    
-    public boolean isUsingProfiles() {
-        return usesProfiles;
-    }
-    
-    public String getMimeType() {
-        return mimeType;
-    }
-
-    public Locator getLocator() {
-        if (locator == null) {
-            switch (this) {
-            case FONTSCOLORS: locator = new FontsColorsLocator(); break;
-            case KEYBINDINGS: locator = new KeybindingsLocator(); break;
-            default: locator = new DefaultLocator(this);
+        public StorageDescription find(String id) {
+            synchronized (cache) {
+                return cache.get(id);
             }
         }
-        return locator;
-    }
+        
+        // ------------------------------------------------------------------
+        // LookupListener implementation
+        // ------------------------------------------------------------------
+        
+        public void resultChanged(LookupEvent ev) {
+            rebuild();
+        }
+        
+        // ------------------------------------------------------------------
+        // private implementation
+        // ------------------------------------------------------------------
+        
+        private static Cache INSTANCE = null;
+        private final Lookup.Result<StorageDescription> lookupResult;
+        private final Map<String, StorageDescription> cache = new HashMap<String, StorageDescription>();
+
+        private Cache() {
+            this.lookupResult = Lookup.getDefault().lookupResult(StorageDescription.class);
+            rebuild();
+            this.lookupResult.addLookupListener(WeakListeners.create(LookupListener.class, this, this.lookupResult));
+        }
+        
+        private void rebuild() {
+            synchronized (cache) {
+                Collection<? extends StorageDescription> allInstances = lookupResult.allInstances();
+                
+                // determine all IDs
+                Collection<String> allIds = new HashSet<String>();
+                for(StorageDescription sd : allInstances) {
+                    allIds.add(sd.getId());
+                }
+
+                // remove descriptions that are no longer in lookupResult
+                cache.keySet().retainAll(allIds);
+                
+                // add new descriptions that appeared in lookupResult
+                for(StorageDescription sd : allInstances) {
+                    if (!cache.containsKey(sd.getId())) {
+                        cache.put(sd.getId(), sd);
+                    }
+                }
+            }            
+        }
+    } // End of Cache class
     
-    public String getLegacyFileName() {
-        return legacyFileName;
-    }
+    // ------------------------------------------------------------------
+    // Locators
+    // ------------------------------------------------------------------
     
     private static class DefaultLocator implements Locator {
 
@@ -159,14 +182,20 @@ public enum SettingsType {
         private static final String WRITABLE_FILE_SUFFIX = ".xml"; //NOI18N
         private static final String FA_TARGET_OS = "nbeditor-settings-targetOS"; //NOI18N
         
-        private final SettingsType settingType;
-        private final String writableFilePrefix;
-        private final String modulesWritableFilePrefix;
+        protected final String settingTypeId;
+        protected final boolean isUsingProfiles;
+        protected final String mimeType;
+        protected final String legacyFileName;
+        protected final String writableFilePrefix;
+        protected final String modulesWritableFilePrefix;
         
-        public DefaultLocator(SettingsType settingType) {
-            assert settingType != null : "The parameter settingType can't be null"; //NOI18N
-            this.settingType = settingType;
-            this.writableFilePrefix = WRITABLE_FILE_PREFIX + settingType.getId();
+        public DefaultLocator(String settingTypeId, boolean hasProfiles, String mimeType, String legacyFileName) {
+            this.settingTypeId = settingTypeId;
+            this.isUsingProfiles = hasProfiles;
+            this.mimeType = mimeType;
+            this.legacyFileName = legacyFileName;
+            
+            this.writableFilePrefix = WRITABLE_FILE_PREFIX + settingTypeId;
             this.modulesWritableFilePrefix = MODULE_FILES_FOLDER + "/" + writableFilePrefix; //NOI18N
         }
         
@@ -212,12 +241,12 @@ public enum SettingsType {
             StringBuilder part = new StringBuilder(127);
             
             if (mimeType == null || mimeType.length() == 0) {
-                part.append(settingType.getId()).append('/'); //NOI18N
+                part.append(settingTypeId).append('/'); //NOI18N
             } else {
-                part.append(mimeType).append('/').append(settingType.getId()).append('/'); //NOI18N
+                part.append(mimeType).append('/').append(settingTypeId).append('/'); //NOI18N
             }
             
-            if (settingType.isUsingProfiles()) {
+            if (isUsingProfiles) {
                 assert profileId != null : "The profileId parameter must not be null"; //NOI18N
                 part.append(profileId).append('/'); //NOI18N
             }
@@ -237,16 +266,20 @@ public enum SettingsType {
             return part.toString();
         }
         
+        public final boolean isUsingProfiles() {
+            return isUsingProfiles;
+        }
+        
         protected FileObject getLegacyMimeFolder(FileObject baseFolder, String mimeType) {
             return mimeType == null ? baseFolder : baseFolder.getFileObject(mimeType);
         }
 
         protected void addModulesLegacyFiles(FileObject mimeFolder, String profileId, boolean fullScan, Map<String, List<Object []>> files) {
-            if (settingType.getLegacyFileName() != null) {
+            if (legacyFileName != null) {
                 addLegacyFiles(
                     mimeFolder, 
                     profileId, 
-                    MODULE_FILES_FOLDER + "/" + settingType.getLegacyFileName(), //NOI18N
+                    MODULE_FILES_FOLDER + "/" + legacyFileName, //NOI18N
                     files, 
                     true
                 );
@@ -254,11 +287,11 @@ public enum SettingsType {
         }
         
         protected void addUsersLegacyFiles(FileObject mimeFolder, String profileId, boolean fullScan, Map<String, List<Object []>> files) {
-            if (settingType.getLegacyFileName() != null) {
+            if (legacyFileName != null) {
                 addLegacyFiles(
                     mimeFolder, 
                     profileId, 
-                    settingType.getLegacyFileName(), 
+                    legacyFileName, 
                     files, 
                     true
                 );
@@ -271,9 +304,9 @@ public enum SettingsType {
 
         private void addModulesFiles(FileObject mimeFolder, String profileId, boolean fullScan, Map<String, List<Object []>> files) {
             if (profileId == null) {
-                FileObject settingHome = mimeFolder.getFileObject(settingType.getId());
+                FileObject settingHome = mimeFolder.getFileObject(settingTypeId);
                 if (settingHome != null && settingHome.isFolder()) {
-                    if (settingType.isUsingProfiles()) {
+                    if (isUsingProfiles) {
                         FileObject [] profileHomes = settingHome.getChildren();
                         for(FileObject f : profileHomes) {
                             if (!f.isFolder()) {
@@ -294,7 +327,7 @@ public enum SettingsType {
                     }
                 }
             } else {
-                FileObject folder = mimeFolder.getFileObject(settingType.getId() + "/" + profileId + "/" + MODULE_FILES_FOLDER); //NOI18N
+                FileObject folder = mimeFolder.getFileObject(settingTypeId + "/" + profileId + "/" + MODULE_FILES_FOLDER); //NOI18N
                 if (folder != null && folder.isFolder()) {
                     addFiles(folder, fullScan, files, profileId, folder.getParent(), true);
                 }
@@ -303,9 +336,9 @@ public enum SettingsType {
         
         private void addUsersFiles(FileObject mimeFolder, String profileId, boolean fullScan, Map<String, List<Object []>> files) {
             if (profileId == null) {
-                FileObject settingHome = mimeFolder.getFileObject(settingType.getId());
+                FileObject settingHome = mimeFolder.getFileObject(settingTypeId);
                 if (settingHome != null && settingHome.isFolder()) {
-                    if (settingType.isUsingProfiles()) {
+                    if (isUsingProfiles) {
                         FileObject [] profileHomes = settingHome.getChildren();
                         for(FileObject f : profileHomes) {
                             if (f.isFolder()) {
@@ -318,7 +351,7 @@ public enum SettingsType {
                     }
                 }
             } else {
-                FileObject folder = mimeFolder.getFileObject(settingType.getId() + "/" + profileId); //NOI18N
+                FileObject folder = mimeFolder.getFileObject(settingTypeId + "/" + profileId); //NOI18N
                 if (folder != null && folder.isFolder()) {
                     addFiles(folder, fullScan, files, profileId, folder, false);
                 }
@@ -335,7 +368,7 @@ public enum SettingsType {
                     continue;
                 }
                 
-                if (f.getMIMEType().equals(settingType.getMimeType())) {
+                if (f.getMIMEType().equals(mimeType)) {
                     Object targetOs = f.getAttribute(FA_TARGET_OS);
                     if (targetOs != null) {
                         try {
@@ -468,7 +501,7 @@ public enum SettingsType {
             if (profileId == null) {
                 String defaultProfileId;
                 
-                if (settingType.isUsingProfiles()) {
+                if (isUsingProfiles) {
                     FileObject [] profileHomes = mimeFolder.getChildren();
                     for(FileObject f : profileHomes) {
                         if (!f.isFolder() || f.getNameExt().equals(MODULE_FILES_FOLDER)) {
@@ -517,8 +550,8 @@ public enum SettingsType {
             pair.add(new Object [] { profileHome, file, moduleFiles });
             
             if (LOG.isLoggable(Level.INFO)) {
-                Utils.logOnce(LOG, Level.INFO, settingType.getId() + " settings " + //NOI18N
-                    "should reside in '" + settingType.getId() + "' subfolder, " + //NOI18N
+                Utils.logOnce(LOG, Level.INFO, settingTypeId + " settings " + //NOI18N
+                    "should reside in '" + settingTypeId + "' subfolder, " + //NOI18N
                     "see #90403 for details. Offending file '" + file.getPath() + "'", null); //NOI18N
             }
         }
@@ -538,8 +571,8 @@ public enum SettingsType {
             "editorColoring.xml", // NOI18N
         };
         
-        public FontsColorsLocator() {
-            super(FONTSCOLORS);
+        public FontsColorsLocator(String settingTypeId, boolean hasProfiles, String mimeType, String legacyFileName) {
+            super(settingTypeId, hasProfiles, mimeType, legacyFileName);
         }
         
         @Override
@@ -600,8 +633,8 @@ public enum SettingsType {
                     pair.add(new Object [] { profileHome, f, moduleFiles });
 
                     if (LOG.isLoggable(Level.INFO)) {
-                        Utils.logOnce(LOG, Level.INFO, FONTSCOLORS.getId() + " settings " + //NOI18N
-                            "should reside in '" + FONTSCOLORS.getId() + "' subfolder, " + //NOI18N
+                        Utils.logOnce(LOG, Level.INFO, settingTypeId + " settings " + //NOI18N
+                            "should reside in '" + settingTypeId + "' subfolder, " + //NOI18N
                             "see #90403 for details. Offending file '" + f.getPath() + "'", null); //NOI18N
                     }
                     
@@ -615,8 +648,8 @@ public enum SettingsType {
 
     private static final class KeybindingsLocator extends DefaultLocator {
         
-        public KeybindingsLocator() {
-            super(KEYBINDINGS);
+        public KeybindingsLocator(String settingTypeId, boolean hasProfiles, String mimeType, String legacyFileName) {
+            super(settingTypeId, hasProfiles, mimeType, legacyFileName);
         }
         
         @Override

@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.editor.settings.storage;
 
+import org.netbeans.modules.editor.settings.storage.keybindings.KeyBindingSettingsImpl;
+import org.netbeans.modules.editor.settings.storage.fontscolors.FontColorSettingsImpl;
 import java.awt.Color;
 import java.lang.ref.WeakReference;
 import java.net.URL;
@@ -67,7 +69,7 @@ public class SettingsProviderTest extends NbTestCase {
         super(name);
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
     
         EditorTestLookup.setLookup(
@@ -120,56 +122,6 @@ public class SettingsProviderTest extends NbTestCase {
             
             assertSame("Test marker and orig marker should be the same", origMarker, testMarker);
         }
-    }
-
-    public void testColoringsForMimeType() throws Exception {
-        final String mimeType = "text/x-orig";
-        
-        Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimeType));
-        
-        // Check the API class
-        Collection<? extends FontColorSettings> c = lookup.lookupAll(FontColorSettings.class);
-        assertEquals("Wrong number of fcs", 1, c.size());
-        
-        FontColorSettings fcs = c.iterator().next();
-        assertNotNull("FCS should not be null", fcs);
-        assertTrue("Wrong fcs impl", fcs instanceof CompositeFCS);
-        
-        CompositeFCS compositeFcs = (CompositeFCS) fcs;
-        assertEquals("CompositeFCS using wrong profile", EditorSettingsImpl.DEFAULT_PROFILE, compositeFcs.profile);
-    }
-
-    public void testColoringsForSpecialTestMimeType() throws Exception {
-        final String origMimeType = "text/x-orig";
-        final String specialTestMimeType = "test123456_" + origMimeType;
-        
-        Lookup lookup = MimeLookup.getLookup(MimePath.parse(specialTestMimeType));
-        
-        // Check the API class
-        Collection<? extends FontColorSettings> c = lookup.lookupAll(FontColorSettings.class);
-        assertEquals("Wrong number of fcs", 1, c.size());
-        
-        FontColorSettings fcs = c.iterator().next();
-        assertNotNull("FCS should not be null", fcs);
-        assertTrue("Wrong fcs impl", fcs instanceof CompositeFCS);
-        
-        CompositeFCS compositeFcs = (CompositeFCS) fcs;
-        assertEquals("CompositeFCS should be using special test profile", "test123456", compositeFcs.profile);
-    }
-
-    public void testKeybindingsForSpecialTestMimeType() throws Exception {
-        final String origMimeType = "text/x-orig";
-        final String specialTestMimeType = "test123456_" + origMimeType;
-        
-        Lookup lookup = MimeLookup.getLookup(MimePath.parse(specialTestMimeType));
-        
-        // Check the API class
-        Collection<? extends KeyBindingSettings> c = lookup.lookupAll(KeyBindingSettings.class);
-        assertEquals("Wrong number of kbs", 1, c.size());
-        
-        KeyBindingSettings kbs = c.iterator().next();
-        assertNotNull("KBS should not be null", kbs);
-        assertTrue("Wrong kbs impl", kbs instanceof KeyBindingSettingsImpl.Immutable);
     }
 
     public void testLookupsCached() {

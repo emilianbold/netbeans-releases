@@ -49,8 +49,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -81,20 +83,49 @@ public final class MimeTypesTracker {
     /** The property for notifying changes in mime types tracked by this tracker. */
     public static final String PROP_MIME_TYPES = "mime-types"; //NOI18N
 
+    private static final Map<String, Map<StorageDescription, MimeTypesTracker>> settingMimeTypes = new HashMap<String, Map<StorageDescription, MimeTypesTracker>>();
+    
+    public static MimeTypesTracker get(String settingsTypeId, String basePath) {
+        assert basePath != null : "The parameter basePath must not be null"; //NOI18N
+
+        StorageDescription sd = null;
+        
+        if (settingsTypeId != null) {
+            sd = SettingsType.find(settingsTypeId);
+            assert sd != null : "Invalid editor settings type id: '" + settingsTypeId + "'"; //NOI18N
+        }
+        
+        synchronized (settingMimeTypes) {
+            Map<StorageDescription, MimeTypesTracker> map = settingMimeTypes.get(basePath);
+            if (map == null) {
+                map = new WeakHashMap<StorageDescription, MimeTypesTracker>();
+                settingMimeTypes.put(basePath, map);
+            }
+            
+            MimeTypesTracker tracker = map.get(sd);
+            if (tracker == null) {
+                tracker = new MimeTypesTracker(sd == null ? null : SettingsType.getLocator(sd), basePath);
+                map.put(sd, tracker);
+            }
+            
+            return tracker;
+        }
+    }
+    
     /**
      * Create a new tracker for tracking mime types under the <code>basePath</code>
      * folder.
      * 
-     * @param basePath The path on the system <code>FileSystem</code> where the
-     *   mime types should be tracked.
      * @param settingsType The type of settings to track mime types for. If not
      *   <code>null</code> the tracker will only list mime types that declare
      *   settings of this type.
+     * @param basePath The path on the system <code>FileSystem</code> where the
+     *   mime types should be tracked.
      */
-    public MimeTypesTracker(String basePath, SettingsType settingsType) {
+    /* package */ MimeTypesTracker(SettingsType.Locator locator, String basePath) {
+        this.locator = locator;
         this.basePath = basePath;
         this.basePathElements = basePath.split("/"); //NOI18N
-        this.locator = settingsType == null ? null : settingsType.getLocator();
         
         rebuild();
         

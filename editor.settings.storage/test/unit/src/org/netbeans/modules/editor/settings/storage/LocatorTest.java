@@ -49,6 +49,8 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.editor.settings.storage.fontscolors.ColoringStorage;
+import org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.util.Utilities;
@@ -69,19 +71,12 @@ public class LocatorTest extends NbTestCase {
         "<!DOCTYPE bindings PUBLIC \"-//NetBeans//DTD Editor KeyBindings settings 1.1//EN\" \"http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd\">\n" +
         "<bindings></bindings>";
 
-    private static final String CT_CONTENTS = 
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-        "<!DOCTYPE codetemplates PUBLIC \"-//NetBeans//DTD Editor Code Templates settings 1.0//EN\" \"http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd\">\n" +
-        "<codetemplates></codetemplates>";
-    
-    
     /** Creates a new instance of LocatorTest */
     public LocatorTest(String name) {
         super(name);
     }
     
-    @Override
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
     
         EditorTestLookup.setLookup(
@@ -131,7 +126,7 @@ public class LocatorTest extends NbTestCase {
         
         FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
         Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
-        SettingsType.FONTSCOLORS.getLocator().scan(baseFolder, "text/x-whatever", null, true, true, true, results);
+        scan(ColoringStorage.ID, baseFolder, "text/x-whatever", null, true, true, true, results);
         
         assertNotNull("Scan results should not null", results);
         assertEquals("Wrong number of profiles", 1, results.size());
@@ -166,7 +161,7 @@ public class LocatorTest extends NbTestCase {
         
         FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
         Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
-        SettingsType.FONTSCOLORS.getLocator().scan(baseFolder, "text/x-whatever", null, true, true, true, results);
+        scan(ColoringStorage.ID, baseFolder, "text/x-whatever", null, true, true, true, results);
         
         assertNotNull("Scan results should not null", results);
         assertEquals("Wrong number of profiles", 2, results.size());
@@ -191,7 +186,7 @@ public class LocatorTest extends NbTestCase {
         
         FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
         Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
-        SettingsType.FONTSCOLORS.getLocator().scan(baseFolder, null, null, true, true, true, results);
+        scan(ColoringStorage.ID, baseFolder, null, null, true, true, true, results);
         
         assertNotNull("Scan results should not null", results);
         assertEquals("Wrong number of profiles", 1, results.size());
@@ -215,7 +210,7 @@ public class LocatorTest extends NbTestCase {
             "Editors/text/x-whatever/FontsColors/NetBeans/file2.xml",
             "Editors/text/x-whatever/FontsColors/NetBeans/file3.xml",
         };
-        String writableUserFile = "Editors/" + SettingsType.FONTSCOLORS.getLocator().getWritableFileName("text/x-whatever", "NetBeans", "xyz", false);
+        String writableUserFile = "Editors/" + getWritableFileName(ColoringStorage.ID, "text/x-whatever", "NetBeans", "xyz", false);
         
         createOrderedFiles(files, FC_CONTENTS);
         TestUtilities.createFile(writableUserFile, FC_CONTENTS);
@@ -224,7 +219,7 @@ public class LocatorTest extends NbTestCase {
         
         FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
         Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
-        SettingsType.FONTSCOLORS.getLocator().scan(baseFolder, "text/x-whatever", null, true, true, true, results);
+        scan(ColoringStorage.ID, baseFolder, "text/x-whatever", null, true, true, true, results);
         
         assertNotNull("Scan results should not null", results);
         assertEquals("Wrong number of profiles", 1, results.size());
@@ -245,7 +240,7 @@ public class LocatorTest extends NbTestCase {
             "Editors/Keybindings/NetBeans/kekeke.xml",
             "Editors/Keybindings/NetBeans/dhdhdddd.xml",
         };
-        String writableUserFile = "Editors/" + SettingsType.KEYBINDINGS.getLocator().getWritableFileName(null, "NetBeans", null, false);
+        String writableUserFile = "Editors/" + getWritableFileName(KeyMapsStorage.ID, null, "NetBeans", null, false);
         
         createOrderedFiles(files, KB_CONTENTS);
         TestUtilities.createFile(writableUserFile, KB_CONTENTS);
@@ -253,7 +248,7 @@ public class LocatorTest extends NbTestCase {
         
         FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
         Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
-        SettingsType.KEYBINDINGS.getLocator().scan(baseFolder, null, null, true, true, true, results);
+        scan(KeyMapsStorage.ID, baseFolder, null, null, true, true, true, results);
         
         assertNotNull("Scan results should not null", results);
         assertEquals("Wrong number of profiles", 1, results.size());
@@ -272,7 +267,7 @@ public class LocatorTest extends NbTestCase {
         
         FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
         Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
-        SettingsType.KEYBINDINGS.getLocator().scan(baseFolder, null, null, true, true, true, results);
+        scan(KeyMapsStorage.ID, baseFolder, null, null, true, true, true, results);
         
         assertNotNull("Scan results should not null", results);
         assertEquals("Wrong number of profiles", 1, results.size());
@@ -281,55 +276,7 @@ public class LocatorTest extends NbTestCase {
         checkProfileFiles(files, null, profileFiles, "NetBeans");
     }
 
-    public void testFullCodeTemplatesMixedLayout() throws Exception {
-        String [] files = new String [] {
-            "Editors/Defaults/abbreviations.xml",
-            "Editors/CodeTemplates/Defaults/zz.xml",
-            "Editors/CodeTemplates/Defaults/dd.xml",
-            "Editors/CodeTemplates/Defaults/kk.xml",
-            "Editors/CodeTemplates/Defaults/aa.xml",
-            "Editors/abbreviations.xml",
-            "Editors/CodeTemplates/papap.xml",
-            "Editors/CodeTemplates/kekeke.xml",
-            "Editors/CodeTemplates/dhdhdddd.xml",
-        };
-        String writableUserFile = "Editors/" + SettingsType.CODETEMPLATES.getLocator().getWritableFileName(null, null, null, false);
-        
-        createOrderedFiles(files, CT_CONTENTS);
-        TestUtilities.createFile(writableUserFile, CT_CONTENTS);
-        orderFiles("Editors/CodeTemplates/dhdhdddd.xml", writableUserFile);
-        
-        FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
-        Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
-        SettingsType.CODETEMPLATES.getLocator().scan(baseFolder, null, null, true, true, true, results);
-        
-        assertNotNull("Scan results should not null", results);
-        assertEquals("Wrong number of profiles", 1, results.size());
-        
-        List<Object []> profileFiles = results.get(null);
-        checkProfileFiles(files, writableUserFile, profileFiles, null);
-    }
-
-    public void testFullCodeTemplatesLegacyLayout() throws Exception {
-        String [] files = new String [] {
-            "Editors/Defaults/abbreviations.xml",
-            "Editors/abbreviations.xml",
-        };
-        
-        createOrderedFiles(files, CT_CONTENTS);
-        
-        FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
-        Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
-        SettingsType.CODETEMPLATES.getLocator().scan(baseFolder, null, null, true, true, true, results);
-        
-        assertNotNull("Scan results should not null", results);
-        assertEquals("Wrong number of profiles", 1, results.size());
-        
-        List<Object []> profileFiles = results.get(null);
-        checkProfileFiles(files, null, profileFiles, null);
-    }
-
-    private void checkProfileFiles(String [] paths, String writablePath, List<Object []> files, String profileId) {
+    public static void checkProfileFiles(String [] paths, String writablePath, List<Object []> files, String profileId) {
         assertNotNull(profileId + ": No files", files);
         assertEquals(profileId + ": Wrong number of files", 
             writablePath != null ? paths.length + 1 : paths.length, files.size());
@@ -351,7 +298,7 @@ public class LocatorTest extends NbTestCase {
         }
     }
     
-    private void createOrderedFiles(String [] files, String contents) throws IOException {
+    public static void createOrderedFiles(String [] files, String contents) throws IOException {
         for(int i = 0; i < files.length; i++) {
             FileObject f = TestUtilities.createFile(files[i], contents);
             if (i + 1 < files.length) {
@@ -366,7 +313,7 @@ public class LocatorTest extends NbTestCase {
         }
     }
     
-    private String [] getNameParts(String path) {
+    private static String [] getNameParts(String path) {
         int idx = path.lastIndexOf('/');
         if (idx != -1) {
             return new String [] { path.substring(0, idx), path.substring(idx + 1) };
@@ -375,7 +322,7 @@ public class LocatorTest extends NbTestCase {
         }
     }
     
-    private void orderFiles(String pathA, String pathB) throws IOException {
+    public static void orderFiles(String pathA, String pathB) throws IOException {
         FileObject fileA = Repository.getDefault().getDefaultFileSystem().findResource(pathA);
         FileObject fileB = Repository.getDefault().getDefaultFileSystem().findResource(pathB);
         assertNotNull("Can't find file '" + pathA + "'", fileA);
@@ -403,5 +350,17 @@ public class LocatorTest extends NbTestCase {
         }
         fail("Can't detect OS type ");
         return null; // not reachable
+    }
+    
+    public static void scan(String settingsTypeId, FileObject baseFolder, String mimeType, String profileId, boolean fullScan, boolean scanModules, boolean scanUsers, Map<String, List<Object []>> results) {
+        SettingsType.Locator l = SettingsType.getLocator(SettingsType.find(settingsTypeId));
+        assertNotNull("Can't find locator for '" + settingsTypeId + "'");
+        l.scan(baseFolder, mimeType, profileId, fullScan, scanModules, scanUsers, results);
+    }
+    
+    public static String getWritableFileName(String settingsTypeId, String mimeType, String profileId, String fileId, boolean modulesFile) {
+        SettingsType.Locator l = SettingsType.getLocator(SettingsType.find(settingsTypeId));
+        assertNotNull("Can't find locator for '" + settingsTypeId + "'");
+        return l.getWritableFileName(mimeType, profileId, fileId, modulesFile);
     }
 }

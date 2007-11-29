@@ -42,12 +42,45 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
+    <attr name="Services\MIMEResolver\org-netbeans-modules-editor-settings-storage-mime-resolver.xml\position" intvalue="325"/>
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance"/>
                     </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Services">
+        <!-- Recognize code templates settings files -->
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-editor-codetemplates-mime-resolver.xml" url="mime-resolvers.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.lib.editor.codetemplates.Bundle"/>
+                <attr name="position" intvalue="520"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="xml">
+        <folder name="entities">
+            <folder name="NetBeans">
+                <file name="DTD_Editor_Code_Templates_settings_1_0" url="nbres:/org/netbeans/lib/editor/codetemplates/storage/EditorCodeTemplates-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Editor Code Templates settings 1.0//EN"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="org-netbeans-modules-options-editor">
+        <folder name="OptionsDialogCategories">
+            <folder name="Editor">
+                <file name="CodeTemplatesPanel.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.lib.editor.codetemplates.storage.ui.CodeTemplatesPanelController"/>
+                    <attr name="position" intvalue="300"/>
+                </file>
             </folder>
         </folder>
     </folder>

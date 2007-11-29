@@ -46,8 +46,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JComponent;
-//import org.netbeans.beaninfo.editors.HtmlBrowser;
+import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.editor.settings.storage.EditorTestLookup;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.filesystems.FileObject;
@@ -56,8 +57,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 
-import org.netbeans.modules.options.macros.MacrosPanelController;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 
@@ -67,26 +66,33 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public class EditorOptionsTest extends NbTestCase {
     
-    
-    static {
-        IDEInitializer.setup (
-            new String[] {
-                "org/netbeans/modules/options/editor/mf-layer.xml",
-                "org/netbeans/modules/defaults/mf-layer.xml",
-                "org/netbeans/modules/options/keymap/mf-layer.xml"
-            }, null 
-//            new Object[] {
-//                new HtmlBrowser.FactoryEditor()
-//            }
+    protected @Override void setUp() throws Exception {
+        super.setUp();
+        
+        EditorTestLookup.setLookup(
+            new URL[] {
+                getClass().getClassLoader().getResource("org/netbeans/modules/options/editor/mf-layer.xml"),
+                getClass().getClassLoader().getResource("org/netbeans/modules/options/keymap/mf-layer.xml"),
+            },
+            getWorkDir(),
+            new Object[] {},
+            getClass().getClassLoader()
         );
+                
+        // This is here to initialize Nb URL factory (org.netbeans.core.startup),
+        // which is needed by Nb EntityCatalog (org.netbeans.core).
+        // Also see the test dependencies in project.xml
+        Main.initializeURLFactory();
     }
     
     public EditorOptionsTest (String testName) {
         super (testName);
     }
     
-    public void testOptions () {
-        assertEquals (4, getCategories ().size ());
+    public void testPanelsRegistration () {
+        // there are two panels registered from this module - Editor, Fonts & Colors
+        // and one panel from core/options/keymap
+        assertEquals (3, getCategories ().size ());
     }
     
     public void testOptionsCategories () {

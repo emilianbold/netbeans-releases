@@ -59,8 +59,8 @@ public abstract class KeyBindingSettings {
      */
     public KeyBindingSettings() {
         // Control instantiation of the allowed subclass only
-        if (!"org.netbeans.modules.editor.settings.storage.KeyBindingSettingsImpl$Immutable".equals(getClass().getName())) { // NOI18N
-            throw new IllegalStateException("Instantiation prohibited."); // NOI18N
+        if (!getClass().getName().startsWith("org.netbeans.modules.editor.settings.storage")) { // NOI18N
+            throw new IllegalStateException("Instantiation prohibited. " + getClass().getName()); // NOI18N
         }
     }
     

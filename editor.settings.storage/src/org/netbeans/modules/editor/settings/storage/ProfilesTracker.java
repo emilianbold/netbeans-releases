@@ -50,7 +50,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Logger;
+import org.netbeans.modules.editor.settings.storage.SettingsType.Locator;
+import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -71,6 +74,35 @@ public final class ProfilesTracker {
      */
     public static final String PROP_PROFILES = "profiles"; //NOI18N
     
+    private static final Map<String, Map<StorageDescription, ProfilesTracker>> settingProfiles = new HashMap<String, Map<StorageDescription, ProfilesTracker>>();
+    
+    public static ProfilesTracker get(String settingsTypeId, String basePath) {
+        assert settingsTypeId != null : "The parameter settingsTypeId must not be null"; //NOI18N
+        assert basePath != null : "The parameter basePath must not be null"; //NOI18N
+        
+        StorageDescription sd = SettingsType.find(settingsTypeId);
+        assert sd != null : "Invalid editor settings type id: '" + settingsTypeId + "'"; //NOI18N
+        
+        synchronized (settingProfiles) {
+            Map<StorageDescription, ProfilesTracker> map = settingProfiles.get(basePath);
+            if (map == null) {
+                map = new WeakHashMap<StorageDescription, ProfilesTracker>();
+                settingProfiles.put(basePath, map);
+            }
+            
+            ProfilesTracker tracker = map.get(sd);
+            if (tracker == null) {
+                SettingsType.Locator locator = SettingsType.getLocator(sd);
+                assert locator.isUsingProfiles() : "No need to track profiles for settings that do not use profiles."; //NOI18N
+                
+                tracker = new ProfilesTracker(locator, MimeTypesTracker.get(null, basePath));
+                map.put(sd, tracker);
+            }
+            
+            return tracker;
+        }
+    }
+    
     /**
      * Creates a new instance of ProfilesTracker.
      * 
@@ -78,19 +110,16 @@ public final class ProfilesTracker {
      * @param mimeTypes 
      * @param strict 
      */
-    public ProfilesTracker(SettingsType type, MimeTypesTracker mimeTypes) {
-        assert type != null : "The parameter type must not be null"; //NOI18N
-        assert type.isUsingProfiles() : "No need to track profiles for settings that do not use profiles."; //NOI18N
-        
-        this.locator = type == null ? null : type.getLocator();
+    /* package */ProfilesTracker(Locator locator, MimeTypesTracker mimeTypes) {
+        this.locator = locator;
         this.mimeTypes = mimeTypes;
 
         rebuild();
 
         // Start listening
         this.listener = new Listener();
-        this.sfs = Repository.getDefault().getDefaultFileSystem();
-        this.sfs.addFileChangeListener(WeakListeners.create(FileChangeListener.class, listener, this.sfs));
+        this.systemFileSystem = Repository.getDefault().getDefaultFileSystem();
+        this.systemFileSystem.addFileChangeListener(WeakListeners.create(FileChangeListener.class, listener, this.systemFileSystem));
         this.mimeTypes.addPropertyChangeListener(listener);
     }
     
@@ -170,7 +199,7 @@ public final class ProfilesTracker {
     private final SettingsType.Locator locator;
     private final MimeTypesTracker mimeTypes;
     
-    private final FileSystem sfs;
+    private final FileSystem systemFileSystem;
     private final Listener listener;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     

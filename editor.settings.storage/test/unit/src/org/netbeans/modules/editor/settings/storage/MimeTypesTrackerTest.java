@@ -65,7 +65,7 @@ public class MimeTypesTrackerTest extends NbTestCase {
         super(name);
     }
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
     
         EditorTestLookup.setLookup(
@@ -78,7 +78,7 @@ public class MimeTypesTrackerTest extends NbTestCase {
     
     public void testBasic() throws Exception {
         TestUtilities.createFolder(BASE + "/text/plain");
-        MimeTypesTracker mtt = new MimeTypesTracker(BASE, null);
+        MimeTypesTracker mtt = new MimeTypesTracker(null, BASE);
         Collection<String> mimeTypes = mtt.getMimeTypes();
         
         assertNotNull("MimeTypes should not be null", mimeTypes);
@@ -88,7 +88,7 @@ public class MimeTypesTrackerTest extends NbTestCase {
 
     public void testGC() throws Exception {
         TestUtilities.createFolder(BASE + "/text/plain");
-        MimeTypesTracker mtt = new MimeTypesTracker(BASE, null);
+        MimeTypesTracker mtt = new MimeTypesTracker(null, BASE);
         Collection<String> mimeTypes = mtt.getMimeTypes();
         
         assertNotNull("MimeTypes should not be null", mimeTypes);
@@ -117,7 +117,7 @@ public class MimeTypesTrackerTest extends NbTestCase {
             TestUtilities.createFolder(BASE + "/" + s);
         }
         
-        MimeTypesTracker mtt = new MimeTypesTracker(BASE, null);
+        MimeTypesTracker mtt = new MimeTypesTracker(null, BASE);
         Collection<String> recognized = mtt.getMimeTypes();
         
         assertNotNull("MimeTypes should not be null", recognized);
@@ -138,7 +138,7 @@ public class MimeTypesTrackerTest extends NbTestCase {
             TestUtilities.createFolder(BASE + "/" + s);
         }
         
-        MimeTypesTracker mtt = new MimeTypesTracker(BASE, null);
+        MimeTypesTracker mtt = new MimeTypesTracker(null, BASE);
         Collection<String> recognized = mtt.getMimeTypes();
         
         assertNotNull("MimeTypes should not be null", recognized);
@@ -150,7 +150,7 @@ public class MimeTypesTrackerTest extends NbTestCase {
         TestUtilities.createFile(BASE + "/text");
         TestUtilities.createFile(BASE + "/application/pdf");
         
-        MimeTypesTracker mtt = new MimeTypesTracker(BASE, null);
+        MimeTypesTracker mtt = new MimeTypesTracker(null, BASE);
         Collection<String> recognized = mtt.getMimeTypes();
         
         assertNotNull("MimeTypes should not be null", recognized);
@@ -158,7 +158,7 @@ public class MimeTypesTrackerTest extends NbTestCase {
     }
     
     public void testRecognition() throws IOException {
-        final MimeTypesTracker mtt = new MimeTypesTracker(BASE, null);
+        final MimeTypesTracker mtt = new MimeTypesTracker(null, BASE);
 
         {
         Collection<String> recognized = mtt.getMimeTypes();
@@ -210,7 +210,7 @@ public class MimeTypesTrackerTest extends NbTestCase {
     
     public void testEvents() throws IOException {
         final L listener = new L();
-        final MimeTypesTracker mtt = new MimeTypesTracker(BASE, null);
+        final MimeTypesTracker mtt = new MimeTypesTracker(null, BASE);
         mtt.addPropertyChangeListener(listener);
         
         {
@@ -253,7 +253,7 @@ public class MimeTypesTrackerTest extends NbTestCase {
 
     public void testEvents2() throws IOException {
         final L listener = new L();
-        final MimeTypesTracker mtt = new MimeTypesTracker(BASE, null);
+        final MimeTypesTracker mtt = new MimeTypesTracker(null, BASE);
         mtt.addPropertyChangeListener(listener);
         
         {

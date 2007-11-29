@@ -52,6 +52,8 @@ import junit.framework.TestResult;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.editor.settings.storage.fontscolors.ColoringStorage;
+import org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 
@@ -65,7 +67,7 @@ public class ProfilesTrackerTest extends NbTestCase {
     private static final String BASE = "Xyz/XoX/abc";
 
     // XXX: This is here just for junit to match the test names in the results properly
-    private SettingsType type = (SettingsType) Suite.ENV[0][2];
+    private String settingsTypeId = (String) Suite.ENV[0][2];
     private String folder = (String) Suite.ENV[0][1];
     private String contents = (String) Suite.ENV[0][0];
     
@@ -78,17 +80,17 @@ public class ProfilesTrackerTest extends NbTestCase {
         super(name);
     }
 
-    private void setEnv(SettingsType type, String folder, String contents) {
-        this.type = type;
+    private void setEnv(String settingsTypeId, String folder, String contents) {
+        this.settingsTypeId = settingsTypeId;
         this.folder = folder;
         this.contents = contents;
     }
     
-    public String getName() {
-        return super.getName() + "(" + type + ")";
+    public @Override String getName() {
+        return super.getName() + "(" + settingsTypeId + ")";
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
     
         EditorTestLookup.setLookup(
@@ -109,13 +111,13 @@ public class ProfilesTrackerTest extends NbTestCase {
         Main.initializeURLFactory();
     }
     
-    protected void tearDown() {
+    protected @Override void tearDown() {
         assertGC("Perform GC", new WeakReference<Object>(new Object()));
     }
     
     public void testBasic() throws Exception {
         TestUtilities.createFile(BASE + "/text/plain/" + folder + "/ProfileA/abc.xml", contents);
-        ProfilesTracker pt = new ProfilesTracker(type, new MimeTypesTracker(BASE, null));
+        ProfilesTracker pt = new ProfilesTracker(getLocator(settingsTypeId), new MimeTypesTracker(null, BASE));
         Set<String> profiles = pt.getProfilesDisplayNames();
         
         assertNotNull("Profiles should not be null", profiles);
@@ -125,7 +127,7 @@ public class ProfilesTrackerTest extends NbTestCase {
 
     public void testBasicRoot() throws Exception {
         TestUtilities.createFile(BASE + "/" + folder + "/ProfileA/abc.xml", contents);
-        ProfilesTracker pt = new ProfilesTracker(type, new MimeTypesTracker(BASE, null));
+        ProfilesTracker pt = new ProfilesTracker(getLocator(settingsTypeId), new MimeTypesTracker(null, BASE));
         Set<String> profiles = pt.getProfilesDisplayNames();
         
         assertNotNull("Profiles should not be null", profiles);
@@ -139,7 +141,7 @@ public class ProfilesTrackerTest extends NbTestCase {
         TestUtilities.createFile(BASE + "/text/xml/" + folder + "/ProfileA/abc.xml", contents);
         TestUtilities.createFile(BASE + "/text/plain/" + folder + "/ProfileB/abc.xml", contents);
         TestUtilities.createFile(BASE + "/text/xml/" + folder + "/ProfileB/abc.xml", contents);
-        ProfilesTracker pt = new ProfilesTracker(type, new MimeTypesTracker(BASE, null));
+        ProfilesTracker pt = new ProfilesTracker(getLocator(settingsTypeId), new MimeTypesTracker(null, BASE));
         Set<String> profiles = pt.getProfilesDisplayNames();
         
         assertNotNull("Profiles should not be null", profiles);
@@ -153,7 +155,7 @@ public class ProfilesTrackerTest extends NbTestCase {
         FileObject f = Repository.getDefault().getDefaultFileSystem().findResource(BASE + "/text/plain/" + folder + "/ProfileA");
         f.setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.editor.settings.storage.Bundle");
         
-        ProfilesTracker pt = new ProfilesTracker(type, new MimeTypesTracker(BASE, null));
+        ProfilesTracker pt = new ProfilesTracker(getLocator(settingsTypeId), new MimeTypesTracker(null, BASE));
         Set<String> profiles = pt.getProfilesDisplayNames();
         
         assertNotNull("Profiles should not be null", profiles);
@@ -162,7 +164,7 @@ public class ProfilesTrackerTest extends NbTestCase {
     }
 
     public void testRollbackIndicator() throws Exception {
-        ProfilesTracker pt = new ProfilesTracker(type, new MimeTypesTracker(BASE, null));
+        ProfilesTracker pt = new ProfilesTracker(getLocator(settingsTypeId), new MimeTypesTracker(null, BASE));
 
         {
         TestUtilities.createFile(BASE + "/text/plain/" + folder + "/ProfileA/abc.xml", contents);
@@ -181,7 +183,7 @@ public class ProfilesTrackerTest extends NbTestCase {
     
     public void testGC() throws Exception {
         TestUtilities.createFile(BASE + "/text/plain/" + folder + "/ProfileA/abc.xml", contents);
-        ProfilesTracker pt = new ProfilesTracker(type, new MimeTypesTracker(BASE, null));
+        ProfilesTracker pt = new ProfilesTracker(getLocator(settingsTypeId), new MimeTypesTracker(null, BASE));
         Set<String> profiles = pt.getProfilesDisplayNames();
         
         assertNotNull("Profiles should not be null", profiles);
@@ -194,7 +196,7 @@ public class ProfilesTrackerTest extends NbTestCase {
     }
 
     public void testRecognition() throws Exception {
-        ProfilesTracker pt = new ProfilesTracker(type, new MimeTypesTracker(BASE, null));
+        ProfilesTracker pt = new ProfilesTracker(getLocator(settingsTypeId), new MimeTypesTracker(null, BASE));
         
         {
         TestUtilities.createFolder(BASE);
@@ -230,7 +232,7 @@ public class ProfilesTrackerTest extends NbTestCase {
     }
 
     public void testRecognition2() throws Exception {
-        ProfilesTracker pt = new ProfilesTracker(type, new MimeTypesTracker(BASE, null));
+        ProfilesTracker pt = new ProfilesTracker(getLocator(settingsTypeId), new MimeTypesTracker(null, BASE));
         
         {
         TestUtilities.createFile(BASE + "/text/x-jsp/" + folder + "/MyProfile/abc.xml", contents);
@@ -261,7 +263,7 @@ public class ProfilesTrackerTest extends NbTestCase {
     }
     
     public void testEvents() throws Exception {
-        ProfilesTracker pt = new ProfilesTracker(type, new MimeTypesTracker(BASE, null));
+        ProfilesTracker pt = new ProfilesTracker(getLocator(settingsTypeId), new MimeTypesTracker(null, BASE));
         L listener = new L();
         
         pt.addPropertyChangeListener(listener);
@@ -304,7 +306,7 @@ public class ProfilesTrackerTest extends NbTestCase {
     }
     
     public void testEventsRoot() throws Exception {
-        ProfilesTracker pt = new ProfilesTracker(type, new MimeTypesTracker(BASE, null));
+        ProfilesTracker pt = new ProfilesTracker(getLocator(settingsTypeId), new MimeTypesTracker(null, BASE));
         L listener = new L();
         
         pt.addPropertyChangeListener(listener);
@@ -375,14 +377,14 @@ public class ProfilesTrackerTest extends NbTestCase {
                 "<!DOCTYPE fontscolors PUBLIC \"-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN\" \"http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd\">\n" +
                 "<fontscolors></fontscolors>",
                 "FontsColors",
-                SettingsType.FONTSCOLORS
+                ColoringStorage.ID
             },
             new Object [] {
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<!DOCTYPE bindings PUBLIC \"-//NetBeans//DTD Editor KeyBindings settings 1.1//EN\" \"http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd\">\n" +
                 "<bindings></bindings>",
                 "Keybindings",
-                SettingsType.KEYBINDINGS
+                KeyMapsStorage.ID
             },
         };
         
@@ -395,7 +397,7 @@ public class ProfilesTrackerTest extends NbTestCase {
             for(int i = 0; i < ENV.length; i++) {
                 String contents = (String) ENV[i][0];
                 String folder = (String) ENV[i][1];
-                SettingsType type = (SettingsType) ENV[i][2];
+                String type = (String) ENV[i][2];
                 
                 for(int j = 0; j < testCount(); j++) {
                     Test test = testAt(j);
@@ -408,5 +410,9 @@ public class ProfilesTrackerTest extends NbTestCase {
                 super.run(result);
             }
         }
+    }
+    
+    private static SettingsType.Locator getLocator(String settingsTypeId) {
+        return SettingsType.getLocator(SettingsType.find(settingsTypeId));
     }
 }

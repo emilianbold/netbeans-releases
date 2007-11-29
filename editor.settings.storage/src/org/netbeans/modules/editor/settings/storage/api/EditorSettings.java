@@ -46,7 +46,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.text.AttributeSet;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.settings.storage.EditorSettingsImpl;
 
 
@@ -273,17 +272,6 @@ public abstract class EditorSettings {
      */
     public abstract void setCurrentKeyMapProfile (String profile);
 
-    // Code templates .................................................................
-
-    /**
-     * Gets code template settings for a given mime path.
-     * 
-     * @param mimePath The mime path to get the settings for.
-     * 
-     * @return The code template settings.
-     */
-    public abstract CodeTemplateSettingsFactory getCodeTemplateSettings(MimePath mimePath);
-    
     // Other .................................................................
     
     /**

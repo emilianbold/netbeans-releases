@@ -49,7 +49,7 @@ import java.util.List;
  * The definition of a code template. A code template is basically a piece of
  * code with an abbreviation associated to it. When a user types the abbreviation
  * to the editor and presses the expansion key the code associated with the
- * abbreviation gets expanded. The code can contain various parameter that the user
+ * abbreviation gets expanded. The code can contain various parameters that the user
  * can enter during the expansion.
  * 
  * <p>The <code>CodeTemplateDescription</code>s can be obtained from
@@ -61,6 +61,12 @@ import java.util.List;
  * CodeTemplateSettings cds = l.lookup(CodeTemplateSettings.class);
  * List<CodeTemplateDescription> codeTemplates = cds.getCodeTemplateDescriptions();
  * </pre>
+ * 
+ * <p><b>IMPORTANT</b>: There is a much more powerful API for working with editor
+ * code templates in
+ * <a href="@org-netbeans-lib-editor-codetemplates@/overview-summary.html">Editor Code Templates</a>
+ * module. If you are retrieving this class from <code>MimeLookup</code> you should
+ * should probably use the Editor Code Templates API instead.
  * 
  * @see CodeTemplateSettings
  * @author Miloslav Metelka
@@ -193,8 +199,67 @@ public final class CodeTemplateDescription {
         return uniqueId;
     }
     
-    public String toString() {
+    public @Override String toString() {
         return "abbrev='" + getAbbreviation() + "', parametrizedText='" + getParametrizedText() + "'"; // NOI18N
+    }
+
+    /**
+     * Checks whether this code template is equal with a code template passed in
+     * as the <code>obj</code> parameter. By definition two code templates are
+     * equal of all their fields are equal - ie. all abbreviation, description,
+     * parametrizedText, contexts, uniqueId fields are equal.
+     * 
+     * @param obj The code template to compare with.
+     * 
+     * @return <code>true</code> if and only if this code template is equal to
+     *   the <code>obj</code> code template.
+     */
+    public @Override boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CodeTemplateDescription other = (CodeTemplateDescription) obj;
+        if ((this.abbreviation == null && other.abbreviation != null) || 
+            (this.abbreviation != null && other.abbreviation == null) || 
+            (this.abbreviation != null && !this.abbreviation.equals(other.abbreviation))
+        ) {
+            return false;
+        }
+        if ((this.description == null && other.description != null) || 
+            (this.description != null && other.description == null) || 
+            (this.description != null && !this.description.equals(other.description))
+        ) {
+            return false;
+        }
+        if ((this.parametrizedText == null && other.parametrizedText != null) ||
+            (this.parametrizedText != null && other.parametrizedText == null) ||
+            (this.parametrizedText != null && !this.parametrizedText.equals(other.parametrizedText))
+        ) {
+            return false;
+        }
+        if (this.contexts != other.contexts && (this.contexts == null || !this.contexts.equals(other.contexts))) {
+            return false;
+        }
+        if ((this.uniqueId == null && other.uniqueId != null) ||
+            (this.uniqueId != null && other.uniqueId == null) ||
+            (this.uniqueId != null && !this.uniqueId.equals(other.uniqueId))
+        ) {
+            return false;
+        }
+        return true;
+    }
+
+    public @Override int hashCode() {
+        int hash = 3;
+        hash = 59 * hash + (this.abbreviation != null ? this.abbreviation.hashCode() : 0);
+        hash = 59 * hash + (this.description != null ? this.description.hashCode() : 0);
+        hash = 59 * hash + (this.parametrizedText != null ? this.parametrizedText.hashCode() : 0);
+        hash = 59 * hash + (this.contexts != null ? this.contexts.hashCode() : 0);
+        hash = 59 * hash + (this.uniqueId != null ? this.uniqueId.hashCode() : 0);
+        return hash;
     }
     
 }

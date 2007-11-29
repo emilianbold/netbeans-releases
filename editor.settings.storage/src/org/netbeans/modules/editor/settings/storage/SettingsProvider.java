@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.editor.settings.storage;
 
+import org.netbeans.modules.editor.settings.storage.keybindings.KeyBindingSettingsImpl;
+import org.netbeans.modules.editor.settings.storage.fontscolors.CompositeFCS;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
@@ -54,7 +56,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
-import org.netbeans.modules.editor.settings.storage.codetemplates.CodeTemplateSettingsImpl;
+import org.netbeans.modules.editor.settings.storage.fontscolors.FontColorSettingsImpl;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
@@ -136,10 +138,8 @@ public final class SettingsProvider implements MimeDataProvider {
         private final InstanceContent ic;
         private CompositeFCS fontColorSettings = null;
         private Object keyBindingSettings = null;
-        private Object codeTemplateSettings = null;
         
         private KeyBindingSettingsImpl kbsi;
-        private CodeTemplateSettingsImpl ctsi;
         
         public MyLookup(MimePath mimePath, String profile) {
             this(mimePath, profile, new InstanceContent());
@@ -153,7 +153,7 @@ public final class SettingsProvider implements MimeDataProvider {
             if (profile == null) {
                 // Use the selected current profile
                 String currentProfile = EditorSettings.getDefault().getCurrentFontColorProfile();
-                this.fcsProfile = EditorSettingsImpl.getInstance().getInternalFontColorProfile(currentProfile);
+                this.fcsProfile = FontColorSettingsImpl.get(mimePath).getInternalFontColorProfile(currentProfile);
                 this.specialFcsProfile = false;
             } else {
                 // This is the special test profile derived from the mime path.
@@ -170,9 +170,6 @@ public final class SettingsProvider implements MimeDataProvider {
             
             this.kbsi = KeyBindingSettingsImpl.get(mimePath);
             this.kbsi.addPropertyChangeListener(WeakListeners.propertyChange(this, this.kbsi));
-
-            this.ctsi = CodeTemplateSettingsImpl.get(mimePath);
-            this.ctsi.addPropertyChangeListener(WeakListeners.propertyChange(this, this.ctsi));
         }
 
         @Override
@@ -180,12 +177,10 @@ public final class SettingsProvider implements MimeDataProvider {
             synchronized (this) {
                 fontColorSettings = new CompositeFCS(mimePath, fcsProfile);
                 keyBindingSettings = this.kbsi.createInstanceForLookup();
-                codeTemplateSettings = this.ctsi.createInstanceForLookup();
                 
                 ic.set(Arrays.asList(new Object [] {
                     fontColorSettings,
                     keyBindingSettings,
-                    codeTemplateSettings
                 }), null);
             }
         }
@@ -194,7 +189,6 @@ public final class SettingsProvider implements MimeDataProvider {
             synchronized (this) {
                 boolean fcsChanged = false;
                 boolean kbsChanged = false;
-                boolean ctsChanged = false;
 
 //                if (mimePath.getPath().contains("xml")) {
 //                    System.out.println("@@@ propertyChange: mimePath = " + mimePath.getPath() + " profile = " + fcsProfile + " property = " + evt.getPropertyName() + " oldValue = " + (evt.getOldValue() instanceof MimePath ? ((MimePath) evt.getOldValue()).getPath() : evt.getOldValue()) + " newValue = " + evt.getNewValue());
@@ -204,16 +198,11 @@ public final class SettingsProvider implements MimeDataProvider {
                 if (this.kbsi == evt.getSource()) {
                     kbsChanged = true;
                     
-                } else if (this.ctsi == evt.getSource() || 
-                           CodeTemplateSettingsImpl.PROP_EXPANSION_KEY.equals(evt.getPropertyName())
-                ) {
-                    ctsChanged = true;
-                    
                 } else if (evt.getPropertyName() == null) {
                     // reset all
                     if (!specialFcsProfile) {
                         String currentProfile = EditorSettings.getDefault().getCurrentFontColorProfile();
-                        fcsProfile = EditorSettingsImpl.getInstance().getInternalFontColorProfile(currentProfile);
+                        fcsProfile = FontColorSettingsImpl.get(mimePath).getInternalFontColorProfile(currentProfile);
                     }
                     fcsChanged = true;
                     
@@ -235,7 +224,7 @@ public final class SettingsProvider implements MimeDataProvider {
                 } else if (evt.getPropertyName().equals(EditorSettingsImpl.PROP_CURRENT_FONT_COLOR_PROFILE)) {
                     if (!specialFcsProfile) {
                         String newProfile = (String) evt.getNewValue();
-                        fcsProfile = EditorSettingsImpl.getInstance().getInternalFontColorProfile(newProfile);
+                        fcsProfile = FontColorSettingsImpl.get(mimePath).getInternalFontColorProfile(newProfile);
                         fcsChanged = true;
                     }
                 }
@@ -253,16 +242,10 @@ public final class SettingsProvider implements MimeDataProvider {
                     updateContents = true;
                 }
                 
-                if (ctsChanged  && codeTemplateSettings != null) {
-                    codeTemplateSettings = this.ctsi.createInstanceForLookup();
-                    updateContents = true;
-                }
-                
                 if (updateContents) {
                     ic.set(Arrays.asList(new Object [] {
                         fontColorSettings,
                         keyBindingSettings,
-                        codeTemplateSettings
                     }), null);
                 }
             }

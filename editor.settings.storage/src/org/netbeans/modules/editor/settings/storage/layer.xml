@@ -58,14 +58,11 @@ made subject to such option by the copyright holder.
     <folder name="xml">
         <folder name="entities">
             <folder name="NetBeans">
-                <file name="DTD_Editor_Fonts_and_Colors_settings_1_1" url="nbres:/org/netbeans/modules/editor/settings/storage/EditorFontsColors-1_1.dtd">
+                <file name="DTD_Editor_Fonts_and_Colors_settings_1_1" url="nbres:/org/netbeans/modules/editor/settings/storage/fontscolors/EditorFontsColors-1_1.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN"/>
                 </file>
-                <file name="DTD_Editor_KeyBindings_settings_1_1" url="nbres:/org/netbeans/modules/editor/settings/storage/EditorKeyBindings-1_1.dtd">
+                <file name="DTD_Editor_KeyBindings_settings_1_1" url="nbres:/org/netbeans/modules/editor/settings/storage/keybindings/EditorKeyBindings-1_1.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Editor KeyBindings settings 1.1//EN"/>
-                </file>
-                <file name="DTD_Editor_Code_Templates_settings_1_0" url="nbres:/org/netbeans/modules/editor/settings/storage/codetemplates/EditorCodeTemplates-1_0.dtd">
-                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Editor Code Templates settings 1.0//EN"/>
                 </file>
             </folder>
         </folder>

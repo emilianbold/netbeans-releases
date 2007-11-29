@@ -62,8 +62,8 @@ import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.settings.storage.EditorTestLookup;
 import org.netbeans.modules.editor.settings.storage.MimeTypesTracker;
-import org.netbeans.modules.editor.settings.storage.SettingsType;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
+import org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.util.Utilities;
@@ -79,7 +79,7 @@ public class Pre90403Phase1CompatibilityTest extends NbTestCase {
         super(name);
     }
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
     
         EditorTestLookup.setLookup(
@@ -155,7 +155,7 @@ public class Pre90403Phase1CompatibilityTest extends NbTestCase {
     }
     
     public void testMimeTypesWithKeybindings() {
-        MimeTypesTracker tracker = new MimeTypesTracker("Editors", SettingsType.KEYBINDINGS);
+        MimeTypesTracker tracker = MimeTypesTracker.get(KeyMapsStorage.ID, "Editors");
         ArrayList<String> sortedMimeTypes = new ArrayList<String>(tracker.getMimeTypes());
         Collections.sort(sortedMimeTypes);
         String currentMimeTypes = sortedMimeTypes.toString();
@@ -165,7 +165,7 @@ public class Pre90403Phase1CompatibilityTest extends NbTestCase {
     }
     
     public void testKeybindings() {
-        MimeTypesTracker tracker = new MimeTypesTracker("Editors", SettingsType.KEYBINDINGS);
+        MimeTypesTracker tracker = MimeTypesTracker.get(KeyMapsStorage.ID, "Editors");
         Set<String> mimeTypes = new HashSet<String>(tracker.getMimeTypes());
         mimeTypes.add("");
         Set<String> profiles = EditorSettings.getDefault().getKeyMapProfiles();
