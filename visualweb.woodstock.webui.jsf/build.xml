@@ -47,6 +47,7 @@ made subject to such option by the copyright holder.
   <property name="nbroot" location="../../.."/>
   <property name="translated.src.dir" value="${nbroot}/translatedfiles/src/visualweb/woodstock/components/src"/>
 
+  <!-- XXX should this rather be files-init? called perversely during clean -->
   <target name="common-init" depends="default.init">
     <mkdir dir="build/external"/>
     <unzip src="external/woodstock-components-4.1.zip" dest="build/external"/>

@@ -44,6 +44,7 @@ made subject to such option by the copyright holder.
 <project name="org.netbeans.modules.visualweb.webui.jsf.defaulttheme" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project com.sun.rave.webui.jsf.themes.defaulttheme.</description>
     <import file="../../../nbbuild/templates/projectized.xml"/>
+    <!-- XXX should probably be files-init; this is called during clean -->
     <target name="common-init" depends="default.init">
 	<mkdir dir="build/external"/>
 	<unzip src="external/woodstock-defaulttheme-4.1.zip" dest="build/external"/>
