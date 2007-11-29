@@ -206,7 +206,7 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
             }
         }
         if (encoding != null) {
-            encoding.trim();
+            encoding = encoding.trim();
         }
         return encoding;
     }
