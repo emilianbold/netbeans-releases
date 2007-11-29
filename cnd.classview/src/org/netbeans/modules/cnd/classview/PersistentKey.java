@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.api.model.util.*;
  * @author Alexander Simon
  */
 public final class PersistentKey {
-    private static final boolean USE_REPOSITORY = Boolean.getBoolean("cnd.modelimpl.use.repository"); // NOI18N
     private static final byte PROXY = 1;
     private static final byte UID = 2;
     private static final byte NAMESPACE = 4;
@@ -127,11 +126,7 @@ public final class PersistentKey {
         } else if (object instanceof CsmProject){
             return new PersistentKey(null, (CsmProject)object, PROJECT, false);
         }
-        if (USE_REPOSITORY){
-            return new PersistentKey(object.getUID(), getStateBit(object));
-        } else {
-            return new PersistentKey(object, getStateBit(object));
-        }
+        return new PersistentKey(object.getUID(), getStateBit(object));
     }
     
     private static boolean getStateBit(CsmIdentifiable object){

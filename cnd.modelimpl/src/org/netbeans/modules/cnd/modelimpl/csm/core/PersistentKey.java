@@ -41,17 +41,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmEnum;
-import org.netbeans.modules.cnd.api.model.CsmEnumerator;
-import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
-import org.netbeans.modules.cnd.api.model.CsmNamespace;
-import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.*;
 
@@ -60,7 +52,6 @@ import org.netbeans.modules.cnd.api.model.util.*;
  * @author Alexander Simon
  */
 public final class PersistentKey {
-    private static final boolean USE_REPOSITORY = Boolean.getBoolean("cnd.modelimpl.use.repository"); // NOI18N
     private static final byte PROXY = 0;
     private static final byte UID = 1;
     private static final byte DECLARATION = 2;
@@ -94,11 +85,7 @@ public final class PersistentKey {
         } else {
             //System.out.println("Skip "+uniq);
         }
-        if (USE_REPOSITORY){
-            return new PersistentKey(decl.getUID());
-        } else {
-            return new PersistentKey(decl);
-        }
+        return new PersistentKey(decl.getUID());
     }
     
     public CsmIdentifiable getObject(){
@@ -113,6 +100,7 @@ public final class PersistentKey {
         return null;
     }
     
+    @Override
     public boolean equals(Object object) {
         if (object instanceof PersistentKey){
             PersistentKey what = (PersistentKey) object;
@@ -130,6 +118,7 @@ public final class PersistentKey {
         return super.equals(object);
     }
     
+    @Override
     public int hashCode() {
         switch(kind){
             case PROXY:
