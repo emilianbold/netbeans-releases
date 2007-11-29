@@ -132,6 +132,7 @@ public class CachedRowSetDataProviderTest extends TestCase {
             
             insert.execute();
         }            
+        
     }
         
     
@@ -168,10 +169,18 @@ public class CachedRowSetDataProviderTest extends TestCase {
        provider.close();
     }
     
+    public void testRowCount() {
+        int currentRowCount = 0;
+        CachedRowSetXImpl rowset = new CachedRowSetXImpl();
+        currentRowCount = getRowCount(rowset);
+        assert (currentRowCount > 0);
+        assertEquals(currentRowCount, 1);
+    }
+    
     public void testInsertRow() {
-        try {
-            int newRowCount = 0;
-            int currentRowCount = 0;
+        int newRowCount = 0;
+        int currentRowCount = 0;
+        try {                        
             CachedRowSetXImpl rowset = new CachedRowSetXImpl();
             Beans beans = new Beans();
             beans.setDesignTime(true);
@@ -185,7 +194,7 @@ public class CachedRowSetDataProviderTest extends TestCase {
             PreparedStatement insert = conn.prepareStatement(
                     "INSERT INTO " + TABLENAME + " VALUES(?, ?, ?)");
 
-            for (int i = 1; i <= NUMROWS; i++) {
+            for (int i = 10; i <= NUMROWS; i++) {
                 insert.setInt(1, i);
                 insert.setString(2, "col1_" + i);
                 insert.setString(3, "col2_" + i);
@@ -194,12 +203,16 @@ public class CachedRowSetDataProviderTest extends TestCase {
             }
             
             newRowCount = getRowCount(rowset);           
-            assertEquals(newRowCount, currentRowCount + 1);
+            
         } catch (ClassNotFoundException ex) {
             LOGGER.log(Level.FINE, null, ex);
         } catch (SQLException sqle) {
             LOGGER.log(Level.FINE, null, sqle);
         }
+        
+        assert(newRowCount > 0);
+        assertEquals(newRowCount, currentRowCount + 1);
+        assertEquals(currentRowCount, 3);
 
     }
     
