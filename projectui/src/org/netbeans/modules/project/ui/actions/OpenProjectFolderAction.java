@@ -45,7 +45,6 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -112,7 +111,7 @@ public final class OpenProjectFolderAction extends AbstractAction implements Con
             projects.removeAll(Arrays.asList(OpenProjectList.getDefault().getOpenProjects()));
             int size = projects.size();
             if (size == 1) {
-                String name = ProjectUtils.getInformation((Project) projects.iterator().next()).getDisplayName();
+                String name = ProjectUtils.getInformation(projects.iterator().next()).getDisplayName();
                 putValue(Action.NAME, NbBundle.getMessage(OpenProjectFolderAction.class, "OpenProjectFolderAction.LBL_menu_one", name));
             } else if (size > 1) {
                 putValue(Action.NAME, NbBundle.getMessage(OpenProjectFolderAction.class, "OpenProjectFolderAction.LBL_menu_multiple", new Integer(size)));
