@@ -1484,7 +1484,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </ant>
   </target>
 
-  <target name="cleanall" depends="init-module-list">
+  <target name="cleanall" depends="init-module-list,init-tasks">
     <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
     <cleanall topdir=".." 
               modules="${allmodules}" 
