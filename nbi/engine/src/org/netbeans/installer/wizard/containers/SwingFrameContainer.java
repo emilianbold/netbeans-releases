@@ -610,7 +610,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                     1.0, 1.0,                         // weight-x, weight-y
                     GridBagConstraints.PAGE_START,    // anchor
                     GridBagConstraints.BOTH,          // fill
-                    new Insets(6, 22, 11, 11),        // padding
+                    new Insets(6, 22, 4, 11),        // padding
                     0, 0));                           // padx, pady - ???
             titlePanel.add(topSeparator, new GridBagConstraints(
                     0, 2,                             // x, y
