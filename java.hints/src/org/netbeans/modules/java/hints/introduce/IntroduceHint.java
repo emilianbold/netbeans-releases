@@ -74,6 +74,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -318,6 +319,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             Fix variable = isVariable ? new IntroduceFix(h, info.getJavaSource(), guessedName, duplicatesForVariable.size() + 1, IntroduceKind.CREATE_VARIABLE) : null;
             Fix constant = isConstant ? new IntroduceFix(h, info.getJavaSource(), guessedName, duplicatesForConstant.size() + 1, IntroduceKind.CREATE_CONSTANT) : null;
             Fix field = null;
+            Fix methodFix = null;
             
             if (method != null) {
                 int[] initilizeIn = computeInitializeIn(info, resolved, duplicatesForConstant);
@@ -335,12 +337,47 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 }
                 
                 field = new IntroduceFieldFix(h, info.getJavaSource(), guessedName, duplicatesForConstant.size() + 1, initilizeIn, statik, allowFinalInCurrentMethod);
+            
+                //introduce method based on expression:
+                Element methodEl = info.getTrees().getElement(method);
+                ScanStatement scanner = new ScanStatement(info, resolved.getLeaf(), resolved.getLeaf(), cancel);
+
+                if (methodEl != null && (methodEl.getKind() == ElementKind.METHOD || methodEl.getKind() == ElementKind.CONSTRUCTOR)) {
+                    ExecutableElement ee = (ExecutableElement) methodEl;
+
+                    scanner.localVariables.addAll(ee.getParameters());
+                }
+
+                scanner.scan(method, null);
+
+                List<TypeMirrorHandle> paramTypes = new LinkedList<TypeMirrorHandle>();
+                List<String> paramNames = new LinkedList<String>();
+
+                for (VariableElement ve : scanner.usedLocalVariables) {
+                    paramTypes.add(TypeMirrorHandle.create(ve.asType()));
+                    if (ve.getModifiers().contains(Modifier.FINAL)) {
+                        paramNames.add("!" + ve.getSimpleName().toString());
+                    } else {
+                        paramNames.add(ve.getSimpleName().toString());
+                    }
+                }
+
+                Set<TypeMirror> exceptions = new HashSet<TypeMirror>(info.getTreeUtilities().getUncaughtExceptions(resolved));
+
+                Set<TypeMirrorHandle> exceptionHandles = new HashSet<TypeMirrorHandle>();
+
+                for (TypeMirror tm : exceptions) {
+                    exceptionHandles.add(TypeMirrorHandle.create(tm));
+                }
+
+                methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, paramTypes, paramNames, exceptionHandles);
             }
             
             if (fixesMap != null) {
                 fixesMap.put(IntroduceKind.CREATE_VARIABLE, variable);
                 fixesMap.put(IntroduceKind.CREATE_CONSTANT, constant);
                 fixesMap.put(IntroduceKind.CREATE_FIELD, field);
+                fixesMap.put(IntroduceKind.CREATE_METHOD, methodFix);
             }
             
             
@@ -354,6 +391,10 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             
             if (field != null) {
                 fixes.add(field);
+            }
+            
+            if (methodFix != null) {
+                fixes.add(methodFix);
             }
         }
         
@@ -704,6 +745,72 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return result;
     }
     
+    private static ExpressionTree expressionCopy(TreePath expression, WorkingCopy copy) throws IOException, BadLocationException {
+        //hack: creating a copy of the expression:
+        Document doc = copy.getDocument();
+        int start = (int) copy.getTrees().getSourcePositions().getStartPosition(copy.getCompilationUnit(), expression.getLeaf());
+        int end = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), expression.getLeaf());
+        String text = doc.getText(start, end - start);
+        
+        return copy.getTreeUtilities().parseExpression(text, new SourcePositions[1]);
+    }
+
+    private static List<ExpressionTree> realArguments(final TreeMaker make, List<String> parameterNames) {
+        List<ExpressionTree> realArguments = new LinkedList<ExpressionTree>();
+
+        for (String name : parameterNames) {
+            name = name.startsWith("!") ? name.substring(1) : name;
+            realArguments.add(make.Identifier(name));
+        }
+
+        return realArguments;
+    }
+    
+    private static List<VariableTree> createVariables(WorkingCopy copy, List<TypeMirrorHandle> parameterTypes, List<String> parameterNames) {
+        final TreeMaker make = copy.getTreeMaker();
+        List<VariableTree> formalArguments = new LinkedList<VariableTree>();
+        Iterator<TypeMirrorHandle> argType = parameterTypes.iterator();
+        Iterator<String> argName = parameterNames.iterator();
+
+        while (argType.hasNext() && argName.hasNext()) {
+            TypeMirror tm = argType.next().resolve(copy);
+
+            if (tm == null) {
+                return null;
+            }
+
+            Tree type = make.Type(tm);
+            String formalArgName = argName.next();
+            Set<Modifier> formalArgMods = EnumSet.noneOf(Modifier.class);
+
+            if (formalArgName.startsWith("!")) {
+                formalArgName = formalArgName.substring(1);
+                formalArgMods.add(Modifier.FINAL);
+            }
+
+            formalArguments.add(make.Variable(make.Modifiers(formalArgMods), formalArgName, type, null));
+        }
+        
+        return formalArguments;
+    }
+    
+    private static List<ExpressionTree> typeHandleToTree(WorkingCopy copy, Set<TypeMirrorHandle> thrownTypes) {
+        final TreeMaker make = copy.getTreeMaker();
+        List<ExpressionTree> thrown = new LinkedList<ExpressionTree>();
+
+        for (TypeMirrorHandle h : thrownTypes) {
+            TypeMirror t = h.resolve(copy);
+
+            if (t == null) {
+                return null;
+            }
+
+            thrown.add((ExpressionTree) make.Type(t));
+        }
+        
+        return thrown;
+    }
+    
     private static final class ScanStatement extends TreePathScanner<Void, Void> {
         private static final int PHASE_BEFORE_SELECTION = 1;
         private static final int PHASE_INSIDE_SELECTION = 2;
@@ -714,7 +821,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         private Tree firstInSelection;
         private Tree lastInSelection;
         private Set<VariableElement> localVariables = new HashSet<VariableElement>();
-        private Set<VariableElement> usedLocalVariables = new HashSet<VariableElement>();
+        private Set<VariableElement> usedLocalVariables = new LinkedHashSet<VariableElement>();
         private Set<VariableElement> selectionLocalVariables = new HashSet<VariableElement>();
         private Set<VariableElement> selectionWrittenLocalVariables = new HashSet<VariableElement>();
         private Set<VariableElement> usedSelectionLocalVariables = new HashSet<VariableElement>();
@@ -1092,11 +1199,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     tm = Utilities.resolveCapturedType(parameter, tm);
                     
                     //hack: creating a copy of the expression:
-                    Document doc = parameter.getDocument();
-                    int start = (int) parameter.getTrees().getSourcePositions().getStartPosition(parameter.getCompilationUnit(), resolved.getLeaf());
-                    int end   = (int) parameter.getTrees().getSourcePositions().getEndPosition(parameter.getCompilationUnit(), resolved.getLeaf());
-                    String text = doc.getText(start, end - start);
-                    ExpressionTree expressionCopy = parameter.getTreeUtilities().parseExpression(text, new SourcePositions[1]);
+                    ExpressionTree expressionCopy = expressionCopy(resolved, parameter);
                     ModifiersTree mods;
                     final TreeMaker make = parameter.getTreeMaker();
                     
@@ -1456,13 +1559,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     
                     nueStatements.addAll(statements.getStatements().subList(0, from));
                     
-                    List<ExpressionTree> realArguments = new LinkedList<ExpressionTree>();
                     final TreeMaker make = copy.getTreeMaker();
-                    
-                    for (String name : parameterNames) {
-                        name = name.startsWith("!") ? name.substring(1) : name;
-                        realArguments.add(make.Identifier(name));
-                    }
+                    List<ExpressionTree> realArguments = realArguments(make, parameterNames);
                     
                     List<StatementTree> methodStatements = new LinkedList<StatementTree>();
                     
@@ -1575,40 +1673,16 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     modifiers.addAll(access);
                     
                     ModifiersTree mods = make.Modifiers(modifiers);
-                    List<VariableTree> formalArguments = new LinkedList<VariableTree>();
-                    Iterator<TypeMirrorHandle> argType = parameterTypes.iterator();
-                    Iterator<String> argName = parameterNames.iterator();
+                    List<VariableTree> formalArguments = createVariables(copy, parameterTypes, parameterNames);
                     
-                    while (argType.hasNext() && argName.hasNext()) {
-                        TypeMirror tm = argType.next().resolve(copy);
-                        
-                        if (tm == null) {
-                            //XXX:
-                            return ;
-                        }
-                        
-                        Tree type = make.Type(tm);
-                        String formalArgName = argName.next();
-                        Set<Modifier> formalArgMods = EnumSet.noneOf(Modifier.class);
-                        
-                        if (formalArgName.startsWith("!")) {
-                            formalArgName = formalArgName.substring(1);
-                            formalArgMods.add(Modifier.FINAL);
-                        }
-                        
-                        formalArguments.add(make.Variable(make.Modifiers(formalArgMods), formalArgName, type, null));
+                    if (formalArguments == null) {
+                        return ; //XXX
                     }
                     
-                    List<ExpressionTree> thrown = new LinkedList<ExpressionTree>();
-                    
-                    for (TypeMirrorHandle h : thrownTypes) {
-                        TypeMirror t = h.resolve(copy);
-                        
-                        if (t == null) {
-                            return ;
-                        }
-                        
-                        thrown.add((ExpressionTree) make.Type(t));
+                    List<ExpressionTree> thrown = typeHandleToTree(copy, thrownTypes);
+
+                    if (thrownTypes == null) {
+                        return; //XXX
                     }
                     
                     MethodTree method = make.Method(mods, name, returnTypeTree, Collections.<TypeParameterTree>emptyList(), formalArguments, thrown, make.Block(methodStatements, false), null);
@@ -1628,4 +1702,109 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
         
     }
+
+    private static final class IntroduceExpressionBasedMethodFix implements Fix {
+
+        private JavaSource js;
+        
+        private TreePathHandle expression;
+        private List<TypeMirrorHandle> parameterTypes;
+        private List<String> parameterNames;
+        private Set<TypeMirrorHandle> thrownTypes;
+
+        public IntroduceExpressionBasedMethodFix(JavaSource js, TreePathHandle expression, List<TypeMirrorHandle> parameterTypes, List<String> parameterNames, Set<TypeMirrorHandle> thrownTypes) {
+            this.js = js;
+            this.expression = expression;
+            this.parameterTypes = parameterTypes;
+            this.parameterNames = parameterNames;
+            this.thrownTypes = thrownTypes;
+        }
+
+        public String getText() {
+            return NbBundle.getMessage(IntroduceHint.class, "FIX_IntroduceMethod");
+        }
+
+        public String toString() {
+            return "[IntroduceExpressionBasedMethodFix]"; // NOI18N
+        }
+
+        public ChangeInfo implement() throws Exception {
+            JButton btnOk = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Ok" ) );
+            JButton btnCancel = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Cancel" ) );
+            IntroduceMethodPanel panel = new IntroduceMethodPanel(""); //NOI18N
+            panel.setOkButton( btnOk );
+            String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_IntroduceMethod");
+            DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[] {btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
+            if (DialogDisplayer.getDefault().notify(dd) != btnOk) {
+                return null;//cancel
+            }
+            final String name = panel.getMethodName();
+            final Set<Modifier> access = panel.getAccess();
+            
+            js.runModificationTask(new Task<WorkingCopy>() {
+                public void run(WorkingCopy copy) throws Exception {
+                    copy.toPhase(Phase.RESOLVED);
+                    
+                    TreePath expression = IntroduceExpressionBasedMethodFix.this.expression.resolve(copy);
+                    TypeMirror returnType = expression != null ? copy.getTrees().getTypeMirror(expression) : null;
+                    
+                    if (expression == null || returnType == null) {
+                        return ; //TODO...
+                    }
+                    
+                    returnType = Utilities.resolveCapturedType(copy, returnType);
+                    ExpressionTree expressionCopy = expressionCopy(expression,copy);
+                    
+                    
+                    final TreeMaker make = copy.getTreeMaker();
+                    Tree returnTypeTree = make.Type(returnType);
+                    List<ExpressionTree> realArguments = realArguments(make, parameterNames);
+                    
+                    ExpressionTree invocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), realArguments);
+                    
+                    Scope s = copy.getTrees().getScope(expression);
+                    boolean isStatic = copy.getTreeUtilities().isStaticContext(s);
+                    
+                    Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
+
+                    if (isStatic) {
+                        modifiers.add(Modifier.STATIC);
+                    }
+
+                    modifiers.addAll(access);
+
+                    ModifiersTree mods = make.Modifiers(modifiers);
+                    List<VariableTree> formalArguments = createVariables(copy, parameterTypes, parameterNames);
+
+                    if (formalArguments == null) {
+                        return ; //XXX
+                    }
+                    
+                    List<ExpressionTree> thrown = typeHandleToTree(copy, thrownTypes);
+
+                    if (thrownTypes == null) {
+                        return ; //XXX
+                    }
+
+                    List<StatementTree> methodStatements = new LinkedList<StatementTree>();
+                    
+                    methodStatements.add(make.Return(expressionCopy));
+                    
+                    MethodTree method = make.Method(mods, name, returnTypeTree, Collections.<TypeParameterTree>emptyList(), formalArguments, thrown, make.Block(methodStatements, false), null);
+                    TreePath pathToClass = findClass(expression);
+
+                    assert pathToClass != null;
+
+                    ClassTree nueClass = GeneratorUtils.insertClassMember(copy, pathToClass, method);
+
+                    copy.rewrite(pathToClass.getLeaf(), nueClass);
+                    copy.rewrite(expression.getLeaf(), invocation);
+                }
+            }).commit();
+            
+            return null;
+        }
+        
+    }
+
 }
