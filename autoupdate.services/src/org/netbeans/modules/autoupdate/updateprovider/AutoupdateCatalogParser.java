@@ -50,6 +50,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -284,6 +285,10 @@ public class AutoupdateCatalogParser {
     static List<SimpleItem> createSimpleItems (Document xmlDocument) {
         NodeList moduleUpdatesList = xmlDocument.getElementsByTagName (TAG_MODULE_UPDATES);
         assert moduleUpdatesList != null && moduleUpdatesList.getLength() == 1;
+        if (moduleUpdatesList == null || moduleUpdatesList.getLength () != 1) {
+            ERR.log (Level.INFO, TAG_MODULE_UPDATES + " tag was invalid: " + moduleUpdatesList);
+            return Collections.emptyList ();
+        }
         NodeList moduleUpdatesChildren = moduleUpdatesList.item (0).getChildNodes ();
         
         return parseUpdateItems (moduleUpdatesChildren, null);
