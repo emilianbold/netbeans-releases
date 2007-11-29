@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<?xml-stylesheet type="text/xml" href="../../../nbbuild/javadoctools/apichanges.xsl"?>
+<!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../../nbbuild/javadoctools/apichanges.dtd">
+
+<!--
+
+INFO FOR PEOPLE ADDING CHANGES:
+
+Check the DTD (apichanges.dtd) for details on the syntax. You do not
+need to regenerate the HTML, as this is part of Javadoc generation; just
+change the XML. Rough syntax of a change (several parts optional):
+
+<change>
+    <api name="compiler"/>
+    <summary>Some brief description here, can use <b>XHTML</b></summary>
+    <version major="1" minor="99"/>
+    <date day="13" month="6" year="2001"/>
+    <author login="jrhacker"/>
+    <compatibility addition="yes"/>
+    <description>
+        The main description of the change here.
+        Again can use full <b>XHTML</b> as needed.
+    </description>
+    <class package="org.openide.compiler" name="DoWhatIWantCompiler"/>
+    <issue number="14309"/>
+</change>
+
+Also permitted elements: <package>, <branch>. <version> is API spec
+version, recommended for all new changes. <compatibility> should say
+if things were added/modified/deprecated/etc. and give all information
+related to upgrading old code. List affected top-level classes and
+link to issue numbers if applicable. See the DTD for more details.
+
+Changes need not be in any particular order, they are sorted in various
+ways by the stylesheet anyway.
+
+Dates are assumed to mean "on the trunk". If you *also* make the same
+change on a stabilization branch, use the <branch> tag to indicate this
+and explain why the change was made on a branch in the <description>.
+
+Please only change this file on the trunk! Rather: you can change it
+on branches if you want, but these changes will be ignored; only the
+trunk version of this file is important.
+
+Deprecations do not count as incompatible, assuming that code using the
+deprecated calls continues to see their documented behavior. But do
+specify deprecation="yes" in <compatibility>.
+
+This file is not a replacement for Javadoc: it is intended to list changes,
+not describe the complete current behavior, for which ordinary documentation
+is the proper place.
+
+-->
+
+<apichanges>
+
+    <!-- First, a list of API names you may use: -->
+<apidefs>
+   <apidef name="tabcontrol">Tab Control APIs</apidef>
+   <!-- etc. -->
+</apidefs>
+
+    <!-- ACTUAL CHANGES BEGIN HERE: -->
+
+<changes>
+
+    <change id="slide_transparency">
+      <api name="tabcontrol"/>
+      <summary>Added support for transparency of slided-in windows</summary>
+      <version major="1" minor="11"/>
+      <date day="28" month="11" year="2007"/>
+      <author login="saubrecht"/>
+      <compatibility addition="yes" binary="compatible" />
+      <description>
+        <p>Containers with slided-in windows can be painted with different alpha channel
+        to achieve window transparency.
+        </p>
+      </description>
+    </change>
+    
+    <change id="devel_api_status">
+      <api name="tabcontrol"/>
+      <summary>API switched to 'public - under development'</summary>
+      <version major="1" minor="9"/>
+      <date day="24" month="7" year="2007"/>
+      <author login="saubrecht"/>
+      <compatibility modification="yes" />
+      <description>
+        <p>Since there are some third party modules that provide non-standard look and feel for
+        the TabControl, the API is switched back to 'public - under development status'.
+        </p>
+      </description>
+    </change>
+    
+    <change id="making_a_friend_with_core_window">
+        <api name="tabcontrol"/>
+        <summary>Module core/windows now has Friend API dependency on core/swing/tabcontrol</summary>
+        <date day="5" month="10" year="2006"/>
+        <author login="saubrecht"/>
+        <compatibility deletion="yes" binary="incompatible" source="incompatible"/>
+        <description>
+            <p>
+            The Tab Control module was unnecessarily exposing all of its packages as public API.
+            Since it's no longer possible to use the Tab Control as a standalone module (because
+            of its dependencies on Windows API) the module now has only a single friend module -
+            Core/Windows.
+            </p>
+            <p>
+            There were also other changes in Tab Control UI classes for various L&amp;Fs (i.e. 
+            classes that were previously in public API packages), some methods have been removed, 
+            some were added. Also some classes in org.netbeans.swing.tabcontrol package have changed.
+            </p>
+        </description>
+    </change>
+
+    <change id="TabbedContainerUI.jdk14bug4924516Hack">
+        <api name="tabcontrol"/>
+        <summary><code>TabbedContainerUI.jdk14bug4924516Hack</code> deleted</summary>
+        <date day="5" month="4" year="2006"/>
+        <author login="jglick"/>
+        <compatibility deletion="yes" binary="incompatible" source="incompatible"/>
+        <description>
+            A method which was present only as a workaround for a bug in JDK 1.4 was
+            deleted, since only JDK 5+ is now supported. The method should not have
+            been called by anyone outside of this module anyway.
+        </description>
+        <class package="org.netbeans.swing.tabcontrol" name="TabbedContainerUI"/>
+    </change>
+
+    <change id="flashing-tabs">
+      <api name="tabcontrol"/>
+      <summary>Flashing tabs added</summary>
+      <version major="1" minor="3"/>
+      <date day="18" month="11" year="2004"/>
+      <author login="mkleint"/>
+      <compatibility addition="yes" binary="compatible" semantic="compatible" />
+      <description>
+        <p>Added support for flashing tabs, to be used to get user's attention.
+        The API allows to start the flashing and stop it explicitly. Also stops when user selects the given
+        tab.
+        </p>
+      </description>
+      <class package="org.netbeans.swing.tabcontrol" name="TabDisplayer"/>
+      <class package="org.netbeans.swing.tabcontrol" name="TabbedContainer"/>
+      <issue number="48811" />
+    </change>
+
+</changes>
+
+    <!-- Now the surrounding HTML text and document structure: -->
+
+    <htmlcontents>
+<!--
+
+                            NO NO NO NO NO!
+
+         ==============>    DO NOT EDIT ME!  <==============
+
+          AUTOMATICALLY GENERATED FROM APICHANGES.XML, DO NOT EDIT
+
+                SEE core/swing/tabcontrol/api/doc/changes/changes.xml
+
+-->
+    <head>
+      <title>Change History for the TabControl API</title>
+      <link rel="stylesheet" href="prose.css" type="text/css"/>
+    </head>
+    <body>
+
+<p class="overviewlink"><a href="overview-summary.html">Overview</a></p>
+
+<h1>Introduction</h1>
+
+<p>This document lists changes made to the TabControl API.</p>
+
+<!-- The actual lists of changes, as summaries and details: -->
+      <hr/>
+      <standard-changelists module-code-name="org.netbeans.swing.tabcontrol"/>
+
+      <hr/><p>@FOOTER@</p>
+
+    </body>
+  </htmlcontents>
+
+</apichanges>

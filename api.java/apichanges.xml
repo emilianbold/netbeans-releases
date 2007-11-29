@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+
+<?xml-stylesheet href="../../nbbuild/javadoctools/apichanges.xsl" type="text/xsl"?>
+<!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
+
+<!-- INFO FOR PEOPLE ADDING CHANGES:
+[most of contents snipped - see openide's apichanges for how-to instructions]
+<change>
+    <api name="compiler"/>
+    <summary>Some brief description here, can use <b>XHTML</b></summary>
+    <version major="1" minor="99"/>
+    <date day="13" month="6" year="2001"/>
+    <author login="jrhacker"/>
+    <compatibility addition="yes"/>
+    <description>
+        The main description of the change here.
+        Again can use full <b>XHTML</b> as needed.
+    </description>
+    <class package="org.openide.compiler" name="DoWhatIWantCompiler"/>
+    <issue number="14309"/>
+</change>
+-->
+
+<apichanges>
+
+<!-- First, a list of API names you may use: -->
+<apidefs>
+        <apidef name="classpath">Classpath API</apidef>
+        <apidef name="queries">Java-related queries</apidef>
+</apidefs>
+
+<!-- ACTUAL CHANGES BEGIN HERE: -->
+
+<changes>
+
+        <change id="includes-excludes.classpath">
+            <api name="classpath"/>
+            <summary>Support for specifying classpath inclusion</summary>
+            <version major="1" minor="13"/>
+            <date day="1" month="3" year="2007"/>
+            <author login="jglick"/>
+            <compatibility addition="yes" modification="yes" semantic="incompatible" source="compatible" binary="compatible">
+                <p>
+                    It is possible for clients of existing <code>ClassPath</code> methods to have made
+                    assumptions about their behavior that are no longer true.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    Classpath implementations can now specify which files and folders/packages to include
+                    or exclude. (This could be used for binary classpaths such as <code>COMPILE</code> but
+                    currently only excludes on <code>SOURCE</code> paths are honored by Java language features.)
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
+            <class package="org.netbeans.spi.java.classpath" name="FilteringPathResourceImplementation"/>
+            <issue number="49026"/>
+        </change>
+
+        <change id="BinaryForSourceQuery">
+            <api name="queries"/>
+            <summary>BinaryForSourceQuery returns folder(s) containing binaries for source rooot</summary>
+            <version major="1" minor="12"/>
+            <date day="8" month="2" year="2007"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                The new API BinaryForSourceQuery was added to allow clients to find out the output (class files)
+                corresponding to source root. The query uses instances of a SPI interface BinaryForSourceQueryImplementation
+                registered in the system lookup to find out the binaries. When no binary is found it uses the default algorithm
+                (SFBQ.findSources(ClassPath.EXECUTE) == sourceRoot)
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.queries" name="BinaryForSourceQuery"/>
+            <class package="org.netbeans.spi.java.queries" name="BinaryForSourceQueryImplementation"/>
+        </change>
+        <change id="UnitTestForSourceQuery.multiple">
+            <api name="queries"/>
+            <summary>UnitTestForSourceQuery supports multiple source and test roots</summary>
+            <version major="1" minor="7"/>
+            <date day="8" month="11" year="2004"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" deprecation="yes">
+                Compatibility with the old API and SPI is provided.
+                Both versions of SPI interfaces are used by the API; a project type may still implement the
+                deprecated <code>UnitTestForSourceQueryImplementation</code> rather than
+                <code>MultipleRootsUnitTestForSourceQueryImplementation</code>.
+            </compatibility>
+            <description>
+                <p>
+                Added two static methods, <code>findSources(FileObject)</code> and <code>findUnitTests(FileObject)</code>,
+                into <code>UnitTestForSourceQuery</code>. Added a new SPI interface
+                <code>MultipleRootsUnitTestForSourceQueryImplementation</code> which allows to a project type to return
+                more than one source/test root.
+                The change was required to allow support of multiple source and test roots.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.queries" name="UnitTestForSourceQuery"/>
+            <class package="org.netbeans.spi.java.queries" name="UnitTestForSourceQueryImplementation"/>
+            <class package="org.netbeans.spi.java.queries" name="MultipleRootsUnitTestForSourceQueryImplementation"/>
+        </change>
+
+        <change>
+            <api name="queries"/>
+            <summary>Added SourceLevelQuery</summary>
+            <version major="1" minor="5"/>
+            <date day="27" month="4" year="2004"/>
+            <author login="dkonecny"/>
+            <compatibility/>
+            <description>
+                <p>
+                    Added query answering the source level of a Java file.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.queries" name="SourceLevelQuery"/>
+            <class package="org.netbeans.spi.java.queries" name="SourceLevelQueryImplementation"/>
+        </change>
+
+        <change id="ClassPath.buildsys">
+            <api name="classpath"/>
+            <summary><code>ClassPath</code> API changed to be pluggable and better support build system</summary>
+            <version major="1" minor="4"/>
+            <date day="16" month="3" year="2004"/>
+            <author login="jglick"/>
+            <compatibility binary="compatible" source="compatible" semantic="incompatible" deprecation="yes" addition="yes" modification="yes">
+                <p>
+                    Code which just called <code>ClassPath.getClassPath</code>
+                    and so on as API clients should still be safe, <em>but</em>
+                    passing null as a reference file no longer works.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    <code>ClassPath</code> is now final, not abstract. (Not
+                    incompatible, since the constructor was never public.) Same
+                    for <code>ClassPath.Entry</code>.
+                </p>
+                <p>
+                    <code>getClassPath</code> now looks for
+                    <code>ClassPathProvider</code>s rather than delegating to the
+                    filesystems mounted in <code>Repository</code>.
+                </p>
+                <p>
+                    The classpath type <code>DEBUG</code> was deprecated.
+                    <code>SOURCE</code> and <code>BOOT</code> were added.
+                </p>
+                <p>
+                    <code>ClassPath.Entry.getURL()</code> was added.
+                </p>
+                <p>
+                    There is a complete SPI for creating <code>ClassPath</code>
+                    instances.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
+            <class package="org.netbeans.spi.java.classpath" name="ClassPathProvider"/>
+            <class package="org.netbeans.spi.java.classpath" name="ClassPathFactory"/>
+            <class package="org.netbeans.spi.java.classpath" name="ClassPathImplementation"/>
+            <class package="org.netbeans.spi.java.classpath" name="PathResourceImplementation"/>
+            <class package="org.netbeans.spi.java.classpath.support" name="ClassPathSupport"/>
+            <class package="org.netbeans.spi.java.classpath.support" name="CompositePathResourceBase"/>
+            <class package="org.netbeans.spi.java.classpath.support" name="PathResourceBase"/>
+        </change>
+
+        <change id="GlobalPathRegistry">
+            <api name="classpath"/>
+            <summary>Added <code>GlobalPathRegistry</code></summary>
+            <version major="1" minor="4"/>
+            <date day="16" month="3" year="2004"/>
+            <author login="jglick"/>
+            <compatibility>
+                <p>
+                    Note that <code>GlobalPathRegistry</code> serves some of the
+                    same functions as <code>Repository.default</code> used to,
+                    but client code should be reviewed carefully for usage.
+                </p>
+            </compatibility>
+            <description>
+                Added a new class <code>GlobalPathRegistry</code> to represent
+                classpaths of current interest, typically from open projects.
+            </description>
+            <class package="org.netbeans.api.java.classpath" name="GlobalPathRegistry"/>
+        </change>
+
+        <change id="new-queries">
+            <api name="queries"/>
+            <summary>Added several queries</summary>
+            <version major="1" minor="4"/>
+            <date day="16" month="3" year="2004"/>
+            <author login="jglick"/>
+            <compatibility/>
+            <description>
+                <p>
+                    Several new queries were added (API and SPI) to represent
+                    various aspects of Java sources.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.queries" name="AccessibilityQuery"/>
+            <class package="org.netbeans.api.java.queries" name="JavadocForBinaryQuery"/>
+            <class package="org.netbeans.api.java.queries" name="SourceForBinaryQuery"/>
+            <class package="org.netbeans.api.java.queries" name="UnitTestForSourceQuery"/>
+            <class package="org.netbeans.spi.java.queries" name="AccessibilityQueryImplementation"/>
+            <class package="org.netbeans.spi.java.queries" name="JavadocForBinaryQueryImplementation"/>
+            <class package="org.netbeans.spi.java.queries" name="SourceForBinaryQueryImplementation"/>
+            <class package="org.netbeans.spi.java.queries" name="UnitTestForSourceQueryImplementation"/>
+        </change>
+
+    <change>
+	<api name="classpath"/>
+	<summary>ClassPath.getClassLoader method added</summary>
+	<version major="1" minor="2" subminor="1"/>
+	<date day="21" month="2" year="2003"/>
+	<author login="sdedic"/>
+	<compatibility semantic="compatible"/>
+	<description>
+	    ClassPath.getClassLoader() method allows to get classloader capable of loading
+	    classes from the ClassPath.
+	</description>
+    </change>
+
+    <change>
+	<api name="classpath"/>
+	<summary>ClassPath.getClassPath is permitted to return null value</summary>
+	<version major="1" minor="2"/>
+	<date day="9" month="12" year="2002"/>
+	<author login="sdedic"/>
+	<compatibility semantic="incompatible"/>
+	<description>
+	    ClassPath.getClassPath() documentation omitted the fact, that the method may
+	    return <code>null</code>. Although the implementation functioned that way
+	    from the beginning, it is considered an incompatible change (tightening of
+	    the contract).
+	</description>
+    </change>    
+</changes>
+
+  <!-- Now the surrounding HTML text and document structure: -->
+
+  <htmlcontents>
+<!--
+
+                            NO NO NO NO NO!
+
+         ==============>    DO NOT EDIT ME!  <======================
+
+          AUTOMATICALLY GENERATED FROM APICHANGES.XML, DO NOT EDIT
+
+                SEE xml/api/doc/changes/apichanges.xml
+
+-->
+    <head>
+      <title>Java Support API changes by date</title>
+      <link rel="stylesheet" href="prose.css" type="text/css"/>
+    </head>
+    <body>
+
+<p class="overviewlink"><a href="overview-summary.html">Overview</a></p>
+
+<h1>Introduction</h1>
+
+<p>This document lists changes made to the Java Support APIs. Please ask on the 
+<code>dev@java.netbeans.org</code> or <code>nbdev@netbeans.org</code>
+mailing list if you have any questions about the details of a
+change, or are wondering how to convert existing code to be compatible.</p>
+
+      <hr/><standard-changelists module-code-name="org.netbeans.api.java/1"/>
+
+      <hr/><p>@FOOTER@</p>
+
+    </body>
+  </htmlcontents>
+</apichanges>
