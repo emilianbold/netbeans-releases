@@ -270,11 +270,11 @@ public class IconEditor extends PropertyEditorSupport
      */
     public FileObject getCurrentFolder() {
         if (currentPackage != null) {
-            FileObject sourceFile = getSourceFile();
-            FileObject folder = ClassPath.getClassPath(sourceFile, ClassPath.SOURCE)
+            FileObject srcFile = getSourceFile();
+            FileObject folder = ClassPath.getClassPath(srcFile, ClassPath.SOURCE)
                     .findResource(currentPackage);
             if (folder == null)
-                folder = ClassPath.getClassPath(sourceFile, ClassPath.EXECUTE)
+                folder = ClassPath.getClassPath(srcFile, ClassPath.EXECUTE)
                     .findResource(currentPackage);
             return folder;
         }
@@ -292,11 +292,11 @@ public class IconEditor extends PropertyEditorSupport
      */
     public void setCurrentFolder(FileObject folder) {
         if (folder != null) {
-            FileObject sourceFile = getSourceFile();
-            FileObject root = ClassPath.getClassPath(sourceFile, ClassPath.SOURCE)
+            FileObject srcFile = getSourceFile();
+            FileObject root = ClassPath.getClassPath(srcFile, ClassPath.SOURCE)
                     .findOwnerRoot(folder);
             if (root == null)
-                root = ClassPath.getClassPath(sourceFile, ClassPath.EXECUTE)
+                root = ClassPath.getClassPath(srcFile, ClassPath.EXECUTE)
                     .findOwnerRoot(folder);
             if (root != null)
                 setCurrentPackage(FileUtil.getRelativePath(root, folder));
@@ -322,13 +322,13 @@ public class IconEditor extends PropertyEditorSupport
     }
 
     FileObject getDefaultResourceFolder() {
-        FileObject sourceFile = getSourceFile();
+        FileObject srcFile = getSourceFile();
         for (String dir : DEFAULT_DIRS) {
-            FileObject folder = sourceFile.getParent().getFileObject(dir);
+            FileObject folder = srcFile.getParent().getFileObject(dir);
             if (folder != null)
                 return folder;
         }
-        return sourceFile.getParent();
+        return srcFile.getParent();
     }
 
     private String getDefaultResourcePackage() {
