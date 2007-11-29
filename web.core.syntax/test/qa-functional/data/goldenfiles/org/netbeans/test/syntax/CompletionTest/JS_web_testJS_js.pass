@@ -20,15 +20,15 @@ DOM2 StyleSheetList
 DOM0 Submit
 JS Core SyntaxError
 End cursor position = 164
-[my|, testJS.js myfunction(), myfunction, 212]
+[my|, testJS.js myfunction(), myfunction(), 214]
 testJS.js myfunction()
 testJS.js myvariable
-End cursor position = 223
-[my|, testJS.js myvariable, myvariable, 266]
+End cursor position = 226
+[my|, testJS.js myvariable, myvariable, 268]
 testJS.js myfunction()
 testJS.js myvariable
-End cursor position = 277
-[|, JS Core RangeError, RangeError, 309]
+End cursor position = 279
+[|, JS Core RangeError, RangeError, 311]
 testJS.js myfunction()
 testJS.js myvariable
 DOM2 AbstractView
@@ -260,4 +260,4 @@ keyword void
 keyword volatile
 keyword while
 keyword with
-End cursor position = 320
+End cursor position = 322

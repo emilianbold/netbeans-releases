@@ -28,7 +28,7 @@ String
 /**CC #99811
 my|
 testJS.js myfunction()
-myfunction
+myfunction()
 */
 
 /**CC #112683
