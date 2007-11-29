@@ -14,7 +14,6 @@ MIDlet-5: Bouncing Balls, , com.sun.perseus.demo.bouncingballs.BouncingBalls
 MIDlet-6: Optimized Menu, , com.sun.perseus.demo.optimizedmenu.OptimizedSVGMenuDemo
 MIDlet-7: Picture Decorator, , com.sun.perseus.demo.picturedecorator.PictureDecorator
 MIDlet-8: Location Based Service, , com.sun.perseus.demo.locationBasedService.LocationBasedService
-MIDlet-9: PlaySVGImageDemo, , com.sun.perseus.demo.PlaySVGImageDemo
 MIDlet-Description: JSR 226 (Scalable Vector Graphics) demo.
 MIDlet-Name: SVGDemo
 MIDlet-Permissions: javax.microedition.io.Connector.file.read
