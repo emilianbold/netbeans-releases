@@ -48,6 +48,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.TexturePaint;
 import java.awt.image.BufferedImage;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -140,7 +141,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     private final WidgetAction doubleClickAction = ActionFactory.createEditAction(new PageNodeEditAction());
     private final WidgetAction pagePopupAction = ActionFactory.createPopupMenuAction(new PageFlowPopupProvider());
 
-    private PageFlowView pageFlowView;
+    private WeakReference<PageFlowView> refPageFlowView;
     private PopupMenuProvider popupProvider; //Please see POPUP_HACK below.
     private PFObjectSceneListener pfObjectSceneListener;
     private static Paint PAINT_BACKGROUND;
@@ -163,7 +164,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
      */
     public PageFlowScene(PageFlowView view) {
         super();
-        this.pageFlowView = view;
+        refPageFlowView = new WeakReference<PageFlowView>(view);
 
         setOpaque(true);
         setBackground(PAINT_BACKGROUND);
@@ -220,7 +221,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
 
     private WidgetAction createActionMap() {
 
-        ActionMap actionMap = pageFlowView.getActionMap();
+        ActionMap actionMap = refPageFlowView.get().getActionMap();
         CallbackSystemAction a = (CallbackSystemAction) SystemAction.get(DeleteAction.class);
         actionMap.put(a.getActionMapKey(), new PageFlowDeleteAction(this));
 
@@ -234,7 +235,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
      * @return PageFlowView
      */
     public PageFlowView getPageFlowView() {
-        return pageFlowView;
+        return refPageFlowView.get();
     }
 
 
@@ -344,7 +345,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
 
     /* This is needed by PageFlowLayoutUtilities*/
     public Rectangle getVisibleRect() {
-        return pageFlowView.getVisibleRect();
+        return refPageFlowView.get().getVisibleRect();
     }
 
 

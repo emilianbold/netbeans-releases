@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -76,7 +77,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -86,10 +86,10 @@ public class PageFlowTestUtility {
 
     private Project project;
     private JSFConfigDataObject jsfDO;
-    private FacesConfig facesConfig;
-    private PageFlowView pageFlowView;
-    private PageFlowScene scene;
-    private PageFlowController controller;
+    private WeakReference<FacesConfig> refFacesConfig;
+    private WeakReference<PageFlowView> refPageFlowView;
+    private WeakReference<PageFlowScene> refScene;
+    private WeakReference<PageFlowController> refController;
     NbTestCase nbTestCase;
 
     public PageFlowTestUtility(NbTestCase nbTestCase) {
@@ -145,6 +145,9 @@ public class PageFlowTestUtility {
         return myProject;
     }
 
+    public void closeProject() throws IOException{
+        closeProject(project);
+    }
     private void closeProject(Project myProject) throws IOException {
         //        assertNotNull(jsfDO);
 //        ((CloseCookie)jsfDO.getCookie(CloseCookie.class)).close();
@@ -275,19 +278,19 @@ public class PageFlowTestUtility {
     }
 
     public PageFlowView getPageFlowView() {
-        return pageFlowView;
+        return refPageFlowView.get();
     }
 
     public void setPageFlowView(PageFlowView pfv) {
-        pageFlowView = pfv;
+        refPageFlowView = new WeakReference<PageFlowView>(pfv);
     }
 
     public FacesConfig getFacesConfig() {
-        return facesConfig;
+        return refFacesConfig.get();
     }
 
     public void setFacesConfig(FacesConfig fc) {
-        facesConfig = fc;
+        refFacesConfig = new WeakReference<FacesConfig>(fc);
     }
 
     public Project getProject() {
@@ -295,7 +298,7 @@ public class PageFlowTestUtility {
     }
 
     public void setProject(Project p) {
-        project = p;
+        project =  p;
     }
 
     public void assertNotNull(Object obj) {
@@ -307,18 +310,18 @@ public class PageFlowTestUtility {
     }
 
     public PageFlowScene getScene() {
-        return scene;
+        return refScene.get();
     }
 
     public void setScene(PageFlowScene scene) {
-        this.scene = scene;
+        refScene = new WeakReference<PageFlowScene>(scene);
     }
 
     public PageFlowController getController() {
-        return controller;
+        return refController.get();
     }
 
     public void setController(PageFlowController controller) {
-        this.controller = controller;
+        refController = new WeakReference<PageFlowController>(controller);
     }
 }

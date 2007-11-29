@@ -42,11 +42,14 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.openide.filesystems.FileObject;
 import junit.framework.*;
+import org.netbeans.api.visual.action.WidgetAction.Chain;
 import org.netbeans.junit.*;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
@@ -55,6 +58,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.*;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneElement;
+import org.netbeans.modules.web.jsf.navigation.graph.actions.MyActionMapAction;
 import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentModelProvider;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
@@ -122,12 +126,26 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         ClassLoader l = this.getClass().getClassLoader();
         MockLookup.setLookup(Lookups.fixed(l), Lookups.metaInfServices(l));
     }
-    
-    
+
     public void testCheckPageFlowControllerMemorySize() {
         System.out.println("Check PageFlowController Memory Size.");
         assertSize("PageFlowController MemorySize:", 3000000, controller);
     }
+/* This test is not ready but will be valueable when it is. */
+//    public void testCloseProjectMemoryLeakFinder() throws IOException {
+//        System.out.println("Close Project Memory Leak Finder");
+//
+//        tu.closeProject();
+//        WeakReference<PageFlowView> refView = new WeakReference<PageFlowView>(view);
+//        WeakReference<PageFlowController> refController = new WeakReference<PageFlowController>(controller);
+//        WeakReference<PageFlowScene> refScene = new WeakReference<PageFlowScene>(scene);
+//        controller = null;
+//        scene = null;
+//        view = null;
+//        assertGC("Controller should now no longer exist.", refController);
+//        assertGC("PageFlowView should now no longer exist.", refView);
+//        assertGC("Scene should now no longer exist.", refScene);
+//    }
 
     /**
      * Test of setShowNoWebFolderDialog method, of class PageFlowController.
@@ -140,16 +158,6 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         assertFalse(controller.isShowNoWebFolderDialog());
         controller.setShowNoWebFolderDialog(true);
         assertTrue(controller.isShowNoWebFolderDialog());
-//
-//        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-//
-//            public void run() {
-//                controller.ifNecessaryShowNoWebFolderDialog();
-//            }
-//        });
-//
-//        Frame frame = WindowManager.getDefault().getMainWindow();
-//        assertNotNull(frame);
     }
 
     private void waitEQ() throws Exception {
@@ -177,7 +185,6 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         webFolder.createData(strNewPage2, JSP_EXT);
         Page page2 = controller.getPageName2Page(strNewPage2 + "." + JSP_EXT);
         assertNull(page2);
-
     }
 
     /**
@@ -224,7 +231,7 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         controller.unregisterListeners();
         boolean npeCaught = false;
         try {
-            Page result = controller.createPage((Node)null);
+            Page result = controller.createPage((Node) null);
         } catch (NullPointerException npe) {
             npeCaught = true;
         }
@@ -244,14 +251,13 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
 //            controller.destroyPageFlowNode(page);
 //        }
 //    }
-
     /**
      * Test of createPage method, of class PageFlowController.
      */
     public void testCreatePage() {
         System.out.println("createPage");
         final String pageName = "pageJSP";
-        
+
         controller.unregisterListeners();
         Page result = controller.createPage(pageName + "." + JSP_EXT);
         assertEquals(pageName + "." + JSP_EXT, result.getName());
@@ -262,7 +268,7 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
      */
     public void testCreatePageEmptyString() {
         System.out.println("createPageEmptyString");
-        
+
         controller.unregisterListeners();
         boolean aeFound = false;
         try {
@@ -283,11 +289,11 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
      */
     public void testCreatePageNull() {
         System.out.println("createPageNull");
-        
+
         controller.unregisterListeners();
         boolean npeCaught = false;
         try {
-            Page result = controller.createPage((String)null);
+            Page result = controller.createPage((String) null);
         } catch (NullPointerException npe) {
             npeCaught = true;
         }
@@ -301,7 +307,7 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         System.out.println("createLink");
         String page1 = "page1.jsp";
         String page2 = "page2.jsp";
-        
+
         controller.unregisterListeners();
         Page source = controller.createPage(page1);
         Page target = controller.createPage(page2);
@@ -329,7 +335,7 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         boolean npeCaught = false;
         String page1 = "page1.jsp";
         String page2 = "page2.jsp";
-        
+
         controller.unregisterListeners();
         Page source = controller.createPage(page1);
         Page target = controller.createPage(page2);
@@ -378,7 +384,7 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
     public void testIsKnownFile() throws IOException {
         System.out.println("isKnownFile");
 
-        
+
         controller.unregisterListeners();
         FileObject webFolder = PageFlowView.getWebFolder(tu.getJsfDO().getPrimaryFile());
         String strNewPage = "newPage";
@@ -388,7 +394,7 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
     }
 
     public void testIsKnownFileXML() throws IOException {
-        
+
         controller.unregisterListeners();
         FileObject webFolder = PageFlowView.getWebFolder(tu.getJsfDO().getPrimaryFile());
         FileObject webINFFile = webFolder.getFileObject("WEB-INF");
@@ -400,7 +406,7 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
 
     public void testIsKnownFileNull() {
         boolean npeFound = false;
-        
+
         controller.unregisterListeners();
         try {
             boolean result = controller.isKnownFile(null);
@@ -476,7 +482,7 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
     public void testCreateEdgeNotNull() {
         System.out.println("createEdge with null value");
         boolean npeCaught = false;
-        
+
         controller.unregisterListeners();
         try {
             controller.createEdge(null);
@@ -486,14 +492,13 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         assertTrue(npeCaught);
     }
 
-
     /**
      * Test of removePageName2Page method, of class PageFlowController.
      */
     public void testRemovePageName2Page() {
         System.out.println("removePageName2Page with false for perm destroy");
         String jspPageName = "welcomeJSF.jsp";
-        
+
         controller.unregisterListeners();
         FileObject webFolder = controller.getWebFolder();
         FileObject welcomeFile = webFolder.getFileObject(jspPageName);
@@ -505,14 +510,14 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         Page result2 = controller.getPageName2Page(jspPageName);
         assertNull(result2);
     }
-    
-        /**
+
+    /**
      * Test of removePageName2Page method, of class PageFlowController.
      */
     public void testRemovePageName2PageTrue() {
         System.out.println("removePageName2Page with true for perm destroy");
         String jspPageName = "welcomeJSF.jsp";
-        
+
         controller.unregisterListeners();
         FileObject webFolder = controller.getWebFolder();
         FileObject welcomeFile = webFolder.getFileObject(jspPageName);
@@ -524,46 +529,46 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         Page result2 = controller.getPageName2Page(jspPageName);
         assertNull(result2);
     }
-    
+
     /**
      * Test of removePageName2Page method, of class PageFlowController.
      */
     public void testRemovePageName2PageNull() {
         System.out.println("removePageName2Page with null with false for perm destroy");
-        
+
         controller.unregisterListeners();
         boolean npeCaught = false;
         try {
-            Page result = controller.removePageName2Page((Page)null, false);
-        } catch ( NullPointerException npe){
+            Page result = controller.removePageName2Page((Page) null, false);
+        } catch (NullPointerException npe) {
             npeCaught = true;
         }
-        assertTrue( npeCaught );
+        assertTrue(npeCaught);
     }
-    
-        /**
+
+    /**
      * Test of removePageName2Page method, of class PageFlowController.
      */
     public void testRemovePageName2PageNullTrue() {
         System.out.println("removePageName2Page with null with true for perm destroy");
-        
+
         controller.unregisterListeners();
         boolean npeCaught = false;
         try {
-            Page result = controller.removePageName2Page((Page)null, true);
-        } catch ( NullPointerException npe){
+            Page result = controller.removePageName2Page((Page) null, true);
+        } catch (NullPointerException npe) {
             npeCaught = true;
         }
-        assertTrue( npeCaught );
+        assertTrue(npeCaught);
     }
-    
+
     /**
      * Test of replacePageName2Page method, of class PageFlowController.
      */
     public void testReplacePageName2Page() {
         System.out.println("replacePageName2Page");
-        
-        
+
+
         String oldName = "welcomeJSF.jsp";
         String newName = "welcomeJSF2.jsp";
         Page page = controller.getPageName2Page(oldName);
@@ -577,72 +582,72 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         assertNotNull(page2);
         assertNull(page3);
     }
-    
-     /**
+
+    /**
      * Test of replacePageName2Page method, of class PageFlowController.
      */
     public void testReplacePageName2PageNull() {
         System.out.println("replacePageName2Page when null page");
-        
-        
+
+
         String oldName = "welcomeJSF.jsp";
         String newName = "welcomeJSF2.jsp";
         boolean npeCaught = false;
-        try { 
+        try {
             boolean result = controller.replacePageName2Page(null, newName, oldName);
-        } catch( NullPointerException npe ){
+        } catch (NullPointerException npe) {
             npeCaught = true;
         }
         assertTrue(npeCaught);
-        assertNotNull( controller.getPageName2Page(oldName)); //Confirming it wasn't removed.
+        assertNotNull(controller.getPageName2Page(oldName)); //Confirming it wasn't removed.
     }
-    
+
     /**
      * Test of replacePageName2Page method, of class PageFlowController.
      */
     public void testReplacePageName2PageEmptyString() {
         System.out.println("replacePageName2Page when new name or old names are empty string.");
-        
+
         String oldName = "welcomeJSF.jsp";
         String newName = "welcomeJSF2.jsp";
         boolean npeCaught = false;
-        try { 
+        try {
             boolean result = controller.replacePageName2Page(null, "", oldName);
-        } catch( NullPointerException error ){
+        } catch (NullPointerException error) {
             npeCaught = true;
         }
         assertTrue(npeCaught);
-        assertNotNull( controller.getPageName2Page(oldName)); //Confirming it wasn't removed.
-        
+        assertNotNull(controller.getPageName2Page(oldName)); //Confirming it wasn't removed.
+
         npeCaught = false;
-        try { 
+        try {
             boolean result = controller.replacePageName2Page(null, newName, "");
-        } catch( NullPointerException error ){
+        } catch (NullPointerException error) {
             npeCaught = true;
         }
         assertTrue(npeCaught);
-        assertNotNull( controller.getPageName2Page(oldName)); //Confirming it wasn't removed.
+        assertNotNull(controller.getPageName2Page(oldName)); //Confirming it wasn't removed.
     }
-    
-        /**
+
+    /**
      * Test of replacePageName2Page method, of class PageFlowController.
      */
     public void testReplacePageName2PageWhenOldPageNonExsitent() {
         System.out.println("replacePageName2Page when oldpage name did not exist.");
-        
-        
+
+
         String oldName = "welcomeJSF.jsp";
         String nonExistantName = "welcomeJSF2.jsp";
         String newName = "welcomeJSF3.jsp";
-        
+
         Page page = controller.getPageName2Page(oldName);
         assertNotNull(page);
-        
+
         Page pageNon = controller.getPageName2Page(newName);
         Page pageNon2 = controller.getPageName2Page(nonExistantName);
         assertNull(pageNon);
         assertNull(pageNon2);
-        
+
         boolean result = controller.replacePageName2Page(page, newName, nonExistantName);
         assertFalse(result);
         Page page2 = controller.getPageName2Page(newName);
@@ -650,8 +655,6 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         assertNull(page2);
         assertNotNull(page3);
     }
-    
-   
 
     /**
      * Test of clearPageName2Page method, of class PageFlowController.
@@ -672,14 +675,14 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
     public void testPutPageName2Page() {
         System.out.println("putPageName2Page");
         String pageName = "SomeName.jsp";
-        
+
         Page page = controller.createPage(pageName);
         assertNotNull(page);
         controller.putPageName2Page(pageName, page);
         Page result = controller.getPageName2Page(pageName);
-        assertEquals(page,result);
+        assertEquals(page, result);
     }
-    
+
     /**
      * Test of putPageName2Page method, of class PageFlowController.
      */
@@ -687,28 +690,28 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         System.out.println("putPageName2Page when page is null");
         boolean npeCaught = false;
         String someName = "somePage.jsp";
-        try { 
-            controller.putPageName2Page(someName, (Page)null);
-        } catch( NullPointerException npe){
+        try {
+            controller.putPageName2Page(someName, (Page) null);
+        } catch (NullPointerException npe) {
             npeCaught = true;
         }
         assertTrue(npeCaught);
-        assertNull( controller.getPageName2Page(someName));
+        assertNull(controller.getPageName2Page(someName));
     }
-    
+
     /**
      * Test of putPageName2Page method, of class PageFlowController.
      */
     public void testPutPageName2PageEmptyString() {
         System.out.println("putPageName2Page when name is empty string");
-        
+
         String pageName = "SomeName.jsp";
-        
+
         Page page = controller.createPage(pageName);
-        assertNotNull(page);         
+        assertNotNull(page);
         controller.putPageName2Page("", page);
         Page page2 = controller.getPageName2Page("");
-        assertEquals(page2,page);
+        assertEquals(page2, page);
     }
 
     /**
@@ -720,7 +723,7 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         Page result = controller.getPageName2Page(displayName);
         assertNotNull(result);
     }
-    
+
     /**
      * Test of getPageName2Page method, of class PageFlowController.
      */
@@ -729,12 +732,12 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         boolean npeCaught = false;
         try {
             controller.getPageName2Page(null);
-        } catch (NullPointerException npe){
+        } catch (NullPointerException npe) {
             npeCaught = true;
         }
         assertTrue(npeCaught);
     }
-    
+
     /**
      * Test of getPageName2Page method, of class PageFlowController.
      */
@@ -743,60 +746,79 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         Page page = controller.getPageName2Page("");
         assertNull(page);
     }
-    
+
     public void testReleaseGraphInfoMemoryLeakFinder() {
         System.out.println("releaseGraphInfo - Looking for memory leaks");
         Set<PageFlowSceneElement> elements = (Set<PageFlowSceneElement>) scene.getObjects();
         Collection<WeakReference<PageFlowSceneElement>> references = new ArrayList<WeakReference<PageFlowSceneElement>>();
-        for( PageFlowSceneElement element: elements ){
+        for (PageFlowSceneElement element : elements) {
             references.add(new WeakReference<PageFlowSceneElement>(element));
         }
         elements = null;
-        
+
         controller.releaseGraphInfo();
-        
-        for( WeakReference<PageFlowSceneElement> ref : references){
+
+        for (WeakReference<PageFlowSceneElement> ref : references) {
             assertGC("PageFlowElement should be GC'ed", ref);
         }
-        
+
+//        Chain chain = scene.getActions();
+//        List<WidgetAction> actions = chain.getActions();
+//        for( WidgetAction action : actions ){
+//            if ( action instanceof MyActionMapAction) {
+//                assertGC("Actions should all be null as well." + action, new WeakReference(action));
+//            }
+//        }
+
     }
-    
+
     public void testsetupGraphMemoryLeakFinder() {
         System.out.println("setupGraph - Looking for memory leaks");
-        
+
         final Collection<WeakReference<PageFlowSceneElement>> references = new ArrayList<WeakReference<PageFlowSceneElement>>();
-        
+
         Set<PageFlowSceneElement> elements = (Set<PageFlowSceneElement>) scene.getObjects();
-        for( PageFlowSceneElement element: elements ){
+        for (PageFlowSceneElement element : elements) {
             references.add(new WeakReference<PageFlowSceneElement>(element));
         }
         elements = null;
-        
+
         Collection<? extends PageContentModelProvider> providers = controller.getPageContentModelProviders();
-        
+
         controller.setupGraph();
-        
+
         Set<PageFlowSceneElement> elements2 = (Set<PageFlowSceneElement>) scene.getObjects();
-        for( PageFlowSceneElement element: elements2 ){
+        for (PageFlowSceneElement element : elements2) {
             references.add(new WeakReference<PageFlowSceneElement>(element));
         }
         elements = null;
-        
+
         controller.setupGraph();
-        
-        for( WeakReference<PageFlowSceneElement> ref : references){
+
+        for (WeakReference<PageFlowSceneElement> ref : references) {
             assertGC("PageFlowElement should be GC'ed", ref);
         }
-        
-        
+
+
     }
-    
+
+    public void testSetupGraphMemorySize20() throws InterruptedException {
+        for (int i = 0; i < 20; i++) {
+            controller.setupGraph();
+        }
+        /* This number could 7MB if I could ensure garbage collection. */
+        assertSize("setupGraph MemorySize after 20 setups:", 14000000, controller);
+        try {
+            assertGC("Force Garbage collection on controller.", new WeakReference(controller));
+        } catch (AssertionError ae) {
+            assertSize("seuptGraph MemorySize after force garbage collect", 7000000, controller);
+        }
+    }
+//    
 //    public void testCheckPageFlowControllerMemorySizeEndOfTests(){
 //        System.out.println("Check PageFlowController Memory Size.");
-//        assertSize("PageFlowController MemorySize:", 3000000, controller);
+//        assertSize("PageFlowController MemorySize:", 7000000, controller);
 //    }
-
-
 //    /**
 //     * Test of renamePageInModel method, of class PageFlowController.
 //     */
