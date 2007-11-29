@@ -75,6 +75,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.editor.java.Utilities;
@@ -227,6 +228,7 @@ public final class UncaughtException implements ErrorRule<Void> {
                         fqns.add(Utilities.getTypeName(tm, true).toString());
                     }
                 }
+                result.add(new OrigSurroundWithTryCatchFix(info.getJavaSource(), thandles, TreePathHandle.create(path, info)));
                 result.add(new MagicSurroundWithTryCatchFix(info.getJavaSource(), thandles, offset, ElementHandle.create(method), fqns));
             }
         }

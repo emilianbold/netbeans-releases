@@ -85,6 +85,7 @@ import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -108,7 +109,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
     }
     
     public String getText() {
-        return "Surround with try-catch";
+        return NbBundle.getMessage(MagicSurroundWithTryCatchFix.class, "LBL_SurroundBlockWithTryCatch");
     }
     
     private static final String[] STREAM_ALIKE_CLASSES = new String[] {
@@ -214,118 +215,8 @@ final class MagicSurroundWithTryCatchFix implements Fix {
             this.make = info.getTreeMaker();
         }
         
-        private StatementTree createExceptionsStatement(String name) {
-            TypeElement exceptions = info.getElements().getTypeElement("org.openide.util.Exceptions");
-            
-            if (exceptions == null) {
-                return null;
-            }
-            
-            return make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.QualIdent(exceptions), "printStackTrace"), Arrays.asList(make.Identifier(name))));
-        }
-        
-        private StatementTree createLogStatement(String name) {
-            if (DISABLE_JAVA_UTIL_LOGGER)
-                return null;
-            
-            if (!GeneratorUtils.supportsOverride(info.getFileObject()))
-                return null;
-            
-            TypeElement logger = info.getElements().getTypeElement("java.util.logging.Logger");
-            TypeElement level  = info.getElements().getTypeElement("java.util.logging.Level");
-            
-            if (logger == null || level == null) {
-                return null;
-            }
-            // find the containing top level class
-            ClassTree containingTopLevel = null;
-            for (Tree t : statement) {
-                if (Kind.CLASS == t.getKind()) {
-                    containingTopLevel = (ClassTree) t;
-                }
-            }
-            // take it easy and make it as an identfier or literal
-            ExpressionTree arg = containingTopLevel != null ? 
-                make.Identifier(containingTopLevel.getSimpleName() + ".class.getName()") :
-                make.Literal("global"); // global should never happen
-            
-            // check that there isn't any Logger class imported
-            boolean useFQN = false;
-            for (ImportTree dovoz : info.getCompilationUnit().getImports()) {
-                MemberSelectTree id = (MemberSelectTree) dovoz.getQualifiedIdentifier();
-                if ("Logger".equals(id.getIdentifier()) && !"java.util.logging.Logger".equals(id.toString())) {
-                    useFQN = true;
-                }
-            }
-            // finally, make the invocation
-            ExpressionTree etExpression = make.MethodInvocation(
-                    Collections.<ExpressionTree>emptyList(),
-                    make.MemberSelect(
-                        useFQN ? make.Identifier(logger.toString()) : make.QualIdent(logger),
-                        "getLogger"
-                    ),
-                    Collections.<ExpressionTree>singletonList(arg)
-            );
-            ExpressionTree levelExpression = make.MemberSelect(make.QualIdent(level), "SEVERE");
-            
-            return make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(etExpression, "log"), Arrays.asList(levelExpression, make.Literal(null), make.Identifier(name))));
-        }
-        
-        private StatementTree createPrintStackTraceStatement(String name) {
-            return make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier(name), "printStackTrace"), Collections.<ExpressionTree>emptyList()));
-        }
-        
-        private CatchTree createCatch(String name, TypeMirror type) {
-            StatementTree logStatement = createExceptionsStatement(name);
-            
-            if (logStatement == null) {
-                logStatement = createLogStatement(name);
-            }
-            
-            if (logStatement == null) {
-                logStatement = createPrintStackTraceStatement(name);
-            }
-            
-            return make.Catch(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(type), null), make.Block(Collections.singletonList(logStatement), false));
-        }
-        
-        private List<CatchTree> createCatches(String name) {
-            List<CatchTree> catches = new ArrayList<CatchTree>();
-            
-            for (TypeMirrorHandle th : thandles) {
-                catches.add(createCatch(name, th.resolve(info)));
-            }
-            
-            return catches;
-        }
-        
-        private String inferName() {
-            Scope s = info.getTrees().getScope(getCurrentPath());
-            Set<String> existingVariables = new HashSet<String>();
-            
-            for (Element e : info.getElementUtilities().getLocalVars(s, new ElementAcceptor() {
-                public boolean accept(Element e, TypeMirror type) {
-                    return e != null && (e.getKind() == ElementKind.PARAMETER || e.getKind() == ElementKind.LOCAL_VARIABLE || e.getKind() == ElementKind.EXCEPTION_PARAMETER);
-                }
-            })) {
-                existingVariables.add(e.getSimpleName().toString());
-            }
-            
-            int index = 0;
-            
-            while (true) {
-                String proposal = "ex" + (index == 0 ? "" : ("" + index));
-                
-                if (!existingVariables.contains(proposal)) {
-                    return proposal;
-                }
-                
-                index++;
-            }
-        }
-        
         public @Override Void visitTry(TryTree tt, Void p) {
-            List<CatchTree> catches = createCatches(inferName());
+            List<CatchTree> catches = createCatches(info, make, thandles, statement);
             
             catches.addAll(tt.getCatches());
             
@@ -372,7 +263,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
         
         private StatementTree createFinallyCloseBlockStatement(CharSequence name) {
             StatementTree close = make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier(name), "close"), Collections.<ExpressionTree>emptyList()));
-            StatementTree tryStatement = make.Try(make.Block(Collections.singletonList(close), false), Collections.singletonList(createCatch(inferName(), info.getElements().getTypeElement("java.io.IOException").asType())), null);
+            StatementTree tryStatement = make.Try(make.Block(Collections.singletonList(close), false), Collections.singletonList(createCatch(info, make, statement, inferName(info, statement), info.getElements().getTypeElement("java.io.IOException").asType())), null);
             
             return tryStatement;
         }
@@ -390,7 +281,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
         }
         
         public @Override Void visitBlock(BlockTree bt, Void p) {
-            List<CatchTree> catches = createCatches(inferName());
+            List<CatchTree> catches = createCatches(info, make, thandles, statement);
             
             //#89379: if inside a constructor, do not wrap the "super"/"this" call:
             //please note that the "super" or "this" call is supposed to be always
@@ -455,9 +346,113 @@ final class MagicSurroundWithTryCatchFix implements Fix {
     }
 
     
-    
+    private static StatementTree createExceptionsStatement(CompilationInfo info, TreeMaker make, String name) {
+        TypeElement exceptions = info.getElements().getTypeElement("org.openide.util.Exceptions");
 
-    
+        if (exceptions == null) {
+            return null;
+        }
 
+        return make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.QualIdent(exceptions), "printStackTrace"), Arrays.asList(make.Identifier(name))));
+    }
+
+    private static StatementTree createLogStatement(CompilationInfo info, TreeMaker make, TreePath statement, String name) {
+        if (DISABLE_JAVA_UTIL_LOGGER) {
+            return null;
+        }
+
+        if (!GeneratorUtils.supportsOverride(info.getFileObject())) {
+            return null;
+        }
+
+        TypeElement logger = info.getElements().getTypeElement("java.util.logging.Logger");
+        TypeElement level = info.getElements().getTypeElement("java.util.logging.Level");
+
+        if (logger == null || level == null) {
+            return null;
+        }
+        // find the containing top level class
+        ClassTree containingTopLevel = null;
+        for (Tree t : statement) {
+            if (Kind.CLASS == t.getKind()) {
+                containingTopLevel = (ClassTree) t;
+            }
+        }
+        // take it easy and make it as an identfier or literal
+        ExpressionTree arg = containingTopLevel != null ? make.Identifier(containingTopLevel.getSimpleName() + ".class.getName()") : make.Literal("global"); // global should never happen
+
+        // check that there isn't any Logger class imported
+        boolean useFQN = false;
+        for (ImportTree dovoz : info.getCompilationUnit().getImports()) {
+            MemberSelectTree id = (MemberSelectTree) dovoz.getQualifiedIdentifier();
+            if ("Logger".equals(id.getIdentifier()) && !"java.util.logging.Logger".equals(id.toString())) {
+                useFQN = true;
+            }
+        }
+        // finally, make the invocation
+        ExpressionTree etExpression = make.MethodInvocation(
+                Collections.<ExpressionTree>emptyList(),
+                make.MemberSelect(
+                useFQN ? make.Identifier(logger.toString()) : make.QualIdent(logger),
+                "getLogger"),
+                Collections.<ExpressionTree>singletonList(arg));
+        ExpressionTree levelExpression = make.MemberSelect(make.QualIdent(level), "SEVERE");
+
+        return make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(etExpression, "log"), Arrays.asList(levelExpression, make.Literal(null), make.Identifier(name))));
+    }
+        
+    private static StatementTree createPrintStackTraceStatement(CompilationInfo info, TreeMaker make, String name) {
+        return make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier(name), "printStackTrace"), Collections.<ExpressionTree>emptyList()));
+    }
+
+    private static CatchTree createCatch(CompilationInfo info, TreeMaker make, TreePath statement, String name, TypeMirror type) {
+        StatementTree logStatement = createExceptionsStatement(info, make, name);
+
+        if (logStatement == null) {
+            logStatement = createLogStatement(info, make, statement, name);
+        }
+        
+        if (logStatement == null) {
+            logStatement = createPrintStackTraceStatement(info, make, name);
+        }
+
+        return make.Catch(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(type), null), make.Block(Collections.singletonList(logStatement), false));
+    }
+
+    static List<CatchTree> createCatches(CompilationInfo info, TreeMaker make, List<TypeMirrorHandle> thandles, TreePath currentPath) {
+        String name = inferName(info, currentPath);
+        List<CatchTree> catches = new ArrayList<CatchTree>();
+
+        for (TypeMirrorHandle th : thandles) {
+            catches.add(createCatch(info, make, currentPath, name, th.resolve(info)));
+        }
+
+        return catches;
+    }
+
+    private static String inferName(CompilationInfo info, TreePath currentPath) {
+        Scope s = info.getTrees().getScope(currentPath);
+        Set<String> existingVariables = new HashSet<String>();
+
+        for (Element e : info.getElementUtilities().getLocalVars(s, new ElementAcceptor() {
+            public boolean accept(Element e, TypeMirror type) {
+                return e != null && (e.getKind() == ElementKind.PARAMETER || e.getKind() == ElementKind.LOCAL_VARIABLE || e.getKind() == ElementKind.EXCEPTION_PARAMETER);
+            }
+            })) {
+            existingVariables.add(e.getSimpleName().toString());
+        }
+
+        int index = 0;
+
+        while (true) {
+            String proposal = "ex" + (index == 0 ? "" : ("" + index));
+
+            if (!existingVariables.contains(proposal)) {
+                return proposal;
+            }
+
+            index++;
+        }
+    }
     
 }

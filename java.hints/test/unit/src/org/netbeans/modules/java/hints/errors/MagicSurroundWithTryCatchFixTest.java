@@ -123,6 +123,13 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
                        "package test; import java.util.logging.Level; import java.util.logging.Logger; public class Test {public void test(Exception ex) {while (true) {Exception ex1; if (1 != 1) {try { x(); } catch (Exception ex2) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex2); } }}} private void x() throws Exception {}}");
     }
     
+//    public void test86483() throws Exception {
+//        performFixTest("test/Test.java",
+//                       "package test; import java.io.IOException; import java.io.FileNotFoundException; import org.openide.util.Exceptions; public class Test {public void test(int a) {try {if (a == 1) |throw new IOException(); } catch (FileNotFoundException e) { Exceptions.printStacktrace(e); } } }",
+//                       "FixImpl",
+//                       "package test; import java.io.IOException; import java.io.FileNotFoundException; import org.openide.util.Exceptions; public class Test {public void test(int a) {try {if (a == 1) throw new IOException(); } catch (FileNotFoundException e) { Exceptions.printStacktrace(e); } catch (IOException e) { Exceptions.printStacktrace(e); } } }");
+//    }
+    
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
         return new UncaughtException().run(info, null, pos, path, null);
     }
@@ -138,7 +145,7 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
 
     @Override
     protected FileObject[] getExtraClassPathElements() {
-        if ("testLogStatementExceptions".equals(getName()) || "test117085b".equals(getName())) {
+        if ("testLogStatementExceptions".equals(getName()) || "test117085b".equals(getName()) || "test86483".equals(getName())) {
             FileObject ooutils = URLMapper.findFileObject(Exceptions.class.getProtectionDomain().getCodeSource().getLocation());
             
             assertNotNull(ooutils);
