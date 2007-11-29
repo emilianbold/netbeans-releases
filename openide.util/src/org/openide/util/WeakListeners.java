@@ -71,7 +71,7 @@ import javax.swing.event.DocumentListener;
  *      private void registerTo(Source source) {
  *          source.addChangeListener({@link
                 #change(javax.swing.event.ChangeListener, java.lang.Object)
- *              WeakListeners.changeListener} (this, source));
+ *              WeakListeners.change} (this, source));
  *      }
  *
  *      public void stateChanged(ChangeEvent e) {
