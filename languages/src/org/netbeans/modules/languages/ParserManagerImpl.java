@@ -115,7 +115,7 @@ public class ParserManagerImpl extends ParserManager {
         }
         if (tokenHierarchy != null) {
             new DocListener (this, tokenHierarchy);
-            if (state == State.NOT_PARSED) {
+            if (mimeType != null && state == State.NOT_PARSED) {
                 try {
                     LanguagesManager.getDefault().getLanguage(mimeType);
                     startParsing();
