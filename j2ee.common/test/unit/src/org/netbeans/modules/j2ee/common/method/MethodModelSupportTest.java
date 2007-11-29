@@ -247,12 +247,12 @@ public class MethodModelSupportTest extends NbTestCase {
         });
     }
 
-    private static void runUserActionTask(FileObject javaFile, CancellableTask<CompilationController> taskToTest) throws IOException {
+    private static void runUserActionTask(FileObject javaFile, Task<CompilationController> taskToTest) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(javaFile);
         javaSource.runUserActionTask(taskToTest, true);
     }
 
-    private static ModificationResult runModificationTask(FileObject javaFile, CancellableTask<WorkingCopy> taskToTest) throws IOException {
+    private static ModificationResult runModificationTask(FileObject javaFile, Task<WorkingCopy> taskToTest) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(javaFile);
         return javaSource.runModificationTask(taskToTest);
     }

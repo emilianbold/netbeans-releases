@@ -52,10 +52,10 @@ import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestCase;
@@ -109,7 +109,7 @@ public class GenerationUtilsTest extends NbTestCase {
                 "package foo;" +
                 "public class TestClass {" +
                 "}");
-        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+        runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = copy.getElements().getTypeElement("foo.TestClass");
@@ -136,7 +136,7 @@ public class GenerationUtilsTest extends NbTestCase {
                 "package foo;" +
                 "public class TestClass {" +
                 "}");
-        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+        runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
                 assertEquals(JavaSource.Phase.ELEMENTS_RESOLVED, copy.getPhase());
@@ -146,7 +146,7 @@ public class GenerationUtilsTest extends NbTestCase {
 
     public void testCreateClass() throws Exception {
         FileObject javaFO = GenerationUtils.createClass(workDir, "NewTestClass", "Javadoc");
-        runUserActionTask(javaFO, new AbstractTask<CompilationController>() {
+        runUserActionTask(javaFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);
                 assertEquals(ElementKind.CLASS, srcUtils.getTypeElement().getKind());
@@ -158,7 +158,7 @@ public class GenerationUtilsTest extends NbTestCase {
 
     public void testCreateInterface() throws Exception {
         FileObject javaFO = GenerationUtils.createInterface(workDir, "NewTestClass", "Javadoc");
-        runUserActionTask(javaFO, new AbstractTask<CompilationController>() {
+        runUserActionTask(javaFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);
                 assertEquals(ElementKind.INTERFACE, srcUtils.getTypeElement().getKind());
@@ -172,14 +172,14 @@ public class GenerationUtilsTest extends NbTestCase {
                 "package foo;" +
                 "public class TestClass {" +
                 "}");
-        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+        runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
                 ClassTree newClassTree = genUtils.ensureNoArgConstructor(genUtils.getClassTree());
                 copy.rewrite(genUtils.getClassTree(), newClassTree);
             }
         }).commit();
-        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
+        runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
                 assertTrue(SourceUtils.newInstance(controller).getNoArgConstructor() != null);
             }
@@ -193,14 +193,14 @@ public class GenerationUtilsTest extends NbTestCase {
                 "    private TestClass() {" +
                 "    }" +
                 "}");
-        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+        runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
                 ClassTree newClassTree = genUtils.ensureNoArgConstructor(genUtils.getClassTree());
                 copy.rewrite(genUtils.getClassTree(), newClassTree);
             }
         }).commit();
-        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
+        runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
                 assertTrue(SourceUtils.newInstance(controller).getNoArgConstructor().getModifiers().contains(Modifier.PUBLIC));
             }
@@ -212,7 +212,7 @@ public class GenerationUtilsTest extends NbTestCase {
                 "package foo;" +
                 "public class TestClass {" +
                 "}");
-        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+        runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
                 assertEquals(TypeKind.BOOLEAN, ((PrimitiveTypeTree)genUtils.createType("boolean")).getPrimitiveTypeKind());
@@ -232,7 +232,7 @@ public class GenerationUtilsTest extends NbTestCase {
                 "package foo;" +
                 "public class TestClass {" +
                 "}");
-        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+        runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
                 AnnotationTree annotationTree = genUtils.createAnnotation("java.lang.SuppressWarnings",
@@ -244,7 +244,7 @@ public class GenerationUtilsTest extends NbTestCase {
                 copy.rewrite(genUtils.getClassTree(), newClassTree);
             }
         }).commit();
-        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
+        runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);
                 assertEquals(2, srcUtils.getTypeElement().getAnnotationMirrors().size());
@@ -272,7 +272,7 @@ public class GenerationUtilsTest extends NbTestCase {
                 "}" +
                 "public class TestClass {" +
                 "}");
-        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+        runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
                 ExpressionTree namedQueryAnnotation0 = genUtils.createAnnotation("foo.NamedQuery", Arrays.asList(
@@ -287,7 +287,7 @@ public class GenerationUtilsTest extends NbTestCase {
                 copy.rewrite(genUtils.getClassTree(), newClassTree);
             }
         }).commit();
-        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
+        runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);
                 List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
@@ -328,7 +328,7 @@ public class GenerationUtilsTest extends NbTestCase {
                 "}" +
                 "public class TestClass {" +
                 "}");
-        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+        runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
                 AnnotationTree annotationTree = genUtils.createAnnotation("foo.Column", Collections.singletonList(genUtils.createAnnotationArgument("nullable", true)));
@@ -336,7 +336,7 @@ public class GenerationUtilsTest extends NbTestCase {
                 copy.rewrite(genUtils.getClassTree(), newClassTree);
             }
         }).commit();
-        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
+        runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);
                 assertEquals(1, srcUtils.getTypeElement().getAnnotationMirrors().size());
@@ -355,7 +355,7 @@ public class GenerationUtilsTest extends NbTestCase {
                 "package foo;" +
                 "public class TestClass {" +
                 "}");
-        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+        runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
                 TreeMaker make = copy.getTreeMaker();
@@ -382,7 +382,7 @@ public class GenerationUtilsTest extends NbTestCase {
                 "   public TestClass() {" +
                 "   }" +
                 "}");
-        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+        runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
                 VariableTree field = genUtils.createField(genUtils.createModifiers(Modifier.PRIVATE), "someProp", "java.lang.String");
@@ -404,7 +404,7 @@ public class GenerationUtilsTest extends NbTestCase {
                 "package foo;" +
                 "public class TestClass {" +
                 "}");
-        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+        runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
                 ClassTree newClassTree = genUtils.addImplementsClause(genUtils.getClassTree(), "java.io.Serializable");
@@ -412,7 +412,7 @@ public class GenerationUtilsTest extends NbTestCase {
                 copy.rewrite(genUtils.getClassTree(), newClassTree);
             }
         }).commit();
-        runUserActionTask(testFO, new AbstractTask<CompilationController>() {
+        runUserActionTask(testFO, new Task<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);
                 assertImplements(controller, srcUtils.getTypeElement(), "java.io.Serializable");
@@ -426,7 +426,7 @@ public class GenerationUtilsTest extends NbTestCase {
                 "package foo;" +
                 "public class TestClass {" +
                 "}");
-        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+        runModificationTask(testFO, new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) throws Exception {
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
                 assertNotNull(genUtils.createType("byte[]"));
@@ -434,12 +434,12 @@ public class GenerationUtilsTest extends NbTestCase {
         });
     }
 
-    private static void runUserActionTask(FileObject javaFile, CancellableTask<CompilationController> taskToTest) throws Exception {
+    private static void runUserActionTask(FileObject javaFile, Task<CompilationController> taskToTest) throws Exception {
         JavaSource javaSource = JavaSource.forFileObject(javaFile);
         javaSource.runUserActionTask(taskToTest, true);
     }
 
-    private static ModificationResult runModificationTask(FileObject javaFile, CancellableTask<WorkingCopy> taskToTest) throws Exception {
+    private static ModificationResult runModificationTask(FileObject javaFile, Task<WorkingCopy> taskToTest) throws Exception {
         JavaSource javaSource = JavaSource.forFileObject(javaFile);
         return javaSource.runModificationTask(taskToTest);
     }
