@@ -172,6 +172,10 @@ public class DataProviderDesignInfoWriter extends java.io.PrintWriter {
         println( "             return Result.SUCCESS;" );
         println( "         } else {// More than one found" );
         println( "             DesignProperty prop = designBean.getProperty( \"" + clientWrapperBeanPropName + "\" );" );
+        println( "             DesignBean defaultBean = (DesignBean)clientBeans.get(0);" );
+        println( "             // Set the default value");
+        println( "             prop.setValue( defaultBean.getInstance() );");
+        println();
         println( "             Customizer2 dpCustomizer = new DataClassInstanceCustomizer( \"DataProvider customizer\", designBean, prop, (DesignBean[])clientBeans.toArray(new DesignBean[0]) ); ");
         println( "             return new CustomizerResult( designBean, dpCustomizer );");
         println( "         }" );
