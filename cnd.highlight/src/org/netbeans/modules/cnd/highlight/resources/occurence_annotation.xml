@@ -45,6 +45,7 @@ made subject to such option by the copyright holder.
                  "http://www.netbeans.org/dtds/annotation-type-1_1.dtd">
        <type name="org-netbeans-modules-cnd-highligh-semantic-markoccurences"
              localizing_bundle="org.netbeans.modules.cnd.highlight.semantic.Bundle"
+             description_key="LABL_CppMarkOccurencesAnnotation"
              visible="true" 
              type="linepart"
              browseable="true"
