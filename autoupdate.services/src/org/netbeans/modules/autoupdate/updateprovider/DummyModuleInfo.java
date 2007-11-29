@@ -111,6 +111,9 @@ final class DummyModuleInfo extends ModuleInfo {
         deps = parseDeps (attr, cnb);
 //        getAutoDepsHandler().refineDependencies(cnb, deps); // #29577
         String providesS = attr.getValue("OpenIDE-Module-Provides"); // NOI18N
+        if (cnb.equals ("org.openide.modules")) { // NOI18N
+            providesS = providesS == null ? "org.openide.modules.ModuleFormat1" : providesS + ", org.openide.modules.ModuleFormat1"; // NOI18N
+        }
         if (providesS == null) {
             provides = new String[0];
         } else {
@@ -198,6 +201,7 @@ final class DummyModuleInfo extends ModuleInfo {
         return false;
     }
     
+    @Override
     public String[] getProvides() {
         return provides;
     }
