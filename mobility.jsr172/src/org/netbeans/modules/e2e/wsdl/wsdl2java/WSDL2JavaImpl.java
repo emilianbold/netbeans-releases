@@ -56,6 +56,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
     
     private Set<QName> usedTypeNames;
     private Set<QName> usedParameterTypes;
+    private Set<QName> usedReturnTypes;
             
     private Map<QName, Integer> uniqueTypeName;
     
@@ -210,6 +211,9 @@ public class WSDL2JavaImpl implements WSDL2Java {
     private void generateInterfaces() throws Exception {        
         Set<QName> usedTypes = new HashSet<QName>();
         
+        usedReturnTypes = new HashSet<QName>();
+        usedParameterTypes = new HashSet<QName>();
+        
         Set<QName> usedReturnTypeNames = new HashSet<QName>();
         Set<QName> usedParameterTypeNames = new HashSet<QName>();
         
@@ -248,9 +252,11 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             Output output = operation.getOutput();                            
                             if (output != null) {
                                 for( Part part : output.getMessage().getParts()) {
-                                    Element e = getReturnElement( definition.getSchemaHolder().getSchemaElement( part.getElementName()));
+                                    Element re = definition.getSchemaHolder().getSchemaElement( part.getElementName());
+                                    Element e = getReturnElement( re );
                                     if( isElementComplex( e )) {
                                         usedTypes.add( e.getName());
+                                        usedReturnTypes.add( re.getName());
                                     }
                                     String javaTypeName = getJavaTypeName( e );
                                     off.write( "public " + javaTypeName + " " );
@@ -272,6 +278,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                         Element e = it.next();
                                         if( isElementComplex( e )) {
                                             usedTypes.add( e.getName());
+                                            usedParameterTypes.add( e.getName());
                                         }
                                         Type type = e.getType();
                                         String javaTypeName = getJavaTypeName( e );
@@ -297,7 +304,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
         
         for( QName typeName : usedTypeNames ) {
 //            System.err.println(" - " + typeName.getLocalPart());
-        }        
+        }               
     }
     
     private String getWrapperTypeName( Type type ) {
@@ -377,15 +384,25 @@ public class WSDL2JavaImpl implements WSDL2Java {
         }
         return result;
     }
+    
     /**
      * Generates all used complex types
      */
     private void generateTypes() throws Exception {
-        Set<QName> usedArrayTypeNames = new HashSet<QName>();        
+        Set<Element> usedArrayTypes = new HashSet<Element>();
         Set<QName> types = new HashSet<QName>();
 
         for( QName typeName : usedTypeNames ) {
             types.addAll( getUsedTypes( typeName ));
+        }
+        
+        for( QName type : usedReturnTypes ) {
+            Element e = getReturnElement( definition.getSchemaHolder().getSchemaElement( type ));
+            usedArrayTypes.addAll( generateType( e ));
+        }
+        for( QName type : usedParameterTypes ) {
+            Element e = definition.getSchemaHolder().getSchemaElement( type );
+            usedArrayTypes.addAll( generateType( e ));
         }
 //        System.err.println(" ---- Used complex types ---- ");
 //        for( QName type : types ) {
@@ -393,55 +410,127 @@ public class WSDL2JavaImpl implements WSDL2Java {
 //        }
 //        System.err.println(" ----  ---- ");
         
-        for( QName typeName : types ) {
-            Element element = definition.getSchemaHolder().getSchemaElement( typeName );
-            Type type = null;
-            if( element == null ) {
-                type = definition.getSchemaHolder().getSchemaType( typeName );
-            } else {
-                type = element.getType();
-            }
-            if( type == null ) {
-                throw new IllegalArgumentException( "Invalid element type." );
-            }
-            if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) continue;
-            String name = type.getName() == null ? element.getName().getLocalPart() : type.getName().getLocalPart();
-            File outputDirectoryF = new File( configuration.getOutputDirectory());
-            FileObject outputDirectoryFO = FileUtil.toFileObject( FileUtil.normalizeFile( outputDirectoryF ));
-            FileObject outputFileDirectoryFO = outputDirectoryFO.getFileObject( configuration.getPackageName().replace( '.', '/' ));           // NOI18N
-            FileObject outputFile = outputFileDirectoryFO.getFileObject( name, "java" );
-            if( outputFile == null  ) {
-                outputFile = outputFileDirectoryFO.createData( name, "java" );
-            }
-            
-            OutputFileFormatter off = new OutputFileFormatter( outputFile );
-            
-            if( configuration.getPackageName() != null && !"".equals( configuration.getPackageName().trim())) {
-                off.write( "package " + configuration.getPackageName() + ";\n");
-            }
-            off.write( "\n" );
-            off.write( "import javax.xml.namespace.QName;\n" );
-            if( configuration.getGenerateDataBinding()) {
-                off.write( "import org.netbeans.microedition.databinding.DataSet;\n" );
-                off.write( "import org.netbeans.microedition.databinding.DataBindingException;\n" );
+//        System.err.println(" --- Array types --- ");
+//        for( QName typeName : usedArrayTypeNames ) {
+//            System.err.println(" - " + typeName.getLocalPart());
+//        }
+//        System.err.println(" --- --- ");
+        if( configuration.getGenerateDataBinding()) {
+            generateDataBindingArrays( usedArrayTypes ); 
+        }
+        
+    }
+    
+    private Set<Element> generateType( Element element ) throws Exception {
+        Set<Element> arrayTypes = new HashSet<Element>();
+        
+        Type type = element.getType();
+        if( type == null ) {
+            throw new IllegalArgumentException( "Invalid element type." );
+        }
+        if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) return arrayTypes;
+        String name = type.getName() == null ? element.getName().getLocalPart() : type.getName().getLocalPart();
+        File outputDirectoryF = new File( configuration.getOutputDirectory());
+        FileObject outputDirectoryFO = FileUtil.toFileObject( FileUtil.normalizeFile( outputDirectoryF ));
+        FileObject outputFileDirectoryFO = outputDirectoryFO.getFileObject( configuration.getPackageName().replace( '.', '/' ));           // NOI18N
+        FileObject outputFile = outputFileDirectoryFO.getFileObject( name, "java" );
+        if( outputFile == null  ) {
+            outputFile = outputFileDirectoryFO.createData( name, "java" );
+        }
+
+        OutputFileFormatter off = new OutputFileFormatter( outputFile );
+
+        if( configuration.getPackageName() != null && !"".equals( configuration.getPackageName().trim())) {
+            off.write( "package " + configuration.getPackageName() + ";\n");
+        }
+        off.write( "\n" );
+        off.write( "import javax.xml.namespace.QName;\n" );
+        if( configuration.getGenerateDataBinding()) {
+            off.write( "import org.netbeans.microedition.databinding.DataSet;\n" );
+            off.write( "import org.netbeans.microedition.databinding.DataBindingException;\n" );
 //                off.write( "import org.netbeans.microedition.databinding.DataSource;\n" );
-                off.write( "\n" );
-                if( type.getParent() == null ) {
-                    off.write( "public class " + name + " implements DataSet {\n" );
-                } else {
-                    Type parentType = definition.getSchemaHolder().getSchemaType( type.getParent().getName());
-                    String parentName = parentType.getName().getLocalPart();
-                    off.write( "public class " + name + " extends " + parentName + " implements DataSet {\n" );
-                }
+            off.write( "\n" );
+            if( type.getParent() == null ) {
+                off.write( "public class " + name + " implements DataSet {\n" );
             } else {
-                if( type.getParent() == null ) {
-                    off.write( "public class " + name + " {\n" );
-                } else {
-                    Type parentType = definition.getSchemaHolder().getSchemaType( type.getParent().getName());
-                    String parentName = parentType.getName().getLocalPart();
-                    off.write( "public class " + name + " extends " + parentName + " {\n" );
-                }
+                Type parentType = definition.getSchemaHolder().getSchemaType( type.getParent().getName());
+                String parentName = parentType.getName().getLocalPart();
+                off.write( "public class " + name + " extends " + parentName + " implements DataSet {\n" );
             }
+        } else {
+            if( type.getParent() == null ) {
+                off.write( "public class " + name + " {\n" );
+            } else {
+                Type parentType = definition.getSchemaHolder().getSchemaType( type.getParent().getName());
+                String parentName = parentType.getName().getLocalPart();
+                off.write( "public class " + name + " extends " + parentName + " {\n" );
+            }
+        }
+        for( SchemaConstruct sc : type.getSubconstructs()) {
+            if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
+                Element sce = (Element) sc;
+                String propertyName = sce.getName().getLocalPart();
+                String propertyVariableName = propertyName.substring( 0, 1 ).toLowerCase() + propertyName.substring( 1 );
+                String propertyType = sce.getType().getName().getLocalPart();
+                boolean isArray = sce.getMaxOccurs() > 1;
+                if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
+                    if( sce.getMinOccurs() == 0 || sce.isNillable()) {
+                        propertyType = getWrapperTypeName( sce.getType());
+                    } else {
+                        propertyType = sce.getType().getJavaTypeName();
+                    }
+                    //propertyType = sce.getType().getJavaTypeName();
+                }
+                if( WSDL2Java.Configuration.TYPE_JAVA_BEANS == configuration.getGenerateType()) {
+                    // Generate code in JavaBeans style
+
+                    off.write( "\n" );
+                    if( !configuration.getGenerateDataBinding()) {
+                        off.write( "private " + propertyType + (isArray ? "[] " : " ") + propertyVariableName + ";\n" );
+                    } else {
+                        if( !isArray ) {
+                            off.write( "private " + propertyType + " " + propertyVariableName + ";\n" );
+                        } else {
+                            off.write( "private " + propertyType + "ArrayItem " + propertyVariableName + "_array_item = " + 
+                                "new " + propertyType + "ArrayItem();\n");
+                        }
+                    }
+                    off.write( "\n" );
+
+                    off.write( "public void " + setter( propertyName ) + "( " + propertyType + (isArray ? "[] " : " ") + propertyVariableName + " ) {\n" );
+                    if( isArray && configuration.getGenerateDataBinding()) {
+                        off.write( propertyVariableName + "_array_item.setArray(" + propertyVariableName + ");\n" );
+                    } else {
+                        off.write( "this." + propertyVariableName + " = " + propertyVariableName + ";\n" );
+                    }
+                    off.write( "}\n\n" );
+
+                    off.write( "public " + propertyType + (isArray ? "[] " : " ") + getter( propertyName ) + "() {\n" );
+                    if( isArray && configuration.getGenerateDataBinding()) {
+                        off.write( "return " + propertyVariableName + "_array_item.getArray();\n" );
+                    } else {
+                        off.write( "return " + propertyVariableName + ";\n" );
+                    }
+                    off.write( "}\n" );
+
+                } else if( WSDL2Java.Configuration.TYPE_STRUCTURES == configuration.getGenerateType()) {
+                    // Generate code in struct style
+
+                    off.write( "\n" );
+                    off.write( "public " + propertyType + (isArray ? "[] " : " ") + propertyVariableName + ";\n" );
+                }
+
+                if( sce.getMaxOccurs() > 1 ) {
+                    arrayTypes.add( sce );
+                }
+
+            }
+        }
+        off.write( "\n" );
+
+        if( configuration.getGenerateDataBinding()) {
+            // getType
+            off.write( "public Class getType(String dataItemName) {\n" );
             for( SchemaConstruct sc : type.getSubconstructs()) {
                 if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
                     Element sce = (Element) sc;
@@ -450,191 +539,113 @@ public class WSDL2JavaImpl implements WSDL2Java {
                     String propertyType = sce.getType().getName().getLocalPart();
                     boolean isArray = sce.getMaxOccurs() > 1;
                     if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
-                        if( sce.getMinOccurs() == 0 || sce.isNillable()) {
-                            propertyType = getWrapperTypeName( sce.getType());
-                        } else {
-                            propertyType = sce.getType().getJavaTypeName();
-                        }
-                        //propertyType = sce.getType().getJavaTypeName();
-                    }
-                    if( WSDL2Java.Configuration.TYPE_JAVA_BEANS == configuration.getGenerateType()) {
-                        // Generate code in JavaBeans style
-                        
-                        off.write( "\n" );
-                        if( !configuration.getGenerateDataBinding()) {
-                            off.write( "private " + propertyType + (isArray ? "[] " : " ") + propertyVariableName + ";\n" );
-                        } else {
-                            if( !isArray ) {
-                                off.write( "private " + propertyType + " " + propertyVariableName + ";\n" );
-                            } else {
-                                off.write( "private " + propertyType + "ArrayItem " + propertyVariableName + "_array_item = " + 
-                                    "new " + propertyType + "ArrayItem();\n");
-                            }
-                        }
-                        off.write( "\n" );
-                        
-                        off.write( "public void " + setter( propertyName ) + "( " + propertyType + (isArray ? "[] " : " ") + propertyVariableName + " ) {\n" );
-                        if( isArray && configuration.getGenerateDataBinding()) {
-                            off.write( propertyVariableName + "_array_item.setArray(" + propertyVariableName + ");\n" );
-                        } else {
-                            off.write( "this." + propertyVariableName + " = " + propertyVariableName + ";\n" );
-                        }
-                        off.write( "}\n\n" );
-                        
-                        off.write( "public " + propertyType + (isArray ? "[] " : " ") + getter( propertyName ) + "() {\n" );
-                        if( isArray && configuration.getGenerateDataBinding()) {
-                            off.write( "return " + propertyVariableName + "_array_item.getArray();\n" );
-                        } else {
-                            off.write( "return " + propertyVariableName + ";\n" );
-                        }
-                        off.write( "}\n" );
-
-                    } else if( WSDL2Java.Configuration.TYPE_STRUCTURES == configuration.getGenerateType()) {
-                        // Generate code in struct style
-                        
-                        off.write( "\n" );
-                        off.write( "public " + propertyType + (isArray ? "[] " : " ") + propertyVariableName + ";\n" );
+                        propertyType = getWrapperTypeName( sce.getType());
                     }
 
-                    if( sce.getMaxOccurs() > 1 ) {
-                        usedArrayTypeNames.add( sce.getType().getName());
+                    off.write( "if( \"" + propertyVariableName + "\".equals(dataItemName)) {\n" );
+                    if( isArray ) {
+                        off.write( "return org.netbeans.microedition.databinding.IndexableDataSet.class;\n" );
+                    } else {
+                        off.write( "return " + propertyType + ".class;\n" );
                     }
-
+                    off.write( "}\n" );
                 }
             }
+            off.write( "throw new IllegalArgumentException( \"Invalid data item name \" + dataItemName );\n" );
+            off.write( "}\n" );
             off.write( "\n" );
-            
-            if( configuration.getGenerateDataBinding()) {
-                // getType
-                off.write( "public Class getType(String dataItemName) {\n" );
-                for( SchemaConstruct sc : type.getSubconstructs()) {
-                    if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
-                        Element sce = (Element) sc;
-                        String propertyName = sce.getName().getLocalPart();
-                        String propertyVariableName = propertyName.substring( 0, 1 ).toLowerCase() + propertyName.substring( 1 );
-                        String propertyType = sce.getType().getName().getLocalPart();
-                        boolean isArray = sce.getMaxOccurs() > 1;
-                        if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
-                            propertyType = getWrapperTypeName( sce.getType());
-                        }
-                        
-                        off.write( "if( \"" + propertyVariableName + "\".equals(dataItemName)) {\n" );
-                        if( isArray ) {
-                            off.write( "return org.netbeans.microedition.databinding.IndexableDataSet.class;\n" );
-                        } else {
-                            off.write( "return " + propertyType + ".class;\n" );
-                        }
-                        off.write( "}\n" );
-                    }
-                }
-                off.write( "throw new IllegalArgumentException( \"Invalid data item name \" + dataItemName );\n" );
-                off.write( "}\n" );
-                off.write( "\n" );
-                
-                // getValue
-                off.write( "public Object getValue(String dataItemName) {\n" );
-                for( SchemaConstruct sc : type.getSubconstructs()) {
-                    if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
-                        Element sce = (Element) sc;
-                        String propertyName = sce.getName().getLocalPart();
-                        String propertyVariableName = propertyName.substring( 0, 1 ).toLowerCase() + propertyName.substring( 1 );
-                        String propertyType = sce.getType().getName().getLocalPart();
-                        
-                        off.write( "if( \"" + propertyVariableName + "\".equals(dataItemName)) {\n" );
+
+            // getValue
+            off.write( "public Object getValue(String dataItemName) {\n" );
+            for( SchemaConstruct sc : type.getSubconstructs()) {
+                if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
+                    Element sce = (Element) sc;
+                    String propertyName = sce.getName().getLocalPart();
+                    String propertyVariableName = propertyName.substring( 0, 1 ).toLowerCase() + propertyName.substring( 1 );
+                    String propertyType = sce.getType().getName().getLocalPart();
+
+                    off.write( "if( \"" + propertyVariableName + "\".equals(dataItemName)) {\n" );
 //                        if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
 //                            off.write( "return " + wrapPrimitiveType( sce.getType(), propertyVariableName ) + ";\n" );
 //                        } else {
-                            if( sce.getMaxOccurs() > 1 ) {
-                                off.write( "return " + propertyVariableName + "_array_item;\n" );
-                            } else {
-                            off.write( "return " + wrapPrimitiveType( sce.getType(), propertyVariableName ) + ";\n" );
+                        if( sce.getMaxOccurs() > 1 ) {
+                            off.write( "return " + propertyVariableName + "_array_item;\n" );
+                        } else {
+                        off.write( "return " + wrapPrimitiveType( sce.getType(), propertyVariableName ) + ";\n" );
 //                                off.write( "return " + propertyVariableName + ";\n" );
-                            }
+                        }
 //                        }
+                    off.write( "}\n" );
+                }
+            }
+            off.write( "throw new IllegalArgumentException( \"Invalid data item name \" + dataItemName );\n" );
+            off.write( "}\n" );
+            off.write( "\n" );
+
+            // setValue
+            off.write( "public void setValue(String dataItemName, Object value) throws DataBindingException {\n" );
+            for( SchemaConstruct sc : type.getSubconstructs()) {
+                if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
+                    Element sce = (Element) sc;
+                    String propertyName = sce.getName().getLocalPart();
+                    String propertyVariableName = propertyName.substring( 0, 1 ).toLowerCase() + propertyName.substring( 1 );
+                    String propertyType = sce.getType().getName().getLocalPart();
+
+                    // Generate set only for non array fields
+                    if( sce.getMaxOccurs() <= 1 ) {
+                        off.write( "if( \"" + propertyVariableName + "\".equals(dataItemName)) {\n" );
+                        if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
+                            off.write( propertyVariableName + " = " + unwrapPrimitiveType( sce, " value" ) + ";\n" );
+                        } else {
+                            off.write( propertyVariableName + " = (" + propertyType +") value;\n" );
+                        }
                         off.write( "}\n" );
                     }
                 }
-                off.write( "throw new IllegalArgumentException( \"Invalid data item name \" + dataItemName );\n" );
-                off.write( "}\n" );
-                off.write( "\n" );
-                
-                // setValue
-                off.write( "public void setValue(String dataItemName, Object value) throws DataBindingException {\n" );
-                for( SchemaConstruct sc : type.getSubconstructs()) {
-                    if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
-                        Element sce = (Element) sc;
-                        String propertyName = sce.getName().getLocalPart();
-                        String propertyVariableName = propertyName.substring( 0, 1 ).toLowerCase() + propertyName.substring( 1 );
-                        String propertyType = sce.getType().getName().getLocalPart();
-                        
-                        // Generate set only for non array fields
-                        if( sce.getMaxOccurs() <= 1 ) {
-                            off.write( "if( \"" + propertyVariableName + "\".equals(dataItemName)) {\n" );
-                            if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
-                                off.write( propertyVariableName + " = " + unwrapPrimitiveType( sce, " value" ) + ";\n" );
-                            } else {
-                                off.write( propertyVariableName + " = (" + propertyType +") value;\n" );
-                            }
-                            off.write( "}\n" );
-                        }
-                    }
-                }
-                off.write( "}\n" );
-                off.write( "\n" );
-                
-                // setAsString
-                off.write( "public void setAsString(String dataItemName, String value) throws DataBindingException {\n" );
-                for( SchemaConstruct sc : type.getSubconstructs()) {
-                    if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
-                        Element sce = (Element) sc;
-                        String propertyName = sce.getName().getLocalPart();
-                        String propertyVariableName = propertyName.substring( 0, 1 ).toLowerCase() + propertyName.substring( 1 );
-                        String propertyType = sce.getType().getName().getLocalPart();
-                        
-                        // Generate set only for non array fields
-                        if( sce.getMaxOccurs() <= 1 ) {
-                            off.write( "if( \"" + propertyVariableName + "\".equals(dataItemName)) {\n" );
-                            if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
-                                off.write( propertyVariableName + " = " + parsePrimitiveType( sce, "value" ) + ";\n" );
-                            } else {
-                                off.write( "throw new DataBindingException( \"Illegal assigment.\");\n" );
-                            }
-                            off.write( "}\n" );
-                        }
-                    }
-                }
-                off.write( "}\n" );
-                off.write( "\n" );
-                off.write( "public boolean isReadOnly(String dataItemName) {\n" );
-                off.write( "return false;\n" );
-                off.write( "}\n" );
-            }            
+            }
             off.write( "}\n" );
-            off.close();
-        }
+            off.write( "\n" );
 
-//        System.err.println(" --- Array types --- ");
-//        for( QName typeName : usedArrayTypeNames ) {
-//            System.err.println(" - " + typeName.getLocalPart());
-//        }
-//        System.err.println(" --- --- ");
-        if( configuration.getGenerateDataBinding()) {
-            generateDataBindingArrays( usedArrayTypeNames );
-        }
+            // setAsString
+            off.write( "public void setAsString(String dataItemName, String value) throws DataBindingException {\n" );
+            for( SchemaConstruct sc : type.getSubconstructs()) {
+                if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
+                    Element sce = (Element) sc;
+                    String propertyName = sce.getName().getLocalPart();
+                    String propertyVariableName = propertyName.substring( 0, 1 ).toLowerCase() + propertyName.substring( 1 );
+                    String propertyType = sce.getType().getName().getLocalPart();
+
+                    // Generate set only for non array fields
+                    if( sce.getMaxOccurs() <= 1 ) {
+                        off.write( "if( \"" + propertyVariableName + "\".equals(dataItemName)) {\n" );
+                        if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
+                            off.write( propertyVariableName + " = " + parsePrimitiveType( sce, "value" ) + ";\n" );
+                        } else {
+                            off.write( "throw new DataBindingException( \"Illegal assigment.\");\n" );
+                        }
+                        off.write( "}\n" );
+                    }
+                }
+            }
+            off.write( "}\n" );
+            off.write( "\n" );
+            off.write( "public boolean isReadOnly(String dataItemName) {\n" );
+            off.write( "return false;\n" );
+            off.write( "}\n" );
+        }            
+        off.write( "}\n" );
+        off.close();
+
+        return arrayTypes;
     }
     
     /**
      * Generates structures for databinding arrays
      */
-    private void generateDataBindingArrays( Set<QName> types ) throws Exception {
-        for( QName qName : types ) {
-            Element element = definition.getSchemaHolder().getSchemaElement( qName );
-            Type type = null;
-            if( element == null ) {
-                type = definition.getSchemaHolder().getSchemaType( qName );
-            } else {
-                type = element.getType();
-            }
+    private void generateDataBindingArrays( Set<Element> types ) throws Exception {
+        for( Element element : types ) {
+            //Element element = definition.getSchemaHolder().getSchemaElement( qName );
+            Type type = element.getType();
             if( type == null ) {
                 throw new IllegalArgumentException( "Invalid element type." );
             }
