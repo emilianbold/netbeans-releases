@@ -48,6 +48,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.AWTEventListener;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
@@ -897,6 +898,12 @@ public class TabbedContainer extends JComponent implements Accessible {
                             updateTransparency( me.getWheelRotation() > 0 );
                             me.consume();
                         }
+                    } else if( event.getID() == MouseEvent.MOUSE_PRESSED ) {
+                        setTransparent( false );
+                    } else if( event.getID() == KeyEvent.KEY_PRESSED ) {
+                        KeyEvent ke = (KeyEvent)event;
+                        if( !(ke.getKeyCode() == KeyEvent.VK_ALT || ke.getKeyCode() == KeyEvent.VK_SHIFT) )
+                            setTransparent( false );
                     }
                 }
             };
@@ -944,7 +951,8 @@ public class TabbedContainer extends JComponent implements Accessible {
         super.addNotify();
         if( isSliding() ) {
             //register AWT listener in case the inner top component has its only mouse listener
-            Toolkit.getDefaultToolkit().addAWTEventListener( getAWTListener(), MouseEvent.MOUSE_WHEEL_EVENT_MASK );
+            Toolkit.getDefaultToolkit().addAWTEventListener( getAWTListener(), 
+                    MouseEvent.MOUSE_WHEEL_EVENT_MASK+MouseEvent.MOUSE_EVENT_MASK+KeyEvent.KEY_EVENT_MASK );
             addMouseWheelListener( getMouseWheelListener() );
         }
     }
