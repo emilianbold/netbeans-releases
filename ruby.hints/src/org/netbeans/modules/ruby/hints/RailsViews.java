@@ -178,6 +178,7 @@ public class RailsViews implements AstRule {
                     //Object generateAction = c.newInstance();
                     @SuppressWarnings("unchecked")
                     SystemAction generateAction = SystemAction.get(c);
+                    @SuppressWarnings("unchecked")
                     Method m = c.getMethod("generate", // NOI18N
                             new Class[] { Project.class, String.class, String.class, String.class });
                     m.invoke(generateAction, new Object[] { project, "controller", controllerName, action }); // NOI18N
