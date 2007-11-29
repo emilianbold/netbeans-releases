@@ -75,6 +75,10 @@ public class CsmIncludeCompletionQuery {
             sysPaths = getFileIncludes(docFile, true);
         } else {
             File baseFile = CsmUtilities.getFile(doc);
+            if (baseFile == null) {
+                // IZ#123039: NPE
+                return Collections.<CsmIncludeCompletionItem>emptyList();
+            }
             usrFilePath = baseFile.getAbsolutePath();
         }
         File usrDir = new File(usrFilePath).getParentFile();
