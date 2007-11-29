@@ -119,6 +119,21 @@ if [ -f $sigtest_jar ]; then
             echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_out/`basename $report`"; 
             echo; cat $sigtest_gen.log
         ) | mail -s "`basename $report` - cannot generate sigtest golden files in $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
+
+        cat >$sigtest_gen.xml <<KONEC
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="1" failures="0" hostname="deadlock.netbeans.org" name="org.netbeans.GenerateSigTest" tests="1" time="1" timestamp="now">
+  <properties>
+  </properties>
+  <testcase classname="org.netbeans.GenerateSigTest" name="testSignaturesCanBeGenerated" time="1"/>
+  <system-out><![CDATA[
+KONEC
+        cat $sigtest_gen.log >>$sigtest_gen.xml
+        cat >>$sigtest_gen.xml <<KONEC
+]]></system-out>
+  <system-err></system-err>
+</testsuite>
+KONEC
     fi
 fi
 echo SigTest: Generating Golden Files Done
@@ -131,7 +146,7 @@ if ! ant -f nbbuild/build.xml -Dsigtest.output.dir=`pwd`/$sigtest_incompat_gen c
         echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_incompat_gen"; 
         echo; 
         cat `pwd`/$sigtest_incompat_gen/*
-    ) | mail -s "Incompatible API change $JOB_NAME build #$BUILD_NUMBER" jtulach@netbeans.org
+    ) | mail -s "Incompatible API change $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
 fi
 echo SigTest: Incompatible Changes Done
 
