@@ -156,8 +156,10 @@ public class FileElementsCollector {
     private Collection<CsmDeclaration> visibleUsedDeclarations = null;
     public Collection<CsmDeclaration> getUsedDeclarations() {
         initMaps();
-        if (visibleUsedDeclarations == null) {
-            visibleUsedDeclarations = CsmUsingResolver.extractDeclarations(usingDeclarations);
+        synchronized (usingDeclarations) {
+            if (visibleUsedDeclarations == null) {
+                visibleUsedDeclarations = CsmUsingResolver.extractDeclarations(usingDeclarations);
+            }
         }
         return Collections.unmodifiableCollection(visibleUsedDeclarations);
     }
@@ -165,16 +167,18 @@ public class FileElementsCollector {
     private Collection<CsmNamespace> visibleNamespaces = null;
     public Collection<CsmNamespace> getVisibleNamespaces() {
         initMaps();
-        if (visibleNamespaces == null) {
-            visibleNamespaces = CsmUsingResolver.extractNamespaces(usingNamespaces);
-            // add scope's and unnamed visible namespaces
-            visibleNamespaces.addAll(directVisibleNamespaces);
+        synchronized (usingNamespaces) {
+            if (visibleNamespaces == null) {
+                visibleNamespaces = CsmUsingResolver.extractNamespaces(usingNamespaces);
+                // add scope's and unnamed visible namespaces
+                visibleNamespaces.addAll(directVisibleNamespaces);
+            }
         }
         return Collections.unmodifiableCollection(visibleNamespaces);
     }
     
     private boolean contextFound = false;
-    private void initContext() {
+    private synchronized void initContext() {
         if( contextFound ) {
             return;
         }
@@ -183,7 +187,7 @@ public class FileElementsCollector {
     }
     
     private boolean mapsGathered = false;
-    private void initMaps() {
+    private synchronized void initMaps() {
         if( mapsGathered ) {
             return;
         }
