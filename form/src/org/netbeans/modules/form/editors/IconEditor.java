@@ -220,7 +220,11 @@ public class IconEditor extends PropertyEditorSupport
     @Override
     public Component getCustomEditor() {
         CustomIconEditor customEditor = new CustomIconEditor(this);
-        customEditor.setValue((NbImageIcon)getValue());
+        Object value = getValue();
+        if (!(value instanceof NbImageIcon)) { // Issue 101318
+            value = null;
+        }
+        customEditor.setValue((NbImageIcon)value);
         currentFiles = null; // hack - reset sometimes to read new folder content
         return customEditor;
     }
