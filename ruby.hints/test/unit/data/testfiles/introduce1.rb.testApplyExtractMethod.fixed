@@ -22,7 +22,7 @@ class FooBar
     x = 50
     return good_symbol, x
   end
-  
+
   # Another method
   def badMethod
     badSymbol = 50

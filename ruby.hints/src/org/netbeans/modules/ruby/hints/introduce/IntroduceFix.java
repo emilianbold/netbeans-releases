@@ -398,7 +398,12 @@ class IntroduceFix implements Fix {
         // TODO - validate that the name is unique etc. so we don't accidentally rewrite it!
 
         StringBuilder sb = new StringBuilder();
-        sb.append("\n\n");
+        List<Edit> edits = new ArrayList<Edit>();
+        boolean isAbove = prevEnd < astRange.getStart();
+        sb.append("\n");
+        if (!isAbove) {
+            sb.append("\n");
+        }
         sb.append("# ");
         int commentTextDelta = sb.length();
         String commentText = NbBundle.getMessage(IntroduceHint.class, "DefaultMethodComment");
@@ -424,13 +429,14 @@ class IntroduceFix implements Fix {
             appendCommaList(sb, outputVars, outputVars.size() == 1 ? "" : "return ", "\n");
         }
         sb.append("end");
+        if (isAbove) {
+            sb.append("\n");
+        }
 
-        doc.insertString(prevEnd, sb.toString(), null);
-        Position methodPos = doc.createPosition(prevEnd+commentTextDelta); // Position of the comment
-        new Formatter().reindent(doc, prevEnd+1, prevEnd+1+sb.length(), null, null);
-        // TODO: Format the method
+        edits.add(new Edit(prevEnd, 0, sb.toString()));
+        Position commentPosition = null;
+        int commentOffset = prevEnd+commentTextDelta;
 
-        doc.remove(lexStart, lexEnd-lexStart);
         sb = new StringBuilder();
         if (outputVars.size() > 0) {
             appendCommaList(sb, outputVars, null, null);
@@ -444,18 +450,38 @@ class IntroduceFix implements Fix {
                 appendCommaList(sb, inputVars, "(", ")");
             }
         }
-        doc.insertString(lexStart, sb.toString(), null);
 
-        new Formatter().reindent(doc, lexStart, lexStart+sb.length(), null, null);
+        edits.add(new Edit(lexStart, lexEnd-lexStart, sb.toString()));
 
+        Collections.sort(edits);
+        Collections.reverse(edits);
+
+        // Apply edits in reverse order (to keep offsets accurate)
+        Formatter formatter = new Formatter();
+        for (Edit edit : edits) {
+            if (edit.removeLen > 0) {
+                doc.remove(edit.offset, edit.removeLen);
+            }
+            if (edit.insertText != null) {
+                doc.insertString(edit.offset, edit.insertText, null);
+                int end = edit.offset+edit.insertText.length();
+                if (edit.offset <= commentOffset && end >= commentOffset) {
+                    commentPosition = doc.createPosition(commentOffset); // Position of the comment
+                }
+                formatter.reindent(doc, edit.offset, end, null, null);
+            }
+        }
+        
         // Warp to the inserted method and show the comment
-        JTextComponent target = CopiedCode.getPaneFor(info.getFileObject());
-        if (target != null) {
-            int offset = methodPos.getOffset();
-            if (offset+commentText.length() <= doc.getLength()) {
-                String s = doc.getText(offset, commentText.length());
-                if (commentText.equals(s)) {
-                    target.select(offset, offset+commentText.length());
+        if (commentPosition != null) {
+            JTextComponent target = CopiedCode.getPaneFor(info.getFileObject());
+            if (target != null) {
+                int offset = commentPosition.getOffset();
+                if (offset+commentText.length() <= doc.getLength()) {
+                    String s = doc.getText(offset, commentText.length());
+                    if (commentText.equals(s)) {
+                        target.select(offset, offset+commentText.length());
+                    }
                 }
             }
         }
@@ -536,18 +562,38 @@ class IntroduceFix implements Fix {
         }
     }
 
-    /** Compute the end of the current method */
+    /** Compute the end of the current method. If we're not in a method, compute a location
+     * inside the surrounding class. */
     private int findMethodEnd() throws BadLocationException {
         // TODO - I need an AST path for this!
         AstPath path = new AstPath(AstUtilities.getRoot(info), astRange.getStart());
-        MethodDefNode method = AstUtilities.findMethod(path);
-        if (method != null) {
-            return Math.min(LexUtilities.getLexerOffset(info, method.getPosition().getEndOffset()), doc.getLength());
-        } else {
-            // Not inside a method - we're in top level scope so just
-            // use the end of the document
-            return doc.getLength();
+        
+        // Find the closest block node enclosing the given node
+        for (Node curr : path) {
+            if (curr.nodeId == NodeTypes.DEFNNODE || curr.nodeId == NodeTypes.DEFSNODE) {
+                return Math.min(LexUtilities.getLexerOffset(info, curr.getPosition().getEndOffset()), doc.getLength());
+            }
+            if (curr.nodeId == NodeTypes.CLASSNODE || curr.nodeId == NodeTypes.SCLASSNODE ||
+                    curr.nodeId == NodeTypes.MODULENODE) {
+                // End of the class:
+                //int clzEnd = LexUtilities.getLexerOffset(info, curr.getPosition().getEndOffset());
+                //// Skip over "end"
+                //clzEnd -= 3;
+                //clzEnd = Math.min(clzEnd, doc.getLength());
+                //if (clzEnd == Utilities.getRowFirstNonWhite(doc, clzEnd)) {
+                //    clzEnd = Utilities.getRowEnd(doc, Utilities.getRowStart(doc, clzEnd)-1);
+                //}
+                //return clzEnd;
+                
+                // Beginning of the class:
+                int clzStart = LexUtilities.getLexerOffset(info, curr.getPosition().getStartOffset());
+                return Utilities.getRowEnd(doc, clzStart);
+            }
         }
+        
+        // Not inside a method - we're in top level scope so just
+        // use the end of the document
+        return doc.getLength();
     }
 
     /** Compute the beginning of the current method */

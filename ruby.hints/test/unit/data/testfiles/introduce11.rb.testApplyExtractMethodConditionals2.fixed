@@ -18,7 +18,7 @@ class ExtractMethodSample
     c += a
     c
   end
-  
+
   def stress_test1(a,b)
     c = 1, d = 2, e = 3
 

@@ -259,4 +259,25 @@ public class IntroduceHintTest extends HintTestBase {
         applyHint(this, hint, "testfiles/introduce12.rb",
                 "(^1+y)", "(1+y^)", "Introduce Variable...");
     }
+
+    public void testApplyIntroduceHintNoMethod1() throws Exception {
+        IntroduceHint hint = new IntroduceHint();
+        hint.testName = "mymethod";
+        applyHint(this, hint, "testfiles/introduce13.rb",
+                "^a = 1", "b = 2^", "Extract Method...");
+    }
+
+    public void testApplyIntroduceHintNoMethod2() throws Exception {
+        IntroduceHint hint = new IntroduceHint();
+        hint.testName = "mymethod";
+        applyHint(this, hint, "testfiles/introduce13.rb",
+                "^some_call1 do", "end # some_call1^", "Extract Method...");
+    }
+
+    public void testApplyIntroduceHintNoMethod3() throws Exception {
+        IntroduceHint hint = new IntroduceHint();
+        hint.testName = "mymethod";
+        applyHint(this, hint, "testfiles/introduce13.rb",
+                "^c = 1", "d = 2^", "Extract Method...");
+    }
 }

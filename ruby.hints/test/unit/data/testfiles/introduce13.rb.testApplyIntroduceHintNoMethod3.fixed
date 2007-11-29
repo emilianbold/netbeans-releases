@@ -1,0 +1,22 @@
+class Foo
+  some_call1 do
+    a = 1
+    b = 2
+  end # some_call1
+end
+
+module Bar
+  # TODO Comment
+  def mymethod
+    c = 1
+    d = 2
+  end
+  
+  some_call2 do
+    mymethod
+  end
+  def bar
+  end
+end
+
+

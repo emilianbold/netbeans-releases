@@ -186,6 +186,15 @@ class InputOutputVarFinder implements ParseTreeVisitor {
             }
             break;
         }
+        case NodeTypes.DEFNNODE:
+        case NodeTypes.DEFSNODE:
+        case NodeTypes.CLASSNODE:
+        case NodeTypes.SCLASSNODE:
+        case NodeTypes.MODULENODE:
+            // We're probably extracting from within the top level of a file or class;
+            // don't look into methods
+            return when != WHEN_BEFORE;
+                
         case NodeTypes.DVARNODE: {
             String name = ((INameNode)node).getName();
             blockScope.read(name);
