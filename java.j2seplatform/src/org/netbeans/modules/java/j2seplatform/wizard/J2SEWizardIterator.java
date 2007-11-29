@@ -41,34 +41,24 @@
 
 package org.netbeans.modules.java.j2seplatform.wizard;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 
 /**

@@ -42,14 +42,12 @@
 package org.netbeans.modules.java.j2seplatform;
 
 import org.openide.filesystems.*;
-import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 import org.netbeans.modules.java.j2seplatform.wizard.J2SEWizardIterator;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 
 import java.io.IOException;
-import java.io.File;
 import java.util.Collections;
 
 import org.openide.WizardDescriptor;
@@ -61,19 +59,11 @@ import org.openide.WizardDescriptor;
  */
 class J2SEInstallImpl extends org.netbeans.spi.java.platform.PlatformInstall {
 
-    private static final String APPLE_JAVAVM_FRAMEWORK_PATH = "/System/Library/Frameworks/JavaVM.framework/Versions/";//NOI18N
-
-    private boolean winOS;
-
-
-    J2SEInstallImpl(boolean winOS) {
-        this.winOS = winOS;
+    J2SEInstallImpl() {
     }
     
-    static J2SEInstallImpl create() {
-        boolean windows = Utilities.isWindows();
-        
-        return new J2SEInstallImpl(windows);
+    static J2SEInstallImpl create() {        
+        return new J2SEInstallImpl();
     }
     
     /**
@@ -84,13 +74,6 @@ class J2SEInstallImpl extends org.netbeans.spi.java.platform.PlatformInstall {
     public boolean accept(FileObject dir) {
         if (!dir.isFolder()) {
             return false;
-        }
-        if (Utilities.isMac()) {
-            //For MacOS X only the version folder is interesting
-            // all other places are links to it
-            File f = FileUtil.toFile(dir);
-            if (f == null || !f.getAbsolutePath().startsWith(APPLE_JAVAVM_FRAMEWORK_PATH))
-                return false;
         }
         FileObject tool = Util.findTool("java", Collections.singleton(dir));    //NOI18N
         if (tool == null) {
