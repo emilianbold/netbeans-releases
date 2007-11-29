@@ -57,6 +57,7 @@ import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import javax.swing.Action;
 import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileObject;
@@ -79,6 +80,7 @@ import org.netbeans.modules.visualweb.api.portlet.dd.PortletModeType;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.ErrorManager;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -92,21 +94,33 @@ public class JsfJspDataNode extends org.openide.loaders.DataNode implements Prop
     private static final String SHEETNAME_TEXT_PROPERTIES = "textProperties"; // NOI18N
     private static final String PROP_FILE_ENCODING = "encoding"; // NOI18N
     private static final String HELP_ID = "org.netbeans.modules.web.core.syntax.JSPKit";
-
+    private WeakReference<ChangeListener> projectPropListener;
+    
     public JsfJspDataNode(DataObject dobj, Children ch) {
         super(dobj, ch);
         setShortDescription(NbBundle.getMessage(JsfJspDataNode.class, "LBL_JsfJspNodeShortDesc"));
         FileObject thisFileObject = dobj.getPrimaryFile();
         Project project = FileOwnerQuery.getOwner(thisFileObject);
-        dobj.addPropertyChangeListener(this);
-        JsfProjectUtils.addProjectPropertyListener(project, this);
+        
+        // Use custom weakly referenced listener since addProjectPropertyListener()
+        // is a non-standard interface.
+        ChangeListener listener = new ChangeListener(this);
+        JsfProjectUtils.addProjectPropertyListener(project, listener);
+        
+        dobj.addPropertyChangeListener(WeakListeners.propertyChange(this, dobj));
+        
+        projectPropListener = new WeakReference<ChangeListener>(listener);
     }
 
     @Override
     public void destroy() throws IOException {
         FileObject thisFileObject = getDataObject().getPrimaryFile();
         Project project = FileOwnerQuery.getOwner(thisFileObject);
-        JsfProjectUtils.removeProjectPropertyListener(project, this);
+        
+        ChangeListener listener = projectPropListener.get();
+        if (listener != null) {
+            JsfProjectUtils.removeProjectPropertyListener(project, listener);
+        }
 
         /**
          * If this is a portlet project and the page is part of an initial mode,
@@ -279,5 +293,21 @@ public class JsfJspDataNode extends org.openide.loaders.DataNode implements Prop
         }
     }
 
+    private static final class ChangeListener implements PropertyChangeListener {
+        private WeakReference<JsfJspDataNode> ref;
+        
+        public ChangeListener(JsfJspDataNode node) {
+            ref = new WeakReference<JsfJspDataNode>(node);
+        }
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            JsfJspDataNode node = ref.get();
+            if (node != null) {
+                node.propertyChange(evt);
+            }
+        }
+        
+    }
+        
 }
 
