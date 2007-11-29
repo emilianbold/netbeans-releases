@@ -31,13 +31,11 @@ import org.openide.util.Exceptions;
 public class FacesModelPropertyChangeListener implements PropertyChangeListener {
 
     public PageFlowController pfc;
-    public PageFlowView view;
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.web.jsf.navigation");
     //    public boolean refactoringIsLikely = false;
     //    PageFlowUtilities pfUtil = PageFlowUtilities.getInstance();
     public FacesModelPropertyChangeListener(PageFlowController pfc) {
         this.pfc = pfc;
-        view = pfc.getView();
     }
 
     public void propertyChange(final PropertyChangeEvent ev) {
@@ -48,15 +46,17 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         record.setSourceMethodName("propertyChangeEvent.");
         record.setParameters(new Object[]{ev.getPropertyName(), ev.getOldValue(), ev.getNewValue()});
         LOGGER.log(record);
+        runEvent(ev);
 
-        //        String oldManagedBeanInfo = null;
-        //        String newManagedBeanInfo = null;
-        //        boolean managedBeanClassModified = false;
+    }
+    
+    protected final void runEvent(final PropertyChangeEvent ev) {
+        
         if (ev.getOldValue() == State.NOT_WELL_FORMED) {
             EventQueue.invokeLater(new Runnable() {
 
                 public void run() {
-                    view.removeUserMalFormedFacesConfig(); // Does clear graph take care of this?
+                    pfc.getView().removeUserMalFormedFacesConfig(); // Does clear graph take care of this?
                     setupGraph(ev);
                 }
             });
@@ -85,6 +85,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             EventQueue.invokeLater(new Runnable() {
 
                 public void run() {
+                    PageFlowView view = pfc.getView();
                     view.clearGraph();
                     view.warnUserMalFormedFacesConfig();
                 }
@@ -124,6 +125,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
 
     private final void replaceFromOutcomeEventHandler(NavigationCase navCase, String oldName, String newName) {
         final NavigationCaseEdge edge = pfc.getNavCase2NavCaseEdge(navCase);
+        PageFlowView view = pfc.getView();
         view.renameEdgeWidget(edge, newName, oldName);
         view.validateGraph();
     }
@@ -140,7 +142,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         final Page newPageNode = pfc.getPageName2Page(newName);
         LOGGER.finest("OldPageNode: " + oldPageNode + "\n" + "NewPageNode: " + newPageNode + "\n");
         boolean isNewPageLinked = false;
-        if (newPageNode != null && view.getNodeEdges(newPageNode).size() > 0) {
+        if (newPageNode != null && pfc.getView().getNodeEdges(newPageNode).size() > 0) {
             /* This tells me that the new page already exists.*/
             isNewPageLinked = true;
         }
@@ -164,9 +166,9 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 try {
                     final Node delegate = DataObject.find(fileObj).getNodeDelegate();
                     oldPageNode.replaceWrappedNode(delegate);
-                    view.resetNodeWidget(oldPageNode, true);
+                    pfc.getView().resetNodeWidget(oldPageNode, true);
                     /*** JUST PUT TRUE HERE AS A HOLDER */
-                    view.validateGraph();
+                    pfc.getView().validateGraph();
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -179,7 +181,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         } else if (navCase != null && pfc.isPageInAnyFacesConfig(oldName)) {
             LOGGER.finest("CASE 3: NavCase is not null");
             NavigationCaseEdge oldCaseEdge = pfc.removeNavCase2NavCaseEdge(navCase);
-            NavigationCaseEdge newCaseEdge = new NavigationCaseEdge(view.getPageFlowController(), navCase);
+            NavigationCaseEdge newCaseEdge = new NavigationCaseEdge(pfc.getView().getPageFlowController(), navCase);
             pfc.putNavCase2NavCaseEdge(navCase, newCaseEdge);
             navigationCaseEdgeEventHandler(newCaseEdge, oldCaseEdge);
         //            if ( !pfc.isPageInFacesConfig(oldName) ){
@@ -198,7 +200,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 NavigationCaseEdge oldCaseEdge = null;
                 //                oldCaseEdge = pfc.getCase2Node(thisNavCase);
                 oldCaseEdge = pfc.removeNavCase2NavCaseEdge(thisNavCase);
-                newCaseEdge = new NavigationCaseEdge(view.getPageFlowController(), thisNavCase);
+                newCaseEdge = new NavigationCaseEdge(pfc.getView().getPageFlowController(), thisNavCase);
                 pfc.putNavCase2NavCaseEdge(navCase, newCaseEdge);
                 navigationCaseEdgeEventHandler(newCaseEdge, oldCaseEdge);
             }
@@ -225,7 +227,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         NavigationCaseEdge newCaseEdge = null;
         NavigationCaseEdge oldCaseEdge = null;
         if (myNewCase != null) {
-            newCaseEdge = new NavigationCaseEdge(view.getPageFlowController(), myNewCase);
+            newCaseEdge = new NavigationCaseEdge(pfc.getView().getPageFlowController(), myNewCase);
             pfc.putNavCase2NavCaseEdge(myNewCase, newCaseEdge);
         //            pfc.createEdge(newCaseEdge);
         }
@@ -237,7 +239,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
     }
 
     private final void navigationCaseEdgeEventHandler(NavigationCaseEdge newCaseEdge, NavigationCaseEdge oldCaseEdge) {
-
+        PageFlowView view = pfc.getView();
         if (newCaseEdge != null && newCaseEdge.getToViewId() != null && newCaseEdge.getFromViewId() != null) {
             //            NavigationCaseEdge newCaseEdge = new NavigationCaseEdge(view.getPageFlowController(), newCase);
             //            pfc.putCase2Node(newCase, newCaseEdge);//     case2Node.put(myNewCase, node);
@@ -266,6 +268,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             final Page pageNode = pfc.getPageName2Page(page);
             if (pageNode != null && !pfc.isPageInAnyFacesConfig(page)) {
                 if (!pageNode.isDataNode() || pfc.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_FACESCONFIG)) {
+                    PageFlowView view = pfc.getView();
                     if (pfc.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_ALL_FACESCONFIG) && !pfc.isPageInAnyFacesConfig(page)) {
                         view.removeNodeWithEdges(pageNode);
                         pfc.removePageName2Page(pageNode, true);
