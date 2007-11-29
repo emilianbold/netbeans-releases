@@ -703,13 +703,13 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                 public boolean accept(Element e, TypeMirror t) {
                                     switch (e.getKind()) {
                                     case LOCAL_VARIABLE:
-                                        if (isStatic && e.getSimpleName().contentEquals("this") || e.getSimpleName().contentEquals("super")) //NOI18N
-                                            return false;
                                     case EXCEPTION_PARAMETER:
                                     case PARAMETER:
                                         return (method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&
                                                 !illegalForwardRefs.contains(e);
                                     case FIELD:
+                                        if (e.getSimpleName().contentEquals("this") || e.getSimpleName().contentEquals("super")) //NOI18N
+                                            return !isStatic;
                                         if (illegalForwardRefs.contains(e))
                                             return false;
                                     default:
