@@ -88,6 +88,11 @@ public class ConvertConditionals implements AstRule {
         Node body = ifNode.getThenBody();
         Node elseNode = ifNode.getElseBody();
 
+        if (body != null && elseNode != null) {
+            // Can't convert if-then-else conditionals
+            return;
+        }
+
         int start = ifNode.getPosition().getStartOffset();
         if (body != null && (
                 // Can't convert blocks with multiple statements

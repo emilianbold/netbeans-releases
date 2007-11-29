@@ -63,6 +63,14 @@ public class ConvertConditionalsTest extends HintTestBase {
         findHints(this, new ConvertConditionals(), "testfiles/emptycondition.rb", "if (^)");
     }
     
+    public void testNoHint5() throws Exception {
+        findHints(this, new ConvertConditionals(), "testfiles/conditionals3.rb", "if (^x > 5)");
+    }
+    
+    public void testNoHint6() throws Exception {
+        findHints(this, new ConvertConditionals(), "testfiles/conditionals3.rb", "i^f jd >= commercial_to_jd");
+    }
+    
     public void testHint2() throws Exception {
         findHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "if tr^ue");
     }
