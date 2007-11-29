@@ -905,7 +905,9 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
             }
             return view.getScene();
         }
-        
-       
     }
+
+    
+    
+    
 }

@@ -226,6 +226,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
 
         public void componentShowing() {
             LOG.finest("PageFlowEditor componentShowing");
+            tc.getPageFlowController().flushEventQueue();
         }
 
         public void componentHidden() {

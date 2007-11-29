@@ -82,6 +82,7 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.NbPreferences;
 import org.openide.cookies.EditCookie;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 
 /**
@@ -172,6 +173,7 @@ public class PageFlowController {
     }
     private PropertyChangeListener pcl;
     private FileChangeListener fcl;
+    
     //    private ComponentListener cl;
     public void registerListeners() {
         if (pcl == null) {
@@ -180,18 +182,15 @@ public class PageFlowController {
                 configModel.addPropertyChangeListener(pcl);
             }
         }
-//        if (cl == null) {
-//            cl = new FacesModelComponentEventListener(this);
-//            if (configModel != null) {
-//                configModel.addComponentListener(cl);
-//            }
-//        }
+        
         FileObject myWebFolder = getWebFolder();
         if (fcl == null) {
             fcl = new WebFolderListener(this);
             if (myWebFolder != null) {
                 try {
+                    FileSystem fileSystem = myWebFolder.getFileSystem();
                     myWebFolder.getFileSystem().addFileChangeListener(fcl);
+                    
                 } catch (FileStateInvalidException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -203,22 +202,28 @@ public class PageFlowController {
      * Unregister any listeners.
      */
     public void unregisterListeners() {
+        
         if (pcl != null) {
             if (configModel != null) {
                 configModel.removePropertyChangeListener(pcl);
             }
             pcl = null;
         }
-        //        if (cl != null && configModel != null) {
-//            configModel.removeComponentListener(cl);
-//            cl = null;
-//        }
+        
         FileObject myWebFolder = getWebFolder();
         if (fcl != null && myWebFolder != null) {
             try {
                 myWebFolder.getFileSystem().removeFileChangeListener(fcl);
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
+    void flushEventQueue() {
+        if( pcl != null ){
+            if ( pcl instanceof FacesModelPropertyChangeListener) {
+                ((FacesModelPropertyChangeListener)pcl).flushEvents();
             }
         }
     }
@@ -282,6 +287,8 @@ public class PageFlowController {
         view.validateGraph();
     }
     private static final String CASE_STRING = "case";
+
+
 
     private int getNewCaseNumber(NavigationRule navRule) {
         Collection<String> caseOutcomes = new HashSet<String>();

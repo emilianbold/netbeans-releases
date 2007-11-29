@@ -11,7 +11,11 @@ package org.netbeans.modules.web.jsf.navigation;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Queue;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -39,19 +43,72 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
     }
 
     public void propertyChange(final PropertyChangeEvent ev) {
-
-
         LogRecord record = new LogRecord(Level.FINE, "Faces Config File Changed:" + pfc.getConfigDataObject().getName());
         record.setSourceClassName("FacesModelPropertyChangeListener");
         record.setSourceMethodName("propertyChangeEvent.");
         record.setParameters(new Object[]{ev.getPropertyName(), ev.getOldValue(), ev.getNewValue()});
         LOGGER.log(record);
-        runEvent(ev);
+//        PFModelEvent modelEvent = new PFModelEvent(ev.getPropertyName(), ev.getNewValue(), ev.getOldValue(), ev.getPropagationId(), ev);
+       
+        if( pfc.getView().isShowing()) {
+            shouldSetupGraphRun = true;
+            runEventShowing(ev);
+        } else {
+            saveEvent(ev);
+            //runEvent(ev);
+        }
 
     }
     
+    Collection<PropertyChangeEvent> waitEvents = new Vector<PropertyChangeEvent>(); 
+    
+    private final void saveEvent(PropertyChangeEvent ev){
+         waitEvents.add(ev);
+         //waitModelEvents.add(ev);    
+    }
+    
+    protected final void flushEvents() {
+        shouldSetupGraphRun = true;
+        for( PropertyChangeEvent ev : waitEvents){
+            runEvent(ev);
+        }
+        waitEvents.clear();
+    }
+
+
+    private boolean shouldSetupGraphRun = true;
     protected final void runEvent(final PropertyChangeEvent ev) {
-        
+        if (ev.getOldValue() == State.NOT_WELL_FORMED) {
+            EventQueue.invokeLater(new Runnable() {
+
+                public void run() {
+                    pfc.getView().removeUserMalFormedFacesConfig(); // Does clear graph take care of this?
+                    setupGraph(ev);
+                }
+            });
+            shouldSetupGraphRun = false;
+        } else if (ev.getNewValue() == State.NOT_WELL_FORMED) {
+            EventQueue.invokeLater(new Runnable() {
+
+                public void run() {
+                    PageFlowView view = pfc.getView();
+                    view.clearGraph();
+                    view.warnUserMalFormedFacesConfig();
+                }
+            });
+            shouldSetupGraphRun = true;
+        } else if (ev.getPropertyName().equals("managed-bean-class") || ev.getPropertyName().equals("managed-bean-name") || ev.getNewValue() == State.NOT_SYNCED) {
+        /* Do Nothing */
+        } else {
+            // System.out.println("Did not catch this event.: " + ev.getPropertyName());
+            if ( shouldSetupGraphRun ) {
+                setupGraphInAWTThread(ev);
+                shouldSetupGraphRun = false;
+            }
+        }
+    }
+    
+    protected final void runEventShowing(final PropertyChangeEvent ev) {
         if (ev.getOldValue() == State.NOT_WELL_FORMED) {
             EventQueue.invokeLater(new Runnable() {
 
