@@ -93,13 +93,19 @@ public class CndSniffyMIMEResolver extends MIMEResolver {
     /**
      *  This is a special detector which samples suffix-less header files looking for the
      *  string "-*- C++ -*-".
-     *
+     *  or 
+     *  #include directive in the first line
      *  Note: Not all Sun Studio headerless includes contain this comment.
      */
     private boolean detectCPPByLine(String line) {
         if (line != null) {
             if (line.startsWith("//") && line.indexOf("-*- C++ -*-") > 0) { // NOI18N
                 return true;
+            } else {
+                line = line.replaceAll("\\s", ""); // NOI18N
+                if (line.startsWith("#include")) { // NOI18N
+                    return true;
+                }
             }
         }
         return false;
