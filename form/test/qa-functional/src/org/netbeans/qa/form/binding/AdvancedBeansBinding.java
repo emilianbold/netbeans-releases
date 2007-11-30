@@ -84,7 +84,7 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new AdvancedBeansBinding("testCompileComponents")); // NOI18N
-        suite.addTest(new AdvancedBeansBinding("testUpdateMode")); // NOI18N
+//        suite.addTest(new AdvancedBeansBinding("testUpdateMode")); // NOI18N
         suite.addTest(new AdvancedBeansBinding("testAlternateValues")); // NOI18N
         suite.addTest(new AdvancedBeansBinding("testConversion")); // NOI18N
         suite.addTest(new AdvancedBeansBinding("testValidation")); // NOI18N
@@ -106,6 +106,7 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
     public void testUpdateMode() {
         // open frame
         openFile(FILENAME);
+        System.out.println("testicek1");
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
         
         // select update modes for jlabels
@@ -131,6 +132,7 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
 
     /** Tests alternate values */
     public void testAlternateValues() {
+        System.out.println("testicek2");
         String nullLabelPath =  "[JFrame]|jLabel7 [JLabel]"; // NOI18N
         String incompleteLabelPath = "[JFrame]|jLabel8 [JLabel]"; // NOI18N
         String nullMsg = "null foo msg"; // NOI18N
