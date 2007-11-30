@@ -99,6 +99,13 @@ import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.netbeans.modules.websvc.core.WsWsdlCookie;
+import org.netbeans.modules.xml.retriever.catalog.Utilities;
+import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
 import org.openide.ErrorManager;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
@@ -639,7 +646,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         boolean jaxWsInJ2ee14Supported = isJaxWsInJ2ee14Supported(project);
         if (projectType > 0) {
             jLabelJaxVersion.setEnabled(false);
-            jComboBoxJaxVersion.setEnabled(false);
+            //jComboBoxJaxVersion.setEnabled(false);
             if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project)) //NOI18N
                 jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
             else{
@@ -647,30 +654,31 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                         (!jsr109Supported && jsr109OldSupported && jwsdpSupported )){
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
                 } else{
+                    jComboBoxJaxVersion.setEnabled(false);
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);
                 }
             }
         } else {
             if (Util.isSourceLevel16orHigher(project)) {
                 jLabelJaxVersion.setEnabled(false);
-                jComboBoxJaxVersion.setEnabled(false);
+                //jComboBoxJaxVersion.setEnabled(false);
                 jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
             } else if (Util.getSourceLevel(project).equals("1.5")) { //NOI18N
                 if (wsimportFO != null) {
                     jLabelJaxVersion.setEnabled(false);
-                    jComboBoxJaxVersion.setEnabled(false);
+                    //jComboBoxJaxVersion.setEnabled(false);
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
                 } else if (wscompileFO != null) {
                     jLabelJaxVersion.setEnabled(false);
-                    jComboBoxJaxVersion.setEnabled(false);
+                    //jComboBoxJaxVersion.setEnabled(false);
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);
                 } else {
                     jLabelJaxVersion.setEnabled(true);
-                    jComboBoxJaxVersion.setEnabled(true);
+                    //jComboBoxJaxVersion.setEnabled(true);
                 }
             } else {
                 jLabelJaxVersion.setEnabled(false);
-                jComboBoxJaxVersion.setEnabled(false);
+                //jComboBoxJaxVersion.setEnabled(false);
                 jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);
             }
         }
@@ -924,6 +932,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             }
         }
         
+        boolean rpcEncoded = false;
         if(wsdlSource == WSDL_FROM_PROJECT || wsdlSource == WSDL_FROM_URL) {
             String wsdlUrl = (wsdlSource == WSDL_FROM_PROJECT?jTxtWsdlProject.getText().trim():jTxtWsdlURL.getText().trim());
             if(wsdlUrl == null || wsdlUrl.length() == 0) {
@@ -1022,8 +1031,20 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             // is the equivalent of doing an update on it.  Nothing bad will happen
             // unless it turns out the user didn't want to update the service in the
             // first place.
+            
+            rpcEncoded = isRpcEncoded(f);
         }
         
+        if(rpcEncoded) {
+            if(jComboBoxJaxVersion.isEnabled()) {
+                jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);
+            } 
+            if(!ClientWizardProperties.JAX_RPC.equals(jComboBoxJaxVersion.getSelectedItem())) {
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "RPC encoded wsdl requires jaxrpc client"); // NOI18N
+                return false;
+            }
+        }
+
         String packageName = getPackageName();
         if(packageName == null || packageName.length() == 0) {
             String jaxwsVersion = (String)this.jComboBoxJaxVersion.getSelectedItem();
@@ -1231,5 +1252,30 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             packageName = className.substring(0, indexDot);
         }
         return packageName;
+    }
+    
+    private boolean isRpcEncoded(File wsdlFile) {
+        FileObject wsdlFO = FileUtil.toFileObject(FileUtil.normalizeFile(wsdlFile));
+        WSDLModel model = WSDLModelFactory.getDefault().getModel(Utilities.getModelSource(wsdlFO, false));
+        for(Binding binding:model.getDefinitions().getBindings()){
+            for(SOAPBinding soapBinding:binding.getExtensibilityElements(SOAPBinding.class)) {
+                if(soapBinding.getStyle()==SOAPBinding.Style.RPC) {
+                    for(BindingOperation operation:binding.getBindingOperations()) {
+                        if(operation.getBindingInput()!=null) {
+                            for (SOAPBody body:operation.getBindingInput().getExtensibilityElements(SOAPBody.class))
+                                if(body.getUse()==SOAPBody.Use.ENCODED)
+                                    return true;
+                        }
+                        if(operation.getBindingOutput()!=null) {
+                            for (SOAPBody body:operation.getBindingOutput().getExtensibilityElements(SOAPBody.class))
+                                if(body.getUse()==SOAPBody.Use.ENCODED)
+                                    return true;
+                        }
+                    }
+                }
+            }
+        }
+            
+        return false;
     }
 }
