@@ -44,16 +44,5 @@ made subject to such option by the copyright holder.
 
     <import file="../../nbbuild/templates/projectized.xml"/>
 
-    <target name="jar" depends="zip-examples,projectized-common.jar"/>
-
-    <target name="zip-examples">
-        <property name="examples" location="${build.classes.dir}/org/netbeans/modules/websvc/metro/samples"/>
-        <mkdir dir="${examples}"/>
-        <zip basedir="SecureCalculatorApp" excludes="CVS" destfile="${examples}/SecureCalculatorApp.zip"/>
-        <zip basedir="SecureCalculatorClientApp" excludes="CVS" destfile="${examples}/SecureCalculatorClientApp.zip"/>
-        <zip basedir="CalculatorApp" excludes="CVS" destfile="${examples}/CalculatorApp.zip"/>
-        <zip basedir="CalculatorClientApp" excludes="CVS" destfile="${examples}/CalculatorClientApp.zip"/>
-    </target>    
-    
 </project>
 

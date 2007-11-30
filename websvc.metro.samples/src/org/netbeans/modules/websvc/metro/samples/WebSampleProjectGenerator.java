@@ -117,7 +117,7 @@ public class WebSampleProjectGenerator {
                     if ((prjName == null) || (prjName.trim().equals(""))) continue;
                     InputStream is = WebSampleProjectGenerator.class.getResourceAsStream(prjName);
                     try {
-                        FileObject prjLoc = createProjectFolder(new File(projectLocation, prjName.substring(0, prjName.indexOf('.'))));
+                        FileObject prjLoc = createProjectFolder(new File(projectLocation, prjName.substring(prjName.lastIndexOf("/")+1, prjName.indexOf('.'))));
                         unzip(is, prjLoc);
                         projects.add(prjLoc);
                         Boolean needsDefaults = (Boolean)template.getAttribute("needsdefaults");
