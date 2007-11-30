@@ -43,7 +43,6 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
-  <!--
   <folder name="Templates">
     <attr name="Classes/Beans" boolvalue="true"/>
     <attr name="GUIForms/Beans" boolvalue="true"/>
@@ -60,6 +59,7 @@ made subject to such option by the copyright holder.
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
          <attr name="templateCategory" stringvalue="java-beans"/>
       </file>
+      <!--
       <file name="BeanInfo.java" url="templates/BeanInfo.template">
          <attr name="template" boolvalue="true" />
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
@@ -74,6 +74,7 @@ made subject to such option by the copyright holder.
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
          <attr name="templateCategory" stringvalue="java-beans"/>
       </file>
+      -->
       <file name="Customizer.java" url="templates/Customizer.template">
          <attr name="template" boolvalue="true" />
          <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/Customizer.html" />
@@ -99,7 +100,6 @@ made subject to such option by the copyright holder.
       </file>
     </folder>
   </folder>
-  -->
   <folder name="Navigator">
         <folder name="Panels">
             <folder name="text">
