@@ -627,7 +627,7 @@ public class PageFlowController {
         Collection<String> pages = new HashSet<String>(pagesInConfig);
 
         //Create all pages in the project...
-        Collection<FileObject> webFilesTmp = Collections.unmodifiableCollection(webFiles);  //Use Unmodifiable set because you may need to remove these files.
+        FileObject[] webFilesTmp = webFiles.toArray(new FileObject[0]);//Use copy because you may need to remove these files.
         for (FileObject webFile : webFilesTmp) {
             //DISPLAYNAME:
             String webFileName = Page.getFolderDisplayName(getWebFolder(), webFile);
