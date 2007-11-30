@@ -44,11 +44,10 @@ made subject to such option by the copyright holder.
 
 <filesystem>
   <folder name="Templates">
-    <attr name="Classes/Beans" boolvalue="true"/>
-    <attr name="GUIForms/Beans" boolvalue="true"/>
     <folder name="Beans">
       <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/Beans.html" />
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
+      <attr name="position" intvalue="1052"/>
 
       <attr name ="PropertyEditor.java/Package.shadow" boolvalue="true" />
 
