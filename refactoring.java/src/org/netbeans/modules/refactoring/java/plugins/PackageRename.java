@@ -57,9 +57,11 @@ import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.PositionBounds;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -155,11 +157,23 @@ public class PackageRename implements RefactoringPluginFactory{
             }
             
             public void performChange() {
-                setName(refactoring.getNewName());
+                atomicSetName(refactoring.getNewName());
             }
             
             public void undoChange() {
-                setName(oldName);
+                atomicSetName(oldName);
+            }
+            
+            private void atomicSetName(final String name) {
+                try {
+                    folder.getFileSystem().runAtomicAction(new AtomicAction() {
+                        public void run() throws IOException {
+                            setName(name);
+                        }
+                    });
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
             
             public Lookup getLookup() {
