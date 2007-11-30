@@ -51,6 +51,7 @@ package org.netbeans.modules.web.jsf.navigation;
 import java.awt.Image;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import javax.swing.JOptionPane;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
@@ -147,11 +148,20 @@ public final class NavigationCaseEdge extends PageFlowSceneElement  {
         super.setName(newName);
     }
     
+    
+    private static final String MSG_FacesConfigIllegalStateWarning = NbBundle.getMessage(NavigationCaseEdge.class, "MSG_FacesConfigIllegalStateWarning");
+    private static final String TLE_FacesConfigIllegalStateWarning = NbBundle.getMessage(NavigationCaseEdge.class, "TLE_FacesConfigIllegalStateWarning");
+    @Override
     public String getName() {
+        String name = "";
         if( navCase.getModel() != null ) {
-            return ( navCase.getFromOutcome() != null ? navCase.getFromOutcome() : navCase.getFromAction());
+            try { 
+                name =  navCase.getFromOutcome() != null ? navCase.getFromOutcome() : navCase.getFromAction();
+            } catch (IllegalStateException ise){
+                JOptionPane.showMessageDialog(null, MSG_FacesConfigIllegalStateWarning, TLE_FacesConfigIllegalStateWarning, JOptionPane.WARNING_MESSAGE);
+            }
         }
-        return "";
+        return name;
     }
     
     public boolean canDestroy() {
