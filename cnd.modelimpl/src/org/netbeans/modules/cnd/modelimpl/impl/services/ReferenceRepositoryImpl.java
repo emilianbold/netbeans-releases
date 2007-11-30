@@ -100,17 +100,27 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         CsmObject decl = decDef[0];
         CsmObject def = decDef[1];
         
-        Collection<FileImpl> files = getFiles(decl, basePrj);
-        
-        List<CsmReference> out = new ArrayList<CsmReference>(files.size() * 10);
-        for (FileImpl file : files) {
-            out.addAll(getReferences(decl, def, file, includeSelfDeclarations));
+        CsmScope scope = getDeclarationScope(decl);
+        CsmFile scopeFile = CsmKindUtilities.isOffsetable(scope) ? ((CsmOffsetable)scope).getContainingFile() : null;
+        List<CsmReference> out;
+        Collection<FileImpl> files;
+        if (scopeFile instanceof FileImpl) {
+            out = new ArrayList(10);
+            CsmOffsetable offs = (CsmOffsetable)scope;
+            out.addAll(getReferences(decl, def, (FileImpl)scopeFile, includeSelfDeclarations, offs.getStartOffset(), offs.getEndOffset()));
+        } else {
+            files = basePrj.getAllFileImpls();
+            out = new ArrayList<CsmReference>(files.size() * 10);
+            for (FileImpl file : files) {
+                out.addAll(getReferences(decl, def, file, includeSelfDeclarations, 0, Integer.MAX_VALUE));
+            }
         }
         return out;
     }
     
     public Collection<CsmReference> getReferences(CsmObject target, CsmFile file, boolean includeSelfDeclarations) {
-        CsmFile scopeFile = getScopedElementFile(target);
+        CsmScope scope = getDeclarationScope(target);
+        CsmFile scopeFile = CsmKindUtilities.isOffsetable(scope) ? ((CsmOffsetable)scope).getContainingFile() : null;
         if (!(file instanceof FileImpl)) {
             return Collections.<CsmReference>emptyList();
         } else if (scopeFile != null && !scopeFile.equals(file)) {
@@ -120,7 +130,12 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
             CsmObject[] decDef = getDefinitionDeclaration(target);
             CsmObject decl = decDef[0];
             CsmObject def = decDef[1];            
-            return getReferences(decl, def, (FileImpl)file, includeSelfDeclarations);
+            int start = 0, end = Integer.MAX_VALUE;
+            if (CsmKindUtilities.isOffsetable(scope)) {
+                start = ((CsmOffsetable)scope).getStartOffset();
+                end = ((CsmOffsetable)scope).getEndOffset();
+            }
+            return getReferences(decl, def, (FileImpl)file, includeSelfDeclarations, start, end);
         }
     }
     
@@ -143,7 +158,8 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     ////////////////////////////////////////////////////////////////////////////
     // prototype of impl
     
-    private Collection<CsmReference> getReferences(CsmObject targetDecl, CsmObject targetDef, FileImpl file, boolean includeSelfDeclarations) {
+    private Collection<CsmReference> getReferences(CsmObject targetDecl, CsmObject targetDef, FileImpl file, 
+            boolean includeSelfDeclarations, int startOffset, int endOffset) {
         assert targetDecl != null;
         assert file != null;
         String name = "";
@@ -164,7 +180,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         if (TraceFlags.TRACE_XREF_REPOSITORY) {
             time = System.currentTimeMillis();
         }
-        Collection<APTToken> tokens = getTokensToResolve(file, name);
+        Collection<APTToken> tokens = getTokensToResolve(file, name, startOffset, endOffset);
         if (TraceFlags.TRACE_XREF_REPOSITORY) {
             time = System.currentTimeMillis() - time;
             System.err.println("collecting tokens");
@@ -180,7 +196,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         return out;
     }
     
-    private Collection<APTToken> getTokensToResolve(FileImpl file, String name) {
+    private Collection<APTToken> getTokensToResolve(FileImpl file, String name, int startOffset, int endOffset) {
         // in prototype use just unexpanded identifier tokens in file
         TokenStream ts = getTokenStream(file);
         Collection<APTToken> tokens = new ArrayList<APTToken>(100);
@@ -194,11 +210,16 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
                 APTToken token = (APTToken) ts.nextToken();
                 APTToken prev = null;
                 while (!APTUtils.isEOF(token)) {
-                    if (APTUtils.isID(token) && name.equals(token.getText())) {
-                        // this is candidate to resolve
-                        if (!destructor || (prev != null && prev.getType() == APTTokenTypes.TILDE)) {
-                            tokens.add(token);
+                    if (token.getOffset() >= startOffset) {
+                        if (APTUtils.isID(token) && name.equals(token.getText())) {
+                            // this is candidate to resolve
+                            if (!destructor || (prev != null && prev.getType() == APTTokenTypes.TILDE)) {
+                                tokens.add(token);
+                            }
                         }
+                    }
+                    if (token.getEndOffset() > endOffset) {
+                        break;
                     }
                     prev = token;
                     token = (APTToken) ts.nextToken();
@@ -295,30 +316,30 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         return new CsmObject[] { decl, def };
     }
 
-    private Collection<FileImpl> getFiles(CsmObject decl, ProjectBase basePrj) {
-        assert decl != null;
-        CsmFile scopeFile = getScopedElementFile(decl);
-        if (scopeFile != null) {
-            return Collections.singleton((FileImpl)scopeFile);
-        } else {
-            return basePrj.getAllFileImpls();
-        }
-    }
+//    private Collection<FileImpl> getFiles(CsmObject decl, ProjectBase basePrj) {
+//        assert decl != null;
+//        CsmScope scope = getDeclarationScope(decl);
+//        if (scope != null && CsmKindUtilities.isOffsetable(scope)) {
+//            CsmFile 
+//            return Collections.singleton((FileImpl)scopeFile);
+//        } else {
+//            return basePrj.getAllFileImpls();
+//        }
+//    }
     
-    private CsmFile getScopedElementFile(CsmObject decl) {
+    private CsmScope getDeclarationScope(CsmObject decl) {
         assert decl != null;
         CsmObject scopeElem = decl;
         while (CsmKindUtilities.isScopeElement(scopeElem)) {
             CsmScope scope = ((CsmScopeElement)scopeElem).getScope();
             if (CsmKindUtilities.isFunction(scope)) {
-                CsmFile file = ((CsmFunction)scope).getContainingFile();
-                return file;
+                return ((CsmFunction)scope);
             } else if (CsmKindUtilities.isScopeElement(scope)) {
                 scopeElem = ((CsmScopeElement)scope);
             } else {
                 break;
             }
         }
-        return null;
+        return null;        
     }
 }
