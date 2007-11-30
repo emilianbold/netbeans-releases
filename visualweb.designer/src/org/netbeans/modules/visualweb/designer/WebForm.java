@@ -72,6 +72,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.util.WeakHashMap;
 import javax.swing.CellRendererPane;
 import javax.swing.JComponent;
 import javax.swing.event.EventListenerList;
@@ -596,11 +597,13 @@ public class WebForm implements Designer {
 //        }
         // #106433 There needs to be 1:N mapping for  element : box.
         // TODO Revise potential memory leak, boxes linked to the elements!
-        Map<WebForm, CssBox> webform2box = (Map<WebForm, CssBox>)element.getUserData(KEY_CSS_BOX_MAP);
+        Map<WebForm, WeakReference<CssBox>> webform2box = (Map<WebForm, WeakReference<CssBox>>)element.getUserData(KEY_CSS_BOX_MAP);
         if (webform2box == null) {
-            webform2box = new HashMap<WebForm, CssBox>();
+            // #123003 Avoiding possible leak, the insync FacesModel
+            // is not garbaged unless the project is closed.
+            webform2box = new WeakHashMap<WebForm, WeakReference<CssBox>>();
         }
-        webform2box.put(this, box);
+        webform2box.put(this, new WeakReference<CssBox>(box));
         element.setUserData(KEY_CSS_BOX_MAP, webform2box, CssBoxDataHandler.getDefault());
     }
     
@@ -611,8 +614,10 @@ public class WebForm implements Designer {
         if (element == null) {
             return null;
         }
-        Map<WebForm, CssBox> webform2box = (Map<WebForm, CssBox>)element.getUserData(KEY_CSS_BOX_MAP);
-        return webform2box == null ? null : webform2box.get(this);
+        Map<WebForm, WeakReference<CssBox>> webform2box = (Map<WebForm, WeakReference<CssBox>>)element.getUserData(KEY_CSS_BOX_MAP);
+//        return webform2box == null ? null : webform2box.get(this);
+        WeakReference<CssBox> cssBoxWRef = webform2box == null ? null : webform2box.get(this);
+        return cssBoxWRef == null ? null : cssBoxWRef.get();
     }
     
     // XXX Temporary, see DesignerService.copyBoxForElement.
