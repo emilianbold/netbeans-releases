@@ -244,7 +244,7 @@ public abstract class HintTestBase extends RubyTestBase {
             assertTrue(caretDelta != -1);
             caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
             int lineOffset = text.indexOf(caretLine);
-            assertTrue(lineOffset != -1);
+            assertTrue("NOT FOUND: " + info.getFileObject().getName() + ":" + caretLine, lineOffset != -1);
 
             caretOffset = lineOffset + caretDelta;
         }
@@ -310,6 +310,31 @@ public abstract class HintTestBase extends RubyTestBase {
             CompilationInfo info = r.info;
             List<ErrorDescription> result = r.hints;
             int caretOffset = r.caretOffset;
+            if (hint.getDefaultSeverity() == HintSeverity.CURRENT_LINE_WARNING && hint instanceof AstRule) {
+                result = new ArrayList<ErrorDescription>(result);
+                Set<Integer> nodeTypes = ((AstRule)hint).getKinds();
+                Node root = AstUtilities.getRoot(info);
+                List<Node> nodes = new ArrayList<Node>();
+                int[] nodeIds = new int[nodeTypes.size()];
+                int index = 0;
+                for (int id : nodeTypes) {
+                    nodeIds[index++] = id;
+                }
+                AstUtilities.addNodesByType(root, nodeIds, nodes);
+                BaseDocument doc = (BaseDocument) info.getDocument();
+                for (Node n : nodes) {
+                    int start = AstUtilities.getRange(n).getStart();
+                    int lineStart = Utilities.getRowFirstNonWhite(doc, start);
+                    int lineEnd = Utilities.getRowEnd(doc, start);
+                    String first = doc.getText(lineStart, start-lineStart); 
+                    String last = doc.getText(start, lineEnd-start);
+                    if (first.indexOf("^") == -1 && last.indexOf("^") == -1) {
+                        String caretLine = first + "^" + last;
+                        ComputedHints r2 = getHints(this, hint, null, fileObject, caretLine);
+                        result.addAll(r.hints);
+                    }
+                }
+            }
 
             String annotatedSource = annotate((BaseDocument)info.getDocument(), result, caretOffset);
             

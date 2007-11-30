@@ -3,4 +3,3 @@
 HINT:Loop variable data already exists in scope and is being reused
 FIX:Rename the inner variable
 FIX:Rename the outer variable
-FIX:Disable this hint

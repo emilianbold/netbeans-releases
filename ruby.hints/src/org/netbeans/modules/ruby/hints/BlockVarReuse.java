@@ -44,12 +44,15 @@ import org.jruby.ast.types.INameNode;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.EditRegions;
 import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
+import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 
@@ -122,7 +125,7 @@ public class BlockVarReuse implements AstRule {
         }
     }
 
-    private static class RenameVarFix implements Fix {
+    private static class RenameVarFix implements PreviewableFix {
 
         private CompilationInfo info;
 
@@ -219,6 +222,23 @@ public class BlockVarReuse implements AstRule {
         }
 
         public boolean isInteractive() {
+            return true;
+        }
+
+        public EditList getEditList() throws Exception {
+            BaseDocument doc = (BaseDocument) info.getDocument();
+            EditList edits = new EditList(doc);
+            Set<OffsetRange> ranges = findRegionsToEdit();
+            String oldName = ((INameNode)path.leaf()).getName();
+            int oldLen = oldName.length();
+            String newName = "new_name";
+            for (OffsetRange range : ranges) {
+                edits.replace(range.getStart(), oldLen, newName, false, 0);
+            }
+            return edits;
+        }
+
+        public boolean canPreview() {
             return true;
         }
     }

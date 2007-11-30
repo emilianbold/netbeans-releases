@@ -40,7 +40,6 @@
 package org.netbeans.modules.ruby.extrahints;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -61,8 +60,10 @@ import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
+import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -213,7 +214,7 @@ public class ConvertIfToUnless implements AstRule {
         return -1;
     }
     
-    private class ConvertToUnlessFix implements Fix {
+    private class ConvertToUnlessFix implements PreviewableFix {
         private CompilationInfo info;
         private IfNode ifNode;
 
@@ -238,78 +239,89 @@ public class ConvertIfToUnless implements AstRule {
         }
 
         public void implement() throws Exception {
-            BaseDocument doc = (BaseDocument) info.getDocument();
-            
-            Node notNode = ifNode.getCondition();
-            if (notNode.nodeId != NodeTypes.NOTNODE) {
-                assert notNode.nodeId == NodeTypes.NEWLINENODE;
-                Node firstChild = notNode.childNodes().size() == 1 ?
-                    ((Node)notNode.childNodes().get(0)) : null;
-                if (firstChild != null && firstChild.nodeId == NodeTypes.NOTNODE) {
-                    notNode = firstChild;
-                } else {
-                    // Unexpected!
-                    assert false : firstChild;
-                    return;
-                }
+            EditList edits = getEditList();
+            if (edits != null) {
+                edits.apply();
+            }
+        }
 
-            }
-            
-            int astNotOffset = AstUtilities.getRange(notNode).getStart();
-            int lexNotOffset = LexUtilities.getLexerOffset(info, astNotOffset);
-            if (lexNotOffset == -1 || lexNotOffset > doc.getLength()-1) {
-                return;
-            }
-
-            int astIfOffset = ifNode.getPosition().getStartOffset();
-            int lexIfOffset = LexUtilities.getLexerOffset(info, astIfOffset);
-            if (lexIfOffset == -1 || lexIfOffset > doc.getLength()) {
-                return;
-            }
-            
-            boolean isEqualComparison = false;
-            char c = doc.getText(lexNotOffset, 1).charAt(0);
-            if (c != '!') {
-                // Probably something like "!=", where the not node range points to
-                // a call node calling method "=="
-                int lineEnd = Utilities.getRowEnd(doc, lexNotOffset);
-                String line = doc.getText(lexNotOffset, lineEnd-lexNotOffset);
-                int lineOffset = line.indexOf("!=");
-                if (lineOffset == -1) {
-                    assert false : line;
-                    return;
-                } else {
-                    lexNotOffset += lineOffset;
-                    isEqualComparison = true;
-                }
-            }
-            
-            int keywordOffset = findKeywordOffset(info, ifNode);
-            if (keywordOffset == -1 || keywordOffset > doc.getLength()-1) {
-                return;
-            }
-
-            assert keywordOffset < lexNotOffset;
-            
-            char k = doc.getText(keywordOffset, 1).charAt(0);
-            boolean isIf = k == 'i';
-            
+        public EditList getEditList() {
             try {
-                doc.atomicLock();
+                BaseDocument doc = (BaseDocument) info.getDocument();
+
+                Node notNode = ifNode.getCondition();
+                if (notNode.nodeId != NodeTypes.NOTNODE) {
+                    assert notNode.nodeId == NodeTypes.NEWLINENODE;
+                    Node firstChild = notNode.childNodes().size() == 1 ?
+                        ((Node)notNode.childNodes().get(0)) : null;
+                    if (firstChild != null && firstChild.nodeId == NodeTypes.NOTNODE) {
+                        notNode = firstChild;
+                    } else {
+                        // Unexpected!
+                        assert false : firstChild;
+                        return null;
+                    }
+
+                }
+
+                int astNotOffset = AstUtilities.getRange(notNode).getStart();
+                int lexNotOffset = LexUtilities.getLexerOffset(info, astNotOffset);
+                if (lexNotOffset == -1 || lexNotOffset > doc.getLength()-1) {
+                    return null;
+                }
+
+                int astIfOffset = ifNode.getPosition().getStartOffset();
+                int lexIfOffset = LexUtilities.getLexerOffset(info, astIfOffset);
+                if (lexIfOffset == -1 || lexIfOffset > doc.getLength()) {
+                    return null;
+                }
+
+                boolean isEqualComparison = false;
+                char c = doc.getText(lexNotOffset, 1).charAt(0);
+                if (c != '!') {
+                    // Probably something like "!=", where the not node range points to
+                    // a call node calling method "=="
+                    int lineEnd = Utilities.getRowEnd(doc, lexNotOffset);
+                    String line = doc.getText(lexNotOffset, lineEnd-lexNotOffset);
+                    int lineOffset = line.indexOf("!=");
+                    if (lineOffset == -1) {
+                        assert false : line;
+                        return null;
+                    } else {
+                        lexNotOffset += lineOffset;
+                        isEqualComparison = true;
+                    }
+                }
+
+                int keywordOffset = findKeywordOffset(info, ifNode);
+                if (keywordOffset == -1 || keywordOffset > doc.getLength()-1) {
+                    return null;
+                }
+
+                assert keywordOffset < lexNotOffset;
+
+                char k = doc.getText(keywordOffset, 1).charAt(0);
+                boolean isIf = k == 'i';
+
+                EditList edits = new EditList(doc);
+
                 if (isEqualComparison) {
                     // Convert != into ==
-                    doc.replace(lexNotOffset, 1, "=", null);
+                    edits.replace(lexNotOffset, 1, "=", false, 0);
                 } else {
                     // Just remove ! from the expression
-                    doc.remove(lexNotOffset, 1);
+                    edits.replace(lexNotOffset, 1, null, false, 0);
                 }
                 if (isIf) {
-                    doc.replace(keywordOffset, 2, "unless", null);
+                    edits.replace(keywordOffset, 2, "unless", false, 1);
                 } else {
-                    doc.replace(keywordOffset, 6, "if", null);
+                    edits.replace(keywordOffset, 6, "if", false, 1);
                 }
-            } finally {
-                doc.atomicUnlock();
+                
+                return edits;
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
             }
         }
 
@@ -319,6 +331,10 @@ public class ConvertIfToUnless implements AstRule {
 
         public boolean isInteractive() {
             return false;
+        }
+
+        public boolean canPreview() {
+            return true;
         }
     }
 }

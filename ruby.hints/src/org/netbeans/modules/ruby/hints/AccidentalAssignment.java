@@ -47,7 +47,6 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.jruby.ast.IfNode;
-import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.netbeans.api.gsf.CompilationInfo;
@@ -59,12 +58,14 @@ import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.hints.introduce.ParseTreeWalker;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
+import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 import org.jruby.ast.types.INameNode;
 import org.netbeans.modules.ruby.hints.introduce.ParseTreeVisitor;
+import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
 
 /**
  * Identify "accidental" assignments of the form "if (a = b)" which should have been "if (a == b)"
@@ -149,7 +150,7 @@ public class AccidentalAssignment implements AstRule {
         return HintSeverity.WARNING;
     }
 
-    private static class ConvertAssignmentFix implements Fix {
+    private static class ConvertAssignmentFix implements PreviewableFix {
 
         private CompilationInfo info;
         private Node assignment;
@@ -164,6 +165,13 @@ public class AccidentalAssignment implements AstRule {
         }
 
         public void implement() throws Exception {
+            EditList edits = getEditList();
+            if (edits != null) {
+                edits.apply();
+            }
+        }
+
+        public EditList getEditList() throws Exception {
             BaseDocument doc = (BaseDocument) info.getDocument();
             OffsetRange range = AstUtilities.getNameRange(assignment);
             int endOffset = range.getEnd();
@@ -176,8 +184,10 @@ public class AccidentalAssignment implements AstRule {
             String line = doc.getText(endOffset, lineEnd - endOffset);
             int dashIndex = line.indexOf('=');
             if (dashIndex != -1) {
-                doc.insertString(endOffset + dashIndex, "=", null);
+                return new EditList(doc).replace(endOffset+dashIndex, 0, "=", false, 0);
             }
+            
+            return null;
         }
 
         public boolean isSafe() {
@@ -186,6 +196,10 @@ public class AccidentalAssignment implements AstRule {
 
         public boolean isInteractive() {
             return false;
+        }
+
+        public boolean canPreview() {
+            return true;
         }
     }
 

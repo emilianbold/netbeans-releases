@@ -50,11 +50,12 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.Formatter;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
+import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.util.Exceptions;
@@ -162,7 +163,7 @@ public class ExpandSameLineDef implements AstRule {
         return NbBundle.getMessage(ExpandSameLineDef.class, "ExpandLineDesc");
     }
 
-    private static class ExpandLineFix implements Fix {
+    private static class ExpandLineFix implements PreviewableFix {
 
         private CompilationInfo info;
 
@@ -204,6 +205,10 @@ public class ExpandSameLineDef implements AstRule {
          * the semicolons suggest we need newlines.
          */
         public void implement() throws Exception {
+            getEditList().apply();
+        }
+
+        public EditList getEditList() throws Exception {
             BaseDocument doc = (BaseDocument)info.getDocument();
             ISourcePosition pos = path.leaf().getPosition();
             int startOffset = pos.getStartOffset();
@@ -245,13 +250,16 @@ public class ExpandSameLineDef implements AstRule {
             // to account for our own edits along the way)
             Collections.reverse(offsets);
 
+            EditList edits = new EditList(doc);
+            
             if (offsets.size() > 0) {
                 // TODO: Create a ModificationResult here and process it
                 // The following is the WRONG way to do it...
                 // I've gotta use a ModificationResult instead!
 
+                List<Integer> newlines = new ArrayList<Integer>();
+                
                 try {
-                    doc.atomicLock();
                     // Process offsets from back to front such that I can
                     // modify the document without worrying that the other offsets
                     // need to be adjusted
@@ -263,33 +271,26 @@ public class ExpandSameLineDef implements AstRule {
                             continue;
                         }
                         prev = offset;
-
                         if (";".equals(doc.getText(offset, 1))) { // NOI18N
-                            doc.remove(offset, 1);
-                        }
-                        if (offset < doc.getLength()-2) {
-                            char c = doc.getText(offset+1,1).charAt(0);
-                            if (c == '\n') {
+                            edits.replace(offset, 1, null, false, 1);
+                            if (newlines.contains(offset+2)) {
                                 continue;
-                            } else if (Character.isWhitespace(c)) {
-                                if (offset < doc.getLength()-3) {
-                                    c = doc.getText(offset+2,1).charAt(0);
-                                    if (c == '\n') {
-                                        continue;
-                                    }
-                                }                                
                             }
                         }
-                        doc.insertString(offset, "\n", null); // NOI18N
+                        if (newlines.contains(offset+1) || newlines.contains(offset)) {
+                            continue;
+                        }
+                        edits.replace(offset, 0, "\n", false, 2); // NOI18N
+                        newlines.add(offset);
                     }
-                    // Finally, reformat
-                    new Formatter().reindent(doc, startOffset, endOffset, null, null);
+                    
+                    edits.format();
                 } catch (BadLocationException ble) {
                     Exceptions.printStackTrace(ble);
-                } finally {
-                    doc.atomicUnlock();
                 }
             }
+            
+            return edits;
         }
 
         public boolean isSafe() {
@@ -298,6 +299,10 @@ public class ExpandSameLineDef implements AstRule {
 
         public boolean isInteractive() {
             return false;
+        }
+
+        public boolean canPreview() {
+            return true;
         }
     }
 

@@ -2,9 +2,7 @@
              -----
 HINT:Style: Method names traditionally use lowercase letters only
 FIX:Rename...
-FIX:Disable this hint
     def D(msg)
         -
 HINT:Style: Method names traditionally use lowercase letters only
 FIX:Rename...
-FIX:Disable this hint

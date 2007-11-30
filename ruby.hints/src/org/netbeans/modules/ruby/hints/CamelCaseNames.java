@@ -28,18 +28,13 @@
 package org.netbeans.modules.ruby.hints;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
@@ -53,8 +48,10 @@ import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
+import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.EditorCookie;
@@ -144,7 +141,7 @@ public class CamelCaseNames implements AstRule {
         return null;
     }
     
-    private static class RenameFix implements Fix, Runnable {
+    private static class RenameFix implements PreviewableFix, Runnable {
 
         private CompilationInfo info;
         private AstPath path;
@@ -163,39 +160,53 @@ public class CamelCaseNames implements AstRule {
                 return NbBundle.getMessage(CamelCaseNames.class, "RenameVar");
             }
         }
+        
+        private Set<OffsetRange> getRanges() {
+            Node node = path.leaf();
+            assert node.nodeId == NodeTypes.LOCALASGNNODE;
+            String oldName = ((INameNode)node).getName();
 
+            Node scope = AstUtilities.findLocalScope(node, path);
+            Set<OffsetRange> ranges = new HashSet<OffsetRange>();
+            addLocalRegions(scope, oldName, ranges);
+            
+            return ranges;
+        }
+        
+        private String getOldName() {
+            Node node = path.leaf();
+            assert node.nodeId == NodeTypes.LOCALASGNNODE;
+            String oldName = ((INameNode)node).getName();
+            return oldName;
+        }
+        
+        private EditList getEditList(String name) throws Exception {
+            int oldLength = getOldName().length();
+            Set<OffsetRange> ranges = getRanges();
+
+            BaseDocument doc = (BaseDocument) info.getDocument();
+            EditList edits = new EditList(doc);
+
+            for (OffsetRange range : ranges) {
+                edits.replace(range.getStart(), oldLength, name, false, 0);
+                assert range.getLength() == oldLength;
+            }
+            
+            return edits;
+        }
+        
+        public boolean canPreview() {
+            return newName != null;
+        }
+
+        public EditList getEditList() throws Exception {
+            return getEditList(newName != null ? newName : "new_name");
+        }
+        
         public void implement() throws Exception {
             if (newName != null) {
-                Node node = path.leaf();
-                assert node.nodeId == NodeTypes.LOCALASGNNODE;
-                String oldName = ((INameNode)node).getName();
-                int oldLength = oldName.length();
-                
-                Node scope = AstUtilities.findLocalScope(node, path);
-                Set<OffsetRange> ranges = new HashSet<OffsetRange>();
-                addLocalRegions(scope, oldName, ranges);
-                
-                BaseDocument doc = (BaseDocument)info.getDocument();
-                try {
-                    doc.atomicLock();
-                    
-                    List<Integer> starts = new ArrayList<Integer>();
-                    for (OffsetRange range : ranges) {
-                        int start = range.getStart();
-                        starts.add(start);
-                        assert range.getLength() == oldLength;
-                    }
-                    // Replace the words in document-decreasing order (to ensure offsets are right)
-                    Collections.sort(starts);
-                    Collections.reverse(starts);
-                    for (int start : starts) {
-                        doc.replace(start, oldLength, newName, null);
-                    }
-                } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
-                } finally {
-                    doc.atomicUnlock();
-                }
+                EditList edits = getEditList(newName);
+                edits.apply();
             } else {
                 // Full rename
                 if (SwingUtilities.isEventDispatchThread()) {

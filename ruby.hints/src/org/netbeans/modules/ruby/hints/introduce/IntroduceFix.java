@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.ruby.hints.introduce;
 
+import java.util.MissingResourceException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,7 +51,6 @@ import javax.swing.JButton;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
-import org.jruby.ast.ClassNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
@@ -60,9 +60,9 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.Formatter;
 import org.netbeans.modules.ruby.RubyIndex;
-import org.netbeans.modules.ruby.hints.spi.Fix;
+import org.netbeans.modules.ruby.hints.spi.EditList;
+import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -74,7 +74,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-class IntroduceFix implements Fix {    
+class IntroduceFix implements PreviewableFix {
     /** Keep in sync with copy in CodeCompleter */
     private static final boolean FORCE_COMPLETION_SPACES = Boolean.getBoolean("ruby.complete.spaces"); // NOI18N
     private static final boolean COMMENT_NEW_ELEMENTS = !Boolean.getBoolean("ruby.create.nocomments"); // NOI18N
@@ -85,7 +85,8 @@ class IntroduceFix implements Fix {
     private final IntroduceKind kind;
     private final List<Node> nodes;
     private BaseDocument doc;
-
+    private int commentOffset = -1;
+    
     IntroduceFix(CompilationInfo info, List<Node> nodes, OffsetRange lexRange, OffsetRange astRange, IntroduceKind kind) {
         this.info = info;
         this.nodes = nodes;
@@ -114,15 +115,56 @@ class IntroduceFix implements Fix {
     }
 
     public void implement() throws Exception {
+        String name = IntroduceHint.testName;
+        EditList edits = createEdits(name);
+        if (edits == null) {
+            // Some kind of error
+            return;
+        }
+
+        Position commentPosition = null;
+        
+        commentPosition = edits.apply(commentOffset);
+
+        // Warp to the inserted method and show the comment
+        if (commentPosition != null) {
+            JTextComponent target = CopiedCode.getPaneFor(info.getFileObject());
+            if (target != null) {
+                int offset = commentPosition.getOffset();
+                String commentText = getCommentText();
+                if (offset+commentText.length() <= doc.getLength()) {
+                    String s = doc.getText(offset, commentText.length());
+                    if (commentText.equals(s)) {
+                        target.select(offset, offset+commentText.length());
+                    }
+                }
+            }
+        }
+    }
+
+    private String getCommentText() throws MissingResourceException {
+        return NbBundle.getMessage(IntroduceHint.class, "DefaultMethodComment");
+    }
+
+    public EditList getEditList() {
+        String name = "new_name";
+        try {
+            return createEdits(name);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+    }
+    
+    private EditList createEdits(String name) throws Exception {
         try {
             doc = (BaseDocument) info.getDocument();
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
-            return;
+            return null;
         }
 
         String guessedName = HintUtilities.guessName(info, lexRange, astRange);
-        String name = IntroduceHint.testName;
         RubyIndex index = RubyIndex.get(info.getIndex());
         AstPath startPath = new AstPath(AstUtilities.getRoot(info), astRange.getStart());
         List<OffsetRange> duplicates = null;
@@ -158,7 +200,7 @@ class IntroduceFix implements Fix {
                         new Object[]{btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null,
                         null);
                 if (DialogDisplayer.getDefault().notify(dd) != btnOk) {
-                    return;//cancel
+                    return null;//cancel
                 }
                 name = panel.getVariableName();
                 if (!panel.isReplaceAll()) {
@@ -179,7 +221,7 @@ class IntroduceFix implements Fix {
                         new Object[]{btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null,
                         null);
                 if (DialogDisplayer.getDefault().notify(dd) != btnOk) {
-                    return;//cancel
+                    return null;//cancel
                 }
                 name = panel.getFieldName();
                 if (!panel.isReplaceAll()) {
@@ -198,7 +240,7 @@ class IntroduceFix implements Fix {
                         new Object[]{btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null,
                         null);
                 if (DialogDisplayer.getDefault().notify(dd) != btnOk) {
-                    return;//cancel
+                    return null;//cancel
                 }
                 name = panel.getMethodName();
                 break;
@@ -212,24 +254,16 @@ class IntroduceFix implements Fix {
             name = name.toUpperCase();
         }
 
-        try {
-            doc.atomicLock();
-            if (kind == IntroduceKind.CREATE_CONSTANT || kind == IntroduceKind.CREATE_VARIABLE || kind == IntroduceKind.CREATE_FIELD) {
-                introduceExp(name, duplicates);
-            } else {
-                assert kind == IntroduceKind.CREATE_METHOD;
-                // XXX TODO
-                extractMethod(name);
-            }
-        } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
-        } finally {
-            doc.atomicUnlock();
+        if (kind == IntroduceKind.CREATE_CONSTANT || kind == IntroduceKind.CREATE_VARIABLE || kind == IntroduceKind.CREATE_FIELD) {
+            return introduceExp(name, duplicates);
+        } else {
+            assert kind == IntroduceKind.CREATE_METHOD;
+            // XXX TODO
+            return extractMethod(name);
         }
     }
 
-    private void introduceExp(String name, List<OffsetRange> duplicates) throws BadLocationException {
-        assert doc.isAtomicLock();
+    private EditList introduceExp(String name, List<OffsetRange> duplicates) throws BadLocationException {
         boolean isConstant = kind == IntroduceKind.CREATE_CONSTANT;
 
         int begin;
@@ -255,14 +289,14 @@ class IntroduceFix implements Fix {
         assert begin <= lexStart;
         StringBuilder sb = new StringBuilder();
 
-        String commentText = NbBundle.getMessage(IntroduceHint.class, "DefaultMethodComment");
         if (isConstant && COMMENT_NEW_ELEMENTS) {
             // TODO - insert a code template for editing the comment?
             sb.append("# ");
         }
+
         int commentTextDelta = sb.length();
         if (isConstant && COMMENT_NEW_ELEMENTS) {
-            sb.append(commentText);
+            sb.append(getCommentText());
             sb.append("\n");
         }
         
@@ -287,82 +321,33 @@ class IntroduceFix implements Fix {
             sb.append("\n");
         }
 
-        Position commentPos = null;
+        commentOffset = -1;
         if (isConstant && begin > 0 && COMMENT_NEW_ELEMENTS) {
-            commentPos = doc.createPosition(begin-1); // -1: want the position -before- the inserts
+            commentOffset = begin+commentTextDelta;
         }
         
-        if (duplicates != null && duplicates.size() > 1) {
-            // Gotta process the edits in order
+        EditList edits = new EditList(doc);
+        edits.replace(lexStart, lexEnd-lexStart, name, true, 1);
+        edits.replace(begin, 0, sb.toString(), true, 2);
 
-            List<Edit> edits = new ArrayList<Edit>();
+        if (duplicates != null && duplicates.size() > 1) {
             Set<Integer> starts = new HashSet<Integer>();
-            edits.add(new Edit(lexStart, lexEnd-lexStart, name));
             starts.add(lexStart);
-            edits.add(new Edit(begin, 0, sb.toString()));
             starts.add(begin);
             
             for (OffsetRange range : duplicates) {
                 int start = range.getStart();
                 if (!starts.contains(start)) {
-                    edits.add(new Edit(start, range.getLength(), name));
+                    edits.replace(start, range.getLength(), name, true, 0);
                     starts.add(start);
                 }
             }
-            Collections.sort(edits);
-            Collections.reverse(edits);
-            
-            // Apply edits in reverse order (to keep offsets accurate)
-            for (Edit edit : edits) {
-                if (edit.removeLen > 0) {
-                    doc.remove(edit.offset, edit.removeLen);
-                }
-                doc.insertString(edit.offset, edit.insertText, null);
-            }
-        } else {
-            doc.remove(lexStart, lexEnd - lexStart);
-            doc.insertString(lexStart, name, null);
-            doc.insertString(begin, sb.toString(), null);
-        }
-        // Finally, reformat - ugh, these offsets can be all bogus now!
-        int newEnd = lexEnd + sb.length() - (lexEnd-lexStart);
-        new Formatter().reindent(doc, begin, newEnd, null, null);
-
-            // Warp to the inserted method and show the comment
-        if (commentPos != null && isConstant) {
-            JTextComponent target = CopiedCode.getPaneFor(info.getFileObject());
-            if (target != null) {
-                int offset = Utilities.getRowFirstNonWhite(doc, commentPos.getOffset()+1);
-                if (offset != -1) {
-                    offset += commentTextDelta;
-                    if (offset+commentText.length() <= doc.getLength()) {
-                        String s = doc.getText(offset, commentText.length());
-                        if (commentText.equals(s)) {
-                            target.select(offset, offset+commentText.length());
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    private class Edit implements Comparable<Edit> {
-        int offset;
-        int removeLen;
-        String insertText;
-
-        public Edit(int offset, int removeLen, String insertText) {
-            this.offset = offset;
-            this.removeLen = removeLen;
-            this.insertText = insertText;
         }
 
-        public int compareTo(IntroduceFix.Edit other) {
-            return offset-other.offset;
-        }
+        return edits;
     }
 
-    private void extractMethod(String name) throws BadLocationException {
+    private EditList extractMethod(String name) throws BadLocationException {
         Node startNode = nodes.get(0);
         Node endNode = nodes.get(nodes.size()-1);
         //AstPath startPath = new AstPath(AstUtilities.getRoot(info), start);
@@ -388,7 +373,6 @@ class IntroduceFix implements Fix {
         List<String> outputVars = new ArrayList<String>(outputs);
         Collections.sort(outputVars);
 
-        assert doc.isAtomicLock();
         // TODO: Compute local and dynamic variables; pass these in to the method
         // TODO: Compute side effects (assignments to local and dynamic variables);
         // these should be "return values"
@@ -398,7 +382,7 @@ class IntroduceFix implements Fix {
         // TODO - validate that the name is unique etc. so we don't accidentally rewrite it!
 
         StringBuilder sb = new StringBuilder();
-        List<Edit> edits = new ArrayList<Edit>();
+        EditList edits = new EditList(doc);
         boolean isAbove = prevEnd < astRange.getStart();
         sb.append("\n");
         if (!isAbove) {
@@ -406,8 +390,7 @@ class IntroduceFix implements Fix {
         }
         sb.append("# ");
         int commentTextDelta = sb.length();
-        String commentText = NbBundle.getMessage(IntroduceHint.class, "DefaultMethodComment");
-        sb.append(commentText);
+        sb.append(getCommentText());
         sb.append("\n");
         sb.append("def ");
         sb.append(name);
@@ -433,9 +416,8 @@ class IntroduceFix implements Fix {
             sb.append("\n");
         }
 
-        edits.add(new Edit(prevEnd, 0, sb.toString()));
-        Position commentPosition = null;
-        int commentOffset = prevEnd+commentTextDelta;
+        edits.replace(prevEnd, 0, sb.toString(), true, 0);
+        commentOffset = prevEnd+commentTextDelta;
 
         sb = new StringBuilder();
         if (outputVars.size() > 0) {
@@ -451,40 +433,9 @@ class IntroduceFix implements Fix {
             }
         }
 
-        edits.add(new Edit(lexStart, lexEnd-lexStart, sb.toString()));
-
-        Collections.sort(edits);
-        Collections.reverse(edits);
-
-        // Apply edits in reverse order (to keep offsets accurate)
-        Formatter formatter = new Formatter();
-        for (Edit edit : edits) {
-            if (edit.removeLen > 0) {
-                doc.remove(edit.offset, edit.removeLen);
-            }
-            if (edit.insertText != null) {
-                doc.insertString(edit.offset, edit.insertText, null);
-                int end = edit.offset+edit.insertText.length();
-                if (edit.offset <= commentOffset && end >= commentOffset) {
-                    commentPosition = doc.createPosition(commentOffset); // Position of the comment
-                }
-                formatter.reindent(doc, edit.offset, end, null, null);
-            }
-        }
+        edits.replace(lexStart, lexEnd-lexStart, sb.toString(), true, 0);
         
-        // Warp to the inserted method and show the comment
-        if (commentPosition != null) {
-            JTextComponent target = CopiedCode.getPaneFor(info.getFileObject());
-            if (target != null) {
-                int offset = commentPosition.getOffset();
-                if (offset+commentText.length() <= doc.getLength()) {
-                    String s = doc.getText(offset, commentText.length());
-                    if (commentText.equals(s)) {
-                        target.select(offset, offset+commentText.length());
-                    }
-                }
-            }
-        }
+        return edits;
     }
 
     private void appendCommaList(StringBuilder sb, List<String> items, String pre, String post) {
@@ -620,6 +571,10 @@ class IntroduceFix implements Fix {
     }
 
     public boolean isInteractive() {
+        return true;
+    }
+
+    public boolean canPreview() {
         return true;
     }
 }

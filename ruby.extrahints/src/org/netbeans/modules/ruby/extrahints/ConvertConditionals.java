@@ -60,8 +60,10 @@ import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
+import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -203,7 +205,7 @@ public class ConvertConditionals implements AstRule {
         return HintSeverity.CURRENT_LINE_WARNING;
     }
     
-    private class ConvertToModifier implements Fix {
+    private class ConvertToModifier implements PreviewableFix {
         private CompilationInfo info;
         private IfNode ifNode;
 
@@ -217,46 +219,53 @@ public class ConvertConditionals implements AstRule {
         }
 
         public void implement() throws Exception {
-            BaseDocument doc = (BaseDocument) info.getDocument();
-            
-            Node bodyNode = ifNode.getThenBody();
-            boolean isIf = bodyNode != null;
-            if (bodyNode == null) {
-                bodyNode = ifNode.getElseBody();
+            EditList edits = getEditList();
+            if (edits != null) {
+                edits.apply();
             }
-            OffsetRange bodyRange = AstUtilities.getRange(bodyNode);
-            bodyRange = LexUtilities.getLexerOffsets(info, bodyRange);
-            if (bodyRange == OffsetRange.NONE) {
-                return;
-            }
-
-            String body = doc.getText(bodyRange.getStart(), bodyRange.getLength()).trim();
-            if (body.endsWith(";")) {
-                body = body.substring(0, body.length()-1);
-            }
-            StringBuilder sb = new StringBuilder();
-            sb.append(body);
-            sb.append(" ");
-            sb.append(isIf ? "if" : "unless"); // NOI18N
-            sb.append(" ");
-            OffsetRange range = AstUtilities.getRange(ifNode.getCondition());
-            range = LexUtilities.getLexerOffsets(info, range);
-            if (range == OffsetRange.NONE) {
-                return;
-            }
-            sb.append(doc.getText(range.getStart(), range.getLength()));
-            
-            OffsetRange ifRange = AstUtilities.getRange(ifNode);
-            ifRange = LexUtilities.getLexerOffsets(info, ifRange);
-            if (ifRange == OffsetRange.NONE) {
-                return;
-            }
-            
+        }
+        
+        public EditList getEditList() {
             try {
-                doc.atomicLock();
-                doc.replace(ifRange.getStart(), ifRange.getLength(), sb.toString(), null);
-            } finally {
-                doc.atomicUnlock();
+                BaseDocument doc = (BaseDocument) info.getDocument();
+
+                Node bodyNode = ifNode.getThenBody();
+                boolean isIf = bodyNode != null;
+                if (bodyNode == null) {
+                    bodyNode = ifNode.getElseBody();
+                }
+                OffsetRange bodyRange = AstUtilities.getRange(bodyNode);
+                bodyRange = LexUtilities.getLexerOffsets(info, bodyRange);
+                if (bodyRange == OffsetRange.NONE) {
+                    return null;
+                }
+
+                String body = doc.getText(bodyRange.getStart(), bodyRange.getLength()).trim();
+                if (body.endsWith(";")) {
+                    body = body.substring(0, body.length()-1);
+                }
+                StringBuilder sb = new StringBuilder();
+                sb.append(body);
+                sb.append(" ");
+                sb.append(isIf ? "if" : "unless"); // NOI18N
+                sb.append(" ");
+                OffsetRange range = AstUtilities.getRange(ifNode.getCondition());
+                range = LexUtilities.getLexerOffsets(info, range);
+                if (range == OffsetRange.NONE) {
+                    return null;
+                }
+                sb.append(doc.getText(range.getStart(), range.getLength()));
+
+                OffsetRange ifRange = AstUtilities.getRange(ifNode);
+                ifRange = LexUtilities.getLexerOffsets(info, ifRange);
+                if (ifRange == OffsetRange.NONE) {
+                    return null;
+                }
+
+                return new EditList(doc).replace(ifRange.getStart(), ifRange.getLength(), sb.toString(), false, 0);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
             }
         }
 
@@ -266,6 +275,10 @@ public class ConvertConditionals implements AstRule {
 
         public boolean isInteractive() {
             return false;
+        }
+
+        public boolean canPreview() {
+            return true;
         }
     }
 }

@@ -2,5 +2,4 @@ unl^ess !x
 
 HINT:Convert negative if statement to an unless statement
 FIX:Change unless into an if statement and reverse condition logic
-FIX:Disable this hint
 end

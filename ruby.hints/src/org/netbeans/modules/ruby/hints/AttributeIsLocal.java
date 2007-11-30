@@ -43,6 +43,7 @@ import org.jruby.ast.types.INameNode;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.EditRegions;
 import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.NbUtilities;
@@ -52,8 +53,10 @@ import org.netbeans.modules.ruby.elements.AstAttributeElement;
 import org.netbeans.modules.ruby.elements.AstClassElement;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
+import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -203,7 +206,7 @@ public class AttributeIsLocal implements AstRule {
         return null;
     }
     
-    private static class AttributeConflictFix implements Fix {
+    private static class AttributeConflictFix implements PreviewableFix {
 
         private final CompilationInfo info;
         private final boolean fixSelf;
@@ -221,13 +224,28 @@ public class AttributeIsLocal implements AstRule {
                 NbBundle.getMessage(AttributeIsLocal.class, "FixRename");
         }
 
+
         public void implement() throws Exception {
+            EditList edits = createEditList(true);
+            if (edits != null) {
+                edits.apply();
+            }
+        }
+
+        public EditList getEditList() throws Exception {
+            return createEditList(false);
+        }
+
+        private EditList createEditList(boolean doit) throws Exception {
+            BaseDocument doc = (BaseDocument) info.getDocument();
+            EditList edits = new EditList(doc);
+            
             if (fixSelf) {
                 OffsetRange range = AstUtilities.getRange(node);
                 int start = range.getStart();
                 start = LexUtilities.getLexerOffset(info, start);
                 if (start != -1) {
-                    info.getDocument().insertString(start, "self.", null); // NOI18N
+                    edits.replace(start, 0, "self.", false, 0); // NOI18N
                 }
             } else {
                 // Initiate synchronous editing:
@@ -244,8 +262,20 @@ public class AttributeIsLocal implements AstRule {
                         caretOffset = range.getStart();
                     }
                 }
-                EditRegions.getInstance().edit(info.getFileObject(), ranges, caretOffset);
+                if (doit) {
+                    EditRegions.getInstance().edit(info.getFileObject(), ranges, caretOffset);
+                    return null;
+                } else {
+                    String oldName = ((INameNode)path.leaf()).getName();
+                    int oldLen = oldName.length();
+                    String newName = "new_name";
+                    for (OffsetRange range : ranges) {
+                        edits.replace(range.getStart(), oldLen, newName, false, 0);
+                    }
+                }
             }
+            
+            return edits;
         }
 
         private void addLocalRegions(Node node, String name, Set<OffsetRange> ranges) {
@@ -275,6 +305,10 @@ public class AttributeIsLocal implements AstRule {
         }
 
         public boolean isInteractive() {
+            return true;
+        }
+
+        public boolean canPreview() {
             return true;
         }
     }

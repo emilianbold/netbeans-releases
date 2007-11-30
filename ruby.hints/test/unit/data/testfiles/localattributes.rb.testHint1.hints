@@ -4,4 +4,3 @@ HINT:Local variable assignment possibly intended to be accessing an attribute?
 FIX:Go to the relevant attribute definition (attr_accessor bar)
 FIX:Change assignment to self.bar to use attribute
 FIX:Rename local variable to avoid confusion
-FIX:Disable this hint

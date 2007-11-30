@@ -4,7 +4,7 @@ class FooBar
   
   GOOD_CONSTANT = 50
   BadConstant = 50
-  
+   
   # My method
   # Has documentation
   private

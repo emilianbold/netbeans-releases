@@ -2,4 +2,3 @@ i^f x < 12 then puts "hello"; end
 --------------------------------
 HINT:Convert conditional statements to modifiers
 FIX:Change statement into a modifier
-FIX:Disable this hint

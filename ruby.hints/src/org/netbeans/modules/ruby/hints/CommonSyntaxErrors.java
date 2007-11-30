@@ -38,9 +38,11 @@ import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.hints.spi.Description;
+import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.ErrorRule;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -86,7 +88,7 @@ public class CommonSyntaxErrors implements ErrorRule {
         return "X";
     }
 
-    private class FixDocIndent implements Fix {
+    private class FixDocIndent implements PreviewableFix {
         private CompilationInfo info;
         private int equalOffset;
         
@@ -100,48 +102,46 @@ public class CommonSyntaxErrors implements ErrorRule {
         }
 
         public void implement() throws Exception {
+            getEditList().apply();
+        }
+        
+        public EditList getEditList() throws Exception {
             // Move code - but I've gotta make sure I create a new line if necessary
-            try {
-                BaseDocument doc = (BaseDocument) info.getDocument();
-                
-                if (equalOffset > doc.getLength()) {
-                    return; // recent edits
-                }
+            BaseDocument doc = (BaseDocument) info.getDocument();
 
-                try {
-                    doc.atomicLock();
-                    int rowStart = Utilities.getRowStart(doc, equalOffset);
-                    if (Utilities.getRowFirstNonWhite(doc, equalOffset) < equalOffset) {
-                        // There's something else on this line! Create a newline instead!
-                        doc.insertString(equalOffset, "\n", null);
-                    } else {
-                        doc.remove(rowStart, equalOffset-rowStart);
-                    }
-                    int nextRow = Utilities.getRowEnd(doc, rowStart)+1;
-                    if (nextRow < doc.getLength()) {
-                        String text = doc.getText(nextRow, doc.getLength()-nextRow);
-                        int index = text.indexOf("=end");
-                        if (index != -1) {
-                            int beginIndex = text.indexOf("=begin");
-                            if (index < beginIndex || beginIndex == -1) {
-                                int offset = nextRow+index;
-                                rowStart = Utilities.getRowStart(doc, offset);
-                                if (Utilities.getRowFirstNonWhite(doc, offset) < offset) {
-                                    // There's something else on this line! Create a newline instead!
-                                    doc.insertString(offset, "\n", null);
-                                } else {
-                                    doc.remove(rowStart, offset-rowStart);
-                                }
+            if (equalOffset > doc.getLength()) {
+                return null; // recent edits
+            }
 
-                            }
+            EditList edits = new EditList(doc);
+
+            int rowStart = Utilities.getRowStart(doc, equalOffset);
+            if (Utilities.getRowFirstNonWhite(doc, equalOffset) < equalOffset) {
+                // There's something else on this line! Create a newline instead!
+                edits.replace(equalOffset, 0, "\n", false, 0);
+            } else {
+                edits.replace(rowStart, equalOffset-rowStart, null, false, 0);
+            }
+            int nextRow = Utilities.getRowEnd(doc, rowStart)+1;
+            if (nextRow < doc.getLength()) {
+                String text = doc.getText(nextRow, doc.getLength()-nextRow);
+                int index = text.indexOf("=end");
+                if (index != -1) {
+                    int beginIndex = text.indexOf("=begin");
+                    if (index < beginIndex || beginIndex == -1) {
+                        int offset = nextRow+index;
+                        rowStart = Utilities.getRowStart(doc, offset);
+                        if (Utilities.getRowFirstNonWhite(doc, offset) < offset) {
+                            // There's something else on this line! Create a newline instead!
+                            edits.replace(offset, 0, "\n", false, 1);
+                        } else {
+                            edits.replace(rowStart, offset-rowStart, null, false, 1);
                         }
                     }
-                } finally {
-                    doc.atomicUnlock();
                 }
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
             }
+            
+            return edits;
         }
 
         public boolean isSafe() {
@@ -150,6 +150,10 @@ public class CommonSyntaxErrors implements ErrorRule {
 
         public boolean isInteractive() {
             return false;
+        }
+
+        public boolean canPreview() {
+            return true;
         }
     }
 

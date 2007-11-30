@@ -2,4 +2,3 @@
       --------
 HINT:Controller action without corresponding view file
 FIX:Create view (open generator)
-FIX:Disable this hint

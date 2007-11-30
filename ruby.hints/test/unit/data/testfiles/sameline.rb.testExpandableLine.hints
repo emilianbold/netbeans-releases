@@ -2,4 +2,3 @@ cla^ss FooController; def rescue_action(e) raise e end; end
 ----------------------------------------------------------
 HINT:Code block on single line
 FIX:Reformat class code block to span multiple lines
-FIX:Disable this hint

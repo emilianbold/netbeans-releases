@@ -3,4 +3,3 @@
 HINT:Convert between {}-blocks and do/end blocks
 FIX:Convert do/end-block to a {}-block
 FIX:Expand single-line block to multiple lines
-FIX:Disable this hint

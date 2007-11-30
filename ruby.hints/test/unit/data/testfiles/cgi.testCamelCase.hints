@@ -2,29 +2,23 @@
            ----------
 HINT:Style: Method names traditionally use lowercase letters only
 FIX:Rename...
-FIX:Disable this hint
   def CGI::unescapeHTML(string)
            ------------
 HINT:Style: Method names traditionally use lowercase letters only
 FIX:Rename...
-FIX:Disable this hint
   def CGI::escapeElement(string, *elements)
            -------------
 HINT:Style: Method names traditionally use lowercase letters only
 FIX:Rename...
-FIX:Disable this hint
   def CGI::unescapeElement(string, *elements)
            ---------------
 HINT:Style: Method names traditionally use lowercase letters only
 FIX:Rename...
-FIX:Disable this hint
     def nOE_element_def(element, append = nil)
         ---------------
 HINT:Style: Method names traditionally use lowercase letters only
 FIX:Rename...
-FIX:Disable this hint
     def nO_element_def(element)
         --------------
 HINT:Style: Method names traditionally use lowercase letters only
 FIX:Rename...
-FIX:Disable this hint

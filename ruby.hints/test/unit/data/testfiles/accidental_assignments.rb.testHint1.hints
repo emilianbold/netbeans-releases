@@ -2,14 +2,11 @@ puts "equal" if foo = bar
                 ---------
 HINT:Accidental Assignment (if x = y instead of x == y)
 FIX:Convert assignment to comparison (change = to ==)
-FIX:Disable this hint
 if (foo = bar)
     ---------
 HINT:Accidental Assignment (if x = y instead of x == y)
 FIX:Convert assignment to comparison (change = to ==)
-FIX:Disable this hint
 if foo = bar # comment
    ---------
 HINT:Accidental Assignment (if x = y instead of x == y)
 FIX:Convert assignment to comparison (change = to ==)
-FIX:Disable this hint

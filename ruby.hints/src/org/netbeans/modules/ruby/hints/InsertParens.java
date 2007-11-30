@@ -40,9 +40,11 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.hints.spi.Description;
+import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.ErrorRule;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 
@@ -81,7 +83,7 @@ public class InsertParens implements ErrorRule {
                 Node callNode = null;
                 if (AstUtilities.isCall(path.leafParent())) {
                     callNode = path.leafParent();
-                } else if (AstUtilities.isCall(path.leafGrandParent())) {
+                } else if (path.leafGrandParent() != null && AstUtilities.isCall(path.leafGrandParent())) {
                     callNode = path.leafGrandParent();
                 } else if (AstUtilities.isCall(node)) {
                     callNode = node;
@@ -116,7 +118,7 @@ public class InsertParens implements ErrorRule {
         return false;
     }
 
-    private static class InsertParenFix implements Fix {
+    private static class InsertParenFix implements PreviewableFix {
 
         private final CompilationInfo info;
         private final int offset;
@@ -133,45 +135,46 @@ public class InsertParens implements ErrorRule {
         }
 
         public void implement() throws Exception {
+            getEditList().apply();
+        }
+        
+        public EditList getEditList() throws Exception {
             ISourcePosition pos = node.getPosition();
             int endOffset = pos.getEndOffset();
             BaseDocument doc = (BaseDocument) info.getDocument();
+            EditList edits = new EditList(doc);
             if (endOffset > doc.getLength()) {
-                return;
+                return edits;
             }
 
-            try {
-                doc.atomicLock();
-                // Insert parentheses
-                assert AstUtilities.isCall(node);
-                OffsetRange range = AstUtilities.getCallRange(node);
-                int insertPos = range.getEnd();
-                // Check if I should remove a space; e.g. replace "foo arg" with "foo(arg"
-                if (Character.isWhitespace(doc.getText(insertPos, 1).charAt(0))) {
-                    doc.replace(insertPos, 1, "(", null); // NOI18N
-                } else {
-                    doc.insertString(insertPos, "(", null); // NOI18N
-                    endOffset++;
-                }
-
-                // Insert )
-                // Look backwards from endOffset to see the first nonspace char and insert
-                // after that
-                for (int i = endOffset-1; i >= 0; i--) {
-                    // TODO - find more efficient doc iterator!
-                    char c = doc.getText(i, 1).charAt(0);
-                    if (Character.isWhitespace(c)) {
-                        continue;
-                    } else {
-                        endOffset = i+1;
-                        break;
-                    }
-                }
-                doc.insertString(endOffset, ")", null); // NOI18N
+            // Insert parentheses
+            assert AstUtilities.isCall(node);
+            OffsetRange range = AstUtilities.getCallRange(node);
+            int insertPos = range.getEnd();
+            // Check if I should remove a space; e.g. replace "foo arg" with "foo(arg"
+            if (Character.isWhitespace(doc.getText(insertPos, 1).charAt(0))) {
+                edits.replace(insertPos, 1, "(", false, 0); // NOI18N
+            } else {
+                edits.replace(insertPos, 0, "(", false, 0); // NOI18N
                 endOffset++;
-            } finally {
-                doc.atomicUnlock();
             }
+
+            // Insert )
+            // Look backwards from endOffset to see the first nonspace char and insert
+            // after that
+            for (int i = endOffset-1; i >= 0; i--) {
+                // TODO - find more efficient doc iterator!
+                char c = doc.getText(i, 1).charAt(0);
+                if (Character.isWhitespace(c)) {
+                    continue;
+                } else {
+                    endOffset = i+1;
+                    break;
+                }
+            }
+            edits.replace(endOffset, 0, ")", false, 1); // NOI18N
+            
+            return edits;
         }
         
         public boolean isSafe() {
@@ -180,6 +183,10 @@ public class InsertParens implements ErrorRule {
 
         public boolean isInteractive() {
             return false;
+        }
+
+        public boolean canPreview() {
+            return true;
         }
     }
 }

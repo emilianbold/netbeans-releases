@@ -2,4 +2,3 @@ i^f (x != 9) then puts "hello"; puts "world"; end
 ------------------------------------------------
 HINT:Convert negative if statement to an unless statement
 FIX:Change if into an unless statement and reverse condition logic
-FIX:Disable this hint

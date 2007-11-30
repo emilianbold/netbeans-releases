@@ -49,6 +49,7 @@ import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
 import org.netbeans.modules.ruby.hints.spi.ErrorRule;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
 import org.netbeans.modules.ruby.hints.spi.Rule;
 import org.netbeans.modules.ruby.hints.spi.SelectionRule;
 import org.netbeans.modules.ruby.hints.spi.UserConfigurableRule;
@@ -75,6 +76,11 @@ public class RubyHintsProvider implements HintsProvider {
     public RubyHintsProvider() {
     }
 
+    private boolean isTest() {
+        return testHints != null || testSuggestions != null || testSelectionHints != null ||
+                testErrors != null;
+    }
+    
     public List<Error> computeErrors(CompilationInfo info, List<ErrorDescription> result) {
         try {
             if (info.getDocument() == null) {
@@ -225,9 +231,16 @@ public class RubyHintsProvider implements HintsProvider {
             fixList = new ArrayList<Fix>(desc.getFixes().size());
             for (org.netbeans.modules.ruby.hints.spi.Fix fix : desc.getFixes()) {
                 fixList.add(new FixWrapper(fix));
+                
+                if (fix instanceof PreviewableFix) {
+                    PreviewableFix previewFix = (PreviewableFix)fix;
+                    if (previewFix.canPreview() && !isTest()) {
+                        fixList.add(new PreviewHintFix(info, previewFix));
+                    }
+                }
             }
             
-            if (rule instanceof UserConfigurableRule) {
+            if (rule instanceof UserConfigurableRule && !isTest()) {
                 // Add a hint for disabling this fix
                 fixList.add(new DisableHintFix((UserConfigurableRule)rule, info, caretPos));
             }
