@@ -238,6 +238,16 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
     
     private Vector<String> combineArgs(Vector<String>oldrow) {
         Vector<String> nurow = new Vector<String>(oldrow.size());
+        nurow.add(0, oldrow.get(0));
+        nurow.add(1, oldrow.get(1));
+        nurow.add(2, oldrow.get(2));
+        nurow.add(3, oldrow.get(3));
+        nurow.add(4, oldrow.get(4));
+        StringBuilder args = new StringBuilder();
+        for (int i = 5; i < oldrow.size(); i++) {
+            args.append(oldrow.get(i) + ' ');
+        }
+        nurow.add(5, args.toString());
         return nurow;
     }
     
@@ -330,6 +340,7 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
             this.pinfo = pinfo;
         }
         
+        @Override
         public String toString() {
             return pinfo.getDisplayName();
         }

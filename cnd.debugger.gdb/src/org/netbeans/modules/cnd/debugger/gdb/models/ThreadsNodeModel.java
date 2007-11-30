@@ -41,58 +41,53 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.Vector;
-import org.netbeans.api.debugger.Session;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
-
 import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 
 /**
- * @author   Gordon Prieur (copied from Jan Jancura's JPDA implementation)
+ * @author   Gordon Prieur (copied from CallStackNodeModel)
  */
-public class CallStackNodeModel implements NodeModel {
+public class ThreadsNodeModel implements NodeModel {
 
-    public static final String CALL_STACK =
-        "org/netbeans/modules/debugger/resources/callStackView/NonCurrentFrame"; // NOI18N
-    public static final String CURRENT_CALL_STACK =
-        "org/netbeans/modules/debugger/resources/callStackView/CurrentFrame"; // NOI18N
+    public static final String CURRENT_THREAD =
+        "org/netbeans/modules/debugger/resources/threadsView/CurrentThread"; // NOI18N
+    public static final String RUNNING_THREAD =
+        "org/netbeans/modules/debugger/resources/threadsView/RunningThread"; // NOI18N
 
     private GdbDebugger debugger;
-    private Session session;
     private Vector listeners = new Vector();
     
-    
-    public CallStackNodeModel(ContextProvider lookupProvider) {
+    public ThreadsNodeModel(ContextProvider lookupProvider) {
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
-        session = (Session) lookupProvider.lookupFirst(null, Session.class);
         new Listener(this, debugger);
     }
     
     public String getDisplayName(Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT) {
-            return NbBundle.getBundle(CallStackNodeModel.class).getString("CTL_CallstackModel_Column_Name_Name"); // NOI18N
-        } else if (o instanceof CallStackFrame) {
-            CallStackFrame sf = (CallStackFrame) o;
-            CallStackFrame ccsf = debugger.getCurrentCallStackFrame();
-            if (ccsf != null && ccsf.equals(sf)) { 
-                return BoldVariablesTableModelFilterFirst.toHTML(getCSFName(session, sf, false),
-			true, false, null);
-	    }
-            return getCSFName(session, sf, false);
+            return NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_Column_Name_Name"); // NOI18N
         } else if ("No current thread" == o) { // NOI18N
-            return NbBundle.getMessage(CallStackNodeModel.class, "NoCurrentThread"); // NOI18N
+            return NbBundle.getMessage(ThreadsNodeModel.class, "CTL_ThreadsModel_MSG_NoCurrentThread"); // NOI18N
         } else if ("Thread is running" == o) { // NOI18N
-            return NbBundle.getMessage(CallStackNodeModel.class, "ThreadIsRunning"); // NOI18N
+            return NbBundle.getMessage(ThreadsNodeModel.class, "CTL_ThreadsModel_MSG_ThreadIsRunning"); // NOI18N
+        } else if (o instanceof String) {
+            String line = o.toString();
+            if (line.startsWith("* ")) { // NOI18N
+                return bold(line.substring(2));
+            } else {
+                return line.substring(1);
+            }
         } else {
 	    throw new UnknownTypeException(o);
 	}
@@ -100,14 +95,11 @@ public class CallStackNodeModel implements NodeModel {
     
     public String getShortDescription(Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT) {
-            return NbBundle.getBundle(CallStackNodeModel.class).getString("CTL_CallstackModel_Column_Name_Desc"); // NOI18N
-        } else if (o instanceof CallStackFrame) {
-            CallStackFrame sf = (CallStackFrame) o;
-            return getCSFName(session, sf, true);
+            return NbBundle.getBundle(ThreadsNodeModel.class).getString("CTL_ThreadsModel_Column_Name_Desc"); // NOI18N
         } else if ("No current thread" == o) { // NOI18N
-            return NbBundle.getMessage(CallStackNodeModel.class, "NoCurrentThread"); // NOI18N
+            return NbBundle.getMessage(ThreadsNodeModel.class, "CTL_ThreadsModel_MSG_NoCurrentThread"); // NOI18N
         } else if ("Thread is running" == o) { // NOI18N
-            return NbBundle.getMessage(CallStackNodeModel.class, "ThreadIsRunning"); // NOI18N
+            return NbBundle.getMessage(ThreadsNodeModel.class, "CTL_ThreadsModel_MSG_ThreadIsRunning"); // NOI18N
         } else {
 	    throw new UnknownTypeException (o);
 	}
@@ -115,14 +107,12 @@ public class CallStackNodeModel implements NodeModel {
     
     public String getIconBase(Object node) throws UnknownTypeException {
         if (node instanceof String) {
-	    return null;
-	}
-        if (node instanceof CallStackFrame) {
-            CallStackFrame ccsf = debugger.getCurrentCallStackFrame();
-            if (ccsf != null && ccsf.equals(node)) {
-		return CURRENT_CALL_STACK;
-	    }
-            return CALL_STACK;
+            String row = node.toString();
+            if (row.charAt(0) == '*') {
+                return CURRENT_THREAD;
+            } else {
+                return RUNNING_THREAD;
+            }
         }
         throw new UnknownTypeException(node);
     }
@@ -150,52 +140,43 @@ public class CallStackNodeModel implements NodeModel {
 	    ((ModelListener) v.get(i)).modelChanged(null);
 	}
     }
-
-    /** 
-     * Gets Call Stack Frame name.
-     * Logic scheme: 
-     * By default return function name and filename:line.
-     * If function name is not available, return address and filename:line.
-     * If function name and address are not available, return filename.
-     *
-     * @param s Session
-     * @param csf Call Stack Frame
-     * @param l A boolean flag to define filename format (l=true means fullname)
-     * @return Call Stack Frame name.
-     */
-    public static String getCSFName(Session s, CallStackFrame csf, boolean useFullName) {
-        String csfName;
-        String functionName = csf.getFunctionName();
-        
-        if (functionName != null && !functionName.equals("??")) { // NOI18N
-            // By default use function name
-            csfName = functionName;
-        } else if (csf.getAddr() != null) {  
-            //If function name is not available, use address
-            csfName= NbBundle.getMessage(CallStackNodeModel.class,
-			"CTL_CallstackModel_Msg_Format", csf.getAddr()); // NOI18N
-	} else {
-            csfName = ""; // NOI18N
-        }     
-        // add filename:line, if no functionName available use full path name.
-        int ln = csf.getLineNumber();
-        if (csfName.length() == 0) {
-            String fileName = useFullName ? csf.getFullname() : csf.getFileName();
-            if (ln < 0) {
-                if (fileName == null) {
-                    csfName = "??"; // NOI18N
-                } else {
-                    csfName = fileName;
-                }
-            }
-        } else {
-            String fileName = csf.getFileName();
-            if (fileName != null && ln >= 0) {
-                csfName = NbBundle.getMessage(CallStackNodeModel.class, "FMT_StackFrame", // NOI18N
-                        new Object[] { csfName, fileName, String.valueOf(ln) });
-            }
-	}
-        return csfName.toString();
+    
+    private String bold(String value) {
+        return toHTML(value, true, false, null);
+    }
+    
+    public static String toHTML(String text, boolean bold, boolean italics, Color color) {
+        if (text == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html>");
+        if (bold) { 
+            sb.append("<b>");
+        }
+        if (italics) {
+            sb.append("<i>");
+        }
+        if (color != null) {
+            sb.append("<font color=");
+            sb.append(Integer.toHexString ((color.getRGB () & 0xffffff)));
+            sb.append(">");
+        }
+        text = text.replaceAll("&", "&amp;");
+        text = text.replaceAll("<", "&lt;");
+        text = text.replaceAll(">", "&gt;");
+        sb.append(text);
+        if (color != null) {
+            sb.append("</font>");
+        }
+        if (italics) {
+            sb.append("</i>");
+        }
+        if (bold) {
+            sb.append("</b>");
+        }
+        sb.append("</html>");
+        return sb.toString();
     }
             
     
@@ -210,26 +191,26 @@ public class CallStackNodeModel implements NodeModel {
         private WeakReference ref;
         private GdbDebugger debugger;
         
-        private Listener(CallStackNodeModel rm, GdbDebugger debugger) {
-            ref = new WeakReference(rm);
+        private Listener(ThreadsNodeModel tnm, GdbDebugger debugger) {
+            ref = new WeakReference(tnm);
             this.debugger = debugger;
             debugger.addPropertyChangeListener(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
         }
         
-        private CallStackNodeModel getModel() {
-            CallStackNodeModel rm = (CallStackNodeModel) ref.get();
-            if (rm == null) {
+        private ThreadsNodeModel getModel() {
+            ThreadsNodeModel tnm = (ThreadsNodeModel) ref.get();
+            if (tnm == null) {
                 debugger.removePropertyChangeListener(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
             }
-            return rm;
+            return tnm;
         }
         
         public void propertyChange(PropertyChangeEvent e) {
-            CallStackNodeModel rm = getModel();
-            if (rm == null) {
+            ThreadsNodeModel tnm = getModel();
+            if (tnm == null) {
 		return;
 	    }
-            rm.fireTreeChanged();
+            tnm.fireTreeChanged();
         }
     }
 }

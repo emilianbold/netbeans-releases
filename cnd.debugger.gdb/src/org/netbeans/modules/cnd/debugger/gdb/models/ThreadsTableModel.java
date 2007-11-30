@@ -41,34 +41,32 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
+import javax.swing.JToolTip;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
+
 
 /**
  *
- * @author   Gordon Prieur (copied from Jan Jancura's JPDA implementation)
+ * @author   Gordon Prieur (copied from CallStackTableModel)
  */
-public class CallStackTableModel implements TableModel, Constants {
+public class ThreadsTableModel implements TableModel, Constants {
     
     public Object getValueAt(Object row, String columnID) throws UnknownTypeException {
-        if (row instanceof CallStackFrame) {
-            if (columnID.equals(CALL_STACK_FRAME_LOCATION_COLUMN_ID)) {
-                String loc = ((CallStackFrame) row).getFullname();
-                loc += ":"; // NOI18N
-                loc += ((CallStackFrame) row).getLineNumber();
-		return (loc);
+        if (row instanceof String || row instanceof JToolTip) {
+            if (!columnID.equals(THREAD_STATE_COLUMN_ID)) {
+		return row;
             }
         }
         throw new UnknownTypeException(row);
     }
     
-    public boolean isReadOnly(Object row, String columnID) throws 
-    UnknownTypeException {
-        if (row instanceof CallStackFrame) {
-            if (columnID.equals(CALL_STACK_FRAME_LOCATION_COLUMN_ID)) {
+    public boolean isReadOnly(Object row, String columnID) throws UnknownTypeException {
+        if (row instanceof String) {
+            if (!columnID.equals(THREAD_STATE_COLUMN_ID)) {
 		return true;
 	    }
         }

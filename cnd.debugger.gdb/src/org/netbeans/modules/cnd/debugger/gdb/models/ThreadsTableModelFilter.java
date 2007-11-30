@@ -41,41 +41,76 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
+import javax.swing.JToolTip;
 import org.netbeans.spi.debugger.ui.Constants;
-import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.TableModel;
+import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 
 /**
  *
- * @author   Gordon Prieur (copied from Jan Jancura's JPDA implementation)
+ * @author   Gordon Prieur (copied from CallStackTableModel)
  */
-public class CallStackTableModel implements TableModel, Constants {
+public class ThreadsTableModelFilter implements TableModelFilter, Constants {
     
-    public Object getValueAt(Object row, String columnID) throws UnknownTypeException {
-        if (row instanceof CallStackFrame) {
-            if (columnID.equals(CALL_STACK_FRAME_LOCATION_COLUMN_ID)) {
-                String loc = ((CallStackFrame) row).getFullname();
-                loc += ":"; // NOI18N
-                loc += ((CallStackFrame) row).getLineNumber();
-		return (loc);
+//    public ThreadsTableModelFilter(ContextProvider lookupProvider) {
+//        System.err.println("ThreadsTableModelFilter<Init>: ");
+//        Model cm;
+//        List l = lookupProvider.lookup(null, Model.class);
+//        int s = l.size();
+//        if (s > 0) {
+//            int i, k = l.size ();
+//            for (i = 0; i < k; i++) {
+//                cm = (Model) l.get(i);
+//                if (cm != null) {
+//                    System.err.println("xxx");
+//                }
+//            }
+//        }
+//        l = DebuggerManager.getDebuggerManager().lookup(null, Models.CompoundModel.class);
+//        s = l.size();
+//        if (s > 0) {
+//            int i, k = l.size ();
+//            for (i = 0; i < k; i++) {
+//                cm = (Models.CompoundModel) l.get(i);
+//                if (cm != null) {
+//                    System.err.println("xxx");
+//                }
+//            }
+//        }
+//        l = DebuggerManager.getDebuggerManager().lookup(null, Model.class);
+//        s = l.size();
+//        if (s > 0) {
+//            int i, k = l.size ();
+//            for (i = 0; i < k; i++) {
+//                cm = (Models.CompoundModel) l.get(i);
+//                if (cm != null) {
+//                    System.err.println("xxx");
+//                }
+//            }
+//        }
+//    }
+    
+    public Object getValueAt(TableModel original, Object row, String columnID) throws UnknownTypeException {
+        if (row instanceof String || row instanceof JToolTip) {
+            if (!columnID.equals(THREAD_STATE_COLUMN_ID)) {
+                return original.getValueAt(row, columnID);
             }
         }
         throw new UnknownTypeException(row);
     }
     
-    public boolean isReadOnly(Object row, String columnID) throws 
-    UnknownTypeException {
-        if (row instanceof CallStackFrame) {
-            if (columnID.equals(CALL_STACK_FRAME_LOCATION_COLUMN_ID)) {
-		return true;
+    public boolean isReadOnly(TableModel original, Object row, String columnID) throws UnknownTypeException {
+        if (row instanceof String || row instanceof JToolTip) {
+            if (!columnID.equals(THREAD_STATE_COLUMN_ID)) {
+                return original.isReadOnly(row, columnID);
 	    }
         }
         throw new UnknownTypeException(row);
     }
     
-    public void setValueAt(Object row, String columnID, Object value) throws UnknownTypeException {
+    public void setValueAt(TableModel original, Object row, String columnID, Object value) throws UnknownTypeException {
         throw new UnknownTypeException(row);
     }
     

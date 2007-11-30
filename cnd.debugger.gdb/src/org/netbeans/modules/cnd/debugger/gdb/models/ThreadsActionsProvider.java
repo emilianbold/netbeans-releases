@@ -41,57 +41,66 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
-import org.netbeans.spi.debugger.ui.Constants;
-import org.netbeans.spi.viewmodel.TableModel;
-import org.netbeans.spi.viewmodel.ModelListener;
+import javax.swing.Action;
+import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
+import org.netbeans.spi.viewmodel.Models;
+import org.netbeans.spi.viewmodel.TreeModel;
+import org.openide.util.NbBundle;
+
 
 /**
- *
- * @author   Gordon Prieur (copied from Jan Jancura's JPDA implementation)
+ * @author   Gordon Prieur
  */
-public class CallStackTableModel implements TableModel, Constants {
+public class ThreadsActionsProvider implements NodeActionsProvider {
+        
+    private GdbDebugger    debugger;
+    private ContextProvider  lookupProvider;
     
-    public Object getValueAt(Object row, String columnID) throws UnknownTypeException {
-        if (row instanceof CallStackFrame) {
-            if (columnID.equals(CALL_STACK_FRAME_LOCATION_COLUMN_ID)) {
-                String loc = ((CallStackFrame) row).getFullname();
-                loc += ":"; // NOI18N
-                loc += ((CallStackFrame) row).getLineNumber();
-		return (loc);
+    private final Action MAKE_CURRENT_ACTION = Models.createAction(
+        NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_ThreadsAction_MakeCurrent_Label"), // NOI18N
+        new Models.ActionPerformer() {
+            public boolean isEnabled(Object node) {
+                return true;
             }
-        }
-        throw new UnknownTypeException(row);
-    }
-    
-    public boolean isReadOnly(Object row, String columnID) throws 
-    UnknownTypeException {
-        if (row instanceof CallStackFrame) {
-            if (columnID.equals(CALL_STACK_FRAME_LOCATION_COLUMN_ID)) {
-		return true;
-	    }
-        }
-        throw new UnknownTypeException(row);
-    }
-    
-    public void setValueAt(Object row, String columnID, Object value) throws UnknownTypeException {
-        throw new UnknownTypeException(row);
-    }
-    
-    /** 
-     * Registers given listener.
-     * 
-     * @param l the listener to add
-     */
-    public void addModelListener(ModelListener l) {
-    }
+            public void perform(Object[] nodes) {
+                makeCurrent(nodes[0]);
+            }
+        },
+        Models.MULTISELECTION_TYPE_EXACTLY_ONE
+    );
 
-    /** 
-     * Unregisters given listener.
-     *
-     * @param l the listener to remove
-     */
-    public void removeModelListener(ModelListener l) {
+
+    public ThreadsActionsProvider(ContextProvider lookupProvider) {
+        this.lookupProvider = lookupProvider;
+        debugger = null;
+    }
+    
+    private GdbDebugger getDebugger() {
+        if (debugger == null) {
+            debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        }
+        return debugger;
+    }
+    
+    public Action[] getActions(Object node) throws UnknownTypeException {
+        if (node == TreeModel.ROOT) {
+	    return new Action[0];
+	} else {
+            return new Action[] { MAKE_CURRENT_ACTION };
+        }
+    }
+    
+    public void performDefaultAction(Object node) {
+        if (node == TreeModel.ROOT) {
+	    return;
+	}
+        makeCurrent(node);
+    }
+    
+    private void makeCurrent(Object node) {
+        getDebugger().makeThreadActive(node.toString().trim());
     }
 }

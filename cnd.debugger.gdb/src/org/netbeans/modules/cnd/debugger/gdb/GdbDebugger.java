@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbMiDefinitions;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
+import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.FieldTokenizer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
@@ -113,6 +114,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 
     public static final String          STATE_NONE = "state_none"; // NOI18N
     public static final String          STATE_STARTING = "state_starting"; // NOI18N
+    public static final String          STATE_ATTACHING = "state_attaching"; // NOI18N
     public static final String          STATE_LOADING = "state_loading"; // NOI18N
     public static final String          STATE_LOADED = "state_loaded"; // NOI18N
     public static final String          STATE_READY = "state_ready"; // NOI18N
@@ -192,7 +194,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public ContextProvider getLookup() {
         return lookupProvider;
     }
-    
+   
     public void startDebugger() {
         ProjectActionEvent pae;
         GdbProfile profile;
@@ -210,15 +212,17 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     pae.getID() != DEBUG_ATTACH) {
                 termpath = pae.getProfile().getTerminalPath();
             }
-            startupTimer = new Timer("GDB Startup Timer Thread"); // NOI18N
-            startupTimer.schedule(new TimerTask() {
-                    public void run() {
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
-                               "ERR_StartupTimeout"))); // NOI18N
-                        setExited();
-                        finish(true);
-                    }
-            }, 30000);
+            if (!Boolean.getBoolean("gdb.suppress-timeout")) {
+                startupTimer = new Timer("GDB Startup Timer Thread"); // NOI18N
+                startupTimer.schedule(new TimerTask() {
+                        public void run() {
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                                   "ERR_StartupTimeout"))); // NOI18N
+                            setExited();
+                            finish(true);
+                        }
+                }, 30000);
+            }
             String gdbCommand = profile.getGdbPath(profile.getGdbCommand(), pae.getProfile().getRunDirectory());
             if (gdbCommand.toLowerCase().contains("cygwin")) { // NOI18N
                 cygwin = true;
@@ -229,9 +233,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             gdb.environment_directory(runDirectory);
             gdb.gdb_show("language"); // NOI18N
             if (pae.getID() == DEBUG_ATTACH) {
+                programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
                 gdb.target_attach(Long.toString(programPID));
-                gdb.file_symbol_file(pae.getExecutable());
-                setLoading();
+//                gdb.file_symbol_file(pae.getExecutable());
+                setAttaching();
             } else {
                 gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
         
@@ -275,6 +280,32 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             setExited();
             finish(false);
         }
+    }
+
+    public String[] getThreadInformation() {
+        while (gdb == null) {
+            try {
+                System.err.println("GD.getThreadInformation: null gdb...");
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+            }
+        }
+        CommandBuffer cb = new CommandBuffer(gdb.info_threads());
+        String results = cb.postAndWait();
+        if (results.length() > 0) {
+            List<String> list = new ArrayList<String>();
+            for (String line : results.split("\\\\n")) { // NOI18N
+                if (!line.trim().startsWith("from ")) { // NOI18N
+                    list.add(line);
+                }
+            }
+            return list.toArray(new String[list.size()]);
+        }
+        return new String[0];
+    }
+
+    public int getThreadCount() {
+        return 1;
     }
     
     private String getProgramName(String program) {
@@ -330,6 +361,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 updateLocalVariables(0);
             } else if (evt.getNewValue() == STATE_SILENT_STOP) {
                 interrupt();
+            } else if (evt.getNewValue() == STATE_ATTACHING) {
+                if (validAttach()) { // FIXME - Is this needed? Is the need platform specific?
+                    setLoading();
+                } else {
+                    finish(false);
+                }
             } else if (evt.getNewValue() == STATE_RUNNING && 
                     (evt.getOldValue() == STATE_SILENT_STOP ||
                      evt.getOldValue() == STATE_READY))  {
@@ -344,6 +381,46 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 finish(false);
             }
         }
+    }
+    
+    /**
+     * Check that the executable from the selected project matches the attached process. Gdb itself
+     * doesn't do this validation and its non-trivial and the methods of validation are system
+     * dependent.
+     * 
+     * @return true if the project matches the attached to executable
+     */
+    private boolean validAttach() {
+        assert !Thread.currentThread().getName().equals("GdbReaderRP") : // NOI18N
+            "Internal Error: Cannot call validAttach from GdbReaderRP thread"; // NOI18N
+        if (!Utilities.isWindows()) {
+            File dir = new File("/proc/" + Long.toString(programPID));
+            if (dir.exists() && dir.isDirectory()) {
+                // various system dependent checks...
+            }
+        }
+        ProjectActionEvent pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+        String info = getInfoFiles();
+        if (checkInfoFiles(pae, info)) {
+            return true;
+        }
+        return true;  // FIXME - this is a debug response!
+//        return false;
+    }
+    
+    private String getInfoFiles() {
+        return null;
+    }
+    
+    private boolean checkInfoFiles(ProjectActionEvent pae, String info) {
+        String executable = pae.getExecutable();
+//        String[] lines = info.split("\\n");
+//        for (String line : lines) {
+//            if (line.contains(executable)) {
+//                return true;
+//            }
+//        }
+        return false;
     }
     
     public GdbProxy getGdbProxy() {
@@ -454,6 +531,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
                 addArgsToLocalVariables(msg.substring(17));
             }
+        } else if (msg.startsWith("^done,new-thread-id=")) { // NOI18N (-thread-select)
+//            firePropertyChange(PROP_CURRENT_THREAD, new)
         } else if (msg.startsWith("^done,value=") && msg.contains("auto; currently c++")) { // NOI18N
             cplusplus = true;
         } else if (msg.startsWith("^done,value=")) { // NOI18N (-data-evaluate-expression)
@@ -470,8 +549,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         } else if (msg.equals("^done") && getState().equals(STATE_SILENT_STOP)) { // NOI18N
             setRunning();
         } else if (msg.equals("^done")) { // NOI18N
+            CommandBuffer cb = CommandBuffer.getCommandBuffer(itok);
             StringBuilder typebuf;
-            if ((typebuf = typeCompletionTable.get(itok)) != null) { // complete response of ptype command
+            if (cb != null) {
+                cb.done();
+                cb.callback();
+                cb.dispose();
+            } else if ((typebuf = typeCompletionTable.get(itok)) != null) { // complete response of ptype command
                 String tbuf = typebuf.toString();
                 int pos = tbuf.indexOf('='); // its guaranteed to have '='
                 String type = tbuf.substring(0, pos);
@@ -554,6 +638,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 watch.setTypeToError(msg.substring(1, msg.length() - 1));
             } else if ((avar = updateVariablesMap.remove(itok)) != null) {
                 avar.restoreOldValue();
+            } else if (msg.equals("\"Can't attach to process.\"")) { // NOI18N
+                DialogDisplayer.getDefault().notify(
+                       new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                       "ERR_CantAttach"))); // NOI18N
+                ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
             } else if (msg.startsWith("\"No symbol ") && msg.endsWith(" in current context.\"")) { // NOI18N
                 String type = msg.substring(13, msg.length() - 23);
                 if (type.equals("string") || type.equals("std::string")) { // NOI18N
@@ -605,16 +694,22 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     /** Handle gdb responses starting with '~' */
-    public void consoleStreamOutput(int token, String msg) {
+    public void consoleStreamOutput(int token, String omsg) {
         StringBuilder typebuf;
         GdbVariable var;
         GdbWatchVariable watch;
         String type;
+        CommandBuffer cb = CommandBuffer.getCommandBuffer(Integer.valueOf(token));
+        String msg;
         
-        if (msg.endsWith("\\n")) { // NOI18N
-            msg = msg.substring(0, msg.length() - 2);
+        if (omsg.endsWith("\\n")) { // NOI18N
+            msg = omsg.substring(0, omsg.length() - 2);
+        } else {
+            msg = omsg;
         }
-        if (msg.startsWith("type = ")) { // NOI18N
+        if (cb != null) {
+            cb.append(omsg);
+        } else if (msg.startsWith("type = ")) { // NOI18N
             if ((var = symbolCompletionTable.remove(Integer.valueOf(token))) != null) { // whatis
                 type = msg.substring(7);
                 var.setType(type);
@@ -1298,6 +1393,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         setState(STATE_STARTING);
     }
     
+    public void setAttaching() {
+        setState(STATE_ATTACHING);
+    }
+    
     public void setLoading() {
         setState(STATE_LOADING);
     }
@@ -1494,8 +1593,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * @param hostName a name of computer to attach to
      * @param portNumber a port number
      */
-    public static void attach(String pid, ProjectInformation pinfo)
-            throws DebuggerStartException {
+    public static void attach(String pid, ProjectInformation pinfo) throws DebuggerStartException {
         Project project = pinfo.getProject();
         ConfigurationDescriptorProvider cdp =
                 (ConfigurationDescriptorProvider) project.getLookup().
@@ -1515,18 +1613,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     null,
                     false);
             DebuggerEngine[] es = DebuggerManager.getDebuggerManager().startDebugging(
-                    DebuggerInfo.create(SESSION_PROVIDER_ID, new Object[] { pae }));
-            int k = es.length;
-
-            for (int i = 0; i < k; i++) {
-                GdbDebugger d = (GdbDebugger) es [i].lookupFirst(null, GdbDebugger.class);
-                if (d != null) {
-                    d.programPID = Long.valueOf(pid);
-                    return;
-                }
+                    DebuggerInfo.create(SESSION_PROVIDER_ID, new Object[] { pae, Long.valueOf(pid)}));
+            if (es == null) {
+               throw new DebuggerStartException(new InternalError()); 
             }
         }
-        throw new DebuggerStartException(new InternalError());
     }
     
     /**
@@ -1574,6 +1665,17 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         
         pcs.firePropertyChange(PROP_CURRENT_CALL_STACK_FRAME, 0, 1);
+    }
+    
+    public void makeThreadActive(String tline) {
+        if (tline.length() > 0) {
+            if (Character.isDigit(tline.charAt(0))) {
+                int idx = tline.indexOf(' ');
+                if (idx > 0) {
+                    gdb.thread_select(tline.substring(0, idx));
+                }
+            }
+        }
     }
     
     /**

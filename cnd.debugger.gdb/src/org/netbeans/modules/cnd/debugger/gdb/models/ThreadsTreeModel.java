@@ -47,28 +47,25 @@ import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
-
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-
 import org.openide.util.RequestProcessor;
 
 /**
  * This tree model provides an array of CallStackFrame objects.
  *
- * @author Gordon Prieur (copied from Jan Jancura's and Martin Entlicher's JPDA implementation)
+ * @author Gordon Prieur (copied from CallStackTreeModel)
  */
-public class CallStackTreeModel implements TreeModel {
-    private GdbDebugger     debugger;
-    private Collection          listeners = new HashSet();
-    private Listener            listener;
+public class ThreadsTreeModel implements TreeModel {
     
+    private GdbDebugger     debugger;
+    private Collection      listeners = new HashSet();
+    private Listener        listener;
    
-    public CallStackTreeModel(ContextProvider lookupProvider) {
+    public ThreadsTreeModel(ContextProvider lookupProvider) {
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     
@@ -78,8 +75,8 @@ public class CallStackTreeModel implements TreeModel {
      */
     public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
         if (parent.equals(ROOT)) {
-            CallStackFrame[] sfs = debugger.getCallStackFrames(from, to);
-	    return sfs;
+            String[] threads = debugger.getThreadInformation();
+	    return threads;
         } else {
 	    throw new UnknownTypeException(parent);
 	}
@@ -95,8 +92,8 @@ public class CallStackTreeModel implements TreeModel {
      * @return  true if node is leaf
      */
     public int getChildrenCount(Object parent) throws UnknownTypeException {
-        if ( parent.equals(ROOT)) {
-            return debugger.getStackDepth();
+        if (parent.equals(ROOT)) {
+            return debugger.getThreadCount();
         } else {
 	    throw new UnknownTypeException(parent);
 	}
@@ -114,7 +111,7 @@ public class CallStackTreeModel implements TreeModel {
         if (node.equals(ROOT)) {
 	    return false;
 	}
-        if (node instanceof CallStackFrame) {
+        if (node instanceof String) {
 	    return true;
 	}
         throw new UnknownTypeException(node);
@@ -166,15 +163,16 @@ public class CallStackTreeModel implements TreeModel {
         
         private GdbDebugger debugger;
         private WeakReference model;
+        private RequestProcessor.Task task;
         
-        public Listener(CallStackTreeModel tm, GdbDebugger debugger) {
+        public Listener(ThreadsTreeModel tm, GdbDebugger debugger) {
             this.debugger = debugger;
             model = new WeakReference(tm);
             debugger.addPropertyChangeListener(this);
         }
         
-        private CallStackTreeModel getModel() {
-            CallStackTreeModel tm = (CallStackTreeModel) model.get();
+        private ThreadsTreeModel getModel() {
+            ThreadsTreeModel tm = (ThreadsTreeModel) model.get();
             if (tm == null) {
                 destroy();
             }
@@ -190,12 +188,6 @@ public class CallStackTreeModel implements TreeModel {
             }
         }
         
-        // currently waiting / running refresh task
-        // there is at most one
-        private RequestProcessor.Task task;
-        
-        // check also whether the current thread was resumed/suspended
-        // the call stack needs to be refreshed after invokeMethod() which resumes the thread
         public synchronized void propertyChange(PropertyChangeEvent e) {
             boolean refresh = false;
             String propertyName = e.getPropertyName();
@@ -215,7 +207,7 @@ public class CallStackTreeModel implements TreeModel {
         private class Refresher extends Object implements Runnable {
             public void run() {
                 if (debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
-                    CallStackTreeModel tm = getModel();
+                    ThreadsTreeModel tm = getModel();
                     if (tm != null) {
                         tm.fireTreeChanged();
                     }

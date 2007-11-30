@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,61 +31,87 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb.models;
+package org.netbeans.modules.cnd.debugger.gdb.utils;
 
-import org.netbeans.spi.debugger.ui.Constants;
-import org.netbeans.spi.viewmodel.TableModel;
-import org.netbeans.spi.viewmodel.ModelListener;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- *
- * @author   Gordon Prieur (copied from Jan Jancura's JPDA implementation)
+ * This class is intended for gathering multiline responses to a single gdb command.
+ * 
+ * @author gordonp
  */
-public class CallStackTableModel implements TableModel, Constants {
+public class CommandBuffer {
     
-    public Object getValueAt(Object row, String columnID) throws UnknownTypeException {
-        if (row instanceof CallStackFrame) {
-            if (columnID.equals(CALL_STACK_FRAME_LOCATION_COLUMN_ID)) {
-                String loc = ((CallStackFrame) row).getFullname();
-                loc += ":"; // NOI18N
-                loc += ((CallStackFrame) row).getLineNumber();
-		return (loc);
+    // Static parts
+    private static Map<Integer, CommandBuffer> map = new HashMap<Integer, CommandBuffer>();
+    
+    public static CommandBuffer getCommandBuffer(Integer id) {
+        return map.get(id);
+    }
+    
+    // Instance parts
+    private StringBuilder buf;
+    private CommandBufferCallbackProc cbproc;
+    private Integer token;
+    private Object lock;
+    
+    public CommandBuffer(int token, CommandBufferCallbackProc cbproc) {
+        buf = new StringBuilder();
+        this.token = new Integer(token);
+        this.cbproc = cbproc;
+        lock = new Object();
+        map.put(this.token, this);
+    }
+    
+    public CommandBuffer(int token) {
+        this(token, null);
+    }
+    
+    public void callback() {
+        if (cbproc != null) {
+            cbproc.callback(toString());
+        }
+    }
+    
+    public String postAndWait() {
+        synchronized (lock) {
+            try {
+                lock.wait(2000);
+                return toString();
+            } catch (InterruptedException ex) {
             }
         }
-        throw new UnknownTypeException(row);
+        
+        return null;
     }
     
-    public boolean isReadOnly(Object row, String columnID) throws 
-    UnknownTypeException {
-        if (row instanceof CallStackFrame) {
-            if (columnID.equals(CALL_STACK_FRAME_LOCATION_COLUMN_ID)) {
-		return true;
-	    }
+    public Integer getID() {
+        return token;
+    }
+    
+    public void append(String line) {
+        buf.append(line);
+    }
+    
+    public void done() {
+        synchronized (lock) {
+            lock.notify();
         }
-        throw new UnknownTypeException(row);
     }
     
-    public void setValueAt(Object row, String columnID, Object value) throws UnknownTypeException {
-        throw new UnknownTypeException(row);
-    }
-    
-    /** 
-     * Registers given listener.
-     * 
-     * @param l the listener to add
-     */
-    public void addModelListener(ModelListener l) {
+    public void dispose() {
+        map.remove(token);
     }
 
-    /** 
-     * Unregisters given listener.
-     *
-     * @param l the listener to remove
-     */
-    public void removeModelListener(ModelListener l) {
+    @Override
+    public String toString() {
+        return buf.toString();
     }
 }
