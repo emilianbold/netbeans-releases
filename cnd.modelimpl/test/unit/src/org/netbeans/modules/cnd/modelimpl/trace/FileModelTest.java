@@ -200,6 +200,10 @@ public class FileModelTest extends TraceModelTestBase {
     public void testExprAfterIf() throws Exception {
         performTest("lparenAfterPPKwds.cc"); // NOI18N
     }
+
+    public void testNamespaceAttribute() throws Exception {
+        performTest("namespace_attrib.cc"); // NOI18N
+    }
     
     /////////////////////////////////////////////////////////////////////
     // FAILS

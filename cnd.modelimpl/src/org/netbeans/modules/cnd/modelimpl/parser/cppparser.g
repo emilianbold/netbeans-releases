@@ -1002,6 +1002,7 @@ decl_namespace
 			//	    antlrTrace(true);
 			//	 }	// Used for diagnostic trigger
 			//}
+			(namespace_attribute_specification)?
 			LCURLY!
 			//{enterNewLocalScope();}
 			((external_declaration)*)
@@ -2182,21 +2183,35 @@ exception_type_id
 	( (so = scope_override ID) | built_in_type ) (STAR | AMPERSAND)*
 	;
 
+protected
 function_attribute_specification! 
         : 
-            attribute_specification (options {greedy=true;} : function_attribute_specification)?
-        ;
-// use the same as for function_attribute_specification 
-variable_attribute_specification!
-        :
-            attribute_specification (options {greedy=true;} : variable_attribute_specification)?
+            attribute_specification_list
         ;
 
-// use the same as for function_attribute_specification  
+protected
+variable_attribute_specification!
+        :
+            attribute_specification_list
+        ;
+
+protected
 type_attribute_specification!
         :
-            attribute_specification (options {greedy=true;} : type_attribute_specification)?
+            attribute_specification_list
         ;
+
+protected
+namespace_attribute_specification!
+        :
+            attribute_specification_list
+        ;
+
+protected
+attribute_specification_list
+	:
+	    attribute_specification (options {greedy=true;} : attribute_specification_list)?
+	;
 
 attribute_specification
         :       LITERAL___attribute__
