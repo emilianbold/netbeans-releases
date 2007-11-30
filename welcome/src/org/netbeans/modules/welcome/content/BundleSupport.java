@@ -96,4 +96,8 @@ public class BundleSupport {
         component.getAccessibleContext().setAccessibleName(aName);
         component.getAccessibleContext().setAccessibleDescription(aDescr);
     }
+    
+    public static String getMessage( String key, Object param ) {
+        return MessageFormat.format( NbBundle.getBundle(BUNDLE_NAME).getString(key), param );
+    }
 }

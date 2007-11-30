@@ -59,8 +59,12 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.project.ui.api.RecentProjects;
 import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.NbBundle;
 
 /**
  * Panel showing all recent projects as clickable buttons.
@@ -143,7 +147,7 @@ public class RecentProjectsPanel extends JPanel implements Constants {
             GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(2,2,2,2), 0, 0 ) );
     }
     
-    private static class OpenProjectAction extends AbstractAction {
+    private class OpenProjectAction extends AbstractAction {
         private UnloadedProjectInformation project;
         public OpenProjectAction( UnloadedProjectInformation project ) {
             super( project.getDisplayName(), project.getIcon() );
@@ -166,6 +170,11 @@ public class RecentProjectsPanel extends JPanel implements Constants {
 
             if ( prj != null ) {
                 OpenProjects.getDefault().open( new Project[] { prj }, false );
+            } else {
+                String msg = BundleSupport.getMessage("ERR_InvalidProject", project.getDisplayName()); //NOI18N
+                NotifyDescriptor nd = new NotifyDescriptor.Message( msg );
+                DialogDisplayer.getDefault().notify( nd );
+                rebuildContent();
             }
         }
     }
