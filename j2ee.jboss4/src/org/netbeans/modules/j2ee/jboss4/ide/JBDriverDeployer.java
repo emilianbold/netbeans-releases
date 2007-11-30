@@ -75,7 +75,9 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.util.JBProperties;
 import org.netbeans.modules.j2ee.jboss4.util.ProgressEventSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -118,39 +120,33 @@ public class JBDriverDeployer implements JDBCDriverDeployer {
         }
     
         public void run() {
-            List<URL> jdbcDriverURLs = jdbcDriversToDeploy();
+            List<FileObject> jdbcDriverURLs = jdbcDriversToDeploy();
             // deploy the driers if needed
-            if (jdbcDriverURLs.size() > 0) {
+            if (!jdbcDriverURLs.isEmpty()) {
                 JBProperties properties = manager.getProperties();
-                for (URL jarUrl : jdbcDriverURLs) {
+                for (FileObject file : jdbcDriverURLs) {
+                    File libsDir = properties.getLibsDir();
+                    File toJar = new File(libsDir, file.getNameExt());
                     try {
-                        File libsDir = properties.getLibsDir();
-                        File toJar = new File(libsDir, new File(jarUrl.toURI()).getName());
+                        BufferedInputStream is = new BufferedInputStream(file.getInputStream());
                         try {
-                            BufferedInputStream is = new BufferedInputStream(jarUrl.openStream());
+                            String msg = NbBundle.getMessage(JBDriverDeployer.class, "MSG_DeployingJDBCDrivers", toJar.getPath());
+                            eventSupport.fireProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, msg));
+                            BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(toJar));
                             try {
-                                String msg = NbBundle.getMessage(JBDriverDeployer.class, "MSG_DeployingJDBCDrivers", toJar.getPath());
-                                eventSupport.fireProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, msg));
-                                BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(toJar));
-                                try {
-                                    FileUtil.copy(is, os);
-                                } finally {
-                                    os.close();
-                                }
+                                FileUtil.copy(is, os);
                             } finally {
-                                is.close();
+                                os.close();
                             }
-                        } catch (IOException e) {
-                            LOGGER.log(Level.INFO, null, e);
-                            String msg = NbBundle.getMessage(JBDriverDeployer.class, "MSG_DeployingJDBCDriversFailed", toJar.getPath(), libsDir.getPath());
-                            eventSupport.fireProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, msg));
-                            return;
+                        } finally {
+                            is.close();
                         }
-                    } catch (URISyntaxException e) {
-                        LOGGER.log(Level.WARNING, null, e);
+                    } catch (IOException e) {
+                        LOGGER.log(Level.INFO, null, e);
+                        String msg = NbBundle.getMessage(JBDriverDeployer.class, "MSG_DeployingJDBCDriversFailed", toJar.getPath(), libsDir.getPath());
+                        eventSupport.fireProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, msg));
                         return;
                     }
-
                 }
                 // set the restart flag
                 manager.setNeedsRestart(true);
@@ -159,8 +155,8 @@ public class JBDriverDeployer implements JDBCDriverDeployer {
         }
         
         /** Returns a list of jdbc drivers that need to be deployed. */
-        private List<URL> jdbcDriversToDeploy() {
-            List<URL> jdbcDriverURLs = new ArrayList<URL>();
+        private List<FileObject> jdbcDriversToDeploy() {
+            List<FileObject> jdbcDriverFiles = new ArrayList<FileObject>();
             Collection<File> driverCP = getJDBCDriverClasspath();
             for (Datasource datasource : datasources) {
                 String className = datasource.getDriverClassName();
@@ -175,12 +171,17 @@ public class JBDriverDeployer implements JDBCDriverDeployer {
                         String driverClass = databaseConnection.getDriverClass();
                         JDBCDriver[] jdbcDrivers = JDBCDriverManager.getDefault().getDrivers(driverClass);
                         for (JDBCDriver jdbcDriver : jdbcDrivers) {
-                            jdbcDriverURLs.addAll(Arrays.asList(jdbcDriver.getURLs()));
+                            for (URL url : jdbcDriver.getURLs()) {
+                                FileObject file = URLMapper.findFileObject(url);
+                                if (file != null) {
+                                    jdbcDriverFiles.add(file);
+                                }
+                            }
                         }
                     }
                 }
             }
-            return jdbcDriverURLs;
+            return jdbcDriverFiles;
         }
         
         /** Returns a classpath where the JDBC drivers could be placed */
