@@ -12,4 +12,5 @@
         Prevent CME
         updated xmpp/service library from nb_openfire_interop branch + compatibility stuff
         Workaround for openfire MUC interoperability
-        
+
+1.4:    Interoperability with OpenFire 3.4.1
