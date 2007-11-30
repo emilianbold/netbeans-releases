@@ -545,16 +545,13 @@ public final class JBLogWriter {
                 }
 
                 try {
-                    LOGGER.log(Level.FINER, "ZZZZ thread " + +Thread.currentThread().getId());
                     Thread.sleep(DELAY); // give the server some time to write the output
-                    LOGGER.log(Level.FINER, "FINISH thread " + +Thread.currentThread().getId());
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
 
                 // logic rely on interrupted status - we must not miss it
                 if (Thread.currentThread().isInterrupted()) {
-                    LOGGER.log(Level.FINER, "INTERRUPTED thread " + +Thread.currentThread().getId());
                     interrupted = true;
                     break;
                 }

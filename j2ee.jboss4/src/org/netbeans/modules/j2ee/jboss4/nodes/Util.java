@@ -203,21 +203,23 @@ public class Util {
         try {
             return server.getAttribute(new ObjectName(targetObject), name);
         } catch (InstanceNotFoundException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
+            LOGGER.log(Level.INFO, null, ex);
         } catch (AttributeNotFoundException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
+            LOGGER.log(Level.INFO, null, ex);
         } catch (MalformedObjectNameException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
+            LOGGER.log(Level.INFO, null, ex);
         } catch (NullPointerException ex) {
             // it's normal behaviour when the server is not running
+            LOGGER.log(Level.FINE, null, ex);
         } catch (IllegalArgumentException ex) {
             // it's normal behaviour when the server is not running
+            LOGGER.log(Level.FINE, null, ex);
         } catch (ReflectionException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
+            LOGGER.log(Level.INFO, null, ex);
         } catch (MBeanException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
+            LOGGER.log(Level.INFO, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
+            LOGGER.log(Level.INFO, null, ex);
         }
 
         return null;
