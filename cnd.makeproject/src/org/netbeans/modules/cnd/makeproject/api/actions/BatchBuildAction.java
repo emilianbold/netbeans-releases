@@ -59,10 +59,12 @@ public class BatchBuildAction extends CallableSystemAction {
         return getString("BatchBuildActionName"); // NOI18N
     }
     
+    @Override
     public void actionPerformed(ActionEvent ev) {
         performAction();
     }
     
+    @Override
     public boolean isEnabled() {
         boolean ret = false;
         Project mainProject = OpenProjects.getDefault().getMainProject();

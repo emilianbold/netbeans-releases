@@ -128,9 +128,9 @@ public class AddExistingItemAction extends NodeAction {
 	Item[] items = new Item[files.length];
 	for (int i = 0; i < files.length; i++) {
 	    String itemPath;
-	    if (pathPanel.getMode() == PathPanel.REL_OR_ABS)
+	    if (PathPanel.getMode() == PathPanel.REL_OR_ABS)
 		itemPath = IpeUtils.toAbsoluteOrRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
-	    else if (pathPanel.getMode() == PathPanel.REL)
+	    else if (PathPanel.getMode() == PathPanel.REL)
 		itemPath = IpeUtils.toRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
 	    else
 		itemPath = files[i].getPath();
@@ -157,6 +157,7 @@ public class AddExistingItemAction extends NodeAction {
 	return null;
     }
 
+    @Override
     protected boolean asynchronous() {
 	return false;
     }
